@@ -20,6 +20,9 @@ import { createPet, listPets, type CreatePetInput } from '../../api/pets';
 import { petKeys } from '../../api/query-keys';
 import { Celebration } from '../../components/celebration';
 import { PetAvatar } from '../../components/pet-avatar';
+import { FieldErrorMessage } from '../../components/field-error-message';
+import type { FieldIssues } from '../../utils/account-rules';
+import { validateAddPet } from '../../utils/form-rules';
 import { useAuth } from '../../providers/auth-provider';
 import {
   useLocale,
@@ -115,6 +118,7 @@ export function AddPetScreen() {
   } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldIssues<'name' | 'birthDate' | 'approxAgeMonths'>>({});
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [celebratePetName, setCelebratePetName] = useState<string | null>(null);
 
@@ -161,27 +165,15 @@ export function AddPetScreen() {
   }
 
   async function handleSubmit() {
-    const trimmedName = name.trim();
-    if (!trimmedName) {
-      setFormError(t('addPet.nameIsRequired'));
-      return;
-    }
+    setFormError(null);
+    const issues = validateAddPet({ name, ageMode, birthDate, approxAgeMonths });
+    setFieldErrors(issues);
+    if (Object.keys(issues).length > 0) return;
 
-    let ageInput: Pick<CreatePetInput, 'birthDate' | 'approxAgeMonths'>;
-    if (ageMode === 'birthDate') {
-      if (!birthDate) {
-        setFormError(t('addPet.chooseBirthDate'));
-        return;
-      }
-      ageInput = { birthDate: dateToIso(birthDate) };
-    } else {
-      const months = Number(approxAgeMonths);
-      if (!/^\d+$/.test(approxAgeMonths) || months < 0 || months > 480) {
-        setFormError(t('addPet.errorAgeRange'));
-        return;
-      }
-      ageInput = { approxAgeMonths: months };
-    }
+    const trimmedName = name.trim();
+    const ageInput: Pick<CreatePetInput, 'birthDate' | 'approxAgeMonths'> = ageMode === 'birthDate'
+      ? { birthDate: dateToIso(birthDate!) }
+      : { approxAgeMonths: Number(approxAgeMonths) };
 
     const trimmedBreed = breed.trim();
     const trimmedMicrochip = microchip.trim();
@@ -197,7 +189,6 @@ export function AddPetScreen() {
     };
 
     setSubmitting(true);
-    setFormError(null);
     try {
       const wasFirst = pets.data?.kind === 'ok' && pets.data.pets.length === 0;
       const result = await createPet(baseUrl, token ?? '', input);
@@ -324,6 +315,7 @@ export function AddPetScreen() {
             value={name}
             onChangeText={setName}
           />
+          <FieldErrorMessage testID="name-input" issue={fieldErrors.name} />
         </View>
 
         <View className="gap-2">
@@ -412,6 +404,8 @@ export function AddPetScreen() {
               onChangeText={setApproxAgeMonths}
             />
           )}
+          {ageMode === 'birthDate' && <FieldErrorMessage testID="birth-date-field" issue={fieldErrors.birthDate} />}
+          {ageMode === 'months' && <FieldErrorMessage testID="approx-age-input" issue={fieldErrors.approxAgeMonths} />}
         </View>
 
         {showDatePicker ? (

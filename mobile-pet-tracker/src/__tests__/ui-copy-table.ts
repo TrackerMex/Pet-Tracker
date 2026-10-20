@@ -147,6 +147,10 @@ export const R4_MAP: UseRow[] = [
 ];
 
 export const R5_HEALTH: UseRow[] = [
+  { file: 'src/utils/form-rules.ts', key: 'weightLog.enterValidWeight' }, // #186 R2
+  { file: 'src/utils/form-rules.ts', key: 'validation.weightRange' }, // #186 R2
+  { file: 'src/utils/form-rules.ts', key: 'validation.bodyConditionRange' }, // #186 R2
+  { file: 'src/utils/form-rules.ts', key: 'validation.invalidDate' }, // #186 R2
   { file: 'src/app/_layout.tsx', key: 'weightLog.weightLog' }, // #95 R4
   { file: 'src/screens/health/index.tsx', key: 'health.health' },
   { file: 'src/screens/health/index.tsx', key: 'common.somethingWentWrong' },
@@ -166,7 +170,7 @@ export const R5_HEALTH: UseRow[] = [
   { file: 'src/screens/health/index.tsx', key: 'home.nextVaccineDays' },
   { file: 'src/screens/health/index.tsx', key: 'home.nextVaccineDaysLeft' },
   { file: 'src/screens/health/index.tsx', key: 'home.nextVaccineToday' },
-  { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.enterValidWeight' },
+  { file: 'src/screens/weight-log/index.tsx', key: 'validation.checkDetails' }, // #186 R7
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.errorForbidden' },
   { file: 'src/screens/weight-log/index.tsx', key: 'common.cannotReachServer' },
   { file: 'src/screens/weight-log/index.tsx', key: 'common.somethingWentWrong' },
@@ -259,6 +263,7 @@ export const R6_FOOD: UseRow[] = [
 ];
 
 export const R7_PROFILE: UseRow[] = [
+  { file: 'src/utils/form-rules.ts', key: 'validation.required' }, // #186 R2
   { file: 'src/screens/profile/index.tsx', key: 'common.noPetsBody' }, // #181 R5
   { file: 'src/screens/profile/index.tsx', key: 'profile.addPet' }, // #181 R5
   { file: 'src/screens/profile/index.tsx', key: 'map.justNow' }, // #173 R9
@@ -330,6 +335,9 @@ export const R7_PROFILE: UseRow[] = [
 ];
 
 export const R8_REMINDERS: UseRow[] = [
+  { file: 'src/utils/form-rules.ts', key: 'addReminder.titleIsRequired' }, // #186 R2
+  { file: 'src/utils/form-rules.ts', key: 'addReminder.pickDate' }, // #186 R2
+  { file: 'src/utils/form-rules.ts', key: 'addReminder.dateMustBeFuture' }, // #186 R2
   { file: 'src/screens/reminders/index.tsx', key: 'common.noPetsYet' }, // #181 R4
   { file: 'src/screens/reminders/index.tsx', key: 'common.noPetsBody' }, // #181 R4
   { file: 'src/screens/reminders/index.tsx', key: 'profile.addPet' }, // #181 R4
@@ -369,9 +377,6 @@ export const R8_REMINDERS: UseRow[] = [
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.advance1Day' },
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.advance3Days' },
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.advance7Days' },
-  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.titleIsRequired' },
-  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.pickDate' },
-  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.dateMustBeFuture' },
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.errorForbidden' },
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.dateMustBeFuture' },
   { file: 'src/screens/add-reminder/index.tsx', key: 'common.cannotReachServer' },
@@ -389,11 +394,11 @@ export const R8_REMINDERS: UseRow[] = [
 ];
 
 export const R9_ADD_PET: UseRow[] = [
+  { file: 'src/utils/form-rules.ts', key: 'addPet.nameIsRequired' }, // #186 R2
+  { file: 'src/utils/form-rules.ts', key: 'addPet.chooseBirthDate' }, // #186 R2
+  { file: 'src/utils/form-rules.ts', key: 'addPet.errorAgeRange' }, // #186 R2
   { file: 'src/app/_layout.tsx', key: 'addPet.addPet' }, // #95 R4
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.errorPhotoFormat' },
-  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.nameIsRequired' },
-  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.chooseBirthDate' },
-  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.errorAgeRange' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.errorPhotoAfterCreate' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.checkPetDetails' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.youCannotCreatePet' },

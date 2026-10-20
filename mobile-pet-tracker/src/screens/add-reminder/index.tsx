@@ -11,6 +11,9 @@ import { Bell, Calendar, Clock } from 'reicon-react-native';
 
 import { createReminder } from '../../api/reminders';
 import type { ReminderType } from '../../api/types';
+import { FieldErrorMessage } from '../../components/field-error-message';
+import type { FieldIssues } from '../../utils/account-rules';
+import { validateReminder } from '../../utils/form-rules';
 import { useAuth } from '../../providers/auth-provider';
 import {
   useLocale,
@@ -75,26 +78,17 @@ function AddReminderContent({ petId }: { petId: string }) {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldIssues<'title' | 'date'>>({});
 
   async function handleSubmit() {
+    setFormError(null);
+    const dueAt = date ? combineDateAndTime(date, time) : null;
+    const issues = validateReminder({ title, dueAt, nowMs: Date.now() });
+    setFieldErrors(issues);
+    if (Object.keys(issues).length > 0 || dueAt === null) return;
     const trimmedTitle = title.trim();
-    if (!trimmedTitle) {
-      setFormError(t('addReminder.titleIsRequired'));
-      return;
-    }
-    if (!date) {
-      setFormError(t('addReminder.pickDate'));
-      return;
-    }
-
-    const dueAt = combineDateAndTime(date, time);
-    if (dueAt.getTime() <= Date.now()) {
-      setFormError(t('addReminder.dateMustBeFuture'));
-      return;
-    }
 
     setSubmitting(true);
-    setFormError(null);
 
     try {
       const result = await createReminder(baseUrl, token ?? '', petId, {
@@ -205,6 +199,7 @@ function AddReminderContent({ petId }: { petId: string }) {
             onFocus={() => setTitleFocused(true)}
             onBlur={() => setTitleFocused(false)}
           />
+          <FieldErrorMessage testID="title-input" issue={fieldErrors.title} />
         </View>
 
         <View className="flex-row gap-2.5">
@@ -226,6 +221,7 @@ function AddReminderContent({ petId }: { petId: string }) {
                   : t('addReminder.selectDate')}
               </Text>
             </Pressable>
+            <FieldErrorMessage testID="date-field" issue={fieldErrors.date} />
           </View>
           <View className="flex-2 gap-1.5">
             <Text className="text-sm font-extrabold text-foreground">

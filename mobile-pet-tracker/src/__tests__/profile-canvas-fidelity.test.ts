@@ -53,8 +53,9 @@ describe('#173 R2: inventario de radios nuevos', () => {
 });
 
 describe('#173 R2.4: inventario de tamaños nuevos', () => {
-  it('reserva text-26 al nombre de la mascota en Perfil', () => {
+  it('reserva text-26 al nombre de la mascota en Perfil (enmendado por #176 R8)', () => {
     expect(filesMatching(/\btext-26\b/)).toEqual([
+      'components/empty-state.tsx', // (enmendado por #176 R8)
       'screens/alert-detail/index.tsx', // #180 R1
       'screens/alerts/index.tsx', // #174 R3
       'screens/docs/index.tsx', // #175 R5
@@ -81,8 +82,8 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
 });
 
 describe('#173 R3: Card hero y flat solo en Perfil', () => {
-  it('Perfil y el detalle de alerta son los consumidores de Card hero (enmendado por #180 R3)', () => {
-    expect(filesMatching(/variant="hero"/)).toEqual(['screens/alert-detail/index.tsx', 'screens/profile/index.tsx']);
+  it('Perfil y el detalle de alerta son los consumidores de Card hero (enmendado por #180 R3) (enmendado por #176 R2)', () => {
+    expect(filesMatching(/<Card\b[^>]*\bvariant="hero"/s)).toEqual(['screens/alert-detail/index.tsx', 'screens/profile/index.tsx']); // (enmendado por #176 R2)
     const profile = readFileSync(join(sourceRoot, 'screens/profile/index.tsx'), 'utf8');
     expect(profile.match(/variant="hero"/g)).toHaveLength(1);
   });

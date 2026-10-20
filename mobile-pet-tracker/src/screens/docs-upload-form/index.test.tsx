@@ -351,29 +351,100 @@ describe('#185 R9 (antes #158 R5): selector y formulario de subida', () => {
 
 describe('#185 R9 (antes #158 R6): validación antes de leer o crear', () => {
   it.each([
-    { label: 'tipo solo con espacios', input: 'docs-type-input', value: '   ' },
-    { label: 'nombre vacío', input: 'docs-name-input', value: '' },
-    { label: 'fecha sin formato ISO', input: 'docs-date-input', value: '09/10/2026' },
-  ])('rechaza $label sin llamadas', async ({ input, value }) => {
+    { label: 'tipo solo con espacios', input: 'docs-type-input', value: '   ', message: 'Este campo es obligatorio' },
+    { label: 'nombre vacío', input: 'docs-name-input', value: '', message: 'Este campo es obligatorio' },
+    { label: 'fecha sin formato ISO', input: 'docs-date-input', value: '09/10/2026', message: 'Escribe una fecha válida con formato AAAA-MM-DD' },
+  ])('#186 R6: rechaza $label bajo su campo sin llamadas', async ({ input, value, message }) => {
     await openUploadForm();
     await fillDocumentForm();
     await fireEvent.changeText(screen.getByTestId(input), value);
     await fireEvent.press(screen.getByTestId('docs-upload-submit'));
-    await screen.findByText('Añade un tipo, un nombre y una fecha con formato AAAA-MM-DD');
+    await waitFor(() => expect(screen.queryByTestId(`${input}-message`)).toHaveTextContent(message));
+    const field = screen.getByTestId(input).parent!;
+    expect(within(field).queryByTestId(`${input}-message`)).toHaveTextContent(message);
+    expect(field.children[field.children.length - 1]).toBe(screen.getByTestId(`${input}-error`));
+    expect(screen.queryByTestId('docs-action-error')).toBeNull();
+    expect(screen.getByTestId('docs-upload-submit')).not.toBeDisabled();
+    expect(uploadChildren()).toEqual(['docs-upload-form']);
+    expect(mockGetDocumentAsync).toHaveBeenCalledTimes(1);
     expect(mockAssetFetch).not.toHaveBeenCalled();
     expect(mockCreatePetDocument).not.toHaveBeenCalled();
   });
 
-  it.each([{ docs: [] }, { docs: [docOne] }])('ordena y limpia el error con lista %j', async ({ docs }) => {
+  it.each([{ docs: [] }, { docs: [docOne] }])('#186 R6: ordena y limpia el error de campo con lista %j', async ({ docs }) => {
     await openUploadForm(docs);
     await fillDocumentForm();
     await fireEvent.changeText(screen.getByTestId('docs-type-input'), '   ');
     await fireEvent.press(screen.getByTestId('docs-upload-submit'));
-    await screen.findByText('Añade un tipo, un nombre y una fecha con formato AAAA-MM-DD');
-    expect(uploadChildren()).toEqual(['docs-upload-form', 'docs-action-error']);
+    await waitFor(() => expect(screen.queryByTestId('docs-type-input-message')).toHaveTextContent('Este campo es obligatorio'));
+    expect(uploadChildren()).toEqual(['docs-upload-form']);
     await fireEvent.press(screen.getByTestId('docs-upload-cancel'));
     await screen.findByTestId(docs.length ? 'docs-upload' : 'docs-empty-action');
+    expect(screen.queryByTestId('docs-type-input-message')).toBeNull();
     expect(screen.queryByTestId('docs-action-error')).toBeNull();
+  });
+});
+
+describe('#186 R6: errores de campos y contrato del documento', () => {
+  it('#186 R6: rechaza un calendario falso antes de leer el archivo', async () => {
+    await openUploadForm();
+    await fillDocumentForm();
+    await fireEvent.changeText(screen.getByTestId('docs-date-input'), '2026-02-30');
+    await fireEvent.press(screen.getByTestId('docs-upload-submit'));
+    await waitFor(() => expect(screen.queryByTestId('docs-date-input-message')).toHaveTextContent('Escribe una fecha válida con formato AAAA-MM-DD'));
+    expect(mockGetDocumentAsync).toHaveBeenCalledTimes(1);
+    expect(mockAssetFetch).not.toHaveBeenCalled();
+    expect(mockCreatePetDocument).not.toHaveBeenCalled();
+  });
+
+  it('#186 R6: muestra los tres campos inválidos simultáneamente', async () => {
+    await openUploadForm();
+    await fireEvent.changeText(screen.getByTestId('docs-date-input'), 'bad-date');
+    await fireEvent.press(screen.getByTestId('docs-upload-submit'));
+    await waitFor(() => expect(screen.queryByTestId('docs-type-input-message')).toHaveTextContent('Este campo es obligatorio'));
+    expect(screen.queryByTestId('docs-type-input-message-row')).not.toBeNull();
+    expect(screen.queryByTestId('docs-name-input-message-row')).not.toBeNull();
+    expect(screen.queryByTestId('docs-date-input-message-row')).not.toBeNull();
+  });
+
+  it('#186 R6: el estado inválido de HeroUI marca tipo pero no veterinario', async () => {
+    await openUploadForm();
+    await fillDocumentForm();
+    await fireEvent.changeText(screen.getByTestId('docs-type-input'), '');
+    await fireEvent.press(screen.getByTestId('docs-upload-submit'));
+    await waitFor(() => expect(screen.getByTestId('docs-type-input').props.className.split(/\s+/)).toContain('android:border-danger'));
+    expect(screen.getByTestId('docs-vet-input').props.className.split(/\s+/)).not.toContain('android:border-danger');
+    expect(screen.queryByTestId('docs-type-input-message')).toHaveTextContent('Este campo es obligatorio');
+  });
+
+  it('#186 R6: fecha recortada se envía una vez sin mensajes de campo', async () => {
+    mockCreatePetDocument.mockReturnValue(pending());
+    await openUploadForm();
+    await fillDocumentForm();
+    await fireEvent.changeText(screen.getByTestId('docs-date-input'), ' 2026-10-09 ');
+    await fireEvent.press(screen.getByTestId('docs-upload-submit'));
+    await waitFor(() => expect(screen.getByTestId('docs-upload-submit')).toBeDisabled());
+    expect(screen.queryAllByTestId(/-message-row$/)).toHaveLength(0);
+    expect(mockCreatePetDocument).toHaveBeenCalledTimes(1);
+    expect(mockCreatePetDocument).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1', {
+      type: 'Vacunación', name: 'Antirrábica', date: '2026-10-09', vet: 'Dra. Pérez',
+    });
+  });
+
+  it('#186 R6: el 400 conserva el aviso genérico sin mensajes de campo', async () => {
+    mockCreatePetDocument.mockResolvedValue({ kind: 'invalid' });
+    await openUploadForm();
+    await fillDocumentForm();
+    await fireEvent.press(screen.getByTestId('docs-upload-submit'));
+    await waitFor(() => expect(screen.queryByTestId('docs-action-error')).toHaveTextContent('Añade un tipo, un nombre y una fecha con formato AAAA-MM-DD'));
+    expect(screen.queryAllByTestId(/-message-row$/)).toHaveLength(0);
+  });
+
+  it('#186 R6: conserva maxLength 40 120 y 120', async () => {
+    await openUploadForm();
+    expect(screen.getByTestId('docs-type-input').props.maxLength).toBe(40);
+    expect(screen.getByTestId('docs-name-input').props.maxLength).toBe(120);
+    expect(screen.getByTestId('docs-vet-input').props.maxLength).toBe(120);
   });
 });
 
@@ -571,18 +642,18 @@ describe('#185 R9 (antes #158 R9): cada fallo conserva el formulario y sus valor
     expect(screen.queryByTestId('docs-action-error')).toBeNull();
   });
 
-  it.each(['Error de R9', 'Error de R6'] as const)('quita al pulsar el error anterior: %s', async (origin) => {
+  it.each(['Error de R9', 'Error de R6'] as const)('#186 R6: quita al pulsar el error anterior: %s', async (origin) => {
     if (origin === 'Error de R9') mockCreatePetDocument.mockResolvedValue({ kind: 'error' });
     await openUploadForm();
     await fillDocumentForm();
     if (origin === 'Error de R6') await fireEvent.changeText(screen.getByTestId('docs-type-input'), '   ');
     await fireEvent.press(screen.getByTestId('docs-upload-submit'));
-    await screen.findByText(origin === 'Error de R9'
-      ? 'Algo salió mal'
-      : 'Añade un tipo, un nombre y una fecha con formato AAAA-MM-DD');
+    await waitFor(() => expect(screen.queryByTestId(origin === 'Error de R9' ? 'docs-action-error' : 'docs-type-input-message')).toHaveTextContent(origin === 'Error de R9' ? 'Algo salió mal' : 'Este campo es obligatorio'));
     if (origin === 'Error de R6') await fireEvent.changeText(screen.getByTestId('docs-type-input'), 'Vacunación');
     mockAssetFetch.mockReturnValueOnce(pending());
     await fireEvent.press(screen.getByTestId('docs-upload-submit'));
+    await waitFor(() => expect(screen.getByTestId('docs-upload-submit')).toBeDisabled());
+    expect(screen.queryAllByTestId(/-message-row$/)).toHaveLength(0);
     expect(screen.getByTestId('docs-upload-form')).toBeVisible();
     expect(screen.queryByTestId('docs-action-error')).toBeNull();
   });
