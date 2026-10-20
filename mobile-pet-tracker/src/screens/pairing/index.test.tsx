@@ -10,7 +10,7 @@ import { notificationAsync } from 'expo-haptics';
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
-import { Alert, DeviceEventEmitter, Platform } from 'react-native';
+import { Alert, DeviceEventEmitter, Platform, StyleSheet } from 'react-native';
 import { getAnimatedStyle } from 'react-native-reanimated';
 
 import {
@@ -1066,6 +1066,31 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
       status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
     } satisfies AuthContextValue);
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('#188 R15: groups a 200 × 150 hero box and the title with a 10 px gap', async () => {
+    await renderPairing();
+    await screen.findByTestId('pairing-title');
+    const hero = screen.getByTestId('pairing-hero', { includeHiddenElements: true });
+    const group = screen.getByTestId('pairing-hero-group');
+    expect(group.props.className.split(' ')).toEqual(expect.arrayContaining(['items-center', 'gap-2.5']));
+    expect(group.children).toEqual([hero, screen.getByTestId('pairing-title')]);
+    expect(hero.props.className.split(' ')).toEqual(expect.arrayContaining([
+      'w-50', 'h-37.5', 'items-center', 'justify-center',
+    ]));
+    expect(hero.props).toMatchObject({
+      accessible: false,
+      accessibilityElementsHidden: true,
+      importantForAccessibility: 'no-hide-descendants',
+    });
+    expect(hero.children).toEqual([
+      screen.getByTestId('pairing-ring-0', { includeHiddenElements: true }),
+      screen.getByTestId('pairing-ring-1', { includeHiddenElements: true }),
+      screen.getByTestId('pairing-pingo-float', { includeHiddenElements: true }),
+    ]);
+    const pingo = screen.getByTestId('pairing-pingo', { includeHiddenElements: true });
+    expect(pingo).toHaveStyle({ width: 120, aspectRatio: 1 });
+    expect(StyleSheet.flatten(pingo.props.style).height).toBeUndefined();
   });
 
   it('#188 R1: shows the collar pose as the first visual content', async () => {
