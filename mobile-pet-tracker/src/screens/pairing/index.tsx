@@ -14,7 +14,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { InfoCircle } from 'reicon-react-native';
+import { InfoCircle, Package } from 'reicon-react-native';
 
 import { claimDevice, releaseDevice } from '../../api/devices';
 import { listPets, type PetsState } from '../../api/pets';
@@ -394,13 +394,13 @@ export function PairingScreen() {
               </Text>
             </View>
 
-            <View className="gap-2">
-              <Text testID="pairing-activation-code-label" className="text-xs font-semibold uppercase tracking-widest text-muted">
+            <View className="gap-1.5">
+              <Text testID="pairing-activation-code-label" className="text-sm font-extrabold text-foreground">
                 {t('pairing.activationCode')}
               </Text>
               <TextInput
                 testID="activation-code-input"
-                className="min-h-12 rounded-xl bg-default px-4 py-3 text-foreground"
+                className="h-15 rounded-14 border-2 border-accent bg-default px-4 font-mono text-24 tracking-code text-foreground"
                 style={CONTINUOUS_CORNER}
                 autoCapitalize="characters"
                 autoCorrect={false}
@@ -408,9 +408,12 @@ export function PairingScreen() {
                 value={code}
                 onChangeText={setCode}
               />
-              <Text testID="pairing-code-hint" className="text-sm font-normal text-muted">
-                {t('pairing.printedOnCollarBox')}
-              </Text>
+              <View testID="pairing-code-hint" className="flex-row items-center gap-1.5">
+                <Package size={14} color={muted} />
+                <Text className="text-xs font-semibold text-muted">
+                  {t('pairing.printedOnCollarBox')}
+                </Text>
+              </View>
             </View>
 
             <View testID="pairing-submit-spacer" style={{ flexGrow: 1 }} />
