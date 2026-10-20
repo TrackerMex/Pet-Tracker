@@ -379,8 +379,7 @@ describe('R1: me card', () => {
 
     await renderProfile();
 
-    await waitFor(() => expect(screen.getByTestId('me-card')).toBeVisible());
-    expect(screen.getByText('Ada Lovelace')).toBeVisible();
+    expect(await screen.findByText('Ada Lovelace')).toBeVisible();
     expect(screen.getByText('ada@example.test')).toBeVisible();
     expect(mockGetMe).toHaveBeenCalledWith(apiUrl, 'jwt-token');
   });
