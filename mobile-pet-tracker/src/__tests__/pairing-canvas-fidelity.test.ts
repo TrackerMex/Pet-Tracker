@@ -21,6 +21,13 @@ function literalText(node: ts.Node | undefined): string | undefined {
   return undefined;
 }
 
+it('#188 R16/R20: declares the new theme tokens', () => {
+  const theme = readSource('src/theme/global.css');
+  expect(theme).toContain('--text-28: 28px');
+  expect(theme).toContain('--tracking-code: 0.14em');
+  expect(theme).toContain('--font-mono: monospace');
+});
+
 it('#188 R11: resolves visible copy through bilingual catalog keys registered for pairing', () => {
   const tree = ts.createSourceFile(pairingFile, readSource(pairingFile), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const keys = new Set<TranslationKey>();

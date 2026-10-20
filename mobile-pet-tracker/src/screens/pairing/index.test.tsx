@@ -1212,6 +1212,17 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     expect(texts[0].props.testID).toBe('pairing-title');
   });
 
+  it('#188 R16: centers the title at 28 px with black weight and title tracking', async () => {
+    await renderPairing();
+    const title = await screen.findByTestId('pairing-title');
+    expect(title.props.className.split(' ')).toEqual(expect.arrayContaining([
+      'text-center', 'text-28', 'font-black', 'tracking-title', 'text-foreground',
+    ]));
+    for (const excluded of ['text-24', 'text-2xl', '[']) {
+      expect(title.props.className).not.toContain(excluded);
+    }
+  });
+
   it('#188 R7: gives the title the 24 px token and black weight', async () => {
     await renderPairing();
     const title = await screen.findByTestId('pairing-title');
