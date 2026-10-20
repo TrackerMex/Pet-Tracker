@@ -248,9 +248,9 @@ Solo el humano marca estas casillas, con su commit de firma. El leader no marca 
 - [X] B-5 · Supuestos reformulados en `4fb7fd9a` (`specs/mobile-pairing-pingo-canvas-fidelity/requirements.md:101`). Confirmado por humano (fecha: 2026-10-20)
 - [X] M-2 · convención de commits de `docs/conventions.md` §Commits. Confirmado por humano (fecha: 2026-10-20)
 - [X] Merge con `origin/main`: unión de las tres enmiendas de `docs/ui-guidelines.md` (#176 y #186 de main, #188 de la rama). Revisado por humano (fecha: 2026-10-20)
-- [X] H1 · build de desarrollo Android: anillos de 2400 ms y flotado (`requirements.md:128`). Verificado por humano (fecha: 2026-10-20)
-- [X] H2 · dispositivo con «Quitar animaciones» activo (`requirements.md:129`). Verificado por humano (fecha: 2026-10-20)
-- [X] H3 · comparación lado a lado con el artboard «Vincular collar (19)» (`requirements.md:130`). Verificado por humano (fecha: 2026-10-20)
+- [ ] H1 · build de desarrollo Android: anillos de 2400 ms y flotado (`requirements.md:128`). Pendiente de verificación humana (desmarcado 2026-10-20: smoke humano incompleto)
+- [ ] H2 · dispositivo con «Quitar animaciones» activo (`requirements.md:129`). Pendiente de verificación humana (desmarcado 2026-10-20: smoke humano incompleto)
+- [ ] H3 · comparación lado a lado con el artboard «Vincular collar (19)» (`requirements.md:130`). Pendiente de verificación humana (desmarcado 2026-10-20: smoke humano incompleto)
 - [X] C4 · M-3 (historia roja): aceptar la excepción de `bb598dbf` (R3, 1 failed, 150 de 151), `bcebe008` (R7, 2 failed, 252 de 254) y `53e9af61` (R2, 1 failed, 253 de 254). Verde en `9f831ea3` (R3) y `0c717e29` (R7). Decisión tomada en el chat del 2026-10-20: aceptar. Firma pendiente, con commit del humano.
 - [X] C4 · R9, R11 y R14: vía excepción, con la evidencia de M1, M2 y M5 (L224–226). Precisa las casillas L239, L240 y L242 («excepción o enmienda vía (b)»). Decisión tomada en el chat del 2026-10-20: excepción. Firma pendiente, con commit del humano.
 - [X] C5 · commits fuera de M-2: aceptar `8166167c` (asunto en inglés, sin tipo) y los merges `50e56e44` y `44a16473` como excepción, sin reescribir. Decisión tomada en el chat del 2026-10-20: aceptar. Firma pendiente, con commit del humano.
