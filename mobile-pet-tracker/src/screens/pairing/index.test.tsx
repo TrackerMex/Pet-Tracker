@@ -1090,6 +1090,25 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
+  it('#188 R19: anchors the submit button to the bottom edge', async () => {
+    const app = await renderPairing();
+    const submit = await screen.findByTestId('pairing-submit');
+    expect(screen.getByTestId('pairing-form').props.contentContainerStyle.flexGrow).toBe(1);
+    const spacer = screen.getByTestId('pairing-submit-spacer');
+    expect(spacer).toHaveStyle({ flexGrow: 1 });
+    const form = submit.parent!;
+    expect(form).toHaveStyle({ flexGrow: 1 });
+    expect(form.children.slice(-2)).toEqual([spacer, submit]);
+    await app.unmount();
+
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ device: makeDevice() })] });
+    mockGetPetTracking.mockResolvedValue({ kind: 'ok', tracked: true });
+    await renderPairing();
+    await screen.findByTestId('device-status-card');
+    expect(screen.getByTestId('pairing-form').props.contentContainerStyle).not.toHaveProperty('flexGrow');
+    expect(screen.queryByTestId('pairing-submit-spacer')).toBeNull();
+  });
+
   it('#188 R18: renders the free-plan banner with an info icon and a bold lead', async () => {
     for (const [language, lead, body] of [
       ['es', 'Plan gratuito — solo salud.', 'Vincula un collar con plan activo para ver el mapa.'],
