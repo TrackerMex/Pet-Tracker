@@ -394,6 +394,7 @@ export const R8_REMINDERS: UseRow[] = [
 ];
 
 export const R9_ADD_PET: UseRow[] = [
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.continue' }, // #191 R7
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.pingoGreeting' }, // #191 R4
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.stepProgress' }, // #191 R3
   { file: 'src/utils/form-rules.ts', key: 'addPet.nameIsRequired' }, // #186 R2

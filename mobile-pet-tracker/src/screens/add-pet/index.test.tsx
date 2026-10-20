@@ -194,6 +194,27 @@ describe('R6: alta de mascota', () => {
     expect(screen.getByTestId('add-pet-step-label')).toHaveTextContent('1 of 2');
   });
 
+  it.each([
+    ['es', 'El nombre es obligatorio', '2 de 2'],
+    ['en', 'Name is required', '2 of 2'],
+  ] as const)('#191 R7: Continuar valida el nombre en %s y avanza al corregirlo', async (language, message, stepLabel) => {
+    await renderAddPet(language);
+    await fireEvent.press(screen.getByTestId('add-pet-continue'));
+    await waitFor(() => expect(screen.getByTestId('name-input-message')).toHaveTextContent(message));
+    expect(within(screen.getByTestId('name-input').parent!).getByTestId('name-input-message')).toHaveTextContent(message);
+    expect(screen.getByTestId('name-input')).toBeVisible();
+    expect(screen.queryByTestId('add-pet-submit')).toBeNull();
+    expect(screen.getByTestId('add-pet-continue')).not.toBeDisabled();
+    expect(mockCreatePet).not.toHaveBeenCalled();
+    await fireEvent.changeText(screen.getByTestId('name-input'), 'Luna');
+    expect(screen.getByTestId('name-input-message')).toHaveTextContent(message);
+    await fireEvent.press(screen.getByTestId('add-pet-continue'));
+    await screen.findByTestId('add-pet-submit');
+    expect(screen.getByTestId('add-pet-step-label')).toHaveTextContent(stepLabel);
+    expect(screen.queryByTestId('name-input-message')).toBeNull();
+    expect(mockCreatePet).not.toHaveBeenCalled();
+  });
+
   it('uses Host + community DateTimePicker and keeps exactly birthDate', async () => {
     mockCreatePet.mockResolvedValue({
       kind: 'ok',
