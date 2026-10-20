@@ -1951,3 +1951,45 @@ describe('#181 R5: Perfil conserva la cuenta y compone el vacío ilustrado', () 
     }
   });
 });
+
+describe('#184 R1: la cámara no responde mientras sube', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: mockSignOut,
+    } satisfies AuthContextValue);
+    mockSignOut.mockResolvedValue();
+    mockGetMe.mockReturnValue(pending<MeState>());
+    const pet = makePet({ photoUrl: 'http://example.test/old.jpg' });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+  });
+
+  it('#184 R1: no responde a toques durante la subida', async () => {
+    let finish!: (value: { kind: 'error' }) => void;
+    const requested = new Promise<{ kind: 'error' }>((resolve) => { finish = resolve; });
+    mockLaunchImageLibrary.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file:///luna.webp', mimeType: 'image/webp' } as never],
+    });
+    mockRequestPhotoUploadUrl.mockReturnValue(requested);
+    await renderProfile();
+    await screen.findByTestId('profile-pet-card');
+    expect(screen.getByTestId('change-photo').props.onStartShouldSetResponder()).toBe(true);
+
+    await fireEvent.press(screen.getByTestId('change-photo'));
+
+    await waitFor(() => expect(screen.getByTestId('change-photo').props.accessibilityState).toEqual({ disabled: true }));
+    expect(screen.getByTestId('change-photo').props.onStartShouldSetResponder()).toBe(false);
+    await fireEvent.press(screen.getByTestId('change-photo'));
+    expect(mockLaunchImageLibrary).toHaveBeenCalledTimes(1);
+    expect(mockRequestPhotoUploadUrl).toHaveBeenCalledTimes(1);
+    await act(async () => { finish({ kind: 'error' }); });
+    await screen.findByTestId('photo-upload-error');
+    expect(screen.getByTestId('change-photo').props.onStartShouldSetResponder()).toBe(true);
+  });
+});
