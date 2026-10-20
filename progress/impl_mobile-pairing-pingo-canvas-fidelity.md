@@ -255,3 +255,199 @@ Solo el humano marca estas casillas, con su commit de firma. El leader no marca 
 - [X] C4 · R9, R11 y R14: vía excepción, con la evidencia de M1, M2 y M5 (L224–226). Precisa las casillas L239, L240 y L242 («excepción o enmienda vía (b)»). Decisión tomada en el chat del 2026-10-20: excepción. Firma pendiente, con commit del humano.
 - [X] C5 · commits fuera de M-2: aceptar `8166167c` (asunto en inglés, sin tipo) y los merges `50e56e44` y `44a16473` como excepción, sin reescribir. Decisión tomada en el chat del 2026-10-20: aceptar. Firma pendiente, con commit del humano.
 - [X] Merge con `origin/main` (re-firma): cubre cuatro enmiendas de `docs/ui-guidelines.md`: #176, #186, #188 y #190 (L747). La casilla L250 cubre solo tres. Firma pendiente, con commit del humano.
+
+## Ronda E2
+
+### T0-E2 y alcance
+
+- Directorio confirmado antes de cualquier lectura: `/home/claude/sites/Pet-Tracker-wt-188`; branch: `feature/188-mobile-pairing-pingo-canvas-fidelity`.
+- H0-E2: `4e835411f84113b957557919d1b81fb69a872bb0`, descendiente de `189e641a`; el commit inicial solo toca `progress/`.
+- Firma de la spec E2: `6a5317b2`; ED1–ED4 cerradas. Solo R15–R20, en el orden de `tasks.md`; R1–R14 conservados salvo las migraciones autorizadas.
+- Todas las anclas T0-E2 coinciden; `pingo-collar.webp` mide 1024 × 1024. Árbol inicial limpio en `mobile-pet-tracker/` y `specs/`; los cuatro `progress/init-188*.exit` son del leader y se conservan.
+- `init.sh`, PR, estado global y smoke H1–H3 quedan al leader/humano según el handoff. No se abren `.env` ni se regeneran dependencias.
+- Skills cargadas: `ponytail`, `.agents/skills/appllama-app-design-skill/SKILL.md`, `building-native-ui` y `expo-tailwind-setup` (estas dos encontradas en `/home/claude/.codex/plugins/cache/openai-curated/expo/11c74d6b/skills/`). No faltan las skills solicitadas. Los nombres inexistentes de Expo indicados por el handoff no se buscaron. La carta/spec prevalece sobre las propuestas de NativeWind, estilos nativos, navegación y simulador de las skills; sin MCP Appllama en Codex.
+- Leída la documentación versionada de Expo SDK 57 exigida por `mobile-pet-tracker/AGENTS.md`: https://docs.expo.dev/versions/v57.0.0/ .
+- T0-E2: `bun run test` sale 0; `Test Suites: 128 passed, 128 total`; `Tests: 4247 passed, 4247 total`. Total esperado al cierre: **4256** (4247 + 9). Log `progress/test-188.log` (se reutiliza por corrida).
+
+### Commits y evidencia TDD E2
+
+- `9b6bc816` test(pairing): require grouped artboard hero geometry (R15) — rojo por ausencia de `pairing-hero`.
+  Tests:       1 failed, 88 passed, 89 total
+
+### Reanudación de E2
+
+- Ruta y branch confirmadas: `/home/claude/sites/Pet-Tracker-wt-188`, `feature/188-mobile-pairing-pingo-canvas-fidelity`. HEAD de reanudación: `0145324ac211f40447eb04a49eef79eb14a9cec0`; H0-E2 original y T0-E2 conservados.
+- El leader autorizó corregir el test de R15 sin modificar design-drift. Se elimina el import prohibido del test y se comprueba la ausencia de `height` mediante `Object.assign` sobre los estilos aplanados con `flat(Infinity)`.
+- Para reproducir el rojo se guarda la implementación pendiente en memoria, se prueba sobre la producción de HEAD y se restaura en `finally`. El commit del test precede al de implementación.
+- Skills recargadas: ponytail, appllama-app-design-skill, building-native-ui y expo-tailwind-setup (mismas rutas anteriores); ninguna solicitada ausente. Leída de nuevo la documentación versionada de Expo SDK 57 antes de editar.
+- Alcance y responsabilidades del handoff sin cambios: reporte durante el trabajo; traceability solo al final; init, PR, estado global y smoke al leader/humano.
+
+- `ed8884ab` test(pairing): check the R15 hero image has no fixed height without StyleSheet (R15) — rojo sobre producción de HEAD, ausencia de `pairing-hero`.
+  Tests:       1 failed, 88 passed, 89 total
+- `f2b8de80` feat(pairing): group the hero and title with artboard geometry (R15) — cuatro suites verdes.
+  Test Suites: 4 passed, 4 total
+  Tests:       279 passed, 279 total
+- Error de lectura corregible: `rg` recibió una ruta de test de tema inexistente; no arrancó ninguna herramienta de verificación ni se modificó código por ello. Las lecturas posteriores se acotan a rutas existentes.
+
+- `05c38cc6` test(pairing): require centered title and artboard theme tokens (R16) — test de título y tokens rojos.
+  Test Suites: 2 failed, 2 total
+  Tests:       2 failed, 92 passed, 94 total
+- Migración autorizada R16: `#188 R7: gives the title the 24 px token and black weight` pasa a `#188 R7/R16: gives the title the 28 px token and black weight`, exige `text-28` y excluye `text-24`.
+- El test `#188 R16/R20: declares the new theme tokens` seguirá rojo por `--tracking-code` y `--font-mono` hasta R20, como autoriza tasks.md. No se adelantan esos tokens.
+
+- `4311c50c` feat(pairing): center the title with the 28 px theme token (R16) — título verde; único fallo permitido: test de tokens R16/R20 (faltan tokens de R20).
+  Test Suites: 1 failed, 3 passed, 4 total
+  Tests:       1 failed, 280 passed, 281 total
+
+- `273c7259` test(pairing): require the selected pet avatar above the hero (R17) — test de avatar rojo (dos casos) y conservación de selector NV.
+  Test Suites: 1 failed, 1 total
+  Tests:       2 failed, 91 passed, 93 total
+- NV R17: `#188 R17: keeps the full pet switcher outside the linking view` nace verde, cubierto por el selector compartido anterior y R14 (otros estados sin hero).
+- Migraciones autorizadas R17: `limpia actionError al seleccionar otra mascota` y `submits the trimmed code exactly once for the selected pet` usan la sonda del provider dentro de `await act`, esperando el avatar con nombre nuevo; el segundo espera inicialmente avatar `Luna`. `uses the shared pet switcher and changes the selected pet` usa dos mascotas emparejadas y tracking resuelto; conserva aserciones de chips. `#188 R6: places the %s title first inside the scroll content` excluye `pairing-pet-avatar-fallback` de los textos para comprobar el título.
+
+- Primera verificación R17: el nuevo test de foto esperaba un objeto, pero expo-image normaliza `source` a array en el árbol nativo. Se corrige solo esa expectativa nueva a `[{ uri, cacheKey }]`; tests previos pasan salvo el fallo de tokens autorizado.
+  Test Suites: 2 failed, 2 passed, 4 total
+  Tests:       2 failed, 282 passed, 284 total
+- Error de invocación al explorar la API de compilación de estilos: cargar `uniwind/vite` no arranca porque falta su peer `vite/package.json`; no arrancó Jest/tsc/eslint ni se tocó ningún archivo por ello. No se añade dependencia; se utiliza el compilador instalado para Metro.
+
+- `6d118e26` feat(pairing): show only the selected pet avatar while linking (R17) — avatar, selección, foto y estados previos verdes; solo falta el test de tokens autorizado.
+  Test Suites: 1 failed, 3 passed, 4 total
+  Tests:       1 failed, 283 passed, 284 total
+
+- `bc5ba3f4` test(pairing): require the bilingual banner with icon and bold lead (R18) — rojo por la receta anterior del banner.
+  Test Suites: 1 failed, 1 total
+  Tests:       1 failed, 93 passed, 94 total
+- Migración autorizada R18: `#188 R11: resolves visible copy through bilingual catalog keys registered for pairing` se renombra `#188 R11/R18: resolves visible copy through bilingual catalog keys registered for pairing`: Lead y Body sustituyen Prompt y se verifica ausencia de Prompt en catálogo, pantalla y tabla. `resuelve las ocurrencias normativas y el delta de conectividad` suma una ocurrencia en `R10_PAIRING` (−1 Prompt, +2 Lead y Body). Copy exacto es/en de requirements.md.
+
+- Primera verificación R18: el nuevo test llamó `findAllByType` sobre una instancia RNTL 14, donde no existe. Se elimina ese uso y su import; la comprobación ahora exige padre `View` con la receta exacta de clases de la spec y sin estilo de Card. Los tests previos y ui-language pasan; sigue el fallo de tokens autorizado.
+  Test Suites: 2 failed, 3 passed, 5 total
+  Tests:       2 failed, 313 passed, 315 total
+
+- `a2a68b97` feat(pairing): render the free-plan banner with icon and bold lead (R18) — pairing, guardas y copia bilingüe verdes; único fallo: tokens de R20.
+  Test Suites: 1 failed, 4 passed, 5 total
+  Tests:       1 failed, 314 passed, 315 total
+- Compilación de utilidades con Tailwind instalado, sobre global.css en memoria, sin artefactos: genera `size-9`, `p-0.75`, `w-50`, `h-37.5` y `leading-4.75` con la escala `--spacing` de 4 px. Falta la comprobación nativa final de R20.
+
+- `75476bee` test(pairing): require the submit button to anchor at the bottom (R19) — rojo por ausencia de flexGrow.
+  Test Suites: 1 failed, 1 total
+  Tests:       1 failed, 94 passed, 95 total
+- Migración autorizada R19: `#188 R10: uses 20 px horizontal padding when %s` añade `{ flexGrow: 1 }` al objeto esperado solo en `linking`. Métricas de carga y de emparejado conservadas.
+
+- Error de edición en el primer intento de migración R19: la línea condicional `state === 'linking'` se insertó en el primer objeto con `paddingBottom: 48` del fichero, el test de skeleton, en vez del bloque R10. Detectado al revisar el diff y restaurado ese test sin cambio; la línea se mueve al único test autorizado R10. La corrida había cargado el fichero anterior: dio ReferenceError (no una aserción de diseño) en skeleton y el fallo de R10 cuya migración aún no había cargado; R19 pasó. No se cambia producción ni se relaja ninguna aserción para corregirlo. Se repite sobre el fichero corregido.
+  Test Suites: 2 failed, 2 passed, 4 total
+  Tests:       3 failed, 283 passed, 286 total
+
+- `01943ce9` feat(pairing): anchor the linking submit button with a growing spacer (R19) — R19 y tests previos verdes; único fallo previsto del test de tokens.
+  Test Suites: 1 failed, 3 passed, 4 total
+  Tests:       1 failed, 285 passed, 286 total
+
+- `5cd90166` test(pairing): require the artboard activation-code field and hint (R20) — rojo por la receta anterior de la etiqueta.
+  Test Suites: 1 failed, 1 total
+  Tests:       1 failed, 95 passed, 96 total
+- Migración autorizada R20: en `design-drift`, la lista de `outsideReminders(/\brounded-14\b/)` añade únicamente `screens/pairing/index.tsx` después de `meals-history`, con la cita `#188 R20 comparte rounded-14`. Ningún otro cambio en esa guarda.
+
+- `4b8622b8` feat(pairing): apply the artboard code field and package hint (R20) — cuatro suites verdes, incluido el test de tokens R16/R20. El input conserva valor sin transformar y envía `code.trim()`.
+  Test Suites: 4 passed, 4 total
+  Tests:       287 passed, 287 total
+- Transformación real de Metro/uniwind para Android completada en memoria con el config del proyecto. Se desactiva solo `generateArtifacts` en el proceso de comprobación para no escribir caché ni declaraciones. La tabla nativa contiene reglas para `font-mono`, `h-15`, `size-9`, `p-0.75`, `w-50`, `h-37.5`, `leading-4.75`, `text-28` y `tracking-code`. Sin cambios de dependencias, dts, fuentes ni otros ficheros. El proceso de verificación no cambia la aplicación.
+
+### Cierre de E2 — comprobación nativa y verificaciones previas
+
+- Valores nativos generados por Metro/uniwind y comprobados con asserts en memoria, sin artefactos: `font-mono → { fontFamily: 'monospace' }`, `h-15 → 60`, `size-9 → 36 × 36`, `p-0.75 → 3`, `w-50 → 200`, `h-37.5 → 150`, `leading-4.75 → 19`, `text-28 → 28`. `tracking-code` sobre 24 px produce 3.3600000143 px (0.14 em, tolerancia 0.000001 por float32).
+- Procedimiento: desde móvil, cargar `./metro.config.js`, localizar `UniwindBundlerConfig` en `require.cache`, sustituir `generateArtifacts` solo en memoria por una función vacía, llamar al transformer sobre global.css con `platform: 'android'` y capturar `Uniwind.__reinit`. Resolver las `entries` de `stylesheet` con `sheet.vars` y `--uniwind-em: () => 24`, y comparar mediante `assert/strict`. Ningún cambio en la aplicación ni en el compilador instalado.
+- Tras R20, la lista desde `189e641a..HEAD` coincidía con las ocho rutas móviles autorizadas entonces. `signOut(` conserva dos llamadas; ambos ficheros de pairing están libres del identificador de estilos prohibido. La autorización de Reanudación 2 amplía la lista a doce rutas.
+- Primer lint: exit 1 por `react-hooks/globals` en `PairingSelectionProbe`, que asignaba `selectPairingPet` durante render. La captura pasa a `useEffect` con dependencia `selectPet`, sin desactivar reglas, cambiar producción ni aserciones previas. Tras la corrección: lint sin caché exit 0 con log vacío; typecheck exit 0 tras `test ! -e .expo/types/router.d.ts`; pairing `Test Suites: 1 passed, 1 total`, `Tests: 96 passed, 96 total` (progress/test-188-probe.log).
+- Comprobación AST: todos los tests previos de pairing fuera de las seis migraciones autorizadas son idénticos byte por byte a `189e641a`, incluido el skeleton cuya edición accidental se restauró.
+- Primera ejecución de `graphify update .`: exit 0, 27024 nodos, 35018 aristas y 1776 comunidades. Omite 20 SQL por faltar `tree_sitter_sql` y sugiere refrescar etiquetas; no se instalan dependencias ni se ejecuta etiquetado con LLM. Solo genera artefactos ignorados en graphify-out/.
+
+### Inventarios globales del Cierre — medición y migraciones autorizadas
+
+La primera suite completa sobre la implementación R15–R20 (`bun run test > ../progress/test-188.log 2>&1`) terminó con exit 1. Se registró la parada requerida y se mantuvieron intactos los cuatro inventarios hasta que el leader autorizó las cinco migraciones exactas en `15394203`, tasks.md §Migraciones descubiertas en el Cierre. Reanudación 2 las incorpora al alcance. Son inventarios incompatibles con los cambios explícitos de E2, no flakes.
+
+```text
+Test Suites: 4 failed, 124 passed, 128 total
+Tests:       5 failed, 4251 passed, 4256 total
+Snapshots:   1 passed, 1 total
+```
+
+El total ya era exactamente T0-E2 + 9 = 4256. Se conserva la evidencia de los cinco fallos y de sus migraciones:
+
+| Fichero y test | Antes de la migración | Aserción autorizada aplicada |
+|---|---|---|
+| `src/__tests__/heroui-text-size-merge.test.ts` — `#187 R1: el escáner cubre al menos el universo medido (enmendado por #177 R9)` | Esperaba al menos 42 elementos Card; observaba 41 | R18: `cardElements` exige al menos 41, con `// #188 R18: 42 - 1 (el banner de vinculación deja de ser Card)`. Escáner y otras tres cifras intactos. |
+| `src/providers/__tests__/language-provider.test.tsx` — `mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas` | Esperaba 433 claves; observaba 434 | R18: la suma añade `+ 1, // #188 R18: -1 Prompt, +2 Lead y Body` tras la línea de #190 R9, que pierde su coma. |
+| `src/__tests__/alerts-canvas-fidelity.test.ts` — `limita tracking-title a su inventario de producción` | El resultado añadía pairing frente a la lista esperada | R16: añade `'screens/pairing/index.tsx', // #188 R16` entre meals-history y reminders en la lista de tracking-title. |
+| `src/__tests__/profile-canvas-fidelity.test.ts` — `reserva rounded-tile a sus consumidores aprobados (enmendado por #190 R13)` | El resultado añadía pairing frente a la lista esperada | R18: añade `'screens/pairing/index.tsx', // #188 R18` entre home y profile. |
+| `src/__tests__/profile-canvas-fidelity.test.ts` — `limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8)` | El resultado añadía pairing frente a la lista esperada | R18: añade `'screens/pairing/index.tsx', // #188 R18` entre meal-schedule y profile. |
+
+No se toca ningún escáner ni otra aserción previa. La medición antes/después y los commits propios de la sonda y los cuatro inventarios se registran a continuación. El reporte permaneció sin commit y traceability.md sin editar hasta preparar el único commit final de documentación, como exige el handoff.
+
+### Reanudación 2 — migraciones autorizadas del Cierre
+
+- Ruta y branch confirmadas: `/home/claude/sites/Pet-Tracker-wt-188`, `feature/188-mobile-pairing-pingo-canvas-fidelity`.
+- HEAD de reanudación: `153942036182d5f9110d49dc9410a29d211decde`, que autoriza en tasks.md las cinco migraciones de inventarios y el commit de la sonda. H0-E2 y T0-E2 anteriores se conservan; no se repiten R15–R20.
+- Skills conservadas de E2: ponytail, appllama-app-design-skill, building-native-ui y expo-tailwind-setup; ninguna solicitada ausente. Solo se aplican las cinco aserciones exactas del nuevo apartado de tasks.md, sin cambios de UI ni dependencias.
+- `e4d63d2d` refactor(pairing): capture the selection probe in an effect (R17) — captura en useEffect ya verificada al terminar la ejecución anterior; commit propio solo del fichero de pairing.
+  Test Suites: 1 passed, 1 total
+  Tests:       96 passed, 96 total
+  Evidencia: progress/test-188-probe.log; lint sin caché y typecheck también salieron 0 en esa comprobación.
+
+- Medición inicial de los cuatro ficheros, antes de las migraciones (exit 1):
+  Test Suites: 4 failed, 4 total
+  Tests:       5 failed, 120 passed, 125 total
+  Log: `progress/test-188-inventories-before.log`.
+- Incidencia de edición: el script que insertaba pairing en tracking-title esperaba en la línea de meals-history el comentario `#179 R11`, pero ese bloque lleva `#179 R9`. La aserción interna del script impidió escribir el fichero; las otras cuatro migraciones sí estaban aplicadas. Una corrida intermedia arrancada prematuramente dio `Tests: 1 failed, 124 passed, 125 total` (solo la migración de tracking-title aún sin aplicar), sin otro fallo. Se corrige el ancla al comentario real y se repite sobre las cinco migraciones completas.
+
+- `fe9642f4` test(pairing): record pairing in the shared inventories after E2 (R16, R18) — solo los cuatro inventarios autorizados; migración de aserciones vigentes, no NV ni test nuevo.
+  Test Suites: 4 passed, 4 total
+  Tests:       125 passed, 125 total
+  Log: `progress/test-188-inventories-after.log`.
+- Las cinco migraciones aplicadas con nombre de test y delta exacto constan en la tabla del cierre; los escáneres y las otras cifras permanecen intactos. No cambia el número de tests.
+
+### Cierre de E2 — verificación final
+
+Suite móvil completa repetida desde `fe9642f4`, con la sonda commiteada y las cinco migraciones aplicadas:
+
+```text
+bun run test > ../progress/test-188.log 2>&1
+Test Suites: 128 passed, 128 total
+Tests:       4256 passed, 4256 total
+```
+
+Exit 0. Total final = T0-E2 4247 + 9; no fallidos ni tests saltados. La ejecución compartió CPU con tests de otro worktree (#191), sin tocar sus procesos o archivos. No se alteran esperas ni timeouts.
+
+Guardas de diseño repetidas, exit 0:
+
+```text
+bun run test --runInBand --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/heroui-text-size-merge.test.ts > ../progress/guards-188.log 2>&1
+Test Suites: 4 passed, 4 total
+Tests:       239 passed, 239 total
+```
+
+Alcance comprobado con `git diff --name-only 189e641a..HEAD -- mobile-pet-tracker/`: doce rutas, exactamente la lista ampliada del handoff.
+
+```text
+mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/__tests__/heroui-text-size-merge.test.ts
+mobile-pet-tracker/src/__tests__/pairing-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/profile-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/i18n/catalog.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/screens/pairing/index.test.tsx
+mobile-pet-tracker/src/screens/pairing/index.tsx
+mobile-pet-tracker/src/theme/global.css
+
+```
+
+Comprobaciones documentales: las columnas de commits de R1–R14 en traceability son idénticas a `15394203`; R7 cita el test de 28 px y R11 el nombre migrado R11/R18 sin alterar sus hashes. Las filas R15–R20 citan tests y commits reales. El reporte original completo (incluidas las firmas humanas y H1–H3) sigue siendo un prefijo intacto del reporte ampliado. La comprobación auxiliar se corrigió para comparar ese prefijo en vez de 258 líneas: el original termina en la 257 y la línea siguiente es el separador nuevo, sin cambio de firmas.
+
+- Typecheck final: `test ! -e .expo/types/router.d.ts && bun run typecheck > ../progress/typecheck-188.log 2>&1`, exit 0. La guarda de tipos generados pasó inmediatamente antes de tsc; no se borró ningún archivo.
+- Lint final: `bunx expo lint --no-cache > ../progress/lint-188.log 2>&1 && test ! -s ../progress/lint-188.log`, exit 0, log de 0 bytes. No se desactiva ninguna regla.
+
+- Graphify final: `graphify update . > progress/graphify-188.log 2>&1`, exit 0. Reconstruye 27028 nodos, 35022 aristas y 1788 comunidades. Mantiene el aviso conocido de 20 SQL sin parser y la sugerencia de refrescar etiquetas; no se añaden dependencias ni se invoca un LLM. Los artefactos permanecen ignorados en graphify-out/.
+- `git diff --check` pasa. Ningún cambio móvil pendiente tras los commits `e4d63d2d` y `fe9642f4`. El commit final solo reúne traceability.md y este reporte; el chequeo de árbol limpio se acota a mobile-pet-tracker/ y specs/, como manda el handoff. Los cuatro progress/init-188*.exit del leader siguen intactos y sin trackear.
+- R15–R20 quedan implementados y verificados automáticamente. Sin nuevos bloqueos. El marcador ignorado `progress/impl_mobile-pairing-pingo-canvas-fidelity.done` se escribe como última acción tras el commit final, con la ruta absoluta de este reporte en una sola línea.
+- Permanecen para el leader/humano: init.sh sobre el HEAD final, revisión de la ronda E2 y smoke H1–H3. No se modifica la feature in_progress, la PR, las firmas, la casilla de la carta, STATUS.md ni el historial del leader. No se acredita fidelidad visual o fps a partir de tests.
