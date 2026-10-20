@@ -1993,3 +1993,28 @@ describe('#184 R1: la cámara no responde mientras sube', () => {
     expect(screen.getByTestId('change-photo').props.onStartShouldSetResponder()).toBe(true);
   });
 });
+
+describe('#184 R4: cerrar sesión conserva su botón danger-soft', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: mockSignOut,
+    } satisfies AuthContextValue);
+    mockSignOut.mockResolvedValue();
+    mockGetMe.mockReturnValue(pending<MeState>());
+    const pet = makePet({ photoUrl: 'http://example.test/old.jpg' });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+  });
+
+  it('#184 R4: conserva la variante y las clases', async () => {
+    await renderProfile();
+    await screen.findByTestId('profile-sign-out');
+
+    expect(screen.getByTestId('profile-sign-out').props.className).toBe('pressable-feedback__root button__root button__root--variant-danger-soft button__root--size-md rounded-xl bg-danger-soft');
+  });
+});
