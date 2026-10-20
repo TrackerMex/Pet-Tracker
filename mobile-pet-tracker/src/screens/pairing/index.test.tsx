@@ -1090,6 +1090,41 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
+  it('#188 R20: styles label, code input and hint like the artboard', async () => {
+    mockClaimDevice.mockResolvedValue({ kind: 'invalid' });
+    await renderPairing();
+    const input = await screen.findByTestId('activation-code-input');
+    const label = screen.getByTestId('pairing-activation-code-label');
+    expect(label.props.className.split(' ')).toEqual(expect.arrayContaining(['text-sm', 'font-extrabold', 'text-foreground']));
+    for (const excluded of ['uppercase', 'tracking-widest', 'text-xs', 'font-semibold', 'text-muted']) {
+      expect(label.props.className.split(' ')).not.toContain(excluded);
+    }
+    expect(input.props.className.split(' ')).toEqual(expect.arrayContaining([
+      'h-15', 'rounded-14', 'border-2', 'border-accent', 'bg-default', 'px-4', 'font-mono', 'text-24', 'tracking-code', 'text-foreground',
+    ]));
+    for (const excluded of ['min-h-12', 'rounded-xl', 'py-3', 'font-black']) {
+      expect(input.props.className.split(' ')).not.toContain(excluded);
+    }
+    expect(input).toHaveStyle({ borderCurve: 'continuous' });
+    expect(input.props).toMatchObject({ autoCapitalize: 'characters', autoCorrect: false, maxLength: 64, value: '', onChangeText: expect.any(Function) });
+    const hint = screen.getByTestId('pairing-code-hint');
+    expect(hint.props.className.split(' ')).toEqual(expect.arrayContaining(['flex-row', 'items-center', 'gap-1.5']));
+    const icon = within(hint).getByTestId('icon-package');
+    expect(icon.props).toMatchObject({ size: 14, color: 'color:muted' });
+    const text = within(hint).getByText('Impreso en la caja del collar', { exact: true });
+    expect(text.props.className.split(' ')).toEqual(expect.arrayContaining(['text-xs', 'font-semibold', 'text-muted']));
+    expect(hint.children).toEqual([icon, text]);
+    const field = label.parent!;
+    expect(field.props.className).toBe('gap-1.5');
+    expect(field.children).toEqual([label, input, hint]);
+    await fireEvent.changeText(input, '  ACT-002  ');
+    expect(screen.getByTestId('activation-code-input').props.value).toBe('  ACT-002  ');
+    await fireEvent.press(screen.getByTestId('pairing-submit'));
+    await screen.findByTestId('pairing-error');
+    expect(mockClaimDevice).toHaveBeenCalledTimes(1);
+    expect(mockClaimDevice).toHaveBeenCalledWith(apiUrl, 'jwt-token', { petId: 'pet-1', activationCode: 'ACT-002' });
+  });
+
   it('#188 R19: anchors the submit button to the bottom edge', async () => {
     const app = await renderPairing();
     const submit = await screen.findByTestId('pairing-submit');
