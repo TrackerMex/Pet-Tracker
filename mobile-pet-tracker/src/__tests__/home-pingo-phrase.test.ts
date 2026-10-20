@@ -47,7 +47,11 @@ describe('#190 R14: la carta incorpora la enmienda aprobada', () => {
     const index = guidelines.indexOf(heading);
     expect(index).toBeGreaterThan(guidelines.indexOf('## Enmienda #186'));
     expect(guidelines.match(/^## Enmienda #190 /gm)).toHaveLength(1);
-    expect(guidelines.slice(index).split('\n## ')[0].trim()).toBe([
+    const section = guidelines.slice(index).split('\n## ')[0].trim();
+    expect(section.match(/^- \[[ xX]\] Enmienda #190 aprobada por humano$/gm)).toHaveLength(1);
+    const lines = section.split('\n');
+    expect(lines.at(-1)).toMatch(/^- \[[ xX]\] Enmienda #190 aprobada por humano$/);
+    expect(lines.slice(0, -1).join('\n')).toBe([
       heading,
       '',
       '> Enmienda de `ui-guidelines` por `mobile-home-pingo-phrase` (#190). Directiva del humano: «el diseño final como el artifact».',
@@ -58,7 +62,6 @@ describe('#190 R14: la carta incorpora la enmienda aprobada', () => {
       '',
       '**La burbuja de Pingo.** `View` de superficie con radio 18 px (`rounded-tile`) y 4 px en la esquina inferior derecha, texto `text-15 font-semibold leading-5.25`. La frase sale de claves `home.pingoPhrase*`, en voz B.',
       '',
-      '- [ ] Enmienda #190 aprobada por humano',
     ].join('\n'));
   });
 });
