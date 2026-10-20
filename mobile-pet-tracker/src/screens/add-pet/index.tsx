@@ -1,5 +1,5 @@
 import { useChunkyLip } from '../../theme/chunky-lip';
-import { HeaderHeightContext } from 'expo-router/react-navigation';
+import { HeaderHeightContext, usePreventRemove } from 'expo-router/react-navigation';
 import { Host } from '@expo/ui';
 import ExpoDateTimePicker from '@expo/ui/community/datetime-picker';
 import { useQuery } from '@tanstack/react-query';
@@ -7,7 +7,7 @@ import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Button } from 'heroui-native';
 import { Camera } from 'reicon-react-native';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -125,6 +125,19 @@ export function AddPetScreen() {
   const [fieldErrors, setFieldErrors] = useState<FieldIssues<'name' | 'birthDate' | 'approxAgeMonths'>>({});
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [celebratePetName, setCelebratePetName] = useState<string | null>(null);
+  const [leaving, setLeaving] = useState(false);
+  const prevent = step === 2 && !submitting && celebratePetName === null && !leaving;
+
+  usePreventRemove(prevent, () => {
+    if (submitting) return;
+    setStep(1);
+    setFieldErrors({});
+    setFormError(null);
+  });
+
+  useEffect(() => {
+    if (leaving) router.back();
+  }, [leaving]);
 
   async function handlePickPhoto() {
     setPhotoError(null);
@@ -214,7 +227,7 @@ export function AddPetScreen() {
           if (wasFirst) {
             setCelebratePetName(result.pet.name);
           } else {
-            router.back();
+            setLeaving(true);
           }
           return;
         case 'unauthorized':
