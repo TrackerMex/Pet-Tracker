@@ -39,7 +39,7 @@ export function GeofencesScreen({ petId }: { petId: string }) {
     queryFn: () => listGeofences(baseUrl, token ?? '', petId),
   });
 
-  const isOwner = pet.data?.kind === 'ok' && pet.data.pet.myRole === 'family';
+  const isOwner = pet.data?.kind === 'ok' && pet.data.pet.myRole === 'owner';
   const zoneCount = geofences.data?.kind === 'ok' ? geofences.data.geofences.length : 0;
   const atLimit = geofences.data?.kind === 'ok' && geofences.data.geofences.length >= GEOFENCE_MAX_PER_PET;
 
