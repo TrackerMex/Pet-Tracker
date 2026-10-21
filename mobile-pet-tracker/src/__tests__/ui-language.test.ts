@@ -544,7 +544,7 @@ describe('#147 R9: el copy del horario editable queda registrado', () => {
 
 describe('#194 R5: la pantalla de edición resuelve su copy por clave', () => {
   it('#194 R6: resolves the editor copy', () => {
-    expect(R17_EDIT_PROFILE).toHaveLength(6 + 1 + 3);
+    expect(R17_EDIT_PROFILE).toHaveLength(6 + 1 + 3 + 1);
     checkUses(R17_EDIT_PROFILE);
   });
 });
