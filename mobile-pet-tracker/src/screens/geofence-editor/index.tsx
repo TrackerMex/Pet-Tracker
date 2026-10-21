@@ -1,5 +1,6 @@
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { BlurView } from 'expo-blur';
 import { router } from 'expo-router';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { Button, Input, Label, Skeleton, Slider, Switch, TextField } from 'heroui-native';
@@ -83,6 +84,7 @@ export function GeofenceEditorScreen({ petId, geofenceId }: { petId: string; geo
   return <ScrollView testID="screen-geofence-editor" className="flex-1 bg-background"
     contentInsetAdjustmentBehavior="automatic"
     contentContainerStyle={{ padding: 24, gap: 16, paddingBottom: insets.bottom + 24 }}>
+    <Text testID="geofence-editor-title" accessibilityRole="header" className="text-26 font-black tracking-title text-foreground">{t('geofenceEditor.title')}</Text>
     {content}
   </ScrollView>;
 }
@@ -140,6 +142,9 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
   return <KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={headerHeight}>
     <View testID="geofence-editor-map" className="flex-1">
       <PetMap onPress={readOnly ? undefined : setCenter} center={readOnly ? initialCenter : camera.center} zoom={readOnly ? zoomForRadius(initialRadius) : camera.zoom} marker={null} polylines={[]} circles={circles} colorScheme={theme === 'dark' ? 'dark' : 'light'} />
+      <BlurView testID="geofence-editor-title-blur" intensity={48} blurMethod="dimezisBlurViewSdk31Plus" tint={theme === 'dark' ? 'dark' : 'light'} className="absolute left-4 top-3 overflow-hidden rounded-full">
+        <Text testID="geofence-editor-title" accessibilityRole="header" className="bg-glass-surface-strong px-4 py-2.5 text-base font-extrabold text-foreground">{t('geofenceEditor.title')}</Text>
+      </BlurView>
     </View>
     <ScrollView testID="geofence-editor-form" className="bg-background"
       style={{ flexGrow: 0, flexShrink: 1 }} keyboardShouldPersistTaps="handled"
