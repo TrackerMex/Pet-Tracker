@@ -483,7 +483,19 @@ corregido pierde su mensaje en la siguiente pulsación y no antes.
   - `#177 R6.2`: `count(/text-17/g)` suma `+ 1 // #194 R6` y `count(/<Text className="text-17 font-extrabold text-accent-foreground">/g)` suma `+ 1 // #194 R6`; `count(/<Button\.Label/g)` y `count(/Button\.Label/g)` no cambian;
   - `#177 R7.3`: `count(/\brounded-16\b/g)` suma `+ 1 // #194 R6`;
   - `ctaFiles`, `consumers` y los inventarios de `chunkyLip.primary` se derivan de `CTA_ROWS`: no se editan (el candado `R7.4` exige `const chunkyLip = useChunkyLip();` exactamente una vez en el fichero).
-- `src/__tests__/consistency-classnames.test.ts`: la aserción de `rounded-16 bg-accent` de `#62 R1` (`toHaveLength(16 + 1)` en H0) suma `+ 1 // #194 R6`; la de `rounded-xl bg-accent` no cambia.
+- `src/__tests__/consistency-classnames.test.ts`: la aserción de `rounded-16 bg-accent` de `#62 R1` (`toHaveLength(16 + 1)` en H0) suma `+ 1 // #194 R6`; la de `rounded-xl bg-accent` no cambia. **Enmienda E1:** el mapa
+  `expected` de `#166 R2 … inventaría los diecisiete primarios con labio, fichero a fichero`
+  (mismo fichero) gana `'screens/edit-profile/index.tsx': 1, // #194 R6` junto a
+  `docs-upload-form` (el nombre del `it` no cambia).
+- **Enmienda E1** — `src/__tests__/design-drift.test.ts`, dos inventarios más además de
+  `screenSignOutCalls` (la spec original los omitió y Codex paró en el verde de R6):
+  - `#178 R13 … reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto`:
+    el mapa `rounded16` gana `'screens/edit-profile/index.tsx': 1, // #194 R6`, entre
+    `docs-upload-form` y `forgot`;
+  - `#179 R13 … limita text-22 a Horario y text-17 al inventario de E1.2`: la lista
+    ordenada de ficheros con `text-17` gana `'screens/edit-profile/index.tsx'`, entre
+    `screens/docs-upload-form/index.tsx` y `screens/forgot/index.tsx` (orden verificado
+    con `.sort()`). La lista de `text-22` no cambia.
 
 **Rojo esperado:** los seis `it` de pantalla (por `getByTestId`/mensaje ausente) y
 los inventarios editados fallan solo porque el botón aún no existe: las filas de
@@ -649,6 +661,9 @@ el humano, no un test. Guion mínimo:
 | `CTA_ROWS`, `radii` | `src/__tests__/chunky-cta-canvas-fidelity.test.ts` | | | `+ 1` fila, `+ 1` radio | `keeps` + `isDisabled` | | | |
 | Recuentos `text-17`, `<Text ...accent-foreground>`, `rounded-16` | ídem | | | `+ 1` cada uno | | | | `+ 1` cada uno |
 | `rounded-16 bg-accent` | `src/__tests__/consistency-classnames.test.ts` | | | `+ 1` | | | | `B + 1` |
+| Mapa `expected` de `#166 R2` (primarios con labio) | `src/__tests__/consistency-classnames.test.ts` | | | `+ 1 entrada` (E1) | | | | 1 entrada nueva |
+| Mapa `rounded16` de `#178 R13` | `src/__tests__/design-drift.test.ts` | | | `+ 1 entrada` (E1) | | | | 1 entrada nueva |
+| Lista ordenada de `text-17` de `#179 R13` | `src/__tests__/design-drift.test.ts` | | | `+ 1 fichero` (E1) | | | | 1 fichero nuevo |
 | Hijos del grupo protegido (4 aserciones) | `src/app/__tests__/layout.test.tsx` | | | | | | | `+ 1` en R4 |
 | Caso `ok` de `me-card` | `src/screens/profile/index.test.tsx` | | | | | | reescrito | |
 | `inkSites` de `text-accent-strong`, `R7_PROFILE`, `account-screens-polish`, `forms-validation-global`, `heroui-text-size-merge`, `profile-canvas-fidelity` | `src/__tests__/*` | | | | | | | **sin cambio** (verificado: ninguna clase ni fila de esos inventarios se mueve) |
@@ -728,3 +743,40 @@ confirma o cambia.
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-21) ← gate obligatorio antes de implementar
+
+## Enmienda E1 — tres inventarios de guardas omitidos en R6 (parada de Codex, 2026-10-21)
+
+> Escrita el 2026-10-21 sobre la spec aprobada, tras la parada de Codex en el verde
+> de R6 (`progress/impl_mobile-edit-profile.md`, §«R6 — Detenido por inventarios no
+> contemplados», sobre `0c10084e`). El leader leyó las tres guardas y confirmó que el
+> fallo es el que describe el reporte. **Solo tests**: la receta del botón
+> (`w-full h-14 rounded-16 bg-accent`, `Text text-17`) y la producción de R6 no
+> cambian; el parche de producción de Codex, guardado en su reporte, es válido tal cual.
+
+**El hecho medido.** El botón de R6 lleva `rounded-16 bg-accent` con labio y un `Text`
+`text-17`. Tres inventarios por fichero lo cuentan y la spec solo listó los
+recuentos de `chunky-cta-canvas-fidelity` y el de `#62 R1`:
+
+| Id | Guarda (por nombre del `it`) | Aserción | Por qué falla |
+|---|---|---|---|
+| E1.1 | `consistency-classnames.test.ts`, `#166 R2 … diecisiete primarios con labio` | `expect(inventory(/rounded-16 bg-accent…/g)).toEqual(expected)` | `expected` no tiene `screens/edit-profile/index.tsx` |
+| E1.2 | `design-drift.test.ts`, `#178 R13 … radios 14, 16 y 22` | `expect(rounded16).toEqual({…})` | falta `screens/edit-profile/index.tsx: 1` |
+| E1.3 | `design-drift.test.ts`, `#179 R13 … text-17` | `expect(productionFilesMatching(/\btext-17\b/)).toEqual([…])` | falta `screens/edit-profile/index.tsx` |
+
+**Qué cambia.** Los tres deltas, escritos arriba en §R6 (candados de inventario) y en
+§Deltas de candados con la marca «Enmienda E1». El permiso sobre `design-drift.test.ts`
+pasa de «solo `screenSignOutCalls`» a «`screenSignOutCalls`, el mapa `rounded16` y la
+lista de `text-17`».
+
+**Qué NO cambia.** R1–R11, las clases de §Clases, las decisiones D1–D5 y la producción.
+Verificación de que no faltan más inventarios para R7–R9: el leader buscó
+`border-separator`, `py-2.5`, `justify-between`, `router.back`, `setQueryData` y
+`useQueryClient` en `src/__tests__/*.ts*`; no hay inventario de las seis clases ni de
+`router.back`, y solo `#134 R7` cita la caché, para tres ficheros que no son éstos.
+Eso no sustituye la corrida: si otra guarda no listada falla en R7–R9, Codex PARA y
+reporta, como en R6.
+
+**Rojo esperado.** Ninguno. Los tres deltas van en un commit propio de tests, antes
+del verde de R6 (ver la Reanudación 3 del handoff).
+
+- [ ] Enmienda E1 aprobada por humano (fecha: ____) ← el humano reabre el gate solo para esta enmienda
