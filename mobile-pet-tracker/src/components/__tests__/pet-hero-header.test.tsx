@@ -625,3 +625,15 @@ describe('#127 R2: el skeleton del hero lleva su receta en el árbol', () => {
     expect(skeleton.props.style).toStrictEqual({ height: 260 });
   });
 });
+
+
+describe('#195 R4: capa de oscurecimiento', () => {
+  afterEach(() => cleanup());
+  it('superpone el token photo-dim sin interceptar toques, tras la foto', async () => {
+    await renderHero(<PetHeroHeader pet={makePet()} />);
+    const dim = screen.getByTestId('pet-hero-dim');
+    expect(dim.props.className).toBe('absolute inset-0 bg-photo-dim');
+    expect(dim.props.pointerEvents).toBe('none');
+    expect(dim.parent?.children[1]).toBe(dim);
+  });
+});
