@@ -86,7 +86,7 @@ export function GeofenceEditorScreen({ petId, geofenceId }: { petId: string; geo
   }
   return <ScrollView testID="screen-geofence-editor" className="flex-1 bg-background"
     contentInsetAdjustmentBehavior="automatic"
-    contentContainerStyle={{ padding: 24, gap: 16, paddingBottom: insets.bottom + 24 }}>
+    contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: insets.bottom + 40, gap: 12 }}>
     <Text testID="geofence-editor-title" accessibilityRole="header" className="text-26 font-black tracking-title text-foreground">{t('geofenceEditor.title')}</Text>
     {content}
   </ScrollView>;
