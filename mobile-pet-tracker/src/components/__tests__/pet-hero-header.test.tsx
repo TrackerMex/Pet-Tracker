@@ -252,13 +252,12 @@ describe('R2: el hero pinta foto a sangre o blobatar', () => {
 describe('R3: el texto del hero va sobre fondo opaco', () => {
   afterEach(() => cleanup());
 
-  it('la banda inferior declara bg-background sin opacidad', async () => {
+  it('el pie flota sin fondo (enmendado por #195 R6)', async () => {
     await renderHero(<PetHeroHeader pet={makePet()} variant="bleed" />);
 
     const caption = screen.getByTestId('pet-hero-caption').props.className;
 
-    expect(caption).toContain('bg-background');
-    expect(caption).not.toMatch(/bg-background\/\d/);
+    expect(caption).not.toMatch(/\bbg-/);
   });
 
   it('el slot flota sin fondo ni padding (enmendado por #195 R5)', async () => {
@@ -702,5 +701,41 @@ describe('#195 R7: píldora del hero sin cambiar los tonos del mapa', () => {
       warning: { surface: 'bg-warning-soft', dot: 'bg-warning-strong', text: 'text-warning-strong' },
       muted: { surface: 'bg-default', dot: 'bg-muted', text: 'text-muted' },
     });
+  });
+});
+
+
+describe('#195 R6: pie y orden exacto de capas', () => {
+  afterEach(() => cleanup());
+  it.each([false, true])('capas con slot %s y clases exactas del pie', async (slot) => {
+    await renderHero(<PetHeroHeader pet={makePet({ breed: null })} highlight={{ value: '2', label: 'Paseos' }} status={{ label: 'En línea', tone: 'success' }}>
+      {slot ? <Text>selector</Text> : null}
+    </PetHeroHeader>);
+    const frame = screen.getByTestId('pet-hero-frame');
+    expect(frame.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual([
+      'pet-hero-photo', 'pet-hero-dim', ...(slot ? ['pet-hero-scrim-top'] : []),
+      'pet-hero-fade-bottom', ...(slot ? ['pet-hero-slot'] : []), 'pet-hero-caption',
+    ]);
+    const caption = screen.getByTestId('pet-hero-caption');
+    expect(caption.props.className).toBe('absolute inset-x-4 bottom-1.5 flex-row items-end justify-between gap-3');
+    expect(caption.children).toHaveLength(2);
+    expect(elementChild(caption, 0).props.className).toBe('min-w-0 flex-1 gap-1');
+    expect(elementChild(caption, 0).children).toHaveLength(3);
+    expect(elementChild(caption, 1).props.className).toBe('items-end');
+    expect(elementChild(caption, 1).children).toHaveLength(2);
+    expect(screen.getByTestId('pet-hero-name').props.className).toBe('text-3xl font-black leading-8.5 tracking-title text-foreground');
+    expect(screen.getByTestId('pet-hero-breed').props.className).toBe('text-sm font-normal text-muted');
+    expect(screen.getByTestId('pet-hero-breed')).toHaveTextContent('—');
+    const value = screen.getByTestId('pet-hero-highlight-value');
+    expect(value.props.className).toBe('text-28 font-black leading-8 text-foreground');
+    expect(value.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+    expect(screen.getByTestId('pet-hero-highlight-label').props.className).toBe('text-xs font-semibold text-muted');
+  });
+  it('sin datos conserva los dos skeletons y omite la cifra', async () => {
+    await renderHero(<PetHeroHeader pet={null} />);
+    const caption = screen.getByTestId('pet-hero-caption');
+    expect(caption.children).toHaveLength(1);
+    expect(elementChild(caption, 0).children.map((child) => typeof child === 'string' ? child : child.props.className)).toEqual(['h-9 w-40 rounded-xl', 'h-6 w-24 rounded-xl']);
+    expect(screen.queryByTestId('pet-hero-highlight-value')).toBeNull();
   });
 });
