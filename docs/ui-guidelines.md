@@ -819,3 +819,14 @@ Detalle y tests en `specs/mobile-pairing-pingo-canvas-fidelity/requirements.md`.
 Detalle y tests en `specs/mobile-pairing-pingo-canvas-fidelity/requirements.md` (R15 a R20).
 
 - [X] Enmienda #188 (E2) aprobada por humano
+
+## Enmienda #189 — Zonas seguras y Editor de zona
+
+> Enmienda de `ui-guidelines` por `mobile-geofences-canvas-fidelity` (#189). Directiva del humano: «el diseño final como el artifact». La firma de esta casilla autoriza las ediciones de R16 de `specs/mobile-geofences-canvas-fidelity/requirements.md`; nada más.
+
+- **Métricas por fidelidad al canvas (A11).** Zonas: `paddingHorizontal: 20`, `paddingTop: 24`, `gap: 12`, `paddingBottom: insets.bottom + 40`. Hoja del Editor: `paddingHorizontal: 20`, `paddingTop: 12`, `gap: 14`, `paddingBottom: insets.bottom + 36`.
+- **Radios fuera de la escala (regla 12).** `rounded-14` (tile de la zona), `rounded-tile` (aviso de límite), `rounded-t-hero` (hoja del Editor) y `rounded-16` (botones). Las líneas de #175 a #180 no se tocan.
+- **Botón (regla 13).** La receta deshabilitada (`h-14 rounded-16 bg-default`, etiqueta `text-17 font-extrabold text-muted`, sin labio) la aplican «Añadir zona» en el límite y «Guardar» con el nombre vacío. «Eliminar» del Editor sale de «Sin labio»: es secundario neutro con etiqueta `text-base font-extrabold text-danger`, excepción a la etiqueta `text-17 … text-foreground` del neutro. La papelera de la fila de zona es una excepción solo-icono (`size-11 rounded-xl bg-danger-soft`).
+- **Paleta categórica.** `zoneCategory` (orden `green, blue, amber, violet, rose`) es el único reparto categoría → ranura de las zonas; el color es de la posición en la lista, no de la zona.
+
+- [ ] Enmienda #189 aprobada por humano
