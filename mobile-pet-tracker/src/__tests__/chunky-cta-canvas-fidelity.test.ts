@@ -47,7 +47,7 @@ function inventory(pattern: RegExp): Record<string, number> {
 const count = (pattern: RegExp) => Object.values(inventory(pattern)).reduce((sum, n) => sum + n, 0);
 
 const CTA_ROWS = [
-  ['screens/edit-profile/index.tsx', literalId('edit-profile-save'), 'w-full h-14 rounded-16 bg-accent', ['onPress={() => void handleSubmit()}']], // #194 R6
+  ['screens/edit-profile/index.tsx', literalId('edit-profile-save'), 'w-full h-14 rounded-16 bg-accent', ['onPress={() => void handleSubmit()}', 'isDisabled={submitting}']], // #194 R7
   ['screens/login/index.tsx', literalId('login-submit'), 'w-full h-14 rounded-16 bg-accent', ['isDisabled={submitting}', 'onPress={() => void handleSubmit()}']],
   ['screens/register/index.tsx', literalId('register-submit'), 'w-full h-14 rounded-16 bg-accent', ['isDisabled={!terms || submitting}', 'onPress={() => void handleSubmit()}']],
   ['screens/forgot/index.tsx', literalId('forgot-submit'), 'w-full h-14 rounded-16 bg-accent', ["isDisabled={email.trim() === '' || submitting}", 'onPress={() => void submit()}']],

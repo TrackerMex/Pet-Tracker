@@ -2,11 +2,12 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { router } from 'expo-router';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { HeroUINativeProvider } from 'heroui-native';
 
 import { userKeys } from '../../api/query-keys';
-import { getMe, updateMe, type MeState, type ProfileResponse } from '../../api/users';
+import { getMe, updateMe, type MeState, type ProfileResponse, type UpdateMeState } from '../../api/users';
 import { useAuth } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { createQueryClient } from '../../providers/query-provider';
@@ -216,6 +217,82 @@ describe('#194 R6: saving validates every editable field', () => {
       else expect(await screen.findByTestId('edit-profile-skeleton', { includeHiddenElements: true })).toBeTruthy();
       expect(screen.queryByTestId('edit-profile-save')).toBeNull();
       await unavailable.unmount();
+    }
+  });
+});
+
+
+describe('#194 R7: saving updates only changed profile values', () => {
+  it('#194 R7: sends only the trimmed first name', async () => {
+    await renderEditor();
+    await changeField('first-name', '  Grace ');
+    await saveProfile();
+    await waitFor(() => expect(router.back).toHaveBeenCalledTimes(1));
+    expect(mockUpdateMe).toHaveBeenCalledTimes(1);
+    expect(mockUpdateMe).toHaveBeenCalledWith(apiUrl, 'jwt-token', { firstName: 'Grace' });
+  });
+
+  it('#194 R7: sends all four changed values trimmed', async () => {
+    await renderEditor();
+    for (const [field, value] of [
+      ['first-name', 'Grace'], ['last-name', 'Hopper'], ['phone', '  +525511112222 '], ['country', 'US'],
+    ]) await changeField(field, value);
+    await saveProfile();
+    await waitFor(() => expect(router.back).toHaveBeenCalledTimes(1));
+    expect(mockUpdateMe).toHaveBeenCalledTimes(1);
+    expect(mockUpdateMe).toHaveBeenCalledWith(apiUrl, 'jwt-token', {
+      firstName: 'Grace', lastName: 'Hopper', phone: '+525511112222', country: 'US',
+    });
+  });
+
+  it('#194 R7: treats surrounding phone spaces as no change', async () => {
+    await renderEditor();
+    await changeField('phone', ' +525500000000 ');
+    await saveProfile();
+    await waitFor(() => expect(router.back).toHaveBeenCalledTimes(1));
+    expect(mockUpdateMe).not.toHaveBeenCalled();
+  });
+
+  it('#194 R7: closes without a request when nothing changed', async () => {
+    await renderEditor();
+    await saveProfile();
+    await waitFor(() => expect(router.back).toHaveBeenCalledTimes(1));
+    expect(mockUpdateMe).not.toHaveBeenCalled();
+  });
+
+  it('#194 R7: caches the complete saved profile before closing', async () => {
+    const updated = { ...me, firstName: 'Grace', timezone: 'Europe/Paris' };
+    mockUpdateMe.mockResolvedValue({ kind: 'ok', me: updated });
+    const { queryClient } = await renderEditor();
+    await changeField('first-name', 'Grace');
+    await saveProfile();
+    await waitFor(() => expect(queryClient.getQueryData(userKeys.me())).toEqual({ kind: 'ok', me: updated }));
+    expect(router.back).toHaveBeenCalledTimes(1);
+    expect(mockGetMe).not.toHaveBeenCalled();
+  });
+
+  it('#194 R7: disables saving during a request and enables it after failure', async () => {
+    let resolve!: (state: UpdateMeState) => void;
+    mockUpdateMe.mockReturnValue(new Promise((done) => { resolve = done; }));
+    await renderEditor();
+    await changeField('first-name', 'Grace');
+    await saveProfile();
+    await waitFor(() => expect(screen.getByTestId('edit-profile-save')).toBeDisabled());
+    await saveProfile();
+    expect(mockUpdateMe).toHaveBeenCalledTimes(1);
+    await act(() => resolve({ kind: 'error' }));
+    await waitFor(() => expect(screen.getByTestId('edit-profile-save')).toBeEnabled());
+    expect(mockUpdateMe).toHaveBeenCalledTimes(1);
+  });
+
+  it('#194 R7: never submits email or timezone', async () => {
+    await renderEditor();
+    await changeField('first-name', 'Grace');
+    await saveProfile();
+    await waitFor(() => expect(screen.getByTestId('edit-profile-save')).toBeEnabled());
+    for (const [, , changes] of mockUpdateMe.mock.calls) {
+      expect(changes).not.toEqual(expect.objectContaining({ timezone: expect.anything() }));
+      expect(changes).not.toEqual(expect.objectContaining({ email: expect.anything() }));
     }
   });
 });
