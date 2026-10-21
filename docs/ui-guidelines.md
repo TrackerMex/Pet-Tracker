@@ -774,7 +774,6 @@ con todos los valores; la salida después de guardar respeta la celebración.
 
 Desviaciones conscientes del canvas aprobadas en la spec:
 
-- Pingo dice «Hola. Cuéntame de tu nuevo compañero.»: el saludo termina en punto.
 - El CTA termina el `ScrollView`; no hay pie fijo con degradado ni dependencia nueva.
 - El segmento activo usa `shadow-sm`, el token de sombra disponible.
 - La burbuja conserva el interlineado de `text-13`; no se añade un valor arbitrario de 1.4.

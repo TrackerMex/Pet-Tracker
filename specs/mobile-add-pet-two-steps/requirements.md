@@ -166,7 +166,7 @@ de elemento), `add-pet-bubble`, `add-pet-bubble-tail`, `add-pet-bubble-text` y
   tres claves nuevas y retirar `addPet.avatarPreview`, de modo que:
   `addPet.stepProgress` = `{{current}} of {{total}}` / `{{current}} de {{total}}`;
   `addPet.pingoGreeting` = `Hi. Tell me about your new companion.` /
-  `Hola. Cuéntame de tu nuevo compañero.`; `addPet.continue` = `Continue` /
+  `¡Hola! Cuéntame de tu nuevo compañero.`; `addPet.continue` = `Continue` /
   `Continuar`. La longitud de `en` pasa de la base de B1 a **base + 3 − 1 = base + 2**
   (suma `+ 3 - 1 // #191 R1` a la fórmula de `language-provider.test.tsx`), `es` mantiene
   las mismas claves (el tipo `Record<TranslationKey, string>` lo exige) y los marcadores
@@ -236,7 +236,7 @@ de elemento), `add-pet-bubble`, `add-pet-bubble-tail`, `add-pet-bubble-text` y
     (orden de los nodos por `getAllByTestId`/jerarquía; ausencia por `queryByTestId` de
     `age-mode-date`, `age-mode-months`, `birth-date-field`, `sterilized-true`, `microchip-input`,
     `add-pet-submit`; clases de foto y burbuja; `pet-avatar` ausente sin foto y presente con
-    foto tras `pressPickPhoto()`; literal «Hola. Cuéntame de tu nuevo compañero.»).
+    foto tras `pressPickPhoto()`; literal «¡Hola! Cuéntame de tu nuevo compañero.»).
     Sustituye a `renders the complete two-section form and deterministic preview`.
 
 - **R5** (selector segmentado compartido): THE SYSTEM SHALL exportar
@@ -423,7 +423,6 @@ El humano las revisa en el gate junto con la spec; ninguna cierra una decisión.
 
 | Desviación | Canvas | Esta feature | Razón |
 |---|---|---|---|
-| Frase de la burbuja | «¡Hola! Cuéntame de tu nuevo compañero.» | «Hola. Cuéntame de tu nuevo compañero.» | Carta §7: un saludo de Pingo termina en punto; misma decisión que #172 en el login |
 | Pie del CTA | Barra fija abajo con degradado | El botón va al final del `ScrollView` | El degradado necesitaría `expo-linear-gradient`, vetado por el humano; #178/add-reminder ya hacen lo mismo |
 | Sombra del segmento activo | `0 2px 6px rgba(13,17,23,.10)` | `shadow-sm` | No hay token exacto; es la sombra que ya usan `Card` y las filas |
 | Interlineado de la burbuja | `line-height: 1.4` | el de `text-13` | Ninguna clase de la escala lo da exacto y están prohibidas las arbitrarias; el login ya lo acepta |

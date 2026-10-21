@@ -1590,5 +1590,5 @@ Copy del asistente de alta; se retira `addPet.avatarPreview` al integrar la foto
 | Pantalla | Clave | Inglés | Español | Origen |
 |---|---|---|---|---|
 | — | `addPet.stepProgress` | `{{current}} of {{total}}` | `{{current}} de {{total}}` | ← añadida por #191 (R1) |
-| — | `addPet.pingoGreeting` | `Hi. Tell me about your new companion.` | `Hola. Cuéntame de tu nuevo compañero.` | ← añadida por #191 (R1) |
+| — | `addPet.pingoGreeting` | `Hi. Tell me about your new companion.` | `¡Hola! Cuéntame de tu nuevo compañero.` | ← añadida por #191 (R1) |
 | — | `addPet.continue` | `Continue` | `Continuar` | ← añadida por #191 (R1) |
