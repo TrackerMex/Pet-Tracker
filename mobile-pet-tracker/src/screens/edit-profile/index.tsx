@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
-import { Input, Label, Skeleton, TextField } from 'heroui-native';
+import { Button, Input, Label, Skeleton, TextField } from 'heroui-native';
 import { useContext, useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,7 +10,8 @@ import { getMe, type ProfileResponse } from '../../api/users';
 import { FieldErrorMessage } from '../../components/field-error-message';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
-import type { FieldIssues, ProfileValues } from '../../utils/account-rules';
+import { validateProfile, type FieldIssues, type ProfileValues } from '../../utils/account-rules';
+import { useChunkyLip } from '../../theme/chunky-lip';
 
 export function EditProfileScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
@@ -46,12 +47,19 @@ export function EditProfileScreen() {
 }
 
 function EditProfileForm({ me }: { me: ProfileResponse }) {
+  const chunkyLip = useChunkyLip();
   const t = useTranslate();
   const [firstName, setFirstName] = useState(me.firstName);
   const [lastName, setLastName] = useState(me.lastName);
   const [phone, setPhone] = useState(me.phone);
   const [country, setCountry] = useState(me.country);
-  const [fieldErrors] = useState<FieldIssues<keyof ProfileValues>>({});
+  const [fieldErrors, setFieldErrors] = useState<FieldIssues<keyof ProfileValues>>({});
+
+  async function handleSubmit() {
+    const issues = validateProfile({ firstName, lastName, phone, country });
+    setFieldErrors(issues);
+    if (Object.keys(issues).length > 0) return;
+  }
 
   return (
     <View testID="edit-profile-form" className="gap-4">
@@ -75,6 +83,9 @@ function EditProfileForm({ me }: { me: ProfileResponse }) {
         <Input testID="edit-profile-country" className="h-13 rounded-xl bg-default" value={country} onChangeText={(value) => setCountry(value.toUpperCase())} autoCapitalize="characters" maxLength={2} />
         <FieldErrorMessage testID="edit-profile-country" issue={fieldErrors.country} />
       </TextField>
+      <Button testID="edit-profile-save" className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary} onPress={() => void handleSubmit()}>
+        <Text className="text-17 font-extrabold text-accent-foreground">{t('editProfile.save')}</Text>
+      </Button>
     </View>
   );
 }
