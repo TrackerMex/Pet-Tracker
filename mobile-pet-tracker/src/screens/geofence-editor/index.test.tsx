@@ -109,7 +109,7 @@ beforeEach(() => {
 });
 
 describe('#146 R6: el editor pinta el formulario sobre el mapa y sus estados', () => {
-  it('pinta el esqueleto mientras carga la lista al editar', async () => {
+  it('pinta el esqueleto mientras carga la lista al editar (enmendado por #189 R14)', async () => {
     mockList.mockReturnValue(new Promise(() => undefined));
     await mount('geofence-1');
     const loading = screen.getByTestId('geofence-editor-loading');
@@ -117,7 +117,7 @@ describe('#146 R6: el editor pinta el formulario sobre el mapa y sus estados', (
     const root = screen.getByTestId('screen-geofence-editor');
     expect(root.props.className).toBe('flex-1 bg-background');
     expect(root.props.contentInsetAdjustmentBehavior).toBe('automatic');
-    expect(root.props.contentContainerStyle).toEqual({ padding: 24, gap: 16, paddingBottom: 48 });
+    expect(root.props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 64, gap: 12 });
     expect(mockPosition).not.toHaveBeenCalled();
     expect(mockList).toHaveBeenCalledWith(apiUrl, 'token-1', 'pet-1');
   });
@@ -832,5 +832,25 @@ describe('#189 R13: acciones del Editor en fila y Guardar deshabilitado', () => 
     expect(mockUpdate).toHaveBeenCalledTimes(1);
     await fireEvent.press(remove);
     expect(mockDelete).not.toHaveBeenCalled();
+  });
+});
+
+
+describe('#189 R14: métricas y avisos conservados en las ramas de estado', () => {
+  it.each(['carga', 'no-tracking', 'error', 'no-encontrada', 'solo-dueño'] as const)('#189 R14: título y aviso con métricas de canvas en %s', async (kind) => {
+    if (kind === 'carga') mockList.mockReturnValue(new Promise(() => undefined));
+    if (kind === 'no-tracking') mockList.mockResolvedValue({ kind: 'no-tracking' });
+    if (kind === 'error') mockList.mockResolvedValue({ kind: 'error' });
+    if (kind === 'solo-dueño') mockGetPet.mockResolvedValue(petState('family'));
+    await mount(kind === 'solo-dueño' ? undefined : kind === 'no-encontrada' ? 'missing' : casa.id);
+    const stateId = { carga: 'loading', 'no-tracking': 'no-tracking', error: 'load-error', 'no-encontrada': 'not-found', 'solo-dueño': 'owner-only' }[kind];
+    await screen.findByTestId(`geofence-editor-${stateId}`);
+    const root = screen.getByTestId('screen-geofence-editor');
+    expect(root.props.className).toBe('flex-1 bg-background');
+    expect(root.props.contentInsetAdjustmentBehavior).toBe('automatic');
+    expect(root.props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 64, gap: 12 });
+    const title = screen.getByTestId('geofence-editor-title');
+    expect(title.parent?.parent).toBe(root);
+    expect(childTestIds(title.parent!).slice(0, 2)).toEqual(['geofence-editor-title', `geofence-editor-${stateId}`]);
   });
 });
