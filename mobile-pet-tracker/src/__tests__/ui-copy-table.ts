@@ -629,6 +629,15 @@ export const R16_WELCOME: UseRow[] = [
   { file: 'src/screens/welcome/index.tsx', key: 'welcome.pingoGreeting' }, // #153 R1
 ];
 
+export const R17_EDIT_PROFILE: UseRow[] = [
+  { file: 'src/screens/edit-profile/index.tsx', key: 'register.firstName' },
+  { file: 'src/screens/edit-profile/index.tsx', key: 'register.lastName' },
+  { file: 'src/screens/edit-profile/index.tsx', key: 'register.phone' },
+  { file: 'src/screens/edit-profile/index.tsx', key: 'register.country' },
+  { file: 'src/screens/edit-profile/index.tsx', key: 'profile.editProfile' },
+  { file: 'src/screens/edit-profile/index.tsx', key: 'profile.accountUnavailable' },
+];
+
 export const ALL_USES: UseRow[] = [
   ...R1_AUTH,
   ...R2_TABS,
@@ -646,6 +655,7 @@ export const ALL_USES: UseRow[] = [
   ...R14_GEOFENCES,
   ...R15_GEOFENCE_EDITOR,
   ...R16_WELCOME,
+  ...R17_EDIT_PROFILE,
 ];
 
 describe('#65: la tabla de uso de copy está disponible al runner', () => {
@@ -655,12 +665,12 @@ describe('#65: la tabla de uso de copy está disponible al runner', () => {
 
   // Enmienda (3): el candado es la consistencia interna, no una constante
   // escrita a mano — es la tercera vez que una cifra congelada envejece.
-  it('cuadra ALL_USES con la suma de sus bloques', () => {
+  it('#194 R5: cuadra ALL_USES con la suma de sus bloques', () => {
     const blocks = [
       R1_AUTH, R2_TABS, R3_HOME, R4_MAP, R5_HEALTH, R6_FOOD,
       R7_PROFILE, R8_REMINDERS, R9_ADD_PET, R10_PAIRING, R11_RESET,
       R12_ALERTS, R13_ALERT_DETAIL, R14_GEOFENCES, R15_GEOFENCE_EDITOR,
-      R16_WELCOME,
+      R16_WELCOME, R17_EDIT_PROFILE,
     ];
 
     expect(ALL_USES).toHaveLength(
