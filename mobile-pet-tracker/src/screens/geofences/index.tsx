@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { Button, Skeleton, Switch } from 'heroui-native';
 import { useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { Map, Trash } from 'reicon-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { GEOFENCE_MAX_PER_PET, deleteGeofence, listGeofences, setGeofenceActive, type Geofence, type GeofenceWriteState } from '../../api/geofences';
@@ -13,10 +14,15 @@ import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import { useThemeColors } from '../../theme/use-theme-colors';
+import { CATEGORY_SLOTS, zoneCategory } from '../../utils/category-palette';
 import { HomeEntrance } from '../home/home-entrance';
 
 export function GeofencesScreen({ petId }: { petId: string }) {
   const chunkyLip = useChunkyLip();
+  const categoryColors = useThemeColors(['category-green-strong', 'category-blue-strong', 'category-amber-strong', 'category-violet-strong', 'category-rose-strong']);
+  const [danger] = useThemeColors(['danger']);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const t = useTranslate();
@@ -106,19 +112,24 @@ export function GeofencesScreen({ petId }: { petId: string }) {
             body={t('geofences.emptyBody')}
           />
         ) : geofences.data.geofences.map((geofence, position) => {
-          const nameAndRadius = <>
-            <Text testID={`geofence-${geofence.id}-name`} selectable={!isOwner} className="font-bold text-foreground">{geofence.name}</Text>
-            <Text testID={`geofence-${geofence.id}-radius`} className="text-sm font-normal text-muted">{t('geofences.radius', { meters: Math.round(geofence.radiusM) })}</Text>
-          </>;
-          return <HomeEntrance key={geofence.id} testID={`geofence-${geofence.id}-entrance`} index={position}><Card testID={`geofence-${geofence.id}`} className="flex-row items-center gap-3">
+          const slot = zoneCategory(position);
+          const tile = <View testID={`geofence-${geofence.id}-tile`} className={`size-11 items-center justify-center rounded-14 ${CATEGORY_SLOTS[slot].surface}`}
+            style={CONTINUOUS_CORNER} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+            <Map size={22} color={categoryColors[position % 5]} />
+          </View>;
+          const nameAndRadius = <View className="min-w-0 flex-1">
+            <Text testID={`geofence-${geofence.id}-name`} selectable={!isOwner} className="text-base font-extrabold text-foreground">{geofence.name}</Text>
+            <Text testID={`geofence-${geofence.id}-radius`} className="text-xs font-normal text-muted">{t('geofences.radius', { meters: Math.round(geofence.radiusM) })}</Text>
+          </View>;
+          return <HomeEntrance key={geofence.id} testID={`geofence-${geofence.id}-entrance`} index={position}><Card testID={`geofence-${geofence.id}`} className="flex-row items-center gap-3 px-3.5 py-3 shadow-none">
             {isOwner ? (
               <Pressable testID={`geofence-${geofence.id}-edit`} accessibilityRole="button"
                 accessibilityLabel={t('geofenceEditor.editLabel', { name: geofence.name })} disabled={busy}
-                className="min-h-11 min-w-0 flex-1 gap-1" style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+                className="min-h-11 min-w-0 flex-1 flex-row items-center gap-3" style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
                 onPress={() => router.push({ pathname: '/pets/[petId]/geofence-editor', params: { petId, geofenceId: geofence.id } })}>
-                {nameAndRadius}
+                {tile}{nameAndRadius}
               </Pressable>
-            ) : <View className="min-w-0 flex-1 gap-1">{nameAndRadius}</View>}
+            ) : <View testID={`geofence-${geofence.id}-text-row`} className="min-h-11 min-w-0 flex-1 flex-row items-center gap-3">{tile}{nameAndRadius}</View>}
             {isOwner ? (
               <>
               <Switch
@@ -129,16 +140,15 @@ export function GeofencesScreen({ petId }: { petId: string }) {
                 accessibilityLabel={t('geofences.activeLabel', { name: geofence.name })}
                 onSelectedChange={(active) => void write(() => setGeofenceActive(baseUrl, token ?? '', petId, geofence.id, active))}
               />
-              <Button
-                testID={`geofence-${geofence.id}-delete`}
-                variant="danger-soft"
-                size="sm"
-                className="min-h-11 rounded-xl bg-danger-soft"
-                isDisabled={busy}
+              <Pressable
+                testID={`geofence-${geofence.id}-delete`} accessibilityRole="button"
+                accessibilityLabel={t('geofences.deleteLabel', { name: geofence.name })}
+                className="size-11 items-center justify-center rounded-xl bg-danger-soft"
+                style={CONTINUOUS_CORNER} disabled={busy}
                 onPress={() => confirmDelete(geofence)}
               >
-                <Button.Label className="font-semibold text-danger">{t('geofences.delete')}</Button.Label>
-              </Button>
+                <Trash size={20} color={danger} />
+              </Pressable>
               </>
             ) : (
               <Text testID={`geofence-${geofence.id}-status`} className="self-start rounded-full bg-default px-2 py-0.5 text-2xs font-bold text-muted">
