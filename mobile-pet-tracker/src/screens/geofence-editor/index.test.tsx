@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
-import { Alert, DeviceEventEmitter } from 'react-native';
+import { Alert, DeviceEventEmitter, StyleSheet } from 'react-native';
 
 import { renderWithProviders } from '../../../test/render-with-providers';
 import { createGeofence, deleteGeofence, listGeofences, setGeofenceActive, updateGeofence, type Geofence } from '../../api/geofences';
@@ -14,6 +14,8 @@ import type { LastPosition, PetProfile } from '../../api/types';
 import { catalog, type Language } from '../../i18n/catalog';
 import { LanguageProvider } from '../../providers/language-provider';
 import { GeofenceEditorScreen } from '.';
+
+jest.mock('../../theme/use-theme-colors', () => ({ useThemeColors: (tokens: string[]) => tokens }));
 
 jest.mock('../../api/geofences', () => ({
   listGeofences: jest.fn(), createGeofence: jest.fn(), updateGeofence: jest.fn(),
@@ -325,12 +327,12 @@ describe('#146 R8: Guardar crea o actualiza la zona y vuelve a la lista', () => 
     expect(mockUpdate).toHaveBeenCalledWith(apiUrl, 'token-1', 'pet-1', 'geofence-1', { name: 'Casa nueva', centerLat: 19.41, centerLng: -99.11, radiusM: 150 });
     expect(mockCreate).not.toHaveBeenCalled();
   });
-  it('pinta Guardar con la receta primaria tras la nota de reinicio', async () => {
+  it('pinta Guardar con la receta primaria tras la nota de reinicio (enmendado por #189 R13)', async () => {
     await edit(); const save = screen.getByTestId('geofence-editor-save');
     expect(save.props.className).toContain('h-14 rounded-16 bg-accent');
     expect(within(save).getByText('Guardar').props.className).toBe('text-17 font-extrabold text-accent-foreground');
-    const ids = childTestIds(save.parent!);
-    expect(ids.slice(ids.indexOf('geofence-editor-reset-note'), ids.indexOf('geofence-editor-reset-note') + 2)).toEqual(['geofence-editor-reset-note', 'geofence-editor-save']);
+    const ids = childTestIds(screen.getByTestId('geofence-editor-actions').parent!);
+    expect(ids.slice(ids.indexOf('geofence-editor-reset-note'), ids.indexOf('geofence-editor-reset-note') + 2)).toEqual(['geofence-editor-reset-note', 'geofence-editor-actions']);
   });
   it('deshabilita Guardar mientras guarda y no envía dos veces', async () => {
     mockUpdate.mockReturnValue(new Promise(() => undefined)); await edit();
@@ -360,7 +362,7 @@ describe('#146 R8: Guardar crea o actualiza la zona y vuelve a la lista', () => 
     ['no-tracking', 'Las zonas seguras necesitan un collar con plan activo.'],
     ['unreachable', 'No se pudo conectar con el servidor'],
     ['error', 'Algo salió mal'], ['missing-config', 'Algo salió mal'],
-  ] as const)('pinta %s bajo Guardar y conserva el borrador', async (kind, message) => {
+  ] as const)('pinta %s bajo Guardar y conserva el borrador (enmendado por #189 R13)', async (kind, message) => {
     mockUpdate.mockResolvedValue(kind === 'unreachable' ? { kind, message: 'offline' } : { kind });
     await edit(); const save = screen.getByTestId('geofence-editor-save');
     await fireEvent.changeText(screen.getByTestId('geofence-editor-name'), 'Mi casa');
@@ -369,7 +371,7 @@ describe('#146 R8: Guardar crea o actualiza la zona y vuelve a la lista', () => 
     expect(error).toHaveTextContent(message);
     expect(error.props.selectable).toBe(true);
     expect(error.props.className).toBe('text-danger');
-    expect(childTestIds(save.parent!).at(-1)).toBe('geofence-editor-error');
+    expect(childTestIds(screen.getByTestId('geofence-editor-actions').parent!).at(-1)).toBe('geofence-editor-error');
     expect(screen.getByTestId('geofence-editor-name').props.value).toBe('Mi casa');
     expect(screen.getByTestId('geofence-editor-radius').props.value).toBe(150);
     expect(mockBack).not.toHaveBeenCalled();
@@ -465,17 +467,17 @@ function alertButton(label: string) {
 describe('#146 R14: Eliminar en el editor borra la zona y vuelve a la lista', () => {
   beforeEach(() => { jest.spyOn(Alert, 'alert').mockImplementation(() => undefined); });
   afterEach(() => { jest.restoreAllMocks(); });
-  it('pinta Eliminar con la receta de peligro justo después de Guardar', async () => {
+  it('pinta Eliminar con la receta de peligro justo después de Guardar (enmendado por #189 R13)', async () => {
     await edit(); const button = screen.getByTestId('geofence-editor-delete');
-    expect(button.props.className).toBe('pressable-feedback__root button__root button__root--variant-danger-soft button__root--size-md rounded-xl bg-danger-soft');
-    expect(within(button).getByText(catalog.es['geofences.delete']).props.className).toBe('button__label button__label--variant-danger-soft button__label--size-md font-semibold text-danger');
+    expect(button.props.className).toBe('pressable-feedback__root button__root button__root--variant-outline button__root--size-md flex-1 h-14 rounded-16 border-2 border-lip-gray bg-surface');
+    expect(within(button).getByText(catalog.es['geofences.delete']).props.className).toBe('text-base font-extrabold text-danger');
     expect(button.props.accessibilityState.disabled).toBe(false);
     const ids = childTestIds(button.parent!);
-    expect(ids.slice(ids.indexOf('geofence-editor-save'), ids.indexOf('geofence-editor-save') + 2)).toEqual(['geofence-editor-save', 'geofence-editor-delete']);
+    expect(ids).toEqual(['geofence-editor-delete', 'geofence-editor-save']);
   });
-  it('ordena el formulario del dueño al editar (enmendado por #189 R9) (enmendado por #189 R11)', async () => {
+  it('ordena el formulario del dueño al editar (enmendado por #189 R9) (enmendado por #189 R11) (enmendado por #189 R13)', async () => {
     await edit();
-    expect(childTestIds(screen.getByTestId('geofence-editor-grabber', { includeHiddenElements: true }).parent!)).toEqual(['geofence-editor-grabber', undefined, 'geofence-editor-radius-block', 'geofence-editor-active-row', 'geofence-editor-reset-note', 'geofence-editor-save', 'geofence-editor-delete']);
+    expect(childTestIds(screen.getByTestId('geofence-editor-grabber', { includeHiddenElements: true }).parent!)).toEqual(['geofence-editor-grabber', undefined, 'geofence-editor-radius-block', 'geofence-editor-active-row', 'geofence-editor-reset-note', 'geofence-editor-actions']);
   });
   it('al crear no pinta ni el interruptor ni Eliminar', async () => {
     await mount(); await screen.findByTestId('geofence-editor-save');
@@ -772,5 +774,63 @@ describe('#189 R12: fila Activa conserva interruptor y orden', () => {
     await screen.findByTestId('geofence-editor-radius-block');
     expect(screen.queryByTestId('geofence-editor-active-row')).toBeNull();
     expect(screen.queryByTestId('geofence-editor-active')).toBeNull();
+  });
+});
+
+
+describe('#189 R13: acciones del Editor en fila y Guardar deshabilitado', () => {
+  it.each([
+    ['es', 'Casa'], ['es', ''], ['es', '   '], ['es', ' Casa '],
+    ['en', 'Casa'], ['en', ''], ['en', '   '], ['en', ' Casa '],
+  ] as const)('#189 R13: recetas al editar en %s con nombre %p', async (language, name) => {
+    await edit(language);
+    await fireEvent.changeText(screen.getByTestId('geofence-editor-name'), name);
+    const actions = screen.getByTestId('geofence-editor-actions');
+    expect(actions.props.className).toBe('flex-row gap-2.5');
+    expect(actions.children).toHaveLength(2);
+    expect(childTestIds(actions)).toEqual(['geofence-editor-delete', 'geofence-editor-save']);
+    const ids = childTestIds(actions.parent!);
+    expect(ids.slice(ids.indexOf('geofence-editor-reset-note'))).toEqual(['geofence-editor-reset-note', 'geofence-editor-actions']);
+    const remove = screen.getByTestId('geofence-editor-delete');
+    expect(remove.props.className).toBe('pressable-feedback__root button__root button__root--variant-outline button__root--size-md flex-1 h-14 rounded-16 border-2 border-lip-gray bg-surface');
+    expect(remove.props.accessibilityState.disabled).toBe(false);
+    expect(remove).toHaveStyle({ boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: 'lip-gray' }] });
+    expect(within(remove).getByText(language === 'es' ? 'Eliminar' : 'Delete').props.className).toBe('text-base font-extrabold text-danger');
+    const save = screen.getByTestId('geofence-editor-save');
+    const disabled = name.trim() === '';
+    expect(save.props.className.endsWith(` flex-2 h-14 rounded-16 ${disabled ? 'bg-default' : 'bg-accent'}`)).toBe(true);
+    expect(save.props.accessibilityState.disabled).toBe(disabled);
+    expect(within(save).getByText(language === 'es' ? 'Guardar' : 'Save').props.className).toBe(`text-17 font-extrabold ${disabled ? 'text-muted' : 'text-accent-foreground'}`);
+    if (disabled) {
+      expect(StyleSheet.flatten(save.props.style)?.boxShadow).toBeUndefined();
+      await fireEvent.press(save);
+      expect(mockUpdate).not.toHaveBeenCalled();
+    } else expect(save).toHaveStyle({ boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: 'lip' }] });
+  });
+  it('#189 R13: al crear la fila contiene solo Guardar', async () => {
+    await mount();
+    const save = await screen.findByTestId('geofence-editor-save');
+    const actions = screen.getByTestId('geofence-editor-actions');
+    expect(actions.children).toHaveLength(1);
+    expect(childTestIds(actions)).toEqual(['geofence-editor-save']);
+    expect(save.props.accessibilityState.disabled).toBe(true);
+    expect(screen.queryByTestId('geofence-editor-delete')).toBeNull();
+  });
+  it('#189 R13: busy bloquea ambos botones conservando las recetas', async () => {
+    mockUpdate.mockReturnValue(new Promise(() => undefined));
+    await edit();
+    const save = screen.getByTestId('geofence-editor-save');
+    await fireEvent.press(save);
+    expect(save.props.accessibilityState.disabled).toBe(true);
+    expect(save.props.className.endsWith(' flex-2 h-14 rounded-16 bg-accent')).toBe(true);
+    expect(save).toHaveStyle({ boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: 'lip' }] });
+    const remove = screen.getByTestId('geofence-editor-delete');
+    expect(remove.props.accessibilityState.disabled).toBe(true);
+    expect(remove.props.className.endsWith(' flex-1 h-14 rounded-16 border-2 border-lip-gray bg-surface')).toBe(true);
+    expect(remove).toHaveStyle({ boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: 'lip-gray' }] });
+    await fireEvent.press(save);
+    expect(mockUpdate).toHaveBeenCalledTimes(1);
+    await fireEvent.press(remove);
+    expect(mockDelete).not.toHaveBeenCalled();
   });
 });

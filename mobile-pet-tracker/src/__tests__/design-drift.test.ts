@@ -1141,7 +1141,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       'screens/alert-detail/index.tsx': 2,
       'screens/docs-upload-form/index.tsx': 2,
       'screens/forgot/index.tsx': 3,
-      'screens/geofence-editor/index.tsx': 1,
+      'screens/geofence-editor/index.tsx': 3, // #189 R13
       'screens/geofences/index.tsx': 2, // #189 R7
       'screens/home/index.tsx': 1,
       'screens/login/index.tsx': 1,
