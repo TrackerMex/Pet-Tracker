@@ -1,6 +1,6 @@
 ---
 feature: "mobile-edit-profile"
-status: draft        # draft | approved
+status: approved      # draft | approved
 tags: [mobile, ui, spec]
 ---
 
@@ -727,4 +727,4 @@ confirma o cambia.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-21) ← gate obligatorio antes de implementar
