@@ -458,6 +458,31 @@ Regla para Codex: **mide la base de cada fila en H0 antes de tocarla**, escribe 
 `progress/impl_mobile-geofences-canvas-fidelity.md` y rehace la suma al cerrar cada R; un candado agregado
 que se queda verde sin tocarlo cuando debía moverse es una alerta (Enmienda de guardas de cadena).
 
+### §4.1 Enmienda E1 (2026-10-21): inventarios por clase que la tabla omitió
+
+Origen: Codex paró en R6 (con razón) al verificar que `profile-canvas-fidelity.test.ts` tiene dos
+inventarios por fichero que la tabla de §4 no listaba (`text-26`, `text-13`), y el leader halló dos más
+en `alerts-canvas-fidelity.test.ts` y uno de recuento en `consistency-classnames.test.ts`. Son consecuencia
+directa de clases que R1, R6, R8, R12 y R13 ya prescriben. La enmienda **añade estas filas a §4** y amplía
+el alcance del handoff con `alerts-canvas-fidelity.test.ts`. Las cifras de recuento se miden en el H0 de la
+enmienda y el cierre es base + delta; el reparto por fichero va en orden alfabético de ruta (`sort()`).
+
+| Candado (fichero, ancla) | Qué mide | Qué se mueve | R |
+|---|---|---|---|
+| `__tests__/profile-canvas-fidelity.test.ts`, `#173 R2.4` `text-26` | consumidores de `text-26` | añadir `'screens/geofence-editor/index.tsx'` y `'screens/geofences/index.tsx'` (en ese orden, tras `screens/docs/index.tsx` y antes de `screens/profile/index.tsx`) **(enmienda)** | R1, R8 |
+| ídem, `text-13` | consumidores de `text-13` | añadir `'screens/geofences/index.tsx'` (tras `screens/forgot/index.tsx`, antes de `screens/login/index.tsx`) **(enmienda)** | R6 |
+| `__tests__/alerts-canvas-fidelity.test.ts`, `#174 R12` `text-15` | consumidores de `text-15` | añadir `'screens/geofence-editor/index.tsx'` (tras `screens/forgot/index.tsx`, antes de `screens/home/index.tsx`) **(enmienda)** | R12 |
+| ídem, `tracking-title` | consumidores de `tracking-title` | añadir `'screens/geofence-editor/index.tsx'` y `'screens/geofences/index.tsx'` (tras `screens/docs/index.tsx`, antes de `screens/meal-schedule/index.tsx`) **(enmienda)** | R1, R8 |
+| `__tests__/consistency-classnames.test.ts`, `count(/border-lip-gray/g)` | usos totales de `border-lip-gray` | `4+1+1+1+1+1+1` pasa a sumar `+ 1` (el «Eliminar» neutro del Editor, `geofence-editor-delete`); medir la base y anotar el origen en el comentario `#189 R13` **(enmienda)** | R13 |
+
+Regla para el hueco que aún pueda quedar: si al cerrar un R **otro** candado agregado por fichero o por
+recuento falla porque la clase que el R prescribe ya la usan otras pantallas y el **único** delta es sumar
+`screens/geofences/index.tsx` o `screens/geofence-editor/index.tsx` (o `+1` por ese uso), Codex lo enmienda en
+el mismo fichero de candado con el sufijo `(enmendado por #189 R<n>)`, **solo si ese fichero ya está en la lista
+cerrada del handoff**, y anota en su reporte el candado, la cifra antes/después y el R. Cualquier otro
+motivo de rojo (otra pantalla que se mueve, un delta distinto, un fichero fuera de la lista) sigue siendo
+PARA y reporta.
+
 ## §5. Fuera de alcance
 
 - **La animación `breathe`** del círculo del mapa (explícita en la descripción; spike N2/N3b).
@@ -486,3 +511,4 @@ En el dev build Android del PC del humano, claro y oscuro, con dueño y con un r
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-19) ← gate obligatorio antes de implementar
+- [ ] Enmienda E1 (§4.1) aprobada por humano (fecha: ____) ← gate obligatorio antes de reanudar desde R6
