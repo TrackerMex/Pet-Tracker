@@ -557,4 +557,4 @@ En el dev build Android del PC del humano, claro y oscuro, con dueño y con un r
 - [x] Aprobado por humano (fecha: 2026-10-19) ← gate obligatorio antes de implementar
 - [X] Enmienda E1 (§4.1) aprobada por humano (fecha: 2026-10-21) ← gate obligatorio antes de reanudar desde R6
 - [X] Enmienda E2 (§4.2) aprobada por humano (fecha: 2026-10-21) ← gate obligatorio antes de reanudar la comprobación previa
-- [ ] Enmienda E3 (§4.3) aprobada por humano (fecha: ____) ← gate obligatorio antes de reanudar R18
+- [X] Enmienda E3 (§4.3) aprobada por humano (fecha: 2026-10-21) ← gate obligatorio antes de reanudar R18
