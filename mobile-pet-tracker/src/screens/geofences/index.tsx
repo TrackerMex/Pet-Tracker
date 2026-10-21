@@ -180,9 +180,9 @@ export function GeofencesScreen({ petId }: { petId: string }) {
             <Text testID="geofences-limit-text" className={`flex-1 text-13 ${CATEGORY_SLOTS.amber.ink}`}>{t('geofenceEditor.limitNotice', { max: GEOFENCE_MAX_PER_PET })}</Text>
           </View>
         </HomeEntrance> : null}
-        <Button testID="geofences-add" className="h-14 rounded-16 bg-accent" style={chunkyLip.primary} isDisabled={busy || atLimit}
+        <Button testID="geofences-add" className={atLimit ? 'mt-auto h-14 rounded-16 bg-default' : 'mt-auto h-14 rounded-16 bg-accent'} style={atLimit ? undefined : chunkyLip.primary} isDisabled={busy || atLimit}
           onPress={() => router.push({ pathname: '/pets/[petId]/geofence-editor', params: { petId } })}>
-          <Text className="text-17 font-extrabold text-accent-foreground">{t('geofenceEditor.add')}</Text>
+          <Text className={atLimit ? 'text-17 font-extrabold text-muted' : 'text-17 font-extrabold text-accent-foreground'}>{t('geofenceEditor.add')}</Text>
         </Button>
 
         </>
