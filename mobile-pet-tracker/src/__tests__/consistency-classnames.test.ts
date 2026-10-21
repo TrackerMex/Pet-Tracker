@@ -550,6 +550,7 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
       'screens/add-reminder/index.tsx': 1,
       'screens/alert-detail/index.tsx': 1,
       'screens/docs-upload-form/index.tsx': 1,
+      'screens/edit-profile/index.tsx': 1, // #194 R6
       'screens/forgot/index.tsx': 1,
       'screens/geofence-editor/index.tsx': 1,
       'screens/geofences/index.tsx': 1,
