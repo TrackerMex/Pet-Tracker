@@ -508,6 +508,25 @@ antes/después, el delta por fichero (`git diff 4204530e`) y el R que lo causa. 
 con lo prescrito) o si el candado es de otra naturaleza (copy, anclas de `isDisabled`/`onPress`, `401`).
 La sonda de mutación sigue aplicando: el candado enmendado tiene que seguir poniéndose rojo si se revierte.
 
+### §4.3 Enmienda E3 (2026-10-21): dos candados fuera de la lista cerrada
+
+Origen: tercera parada de Codex, en R18 (`heroui-text-size-merge.test.ts` no estaba en la lista cerrada del
+handoff, y §4.2 manda PARA ante un fichero fuera de la lista). El leader corrió la suite móvil completa sobre
+el árbol de `0896a843` más la restauración de R18 (131 suites, 4398 tests): **solo fallan estos dos candados**,
+ambos consecuencia de lo que R5, R10, R13 y R9 ya prescriben. No hay más rojos.
+
+| Candado (fichero, ancla) | Qué mide | Qué se mueve | R |
+|---|---|---|---|
+| `__tests__/heroui-text-size-merge.test.ts`, `#187 R1: el escáner cubre al menos el universo medido` | pisos de nodos HeroUI y de nodos con `className` | `toBeGreaterThanOrEqual(199)` pasa a `197` (R5.6 -2 por Button y Button.Label de la papelera; R10 +1 por `Label.Text`; R13.1 -1 por el `Button.Label` de «Eliminar»); `toBeGreaterThanOrEqual(166)` pasa a `163` (R5.6 -2, R10 0, R13.1 -1). Los pisos de ficheros con HeroUI (28) y de `Card` (41) **no cambian**. Comentario `// #189 R5, R10, R13: -2, +1, -1` **(enmienda)** | R5, R10, R13 |
+| `__tests__/alert-detail-canvas-fidelity.test.ts`, `#180 R5.6: solo la barra de pestañas y el detalle importan expo-blur` | quién importa `expo-blur` | añadir `'screens/geofence-editor/index.tsx'` tras `'screens/alert-detail/index.tsx'` (R9 prescribe `BlurView` solo en el Editor); título del `it` con sufijo `(enmendado por #189 R9)` **(enmienda)** | R9 |
+
+La lista cerrada del handoff se amplía con **ambos** ficheros. El candado de `heroui-text-size-merge` que
+prohíbe `text-NN` sobre HeroUI y `Card` **no se toca**: solo se bajan los dos pisos de cobertura, que son
+mínimos de «al menos el universo medido», y bajan por componentes que la spec quita, no por relajar la
+guarda. Tras enmendar, `heroui-text-size-merge`, `alert-detail-canvas-fidelity` y la suite completa deben
+quedar verdes; la suite completa mide el total de tests en 4398 al cierre de R18 más los `it` que añada su
+commit verde.
+
 ## §5. Fuera de alcance
 
 - **La animación `breathe`** del círculo del mapa (explícita en la descripción; spike N2/N3b).
@@ -538,3 +557,4 @@ En el dev build Android del PC del humano, claro y oscuro, con dueño y con un r
 - [x] Aprobado por humano (fecha: 2026-10-19) ← gate obligatorio antes de implementar
 - [X] Enmienda E1 (§4.1) aprobada por humano (fecha: 2026-10-21) ← gate obligatorio antes de reanudar desde R6
 - [X] Enmienda E2 (§4.2) aprobada por humano (fecha: 2026-10-21) ← gate obligatorio antes de reanudar la comprobación previa
+- [ ] Enmienda E3 (§4.3) aprobada por humano (fecha: ____) ← gate obligatorio antes de reanudar R18
