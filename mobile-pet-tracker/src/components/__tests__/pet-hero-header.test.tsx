@@ -23,6 +23,7 @@ import { useThemeColors } from '../../theme/use-theme-colors';
 import {
   PET_HERO_FADE_HEIGHT,
   PET_HERO_MEDIA_HEIGHT,
+  PET_HERO_SCRIM_HEIGHT,
   STATUS_DOT_PULSE,
   PetHeroHeader,
 } from '../pet-hero-header';
@@ -190,9 +191,10 @@ describe('R1: PetHeroHeader es el único hero compartido', () => {
     );
   });
 
-  it('exporta las dos constantes de dimensión del hero', () => {
-    expect(PET_HERO_MEDIA_HEIGHT).toBe(260);
-    expect(PET_HERO_FADE_HEIGHT).toBe(64);
+  it('exporta las constantes de dimensión del hero (enmendado por #195 R1)', () => {
+    expect(PET_HERO_MEDIA_HEIGHT).toBe(330);
+    expect(PET_HERO_FADE_HEIGHT).toBe(160);
+    expect(PET_HERO_SCRIM_HEIGHT).toBe(130);
   });
 
   it('no importa el selector de mascota ni la capa de API', () => {
@@ -616,13 +618,13 @@ describe('#73 E2: el punto de "en linea" pulsa con Reanimated y respeta reduced 
 describe('#127 R2: el skeleton del hero lleva su receta en el árbol', () => {
   afterEach(() => cleanup());
 
-  it('pinta pet-hero-skeleton con la clase w-full sin radio y el alto de 260 como único estilo, los vea o no el recorte de fuente', async () => {
+  it('pinta pet-hero-skeleton con la clase w-full sin radio y el alto de 330 como único estilo (enmendado por #195 R1)', async () => {
     await renderHero(<PetHeroHeader pet={null} variant="bleed" />);
 
     const skeleton = screen.getByTestId('pet-hero-skeleton');
 
     expect(skeleton.props.className).toBe('w-full');
-    expect(skeleton.props.style).toStrictEqual({ height: 260 });
+    expect(skeleton.props.style).toStrictEqual({ height: 330 });
   });
 });
 
@@ -635,5 +637,25 @@ describe('#195 R4: capa de oscurecimiento', () => {
     expect(dim.props.className).toBe('absolute inset-0 bg-photo-dim');
     expect(dim.props.pointerEvents).toBe('none');
     expect(dim.parent?.children[1]).toBe(dim);
+  });
+});
+
+
+describe('#195 R1: frame de 330 y raíz estable', () => {
+  afterEach(() => cleanup());
+  it.each([
+    ['bleed', false, false], ['bleed', true, true],
+    ['card', false, true], ['card', true, false],
+  ] as const)('%s con mascota %s y slot %s', async (variant, hasPet, hasSlot) => {
+    await renderHero(<PetHeroHeader pet={hasPet ? makePet() : null} variant={variant}>
+      {hasSlot ? <Text>slot</Text> : null}
+    </PetHeroHeader>);
+    const root = screen.getByTestId('pet-hero');
+    const frame = screen.getByTestId('pet-hero-frame');
+    expect(root.children).toEqual([frame]);
+    expect(frame.props.style).toEqual({ height: 330 });
+    expect(root.props.style).toEqual({ borderCurve: 'continuous' });
+    expect(root.props.className).toBe(variant === 'card'
+      ? 'overflow-hidden rounded-card bg-default' : 'overflow-hidden bg-default');
   });
 });
