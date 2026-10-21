@@ -129,3 +129,93 @@ describe('#194 R5: the current profile seeds the editor', () => {
     await waitFor(() => expect(screen.getByTestId('edit-profile-first-name')).toHaveProp('value', 'Typed name'));
   });
 });
+
+
+async function changeField(field: string, value: string) {
+  await fireEvent.changeText(screen.getByTestId('edit-profile-' + field), value);
+}
+
+async function saveProfile() {
+  await fireEvent.press(screen.getByTestId('edit-profile-save'));
+}
+
+describe('#194 R6: saving validates every editable field', () => {
+  it('#194 R6: shows only the required first name issue', async () => {
+    await renderEditor();
+    await changeField('first-name', '');
+    await saveProfile();
+    expect(await screen.findByTestId('edit-profile-first-name-message')).toHaveTextContent('Enter your first name');
+    expect(screen.getByTestId('edit-profile-first-name-message-row')).toBeTruthy();
+    expect(mockUpdateMe).not.toHaveBeenCalled();
+    for (const field of ['last-name', 'phone', 'country']) {
+      expect(screen.queryByTestId('edit-profile-' + field + '-error')).toBeNull();
+    }
+  });
+
+  it('#194 R6: shows all four invalid fields together', async () => {
+    await renderEditor();
+    for (const [field, value] of [['first-name', ''], ['last-name', ''], ['phone', '123'], ['country', 'M']]) {
+      await changeField(field, value);
+    }
+    await saveProfile();
+    for (const [field, text] of [
+      ['first-name', 'Enter your first name'], ['last-name', 'Enter your last name'],
+      ['phone', 'Use at least 7 characters'], ['country', "Enter your country's 2-letter code, like MX"],
+    ]) {
+      expect(await screen.findByTestId('edit-profile-' + field + '-message')).toHaveTextContent(text);
+    }
+    expect(mockUpdateMe).not.toHaveBeenCalled();
+  });
+
+  it('#194 R6: rejects nonletter countries and oversized surnames', async () => {
+    await renderEditor();
+    await changeField('country', 'M1');
+    await changeField('last-name', 'a'.repeat(121));
+    await saveProfile();
+    expect(await screen.findByTestId('edit-profile-country-message')).toHaveTextContent('Use only letters A to Z');
+    expect(screen.getByTestId('edit-profile-last-name-message')).toHaveTextContent('Use 120 characters or fewer');
+    expect(mockUpdateMe).not.toHaveBeenCalled();
+  });
+
+  it('#194 R6: replaces issues only on the next save', async () => {
+    await renderEditor();
+    await changeField('first-name', '');
+    await changeField('last-name', '');
+    await saveProfile();
+    expect(await screen.findByTestId('edit-profile-first-name-message')).toHaveTextContent('Enter your first name');
+    await changeField('first-name', 'Ada');
+    expect(screen.getByTestId('edit-profile-first-name-message')).toHaveTextContent('Enter your first name');
+    await saveProfile();
+    await waitFor(() => {
+      expect(screen.getByTestId('edit-profile-last-name-message')).toHaveTextContent('Enter your last name');
+      expect(screen.queryByTestId('edit-profile-first-name-message')).toBeNull();
+    });
+  });
+
+  it('#194 R6: removes the error container after correcting the form', async () => {
+    await renderEditor();
+    await changeField('first-name', '');
+    await saveProfile();
+    expect(await screen.findByTestId('edit-profile-first-name-message')).toBeVisible();
+    expect(screen.getByTestId('edit-profile-first-name-error')).toBeTruthy();
+    await changeField('first-name', 'Ada');
+    await saveProfile();
+    await waitFor(() => {
+      expect(screen.getByTestId('edit-profile-first-name')).toHaveProp('value', 'Ada');
+      expect(screen.queryByTestId('edit-profile-first-name-error')).toBeNull();
+    });
+  });
+
+  it('#194 R6: exposes Save changes only for an available profile', async () => {
+    const { app } = await renderEditor();
+    expect(within(await screen.findByTestId('edit-profile-save')).getByText('Save changes')).toBeVisible();
+    await app.unmount();
+    for (const initial of [null, { kind: 'error' } as const]) {
+      const { app: unavailable } = await renderEditor(initial);
+      if (initial) expect(await screen.findByTestId('edit-profile-state')).toHaveTextContent('Account unavailable');
+      else expect(await screen.findByTestId('edit-profile-skeleton', { includeHiddenElements: true })).toBeTruthy();
+      expect(screen.queryByTestId('edit-profile-save')).toBeNull();
+      await unavailable.unmount();
+    }
+  });
+});

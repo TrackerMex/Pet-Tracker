@@ -100,7 +100,7 @@ describe('#62 R1: la escala de radios está declarada y el botón primario tiene
     );
 
     expect(primaryRadius).toHaveLength(1); // #177 R10
-    expect(sourceFiles().flatMap(path => readFileSync(path, 'utf8').match(/rounded-16 bg-accent(?=[\s'"`])/g) ?? [])).toHaveLength(16 + 1); // #191 R11
+    expect(sourceFiles().flatMap(path => readFileSync(path, 'utf8').match(/rounded-16 bg-accent(?=[\s'"`])/g) ?? [])).toHaveLength(16 + 1 + 1); // #194 R6 // #191 R11
     expect(filesMatching(/rounded-2xl bg-accent(?=[\s'"`])/)).toEqual([]);
   });
 });

@@ -630,6 +630,7 @@ export const R16_WELCOME: UseRow[] = [
 ];
 
 export const R17_EDIT_PROFILE: UseRow[] = [
+  { file: 'src/screens/edit-profile/index.tsx', key: 'editProfile.save' },
   { file: 'src/screens/edit-profile/index.tsx', key: 'register.firstName' },
   { file: 'src/screens/edit-profile/index.tsx', key: 'register.lastName' },
   { file: 'src/screens/edit-profile/index.tsx', key: 'register.phone' },
