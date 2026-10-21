@@ -226,13 +226,14 @@ describe('#174 R12: inventarios', () => {
         'screens/alert-detail/index.tsx', // #180 R1
         'screens/alerts/index.tsx', // #174 R12: H0 sin consumidores
         'screens/docs/index.tsx', // #175 R5
+        'screens/geofences/index.tsx', // #189 R1
         'screens/meal-schedule/index.tsx', // #179 R4
         'screens/meals-history/index.tsx', // #179 R9
         'screens/pairing/index.tsx', // #188 R16
         'screens/reminders/index.tsx', // #178 R4
       ],
     },
-  ])('limita $token a su inventario de producción', ({ pattern, files }) => {
+  ])('limita $token a su inventario de producción (enmendado por #189 R1)', ({ pattern, files }) => {
     expect(filesMatching(pattern)).toEqual(files);
   });
 
