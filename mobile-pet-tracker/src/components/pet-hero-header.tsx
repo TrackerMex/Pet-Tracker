@@ -190,9 +190,9 @@ export function PetHeroHeader({
 
       <View
         testID="pet-hero-caption"
-        className="flex-row items-end justify-between gap-4 bg-background px-6 pb-4 pt-1"
+        className="absolute inset-x-4 bottom-1.5 flex-row items-end justify-between gap-3"
       >
-        <View className="flex-1 gap-1">
+        <View className="min-w-0 flex-1 gap-1">
           {pet ? (
             <>
               {status ? (
@@ -225,11 +225,11 @@ export function PetHeroHeader({
               ) : null}
               <Text
                 testID="pet-hero-name"
-                className="text-3xl font-black text-foreground"
+                className="text-3xl font-black leading-8.5 tracking-title text-foreground"
               >
                 {pet.name}
               </Text>
-              <Text testID="pet-hero-breed" className="font-normal text-muted">
+              <Text testID="pet-hero-breed" className="text-sm font-normal text-muted">
                 {pet.breed ?? '—'}
               </Text>
             </>
@@ -242,17 +242,17 @@ export function PetHeroHeader({
         </View>
 
         {highlight ? (
-          <View className="items-end gap-1">
+          <View className="items-end">
             <Text
               testID="pet-hero-highlight-value"
-              className="text-3xl font-black text-foreground"
+              className="text-28 font-black leading-8 text-foreground"
               style={TABULAR_NUMS}
             >
               {highlight.value}
             </Text>
             <Text
               testID="pet-hero-highlight-label"
-              className="text-xs font-medium text-muted"
+              className="text-xs font-semibold text-muted"
             >
               {highlight.label}
             </Text>
