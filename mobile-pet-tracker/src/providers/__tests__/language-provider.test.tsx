@@ -48,7 +48,7 @@ function LocaleProbe() {
 
 describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y parámetros', () => {
   // 259 en `303fc19` + 1 de `home.walks` (#67 R7b) + 16 de #68 + 14 de #78 + 2 de #73 + 1 de #90 + 4 de #98 - 6 de #95 R5 (las seis claves de volver) + 1 de #113 R3 (food.kcalConsumedOfTarget) + 2 de #99 R3 (profile.notificationsBlocked, profile.openSettings) + 3 de #100 R1 (alerts.detailTitle, alerts.statusOpen, alerts.openedAt) + 11 de #41 R1 (geofences.*) + 12 de #146 R1 (geofenceEditor.*) + 2 de #146 R1 (geofenceEditor.limitNotice, geofenceEditor.ownerOnly) + 9 de #147 R1 (mealSchedule.* del horario editable).
-  it('mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas', () => {
+  it('#194 R1: mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas', () => {
     const englishKeys = Object.keys(en).sort();
     const spanishKeys = Object.keys(es).sort();
 
@@ -77,7 +77,8 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
         + 4 // #186 R1
         + 4 // #190 R9 (enmendado por #190 R9)
         + 1 // #188 R18: -1 Prompt, +2 Lead y Body
-        + 3 - 1, // #191 R1
+        + 3 - 1 // #191 R1
+        + 2, // #194 R1
     );
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {
@@ -852,4 +853,24 @@ describe('#186 R1: el copy de validación de los formularios', () => {
       /### §2\.\d+ — Añadidos por #186 — Validación de formularios de mascota, recordatorio, documento y peso/,
     );
   });
+});
+
+
+it('#194 R1: declara las claves de edición de perfil en los dos idiomas y su registro', () => {
+  const english = en as Record<string, string>;
+  const spanish = es as Record<string, string>;
+  const languageDesign = readFileSync(join(process.cwd(), '../specs/mobile-ui-language/design.md'), 'utf8');
+  const translations = [
+    ['profile.editProfile', 'Edit profile', 'Editar perfil'],
+    ['editProfile.save', 'Save changes', 'Guardar cambios'],
+  ] as const;
+
+  for (const [key, englishValue, spanishValue] of translations) {
+    expect(english[key]).toBe(englishValue);
+    expect(spanish[key]).toBe(spanishValue);
+    expect(languageDesign).toMatch(
+      new RegExp('\\| — \\| `' + escapeRegExp(key) + '`[^\\n]*← añadida por #194 \\(R1\\)'),
+    );
+  }
+  expect(languageDesign).toMatch(/### §2\.\d+ — Añadidos por #194 — Editar perfil/);
 });
