@@ -511,4 +511,4 @@ En el dev build Android del PC del humano, claro y oscuro, con dueño y con un r
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-19) ← gate obligatorio antes de implementar
-- [ ] Enmienda E1 (§4.1) aprobada por humano (fecha: ____) ← gate obligatorio antes de reanudar desde R6
+- [X] Enmienda E1 (§4.1) aprobada por humano (fecha: 2026-10-21) ← gate obligatorio antes de reanudar desde R6
