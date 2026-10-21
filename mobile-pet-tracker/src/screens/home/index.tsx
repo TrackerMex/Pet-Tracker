@@ -1,5 +1,6 @@
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { useQuery } from '@tanstack/react-query';
+import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import { Button, Card as HeroUICard, Skeleton } from 'heroui-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -52,6 +53,7 @@ import {
   type PetHeroStatusTone,
 } from '../../components/pet-hero-header';
 import { PetSwitcher } from '../../components/pet-switcher';
+import { PingoFloat } from '../../components/pingo-float';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import type { TranslationKey } from '../../i18n/catalog';
 import { useAuth } from '../../providers/auth-provider';
@@ -83,6 +85,7 @@ import {
 } from './format';
 import { CollarBatteryBar } from './collar-battery-bar';
 import { HomeEntrance, homeEntering } from './home-entrance';
+import { homePingoPhrase } from './pingo-phrase';
 import { WeeklyActivityChart } from './weekly-activity-chart';
 
 const WEEKLY_ACTIVITY_SKELETON_HEIGHT = 408;
@@ -286,6 +289,15 @@ export function HomeScreen() {
       ? deviceConnectionState(detail.data.pet.device)
       : null;
 
+  const pingoPhrase =
+    hasPets && selectedPetId !== null && detail.data?.kind === 'ok' && activity.data !== undefined
+      ? homePingoPhrase({
+          petName: detail.data.pet.name,
+          distanceM: today?.distanceM ?? null,
+          meals: mealsToday,
+        })
+      : null;
+
   useEffect(() => {
     selectedPetIdRef.current = selectedPetId;
   }, [selectedPetId]);
@@ -420,6 +432,29 @@ export function HomeScreen() {
       )}
 
       <View testID="home-content" style={{ paddingHorizontal: 24, gap: 16 }}>
+        {pingoPhrase !== null ? (
+          <HomeEntrance index={0} testID="home-entrance-pingo">
+            <View testID="home-pingo-phrase" className="flex-row items-end gap-2.5">
+              <View
+                testID="home-pingo-bubble"
+                className="flex-1 rounded-tile rounded-br-4 bg-surface px-3.5 py-3 shadow-sm"
+                style={CONTINUOUS_CORNER}
+              >
+                <Text testID="home-pingo-text" className="text-15 font-semibold leading-5.25 text-foreground" selectable>
+                  {t(pingoPhrase.labelKey, pingoPhrase.params)}
+                </Text>
+              </View>
+              <PingoFloat testID="home-pingo-float">
+                <Image
+                  testID="home-pingo"
+                  source={require('../../../assets/images/pingo-talk.webp')}
+                  style={{ width: 64, height: 64 }}
+                />
+              </PingoFloat>
+            </View>
+          </HomeEntrance>
+        ) : null}
+
         {selectedPetId !== null && (detail.data?.kind === 'error' || detail.data?.kind === 'unreachable') ? (
           <HeroUICard testID="pet-hero-error" className="items-start gap-3 p-4">
             <Text className="text-danger">
@@ -435,7 +470,7 @@ export function HomeScreen() {
         ) : null}
 
         {selectedPetId ? (
-          <HomeEntrance index={0} testID="home-entrance-summary">
+          <HomeEntrance index={1} testID="home-entrance-summary">
             <Card testID="summary-card" className="gap-4">
               <Text
                 testID="summary-card-title"
@@ -529,7 +564,7 @@ export function HomeScreen() {
         ) : null}
 
         {detail.data?.kind === 'ok' && connection ? (
-          <HomeEntrance index={1} testID="home-entrance-collar">
+          <HomeEntrance index={2} testID="home-entrance-collar">
             <Card
               testID="collar-card"
               className="gap-3 bg-default"
@@ -608,7 +643,7 @@ export function HomeScreen() {
         ) : null}
 
         {selectedPetId ? (
-          <HomeEntrance index={2} testID="home-entrance-quick-actions">
+          <HomeEntrance index={3} testID="home-entrance-quick-actions">
             <View testID="quick-actions" className="gap-3">
               <Text
                 testID="quick-actions-title"
@@ -643,7 +678,7 @@ export function HomeScreen() {
         ) : null}
 
         {selectedPetId && (activity.data === undefined || activity.data.kind === 'ok') ? (
-          <HomeEntrance index={3} testID="home-entrance-weekly">
+          <HomeEntrance index={4} testID="home-entrance-weekly">
             {activity.data === undefined ? (
               <Skeleton
                 testID="weekly-activity-skeleton"
@@ -679,7 +714,7 @@ export function HomeScreen() {
         ) : null}
 
         {selectedPetId ? (
-          <HomeEntrance index={4} testID="home-entrance-reminders">
+          <HomeEntrance index={5} testID="home-entrance-reminders">
             <View testID="reminders-section" className="gap-3">
               <View className="flex-row items-center justify-between">
                 <Text
@@ -858,7 +893,7 @@ export function HomeScreen() {
         ) : null}
 
         {detail.data?.kind === 'ok' && detail.data.pet.device ? (
-          <HomeEntrance index={5} testID="home-entrance-last-position">
+          <HomeEntrance index={6} testID="home-entrance-last-position">
             <Card
               testID="last-position-card"
               className="gap-2 bg-default"

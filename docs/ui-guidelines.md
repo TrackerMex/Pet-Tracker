@@ -785,3 +785,37 @@ Los candados de `src/__tests__/add-pet-two-steps.test.ts` verifican esta
 ampliación y los inventarios de la pantalla y el selector.
 
 - [X] Enmienda #191 aprobada por humano
+
+## Enmienda #190 — Burbuja de Pingo en Inicio
+
+> Enmienda de `ui-guidelines` por `mobile-home-pingo-phrase` (#190). Directiva del humano: «el diseño final como el artifact».
+
+**Pingo flota en la burbuja de Inicio.** Con mascota seleccionada, la pose de la burbuja de Pingo de Inicio (`home-pingo`) usa `PingoFloat` (`src/components/pingo-float.tsx`) con `MOTION_PINGO_FLOAT_OFFSET_Y` (10 px) y `MOTION_PINGO_FLOAT_TIMING` (1500 ms por tramo). Con reduce motion no arranca. Esta enmienda no autoriza `PingoFloat` en ninguna otra pantalla.
+
+**Escala de radios.** Se añade `--radius-4: 4px` (`rounded-br-4`), la esquina de la «cola» de la burbuja. Un solo uso hoy.
+
+**La burbuja de Pingo.** `View` de superficie con radio 18 px (`rounded-tile`) y 4 px en la esquina inferior derecha, texto `text-15 font-semibold leading-5.25`. La frase sale de claves `home.pingoPhrase*`, en voz B.
+
+- [X] Enmienda #190 aprobada por humano
+
+## Enmienda #188 — Anillos de la vinculación de collar
+
+> Enmienda de `ui-guidelines` por `mobile-pairing-pingo-canvas-fidelity` (#188, 2026-10-19).
+> Directiva del humano: «el diseño final como el artifact» y «Píxel exacto».
+
+**Qué cambia**: la vista de vinculación sin dispositivo de `pairing` usa dos anillos con `PingRing` (`src/components/ping-ring.tsx`): escala de 0.55 a 1.5, opacidad de 0.55 a 0, 2400 ms, retardo de 1200 ms en el segundo, borde de 3 px en `accent`, 150 px. Bajo reduce motion, los anillos quedan en reposo (escala 1, opacidad 0.3). Esta enmienda cubre solo esa vista: la regla de #167, «Ninguna otra pantalla usa anillos de ping sin una enmienda propia», sigue vigente para el resto de pantallas.
+
+Detalle y tests en `specs/mobile-pairing-pingo-canvas-fidelity/requirements.md`.
+
+- [X] Enmienda #188 aprobada por humano
+
+## Enmienda #188 (E2) — Geometría de la vinculación de collar
+
+> Enmienda de `ui-guidelines` por `mobile-pairing-pingo-canvas-fidelity` (#188, E2, 2026-10-20).
+> Directiva del humano: «aplicalas tal cual como en artboard».
+
+**Qué cambia**: el input del código de activación de `pairing` usa `rounded-14` (14 px, `--radius-14`) con `h-15`, `border-2 border-accent` y `bg-default`, como el artboard «Vincular collar (19)». El avatar de la mascota de la fila superior usa el anillo de 2 px en `accent` con 3 px de separación (`border-2 border-accent p-0.75`), el mismo que el selector de avatares, y no es interactivo. El código se muestra en `font-mono` (`--font-mono: monospace`, familia genérica de Android) con `tracking-code` (0.14 em); no combina con `font-black` porque los pesos del proyecto son familias de fuente. Esta enmienda cubre solo esta pantalla: `rounded-14` sigue nombrado como excepción solo para las pantallas que ya lo citan.
+
+Detalle y tests en `specs/mobile-pairing-pingo-canvas-fidelity/requirements.md` (R15 a R20).
+
+- [X] Enmienda #188 (E2) aprobada por humano

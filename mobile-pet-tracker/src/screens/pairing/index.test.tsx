@@ -9,8 +9,9 @@ import {
 import { notificationAsync } from 'expo-haptics';
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { Alert, DeviceEventEmitter, Platform } from 'react-native';
+import { getAnimatedStyle } from 'react-native-reanimated';
 
 import {
   claimDevice,
@@ -28,7 +29,7 @@ import type { PetProfile } from '../../api/types';
 import PairingRoute from '../../app/pairing';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
-import { SelectedPetProvider } from '../../providers/selected-pet-provider';
+import { SelectedPetProvider, useSelectedPet } from '../../providers/selected-pet-provider';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
 jest.mock('../../api/devices', () => ({
@@ -59,6 +60,21 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
 
+jest.mock('reicon-react-native', () => {
+  const actual = jest.requireActual<typeof import('reicon-react-native')>('reicon-react-native');
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    ...actual,
+    InfoCircle: (props: Record<string, unknown>) => React.createElement(View, { testID: 'icon-info-circle', ...props }),
+    Package: (props: Record<string, unknown>) => React.createElement(View, { testID: 'icon-package', ...props }),
+  };
+});
+
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: (tokens: string[]) => tokens.map((token) => `color:${token}`),
+}));
+
 const originalOS = Platform.OS;
 
 const apiUrl = 'http://example.test/v1';
@@ -69,6 +85,13 @@ const mockReleaseDevice = jest.mocked(releaseDevice);
 const mockUseAuth = jest.mocked(useAuth);
 const mockRouter = jest.mocked(router);
 const mockUseFocusEffect = jest.mocked(useFocusEffect);
+const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
+
+jest.mock('react-native-reanimated', () => ({
+  ...jest.requireActual('react-native-reanimated'),
+  __esModule: true,
+  useReducedMotion: () => mockUseReducedMotion(),
+}));
 
 function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
   return {
@@ -118,11 +141,22 @@ function pending<T>(): Promise<T> {
   return new Promise(() => undefined);
 }
 
+let selectPairingPet: ReturnType<typeof useSelectedPet>['selectPet'];
+
+function PairingSelectionProbe() {
+  const { selectPet } = useSelectedPet();
+  useEffect(() => {
+    selectPairingPet = selectPet;
+  }, [selectPet]);
+  return null;
+}
+
 function PairingWrapper({ children }: { children: ReactNode }) {
   return (
     <HeroUINativeProvider>
       <LanguageProvider initial="es">
         <SelectedPetProvider>
+          <PairingSelectionProbe />
           <HeaderHeightContext.Provider value={91}>
             {children}
           </HeaderHeightContext.Provider>
@@ -180,7 +214,8 @@ describe('R6: el estado local de pairing se limpia al cambiar de mascota', () =>
     await fireEvent.press(screen.getByTestId('pairing-submit'));
     expect(await screen.findByTestId('pairing-error')).toBeVisible();
 
-    await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
+    await act(() => selectPairingPet('pet-2'));
+    await waitFor(() => expect(screen.getByTestId('pairing-pet-avatar').props.accessibilityLabel).toBe('Milo'));
 
     await waitFor(() => {
       expect(screen.queryByTestId('pairing-error')).toBeNull();
@@ -208,7 +243,8 @@ describe('R4: /pairing monta en el Stack raíz con selector de mascota y estados
 
     expect(screen.getByTestId('screen-pairing')).toBeVisible();
     expect(screen.getByTestId('pairing-form').props.contentContainerStyle).toEqual({
-      padding: 24,
+      paddingHorizontal: 20,
+      paddingVertical: 24,
       gap: 16,
       paddingBottom: 48,
     });
@@ -252,9 +288,10 @@ describe('R4: /pairing monta en el Stack raíz con selector de mascota y estados
   it('uses the shared pet switcher and changes the selected pet', async () => {
     mockListPets.mockResolvedValue({
       kind: 'ok',
-      pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo' })],
+      pets: [makePet({ device: makeDevice() }), makePet({ id: 'pet-2', name: 'Milo', device: makeDevice() })],
     });
 
+    mockGetPetTracking.mockResolvedValue({ kind: 'ok', tracked: true });
     await renderPairing();
 
     await waitFor(() =>
@@ -337,12 +374,9 @@ describe('R5: sin collar muestra el formulario de vinculación y publica el clai
       pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo' })],
     });
     await renderPairing();
-    await waitFor(() =>
-      expect(
-        screen.getByTestId('pet-chip-pet-1').props.accessibilityState,
-      ).toEqual({ selected: true }),
-    );
-    await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
+    await waitFor(() => expect(screen.getByTestId('pairing-pet-avatar').props.accessibilityLabel).toBe('Luna'));
+    await act(() => selectPairingPet('pet-2'));
+    await waitFor(() => expect(screen.getByTestId('pairing-pet-avatar').props.accessibilityLabel).toBe('Milo'));
     await fireEvent.changeText(
       screen.getByTestId('activation-code-input'),
       '  ACT-002  ',
@@ -1046,3 +1080,436 @@ jest.mock('expo-haptics', () => ({
   NotificationFeedbackType: { Success: 'mock-success', Error: 'mock-error' },
 }));
 const mockNotificationAsync = jest.mocked(notificationAsync);
+
+
+describe('#188 R1-R14: pairing canvas fidelity', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseReducedMotion.mockReturnValue(false);
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('#188 R20: styles label, code input and hint like the artboard', async () => {
+    mockClaimDevice.mockResolvedValue({ kind: 'invalid' });
+    await renderPairing();
+    const input = await screen.findByTestId('activation-code-input');
+    const label = screen.getByTestId('pairing-activation-code-label');
+    expect(label.props.className.split(' ')).toEqual(expect.arrayContaining(['text-sm', 'font-extrabold', 'text-foreground']));
+    for (const excluded of ['uppercase', 'tracking-widest', 'text-xs', 'font-semibold', 'text-muted']) {
+      expect(label.props.className.split(' ')).not.toContain(excluded);
+    }
+    expect(input.props.className.split(' ')).toEqual(expect.arrayContaining([
+      'h-15', 'rounded-14', 'border-2', 'border-accent', 'bg-default', 'px-4', 'font-mono', 'text-24', 'tracking-code', 'text-foreground',
+    ]));
+    for (const excluded of ['min-h-12', 'rounded-xl', 'py-3', 'font-black']) {
+      expect(input.props.className.split(' ')).not.toContain(excluded);
+    }
+    expect(input).toHaveStyle({ borderCurve: 'continuous' });
+    expect(input.props).toMatchObject({ autoCapitalize: 'characters', autoCorrect: false, maxLength: 64, value: '', onChangeText: expect.any(Function) });
+    const hint = screen.getByTestId('pairing-code-hint');
+    expect(hint.props.className.split(' ')).toEqual(expect.arrayContaining(['flex-row', 'items-center', 'gap-1.5']));
+    const icon = within(hint).getByTestId('icon-package');
+    expect(icon.props).toMatchObject({ size: 14, color: 'color:muted' });
+    const text = within(hint).getByText('Impreso en la caja del collar', { exact: true });
+    expect(text.props.className.split(' ')).toEqual(expect.arrayContaining(['text-xs', 'font-semibold', 'text-muted']));
+    expect(hint.children).toEqual([icon, text]);
+    const field = label.parent!;
+    expect(field.props.className).toBe('gap-1.5');
+    expect(field.children).toEqual([label, input, hint]);
+    await fireEvent.changeText(input, '  ACT-002  ');
+    expect(screen.getByTestId('activation-code-input').props.value).toBe('  ACT-002  ');
+    await fireEvent.press(screen.getByTestId('pairing-submit'));
+    await screen.findByTestId('pairing-error');
+    expect(mockClaimDevice).toHaveBeenCalledTimes(1);
+    expect(mockClaimDevice).toHaveBeenCalledWith(apiUrl, 'jwt-token', { petId: 'pet-1', activationCode: 'ACT-002' });
+  });
+
+  it('#188 R19: anchors the submit button to the bottom edge', async () => {
+    const app = await renderPairing();
+    const submit = await screen.findByTestId('pairing-submit');
+    expect(screen.getByTestId('pairing-form').props.contentContainerStyle.flexGrow).toBe(1);
+    const spacer = screen.getByTestId('pairing-submit-spacer');
+    expect(spacer).toHaveStyle({ flexGrow: 1 });
+    const form = submit.parent!;
+    expect(form).toHaveStyle({ flexGrow: 1 });
+    expect(form.children.slice(-2)).toEqual([spacer, submit]);
+    await app.unmount();
+
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ device: makeDevice() })] });
+    mockGetPetTracking.mockResolvedValue({ kind: 'ok', tracked: true });
+    await renderPairing();
+    await screen.findByTestId('device-status-card');
+    expect(screen.getByTestId('pairing-form').props.contentContainerStyle).not.toHaveProperty('flexGrow');
+    expect(screen.queryByTestId('pairing-submit-spacer')).toBeNull();
+  });
+
+  it('#188 R18: renders the free-plan banner with an info icon and a bold lead', async () => {
+    for (const [language, lead, body] of [
+      ['es', 'Plan gratuito — solo salud.', 'Vincula un collar con plan activo para ver el mapa.'],
+      ['en', 'Free plan — health only.', 'Pair a collar with an active plan to see the map.'],
+    ] as const) {
+      const app = await renderWithProviders(
+        <LanguageProvider initial={language}><PairingRoute /></LanguageProvider>,
+        { wrapper: PairingWrapper },
+      );
+      const text = await screen.findByTestId('pairing-plan-free');
+      expect(text.props.className.split(' ')).toEqual(expect.arrayContaining([
+        'flex-1', 'text-13', 'font-normal', 'leading-4.75', 'text-muted',
+      ]));
+      expect(text.props.selectable).toBe(true);
+      expect(text).toHaveTextContent(`${lead} ${body}`, { exact: true });
+      const heading = within(text).getByText(lead, { exact: true });
+      expect(heading.props.className.split(' ')).toEqual(expect.arrayContaining(['font-bold', 'text-foreground']));
+      const iconBox = screen.getByTestId('pairing-plan-icon');
+      const banner = text.parent!;
+      expect(banner.children).toEqual([iconBox, text]);
+      expect(banner.props.className.split(' ')).toEqual(expect.arrayContaining([
+        'flex-row', 'items-start', 'gap-2.5', 'rounded-tile', 'bg-default', 'px-3.5', 'py-3',
+      ]));
+      expect(banner.type).toBe('View');
+      expect(banner.props.className).toBe('flex-row items-start gap-2.5 rounded-tile bg-default px-3.5 py-3');
+      expect(banner.props.style).toBeUndefined();
+      expect(iconBox.props.className).toBe('mt-px');
+      expect(within(iconBox).getByTestId('icon-info-circle').props).toMatchObject({ size: 20, color: 'color:muted' });
+      await app.unmount();
+    }
+  });
+
+  it('#188 R17: shows only the selected pet avatar above the hero', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo' })] });
+    await renderPairing();
+    const avatar = await screen.findByTestId('pairing-pet-avatar');
+    expect(screen.getAllByTestId('pairing-pet-avatar')).toHaveLength(1);
+    expect(avatar.props.accessibilityLabel).toBe('Luna');
+    expect(avatar.props.onPress).toBeUndefined();
+    expect(avatar.props.accessibilityRole).not.toBe('button');
+    expect(avatar.props.className.split(' ')).toEqual(expect.arrayContaining([
+      'rounded-full', 'border-2', 'border-accent', 'p-0.75',
+    ]));
+    const row = screen.getByTestId('pairing-pet-row');
+    expect(row.props.className.split(' ')).toEqual(expect.arrayContaining(['w-full', 'flex-row', 'justify-end']));
+    expect(row.children).toEqual([avatar]);
+    expect(within(screen.getByTestId('pairing-form')).getAllByTestId(
+      /^(pairing-pet-avatar|pairing-pingo)$/,
+      { includeHiddenElements: true },
+    ).map((node) => node.props.testID)).toEqual(['pairing-pet-avatar', 'pairing-pingo']);
+    expect(screen.queryAllByTestId(/^pet-chip-/)).toHaveLength(0);
+  });
+
+  it('#188 R17: renders the initial or the photo on the palette slot of the selected pet', async () => {
+    const pets = [makePet({ name: 'luna' }), makePet({ id: 'pet-2', name: 'milo' })];
+    mockListPets.mockResolvedValue({ kind: 'ok', pets });
+    const app = await renderPairing();
+    await screen.findByTestId('pairing-pet-avatar');
+    expect(screen.getByTestId('pairing-pet-avatar-fallback')).toHaveTextContent('L', { exact: true });
+    expect(screen.getByTestId('pairing-pet-avatar-fallback').props.className.split(' ')).toEqual(expect.arrayContaining([
+      'text-sm', 'font-extrabold', 'text-category-amber-strong',
+    ]));
+    expect(screen.getByTestId('pairing-pet-avatar-disc').props.className.split(' ')).toEqual(expect.arrayContaining([
+      'size-9', 'items-center', 'justify-center', 'overflow-hidden', 'rounded-full', 'bg-category-amber',
+    ]));
+    await act(() => selectPairingPet('pet-2'));
+    await waitFor(() => expect(screen.getByTestId('pairing-pet-avatar').props.accessibilityLabel).toBe('milo'));
+    expect(screen.getByTestId('pairing-pet-avatar-fallback')).toHaveTextContent('M', { exact: true });
+    expect(screen.getByTestId('pairing-pet-avatar-disc').props.className).toContain('bg-category-violet');
+    expect(screen.getByTestId('pairing-pet-avatar-fallback').props.className).toContain('text-category-violet-strong');
+    const photoPets = [pets[0], { ...pets[1], photoUrl: 'https://example.test/milo.jpg' }];
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: photoPets });
+    await act(() => app.queryClient.setQueryData(petKeys.list(), { kind: 'ok', pets: photoPets }));
+    const photo = await screen.findByTestId('pairing-pet-avatar-image');
+    expect(photo.props.source).toEqual([{ uri: 'https://example.test/milo.jpg', cacheKey: 'pet-2' }]);
+    expect(photo).toHaveStyle({ width: 36, height: 36 });
+    expect(screen.queryByTestId('pairing-pet-avatar-fallback')).toBeNull();
+  });
+
+  it('#188 R17: keeps the full pet switcher outside the linking view', async () => {
+    for (const state of ['paired', 'ready']) {
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [
+        makePet({ device: state === 'paired' ? makeDevice() : null }),
+        makePet({ id: 'pet-2', name: 'Milo', device: state === 'paired' ? makeDevice() : null }),
+      ] });
+      mockGetPetTracking.mockResolvedValue({ kind: 'ok', tracked: true });
+      mockClaimDevice.mockResolvedValue({ kind: 'ok', device: makeDevice() });
+      const app = await renderPairing();
+      if (state === 'ready') {
+        await fireEvent.changeText(await screen.findByTestId('activation-code-input'), 'ACT-001');
+        await fireEvent.press(screen.getByTestId('pairing-submit'));
+      }
+      await screen.findByTestId(state === 'paired' ? 'device-status-card' : 'pairing-ready');
+      expect(screen.getByTestId('pet-chip-pet-1')).toBeOnTheScreen();
+      expect(screen.getByTestId('pet-chip-pet-2')).toBeOnTheScreen();
+      expect(screen.queryByTestId('pairing-pet-avatar')).toBeNull();
+      expect(screen.queryByTestId('pairing-pet-row')).toBeNull();
+      await app.unmount();
+    }
+  });
+
+  it('#188 R15: groups a 200 × 150 hero box and the title with a 10 px gap', async () => {
+    await renderPairing();
+    await screen.findByTestId('pairing-title');
+    const hero = screen.getByTestId('pairing-hero', { includeHiddenElements: true });
+    const group = screen.getByTestId('pairing-hero-group');
+    expect(group.props.className.split(' ')).toEqual(expect.arrayContaining(['items-center', 'gap-2.5']));
+    expect(group.children).toEqual([hero, screen.getByTestId('pairing-title')]);
+    expect(hero.props.className.split(' ')).toEqual(expect.arrayContaining([
+      'w-50', 'h-37.5', 'items-center', 'justify-center',
+    ]));
+    expect(hero.props).toMatchObject({
+      accessible: false,
+      accessibilityElementsHidden: true,
+      importantForAccessibility: 'no-hide-descendants',
+    });
+    expect(hero.children).toEqual([
+      screen.getByTestId('pairing-ring-0', { includeHiddenElements: true }),
+      screen.getByTestId('pairing-ring-1', { includeHiddenElements: true }),
+      screen.getByTestId('pairing-pingo-float', { includeHiddenElements: true }),
+    ]);
+    const pingo = screen.getByTestId('pairing-pingo', { includeHiddenElements: true });
+    expect(pingo).toHaveStyle({ width: 120, aspectRatio: 1 });
+    const style = Object.assign({}, ...[pingo.props.style].flat(Infinity));
+    expect(style).not.toHaveProperty('height');
+  });
+
+  it('#188 R1: shows the collar pose as the first visual content', async () => {
+    await renderPairing();
+    const pingo = await screen.findByTestId('pairing-pingo', { includeHiddenElements: true });
+    expect(pingo.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-collar\.webp$/) }),
+    ]);
+    expect(JSON.stringify(pingo.props.source)).not.toContain('pingo-wave.webp');
+    expect(pingo.props.contentFit).toBe('contain');
+    const visuals = within(screen.getByTestId('pairing-form')).getAllByTestId(
+      /^(pairing-pingo|pet-chip-pet-1|pairing-plan-free|activation-code-input|pairing-submit)$/,
+      { includeHiddenElements: true },
+    );
+    expect(visuals[0].props.testID).toBe('pairing-pingo');
+  });
+
+  it('#188 R2: draws exactly two accent rings behind Pingo', async () => {
+    await renderPairing();
+    await screen.findByTestId('pairing-pingo', { includeHiddenElements: true });
+    for (const index of [0, 1]) {
+      const ring = screen.getByTestId(`pairing-ring-${index}`, { includeHiddenElements: true });
+      expect(ring.props.className.split(' ')).toEqual(expect.arrayContaining([
+        'size-37.5', 'rounded-full', 'border-3', 'border-accent',
+      ]));
+    }
+    expect(screen.queryByTestId('pairing-ring-2', { includeHiddenElements: true })).toBeNull();
+    const stage = screen.getByTestId('pairing-ring-0', { includeHiddenElements: true }).parent!;
+    expect(within(stage).getAllByTestId(/^pairing-(ring-0|ring-1|pingo)$/, { includeHiddenElements: true })
+      .map((node) => node.props.testID)).toEqual(['pairing-ring-0', 'pairing-ring-1', 'pairing-pingo']);
+  });
+
+
+  it('#188 R3: staggers the ping loop and resets at 2401 ms', async () => {
+    jest.useFakeTimers();
+    try {
+      await renderPairing();
+      const ring0 = await screen.findByTestId('pairing-ring-0', { includeHiddenElements: true });
+      const ring1 = screen.getByTestId('pairing-ring-1', { includeHiddenElements: true });
+      for (const ring of [ring0, ring1]) {
+        expect(ring).toHaveAnimatedStyle({ opacity: 0.55, transform: [{ scale: 0.55 }] }, { shouldMatchAllProps: true });
+      }
+      await act(async () => { jest.advanceTimersByTime(600); });
+      const style = getAnimatedStyle(ring0);
+      const scale = (style.transform as [{ scale: number }])[0].scale;
+      expect(scale).toBeGreaterThan(0.55);
+      expect(scale).toBeLessThan(1.5);
+      expect(style.opacity).toBeGreaterThan(0);
+      expect(style.opacity).toBeLessThan(0.55);
+      expect(ring0).toHaveAnimatedStyle({ opacity: style.opacity, transform: [{ scale }] }, { shouldMatchAllProps: true });
+      expect(ring1).toHaveAnimatedStyle({ opacity: 0.55, transform: [{ scale: 0.55 }] }, { shouldMatchAllProps: true });
+      await act(async () => { jest.advanceTimersByTime(1800); });
+      expect(ring0).toHaveAnimatedStyle({ opacity: 0, transform: [{ scale: 1.5 }] }, { shouldMatchAllProps: true });
+      await act(async () => { jest.advanceTimersByTime(1); });
+      const restarted = getAnimatedStyle(ring0);
+      expect(Object.keys(restarted).sort()).toEqual(['opacity', 'transform']);
+      expect(restarted.transform).toHaveLength(1);
+      expect(Object.keys(restarted.transform![0])).toEqual(['scale']);
+      const restartedScale = (restarted.transform as [{ scale: number }])[0].scale;
+      expect(restartedScale).toBeGreaterThan(0.55);
+      expect(restartedScale).toBeLessThan(0.6);
+      expect(restarted.opacity).toBeGreaterThan(0.5);
+      expect(restarted.opacity).toBeLessThan(0.55);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('#188 R4: floats Pingo from 0 to -10 and back over 3000 ms', async () => {
+    jest.useFakeTimers();
+    try {
+      await renderPairing();
+      const pingo = await screen.findByTestId('pairing-pingo', { includeHiddenElements: true });
+      const float = screen.getByTestId('pairing-pingo-float', { includeHiddenElements: true });
+      expect(within(float).getByTestId('pairing-pingo', { includeHiddenElements: true })).toBe(pingo);
+      expect(float).toHaveAnimatedStyle({ transform: [{ translateY: 0 }] }, { shouldMatchAllProps: true });
+      await act(async () => { jest.advanceTimersByTime(1500); });
+      expect(float).toHaveAnimatedStyle({ transform: [{ translateY: -10 }] }, { shouldMatchAllProps: true });
+      await act(async () => { jest.advanceTimersByTime(1500); });
+      expect(float).toHaveAnimatedStyle({ transform: [{ translateY: 0 }] }, { shouldMatchAllProps: true });
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('#188 R5: keeps rings and Pingo at rest with reduced motion at 0, 1500 and 2400 ms', async () => {
+    jest.useFakeTimers();
+    mockUseReducedMotion.mockReturnValue(true);
+    try {
+      await renderPairing();
+      const float = await screen.findByTestId('pairing-pingo-float', { includeHiddenElements: true });
+      const rings = [0, 1].map((index) => screen.getByTestId(`pairing-ring-${index}`, { includeHiddenElements: true }));
+      for (const elapsed of [0, 1500, 900]) {
+        await act(async () => { jest.advanceTimersByTime(elapsed); });
+        for (const ring of rings) {
+          expect(ring).toHaveAnimatedStyle({ opacity: 0.3, transform: [{ scale: 1 }] }, { shouldMatchAllProps: true });
+        }
+        expect(float).toHaveAnimatedStyle({ transform: [{ translateY: 0 }] }, { shouldMatchAllProps: true });
+      }
+    } finally {
+      mockUseReducedMotion.mockReturnValue(false);
+      jest.useRealTimers();
+    }
+  });
+
+  it.each([
+    ['es', 'Vincular collar'],
+    ['en', 'Pair collar'],
+  ] as const)('#188 R6: places the %s title first inside the scroll content', async (language, title) => {
+    await renderWithProviders(
+      <LanguageProvider initial={language}><PairingRoute /></LanguageProvider>,
+      { wrapper: PairingWrapper },
+    );
+    const form = screen.getByTestId('pairing-form');
+    const heading = await within(form).findByTestId('pairing-title');
+    expect(heading).toHaveTextContent(title, { exact: true });
+    const texts = within(form).getAllByText(/\S/).filter((node) => node.props.testID !== 'pairing-pet-avatar-fallback');
+    expect(texts[0].props.testID).toBe('pairing-title');
+  });
+
+  it('#188 R16: centers the title at 28 px with black weight and title tracking', async () => {
+    await renderPairing();
+    const title = await screen.findByTestId('pairing-title');
+    expect(title.props.className.split(' ')).toEqual(expect.arrayContaining([
+      'text-center', 'text-28', 'font-black', 'tracking-title', 'text-foreground',
+    ]));
+    for (const excluded of ['text-24', 'text-2xl', '[']) {
+      expect(title.props.className).not.toContain(excluded);
+    }
+  });
+
+  it('#188 R7/R16: gives the title the 28 px token and black weight', async () => {
+    await renderPairing();
+    const title = await screen.findByTestId('pairing-title');
+    expect(title.props.className.split(' ')).toEqual(expect.arrayContaining(['text-28', 'font-black']));
+    expect(title.props.className).not.toContain('text-24');
+    expect(title.props.className).not.toContain('text-2xl');
+    expect(title.props.className).not.toContain('[');
+  });
+
+  it.each([
+    ['es', 'Plan gratuito — solo salud. Vincula un collar con plan activo para ver el mapa.', 'Código de activación', 'Impreso en la caja del collar'],
+    ['en', 'Free plan — health only. Pair a collar with an active plan to see the map.', 'Activation code', 'Printed on the collar box'],
+  ] as const)('#188 R8: orders the %s linking content and preserves its exact copy', async (language, plan, label, hint) => {
+    await renderWithProviders(
+      <LanguageProvider initial={language}><PairingRoute /></LanguageProvider>,
+      { wrapper: PairingWrapper },
+    );
+    await screen.findByTestId('pairing-title');
+    const form = within(screen.getByTestId('pairing-form'));
+    expect(form.getAllByTestId(
+      /^(pairing-pingo|pairing-title|pairing-plan-free|pairing-activation-code-label|activation-code-input|pairing-code-hint|pairing-submit)$/,
+      { includeHiddenElements: true },
+    ).map((node) => node.props.testID)).toEqual([
+      'pairing-pingo', 'pairing-title', 'pairing-plan-free', 'pairing-activation-code-label',
+      'activation-code-input', 'pairing-code-hint', 'pairing-submit',
+    ]);
+    expect(form.getByTestId('pairing-plan-free')).toHaveTextContent(plan, { exact: true });
+    expect(form.getByTestId('pairing-activation-code-label')).toHaveTextContent(label, { exact: true });
+    expect(form.getByTestId('pairing-code-hint')).toHaveTextContent(hint, { exact: true });
+    expect(form.queryByTestId('pairing-subtitle', { includeHiddenElements: true })).toBeNull();
+  });
+
+  it.each([
+    ['loading', 'pairing-skeleton'],
+    ['pets-error', 'pairing-error-pets'],
+    ['no-pets', 'pairing-no-pets'],
+    ['linking', 'pairing-title'],
+    ['paired-loading', 'plan-skeleton'],
+    ['paired-tracked', 'plan-tracked'],
+    ['paired-free', 'plan-free'],
+    ['paired-unknown', 'plan-unknown'],
+    ['claim-error', 'pairing-error'],
+    ['ready', 'pairing-ready'],
+  ] as const)('#188 R9: omits the unapproved subtitle in %s', async (state, anchor) => {
+    if (state === 'loading') mockListPets.mockReturnValue(pending<PetsState>());
+    if (state === 'pets-error') mockListPets.mockResolvedValue({ kind: 'error' });
+    if (state === 'no-pets') mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    if (state.startsWith('paired-')) {
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ device: makeDevice() })] });
+      if (state === 'paired-loading') mockGetPetTracking.mockReturnValue(pending<PetTrackingState>());
+      else if (state === 'paired-unknown') mockGetPetTracking.mockResolvedValue({ kind: 'error' });
+      else mockGetPetTracking.mockResolvedValue({ kind: 'ok', tracked: state === 'paired-tracked' });
+    }
+    if (state === 'ready') mockClaimDevice.mockResolvedValue({ kind: 'ok', device: makeDevice() });
+    if (state === 'claim-error') mockClaimDevice.mockResolvedValue({ kind: 'invalid' });
+    await renderPairing();
+    if (state === 'ready' || state === 'claim-error') {
+      await fireEvent.changeText(await screen.findByTestId('activation-code-input'), 'ACT-001');
+      await fireEvent.press(screen.getByTestId('pairing-submit'));
+    }
+    await screen.findByTestId(anchor);
+    expect(screen.queryByTestId('pairing-subtitle', { includeHiddenElements: true })).toBeNull();
+  });
+
+  it.each(['linking', 'paired'] as const)('#188 R10: uses 20 px horizontal padding when %s', async (state) => {
+    if (state === 'paired') {
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ device: makeDevice() })] });
+      mockGetPetTracking.mockResolvedValue({ kind: 'ok', tracked: true });
+    }
+    await renderPairing();
+    await screen.findByTestId(state === 'paired' ? 'device-status-card' : 'pairing-title');
+    expect(screen.getByTestId('pairing-form').props.contentContainerStyle).toEqual({
+      paddingHorizontal: 20,
+      paddingVertical: 24,
+      gap: 16,
+      paddingBottom: 48,
+      ...(state === 'linking' ? { flexGrow: 1 } : {}),
+    });
+  });
+
+  it.each([
+    ['tracked', 'plan-tracked'],
+    ['free', 'plan-free'],
+    ['unknown', 'plan-unknown'],
+    ['ready', 'pairing-ready'],
+    ['no-pets', 'pairing-no-pets'],
+  ] as const)('#188 R14: preserves %s without the linking hero', async (state, anchor) => {
+    const paired = state === 'tracked' || state === 'free' || state === 'unknown';
+    if (paired) {
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ device: makeDevice() })] });
+      mockGetPetTracking.mockResolvedValue(state === 'unknown' ? { kind: 'error' } : { kind: 'ok', tracked: state === 'tracked' });
+    }
+    if (state === 'no-pets') mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    if (state === 'ready') mockClaimDevice.mockResolvedValue({ kind: 'ok', device: makeDevice() });
+    await renderPairing();
+    if (state === 'ready') {
+      await fireEvent.changeText(await screen.findByTestId('activation-code-input'), 'ACT-001');
+      await fireEvent.press(screen.getByTestId('pairing-submit'));
+    }
+    expect(await screen.findByTestId(anchor)).toBeOnTheScreen();
+    if (paired) {
+      expect(screen.getByTestId('device-status-card')).toBeOnTheScreen();
+      expect(screen.getByTestId('device-unpair')).toBeOnTheScreen();
+    }
+    for (const testID of ['pairing-pingo', 'pairing-ring-0', 'pairing-ring-1', 'pairing-pingo-float']) {
+      expect(screen.queryByTestId(testID, { includeHiddenElements: true })).toBeNull();
+    }
+  });
+
+});

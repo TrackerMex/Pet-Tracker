@@ -339,7 +339,8 @@ describe('R11 (mobile-device-pairing): pairing usa el Card compartido y las dime
   });
 
   it.each([
-    'padding: 24',
+    'paddingHorizontal: 20',
+    'paddingVertical: 24',
     'gap: 16',
     'insets.bottom + 24',
   ])('keeps the uniform screen metric %s', (metric) => {
@@ -1154,6 +1155,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       join('components', 'segmented-control.tsx'), // #191 R11
       join('screens', 'meal-schedule', 'index.tsx'), // #179 R13 comparte rounded-14
       join('screens', 'meals-history', 'index.tsx'), // #179 R13 comparte rounded-14
+      join('screens', 'pairing', 'index.tsx'), // #188 R20 comparte rounded-14
     ]);
   });
 });
