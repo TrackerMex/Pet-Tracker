@@ -76,3 +76,9 @@ export const MOTION_CELEBRATION_RISE_STAGGER_MS = 80;
 export const MOTION_CELEBRATION_RISE_OFFSET_Y = 14;
 export const MOTION_PINGO_FLOAT_OFFSET_Y = 10;
 export const MOTION_PINGO_FLOAT_TIMING = { duration: 1500, easing: Easing.bezier(0.42, 0, 0.58, 1), reduceMotion: ReduceMotion.System };
+
+// #195 R13: tiempos propios de la cabecera de Inicio.
+export const MOTION_HERO_FADE_MS = 500;
+export const MOTION_HERO_CAPTION_DELAY_MS = 80;
+export const MOTION_HERO_PING_MS = 1600;
+export const MOTION_HERO_BUBBLE_POP_DELAY_MS = 450;
