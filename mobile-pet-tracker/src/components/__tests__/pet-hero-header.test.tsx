@@ -19,6 +19,7 @@ import type { TestInstance } from 'test-renderer';
 import { Uniwind } from 'uniwind';
 
 import type { PetProfile } from '../../api/types';
+import { MOTION_CELEBRATION_EASE_OUT } from '../../theme/motion';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import {
   PET_HERO_FADE_HEIGHT,
@@ -681,7 +682,7 @@ describe('#195 R2: foto alineada arriba y fundido por identidad', () => {
     expect(mockWithTiming).not.toHaveBeenCalled();
     expect(screen.getByTestId('pet-hero-photo')).toHaveAnimatedStyle({ opacity: 1 }, { shouldMatchAllProps: true });
     await view.rerender(<PetHeroHeader pet={makePet()} />);
-    expect(mockWithTiming).toHaveBeenCalledWith(1, expect.objectContaining({ duration: 500, easing: expect.any(Function), reduceMotion: ReduceMotion.System }));
+    expect(mockWithTiming).toHaveBeenCalledWith(1, expect.objectContaining({ duration: 500, easing: MOTION_CELEBRATION_EASE_OUT.easing, reduceMotion: ReduceMotion.System }));
     mockWithTiming.mockClear();
     await view.rerender(<PetHeroHeader pet={makePet({ id: 'pet-2' })} />);
     expect(mockWithTiming).toHaveBeenCalledTimes(1);
