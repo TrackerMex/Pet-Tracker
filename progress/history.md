@@ -9800,3 +9800,52 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
 - **Sin skills de Expo:** ninguna aplicaba (una ref y tests RN, sin diseño ni UI nueva).
 - **Estado final:** done. Notion: Implementado / Completado. La PR #237 la mergea el humano; después se
   borra el worktree.
+
+## Sesión 2026-10-21 — mobile-pairing-pingo-canvas-fidelity (id: 188)
+
+- **Feature:** Vincular collar como su artboard «Vincular collar (19)» del canvas. Pingo (pose
+  collar) de 120 px con dos anillos de ping (2400 ms, retraso 1200 ms; `PingRing` extraído a
+  `src/components/ping-ring.tsx`) y flotación `PingoFloat`; título centrado de 28 px (token
+  `--text-28`); una fila superior con el avatar de la mascota seleccionada y sin el listado;
+  banner de plan gratuito como `View` con `pairing.freePlanPairPrompt` partida en Lead y Body;
+  botón anclado al borde inferior; etiqueta, campo y pista del código con `--tracking-code` y
+  `--font-mono`.
+- **Spec:** [[specs/mobile-pairing-pingo-canvas-fidelity/requirements|spec]], firmada por el humano
+  vía Notion (2026-10-19). Enmienda E2 (R15–R20, ED1–ED4 cerradas) aprobada en Notion el
+  2026-10-20 tras un smoke humano que no coincidía con el artboard (título sin centrar, Pingo a
+  150 px, selector de mascota entre título y banner, botón sin anclar). El texto de R17, R18 y R20 lo
+  derivó el leader de la instrucción del humano; el espejo que el humano vio tenía R17 con
+  `PetSwitcher variant="avatars"` y no tenía R20.
+- **Acciones:** handoff a Codex para R1–R14 (ronda E1) y segundo handoff para R15–R20 (ronda E2,
+  `progress/handoff_mobile-pairing-pingo-canvas-fidelity-e2.md`). Codex paró en R15: la guarda
+  `#68 R18` de `design-drift` lee también `screens/pairing/index.test.tsx` y rechaza
+  `StyleSheet.flatten`; el hueco era del handoff, no de Codex. Cierre de Codex en `22c4991c`
+  (12 rutas móviles) con las cinco migraciones de inventarios de `tasks.md`. Reviewer APROBADO
+  sobre `22c4991c` con mutaciones M1, M2a, M2b y M13 rojas (`progress/review_188.md`; el veredicto
+  de `db3bd5e3` queda como historia al final). El humano firmó la casilla «Enmienda #188 (E2)» de
+  `docs/ui-guidelines.md` y H1–H3 en `eaa0a9a9` (2026-10-21).
+- **Resultado:** `./init.sh` exit 0 en `22c4991c` (móvil 128/128 suites y 4256/4256 tests; e2e 468
+  passed) y exit 0 en el merge de main `55c93646`: backend 187/187 suites y 1474/1474 tests; móvil
+  128/128 suites y 4267/4267 tests; infra 14/14; e2e 468 passed; typecheck y lint sin errores.
+- **Primera corrida del merge en rojo** (log local `progress/init-188-55c93646-run1-e2e-rojo.log`, no versionado: `*.log` está en `.gitignore`): exit 1,
+  con 3 suites e2e y 6 tests rojos (`alerts-center-notifier` R23, `pet-reminders` R7 y R8,
+  `alerts-engine` R14 y R18; `connect ECONNREFUSED 127.0.0.1:4566`). Causa: un `init.sh` de otro
+  worktree (#191) corría a la vez sobre el mismo LocalStack y Postgres. El merge no toca
+  `backend-pet-tracker/` ni `infra/`. Repetida sin pares concurrentes: verde (log local
+  `progress/init-188-55c93646.log`). No es un flake sin causa: el peer estaba corriendo.
+- **Notas no bloqueantes:** B-3 (`screens/pairing/index.test.tsx` tiene una aserción circular) y B-4
+  (la rama reduce-motion de `components/ping-ring.tsx` es inalcanzable en producción); tres
+  hallazgos del reviewer: R17 solo candada los índices 0 y 1 del ciclo de colores, el candado de
+  tokens de `global.css` compara por texto y el avatar no lleva `accessible`. M-3 se conserva
+  (reescribir la historia rompería los hashes de `traceability.md`); los `.exit` de init no se
+  commitean. `traceability.md` queda en `status: draft`. El espejo de Codex en
+  `progress/impl_mobile-pairing-pingo-canvas-fidelity.md` (H1–H3) conserva sus casillas `[ ]`;
+  las firmas están en `requirements.md`. Fuera de #188: `progress/handoff_mobile-docs-upload.md`
+  tiene marcadores de conflicto en main.
+- **Drift tras el veredicto:** el veredicto es sobre `22c4991c`. Después cambian la firma del humano
+  (`eaa0a9a9`, solo `specs/`, `docs/` y `progress/`) y el merge de `origin/main` (`55c93646`, con
+  #184), cuyos únicos ficheros de código son `pet-switcher.test.tsx`, `profile/index.tsx` y
+  `profile/index.test.tsx`, ya revisados en #184. `git diff --stat 22c4991c HEAD --
+  mobile-pet-tracker backend-pet-tracker infra` confirma esos tres.
+- **Estado final:** done. Notion: Implementado / Completado. La PR #232 la mergea el humano; después se
+  borran los worktrees `Pet-Tracker-wt-188` y `Pet-Tracker-wt-188-probe`.

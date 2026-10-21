@@ -357,11 +357,16 @@ Conventional commits, en inglés:
 ```
 feat(<scope>): <descripción> (R1,R2)
 fix(<scope>): <descripción> (R3)
-refactor(<scope>): <descripción>
+refactor(<scope>): <descripción> (R4)
+test(<scope>): <descripción> (R1)
+docs(<scope>): <descripción>
+chore(<scope>): <descripción>
 ```
 
 El `<scope>` es el nombre de la feature o módulo. Los R-ids referencian los
 requisitos de `specs/<feature>/requirements.md` que ese commit satisface.
+`feat`, `fix`, `refactor` y `test` que tocan código o tests de una feature
+llevan `(R<n>)`. `docs` y `chore` no llevan R-ids: son documentación y arnés.
 
 ---
 

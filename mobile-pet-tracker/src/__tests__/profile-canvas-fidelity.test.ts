@@ -48,6 +48,7 @@ describe('#173 R2: inventario de radios nuevos', () => {
     expect(filesMatching(/\brounded-tile\b/)).toEqual([
       'screens/add-reminder/index.tsx', // #178 R12
       'screens/home/index.tsx', // (enmendado por #190 R13)
+      'screens/pairing/index.tsx', // #188 R18
       'screens/profile/index.tsx',
     ]);
   });
@@ -74,6 +75,7 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/forgot/index.tsx',
       'screens/login/index.tsx',
       'screens/meal-schedule/index.tsx', // #179 R6
+      'screens/pairing/index.tsx', // #188 R18
       'screens/profile/index.tsx',
       'screens/register/index.tsx',
       'screens/reminders/index.tsx', // #178 R6
