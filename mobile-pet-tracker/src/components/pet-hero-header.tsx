@@ -78,6 +78,11 @@ export const STATUS_TONE_CLASSES: Record<
   },
 };
 
+const HERO_TONE_CLASSES = {
+  ...STATUS_TONE_CLASSES,
+  success: { ...STATUS_TONE_CLASSES.success, surface: 'bg-surface-secondary', dot: 'bg-accent' },
+};
+
 export interface PetHeroHeaderProps {
   /** null mientras el detalle de la mascota no ha resuelto (R8). */
   pet: PetProfile | null;
@@ -113,7 +118,7 @@ export function PetHeroHeader({
   const dotOpacity = useSharedValue(1);
   const dotStyle = useAnimatedStyle(() => ({ opacity: dotOpacity.get() }));
   const pulses = !reduceMotion && pet !== null && status?.tone === 'success';
-  const tone = STATUS_TONE_CLASSES[status?.tone ?? 'muted'];
+  const tone = HERO_TONE_CLASSES[status?.tone ?? 'muted'];
 
   useEffect(() => {
     if (!pulses) return;
@@ -231,23 +236,23 @@ export function PetHeroHeader({
                   testID="pet-hero-status"
                   accessible
                   accessibilityLabel={status.label}
-                  className={`flex-row items-center gap-1 self-start rounded-full px-2.5 py-0.5 ${tone.surface}`}
+                  className={`flex-row items-center gap-1.5 self-start rounded-full px-2.5 py-0.75 ${tone.surface}`}
                 >
                   {pulses ? (
                     <AnimatedView
                       testID="pet-hero-status-dot"
-                      className={`size-1.5 rounded-full ${tone.dot}`}
+                      className={`relative size-2 rounded-full ${tone.dot}`}
                       style={dotStyle}
                     />
                   ) : (
                     <View
                       testID="pet-hero-status-dot"
-                      className={`size-1.5 rounded-full ${tone.dot}`}
+                      className={`relative size-2 rounded-full ${tone.dot}`}
                     />
                   )}
                   <Text
                     testID="pet-hero-status-text"
-                    className={`text-2xs font-semibold ${tone.text}`}
+                    className={`text-xs font-bold ${tone.text}`}
                   >
                     {status.label}
                   </Text>
