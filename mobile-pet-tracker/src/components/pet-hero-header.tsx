@@ -163,6 +163,12 @@ export function PetHeroHeader({
           />
         )}
 
+        <View
+          testID="pet-hero-dim"
+          className="absolute inset-0 bg-photo-dim"
+          pointerEvents="none"
+        />
+
         {/*
           La parada transparente se escribe con el propio color de fondo y alfa
           0, nunca con `transparent`: `transparent` es negro con alfa cero y
