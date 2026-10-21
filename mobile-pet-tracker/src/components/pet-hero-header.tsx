@@ -24,10 +24,12 @@ import { PetAvatar } from './pet-avatar';
  * carta pide token a partir de la segunda repetición, y una clase arbitraria de
  * altura está prohibida. Se exporta para los tests, no para otros componentes.
  */
-export const PET_HERO_MEDIA_HEIGHT = 260;
+export const PET_HERO_MEDIA_HEIGHT = 330;
 
 /** Alto de cada franja de degradado entre la imagen y una banda opaca. */
-export const PET_HERO_FADE_HEIGHT = 64;
+export const PET_HERO_FADE_HEIGHT = 160
+
+export const PET_HERO_SCRIM_HEIGHT = 130;
 
 /**
  * Pulso del punto 'en línea' (#73 E2): animate-pulse de Tailwind traducido a
@@ -136,6 +138,7 @@ export function PetHeroHeader({
       }
       style={CONTINUOUS_CORNER}
     >
+      <View testID="pet-hero-frame" style={{ height: PET_HERO_MEDIA_HEIGHT }}>
       {children ? (
         <View
           testID="pet-hero-slot"
@@ -264,6 +267,7 @@ export function PetHeroHeader({
             </Text>
           </View>
         ) : null}
+      </View>
       </View>
     </View>
   );
