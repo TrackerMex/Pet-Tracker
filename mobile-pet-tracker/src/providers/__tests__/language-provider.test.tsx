@@ -145,7 +145,7 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
 it('#191 R1: declara las claves del asistente de dos pasos en los dos idiomas', () => {
   const translations = [
     ['addPet.stepProgress', '{{current}} of {{total}}', '{{current}} de {{total}}'],
-    ['addPet.pingoGreeting', 'Hi. Tell me about your new companion.', 'Hola. Cuéntame de tu nuevo compañero.'],
+    ['addPet.pingoGreeting', 'Hi. Tell me about your new companion.', '¡Hola! Cuéntame de tu nuevo compañero.'],
     ['addPet.continue', 'Continue', 'Continuar'],
   ];
   for (const [key, english, spanish] of translations) {

@@ -146,7 +146,7 @@ describe('R6: alta de mascota', () => {
     expect(bubble).toHaveStyle({ borderCurve: 'continuous' });
     expect(bubble.parent!.props.className).toBe('flex-row items-center gap-3.5');
     expect(screen.getByTestId('add-pet-bubble-tail').props.className).toBe('absolute -left-1.5 top-5.5 size-3 rotate-45 bg-surface-secondary');
-    expect(screen.getByTestId('add-pet-bubble-text')).toHaveTextContent('Hola. Cuéntame de tu nuevo compañero.');
+    expect(screen.getByTestId('add-pet-bubble-text')).toHaveTextContent('¡Hola! Cuéntame de tu nuevo compañero.');
     expect(screen.getByTestId('add-pet-bubble-text').props.className).toBe('text-13 font-semibold text-foreground');
     expect(screen.getByText('Datos básicos')).toBeVisible();
     const ids = ['add-pet-photo', 'add-pet-bubble', 'species-dog', 'species-cat', 'name-input', 'breed-input', 'sex-female', 'sex-male', 'size-small', 'size-medium', 'size-large', 'add-pet-continue'];
