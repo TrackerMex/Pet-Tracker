@@ -256,6 +256,8 @@ Solo el humano marca estas casillas, con su commit de firma. El leader no marca 
 - [X] C5 · commits fuera de M-2: aceptar `8166167c` (asunto en inglés, sin tipo) y los merges `50e56e44` y `44a16473` como excepción, sin reescribir. Decisión tomada en el chat del 2026-10-20: aceptar. Firma pendiente, con commit del humano.
 - [X] Merge con `origin/main` (re-firma): cubre cuatro enmiendas de `docs/ui-guidelines.md`: #176, #186, #188 y #190 (L747). La casilla L250 cubre solo tres. Firma pendiente, con commit del humano.
 
+> Nota del leader (2026-10-21): el humano firmó H1–H3 en `specs/mobile-pairing-pingo-canvas-fidelity/requirements.md` (commit `eaa0a9a9`, 2026-10-21 10:50 -0600) tras el smoke de la ronda E2. Las tres líneas H1–H3 de arriba son el espejo de Codex con el texto anterior y no se tocan; la firma vive en `requirements.md`.
+
 ## Ronda E2
 
 ### T0-E2 y alcance
