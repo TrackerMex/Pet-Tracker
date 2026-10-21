@@ -259,7 +259,7 @@ describe('R3: el texto del hero va sobre fondo opaco', () => {
     expect(caption).not.toMatch(/bg-background\/\d/);
   });
 
-  it('la banda del slot declara bg-background sin opacidad', async () => {
+  it('el slot flota sin fondo ni padding (enmendado por #195 R5)', async () => {
     await renderHero(
       <PetHeroHeader pet={makePet()} variant="bleed">
         <Text testID="slot-child">selector</Text>
@@ -268,8 +268,7 @@ describe('R3: el texto del hero va sobre fondo opaco', () => {
 
     const slot = screen.getByTestId('pet-hero-slot').props.className;
 
-    expect(slot).toContain('bg-background');
-    expect(slot).not.toMatch(/bg-background\/\d/);
+    expect(slot).toBe('absolute inset-x-4');
     expect(screen.getByTestId('slot-child')).toBeVisible();
   });
 
@@ -347,7 +346,7 @@ describe('R3: el texto del hero va sobre fondo opaco', () => {
 describe('R4: el slot superior respeta la safe area', () => {
   afterEach(() => cleanup());
 
-  it('baja el slot con insets.top + 12, nunca con un valor fijo', async () => {
+  it('baja el slot con insets.top + 12, nunca con un valor fijo (enmendado por #195 R5)', async () => {
     await renderHero(
       <PetHeroHeader pet={makePet()} variant="bleed">
         <Text testID="slot-child">selector</Text>
@@ -355,7 +354,7 @@ describe('R4: el slot superior respeta la safe area', () => {
     );
 
     expect(screen.getByTestId('pet-hero-slot').props.style).toMatchObject({
-      paddingTop: 52,
+      top: 52,
     });
   });
 
@@ -366,11 +365,12 @@ describe('R4: el slot superior respeta la safe area', () => {
     expect(source).toContain('insets.top + 12');
   });
 
-  it('no gasta alto de foto cuando no hay slot', async () => {
+  it('no gasta alto de foto cuando no hay slot (enmendado por #195 R5)', async () => {
     await renderHero(<PetHeroHeader pet={makePet()} variant="card" />);
 
     expect(screen.queryByTestId('pet-hero-slot')).toBeNull();
     expect(screen.queryByTestId('pet-hero-fade-top')).toBeNull();
+    expect(screen.queryByTestId('pet-hero-scrim-top')).toBeNull();
     expect(screen.getByTestId('pet-hero-fade-bottom')).toBeVisible();
   });
 });
@@ -716,5 +716,22 @@ describe('#195 R3: degradados exactos sobre la fotografía', () => {
     expect(screen.queryByTestId('pet-hero-scrim-top')).toBeNull();
     const source = readSource('components', 'pet-hero-header.tsx').replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, '');
     expect(source).not.toMatch(/\btransparent\b/);
+  });
+});
+
+
+describe('#195 R5: fila superior flotante', () => {
+  afterEach(() => cleanup());
+  it('usa inset superior más 12 y laterales de 16 sin fondo ni padding', async () => {
+    await renderHero(<PetHeroHeader pet={makePet()}><Text testID="floating-child">selector</Text></PetHeroHeader>);
+    const slot = screen.getByTestId('pet-hero-slot');
+    expect(slot.props.className).toBe('absolute inset-x-4');
+    expect(slot.props.style).toEqual({ top: 52 });
+    expect(within(slot).getByTestId('floating-child')).toBeVisible();
+  });
+  it('sin children no reserva slot ni scrim', async () => {
+    await renderHero(<PetHeroHeader pet={null} />);
+    expect(screen.queryByTestId('pet-hero-slot')).toBeNull();
+    expect(screen.queryByTestId('pet-hero-scrim-top')).toBeNull();
   });
 });
