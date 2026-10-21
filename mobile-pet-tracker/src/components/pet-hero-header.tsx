@@ -15,6 +15,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { PetProfile } from '../api/types';
+import { MOTION_CELEBRATION_EASE_OUT, MOTION_HERO_FADE_MS } from '../theme/motion';
 import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../theme/native-styles';
 import { useThemeColors } from '../theme/use-theme-colors';
 import { PetAvatar } from './pet-avatar';
@@ -103,6 +104,12 @@ export function PetHeroHeader({
   const insets = useSafeAreaInsets();
   const [background] = useThemeColors(['background']);
   const reduceMotion = useReducedMotion();
+  const petId = pet?.id;
+  const photoOpacity = useSharedValue(reduceMotion || !pet ? 1 : 0);
+  const photoStyle = useAnimatedStyle(() => ({ opacity: photoOpacity.get() }));
+
+
+
   const dotOpacity = useSharedValue(1);
   const dotStyle = useAnimatedStyle(() => ({ opacity: dotOpacity.get() }));
   const pulses = !reduceMotion && pet !== null && status?.tone === 'success';
@@ -128,6 +135,15 @@ export function PetHeroHeader({
     };
   }, [pulses, dotOpacity]);
 
+  useEffect(() => {
+    if (reduceMotion || !petId) {
+      photoOpacity.set(1);
+      return;
+    }
+    photoOpacity.set(0);
+    photoOpacity.set(withTiming(1, { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_HERO_FADE_MS }));
+  }, [petId, photoOpacity, reduceMotion]);
+
   return (
     <View
       testID="pet-hero"
@@ -149,12 +165,13 @@ export function PetHeroHeader({
         </View>
       ) : null}
 
-      <View style={{ height: PET_HERO_MEDIA_HEIGHT }}>
+        <AnimatedView testID="pet-hero-photo" className="absolute inset-0" style={photoStyle}>
         {pet ? (
           <PetAvatar
             name={pet.name}
             photoUrl={pet.photoUrl}
             cacheKey={pet.id}
+            contentPosition="top"
             size={{ width: '100%', height: PET_HERO_MEDIA_HEIGHT }}
             testID="pet-hero-media"
           />
@@ -166,6 +183,7 @@ export function PetHeroHeader({
           />
         )}
 
+        </AnimatedView>
         <View
           testID="pet-hero-dim"
           className="absolute inset-0 bg-photo-dim"
@@ -196,7 +214,6 @@ export function PetHeroHeader({
             experimental_backgroundImage: `linear-gradient(to bottom, ${background}00 0%, ${background} 100%)`,
           }}
         />
-      </View>
 
       <View
         testID="pet-hero-caption"
