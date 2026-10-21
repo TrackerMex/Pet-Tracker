@@ -36,9 +36,15 @@ jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
+let mockTheme: 'light' | 'dark' = 'light';
+jest.mock('expo-blur', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return { BlurView: (props: Record<string, unknown>) => React.createElement(View, props) };
+});
 jest.mock('uniwind', () => ({
   ...jest.requireActual('uniwind'),
-  useUniwind: () => ({ theme: 'light', hasAdaptiveThemes: false }),
+  useUniwind: () => ({ theme: mockTheme, hasAdaptiveThemes: false }),
 }));
 jest.mock('heroui-native', () => {
   const actual = jest.requireActual('heroui-native');
@@ -88,6 +94,7 @@ async function edit(language: Language = 'es') {
 }
 
 beforeEach(() => {
+  mockTheme = 'light';
   jest.clearAllMocks();
   mockList.mockReset().mockResolvedValue({ kind: 'ok', geofences: [casa, parque] });
   mockPosition.mockReset().mockResolvedValue({ kind: 'ok', position: lastPosition });
@@ -587,5 +594,49 @@ describe('#146 R16: quien no es dueño ve la zona sin poder editarla', () => {
   it('pide el rol de la mascota con su token', async () => {
     await mount('geofence-1');
     await waitFor(() => expect(mockGetPet).toHaveBeenCalledWith(apiUrl, 'token-1', 'pet-1'));
+  });
+});
+
+
+describe('#189 R8: título en contenido y píldora de cristal sobre el mapa', () => {
+  it.each([
+    ['editar', 'es', 'light'], ['crear', 'es', 'light'], ['lectura', 'es', 'light'],
+    ['editar', 'en', 'dark'], ['crear', 'en', 'dark'], ['lectura', 'en', 'dark'],
+  ] as const)('#189 R8: título del formulario al %s en %s (%s)', async (kind, language, theme) => {
+    mockTheme = theme;
+    if (kind === 'lectura') mockGetPet.mockResolvedValue(petState('family'));
+    await mount(kind === 'crear' ? undefined : casa.id, language);
+    await screen.findByTestId('geofence-editor-form');
+    const title = screen.getByTestId('geofence-editor-title');
+    expect(title).toHaveTextContent(language === 'es' ? 'Zona segura' : 'Safe zone');
+    expect(title.props.accessibilityRole).toBe('header');
+    expect(title.props.className).toBe('bg-glass-surface-strong px-4 py-2.5 text-base font-extrabold text-foreground');
+    const blur = screen.getByTestId('geofence-editor-title-blur');
+    expect(title.parent).toBe(blur);
+    expect(blur.props.className).toBe('absolute left-4 top-3 overflow-hidden rounded-full');
+    expect(blur.props.intensity).toBe(48);
+    expect(blur.props.blurMethod).toBe('dimezisBlurViewSdk31Plus');
+    expect(blur.props.tint).toBe(theme);
+    expect(blur.children).toHaveLength(1);
+    expect(childTestIds(blur)).toEqual(['geofence-editor-title']);
+    const map = screen.getByTestId('geofence-editor-map');
+    expect(blur.parent).toBe(map);
+    expect(childTestIds(map).slice(0, 2)).toEqual(['map-view', 'geofence-editor-title-blur']);
+  });
+  it.each(['carga', 'no-tracking', 'error', 'no-encontrada', 'solo-dueño'] as const)('#189 R8: título plano primero en %s', async (kind) => {
+    if (kind === 'carga') mockList.mockReturnValue(new Promise(() => undefined));
+    if (kind === 'no-tracking') mockList.mockResolvedValue({ kind: 'no-tracking' });
+    if (kind === 'error') mockList.mockResolvedValue({ kind: 'error' });
+    if (kind === 'solo-dueño') mockGetPet.mockResolvedValue(petState('family'));
+    await mount(kind === 'solo-dueño' ? undefined : kind === 'no-encontrada' ? 'missing' : casa.id);
+    const stateId = { carga: 'loading', 'no-tracking': 'no-tracking', error: 'load-error', 'no-encontrada': 'not-found', 'solo-dueño': 'owner-only' }[kind];
+    await screen.findByTestId(`geofence-editor-${stateId}`);
+    const title = screen.getByTestId('geofence-editor-title');
+    expect(title).toHaveTextContent('Zona segura');
+    expect(title.props.accessibilityRole).toBe('header');
+    expect(title.props.className).toBe('text-26 font-black tracking-title text-foreground');
+    const root = screen.getByTestId('screen-geofence-editor');
+    expect(childTestIds(root).slice(0, 2)).toEqual(['geofence-editor-title', `geofence-editor-${stateId}`]);
+    expect(screen.queryByTestId('geofence-editor-title-blur')).toBeNull();
   });
 });
