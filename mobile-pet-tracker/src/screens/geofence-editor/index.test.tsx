@@ -636,7 +636,8 @@ describe('#189 R8: título en contenido y píldora de cristal sobre el mapa', ()
     expect(title.props.accessibilityRole).toBe('header');
     expect(title.props.className).toBe('text-26 font-black tracking-title text-foreground');
     const root = screen.getByTestId('screen-geofence-editor');
-    expect(childTestIds(root).slice(0, 2)).toEqual(['geofence-editor-title', `geofence-editor-${stateId}`]);
+    expect(title.parent?.parent).toBe(root);
+    expect(childTestIds(title.parent!).slice(0, 2)).toEqual(['geofence-editor-title', `geofence-editor-${stateId}`]);
     expect(screen.queryByTestId('geofence-editor-title-blur')).toBeNull();
   });
 });
