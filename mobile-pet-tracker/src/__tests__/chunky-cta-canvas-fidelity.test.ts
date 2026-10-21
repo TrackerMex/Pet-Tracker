@@ -152,8 +152,8 @@ it('#177 R5.2: el tile conserva la esquina y recibe el labio con el orden exacto
 });
 it('#177 R6.2: recuentos de etiquetas', () => {
   // #177 R6
-  expect(count(/<Button\.Label/g)).toBe(35 - 15 - 1); // #191 R11
-  expect(count(/Button\.Label/g)).toBe(82 - 30 - 2); // #191 R11
+  expect(count(/<Button\.Label/g)).toBe(35 - 15 - 1 - 1); // #189 R5
+  expect(count(/Button\.Label/g)).toBe(82 - 30 - 2 - 2); // #189 R5
   expect(count(/text-17/g)).toBe(8 + 15 + 1); // #191 R11
   expect(count(/<Text className="text-17 font-extrabold text-accent-foreground">/g)).toBe(5 + 11 + 1); // #191 R11
   expect(count(/text-17 font-extrabold text-foreground/g)).toBe(3 + 3);
