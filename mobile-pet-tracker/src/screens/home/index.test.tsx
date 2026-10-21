@@ -833,7 +833,7 @@ describe('#73 R9: la pildora del hero y collar-status nacen del mismo estado', (
         esn: 'ACT-001',
       },
       'En línea',
-      'bg-success',
+      'bg-accent',
     ],
   ];
 
@@ -851,7 +851,7 @@ describe('#73 R9: la pildora del hero y collar-status nacen del mismo estado', (
     mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
   });
 
-  it.each(states)('%s -> pildora "%s" con punto %s', async (device, label, dotClass) => {
+  it.each(states)('%s -> pildora "%s" con punto %s (enmendado por #195 R7)', async (device, label, dotClass) => {
     mockGetPet.mockResolvedValue({
       kind: 'ok',
       pet: makePet({ device }),

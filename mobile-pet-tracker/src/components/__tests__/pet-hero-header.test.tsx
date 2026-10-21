@@ -27,6 +27,7 @@ import {
   PET_HERO_MEDIA_HEIGHT,
   PET_HERO_SCRIM_HEIGHT,
   STATUS_DOT_PULSE,
+  STATUS_TONE_CLASSES,
   PetHeroHeader,
 } from '../pet-hero-header';
 
@@ -439,11 +440,11 @@ describe('#73 R8: la pildora de estado vive en la banda inferior, encima del nom
   });
 
   it.each([
-    ['success', 'bg-success-soft', 'bg-success', 'text-accent-strong'],
+    ['success', 'bg-surface-secondary', 'bg-accent', 'text-accent-strong'],
     ['warning', 'bg-warning-soft', 'bg-warning-strong', 'text-warning-strong'],
     ['muted', 'bg-default', 'bg-muted', 'text-muted'],
   ] as const)(
-    '%s: superficie, punto y tinta usan los tokens del tono',
+    '%s: superficie, punto y tinta usan los tokens del tono (enmendado por #195 R7)',
     async (tone, surfaceClass, dotClass, textClass) => {
       await renderHero(
         <PetHeroHeader pet={makePet()} status={{ label: 'x', tone }} />,
@@ -456,7 +457,7 @@ describe('#73 R8: la pildora de estado vive en la banda inferior, encima del nom
     },
   );
 
-  it('es una capsula rounded-full de text-2xs font-semibold, self-start, sin animate-pulse ni Chip', async () => {
+  it('es una capsula rounded-full de text-xs font-bold, self-start, sin animate-pulse ni Chip (enmendado por #195 R7)', async () => {
     await renderHero(
       <PetHeroHeader
         pet={makePet()}
@@ -470,10 +471,10 @@ describe('#73 R8: la pildora de estado vive en la banda inferior, encima del nom
     const source = readSource('components', 'pet-hero-header.tsx');
 
     expect(pill.props.className).toContain(
-      'flex-row items-center gap-1 self-start rounded-full px-2.5 py-0.5',
+      'flex-row items-center gap-1.5 self-start rounded-full px-2.5 py-0.75',
     );
-    expect(dot.props.className).toContain('size-1.5 rounded-full');
-    expect(text.props.className).toContain('text-2xs font-semibold');
+    expect(dot.props.className).toContain('relative size-2 rounded-full');
+    expect(text.props.className).toContain('text-xs font-bold');
     expect(source).not.toMatch(/className=[^\n]*animate-pulse/);
     expect(source).toContain("from 'react-native-reanimated'");
     expect(source).not.toMatch(/\bChip\b/);
@@ -555,7 +556,7 @@ describe('#73 E2: el punto de "en linea" pulsa con Reanimated y respeta reduced 
     );
   });
 
-  it('con reduced motion activo el punto es estatico: sin estilo animado y sin arrancar ningun bucle', async () => {
+  it('con reduced motion activo el punto es estatico: sin estilo animado y sin arrancar ningun bucle (enmendado por #195 R7)', async () => {
     mockUseReducedMotion.mockReturnValue(true);
     await renderHero(
       <PetHeroHeader
@@ -569,7 +570,7 @@ describe('#73 E2: el punto de "en linea" pulsa con Reanimated y respeta reduced 
 
     expect(dot).not.toHaveAnimatedStyle({ opacity: 1 });
     expect(mockWithRepeat).not.toHaveBeenCalled();
-    expect(dot.props.className).toContain('bg-success');
+    expect(dot.props.className).toContain('bg-accent');
   });
 
   it('con tone success el punto es el nodo animado: 1 -> 0.5 -> 1 con STATUS_DOT_PULSE, infinito y sin reverse', async () => {
@@ -733,5 +734,27 @@ describe('#195 R5: fila superior flotante', () => {
     await renderHero(<PetHeroHeader pet={null} />);
     expect(screen.queryByTestId('pet-hero-slot')).toBeNull();
     expect(screen.queryByTestId('pet-hero-scrim-top')).toBeNull();
+  });
+});
+
+
+describe('#195 R7: píldora del hero sin cambiar los tonos del mapa', () => {
+  afterEach(() => cleanup());
+  it.each([
+    ['success', 'bg-surface-secondary', 'bg-accent', 'text-accent-strong'],
+    ['warning', 'bg-warning-soft', 'bg-warning-strong', 'text-warning-strong'],
+    ['muted', 'bg-default', 'bg-muted', 'text-muted'],
+  ] as const)('fija las tres recetas exactas de %s', async (tone, surface, dot, ink) => {
+    await renderHero(<PetHeroHeader pet={makePet()} status={{ label: 'estado', tone }} />);
+    const pill = screen.getByTestId('pet-hero-status');
+    expect(pill.props.className).toBe(`flex-row items-center gap-1.5 self-start rounded-full px-2.5 py-0.75 ${surface}`);
+    expect(pill.children).toHaveLength(2);
+    expect(elementChild(pill, 0).props.className).toBe(`relative size-2 rounded-full ${dot}`);
+    expect(elementChild(pill, 1).props.className).toBe(`text-xs font-bold ${ink}`);
+    expect(STATUS_TONE_CLASSES).toEqual({
+      success: { surface: 'bg-success-soft', dot: 'bg-success', text: 'text-accent-strong' },
+      warning: { surface: 'bg-warning-soft', dot: 'bg-warning-strong', text: 'text-warning-strong' },
+      muted: { surface: 'bg-default', dot: 'bg-muted', text: 'text-muted' },
+    });
   });
 });
