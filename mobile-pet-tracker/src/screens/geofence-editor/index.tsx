@@ -17,7 +17,7 @@ import { Card } from '../../components/card';
 import { DEFAULT_CENTER, PetMap, type MapCoordinates } from '../../components/pet-map';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
-import { TABULAR_NUMS } from '../../theme/native-styles';
+import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';
 import { zoomForRadius } from '../../utils/zoom-for-radius';
 
 function messageFor(t: ReturnType<typeof useTranslate>, kind: GeofenceSaveState['kind']): string {
@@ -145,16 +145,19 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
       <BlurView testID="geofence-editor-title-blur" intensity={48} blurMethod="dimezisBlurViewSdk31Plus" tint={theme === 'dark' ? 'dark' : 'light'} className="absolute left-4 top-3 overflow-hidden rounded-full">
         <Text testID="geofence-editor-title" accessibilityRole="header" className="bg-glass-surface-strong px-4 py-2.5 text-base font-extrabold text-foreground">{t('geofenceEditor.title')}</Text>
       </BlurView>
+      {readOnly ? null : <BlurView testID="geofence-editor-map-hint-blur" intensity={48} blurMethod="dimezisBlurViewSdk31Plus" tint={theme === 'dark' ? 'dark' : 'light'} className="absolute bottom-9 self-center overflow-hidden rounded-full">
+        <Text testID="geofence-editor-map-hint" className="bg-glass-surface-strong px-3 py-1.5 text-xs font-bold text-foreground">{t('geofenceEditor.mapHint')}</Text>
+      </BlurView>}
     </View>
-    <ScrollView testID="geofence-editor-form" className="bg-background"
-      style={{ flexGrow: 0, flexShrink: 1 }} keyboardShouldPersistTaps="handled"
-      contentContainerStyle={{ padding: 24, gap: 16, paddingBottom: insets.bottom + 24 }}>
+    <ScrollView testID="geofence-editor-form" className="-mt-6.5 rounded-t-hero bg-surface"
+      style={[CONTINUOUS_CORNER, { flexGrow: 0, flexShrink: 1 }]} keyboardShouldPersistTaps="handled"
+      contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 12, gap: 14, paddingBottom: insets.bottom + 36 }}>
+      <View testID="geofence-editor-grabber" className="h-1.25 w-10 self-center rounded-full bg-lip-gray" importantForAccessibility="no-hide-descendants" accessibilityElementsHidden />
       {readOnly ? <Text testID="geofence-editor-name-text" selectable className="font-bold text-foreground">{zone?.name}</Text> : <>
       <TextField>
         <Label className="text-xs font-semibold text-foreground">{t('geofenceEditor.nameLabel')}</Label>
         <Input testID="geofence-editor-name" className="rounded-xl bg-default" maxLength={120} value={name} onChangeText={setName} />
       </TextField>
-      <Text testID="geofence-editor-map-hint" className="text-sm font-normal text-muted">{t('geofenceEditor.mapHint')}</Text>
       </>}
       <Text testID="geofence-editor-radius-value" selectable style={TABULAR_NUMS} className="font-bold text-foreground">{t('geofences.radius', { meters: Math.round(readOnly ? initialRadius : radius) })}</Text>
       {readOnly ? <Text testID="geofence-editor-read-only" className="text-sm font-normal text-muted">{t('geofenceEditor.ownerOnly')}</Text> : <>
