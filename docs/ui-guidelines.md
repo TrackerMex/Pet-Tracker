@@ -122,7 +122,7 @@ Tres límites, no negociables:
    **Excepción nombrada (enmienda A11 de #95, 2026-09-23)**: una pantalla empujada
    sobre el Stack raíz con cabecera nativa (`headerShown: true`) —hoy
    `add-reminder`, `pets/add`, `pets/[petId]/docs`, `pets/[petId]/docs-upload` (por #185), `weight-log`,
-   `meal-schedule`, `pairing`, `reminders`, `alerts` (estas dos por la enmienda A13 de #114, 2026-09-23), `alerts/[alertId]` (por la enmienda A15 de #100, 2026-09-28), `pets/[petId]/geofences` (por la enmienda A18 de #41, 2026-10-02) y `pets/[petId]/geofence-editor` (por la enmienda A19 de #146, 2026-10-02) y `meals-history` (por la enmienda A20 de #105, 2026-10-04)— no lleva `paddingTop: insets.top + 12`, porque
+   `meal-schedule`, `pairing`, `reminders`, `alerts` (estas dos por la enmienda A13 de #114, 2026-09-23), `alerts/[alertId]` (por la enmienda A15 de #100, 2026-09-28), `pets/[petId]/geofences` (por la enmienda A18 de #41, 2026-10-02) y `pets/[petId]/geofence-editor` (por la enmienda A19 de #146, 2026-10-02) y `meals-history` (por la enmienda A20 de #105, 2026-10-04) y `edit-profile` (por la enmienda A22 de #194, 2026-10-21) — no lleva `paddingTop: insets.top + 12`, porque
    el inset superior lo consume la cabecera, ni `paddingBottom: insets.bottom +
    96`, porque sobre ella no flota el `FloatingTabBar`. Su
    `contentContainerStyle` es `padding: 24`, `gap: 16` y `paddingBottom:
@@ -819,3 +819,21 @@ Detalle y tests en `specs/mobile-pairing-pingo-canvas-fidelity/requirements.md`.
 Detalle y tests en `specs/mobile-pairing-pingo-canvas-fidelity/requirements.md` (R15 a R20).
 
 - [X] Enmienda #188 (E2) aprobada por humano
+
+
+## Enmienda #194 — Editar perfil
+
+El perfil se edita en `/edit-profile`, ruta protegida con cabecera nativa y
+accesible desde la fila `edit-profile-link` de `me-card` en Perfil. Sigue la
+excepción A11 con padding 24, gap 16 y holgura inferior `insets.bottom + 24`.
+
+Los campos editables son nombres, apellidos, teléfono y país. El correo y la
+zona horaria no se editan en la app. La validación al pulsar Guardar muestra
+los mensajes debajo de cada campo con `FieldErrorMessage`.
+
+Solo se envían los campos cambiados. El éxito escribe la respuesta completa
+en `userKeys.me()` y cierra la pantalla; Perfil refleja el cambio sin otra
+petición. Los errores conservan lo escrito y muestran mensajes del catálogo,
+nunca texto crudo del servidor.
+
+- [ ] Enmienda #194 aprobada por humano
