@@ -772,7 +772,7 @@ export const es: Record<TranslationKey, string> = {
   'addPet.youCannotCreatePet': 'No puedes crear una mascota',
   'addPet.addPet': 'Nueva mascota',
   'addPet.stepProgress': '{{current}} de {{total}}',
-  'addPet.pingoGreeting': 'Hola. Cuéntame de tu nuevo compañero.',
+  'addPet.pingoGreeting': '¡Hola! Cuéntame de tu nuevo compañero.',
   'addPet.continue': 'Continuar',
   'addPet.pet': 'Mascota',
   'addPet.choosePhoto': 'Elegir foto',

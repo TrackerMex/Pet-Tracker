@@ -450,8 +450,8 @@ El humano las revisa en el gate junto con la spec; ninguna cierra una decisión.
 
 ## Cierre del humano
 
-- [ ] Enmienda #191 aprobada por humano (la casilla vive también en `docs/ui-guidelines.md`)
-- [ ] Prueba de humo en dev build de Android hecha por el humano (fecha: ____). Guion:
+- [X] Enmienda #191 aprobada por humano (la casilla vive también en `docs/ui-guidelines.md`)
+- [X] Prueba de humo en dev build de Android hecha por el humano (fecha: 2026-10-21). Guion:
   Nueva mascota desde Perfil → el título «Nueva mascota» y «1 de 2» se ven y la barra tiene
   un segmento lleno → «Continuar» con el nombre vacío muestra el mensaje bajo el campo →
   nombre + gato + hembra + foto → «Continuar» (la pantalla empieza arriba) → botón atrás de

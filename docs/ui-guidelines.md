@@ -785,4 +785,4 @@ Desviaciones conscientes del canvas aprobadas en la spec:
 Los candados de `src/__tests__/add-pet-two-steps.test.ts` verifican esta
 ampliación y los inventarios de la pantalla y el selector.
 
-- [ ] Enmienda #191 aprobada por humano
+- [X] Enmienda #191 aprobada por humano
