@@ -560,14 +560,14 @@ describe('#146 R16: quien no es dueño ve la zona sin poder editarla', () => {
     expect(await screen.findByTestId('geofence-editor-loading')).toBeVisible();
     expect(screen.queryByTestId('geofence-editor-form')).toBeNull();
   });
-  it.each(['family', 'walker', 'vet', 'un error al leer el rol'] as const)('al editar como %s pinta la zona en solo lectura (enmendado por #189 R9)', async (role) => {
+  it.each(['family', 'walker', 'vet', 'un error al leer el rol'] as const)('al editar como %s pinta la zona en solo lectura (enmendado por #189 R9) (enmendado por #189 R10)', async (role) => {
     mockGetPet.mockResolvedValue(role === 'un error al leer el rol' ? { kind: 'error' } : petState(role));
     await mount('geofence-1'); await screen.findByTestId('geofence-editor-form');
     const radius = screen.getByTestId('geofence-editor-radius-value');
     expect(childTestIds(radius.parent!)).toEqual(['geofence-editor-grabber', 'geofence-editor-name-text', 'geofence-editor-radius-value', 'geofence-editor-read-only']);
     const name = screen.getByTestId('geofence-editor-name-text');
     expect(name).toHaveTextContent(casa.name); expect(name.props.selectable).toBe(true);
-    expect(name.props.className).toBe('font-bold text-foreground');
+    expect(name.props.className).toBe('text-base font-extrabold text-foreground');
     expect(radius).toHaveTextContent(catalog.es['geofences.radius'].replace('{{meters}}', '150'));
     const notice = screen.getByTestId('geofence-editor-read-only');
     expect(notice).toHaveTextContent('Solo el dueño de la mascota puede crear o editar zonas.');
@@ -684,5 +684,21 @@ describe('#189 R9: hoja estática solapada y capas del mapa', () => {
       expect(blur.props.tint).toBe('light');
       expect(childTestIds(mapContainer)).toEqual(['map-view', 'geofence-editor-title-blur', 'geofence-editor-map-hint-blur']);
     }
+  });
+});
+
+
+describe('#189 R10: campo Nombre con Label.Text e input del canvas', () => {
+  it.each(['es', 'en'] as const)('#189 R10: etiqueta y tamaño del campo en %s', async (language) => {
+    await edit(language);
+    const label = screen.getByText(language === 'es' ? 'Nombre' : 'Name');
+    expect(label.props.className).toBe('label__text text-sm font-extrabold text-foreground');
+    const input = screen.getByTestId('geofence-editor-name');
+    expect(input.props.className.startsWith('input__input ')).toBe(true);
+    expect(input.props.className.endsWith(' h-12.5 rounded-xl bg-default px-3.5')).toBe(true);
+    expect(input.props.maxLength).toBe(120);
+    expect(input.props.value).toBe('Casa');
+    await fireEvent.changeText(input, 'Casa nueva');
+    expect(input.props.value).toBe('Casa nueva');
   });
 });
