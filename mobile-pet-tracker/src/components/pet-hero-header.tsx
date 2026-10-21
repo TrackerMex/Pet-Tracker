@@ -155,15 +155,7 @@ export function PetHeroHeader({
       style={CONTINUOUS_CORNER}
     >
       <View testID="pet-hero-frame" style={{ height: PET_HERO_MEDIA_HEIGHT }}>
-      {children ? (
-        <View
-          testID="pet-hero-slot"
-          className="bg-background px-6 pb-3"
-          style={{ paddingTop: insets.top + 12 }}
-        >
-          {children}
-        </View>
-      ) : null}
+
 
         <AnimatedView testID="pet-hero-photo" className="absolute inset-0" style={photoStyle}>
         {pet ? (
@@ -216,6 +208,16 @@ export function PetHeroHeader({
             experimental_backgroundImage: `linear-gradient(to bottom, ${background}00 0%, ${background}59 35%, ${background}D9 65%, ${background} 100%)`,
           }}
         />
+
+      {children ? (
+        <View
+          testID="pet-hero-slot"
+          className="absolute inset-x-4"
+          style={{ top: insets.top + 12 }}
+        >
+          {children}
+        </View>
+      ) : null}
 
       <View
         testID="pet-hero-caption"
