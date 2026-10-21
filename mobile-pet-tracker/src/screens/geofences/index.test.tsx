@@ -3,7 +3,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
-import { Alert } from 'react-native';
+import { Alert, StyleSheet } from 'react-native';
 
 import { renderWithProviders } from '../../../test/render-with-providers';
 import { GEOFENCE_MAX_PER_PET, deleteGeofence, listGeofences, setGeofenceActive, type Geofence, type GeofenceWriteState } from '../../api/geofences';
@@ -857,5 +857,39 @@ describe('#189 R6: aviso ámbar al alcanzar el límite', () => {
     await screen.findByTestId('geofences-error');
     expect(screen.queryByTestId('geofences-limit-entrance')).toBeNull();
     expect(screen.queryByTestId('geofences-limit')).toBeNull();
+  });
+});
+
+
+describe('#189 R7: Añadir zona conserva una sola CTA anclada al pie', () => {
+  it.each([['es', 0], ['es', 4], ['es', 5], ['en', 0], ['en', 4], ['en', 5]] as const)('#189 R7: receta y navegación en %s con %i zonas', async (language, count) => {
+    mockList.mockResolvedValue({ kind: 'ok', geofences: Array.from({ length: count }, (_, i) => makeGeofence({ id: `zone-${i}` })) });
+    await mount(language);
+    const add = await screen.findByTestId('geofences-add');
+    expect(screen.getAllByTestId('geofences-add')).toHaveLength(1);
+    expect(add.props.className).toBe(`pressable-feedback__root button__root button__root--variant-primary button__root--size-md mt-auto h-14 rounded-16 ${count === 5 ? 'bg-default' : 'bg-accent'}`);
+    expect(add.props.accessibilityState.disabled).toBe(count === 5);
+    const label = within(add).getByText(language === 'es' ? 'Añadir zona' : 'Add zone');
+    expect(label.props.className).toBe(`text-17 font-extrabold ${count === 5 ? 'text-muted' : 'text-accent-foreground'}`);
+    if (count === 5) expect(StyleSheet.flatten(add.props.style)?.boxShadow).toBeUndefined();
+    else expect(add).toHaveStyle({ boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: 'lip' }] });
+    expect(childTestIds(add.parent!).at(-1)).toBe('geofences-add');
+    expect(screen.getByTestId('screen-geofences').props.contentContainerStyle.flexGrow).toBe(1);
+    await fireEvent.press(add);
+    if (count === 5) expect(mockPush).not.toHaveBeenCalled();
+    else expect(mockPush).toHaveBeenCalledWith({ pathname: '/pets/[petId]/geofence-editor', params: { petId: 'pet-1' } });
+  });
+  it('#189 R7: una escritura bloquea la CTA sin cambiar su receta primaria', async () => {
+    mockList.mockResolvedValue({ kind: 'ok', geofences: [makeGeofence()] });
+    mockSetActive.mockReturnValue(new Promise(() => undefined));
+    await mount();
+    const add = await screen.findByTestId('geofences-add');
+    await fireEvent.press(screen.getByTestId('geofence-geofence-1-active'));
+    expect(add.props.accessibilityState.disabled).toBe(true);
+    expect(add.props.className).toContain('mt-auto h-14 rounded-16 bg-accent');
+    expect(within(add).getByText('Añadir zona').props.className).toBe('text-17 font-extrabold text-accent-foreground');
+    expect(add).toHaveStyle({ boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: 'lip' }] });
+    await fireEvent.press(add);
+    expect(mockPush).not.toHaveBeenCalled();
   });
 });

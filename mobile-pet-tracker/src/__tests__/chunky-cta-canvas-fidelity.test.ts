@@ -62,7 +62,7 @@ const CTA_ROWS = [
   ['screens/add-reminder/index.tsx', literalId('add-reminder-submit'), 'h-14 rounded-16 bg-accent', ['isDisabled={submitting}', 'onPress={() => void handleSubmit()}']],
   ['screens/docs-upload-form/index.tsx', literalId('docs-upload-submit'), 'h-14 rounded-16 bg-accent', ['isDisabled={uploading}', 'onPress={() => void submitDocument()}']],
   ['screens/geofence-editor/index.tsx', literalId('geofence-editor-save'), 'h-14 rounded-16 bg-accent', ["isDisabled={busy || name.trim() === ''}", 'onPress={() => void save()}']],
-  ['screens/geofences/index.tsx', literalId('geofences-add'), 'h-14 rounded-16 bg-accent', ['isDisabled={busy || atLimit}']],
+  ['screens/geofences/index.tsx', literalId('geofences-add'), 'mt-auto h-14 rounded-16 bg-accent', ['isDisabled={busy || atLimit}']],
   ['screens/weight-log/index.tsx', literalId('weight-submit'), 'h-14 rounded-16 bg-accent', ['isDisabled={submitting}', 'onPress={() => void handleSubmit()}']],
 ] as const;
 const NEUTRAL_ROWS = [
@@ -87,7 +87,7 @@ const radii = {
   'screens/docs-upload-form/index.tsx': 2,
   'screens/forgot/index.tsx': 3,
   'screens/geofence-editor/index.tsx': 1,
-  'screens/geofences/index.tsx': 1,
+  'screens/geofences/index.tsx': 2, // #189 R7
   'screens/home/index.tsx': 1,
   'screens/login/index.tsx': 1,
   'screens/pairing/index.tsx': 1,
@@ -98,16 +98,20 @@ const radii = {
   'screens/welcome/index.tsx': 2,
 };
 
-it.each(CTA_ROWS)('#177 R3.1: %s pinta la receta cta de %s', (path, anchor, classes, keeps) => {
+const disabledCtas: Record<string, string> = { 'screens/geofences/index.tsx': 'atLimit' }; // #189 R7
+
+it.each(CTA_ROWS)('#177 R3.1: %s pinta la receta cta de %s (enmendado por #189 R7)', (path, anchor, classes, keeps) => {
   const tag = openingTagWithTestId(readSource(path), anchor);
-  expect(tag).toContain(`className="${classes}"`);
-  expect(tag).toContain('style={chunkyLip.primary}');
+  const condition = disabledCtas[path];
+  expect(tag).toContain(condition ? `className={${condition} ? '${classes.replace('bg-accent', 'bg-default')}' : '${classes}'}` : `className="${classes}"`);
+  expect(tag).toContain(condition ? `style={${condition} ? undefined : chunkyLip.primary}` : 'style={chunkyLip.primary}');
   for (const keep of keeps) expect(tag).toContain(keep);
   for (const forbidden of ['border-b-4', 'border-black', 'rounded-xl', 'min-h-11']) expect(tag).not.toContain(forbidden);
 });
-it.each(CTA_ROWS)('#177 R3.2: %s pinta la etiqueta Text 17/800 de %s', (path, anchor) => {
+it.each(CTA_ROWS)('#177 R3.2: %s pinta la etiqueta Text 17/800 de %s (enmendado por #189 R7)', (path, anchor) => {
   const element = elementWithTestId(readSource(path), anchor);
-  expect(element).toContain('<Text className="text-17 font-extrabold text-accent-foreground">');
+  const condition = disabledCtas[path];
+  expect(element).toContain(condition ? `<Text className={${condition} ? 'text-17 font-extrabold text-muted' : 'text-17 font-extrabold text-accent-foreground'}>` : '<Text className="text-17 font-extrabold text-accent-foreground">');
   expect(element).not.toContain('Button.Label');
   expect(readSource(path)).toMatch(/import \{[^}]*\bText\b[^}]*\} from 'react-native';/);
 });
@@ -150,12 +154,12 @@ it('#177 R5.2: el tile conserva la esquina y recibe el labio con el orden exacto
   expect(tag).toContain('style={[CONTINUOUS_CORNER, chunkyLip.primary]}');
   expect(tag).not.toMatch(/border-b-4|border-black\/25/);
 });
-it('#177 R6.2: recuentos de etiquetas', () => {
+it('#177 R6.2: recuentos de etiquetas (enmendado por #189 R7)', () => {
   // #177 R6
   expect(count(/<Button\.Label/g)).toBe(35 - 15 - 1 - 1); // #189 R5
   expect(count(/Button\.Label/g)).toBe(82 - 30 - 2 - 2); // #189 R5
-  expect(count(/text-17/g)).toBe(8 + 15 + 1); // #191 R11
-  expect(count(/<Text className="text-17 font-extrabold text-accent-foreground">/g)).toBe(5 + 11 + 1); // #191 R11
+  expect(count(/text-17/g)).toBe(8 + 15 + 1 + 1); // #189 R7
+  expect(count(/<Text className="text-17 font-extrabold text-accent-foreground">/g)).toBe(5 + 11 + 1 - 1); // #189 R7
   expect(count(/text-17 font-extrabold text-foreground/g)).toBe(3 + 3);
   expect(count(/<Text className="text-17 font-bold text-accent-strong">/g)).toBe(0 + 1);
 });
@@ -169,24 +173,24 @@ it('#177 R7.2: inventarios de las dos recetas de primario', () => {
   expect(inventory(/rounded-16 bg-accent(?=[\s'"`])/g)).toEqual(Object.fromEntries(ctaFiles.map(path => [path, path === 'screens/add-pet/index.tsx' ? 2 : 1])));
   expect(inventory(/rounded-xl bg-accent(?=[\s'"`])/g)).toEqual({ 'screens/reminders/index.tsx': 1 });
 });
-it('#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por #191 R11)', () => {
+it('#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por #191 R11) (enmendado por #189 R7)', () => {
   expect(inventory(/\brounded-16\b/g)).toEqual(radii);
-  expect(count(/\brounded-16\b/g)).toBe(26 + 1); // #191 R11
+  expect(count(/\brounded-16\b/g)).toBe(26 + 1 + 1); // #189 R7
 });
 it('#177 R7.4: solo la definición y los diecisiete consumidores usan el hook', () => {
   expect(Object.keys(inventory(/useChunkyLip/g)).sort()).toEqual([...consumers, 'theme/chunky-lip.ts'].sort());
   for (const path of consumers) expect((readSource(path).match(/const chunkyLip = useChunkyLip\(\);/g) ?? []).length).toBe(1);
 });
-it('#177 R7.5: inventario de los tres estilos y el tile', () => {
-  expect(inventory(/style=\{chunkyLip\.primary\}/g)).toEqual(Object.fromEntries(ctaFiles.map(path => [path, path === 'screens/add-pet/index.tsx' ? 2 : 1])));
+it('#177 R7.5: inventario de los tres estilos y el tile (enmendado por #189 R7)', () => {
+  expect(inventory(/style=\{(?:atLimit \? undefined : )?chunkyLip\.primary\}/g)).toEqual(Object.fromEntries(ctaFiles.map(path => [path, path === 'screens/add-pet/index.tsx' ? 2 : 1])));
   expect(inventory(/style=\{chunkyLip\.neutral\}/g)).toEqual(Object.fromEntries(NEUTRAL_ROWS.map(([path]) => [path, 1]).sort()));
   expect(inventory(/style=\{chunkyLip\.primaryCompact\}/g)).toEqual({ 'screens/reminders/index.tsx': 1 });
   expect(inventory(/chunkyLip\.primary\b/g)).toEqual(Object.fromEntries(ctaFiles.map(path => [path, path === 'screens/forgot/index.tsx' || path === 'screens/add-pet/index.tsx' ? 2 : 1])));
 });
 it.each([
   ['primary', primaryIds], ['neutral', neutralIds], ['primaryCompact', ['reminders-add-link']],
-] as const)('#177 R8.1: solo la tabla recibe chunkyLip.%s', (style, ids) => {
-  expect(idsWhere(tag => tag.includes(`style={chunkyLip.${style}}`))).toEqual(ids);
+] as const)('#177 R8.1: solo la tabla recibe chunkyLip.%s (enmendado por #189 R7)', (style, ids) => {
+  expect(idsWhere(tag => tag.includes(`style={chunkyLip.${style}}`) || (style === 'primary' && tag.includes('style={atLimit ? undefined : chunkyLip.primary}')))).toEqual(ids);
 });
 it('#177 R8.2: Alertas y Horario quedan fuera de useChunkyLip', () => {
   for (const path of ['screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx']) expect(readSource(path)).not.toMatch(/chunkyLip|useChunkyLip/);
