@@ -153,10 +153,10 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
       style={[CONTINUOUS_CORNER, { flexGrow: 0, flexShrink: 1 }]} keyboardShouldPersistTaps="handled"
       contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 12, gap: 14, paddingBottom: insets.bottom + 36 }}>
       <View testID="geofence-editor-grabber" className="h-1.25 w-10 self-center rounded-full bg-lip-gray" importantForAccessibility="no-hide-descendants" accessibilityElementsHidden />
-      {readOnly ? <Text testID="geofence-editor-name-text" selectable className="font-bold text-foreground">{zone?.name}</Text> : <>
+      {readOnly ? <Text testID="geofence-editor-name-text" selectable className="text-base font-extrabold text-foreground">{zone?.name}</Text> : <>
       <TextField>
-        <Label className="text-xs font-semibold text-foreground">{t('geofenceEditor.nameLabel')}</Label>
-        <Input testID="geofence-editor-name" className="rounded-xl bg-default" maxLength={120} value={name} onChangeText={setName} />
+        <Label><Label.Text className="text-sm font-extrabold text-foreground">{t('geofenceEditor.nameLabel')}</Label.Text></Label>
+        <Input testID="geofence-editor-name" className="h-12.5 rounded-xl bg-default px-3.5" maxLength={120} value={name} onChangeText={setName} />
       </TextField>
       </>}
       <Text testID="geofence-editor-radius-value" selectable style={TABULAR_NUMS} className="font-bold text-foreground">{t('geofences.radius', { meters: Math.round(readOnly ? initialRadius : radius) })}</Text>
