@@ -436,6 +436,12 @@ con la caché sembrada con `{ kind: 'ok', me }` donde `me = { id: 'user-1', emai
   `FieldErrorMessage` en su fuente es 5 (1 import + 4 usos); no importa
   `FieldError` de `heroui-native`; no contiene `timezone` ni `deviceTimezone`
   (candado de D2: dos mutaciones plantadas, ver sondas).
+- **Enmienda E2** — `src/__tests__/profile-canvas-fidelity.test.ts`: el `it` `limita
+  text-13 a Perfil y a las pantallas de cuenta de #172 (E8)` (describe `#173 R2.4`)
+  compara `filesMatching(/\btext-13\b/)` con una lista ordenada. Las cuatro etiquetas
+  de R5 (`<Text className="text-13 font-semibold text-muted">`) meten
+  `'screens/edit-profile/index.tsx'` en ella: se añade entre `'screens/docs/index.tsx'`
+  y `'screens/forgot/index.tsx'` con el comentario `// #194 R5`.
 
 **Sondas** (mutando producción): S5.1 `useState(me.phone)` pasa a `useState('')`
 (rojo: caso 1); S5.2 `maxLength={2}` se borra (caso 3); S5.3 se añade
@@ -664,9 +670,10 @@ el humano, no un test. Guion mínimo:
 | Mapa `expected` de `#166 R2` (primarios con labio) | `src/__tests__/consistency-classnames.test.ts` | | | `+ 1 entrada` (E1) | | | | 1 entrada nueva |
 | Mapa `rounded16` de `#178 R13` | `src/__tests__/design-drift.test.ts` | | | `+ 1 entrada` (E1) | | | | 1 entrada nueva |
 | Lista ordenada de `text-17` de `#179 R13` | `src/__tests__/design-drift.test.ts` | | | `+ 1 fichero` (E1) | | | | 1 fichero nuevo |
+| Lista ordenada de `text-13` de `#173 R2.4` | `src/__tests__/profile-canvas-fidelity.test.ts` | | `+ 1 fichero` (E2) | | | | | 1 fichero nuevo |
 | Hijos del grupo protegido (4 aserciones) | `src/app/__tests__/layout.test.tsx` | | | | | | | `+ 1` en R4 |
 | Caso `ok` de `me-card` | `src/screens/profile/index.test.tsx` | | | | | | reescrito | |
-| `inkSites` de `text-accent-strong`, `R7_PROFILE`, `account-screens-polish`, `forms-validation-global`, `heroui-text-size-merge`, `profile-canvas-fidelity` | `src/__tests__/*` | | | | | | | **sin cambio** (verificado: ninguna clase ni fila de esos inventarios se mueve) |
+| `inkSites` de `text-accent-strong`, `R7_PROFILE`, `account-screens-polish`, `forms-validation-global`, `heroui-text-size-merge`, `profile-canvas-fidelity` (salvo la lista de `text-13`, fila de arriba, Enmienda E2) | `src/__tests__/*` | | | | | | | **sin cambio** (la corrida íntegra de H0 a R10 confirma que el resto de sus inventarios no se mueve) |
 | §2.N en el design de idioma | `specs/mobile-ui-language/design.md` | +1 sección, 2 filas | | | | | | |
 
 ## Coordinación y reparto de ficheros
@@ -780,3 +787,35 @@ reporta, como en R6.
 del verde de R6 (ver la Reanudación 3 del handoff).
 
 - [x] Enmienda E1 aprobada por humano (fecha: 2026-10-21) ← el humano reabre el gate solo para esta enmienda
+
+## Enmienda E2 — inventario de `text-13` omitido en R5 (parada de Codex en el Cierre, 2026-10-21)
+
+> Escrita el 2026-10-21 sobre la spec aprobada, tras la parada de Codex en la corrida
+> íntegra del Cierre (`progress/impl_mobile-edit-profile.md`, §«Bloqueo del Cierre»,
+> sobre `cefbdffc`). El leader reprodujo el rojo con la suite sola
+> (`bun run test --runInBand --runTestsByPath src/__tests__/profile-canvas-fidelity.test.ts`:
+> 1 rojo / 25 verdes, recibido `+ "screens/edit-profile/index.tsx"`). **Solo tests**: las
+> etiquetas de R5 no cambian; la producción es válida tal cual.
+
+**El hecho medido.** R5 prescribe cuatro etiquetas con `text-13`. La tabla de §Deltas de
+candados declaraba `profile-canvas-fidelity` «sin cambio (verificado)»: esa verificación
+fue un error del leader, que no buscó la clase `text-13` contra los inventarios por
+fichero. La corrida íntegra (132 suites) es la prueba de que es el **único** inventario
+más: todo lo demás pasa.
+
+| Id | Guarda (por nombre del `it`) | Aserción | Por qué falla |
+|---|---|---|---|
+| E2.1 | `profile-canvas-fidelity.test.ts`, `#173 R2.4 … limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8)` | `expect(filesMatching(/\btext-13\b/)).toEqual([…])` | la lista no tiene `screens/edit-profile/index.tsx` |
+
+**Qué cambia.** Una entrada en la lista de ese `it`, escrita arriba en §R5 y en §Deltas
+de candados con la marca «Enmienda E2». El permiso sobre `profile-canvas-fidelity.test.ts`
+pasa de «ninguno» a «solo esa lista».
+
+**Qué NO cambia.** R1–R11, las clases de §Clases, D1–D5 y toda la producción.
+
+**Rojo esperado.** El rojo ya existe: es la guarda sobre `cefbdffc`, medida en la
+corrida íntegra y reproducida por el leader. El delta va en un commit propio de tests,
+sin tocar producción; su verde es el cierre de ese rojo. La sonda S-E2 (ver la
+Reanudación 5 del handoff) prueba que la entrada discrimina.
+
+- [ ] Enmienda E2 aprobada por humano (fecha: ____) ← el humano reabre el gate solo para esta enmienda
