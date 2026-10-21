@@ -190,6 +190,6 @@ Cada decisión tiene opciones, recomendación y requisito afectado. El spec_auth
 - [x] D7 cerrada por humano: solapes con #186 y #181 (recomendado)
 - [x] E1 aprobada por humano (Notion, «Estado del gate» = Aprobado)
 - [x] E2 aprobada por humano (Notion, «Estado del gate» = Aprobado), con ED1–ED4 cerradas por humano. Gate obligatorio antes de implementar E2.
-- [ ] H1 verificado en dispositivo por el humano: anillos de 2400 ms con el segundo a 1200 ms de retardo y flotado de 3000 ms por ciclo, en build de desarrollo Android (no Expo Go, no VPS)
-- [ ] H2 verificado en dispositivo por el humano: con «Quitar animaciones» activo, la vista se ve como fija D2
-- [ ] H3 verificado por el humano: comparación lado a lado con el artboard «Vincular collar (19)», incluida la amplitud del flotado (diferencia declarada)
+- [X] H1 verificado en dispositivo por el humano: anillos de 2400 ms con el segundo a 1200 ms de retardo y flotado de 3000 ms por ciclo, en build de desarrollo Android (no Expo Go, no VPS)
+- [X] H2 verificado en dispositivo por el humano: con «Quitar animaciones» activo, la vista se ve como fija D2
+- [X] H3 verificado por el humano: comparación lado a lado con el artboard «Vincular collar (19)», incluida la amplitud del flotado (diferencia declarada)
