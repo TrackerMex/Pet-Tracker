@@ -483,6 +483,31 @@ cerrada del handoff**, y anota en su reporte el candado, la cifra antes/después
 motivo de rojo (otra pantalla que se mueve, un delta distinto, un fichero fuera de la lista) sigue siendo
 PARA y reporta.
 
+### §4.2 Enmienda E2 (2026-10-21): recuentos de etiquetas de `chunky-cta` y regla ampliada
+
+Origen: segunda parada de Codex, esta vez en `chunky-cta-canvas-fidelity.test.ts`, `#177 R6.2` («recuentos
+de etiquetas»). R5.6 sustituye el `Button.Label` de la papelera de cada fila por el icono `Trash` en un
+`Pressable`, y R13.1 sustituye el `Button.Label` de «Eliminar» del Editor por un `Text` plano. Cada
+sustitución resta **1** a `<Button.Label` y **2** a `Button.Label` (apertura y cierre). Codex midió el
+delta de R5 (19→18 y 50→48); el de R13 es idéntico y aún no ejecutado.
+
+| Candado (fichero, ancla) | Qué mide | Qué se mueve | R |
+|---|---|---|---|
+| `__tests__/chunky-cta-canvas-fidelity.test.ts`, `#177 R6.2`, `count(/<Button\.Label/g)` | aperturas de `Button.Label` | `35 - 15 - 1` pasa a `35 - 15 - 1 - 1 - 1` (`// #189 R5`, `// #189 R13`): 19 → 17 al cierre; 18 tras R5 **(enmienda)** | R5, R13 |
+| ídem, `count(/Button\.Label/g)` | menciones de `Button.Label` | `82 - 30 - 2` pasa a `82 - 30 - 2 - 2 - 2`: 50 → 46 al cierre; 48 tras R5 **(enmienda)** | R5, R13 |
+| ídem, `count(/text-17/g)` y los tres recuentos de `<Text className="text-17 …">` | etiquetas `text-17` | **medir**: R7.2 y R13.2 prescriben una etiqueta `text-17 font-extrabold text-muted` en la receta deshabilitada, que puede sumar menciones de `text-17` o dejar de casar con el literal `<Text className="text-17 font-extrabold text-accent-foreground">` si la clase pasa a ternario. El delta se explica por R7/R13 y se enmienda con la regla de abajo | R7, R13 |
+
+**Regla residual ampliada (sustituye a la de §4.1).** Cuando al cerrar un R un candado agregado por fichero o
+por recuento se pone rojo, Codex lo enmienda en su mismo fichero (que ya esté en la lista cerrada del
+handoff) con el sufijo `(enmendado por #189 R<n>)` **si y solo si** el delta medido se explica por completo
+por lo que R1-R18 prescriben: sumar o quitar `screens/geofences/index.tsx` o `screens/geofence-editor/index.tsx`
+de un inventario, o sumar/restar menciones de una clase o componente que ese R añade o quita (p. ej.
+`Button.Label` → `Text`, ternario de clase). Debe anotar en el reporte, por candado: la aserción, la cifra
+antes/después, el delta por fichero (`git diff 4204530e`) y el R que lo causa. PARA y reporta solo si el delta
+**no** se explica por un R (otra pantalla que se mueve, un fichero fuera de la lista, una cifra que no cuadra
+con lo prescrito) o si el candado es de otra naturaleza (copy, anclas de `isDisabled`/`onPress`, `401`).
+La sonda de mutación sigue aplicando: el candado enmendado tiene que seguir poniéndose rojo si se revierte.
+
 ## §5. Fuera de alcance
 
 - **La animación `breathe`** del círculo del mapa (explícita en la descripción; spike N2/N3b).
@@ -512,3 +537,4 @@ En el dev build Android del PC del humano, claro y oscuro, con dueño y con un r
 
 - [x] Aprobado por humano (fecha: 2026-10-19) ← gate obligatorio antes de implementar
 - [X] Enmienda E1 (§4.1) aprobada por humano (fecha: 2026-10-21) ← gate obligatorio antes de reanudar desde R6
+- [ ] Enmienda E2 (§4.2) aprobada por humano (fecha: ____) ← gate obligatorio antes de reanudar la comprobación previa
