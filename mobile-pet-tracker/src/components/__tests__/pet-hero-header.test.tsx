@@ -21,6 +21,7 @@ import { Uniwind } from 'uniwind';
 import type { PetProfile } from '../../api/types';
 import { MOTION_CELEBRATION_EASE_OUT } from '../../theme/motion';
 import { useThemeColors } from '../../theme/use-theme-colors';
+import * as themeColors from '../../theme/use-theme-colors';
 import {
   PET_HERO_FADE_HEIGHT,
   PET_HERO_MEDIA_HEIGHT,
@@ -155,8 +156,8 @@ function backgroundToken(variant: 'light' | 'dark'): string {
   );
 }
 
-function BackgroundProbe() {
-  const [background] = useThemeColors(['background']);
+function BackgroundProbe({ token = 'background' }: { token?: 'background' | 'scrim' }) {
+  const [background] = useThemeColors([token]);
 
   return <Text testID="background-probe">{background}</Text>;
 }
@@ -272,7 +273,7 @@ describe('R3: el texto del hero va sobre fondo opaco', () => {
     expect(screen.getByTestId('slot-child')).toBeVisible();
   });
 
-  it('funde la imagen hacia el fondo opaco por arriba y por abajo', async () => {
+  it('funde la imagen con scrim superior y degradado inferior (enmendado por #195 R3)', async () => {
     await renderHero(
       <PetHeroHeader pet={makePet()} variant="bleed">
         <Text testID="slot-child">selector</Text>
@@ -280,16 +281,16 @@ describe('R3: el texto del hero va sobre fondo opaco', () => {
     );
 
     const bottom = screen.getByTestId('pet-hero-fade-bottom').props.style;
-    const top = screen.getByTestId('pet-hero-fade-top').props.style;
+    const top = screen.getByTestId('pet-hero-scrim-top').props.style;
 
     expect(bottom.experimental_backgroundImage).toMatch(
-      /^linear-gradient\(to bottom, #[0-9A-Fa-f]{6}00 0%, #[0-9A-Fa-f]{6} 100%\)$/,
+      /^linear-gradient\(to bottom, #[0-9A-Fa-f]{6}00 0%, #[0-9A-Fa-f]{6}59 35%, #[0-9A-Fa-f]{6}D9 65%, #[0-9A-Fa-f]{6} 100%\)$/,
     );
     expect(top.experimental_backgroundImage).toMatch(
-      /^linear-gradient\(to bottom, #[0-9A-Fa-f]{6} 0%, #[0-9A-Fa-f]{6}00 100%\)$/,
+      /^linear-gradient\(to bottom, #[0-9A-Fa-f]{6}80 0%, #[0-9A-Fa-f]{6}00 100%\)$/,
     );
     expect(bottom.height).toBe(PET_HERO_FADE_HEIGHT);
-    expect(top.height).toBe(PET_HERO_FADE_HEIGHT);
+    expect(top.height).toBe(PET_HERO_SCRIM_HEIGHT);
   });
 
   it('usa el nombre prefijado de la propiedad, que es el único que existe en RN 0.86', () => {
@@ -302,15 +303,15 @@ describe('R3: el texto del hero va sobre fondo opaco', () => {
   // Candado de forma del token: la parada transparente del degradado se
   // concatena como `${background}00`, así que el token debe seguir siendo un
   // hex de 6 dígitos en los dos temas o la cadena deja de ser válida.
-  it.each(['light', 'dark'] as const)(
-    'resuelve el token background como hex de 6 dígitos en tema %s',
-    async (variant) => {
-      const token = backgroundToken(variant);
+  it.each([['light', 'background'], ['dark', 'background'], ['light', 'scrim'], ['dark', 'scrim']] as const)(
+    'resuelve %s %s como hex de 6 dígitos (enmendado por #195 R3)',
+    async (variant, name) => {
+      const token = name === 'background' ? backgroundToken(variant) : extractVariant(variant).match(/--scrim:\s*([^;]+);/)?.[1].trim() ?? '';
 
       expect(token).toMatch(/^#[0-9A-Fa-f]{6}$/);
 
-      const resolve = (name: string) =>
-        name === '--color-background' || name === '--background'
+      const resolve = (key: string) =>
+        key === `--color-${name}` || key === `--${name}`
           ? token
           : undefined;
       const spy = jest.spyOn(Uniwind, 'getCSSVariable');
@@ -318,7 +319,7 @@ describe('R3: el texto del hero va sobre fondo opaco', () => {
       spy.mockImplementation(
         resolve as unknown as typeof Uniwind.getCSSVariable,
       );
-      const view = await render(<BackgroundProbe />);
+      const view = await render(<BackgroundProbe token={name} />);
 
       expect(view.getByTestId('background-probe').props.children).toMatch(
         /^#[0-9A-Fa-f]{6}$/,
@@ -690,5 +691,30 @@ describe('#195 R2: foto alineada arriba y fundido por identidad', () => {
     mockWithTiming.mockClear();
     await view.rerender(<PetHeroHeader pet={makePet({ id: 'pet-2', name: 'Milo' })} />);
     expect(mockWithTiming).not.toHaveBeenCalled();
+  });
+});
+
+
+describe('#195 R3: degradados exactos sobre la fotografía', () => {
+  afterEach(() => { cleanup(); jest.restoreAllMocks(); });
+  it('resuelve ambos colores en una llamada y conserva alfa, geometría y toques', async () => {
+    const spy = jest.spyOn(themeColors, 'useThemeColors').mockReturnValue(['#FFFFFF', '#0D1117']);
+    await renderHero(<PetHeroHeader pet={makePet()}><Text>slot</Text></PetHeroHeader>);
+    expect(spy).toHaveBeenCalledWith(['background', 'scrim']);
+    const top = screen.getByTestId('pet-hero-scrim-top');
+    const bottom = screen.getByTestId('pet-hero-fade-bottom');
+    expect(top.props.className).toBe('absolute inset-x-0 top-0');
+    expect(bottom.props.className).toBe('absolute inset-x-0 bottom-0');
+    expect(top.props.style).toEqual({ height: 130, experimental_backgroundImage: 'linear-gradient(to bottom, #0D111780 0%, #0D111700 100%)' });
+    expect(bottom.props.style).toEqual({ height: 160, experimental_backgroundImage: 'linear-gradient(to bottom, #FFFFFF00 0%, #FFFFFF59 35%, #FFFFFFD9 65%, #FFFFFF 100%)' });
+    expect(top.props.pointerEvents).toBe('none');
+    expect(bottom.props.pointerEvents).toBe('none');
+    expect(screen.queryByTestId('pet-hero-fade-top')).toBeNull();
+  });
+  it('sin slot no hay scrim y el código sin comentarios no usa negro de alfa cero', async () => {
+    await renderHero(<PetHeroHeader pet={makePet()} />);
+    expect(screen.queryByTestId('pet-hero-scrim-top')).toBeNull();
+    const source = readSource('components', 'pet-hero-header.tsx').replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, '');
+    expect(source).not.toMatch(/\btransparent\b/);
   });
 });
