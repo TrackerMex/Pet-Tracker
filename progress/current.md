@@ -9,4 +9,5 @@
 - humano pendiente: R21 (prueba de humo Android en dev build: claro, oscuro, reduce motion; foto oscura, clara y sin foto; nombre largo).
 - init.sh: corrido por el leader en `ab33dfd1`, exit 0. Base móvil 130 suites / 4297 tests, cero FAIL.
 - riesgo de merge: #189 (wt-189) toca el final de `docs/ui-guidelines.md` y la fila `tracking-title` de `alerts-canvas-fidelity.test.ts`; el leader lo resuelve al mergear (R20 exige que la sección Enmienda #195 sea la última `## `).
+- 2026-10-21: Codex paró en R14 (R13, R4, R1, R2, R3, R5, R7, R8, R6 hechos; supuesto 1 de design.md no se cumple con aserción síncrona). El leader validó HEAD `98419978` (20 suites, 745 tests en verde) y dejó el adendo `progress/handoff_mobile-home-photo-hero-canvas-reanudar.md` para reanudar.
 - Mientras Codex implementa, el leader no toca `backend-pet-tracker/` ni `mobile-pet-tracker/`.
