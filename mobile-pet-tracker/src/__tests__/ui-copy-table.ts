@@ -579,7 +579,7 @@ export const R14_GEOFENCES: UseRow[] = [
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.emptyBody' }, // #155 R8
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.radius' },
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.activeLabel' },
-  { file: 'src/screens/geofences/index.tsx', key: 'geofences.delete' },
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.deleteLabel' }, // #189 R5
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.statusActive' },
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.statusInactive' },
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.noTrackingTitle' }, // #159 R5

@@ -1153,6 +1153,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     });
     expect(outsideReminders(/\brounded-14\b/)).toEqual([
       join('components', 'segmented-control.tsx'), // #191 R11
+      join('screens', 'geofences', 'index.tsx'), // #189 R5
       join('screens', 'meal-schedule', 'index.tsx'), // #179 R13 comparte rounded-14
       join('screens', 'meals-history', 'index.tsx'), // #179 R13 comparte rounded-14
       join('screens', 'pairing', 'index.tsx'), // #188 R20 comparte rounded-14
