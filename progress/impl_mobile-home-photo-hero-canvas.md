@@ -165,3 +165,147 @@ mobile-pet-tracker/src/theme/motion.ts
 ```
 
 Todos pertenecen a la lista cerrada del handoff. No hay cambios de producción sin commit ni sondas plantadas restantes.
+
+## Reanudación — 2026-10-21
+
+- Primer comando ejecutado: `cd /home/claude/sites/Pet-Tracker-wt-195 && pwd && git branch --show-current`. Salida confirmada: `/home/claude/sites/Pet-Tracker-wt-195`, branch `feature/195-mobile-home-photo-hero-canvas`. H0 sigue en `ab33dfd1`; HEAD inicial `99c8f330` (adendo del leader). Árbol inicial limpio.
+- Leídos completos ambos handoffs, requirements/design/tasks y el reporte anterior. No se ejecuta init ni se tocan los ficheros de cierre del leader.
+- Skills cargadas de nuevo: ponytail, appllama-app-design-skill, animate-expo, building-native-ui y expo-tailwind-setup. Inexistentes según catálogo/handoff: expo-overview, expo-animation, expo-router, expo-design-system; MCP Appllama no disponible. Prevalecen carta y spec.
+- Pendiente ALERTS 1: restaurado el comentario histórico de empty-state y etiquetada la fila del hero con `#195 R6`. `Tests: 27 passed, 27 total`. Commit indicado en la tabla de reanudación.
+
+
+### R6 — pendientes de ALERTS resueltos
+
+- `bc14d41b` — `test(mobile): restore empty-state amendment note and tag hero row (R6)`. Antes del commit: `Tests: 27 passed, 27 total`.
+- Mutación obligatoria: se quitó exactamente la línea `        'components/pet-hero-header.tsx', // #195 R6` del inventario de `tracking-title`. La búsqueda incluyó el comentario final; una aserción confirmó una única coincidencia antes de escribir. Jest arrancó y terminó con exit 1:
+
+```text
+FAIL src/__tests__/alerts-canvas-fidelity.test.ts
+#174 R12: inventarios › limita tracking-title a su inventario de producción
+Expected: inventario sin components/pet-hero-header.tsx
+Received: inventario con components/pet-hero-header.tsx
+Tests: 1 failed, 26 passed, 27 total
+```
+
+- Mutación revertida en `finally`, sin commit propio. El diff actual del test coincide únicamente con la corrección de comentarios solicitada. Se cierra la sonda pendiente de R6; `e17c14b3` sigue siendo su commit de producción.
+
+### PARADA de reanudación — supuesto 1 sigue fallando con espera
+
+**Estado vigente: PARADO antes del rojo de R14, según la condición explícita del adendo. R14–R20 no completados; no apto para merge.** No se modifican el bloqueo histórico ni sus resultados: este apartado añade la medición nueva y prevalece como estado actual.
+
+Se plantaron las tres variantes de la sonda fiel en HERO y se ejecutaron **juntas en una única invocación de Jest**. Nodo creado con `Animated.createAnimatedComponent(View)` desde el default del mock de HERO; `View` y React reales; `useSharedValue`, `useAnimatedStyle`, `withTiming` y `useReducedMotion` del mismo mock. No se cambió el mock de Reanimated, ningún `it` previo ni ninguna aserción de visibilidad.
+
+Comando, desde `mobile-pet-tracker/` (ambos pgrep previos vacíos):
+
+```bash
+bunx jest src/components/__tests__/pet-hero-header.test.tsx --testTimeout=30000 --silent --json -t '#195 R14: sonda fiel de visibilidad'
+```
+
+Las tres líneas `Tests:` siguientes son el desglose **por variante obtenido de `assertionResults` del JSON de esa misma corrida**, no tres invocaciones separadas:
+
+```text
+Tests: 1 failed, 1 total — (a) temporizadores reales y waitFor sobre el nodo visible
+Tests: 1 failed, 1 total — (b) temporizadores falsos y act de 500 ms
+Tests: 1 passed, 1 total — (c) reduce motion inicia en uno y visibilidad síncrona
+```
+
+Salida de Jest (errores sin escapes de color; los bloques repetidos de Babel se omiten):
+
+```text
+FAIL src/components/__tests__/pet-hero-header.test.tsx (5.698 s)
+● #195 R14: sonda fiel de visibilidad en tres variantes › (a) temporizadores reales y waitFor sobre el nodo visible
+expect(instance).toBeVisible()
+Received instance is not visible:
+  <Text testID="visibility-probe">hijo</Text>
+> await waitFor(() => expect(screen.getByTestId('visibility-probe')).toBeVisible());
+
+● #195 R14: sonda fiel de visibilidad en tres variantes › (b) temporizadores falsos y act de 500 ms
+expect(instance).toBeVisible()
+Received instance is not visible:
+  <Text testID="visibility-probe">hijo</Text>
+> expect(screen.getByTestId('visibility-probe')).toBeVisible();
+
+Test Suites: 1 failed, 1 total
+Tests: 2 failed, 55 skipped, 1 passed, 58 total
+Snapshots: 0 total
+Time: 5.926 s
+PROBE exit: 1
+```
+
+Reproductor efímero completo (añadido al final de HERO y retirado en `finally` tras obtener el resultado):
+
+```tsx
+describe('#195 R14: sonda fiel de visibilidad en tres variantes', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  const m = jest.requireMock('react-native-reanimated');
+  const { act, waitFor } = jest.requireActual<typeof import('@testing-library/react-native')>('@testing-library/react-native');
+  const ProbeView = m.default.createAnimatedComponent(View);
+  function Probe() {
+    const reduceMotion = m.useReducedMotion();
+    const opacity = m.useSharedValue(reduceMotion ? 1 : 0);
+    React.useEffect(() => {
+      if (!reduceMotion) opacity.set(m.withTiming(1));
+    }, [opacity, reduceMotion]);
+    const style = m.useAnimatedStyle(() => ({ opacity: opacity.get() }));
+    return <ProbeView style={style}><Text testID="visibility-probe">hijo</Text></ProbeView>;
+  }
+  afterEach(() => {
+    cleanup();
+    jest.useRealTimers();
+    mockUseReducedMotion.mockReturnValue(false);
+  });
+  it('(a) temporizadores reales y waitFor sobre el nodo visible', async () => {
+    mockUseReducedMotion.mockReturnValue(false);
+    await renderHero(<Probe />);
+    await waitFor(() => expect(screen.getByTestId('visibility-probe')).toBeVisible());
+  });
+  it('(b) temporizadores falsos y act de 500 ms', async () => {
+    jest.useFakeTimers();
+    mockUseReducedMotion.mockReturnValue(false);
+    await renderHero(<Probe />);
+    await act(async () => { jest.advanceTimersByTime(500); });
+    expect(screen.getByTestId('visibility-probe')).toBeVisible();
+  });
+  it('(c) reduce motion inicia en uno y visibilidad síncrona', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    await renderHero(<Probe />);
+    expect(screen.getByTestId('visibility-probe')).toBeVisible();
+  });
+});
+```
+
+No se adopta ninguna variante para R14/R16/R18: ni (a) ni (b) pasa. Se cumple literalmente la parada del adendo: «Si ni (a) ni (b) pasan, o (c) falla: PARA otra vez, con las tres salidas pegadas». Corresponde al leader enmendar la spec y reabrir su gate. No se altera la spec, no se relaja `toBeVisible`, no se añade todavía `withDelay` ni se intenta otro montaje.
+
+### Diff medido y alcance al parar
+
+Respecto a HEAD de reanudación `99c8f330`, el único cambio móvil/docs es:
+
+```text
+mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts | 4 ++--
+1 file changed, 2 insertions(+), 2 deletions(-)
+
+-        'components/empty-state.tsx',
+-        'components/pet-hero-header.tsx', // (enmendado por #176 R8)
++        'components/empty-state.tsx', // (enmendado por #176 R8)
++        'components/pet-hero-header.tsx', // #195 R6
+```
+
+`git diff --exit-code -- mobile-pet-tracker/ specs/ docs/` termina con exit 0 tras retirar las sondas. La lista de archivos móvil/docs desde H0 `ab33dfd1` sigue siendo la registrada en «Archivos desde H0»: 12 ficheros, todos dentro de la lista cerrada. No hay cambio de producción en esta reanudación. No se midieron las cuentas de cierre porque se activó la parada antes de R14.
+
+Se conserva el reporte anterior y su tabla como historia. Actualización de trazabilidad de la reanudación: R6 tiene ya ambas sondas rojas y revertidas; R14 sigue sin test de aceptación ni implementación. R9–R12, R15–R20 siguen pendientes. No se toca `traceability.md`: está reservado para el commit final tras R1–R20 completos.
+
+No se ejecutaron init, test móvil completo, typecheck, lint, mapa ni graphify. No se abrió ni editó PR; no se tocaron progress/current.md, history.md, STATUS.md, feature_list.json, handoffs o dependencias. `progress/impl_mobile-home-photo-hero-canvas.done` sigue ausente y no se crea al parar a medias.
+
+### Verificación tras retirar sondas
+
+```text
+PASS src/__tests__/alerts-canvas-fidelity.test.ts
+PASS src/components/__tests__/pet-hero-header.test.tsx
+Test Suites: 2 passed, 2 total
+Tests: 82 passed, 82 total
+Snapshots: 0 total
+Time: 3.463 s, estimated 6 s
+```
+
+Comando: `bunx jest 'src/components/__tests__/pet-hero-header.test.tsx|src/__tests__/alerts-canvas-fidelity.test.ts' --testTimeout=30000 --silent`, ambos pgrep previos vacíos, exit 0. Este verde verifica la retirada de las sondas; no confirma el supuesto 1. El commit de documentación de esta parada no es el commit final de R1–R20 y no contiene traceability.
