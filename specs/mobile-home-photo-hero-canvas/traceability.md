@@ -10,19 +10,19 @@ Rutas relativas a `mobile-pet-tracker/src/`. La columna de test lleva el `descri
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | `components/__tests__/pet-hero-header.test.tsx::#195 R1` | pendiente |
-| R2 | `components/__tests__/pet-avatar.test.tsx::#195 R2`; `components/__tests__/pet-hero-header.test.tsx::#195 R2` | pendiente |
-| R3 | `components/__tests__/pet-hero-header.test.tsx::#195 R3` | pendiente |
-| R4 | `theme/__tests__/global-css.test.ts::#195 R4`; `components/__tests__/pet-hero-header.test.tsx::#195 R4` | pendiente |
-| R5 | `components/__tests__/pet-hero-header.test.tsx::#195 R5` | pendiente |
-| R6 | `components/__tests__/pet-hero-header.test.tsx::#195 R6`; `__tests__/alerts-canvas-fidelity.test.ts::limita $token a su inventario de producción` (fila `tracking-title`) | pendiente |
-| R7 | `components/__tests__/pet-hero-header.test.tsx::#195 R7`; `screens/home/index.test.tsx::#73 R9` | pendiente |
-| R8 | `components/__tests__/pet-hero-header.test.tsx::#195 R8`; `components/__tests__/ping-ring.test.tsx::#195 R8` | pendiente |
+| R1 | `components/__tests__/pet-hero-header.test.tsx::#195 R1` | bd03f556 feat(mobile): contain hero in a 330 point frame (R1) |
+| R2 | `components/__tests__/pet-avatar.test.tsx::#195 R2`; `components/__tests__/pet-hero-header.test.tsx::#195 R2` | 626ebc69 feat(mobile): align hero photo and fade on pet identity (R2) |
+| R3 | `components/__tests__/pet-hero-header.test.tsx::#195 R3` | 964aac85 feat(mobile): match canvas gradient stops and scrim (R3) |
+| R4 | `theme/__tests__/global-css.test.ts::#195 R4`; `components/__tests__/pet-hero-header.test.tsx::#195 R4` | f308ea70 feat(mobile): add theme-aware photo dim layer (R4) |
+| R5 | `components/__tests__/pet-hero-header.test.tsx::#195 R5` | 016e4749 feat(mobile): float hero slot above photo (R5) |
+| R6 | `components/__tests__/pet-hero-header.test.tsx::#195 R6`; `__tests__/alerts-canvas-fidelity.test.ts::limita $token a su inventario de producción` (fila `tracking-title`) | e17c14b3 feat(mobile): place hero caption over the gradient (R6) — pendiente sonda ALERTS |
+| R7 | `components/__tests__/pet-hero-header.test.tsx::#195 R7`; `screens/home/index.test.tsx::#73 R9` | c9e578a9 feat(mobile): derive hero pill accent tone and spacing (R7) |
+| R8 | `components/__tests__/pet-hero-header.test.tsx::#195 R8`; `components/__tests__/ping-ring.test.tsx::#195 R8` | 2b71c252 feat(mobile): use configurable ping ring for online status (R8) |
 | R9 | `components/__tests__/pet-switcher.test.tsx::#195 R9` | pendiente |
 | R10 | `components/__tests__/pet-switcher.test.tsx::#195 R10` | pendiente |
 | R11 | `components/__tests__/glass-circle.test.tsx::#195 R11`; `screens/home/index.test.tsx::#195 R11`; `screens/home/index.test.tsx::#152 R5`; `__tests__/home-photo-hero-canvas.test.ts::#195 R19` (una sola `t('profile.addPet'`) | pendiente |
 | R12 | `screens/home/index.test.tsx::#195 R12`; `screens/home/index.test.tsx::#78 R10`, `#124 R1`, `#78 R11` | pendiente |
-| R13 | `theme/__tests__/motion.test.ts::#195 R13` | pendiente |
+| R13 | `theme/__tests__/motion.test.ts::#195 R13` | 2908e173 feat(mobile): add hero motion constants (R13) |
 | R14 | `components/__tests__/pet-hero-header.test.tsx::#195 R14` | pendiente |
 | R15 | `screens/home/index.test.tsx::#195 R15`; `screens/home/index.test.tsx::R5: Home usa el hero compartido` | pendiente |
 | R16 | `screens/home/bubble-pop.test.tsx::#195 R16`; `screens/home/index.test.tsx::#190 R11`, `#190 R4`, `#190 R7` | pendiente |
@@ -36,3 +36,5 @@ Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(<scope>): <desc> (R1,R2)`.
 El implementer actualiza esta tabla tras cada commit; el reviewer la valida
 al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).
+
+Implementación parcial parada antes de R14: la sonda fiel al AnimatedView del hero falla `toBeVisible` (supuesto 1 de design). No se declara done. R6 tiene tests verdes, pero falta la mutación de ALERTS. Evidencia, nombres completos, commits test-primero y pendientes en `progress/impl_mobile-home-photo-hero-canvas.md`.
