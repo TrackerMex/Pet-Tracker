@@ -20,6 +20,9 @@ import { useTranslate } from '../../providers/language-provider';
 import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';
 import { zoomForRadius } from '../../utils/zoom-for-radius';
 
+const MIN_RADIUS = 20;
+const MAX_RADIUS = 2000;
+
 function messageFor(t: ReturnType<typeof useTranslate>, kind: GeofenceSaveState['kind']): string {
   switch (kind) {
     case 'not-found': return t('geofenceEditor.notFound');
@@ -139,6 +142,8 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
     ]);
   };
 
+  const radiusValue = <Text testID="geofence-editor-radius-value" selectable style={TABULAR_NUMS} className={readOnly ? 'font-bold text-foreground' : 'text-sm font-extrabold text-accent-strong'}>{t('geofences.radius', { meters: Math.round(readOnly ? initialRadius : radius) })}</Text>;
+
   return <KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={headerHeight}>
     <View testID="geofence-editor-map" className="flex-1">
       <PetMap onPress={readOnly ? undefined : setCenter} center={readOnly ? initialCenter : camera.center} zoom={readOnly ? zoomForRadius(initialRadius) : camera.zoom} marker={null} polylines={[]} circles={circles} colorScheme={theme === 'dark' ? 'dark' : 'light'} />
@@ -159,20 +164,29 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
         <Input testID="geofence-editor-name" className="h-12.5 rounded-xl bg-default px-3.5" maxLength={120} value={name} onChangeText={setName} />
       </TextField>
       </>}
-      <Text testID="geofence-editor-radius-value" selectable style={TABULAR_NUMS} className="font-bold text-foreground">{t('geofences.radius', { meters: Math.round(readOnly ? initialRadius : radius) })}</Text>
-      {readOnly ? <Text testID="geofence-editor-read-only" className="text-sm font-normal text-muted">{t('geofenceEditor.ownerOnly')}</Text> : <>
-      <Slider testID="geofence-editor-radius" value={radius} minValue={20} maxValue={2000} step={10}
+      {readOnly ? <>{radiusValue}<Text testID="geofence-editor-read-only" className="text-sm font-normal text-muted">{t('geofenceEditor.ownerOnly')}</Text></> : <>
+      <View testID="geofence-editor-radius-block" className="gap-2">
+      <View className="flex-row justify-between">
+        <Text testID="geofence-editor-radius-label" className="text-sm font-extrabold text-foreground">{t('geofenceEditor.radiusTitle')}</Text>
+        {radiusValue}
+      </View>
+      <Slider testID="geofence-editor-radius" value={radius} minValue={MIN_RADIUS} maxValue={MAX_RADIUS} step={10}
         onChange={(v) => setRadius(Array.isArray(v) ? v[0] : v)}
         onChangeEnd={(v) => setCamera({ center, zoom: zoomForRadius(Array.isArray(v) ? v[0] : v) })}>
         <Slider.Track><Slider.Fill /><Slider.Thumb testID="geofence-editor-radius-thumb" accessibilityLabel={t('geofenceEditor.radiusLabel')}
           accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
           onAccessibilityAction={({ nativeEvent: { actionName } }) => {
             if (actionName !== 'increment' && actionName !== 'decrement') return;
-            const next = actionName === 'increment' ? Math.min(2000, radius + 10) : Math.max(20, radius - 10);
+            const next = actionName === 'increment' ? Math.min(MAX_RADIUS, radius + 10) : Math.max(MIN_RADIUS, radius - 10);
             setRadius(next);
             setCamera({ center, zoom: zoomForRadius(next) });
           }} /></Slider.Track>
       </Slider>
+      <View className="flex-row justify-between">
+        <Text testID="geofence-editor-radius-min" className="text-11 font-semibold text-muted">{t('geofenceEditor.meters', { meters: MIN_RADIUS })}</Text>
+        <Text testID="geofence-editor-radius-max" className="text-11 font-semibold text-muted">{t('geofenceEditor.meters', { meters: MAX_RADIUS })}</Text>
+      </View>
+      </View>
       {zone ? <View testID="geofence-editor-active-row" className="flex-row items-center justify-between gap-3">
         <Text className="font-semibold text-foreground">{t('geofences.statusActive')}</Text>
         <Switch testID="geofence-editor-active" isSelected={zone.active} hitSlop={10} isDisabled={busy}
