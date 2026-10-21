@@ -105,6 +105,11 @@ recuentos caducan al mergear otra feature, así que se **re-miden** al arrancar)
 
 ## §3. Requisitos funcionales
 
+> **Enmendado por E4 (§4.4, 2026-10-21):** R1.1, R1.2, R3, R5.5, R7.1/R7.2, R8.2, R9 (teclado y capas del
+> mapa), R12, R13.1/R13.2 y R16.1 quedan sustituidos en los puntos que lista la tabla «Texto que E4
+> sustituye» de §4.4 (los R-ids no cambian; los requisitos nuevos son R19-R24). Donde el texto de abajo
+> choque con esa tabla, manda §4.4.
+
 Convención de etiquetas de test (R-id → fichero), todos desde `src/`:
 
 - **F** `screens/geofences/index.test.tsx` · **E** `screens/geofence-editor/index.test.tsx`
@@ -246,7 +251,9 @@ identidad, el orden y la cardinalidad de hijos se miden con `children.length` y 
   - **R7.2** si `zonas >= 5` (con `isDisabled`): receta **deshabilitada** de la carta §13 (la que
     «aplica #189»): `className="mt-auto h-14 rounded-16 bg-default"`, **sin** `style` de labio, etiqueta
     `text-17 font-extrabold text-muted`, `accessibilityState.disabled === true`. `busy` (escritura en
-    curso) **no** cambia el aspecto: conserva la receta primaria con `isDisabled`.
+    curso) conserva la receta primaria con `isDisabled` y, **desde E4, sin atenuado** (heroui lo
+    atenuaba al 50 %; `style` lo cancela). La frase original «`busy` **no** cambia el aspecto» era falsa
+    (`enmendado por #189 E4 R20`).
   - Con la lista vacía el botón se pinta primario (R7.1). Un único `Button` con `testID="geofences-add"`
     (no dos ramas con el mismo id); la receta cambia por ternario de dos literales de clase.
   - **Test (F)**: enmienda de `#146 R12` y `#41 R8` (`(enmendado por #189 R7)`): clases y estilo
@@ -527,6 +534,411 @@ guarda. Tras enmendar, `heroui-text-size-merge`, `alert-detail-canvas-fidelity` 
 quedar verdes; la suite completa mide el total de tests en 4398 al cierre de R18 más los `it` que añada su
 commit verde.
 
+### §4.4 Enmienda E4 (2026-10-21): hallazgos del smoke Android (parpadeo, «Añadir zona» en el límite y cabeceras)
+
+Base de medida de la enmienda: `18f86849` (HEAD de la branch al redactar). Los recuentos y las líneas
+**caducan**: todo se ancla por contenido y se **re-mide en el H0 de la enmienda** (H0-E4 = commit del
+handoff de E4); el total de cierre es base + delta. Los R-ids son inmutables: E4 añade **R19-R24** y
+enmienda por sufijo los R anteriores (tabla «Texto que E4 sustituye»).
+
+**Decisiones del humano ya tomadas (2026-10-21, cerradas, no se reabren)**
+
+| # | Decisión | Dónde se cumple |
+|---|---|---|
+| H1 | **Parpadeo**: mientras `busy`, los `Switch` de las filas y «Añadir zona» **conservan el aspecto**. Siguen bloqueados (`isDisabled`, `accessibilityState.disabled`; el bloqueo de R17 no se toca). Solo se cancela el atenuado de heroui `disabled:element-disabled` (opacidad 0.5). Opción A de las tres propuestas. | R19, R20 |
+| H1b | **«Añadir zona» en el límite (5 zonas)**: como el artboard, gris `bg-default`, texto `text-muted`, **sin** el 50 % de opacidad. | R20 |
+| H2 | **Editor**: cabecera nativa **transparente** solo en la rama del formulario (`headerTransparent: true`, botón de volver nativo). El mapa sube a `y = 0`; la píldora «Zona segura» va en la misma fila que la flecha, a su derecha; `keyboardVerticalOffset` pasa a `0`. Las demás ramas conservan la cabecera opaca y el `Text` 26/900 del ScrollView. | R22 |
+| H3 | **Zonas**: cabecera transparente en la ruta `pets/[petId]/geofences`; título 26/900 y contador `n/5` **en la fila de la flecha**, a su derecha; el contenido empieza bajo la cabecera. | R21 |
+
+**Decisión humana pendiente** (cada fila trae un valor por defecto razonado; el humano las cierra al
+firmar la casilla E4 o las cambia, y entonces se enmienda §4.4 antes del handoff. Codex no empieza hasta
+la firma):
+
+| # | Decisión humana pendiente | Por defecto propuesto (y por qué) | Toca |
+|---|---|---|---|
+| DE4-1 | **Alcance de H1 en el Editor.** H1 nombra las filas de Zonas y «Añadir zona». El Editor tiene la misma causa (`Switch` `geofence-editor-active`, `Button` `geofence-editor-delete` y `geofence-editor-save` con `isDisabled`) y el mismo parpadeo al guardar o eliminar. ¿Se incluye? Y dentro de eso: «Guardar» con el **nombre vacío** también es `isDisabled` (receta gris de la carta §13, que dice que la aplican «Añadir zona» en el límite y «Guardar» con nombre vacío); incluirlo sin atenuado es una inferencia de la decisión de «Añadir zona» en el límite. | **Se incluyen los tres elementos del Editor, también Guardar con nombre vacío.** La carta define **una** receta deshabilitada para los dos botones; si Zonas va sin atenuado y el Editor con él, el gris del mismo botón saldría distinto entre pantallas. Alternativa: limitar E4 a Zonas y abrir otra feature para el Editor. | R19 |
+| DE4-2 | **Tolerancia N de la geometría de las cabeceras.** La flecha nativa de Android no es la de 44 × 44 del artboard y su posición exacta solo se mide en dispositivo. ¿Cuánto se puede ajustar sin volver a firmar? | **N = 8 dp** sobre cada una de las dos constantes de offset (`ZONES_TITLE_OFFSET` 42, `EDITOR_PILL_LEFT` 70). Dentro de ±8 el humano mide en el smoke y se ajusta **solo** `src/theme/header-layout.ts` (un fichero, un commit) sin enmienda. **Fuera de ±8 se necesita enmienda E5 y nueva firma.** Alternativa: N = 0 (cualquier ajuste firma de nuevo). | R23 |
+| DE4-3 | **iOS.** Las cabeceras transparentes y los offsets se redactan para las dos plataformas, pero el smoke es Android (dev build del PC del humano) y `contentInsetAdjustmentBehavior` desaparece de Zonas. | **iOS no se verifica en E4.** Los tests de jest corren igual en ambas; la comprobación visual en iOS queda fuera de alcance (§5). Alternativa: añadir un paso de smoke en iOS (requiere dispositivo o simulador). | R21, R22 |
+| DE4-4 | **El contenido que se desplaza pasa bajo la flecha de Zonas.** Con la cabecera transparente (H3) la flecha queda fija encima de un `ScrollView` que llega hasta `y = 0`: con 5 zonas, aviso y botón en un móvil bajo, las filas pasan por debajo de la flecha al desplazar. El artboard no desplaza. | **Se acepta** (consecuencia directa de H3; la flecha sigue legible sobre `bg-background`/filas y el título sale del campo al desplazar). Alternativa: cabecera con fondo al desplazar (`scrollEdgeEffects`/título grande), que es otra feature. | R21 |
+| DE4-5 | **El mismo atenuado en el resto de la app.** Todos los `Switch`/`Button` de heroui con `isDisabled` de las demás pantallas tienen el mismo 50 %. | **Fuera de alcance de E4**: solo las dos pantallas de #189. Se anota en §5 como candidato a una feature propia (una constante `KEEP_OPACITY` ya existiría). | §5 |
+
+**Origen.** Tras el verde de E3 el humano corrió el smoke §6 en el dev build Android y halló tres
+defectos que jest no puede ver porque no resuelve `className` ni dibuja el atenuado de heroui:
+
+1. **Parpadeo en las filas de Zonas.** heroui añade la clase `disabled:element-disabled` (opacidad 0.5) a
+   `Switch` (`switch.styles.ts`) y a `Button` (`button.styles.ts`) cuando `isDisabled`. Al escribir
+   (`busy`) las filas se atenúan y vuelven. R7.2 afirmaba que `busy` «**no** cambia el aspecto»: es
+   **falso**, y por eso ningún test lo vio. Esta enmienda corrige esa frase (R20).
+2. **«Añadir zona» en el límite, demasiado apagado.** La receta gris (`bg-default`, `text-muted`) ya
+   casa con el artboard, pero el 50 % de heroui se multiplica por encima. El artboard
+   (`canvas/Zonas.dc.html`, botón `disabled`) pinta solo `background: var(--default); color:
+   var(--muted)`, sin opacidad.
+3. **Posición de los títulos.** En Zonas el título cuelga bajo la flecha y en el Editor la píldora
+   cuelga bajo la cabecera. El artboard de Zonas los pone en la fila de la flecha (cabecera `display:
+   flex; align-items: center; gap: 8px`; flecha 44 × 44 con `margin-left: -10px`; `h1` `flex: 1`;
+   contador 14/800 en la misma fila; contenedor `padding: 56px 20px 40px`, `gap: 12`) y el del Editor
+   pone flecha y píldora en una cabecera `position: absolute; top: 52px; left: 16px; right: 16px;
+   align-items: center; gap: 10px` (flecha 44 × 44; píldora `padding: 10px 16px`, `border-radius: 999px`,
+   `font: 800 16px`).
+
+**Premisas verificadas contra el árbol y las dependencias (no se reabren)**
+
+- `style` **gana** a `className`: uniwind compone `[estilos de className, props.style]` en `View` y
+  `Pressable`; el `Switch` de heroui pone `style` **último** en su estilo raíz (`[switchStyleSheet.borderCurve,
+  rContainerStyle, style]`) y el `Button` también (`[buttonStyleSheet.buttonRoot, style]`). Por eso
+  `style={KEEP_OPACITY}` cancela el 0.5 de forma determinista mientras `isDisabled`,
+  `accessibilityState.disabled` y la clase `disabled:element-disabled` siguen presentes. Se **descarta**
+  la clase `disabled:opacity-100`: el orden entre utilidades en conflicto no está garantizado.
+- En `@react-navigation/native-stack`, `headerStyle.backgroundColor` **gana** a `headerTransparent`
+  (`headerBackgroundColor = headerStyle.backgroundColor ?? (headerBackground || headerTransparent ?
+  'transparent' : colors.card)`): una cabecera transparente exige **las dos** opciones,
+  `headerTransparent: true` y `headerStyle: { backgroundColor: 'transparent' }`. Los `headerOptions` de
+  `_layout.tsx` traen `headerStyle: { backgroundColor: background }`, que hay que pisar.
+- Con `headerTransparent` (`translucent`) react-native-screens en Android **no** aplica
+  `ScrollingViewBehavior`: el contenido empieza en `y = 0`, bajo la cabecera; `contentInsetAdjustmentBehavior`
+  no hace nada en Android y en iOS añadiría un segundo desplazamiento. La barra de Android mide 56 dp
+  (`ANDROID_DEFAULT_HEADER_HEIGHT`) bajo el inset superior.
+- Bajo cabecera **opaca** `useSafeAreaInsets().top` ya está consumido por la cabecera (por eso la carta
+  A11 no lleva `insets.top`); bajo cabecera **transparente** vale el inset de la barra de estado. Los tests
+  de las dos pantallas fijan `insets.top = 40`.
+- `Stack.Screen` de expo-router llama a `navigation.setOptions` en un efecto y **no restaura** las
+  opciones al desmontarse: si el formulario del Editor pone la cabecera transparente y la pantalla pasa
+  después a una rama de estado, la cabecera seguiría transparente. Por eso **cada rama del Editor
+  declara su `Stack.Screen`** (R22) y las opciones tienen identidad estable entre renders.
+- `KeyboardAvoidingView` en Android: `paddingBottom = max(frame.y + frame.height − (keyboardScreenY −
+  keyboardVerticalOffset), 0)`. Con el candado actual (`layout` y 700, teclado en 500, offset 91) da 291; con
+  offset 0 da **200**.
+
+**Mapa de `testID` nuevo**: `geofence-editor-title-row` (Editor): `View` absoluto sobre el mapa que aloja
+la píldora (R22.4). No cambia ningún otro `testID`; `geofences-header`, `geofences-title` y
+`geofences-counter` conservan los suyos.
+
+**Medidas en H0-E4** (la base se mide; el delta lo da cada R; total = base + delta; comandos desde
+`mobile-pet-tracker/`, por contenido):
+
+| # | Orden | Base en `18f86849` | Total esperado | R |
+|---|---|---|---|---|
+| M10 | `grep -cF "isDisabled" src/screens/geofences/index.tsx src/screens/geofence-editor/index.tsx` | 2 y 3 | 2 y 3 (no se quita ningún `isDisabled`) | R19, R20 |
+| M11 | `grep -o "KEEP_OPACITY" <fichero> \| wc -l` en `src/screens/geofences/index.tsx`, `src/screens/geofence-editor/index.tsx`, `src/theme/native-styles.ts` | 0, 0 y 0 | 4 (import + Switch + 2 en Añadir), 5 (import + Switch + Eliminar + 2 en Guardar) y 1 (definición) | R19, R20 |
+| M12 | `grep -cF "HeaderHeightContext" src/screens/geofence-editor/index.tsx` | 2 | **0** (ancla negativa, probada con mutación: P-E4-9) | R22 |
+| M13 | `grep -cF "keyboardVerticalOffset={headerHeight}" src/screens/geofence-editor/index.tsx` y `grep -cF "keyboardVerticalOffset={0}" src/screens/geofence-editor/index.tsx` | 1 y 0 | 0 y 1 | R22 |
+| M14 | `grep -cF "contentInsetAdjustmentBehavior" src/screens/geofences/index.tsx src/screens/geofence-editor/index.tsx` | 1 y 1 | **0** y 1 (el Editor lo conserva solo en la rama de estados) | R21 |
+| M15 | `grep -cF "Stack.Screen" src/screens/geofence-editor/index.tsx src/screens/geofences/index.tsx` | 0 y 0 | 2 (una por rama) y 0 (Zonas lo declara en `_layout.tsx`) | R22 |
+| M16 | `test ! -e src/theme/header-layout.ts` (base) y `grep -cF "export const" src/theme/header-layout.ts` | existe: no / n.a. | existe; 6 `export const` (R23.1) | R23 |
+| M17 | `grep -cF "TRANSPARENT_HEADER_OPTIONS" src/app/_layout.tsx src/screens/geofence-editor/index.tsx` | 0 y 0 | 2 (import + uso) y 2 (import + uso) | R21, R22 |
+| M18 | `grep -c "title: t('geofences.title')\|title: t('geofenceEditor.title')" src/app/_layout.tsx` (M9 re-medida) | **0** (E1 ya lo aplicó; M9 «2 líneas» caducó) | 0 | R1.1 |
+| M19 | `grep -c "chunkyLip" src/screens/geofences/index.tsx src/screens/geofence-editor/index.tsx src/__tests__/design-drift.test.ts` | 2, 3 y 0 | 2, 3 y 0 (los usos de `chunkyLip` no cambian de número: solo cambia la forma del `style`) | R19, R20 |
+
+#### Requisitos de E4
+
+- **R19 — Bloqueado no es atenuado (H1, DE4-1).**
+  - **R19.1** THE SYSTEM SHALL exportar de `src/theme/native-styles.ts` `export const KEEP_OPACITY = {
+    opacity: 1 } as const;`, con comentario de por qué existe (cancela el atenuado `disabled:element-disabled`
+    de heroui; el elemento sigue bloqueado), junto a `CONTINUOUS_CORNER` y `TABULAR_NUMS` (mismo motivo y
+    precedente que ellos: prop de estilo sin utilidad CSS equivalente).
+  - **R19.2** WHILE un elemento de heroui con `isDisabled` de las dos pantallas está bloqueado THE SYSTEM
+    SHALL conservar su aspecto: lleva `KEEP_OPACITY` en `style` y **conserva** `isDisabled`, su expresión y
+    su `className` completo (la clase `disabled:element-disabled` **no se quita**: se cancela, no se
+    elimina). Los **cinco** elementos y su literal exacto:
+    - Zonas, `Switch testID={`geofence-${geofence.id}-active`}`: `style={KEEP_OPACITY}`.
+    - Zonas, `Button testID="geofences-add"`: ver R20.
+    - Editor, `Switch testID="geofence-editor-active"`: `style={KEEP_OPACITY}`.
+    - Editor, `Button testID="geofence-editor-delete"`: `style={[chunkyLip.neutral, KEEP_OPACITY]}`
+      (sustituye a `style={chunkyLip.neutral}`).
+    - Editor, `Button testID="geofence-editor-save"`: `style={name.trim() === '' ? KEEP_OPACITY :
+      [chunkyLip.primary, KEEP_OPACITY]}` (sustituye a `style={name.trim() === '' ? undefined :
+      chunkyLip.primary}`; la ternaria de `className` y la de la etiqueta no cambian).
+  - **R19.3** Los `Pressable` de React Native de la fila (`geofence-<id>-edit`, `geofence-<id>-delete`)
+    y los que pinte el Editor no son de heroui, usan `disabled={busy}` y no pintan opacidad: **no se
+    tocan**. Los demás elementos de heroui sin `isDisabled` (p. ej. `geofences-retry`) tampoco.
+  - **Test (F, E, C)**:
+    - **(F)** `describe('#189 R19: …')` en `screens/geofences/index.test.tsx`: con una escritura en vuelo
+      (patrón del `it` existente «bloquea los dos interruptores mientras escribe»), cada `Switch`
+      `geofence-<id>-active` tiene `accessibilityState.disabled === true` **y** `StyleSheet.flatten(node.props.style).opacity === 1`.
+      Si el nodo anfitrión del `Switch` de heroui no expone el estilo de su raíz en jest, esa aserción se
+      sustituye por el candado de fuente (C) para el `Switch` y el reporte lo anota; **no es motivo de PARA**.
+    - **(E)** `describe('#189 R19: …')` en `screens/geofence-editor/index.test.tsx`: con `busy` y con el
+      nombre vacío, `geofence-editor-active`, `geofence-editor-delete` y `geofence-editor-save` están
+      bloqueados (`accessibilityState.disabled === true`) y su estilo aplanado tiene `opacity === 1`;
+      con el nombre vacío y sin `busy` Guardar también (`opacity === 1`).
+    - **(C)** `geofences-canvas-fidelity.test.ts`, `#189 R19.1/R19.2`: `native-styles.ts` contiene
+      `export const KEEP_OPACITY = { opacity: 1 } as const;`; en cada una de las dos pantallas, **toda
+      etiqueta de apertura** de `<Switch` y `<Button` que contiene `isDisabled=` contiene también
+      `KEEP_OPACITY`, y el número de etiquetas con `isDisabled=` es 2 (Zonas) y 3 (Editor), que es M10 (el
+      candado barre **todas** las etiquetas, no una lista de `testID`, para que un elemento nuevo con
+      `isDisabled` y sin `KEEP_OPACITY` ponga en rojo el candado: P-E4-2).
+    - **Límite de jest, dicho en voz alta**: jest no resuelve `disabled:element-disabled`, así que estos
+      tests prueban la **forma** (el `style` cancelador está y el bloqueo sigue). La comprobación real de
+      que el 0.5 ya no se ve es el **smoke del humano** (§6, pasos 6 y 7).
+  - **Fuera de R19**: quitar `isDisabled` para evitar el atenuado (cambia el comportamiento de R17).
+- **R20 — «Añadir zona» en el límite y bajo `busy` (H1, H1b).** THE SYSTEM SHALL pintar `geofences-add`
+  con **exactamente** esta etiqueta de apertura (solo cambia `style`):
+  `<Button testID="geofences-add" className={atLimit ? 'mt-auto h-14 rounded-16 bg-default' : 'mt-auto h-14
+  rounded-16 bg-accent'} style={atLimit ? KEEP_OPACITY : [chunkyLip.primary, KEEP_OPACITY]}
+  isDisabled={busy || atLimit} …>`, con la etiqueta `<Text className={atLimit ? 'text-17 font-extrabold
+  text-muted' : 'text-17 font-extrabold text-accent-foreground'}>` **sin cambios**.
+  - **R20.1** WHILE `zonas >= 5`: gris del artboard (`bg-default`, texto `text-muted`), sin labio y **sin
+    atenuado**: `StyleSheet.flatten(add.props.style)` es exactamente `{ opacity: 1 }` (no contiene
+    `boxShadow`), `accessibilityState.disabled === true`, y el `className` renderizado **conserva**
+    `disabled:element-disabled` (la clase de heroui sigue ahí; la cancela el `style`).
+  - **R20.2** WHILE `busy` con menos de 5 zonas: receta primaria completa (`bg-accent`, labio
+    `chunkyLip.primary`) **y** `opacity: 1`, con `accessibilityState.disabled === true`. Es la
+    corrección de R7.2: `busy` **sí** cambiaba el aspecto (lo atenuaba heroui); ahora no.
+  - **R20.3** WHILE `zonas < 5` y no `busy` (también con la lista vacía): receta primaria con labio; el
+    `opacity: 1` no tiene efecto visible.
+  - **Test (F)**: el `it` «#189 R7» (clases por conteo) se enmienda (`(enmendado por E4 R20)`): para
+    `count === 5` el estilo aplanado `toEqual({ opacity: 1 })` (hoy: `boxShadow` indefinido), para
+    `count < 5` `toHaveStyle` del labio **y** `opacity: 1`; el `it` «busy» (hoy `toContain('mt-auto h-14
+    rounded-16 bg-accent')` + labio) añade `opacity: 1`; nuevo `it` que con 5 zonas comprueba
+    `className` `toContain('disabled:element-disabled')`. Sondas: P-E4-3 y P-E4-4.
+- **R21 — Zonas: cabecera transparente y título en la fila de la flecha (H3, DE4-3, DE4-4).**
+  - **R21.1 Ruta.** THE SYSTEM SHALL declarar en `src/app/_layout.tsx` la ruta `pets/[petId]/geofences`
+    con `options={{ ...headerOptions, title: '', ...TRANSPARENT_HEADER_OPTIONS }}`, donde
+    `TRANSPARENT_HEADER_OPTIONS` (R23.1) es `{ headerTransparent: true, headerStyle: { backgroundColor:
+    'transparent' } }` y el spread va **después** de `headerOptions` para pisar su `headerStyle`. La ruta
+    `pets/[petId]/geofence-editor` **no cambia** (sigue `{ ...headerOptions, title: '' }`, opaca: la
+    transparencia del formulario la declara el propio formulario, R22). Se elige `_layout.tsx` y no
+    `Stack.Screen` en la pantalla porque Zonas tiene **un solo régimen** (sin ramas con cabecera distinta),
+    el candado de `layout.test.tsx` ya fija las opciones por ruta y no hay efecto que restaurar.
+  - **R21.2 Contenedor.** THE SYSTEM SHALL pintar el `ScrollView` `screen-geofences` con
+    `className="flex-1 bg-background"`, **sin** `contentInsetAdjustmentBehavior` (con la cabecera
+    transparente el contenido ya empieza bajo ella; en iOS el ajuste automático sumaría un segundo
+    desplazamiento) y `contentContainerStyle` exactamente `{ paddingHorizontal: 20, paddingTop: insets.top
+    + HEADER_ROW_TOP, paddingBottom: insets.bottom + 40, gap: 12, flexGrow: 1 }` (con `insets.top = 40` y
+    `HEADER_ROW_TOP = 6` del test: `paddingTop: 46`; el resto igual que R3).
+  - **R21.3 Fila de título.** THE SYSTEM SHALL pintar `geofences-header` con `className="h-11
+    flex-row items-center gap-2"` y `style={{ paddingLeft: ZONES_TITLE_OFFSET }}` (R23.1: 42 = 44 − 10 + 8,
+    el inicio del título del artboard: flecha 44 con `margin-left: -10`, hueco 8). Altura 44 (`h-11`) para
+    que, con `gap: 12` del contenedor, la barra de progreso quede a la misma distancia que en el artboard.
+    El título (`geofences-title`, mismas clases y rol) y el contador (`geofences-counter`) **no cambian**,
+    ni su orden, ni R1.3 (un hijo / dos hijos). El resto de hijos del scroll (R3) no cambia.
+  - **R21.4 Fila en la altura de la flecha.** El centro de la fila queda a `insets.top + 28` (fila de 44
+    en `HEADER_ROW_TOP = 6` dentro de la barra de 56): el título comparte eje con la flecha nativa.
+  - **Test (L, F)**:
+    - **(L)** el `it` «declara pets/[petId]/geofences como undécimo hijo y no singular» se enmienda
+      (`(enmendado por E4 R21)`): su `toEqual` de opciones pasa de `{ headerShown: true, title: '',
+      headerStyle: { backgroundColor: 'token:background' }, headerTintColor: 'token:foreground',
+      headerTitleStyle: { fontFamily: 'Inter-Bold' }, headerShadowVisible: false }` a `{ headerShown: true,
+      title: '', headerStyle: { backgroundColor: 'transparent' }, headerTintColor: 'token:foreground',
+      headerTitleStyle: { fontFamily: 'Inter-Bold' }, headerShadowVisible: false, headerTransparent:
+      true }`; la posición (undécimo hijo) y que no es singular no cambian. El `it` del **Editor** no se
+      toca (sigue opaco).
+    - **(F)** el `it` «respeta las métricas A11 bajo cabecera nativa» (`#189 R3`) se enmienda
+      (`(enmendado por E4 R21)`): `contentInsetAdjustmentBehavior` pasa de `'automatic'` a `undefined` y el
+      `contentContainerStyle` de `{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 64, gap: 12,
+      flexGrow: 1 }` a `{ paddingHorizontal: 20, paddingTop: 46, paddingBottom: 64, gap: 12, flexGrow: 1
+      }`. El `it` de R1.2 (`#189 R1`, clase del encabezado) se enmienda: `className` pasa de
+      `'flex-row items-center gap-2'` a `'h-11 flex-row items-center gap-2'` y se añade que el estilo
+      aplanado tiene `paddingLeft` igual a `ZONES_TITLE_OFFSET` (R23.2). Los `childTestIds`, los textos y
+      R1.3 se conservan tal cual.
+- **R22 — Editor: cabecera transparente en el formulario y píldora en la fila de la flecha (H2, DE4-3).**
+  - **R22.1 Formulario.** WHEN el Editor pinta la rama `GeofenceEditorForm` THE SYSTEM SHALL devolver un
+    fragmento con dos hijos, en este orden: `<Stack.Screen options={TRANSPARENT_HEADER_OPTIONS} />` (de
+    `expo-router`) y el `KeyboardAvoidingView testID="screen-geofence-editor"`. El `Stack.Screen` es
+    **hermano** del `KeyboardAvoidingView` (no hijo), para que R9 (`childTestIds(root)` =
+    `[geofence-editor-map, geofence-editor-form]`) siga valiendo.
+  - **R22.2 Ramas de estado.** WHEN el Editor pinta cualquier rama de R8.3 (esqueleto, `no-tracking`,
+    error de carga, no encontrada, solo dueño) THE SYSTEM SHALL devolver un fragmento `[Stack.Screen,
+    ScrollView]` con `<Stack.Screen options={opaqueHeader} />`, donde `opaqueHeader = useMemo(() => ({
+    headerTransparent: false, headerStyle: { backgroundColor: background } }), [background])` y
+    `const [background] = useThemeColors(['background'])`, ambos **al principio** de `GeofenceEditorScreen`
+    (antes de cualquier retorno temprano: hooks nunca bajo una rama condicional). Así el paso formulario →
+    estado restaura la cabecera opaca. R8.3 y R14 no cambian (el título sigue siendo el primer hijo del
+    `ScrollView`; el `Stack.Screen` es su hermano).
+  - **R22.3 Teclado.** THE SYSTEM SHALL pasar `keyboardVerticalOffset` de `{headerHeight}` a `{0}`
+    (el `KeyboardAvoidingView` empieza ahora en `y = 0`, no bajo la cabecera) y **eliminar** de
+    `geofence-editor/index.tsx` la importación `HeaderHeightContext` y el `useContext`. Con `layout` (y 0,
+    alto 700) y `keyboardWillShow` con `screenY` 500: `paddingBottom` **200** (`700 − (500 − 0)`), y `0`
+    antes del teclado. **El texto de R9 «el bloque del teclado `paddingBottom: 291` se conserva idéntico»
+    queda sustituido por este**: la regresión de edge-to-edge se sigue candando, con el valor nuevo.
+  - **R22.4 Píldora en la fila de la flecha.** THE SYSTEM SHALL pintar, dentro de `View
+    testID="geofence-editor-map"`, **después** de `PetMap`, un `View testID="geofence-editor-title-row"`
+    con `className="absolute justify-center"`, `pointerEvents="box-none"` y `style={{ top: insets.top,
+    left: EDITOR_PILL_LEFT, height: HEADER_BAR_HEIGHT }}` (R23.1: 70 = 16 + 44 + 10, la posición de la
+    píldora del artboard; 56 = barra nativa), que contiene el `BlurView testID="geofence-editor-title-blur"`
+    de R8.2 con el `className` cambiado de `absolute left-4 top-3 overflow-hidden rounded-full` a
+    `self-start overflow-hidden rounded-full` (`intensity={48}`, `blurMethod`, `tint` y el `Text
+    geofence-editor-title` interior **sin cambios**). El mapa llega a `y = 0`. La cadena de padres es
+    `geofence-editor-title` → `geofence-editor-title-blur` → `geofence-editor-title-row` →
+    `geofence-editor-map`; el orden de hijos de `geofence-editor-map` es `[map-view, geofence-editor-title-row,
+    (geofence-editor-map-hint-blur)]`. El botón de volver sigue siendo el nativo (el de cristal sigue fuera
+    de alcance, §5): su contraste sobre el mapa se comprueba en el smoke.
+  - **Test (E)**: 
+    - El `jest.mock('expo-router', …)` del test (hoy `({ router: { back: jest.fn() } })`, **sin** `Stack`)
+      pasa a incluir `Stack: { Screen: <jest.fn que devuelve null> }` (nombre con prefijo `mock` por el
+      alzado de jest). Se **verifica contra el fichero** antes de escribirlo (regla de mocks por intención).
+    - `describe('#189 R22: …')`: en la rama del formulario (editar, crear, solo lectura) la última llamada
+      a `Stack.Screen` recibe `options` `toEqual({ headerTransparent: true, headerStyle: { backgroundColor:
+      'transparent' } })`; en **cada una de las cinco ramas de estado** recibe `{ headerTransparent: false,
+      headerStyle: { backgroundColor: 'background' } }` (el mock de `useThemeColors` del test devuelve el
+      nombre del token); `it` de transición formulario → estado (montar el formulario y forzar con
+      `queryClient.setQueryData` en la clave de la lista un `kind: 'no-tracking'` o `'not-found'`): la
+      última llamada pasa a opaca; `it` de identidad: tras un `rerender` sin cambios, `Object.is(opciones
+      previas, opciones nuevas)` es `true` en las dos ramas (sin objetos nuevos por render).
+    - `#189 R9` enmendado (`(enmendado por E4 R22)`): el `it` «compone mapa y formulario…» cambia
+      `paddingBottom: 291` por `paddingBottom: 200` (la fila `#146 R6` del traceability se actualiza); el
+      `Provider value={91}` del `wrapper` se **conserva** como guarda inerte (si alguien restaura
+      `keyboardVerticalOffset={headerHeight}` el valor vuelve a 291 y el test se pone rojo).
+    - `#189 R8` / `#189 R9` enmendados: `geofence-editor-title-blur` ya no es hijo directo del mapa; los
+      `childTestIds(map)` pasan de `['map-view', 'geofence-editor-title-blur', …]` a `['map-view',
+      'geofence-editor-title-row', …]`; `blur.parent === map` pasa a `blur.parent` = la fila y la fila
+      con `parent === map`; la clase del blur y los `style` de la fila (`top: 40`, `left: 70`, `height:
+      56` con el `insets.top = 40` del test) se asertan con literales (ver R23.2 para su ventana).
+    - Candado de fuente (C): `grep -cF HeaderHeightContext` = **0** en `geofence-editor/index.tsx`
+      (ancla negativa, probada con mutación: P-E4-9).
+- **R23 — Geometría de las cabeceras en un solo sitio y tolerancia N (DE4-2).**
+  - **R23.1** THE SYSTEM SHALL crear `src/theme/header-layout.ts` (precedente: `touch-target.ts`) con
+    **seis** `export const` y un comentario que explica que la geometría deriva de los artboards y que la
+    flecha nativa se mide en dispositivo:
+    `HEADER_BAR_HEIGHT = 56`, `BACK_BUTTON_SIZE = 44`, `HEADER_ROW_TOP = (HEADER_BAR_HEIGHT -
+    BACK_BUTTON_SIZE) / 2` (= 6), `ZONES_TITLE_OFFSET = BACK_BUTTON_SIZE - 10 + 8` (= 42),
+    `EDITOR_PILL_LEFT = 16 + BACK_BUTTON_SIZE + 10` (= 70) y `TRANSPARENT_HEADER_OPTIONS = {
+    headerTransparent: true, headerStyle: { backgroundColor: 'transparent' } }` (sin `as const` si el tipo de
+    `options` lo rechaza). Ninguna otra pieza escribe estos números: Zonas, el Editor y `_layout.tsx` los
+    importan.
+  - **R23.2 Tolerancia N = 8 dp (DE4-2).** El humano mide en el smoke la posición real de la flecha
+    nativa. Si el título de Zonas o la píldora del Editor se desvían **hasta 8 dp** del artboard, se
+    ajustan **solo** `ZONES_TITLE_OFFSET` y/o `EDITOR_PILL_LEFT` en `header-layout.ts` (un commit, sin
+    enmienda ni firma). **Fuera de 8 dp se necesita enmienda E5 con nueva firma.**
+  - **Test (C)**: `#189 R23` en `geofences-canvas-fidelity.test.ts` con **dos** familias de aserción, para
+    que no sea tautología: (a) **cableado**: el estilo aplanado de `geofences-header` tiene `paddingLeft`
+    igual a `ZONES_TITLE_OFFSET` importado, el de `geofence-editor-title-row` tiene `left` igual a
+    `EDITOR_PILL_LEFT`, y `top`/`height`/`paddingTop` salen de `HEADER_BAR_HEIGHT`/`HEADER_ROW_TOP` (en los
+    tests de pantalla F y E, que importan las constantes); (b) **ventana** con literales **propios del
+    test**, independientes de producción: `ZONES_TITLE_OFFSET` ∈ [34, 50] y `EDITOR_PILL_LEFT` ∈ [62, 78]
+    (42 ± 8 y 70 ± 8), y `HEADER_BAR_HEIGHT` = 56, `BACK_BUTTON_SIZE` = 44. Las dos pantallas **no**
+    escriben `42`, `70` ni `56` como literal de estilo (barrido de fuente: P-E4-8).
+- **R24 — Carta y candados de E4.**
+  - **R24.1** THE SYSTEM SHALL enmendar `docs/ui-guidelines.md` en el mismo PR, **sin** añadir casilla a la
+    carta (la firma de la casilla E4 de este fichero autoriza estas ediciones y nada más; Codex **no**
+    escribe `[X]` en ninguna parte):
+    - **A11 (línea de Zonas)**: la frase «Zonas seguras (#189): `paddingHorizontal: 20`, `paddingTop: 24`,
+      `gap: 12`, `paddingBottom: insets.bottom + 40`.» pasa a «Zonas seguras (#189): `paddingHorizontal: 20`,
+      `paddingTop: insets.top + 6`, `gap: 12`, `paddingBottom: insets.bottom + 40`.», en la regla 6 y en el
+      bloque «Enmienda #189» (las dos apariciones).
+    - **Frase nueva en la misma excepción de fidelidad al canvas** (regla 6): «Cabecera nativa transparente
+      (#189 E4): Zonas seguras y la rama de formulario del Editor usan `headerTransparent: true` con
+      `headerStyle: { backgroundColor: 'transparent' }`; el contenido empieza bajo la cabecera, el título
+      comparte fila con la flecha, el `paddingTop` suma `insets.top` y no se usa
+      `contentInsetAdjustmentBehavior`. Las ramas de estado del Editor conservan la cabecera opaca.»
+    - **Excepción A11 de cabecera opaca** (la frase que lista `pets/[petId]/geofences` entre las pantallas
+      cuya cabecera consume el inset superior): se añade al final «`pets/[petId]/geofences` queda fuera de
+      esta excepción desde #189 E4 (cabecera transparente, ver más abajo)». La misma nota de una línea va en
+      `docs/conventions.md` (frase equivalente de §Dimensiones).
+    - **Regla 13 (receta deshabilitada)**: frase nueva «El bloqueo (`isDisabled`) no atenúa: en #189 los
+      `Switch` y `Button` de heroui cancelan el 50 % de `disabled:element-disabled` con `KEEP_OPACITY`, y la
+      receta gris del límite no lleva opacidad.»; las frases existentes de R16.3 **no se tocan**.
+    - Las líneas «título en contenido y cabecera nativa con `title: ''`» (regla de títulos), «Título en
+      contenido (D-H)» y «El botón atrás pertenece a la cabecera nativa con `title: ''`» **siguen siendo
+      ciertas** (el botón nativo y `title: ''` se conservan) y **no se tocan**.
+  - **R24.2 Test (C)**: `#189 R16.1` se enmienda (`(enmendado por E4 R24)`): la frase de Zonas pasa a la
+    nueva con `insets.top + 6`; nuevos `it` `#189 R24.1/R24.2/R24.3` con un `toContain` de la frase fija
+    de transparencia, de la nota de la excepción opaca y de la frase de `KEEP_OPACITY`. Los candados de la
+    carta de `design-drift` y #177 R10 siguen verdes.
+
+#### Texto que E4 sustituye (antes → después)
+
+| Cláusula | Antes | Después | R |
+|---|---|---|---|
+| R1.1 (opciones de la ruta de Zonas) | `{ ...headerOptions, title: '' }` | `{ ...headerOptions, title: '', ...TRANSPARENT_HEADER_OPTIONS }` (el Editor no cambia) | R21.1 |
+| R1.2 (`geofences-header`) | `className="flex-row items-center gap-2"` | `className="h-11 flex-row items-center gap-2"` y `style={{ paddingLeft: ZONES_TITLE_OFFSET }}` | R21.3 |
+| R3 (contenedor de Zonas) | `contentInsetAdjustmentBehavior="automatic"`, `paddingTop: 24` | sin `contentInsetAdjustmentBehavior`; `paddingTop: insets.top + HEADER_ROW_TOP` (46 con el mock) | R21.2 |
+| R5.5 (`Switch` de la fila «sin cambios») | sin `style` | `style={KEEP_OPACITY}` (resto sin cambios) | R19.2 |
+| R7.2 (frase falsa) | «`busy` (escritura en curso) **no** cambia el aspecto: conserva la receta primaria con `isDisabled`» | «`busy` conserva la receta primaria con `isDisabled` y, **desde E4, sin atenuado**: heroui lo atenuaba al 50 % y `style` lo cancela» | R20.2 |
+| R7.1/R7.2 (`style` del botón) | `style={atLimit ? undefined : chunkyLip.primary}` | `style={atLimit ? KEEP_OPACITY : [chunkyLip.primary, KEEP_OPACITY]}` | R20 |
+| R8.2 (píldora) | `className="absolute left-4 top-3 overflow-hidden rounded-full"`, hijo directo de `geofence-editor-map` | `className="self-start overflow-hidden rounded-full"` dentro de `geofence-editor-title-row` (R22.4) | R22.4 |
+| R9 (teclado) | `keyboardVerticalOffset={headerHeight}`; «`paddingBottom: 291` se conserva idéntico» | `keyboardVerticalOffset={0}`; `paddingBottom: 200` | R22.3 |
+| R12 (`Switch` Activa «sin cambios») | sin `style` | `style={KEEP_OPACITY}` | R19.2 |
+| R13.1 (`style` de Eliminar) | `style={chunkyLip.neutral}` | `style={[chunkyLip.neutral, KEEP_OPACITY]}` | R19.2 |
+| R13.2 (`style` de Guardar y «`busy` mantiene … la receta primaria») | `style={name.trim() === '' ? undefined : chunkyLip.primary}` | `style={name.trim() === '' ? KEEP_OPACITY : [chunkyLip.primary, KEEP_OPACITY]}`; `busy` mantiene la receta primaria y la opacidad 1 | R19.2 |
+| R16.1 (Zonas) | `paddingTop: 24` | `paddingTop: insets.top + 6` | R24.1 |
+| M9 | «2 líneas, delta −2» | base real 0 (E1 lo aplicó); no se re-mide a 2 | M18 |
+
+#### Candados agregados que se mueven (E4: antes → después)
+
+Todas las cifras se miden en H0-E4 (la base de abajo es la de `18f86849`); el total es base + delta. Los
+ficheros de la lista cerrada se lanzan solos y completos tras el verde de su R.
+
+| Candado (fichero, ancla) | Qué mide | Antes → después | R |
+|---|---|---|---|
+| `chunky-cta-canvas-fidelity.test.ts`, `#177 R3.1` (`it.each(CTA_ROWS)`), filas `geofences-add` y `geofence-editor-save` | el `style` de la etiqueta de apertura | `style={${condition} ? undefined : chunkyLip.primary}` → `style={${condition} ? KEEP_OPACITY : [chunkyLip.primary, KEEP_OPACITY]}` **(enmienda)**; las otras 15 filas conservan `style={chunkyLip.primary}`; `className`, anclas `isDisabled`/`onPress` y los prohibidos no cambian | R19 (Guardar), R20 (Añadir) |
+| ídem, `#177 R4.1` (`it.each(NEUTRAL_ROWS)`), fila `geofence-editor-delete` | el `style` neutro | `'style={chunkyLip.neutral}'` → `'style={[chunkyLip.neutral, KEEP_OPACITY]}'` **solo para esa fila**; las demás filas neutras conservan la forma vieja **(enmienda)** | R19 |
+| ídem, `#177 R7.5` | inventario de `style=…` por fichero | primario `style=\{(?:…)? chunkyLip\.primary\}`: la expresión regular se amplía para casar las dos formas nuevas; **recuentos sin cambio** (`geofences` 1 → 1, `geofence-editor` 1 → 1, `add-pet` 2 → 2, el resto 1 → 1); neutro `style=\{chunkyLip\.neutral\}`: se amplía para casar `style={[chunkyLip.neutral, KEEP_OPACITY]}`, recuentos 1 → 1 por fila de `NEUTRAL_ROWS`; `primaryCompact` y `chunkyLip\.primary\b` sin cambio **(enmienda)** | R19, R20 |
+| ídem, `#177 R8.1` | quién recibe cada estilo | el predicado se amplía igual que `R7.5`; `primaryIds`, `neutralIds` y `['reminders-add-link']` **sin cambio** **(enmienda)** | R19, R20 |
+| ídem, `radii` / `#177 R7.3` (`rounded-16`) | radios por fichero | **sin cambio** (`geofences` 2, `geofence-editor` 3; total `26 + 1 + 1 + 2`) | - |
+| ídem, `#177 R3.2`, `#177 R6.2` | etiquetas `Text` y `Button.Label` | **sin cambio** (la etiqueta y el número de `Button.Label` no se mueven) | - |
+| `consistency-classnames.test.ts`, `style={CONTINUOUS_CORNER}` global y por fichero, `TABULAR_NUMS` | usos de los estilos nativos | **sin cambio** (E4 no añade usos); las importaciones de las pantallas pasan a `import { CONTINUOUS_CORNER, KEEP_OPACITY } from '../../theme/native-styles';` (Zonas) y `import { CONTINUOUS_CORNER, KEEP_OPACITY, TABULAR_NUMS } from '../../theme/native-styles';` (Editor), que ningún candado fija por texto (los únicos candados de import exacto son los de `history`) | R19 |
+| `heroui-text-size-merge.test.ts`, pisos 197 y 163 | nodos HeroUI / con `className` | **sin cambio** (E4 no añade ni quita componentes de heroui) | - |
+| `ui-language.test.ts`, `ui-copy-table.ts`, `language-provider.test.tsx` | copy y catálogo | **sin cambio** (E4 no añade ni cambia ninguna `t('…')` ni clave) | - |
+| `geofences-canvas-fidelity.test.ts`, `#189 R16.1` | frase de la carta de Zonas | `paddingTop: 24` → `paddingTop: insets.top + 6` **(enmienda)** + `it` nuevos `#189 R19`, `#189 R23`, `#189 R24.1/2/3` | R23, R24 |
+| `geofences-canvas-fidelity.test.ts`, `#189 R18` (candados de fuente) | hex, corchetes, `StyleSheet.create`, `text-NN` | **sin cambio de comportamiento**; `'transparent'` no es hex y `style={{ … }}` en línea no está vetado; se **re-mide** que siguen verdes con el estilo en línea de la fila de Zonas | R21, R22 |
+| `app/__tests__/layout.test.tsx` | opciones de la ruta de Zonas | `toEqual` con `headerStyle: { backgroundColor: 'token:background' }` → `{ backgroundColor: 'transparent' }` y `+ headerTransparent: true`; la ruta del Editor sin cambio; `title: ''` de las dos sin cambio | R21 |
+| `screens/geofences/index.test.tsx`, métricas A11 y R1.2 | `contentContainerStyle` y clase del encabezado | `paddingTop: 24` → `46`; `contentInsetAdjustmentBehavior: 'automatic'` → `undefined`; `'flex-row items-center gap-2'` → `'h-11 flex-row items-center gap-2'` | R21 |
+| `screens/geofence-editor/index.test.tsx`, `#146 R6` / `#189 R9` (teclado) | `paddingBottom` con el teclado | `291` → `200` (`700 − (500 − 0)`) | R22 |
+
+Regla de H0-E4 (guardas de cadena en estado intermedio): **mide la base de cada fila antes de tocarla**,
+escríbela en `progress/impl_mobile-geofences-canvas-fidelity.md` y rehace la suma al cerrar cada R. Un 0 medido
+al final de la cadena puede ser falso a mitad de ella: las anclas negativas (M12, M14) se miden **tras** el
+verde de su R. Un candado agregado que se queda verde cuando debía moverse es una alerta. La regla residual
+de §4.2 sigue en vigor para los tres ficheros de candados agregados (`consistency-classnames`,
+`design-drift`, `heroui-text-size-merge`), que **no** están en la lista de edición de E4: si alguno se pone
+rojo, PARA y reporta (el delta esperado es cero).
+
+#### Sondas de mutación (cada candado, en su zona ciega)
+
+| # | Mutación plantada | Debe poner en rojo |
+|---|---|---|
+| P-E4-1 | quitar `style={KEEP_OPACITY}` del `Switch` `geofence-<id>-active` | el candado de fuente R19.2 (y, si el nodo lo expone, el `it` (F) de opacidad bajo `busy`) |
+| P-E4-2 | añadir un `Button`/`Switch` con `isDisabled` y sin `KEEP_OPACITY` (p. ej. `isDisabled={busy}` en `geofences-retry`) | el barrido de **todas** las etiquetas de R19.2 (y el conteo 2 / 3 de M10) |
+| P-E4-3 | `geofences-add` con `style={atLimit ? undefined : chunkyLip.primary}` (forma vieja) | el `it` de R20 (`opacity` bajo `busy` y con 5) y `#177 R3.1` |
+| P-E4-4 | `geofences-add` con `style={chunkyLip.primary}` también en el límite | R20.1 (`toEqual({ opacity: 1 })` falla por `boxShadow`) |
+| P-E4-5 | quitar `isDisabled` de `geofences-add` o del `Switch` «para arreglar el parpadeo» | `accessibilityState.disabled` y los bloqueos de R17 (`bloquea los dos interruptores mientras escribe`, `no abre el editor mientras una escritura está en vuelo`) |
+| P-E4-6 | la ruta de Zonas con `headerTransparent: true` pero **sin** `headerStyle: { backgroundColor: 'transparent' }` | `layout.test.tsx` (`toEqual`) |
+| P-E4-7 | restaurar `contentInsetAdjustmentBehavior="automatic"` o `paddingTop: 24` en Zonas | el `it` de métricas (F) y la ancla M14 |
+| P-E4-8 | `ZONES_TITLE_OFFSET = 60` (fuera de ventana); `geofences-header` sin `paddingLeft`; `paddingLeft: 50` literal en la pantalla (dentro de ventana pero sin constante) | la ventana (R23.2 b); el cableado (R23.2 a); el barrido de literales de R23.2 |
+| P-E4-9 | `keyboardVerticalOffset={headerHeight}` restaurado; o solo el `import { HeaderHeightContext }` restaurado | el `it` de teclado (291 ≠ 200); la ancla negativa M12 (`grep -cF HeaderHeightContext` ≠ 0) |
+| P-E4-10 | la fila de la píldora con `left: 16` (valor viejo) o el `BlurView` con `absolute left-4 top-3` | el `it` de R22.4 (clase y `left`) y los `childTestIds` del mapa |
+| P-E4-11 | la rama de estados sin `Stack.Screen`, o el formulario sin `Stack.Screen` | el `it` de transición y el de las cinco ramas de R22.2 |
+| P-E4-12 | `options` como objeto en línea nuevo en cada render | el `it` de identidad de R22 |
+| P-E4-13 | quitar `h-11` de `geofences-header` | el `it` de R1.2 enmendado |
+
+Las anclas negativas (M12: `HeaderHeightContext` = 0; M14: `contentInsetAdjustmentBehavior` = 0 en Zonas;
+la forma vieja `? undefined : chunkyLip.primary` = 0 en las dos pantallas) se **prueban contra la mutación
+plantada** (P-E4-9, P-E4-7, P-E4-3): un `grep = 0` que nunca se ha visto fallar no es un candado.
+
+#### Lista cerrada de ficheros que E4 puede tocar
+
+Producción (`mobile-pet-tracker/`): `src/theme/native-styles.ts`, `src/theme/header-layout.ts` (nuevo),
+`src/screens/geofences/index.tsx`, `src/screens/geofence-editor/index.tsx`, `src/app/_layout.tsx`.
+Tests: `src/screens/geofences/index.test.tsx`, `src/screens/geofence-editor/index.test.tsx`,
+`src/app/__tests__/layout.test.tsx`, `src/__tests__/chunky-cta-canvas-fidelity.test.ts`,
+`src/__tests__/geofences-canvas-fidelity.test.ts`. Docs: `docs/ui-guidelines.md`, `docs/conventions.md`
+(una frase, R24.1). Registro: `progress/impl_mobile-geofences-canvas-fidelity.md` y
+`specs/mobile-geofences-canvas-fidelity/traceability.md`. **Fuera de la lista** (PARA y reporta si hace
+falta tocarlos): cualquier otra pantalla, `feature_list.json`, `init.sh`, `src/__tests__/design-drift.test.ts`,
+`consistency-classnames.test.ts`, `heroui-text-size-merge.test.ts`, el backend, `global.css`.
+
+#### Orden rojo → verde de E4 y regla de commits
+
+Un commit rojo (solo tests) y un commit verde (solo producción y docs) por requisito; **nunca**
+implementación y tests en el mismo commit (en #19 Codex los mezcló en uno y se incumplió C4 de
+`CHECKPOINTS.md`). Convención: `test(mobile): #189 E4 R<n> rojo — <desc>` y `feat(mobile): #189 E4 R<n>
+<desc>`. Esperas: seguir `.claude/agents/leader.md` §Esperas (sin esperar al contador de mock; jest de un
+fichero con `bunx jest <ruta> --testTimeout=30000`, solo con `pgrep -f '[n]ode_modules/(.bin/jest|jest-worker)'`
+y `pgrep -f '[i]nit.sh'` vacíos; **no** `./init.sh`; RNTL 14 con `await` en `fireEvent`, `render` y `act`).
+Orden, porque cada paso usa el anterior:
+
+1. **R23** (constantes y ventana): rojo = el test importa un módulo que no existe; verde = `header-layout.ts`.
+2. **R19** (`KEEP_OPACITY`, los dos `Switch`, Eliminar y Guardar del Editor) con la enmienda de `#177 R3.1`
+   (fila de Guardar), `R4.1`, `R7.5` y `R8.1` del lado del Editor.
+3. **R20** («Añadir zona») con la enmienda de `#177 R3.1` (fila de Añadir) y de `R7.5`/`R8.1` del lado de Zonas.
+4. **R21** (ruta, contenedor y fila de título de Zonas) con `layout.test.tsx`.
+5. **R22** (Editor: `Stack.Screen` por rama, teclado, píldora).
+6. **R24** (carta y sus candados) y, al final, el barrido de M10-M19 con base + delta.
+
+**Smoke de E4**: los pasos 6-10 de §6 los corre el humano; el 0.5 real y la posición real de la flecha nativa
+**no** los puede ver ningún test.
+
 ## §5. Fuera de alcance
 
 - **La animación `breathe`** del círculo del mapa (explícita en la descripción; spike N2/N3b).
@@ -540,6 +952,14 @@ commit verde.
 - **Otros artboards** del canvas y la unificación del patrón de cristal con #180 (extraer un componente
   `GlassPill` es una feature de refactor).
 - **Dark mode propio**: los tokens ya resuelven los dos temas; no hay requisitos nuevos por tema.
+- **El mismo atenuado `disabled:element-disabled` en el resto de la app** (DE4-5): los `Switch`/`Button`
+  de heroui con `isDisabled` de otras pantallas siguen al 50 %; E4 solo cubre las dos pantallas de #189.
+  Candidato a una feature propia (`KEEP_OPACITY` ya existiría).
+- **iOS** (DE4-3): el smoke de #189 es Android; las cabeceras transparentes y los offsets de E4 no se
+  verifican visualmente en iOS.
+- **Cabecera con fondo al desplazar** en Zonas (DE4-4): el contenido pasa bajo la flecha; es otra feature.
+- **Botón de volver de cristal** sobre el mapa del Editor: sigue fuera (su contraste sobre el mapa se
+  comprueba en el smoke de E4).
 
 ## §6. Prueba de humo (humano)
 
@@ -552,9 +972,27 @@ En el dev build Android del PC del humano, claro y oscuro, con dueño y con un r
 4. Abrir el teclado en el campo Nombre: la hoja sube y no tapa el campo; el mapa se encoge.
 5. Reduce motion activo: las filas aparecen sin movimiento.
 
+Pasos añadidos por E4 (§4.4), mismo dev build Android, claro y oscuro:
+6. **Sin parpadeo ni atenuado.** Zonas: activar y desactivar un interruptor, y borrar una zona: ni los
+   interruptores ni «Añadir zona» se atenúan mientras escribe. Editor: escribir en Nombre y pulsar Guardar,
+   Eliminar y el interruptor Activa: ninguno se atenúa mientras `busy`. (R19; jest no ve el 0.5.)
+7. **«Añadir zona» con 5 zonas** se ve gris `bg-default` con texto apagado, como el botón `disabled` del
+   artboard, y no más oscuro. (R20)
+8. **Zonas, cabecera**: flecha, título 26/900 y contador «n/5» en **una** fila; el título empieza a unos
+   62 dp del borde (artboard, ±8 dp); el contenido no queda tapado por la cabecera; al desplazar, las filas
+   pasan bajo la flecha (aceptado, DE4-4). (R21, R23)
+9. **Editor, cabecera**: el mapa llega al borde superior; la píldora «Zona segura» queda a la derecha de
+   la flecha en el mismo eje, a unos 70 dp del borde (±8 dp); la flecha se lee sobre el mapa en claro y
+   oscuro; al abrir el Editor **no** hay destello de cabecera opaca a transparente (si lo hay: fallback
+   de design.md, otra enmienda); las ramas de estado (esqueleto, error, no encontrada) conservan la
+   cabecera opaca y el título 26/900. (R22, R23)
+10. **Teclado con offset 0**: abrir el teclado en Nombre; el campo no queda tapado y la hoja sube
+    (equivale a `paddingBottom` 200 del test). (R22.3)
+
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-19) ← gate obligatorio antes de implementar
 - [X] Enmienda E1 (§4.1) aprobada por humano (fecha: 2026-10-21) ← gate obligatorio antes de reanudar desde R6
 - [X] Enmienda E2 (§4.2) aprobada por humano (fecha: 2026-10-21) ← gate obligatorio antes de reanudar la comprobación previa
 - [X] Enmienda E3 (§4.3) aprobada por humano (fecha: 2026-10-21) ← gate obligatorio antes de reanudar R18
+- [ ] Enmienda E4 (§4.4) aprobada por humano (fecha: ____) ← gate obligatorio antes de reanudar R23 (y resolver DE4-1..DE4-5)

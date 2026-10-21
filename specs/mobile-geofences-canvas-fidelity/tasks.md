@@ -165,3 +165,58 @@ el gate; si firma otro, la spec se enmienda antes del handoff. `Date.now()` no v
 - [ ] Medir los candados agregados de requirements §4 tras el último verde y registrar base + delta.
 - [ ] `progress/impl_mobile-geofences-canvas-fidelity.md` completo; `traceability.md` sin filas «pendiente».
 - [ ] Smoke (requirements §6) lo corre el humano.
+
+## Enmienda E4 (§4.4): no empieces sin la casilla E4 firmada
+
+Commits test-primero (rojo solo tests, verde solo producción y docs), un par por requisito; esperas según
+`.claude/agents/leader.md` §Esperas; sin `./init.sh`; RNTL 14 con `await`. Mide la base de M10-M19 antes
+de tocar y registra base + delta en `progress/impl_mobile-geofences-canvas-fidelity.md`.
+
+## H0-E4 — Medidas previas
+
+- [ ] Verificar que la casilla E4 está firmada y que DE4-1..DE4-5 siguen con el valor por defecto (o el que fijó el humano).
+- [ ] Medir M10-M19 con los comandos de requirements §4.4 y anotar la base.
+- [ ] Verificar contra los ficheros el mock de `expo-router` de los tests de pantalla antes de ampliarlo.
+
+## R23 — Constantes de cabecera
+
+- [ ] (1) Rojo (C): test que importa `src/theme/header-layout.ts` (no existe) con ventana propia (42 ± 8, 70 ± 8, 56, 44) y sondas P-E4-8.
+- [ ] (2) Implementación mínima: crear `header-layout.ts` con las seis `export const`.
+- [ ] (3) Refactor.
+
+## R19 — Bloqueado no es atenuado
+
+- [ ] (1) Rojo: (C) barrido de `isDisabled` ⇒ `KEEP_OPACITY` y definición en `native-styles.ts`; (F)/(E) `opacity === 1` bajo `busy`; enmendar `#177 R3.1` (fila Guardar), `R4.1` (Eliminar), `R7.5`, `R8.1` del lado del Editor.
+- [ ] (2) Implementación mínima: `KEEP_OPACITY` + los dos `Switch` + Eliminar + Guardar del Editor.
+- [ ] (3) Refactor.
+
+## R20 — «Añadir zona»
+
+- [ ] (1) Rojo (F): límite `toEqual({ opacity: 1 })`, `busy` con receta primaria y opacidad 1, clase `disabled:element-disabled` presente; enmendar `#177 R3.1` (fila Añadir), `R7.5`, `R8.1` del lado de Zonas; corregir la frase falsa de R7.2.
+- [ ] (2) Implementación mínima: `style={atLimit ? KEEP_OPACITY : [chunkyLip.primary, KEEP_OPACITY]}`.
+- [ ] (3) Refactor.
+
+## R21 — Zonas, cabecera transparente
+
+- [ ] (1) Rojo: (L) `layout.test.tsx` con `headerStyle` transparente y `headerTransparent: true`; (F) `paddingTop: 46`, sin `contentInsetAdjustmentBehavior`, `h-11 flex-row items-center gap-2` y `paddingLeft` = `ZONES_TITLE_OFFSET`.
+- [ ] (2) Implementación mínima: `_layout.tsx` y pantalla de Zonas.
+- [ ] (3) Refactor.
+
+## R22 — Editor, cabecera transparente
+
+- [ ] (1) Rojo (E): mock de `Stack.Screen`; opciones por rama, transición, identidad (`Object.is`); teclado 200 con `paddingBottom: 0` antes; `childTestIds` y cadena de padres con `geofence-editor-title-row`; ancla negativa `HeaderHeightContext` = 0 probada con P-E4-9.
+- [ ] (2) Implementación mínima: `Stack.Screen` por rama, `useMemo`, `keyboardVerticalOffset={0}`, fila de la píldora.
+- [ ] (3) Refactor.
+
+## R24 — Carta
+
+- [ ] (1) Rojo (C): enmendar `#189 R16.1` y añadir `#189 R24.1/2/3` con las frases fijas.
+- [ ] (2) Editar `docs/ui-guidelines.md` y una frase en `docs/conventions.md` (sin escribir `[X]`).
+- [ ] (3) Refactor.
+
+## Cierre E4
+
+- [ ] Re-medir M10-M19 y los candados agregados de requirements §4.4 (base + delta); anclas negativas tras su verde.
+- [ ] Sondas P-E4-1..13 ejecutadas y registradas en el informe.
+- [ ] `traceability.md` sin filas «pendiente» de R19-R24.
+- [ ] Smoke §6 pasos 6-10: lo corre el humano; no se afirma ejecutado.

@@ -96,3 +96,91 @@ Capa de presentación (UI) únicamente:
 - **Sombra de la hoja con valor ad hoc**: la carta prohíbe valores sin token; queda fuera de alcance.
 - **Icono de círculo discontinuo propio (SVG)**: añade un activo no verificado en `reicon`; `Map` cubre
   la función y se declara como decisión D1.
+
+## Enmienda E4 (2026-10-21): bloqueo sin atenuado y cabeceras transparentes
+
+Decisiones técnicas de alto nivel; requisitos y literales exactos en `requirements.md` §4.4 (R19-R24).
+
+**Capas**: solo presentación (UI) y tema. Sin cambios de dominio, aplicación, API ni backend.
+
+### Bloqueo sin atenuado (R19, R20)
+
+- **Causa**: heroui añade `disabled:element-disabled` (opacidad 0.5) a `Switch` y `Button` cuando
+  `isDisabled`. `busy` activa `isDisabled` en las filas y en «Añadir zona»: de ahí el parpadeo, y de ahí el
+  gris del límite demasiado apagado. R7.2 original lo negaba por error.
+- **Solución (opción A del humano)**: `KEEP_OPACITY = { opacity: 1 }` en `src/theme/native-styles.ts`
+  (junto a `CONTINUOUS_CORNER` y `TABULAR_NUMS`) aplicado por `style`. `style` es lo último que componen
+  uniwind (`[className, style]`), el `Switch` (`[…, style]`) y el `Button` (`[buttonRoot, style]`), así que
+  gana a la clase de forma determinista. `isDisabled`, `accessibilityState.disabled`, la clase
+  `disabled:element-disabled` y el bloqueo de R17 no se tocan.
+- **Candado de fuente genérico**: toda etiqueta `<Switch`/`<Button` con `isDisabled=` debe llevar
+  `KEEP_OPACITY` (barrido, no lista de `testID`): un elemento nuevo con `isDisabled` y sin la constante pone
+  rojo el candado.
+- **Límite de jest**: no resuelve `className` ni dibuja el 0.5. Los tests prueban la forma; el efecto real
+  lo comprueba el humano en el smoke (§6, pasos 6-7).
+- **Alcance en el Editor** (DE4-1): los tres elementos con `isDisabled`, incluido Guardar con nombre vacío,
+  para que la receta gris sea una sola en las dos pantallas.
+
+### Dos regímenes de cabecera (R21, R22, R23)
+
+| Pantalla / rama | Cabecera | Dónde se declara | Cómo se prueba |
+|---|---|---|---|
+| Zonas (`pets/[petId]/geofences`) | transparente, siempre | `_layout.tsx`: `{ ...headerOptions, title: '', ...TRANSPARENT_HEADER_OPTIONS }` | `layout.test.tsx` (`toEqual`) |
+| Editor, rama formulario | transparente | `Stack.Screen options={TRANSPARENT_HEADER_OPTIONS}` en `GeofenceEditorForm` | mock de `Stack.Screen` en el test del Editor |
+| Editor, ramas de estado | opaca (como hoy) | `Stack.Screen options={opaqueHeader}` en la rama de estados | ídem, cinco ramas + transición |
+
+- **Por qué `_layout.tsx` en Zonas y `Stack.Screen` en el Editor**: Zonas tiene un solo régimen y las
+  opciones por ruta ya están candadas en `layout.test.tsx`. El Editor tiene dos regímenes según la rama; la
+  ruta no sabe en qué rama está, así que la rama declara su cabecera. La ruta del Editor queda opaca como
+  base.
+- **Cada rama declara su `Stack.Screen`**: `Stack.Screen` llama a `navigation.setOptions` en un efecto y
+  **no restaura** al desmontarse; si solo el formulario declarase, la transición formulario → estado
+  (p. ej. la lista pasa a `no-tracking`) dejaría la cabecera transparente sobre una pantalla opaca.
+- **Identidad estable de las opciones**: constante de módulo (`TRANSPARENT_HEADER_OPTIONS`) y `useMemo` por
+  `background` (opaca). Un objeto nuevo por render dispararía `setOptions` en cada render. El `Stack.Screen`
+  es **hermano** del `KeyboardAvoidingView`/`ScrollView` (fragmento), para no romper R8.3 ni R9.
+- **`headerStyle` obligatorio**: en react-navigation `headerStyle.backgroundColor` gana a
+  `headerTransparent`; las opciones transparentes llevan las dos y se aplican **después** de `headerOptions`.
+- **Insets**: bajo cabecera transparente `insets.top` ya no está consumido; por eso `paddingTop: insets.top
+  + HEADER_ROW_TOP` en Zonas y `top: insets.top` en la fila de la píldora. `contentInsetAdjustmentBehavior`
+  sale de Zonas (iOS lo sumaría dos veces; es no-op en Android).
+- **Teclado**: el `KeyboardAvoidingView` pasa a empezar en `y = 0`, así que `keyboardVerticalOffset={0}` y
+  se elimina `HeaderHeightContext` del Editor. El candado 291 pasa a 200 (`700 − (500 − 0)`); el `Provider
+  value={91}` del test se conserva como guarda inerte.
+- **Geometría en un solo sitio**: `src/theme/header-layout.ts` (precedente `touch-target.ts`) con las seis
+  constantes. Los tests combinan cableado (la pantalla usa la constante) y ventana con literales propios del
+  test (42 ± 8 y 70 ± 8), para que no sea tautología. Ajustes dentro de N = 8 dp: solo ese fichero, sin
+  firma; fuera, enmienda E5 (DE4-2).
+
+### Archivos afectados por E4 (bajo `mobile-pet-tracker/` salvo spec y carta)
+
+- Tema: `src/theme/native-styles.ts` (+`KEEP_OPACITY`), `src/theme/header-layout.ts` (nuevo).
+- Pantallas: `src/screens/geofences/index.tsx`, `src/screens/geofence-editor/index.tsx`.
+- Ruta: `src/app/_layout.tsx` (opciones de Zonas).
+- Tests: ambos de pantalla, `src/app/__tests__/layout.test.tsx`, `chunky-cta-canvas-fidelity.test.ts`,
+  `geofences-canvas-fidelity.test.ts`.
+- Docs: `docs/ui-guidelines.md`, `docs/conventions.md` (una frase).
+- Sin cambios: dominio, aplicación, API, backend, `global.css`, `design-drift`, `consistency-classnames`,
+  `heroui-text-size-merge` (delta esperado cero; si se ponen rojos, PARA).
+
+### Alternativas descartadas (E4)
+
+- **Clase `disabled:opacity-100`** en lugar de `style`: el orden entre utilidades en conflicto no está
+  garantizado; `style` gana siempre.
+- **Quitar `isDisabled` y bloquear con un guard en `onPress`**: cambia `accessibilityState` y R17.
+- **Opción B/C de H1** (animar el atenuado, o mostrar un spinner en `busy`): más superficie sin que el
+  artboard lo dibuje; el humano eligió la A.
+- **`Stack.Screen` solo en el formulario del Editor**: deja la cabecera transparente tras una transición a
+  estado (ver arriba).
+- **Cabecera transparente por ruta también en el Editor**: las ramas de estado se pintarían bajo una barra
+  transparente sin mapa debajo.
+- **Contenido de Zonas bajo cabecera opaca con título en la fila**: el título no puede alojarse en la
+  cabecera nativa con `title: ''` y el contador del artboard (D2, ya descartado).
+- **Botón de volver propio de cristal**: sigue fuera de alcance (§5).
+
+### Riesgo abierto: destello opaco → transparente al abrir el Editor
+
+Las opciones del formulario se aplican en un efecto, así que el primer fotograma puede verse con la
+cabecera opaca de la ruta. Se comprueba en el smoke (§6, paso 9). **Fallback** si aparece: declarar la ruta
+del Editor con `TRANSPARENT_HEADER_OPTIONS` y que las ramas de estado sean las que fijen la opaca (otra
+enmienda: cambia `layout.test.tsx` y R22.2).
