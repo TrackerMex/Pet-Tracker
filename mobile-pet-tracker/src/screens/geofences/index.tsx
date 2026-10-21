@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { Button, Skeleton, Switch } from 'heroui-native';
 import { useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
-import { Map, Trash } from 'reicon-react-native';
+import { AlertCircle, Map, Trash } from 'reicon-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { GEOFENCE_MAX_PER_PET, deleteGeofence, listGeofences, setGeofenceActive, type Geofence, type GeofenceWriteState } from '../../api/geofences';
@@ -23,6 +23,7 @@ export function GeofencesScreen({ petId }: { petId: string }) {
   const chunkyLip = useChunkyLip();
   const categoryColors = useThemeColors(['category-green-strong', 'category-blue-strong', 'category-amber-strong', 'category-violet-strong', 'category-rose-strong']);
   const [danger] = useThemeColors(['danger']);
+  const [warning] = useThemeColors(['warning']);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const t = useTranslate();
@@ -173,7 +174,12 @@ export function GeofencesScreen({ petId }: { petId: string }) {
       )}
       {isOwner && geofences.data?.kind === 'ok' ? (
         <>
-        {atLimit ? <HomeEntrance testID="geofences-limit-entrance" index={zoneCount}><Text testID="geofences-limit" className="text-sm font-normal text-muted">{t('geofenceEditor.limitNotice', { max: GEOFENCE_MAX_PER_PET })}</Text></HomeEntrance> : null}
+        {atLimit ? <HomeEntrance testID="geofences-limit-entrance" index={zoneCount}>
+          <View testID="geofences-limit" className={`flex-row items-start gap-2.5 rounded-tile px-3.5 py-3 ${CATEGORY_SLOTS.amber.surface}`} style={CONTINUOUS_CORNER}>
+            <AlertCircle size={20} color={warning} />
+            <Text testID="geofences-limit-text" className={`flex-1 text-13 ${CATEGORY_SLOTS.amber.ink}`}>{t('geofenceEditor.limitNotice', { max: GEOFENCE_MAX_PER_PET })}</Text>
+          </View>
+        </HomeEntrance> : null}
         <Button testID="geofences-add" className="h-14 rounded-16 bg-accent" style={chunkyLip.primary} isDisabled={busy || atLimit}
           onPress={() => router.push({ pathname: '/pets/[petId]/geofence-editor', params: { petId } })}>
           <Text className="text-17 font-extrabold text-accent-foreground">{t('geofenceEditor.add')}</Text>
