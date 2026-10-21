@@ -259,6 +259,7 @@ describe('R9: mobile-pets-profile sin drift', () => {
     'api/users.ts',
     'components/pet-avatar.tsx',
     'components/pet-hero-header.tsx',
+    'components/segmented-control.tsx', // #191 R11
     'screens/add-pet/index.tsx',
     'screens/docs/index.tsx',
     'screens/profile/index.tsx',
@@ -1135,7 +1136,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     expect(rounded16).toEqual({
       'components/celebration.tsx': 2,
       'components/empty-state.tsx': 1,
-      'screens/add-pet/index.tsx': 1,
+      'screens/add-pet/index.tsx': 2, // #191 R11
       'screens/add-reminder/index.tsx': 1,
       'screens/alert-detail/index.tsx': 2,
       'screens/docs-upload-form/index.tsx': 2,
@@ -1151,6 +1152,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       'screens/welcome/index.tsx': 2,
     });
     expect(outsideReminders(/\brounded-14\b/)).toEqual([
+      join('components', 'segmented-control.tsx'), // #191 R11
       join('screens', 'meal-schedule', 'index.tsx'), // #179 R13 comparte rounded-14
       join('screens', 'meals-history', 'index.tsx'), // #179 R13 comparte rounded-14
       join('screens', 'pairing', 'index.tsx'), // #188 R20 comparte rounded-14

@@ -76,7 +76,8 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
         + 1 // #180 R8
         + 4 // #186 R1
         + 4 // #190 R9 (enmendado por #190 R9)
-        + 1, // #188 R18: -1 Prompt, +2 Lead y Body
+        + 1 // #188 R18: -1 Prompt, +2 Lead y Body
+        + 3 - 1, // #191 R1
     );
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {
@@ -141,6 +142,22 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
       'Última señal {{date}}',
     );
   });
+});
+
+it('#191 R1: declara las claves del asistente de dos pasos en los dos idiomas', () => {
+  const translations = [
+    ['addPet.stepProgress', '{{current}} of {{total}}', '{{current}} de {{total}}'],
+    ['addPet.pingoGreeting', 'Hi. Tell me about your new companion.', '¡Hola! Cuéntame de tu nuevo compañero.'],
+    ['addPet.continue', 'Continue', 'Continuar'],
+  ];
+  for (const [key, english, spanish] of translations) {
+    expect((en as Record<string, string>)[key]).toBe(english);
+    expect((es as Record<string, string>)[key]).toBe(spanish);
+    expect(markerNames(english)).toEqual(markerNames(spanish));
+  }
+  for (const catalog of [en, es]) {
+    expect(Object.keys(catalog)).not.toContain(['addPet', 'avatarPreview'].join('.'));
+  }
 });
 
 describe('#179 R3: claves de Horario e Historial del canvas', () => {

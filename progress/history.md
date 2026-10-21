@@ -9849,3 +9849,38 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   mobile-pet-tracker backend-pet-tracker infra` confirma esos tres.
 - **Estado final:** done. Notion: Implementado / Completado. La PR #232 la mergea el humano; después se
   borran los worktrees `Pet-Tracker-wt-188` y `Pet-Tracker-wt-188-probe`.
+
+## Sesión 2026-10-21 — mobile-add-pet-two-steps (id: 191)
+
+- **Feature:** Nueva mascota como el artboard «Nueva mascota (22)» del canvas, en dos pasos. Indicador
+  «1 de 2» con barra de dos segmentos; paso 1 con foto, burbuja de Pingo y Datos básicos (Tipo,
+  Nombre, Raza, Sexo, Tamaño) más Continuar; paso 2 con edad, esterilizado y microchip más Guardar
+  mascota; título en el contenido; `SegmentedControl` compartido; `validateAddPetBasics` en
+  `form-rules.ts`; atrás en el paso 2 vuelve al 1 conservando los datos; la celebración final es la
+  de #171. Enmienda E1 (R13): `birth-date-field` con la receta de `date-field` de add-reminder.
+- **Spec:** [[specs/mobile-add-pet-two-steps/requirements|spec]], firmada por el humano (2026-10-19,
+  D1–D5 con el valor por defecto). Enmienda E1 (R13) aprobada tras el smoke Android, donde el campo
+  de fecha y el botón de posición no coincidían con el canvas.
+- **Acciones:** Codex implementó R1–R11 test-primero (`921a6f89` … `b331fc88`), con el cierre en
+  `ed4462fd`; reviewer APROBADO (`31110d80`). Tras el smoke, E1 y R13 en rojo/verde (`eb83ca10`,
+  `68d3c45a`; el primer rojo `f3623bd0` era un TypeError y se corrigió con un rojo por aserción
+  real); reviewer APROBADO (`d3047c36`, O2 aceptada). El humano firmó las casillas de cierre y el
+  literal ES del saludo en `f486e691` (`¡Hola! Cuéntame de tu nuevo compañero.`, con exclamación,
+  como el canvas). Eso dejó dos tests rojos: docs del leader (`e60e9c64`: se retira la desviación
+  «Frase de la burbuja» de la spec y de la carta; `specs/mobile-ui-language/design.md` §2.37) y
+  tests por el fallback `implementer` (`e8b13b78`). Merge de `origin/main` (`79052141`, no rebase,
+  para conservar los hashes de `traceability.md`) con cuatro conflictos: docs resuelto por el
+  leader y tests por el `implementer`, sin relajar candados (fórmulas de `directUses` y
+  `CONTINUOUS_CORNER` suman main + 3; mínimos heroui 199/41/166; `en` = 436).
+- **Resultado:** `./init.sh` exit 0 sobre `79052141`: backend 187 suites / 1474 tests; móvil 130
+  suites / 4297 tests; e2e 468 passed; typecheck y lint sin errores. Reviewer APROBADO sobre el delta
+  posterior (`progress/review_mobile-add-pet-two-steps_post.md`, 0 bloqueantes).
+- **Flake de la primera corrida:** `init.sh` sobre `ad3b412e` salió en rojo (3 suites e2e de backend)
+  mientras otro worktree (#188) corría `init.sh` sobre el mismo Postgres y LocalStack. La rama no
+  toca `backend-pet-tracker/`. Repetido sin pares concurrentes sobre el mismo HEAD: exit 0.
+- **Notas no bloqueantes:** O1 y O2 del reviewer; `requirements.md:62` (bloque D3) sigue diciendo
+  «el saludo termina en punto» y `docs/ui-guidelines.md` ~l.378 mantiene la regla general sin
+  excepción para este saludo (ningún candado la verifica); D6 (el botón cambia de posición entre
+  pasos) se dio por pasada: el humano completó el smoke y firmó sin reportar más.
+- **Estado final:** done. Notion: Implementado / Completado. PR #238; la mergea el humano y después se
+  borra el worktree `Pet-Tracker-wt-191`.

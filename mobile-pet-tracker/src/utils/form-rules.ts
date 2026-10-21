@@ -19,14 +19,17 @@ function isIsoDate(value: string): boolean {
   return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }
 
+export function validateAddPetBasics(values: { name: string }): FieldIssues<'name'> {
+  return values.name.trim() ? {} : { name: nameRequired };
+}
+
 export function validateAddPet(values: {
   name: string;
   ageMode: 'birthDate' | 'months';
   birthDate: Date | null;
   approxAgeMonths: string;
 }): FieldIssues<'name' | 'birthDate' | 'approxAgeMonths'> {
-  const issues: FieldIssues<'name' | 'birthDate' | 'approxAgeMonths'> = {};
-  if (!values.name.trim()) issues.name = nameRequired;
+  const issues: FieldIssues<'name' | 'birthDate' | 'approxAgeMonths'> = validateAddPetBasics(values);
   if (values.ageMode === 'birthDate' && values.birthDate === null) {
     issues.birthDate = birthDateRequired;
   }

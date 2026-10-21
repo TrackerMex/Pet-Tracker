@@ -185,7 +185,7 @@ describe('#174 R12: inventarios', () => {
     {
       token: 'rounded-10',
       pattern: /(?<![\w-])rounded-10\b/,
-      files: ['screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx'], // #179 R6; #174 R12
+      files: ['components/segmented-control.tsx', 'screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx'], // #179 R6; #174 R12
     },
     {
       token: 'border-b-5',
@@ -203,6 +203,7 @@ describe('#174 R12: inventarios', () => {
       files: [
         'components/celebration.tsx',
         'components/empty-state.tsx', // (enmendado por #176 R9)
+        'screens/add-pet/index.tsx', // #191 R11
         'screens/alert-detail/index.tsx', // #180 R3
         'screens/alerts/index.tsx', // #174 R12: delta sobre la lista medida en H0
         'screens/docs/index.tsx', // #175 R6
@@ -220,6 +221,7 @@ describe('#174 R12: inventarios', () => {
       pattern: /(?<![\w-])tracking-title\b/,
       files: [
         'components/empty-state.tsx', // (enmendado por #176 R8)
+        'screens/add-pet/index.tsx', // #191 R11
         'screens/add-reminder/index.tsx', // #178 R10
         'screens/alert-detail/index.tsx', // #180 R1
         'screens/alerts/index.tsx', // #174 R12: H0 sin consumidores
