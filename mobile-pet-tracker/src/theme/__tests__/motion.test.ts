@@ -73,7 +73,7 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
     });
   });
 
-  it('no exporta nada más', () => {
+  it('no exporta nada más (enmendado por #195 R13)', () => {
     expect(Object.keys(require('../motion')).sort()).toEqual([
       'MOTION_ALERT_PING_MS',
       'MOTION_BLINK_INTERVAL_MS',
@@ -95,6 +95,10 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
       'MOTION_FILL_TIMING',
       'MOTION_FLOAT_OFFSET_Y',
       'MOTION_FLOAT_TIMING',
+      'MOTION_HERO_BUBBLE_POP_DELAY_MS',
+      'MOTION_HERO_CAPTION_DELAY_MS',
+      'MOTION_HERO_FADE_MS',
+      'MOTION_HERO_PING_MS',
       'MOTION_PINGO_FLOAT_OFFSET_Y',
       'MOTION_PINGO_FLOAT_TIMING',
       'MOTION_PING_FROM',
@@ -240,4 +244,17 @@ describe('#171 E4: las constantes de la celebración viven en motion.ts', () => 
 
 it('#180 R4.5: declara el ping del detalle de alerta en 1800 ms', () => {
   expect(MOTION_ALERT_PING_MS).toBe(1800);
+});
+
+
+describe('#195 R13: constantes propias del hero', () => {
+  it('declara fundido, retrasos y ping sin acoplarlos a la celebración', () => {
+    const motion = require('../motion');
+    expect([
+      motion.MOTION_HERO_FADE_MS,
+      motion.MOTION_HERO_CAPTION_DELAY_MS,
+      motion.MOTION_HERO_PING_MS,
+      motion.MOTION_HERO_BUBBLE_POP_DELAY_MS,
+    ]).toEqual([500, 80, 1600, 450]);
+  });
 });
