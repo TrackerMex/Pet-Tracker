@@ -13,6 +13,7 @@ import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
+import { HomeEntrance } from '../home/home-entrance';
 
 export function GeofencesScreen({ petId }: { petId: string }) {
   const chunkyLip = useChunkyLip();
@@ -82,7 +83,7 @@ export function GeofencesScreen({ petId }: { petId: string }) {
       testID="screen-geofences"
       className="flex-1 bg-background"
       contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{ padding: 24, gap: 16, paddingBottom: insets.bottom + 24 }}
+      contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: insets.bottom + 40, gap: 12, flexGrow: 1 }}
     >
       <View testID="geofences-header" className="flex-row items-center gap-2">
         <Text testID="geofences-title" accessibilityRole="header" className="flex-1 text-26 font-black tracking-title text-foreground">{t('geofences.title')}</Text>
@@ -104,12 +105,12 @@ export function GeofencesScreen({ petId }: { petId: string }) {
             title={t('geofences.empty')}
             body={t('geofences.emptyBody')}
           />
-        ) : geofences.data.geofences.map((geofence) => {
+        ) : geofences.data.geofences.map((geofence, position) => {
           const nameAndRadius = <>
             <Text testID={`geofence-${geofence.id}-name`} selectable={!isOwner} className="font-bold text-foreground">{geofence.name}</Text>
             <Text testID={`geofence-${geofence.id}-radius`} className="text-sm font-normal text-muted">{t('geofences.radius', { meters: Math.round(geofence.radiusM) })}</Text>
           </>;
-          return <Card key={geofence.id} testID={`geofence-${geofence.id}`} className="flex-row items-center gap-3">
+          return <HomeEntrance key={geofence.id} testID={`geofence-${geofence.id}-entrance`} index={position}><Card testID={`geofence-${geofence.id}`} className="flex-row items-center gap-3">
             {isOwner ? (
               <Pressable testID={`geofence-${geofence.id}-edit`} accessibilityRole="button"
                 accessibilityLabel={t('geofenceEditor.editLabel', { name: geofence.name })} disabled={busy}
@@ -144,7 +145,7 @@ export function GeofencesScreen({ petId }: { petId: string }) {
                 {geofence.active ? t('geofences.statusActive') : t('geofences.statusInactive')}
               </Text>
             )}
-          </Card>;
+          </Card></HomeEntrance>;
         })
       ) : geofences.data.kind === 'no-tracking' ? (
         <EmptyState testID="geofences-no-tracking" pose="collar" title={t('geofences.noTrackingTitle')} body={t('geofences.noTrackingBody')} />
@@ -162,11 +163,12 @@ export function GeofencesScreen({ petId }: { petId: string }) {
       )}
       {isOwner && geofences.data?.kind === 'ok' ? (
         <>
+        {atLimit ? <HomeEntrance testID="geofences-limit-entrance" index={zoneCount}><Text testID="geofences-limit" className="text-sm font-normal text-muted">{t('geofenceEditor.limitNotice', { max: GEOFENCE_MAX_PER_PET })}</Text></HomeEntrance> : null}
         <Button testID="geofences-add" className="h-14 rounded-16 bg-accent" style={chunkyLip.primary} isDisabled={busy || atLimit}
           onPress={() => router.push({ pathname: '/pets/[petId]/geofence-editor', params: { petId } })}>
           <Text className="text-17 font-extrabold text-accent-foreground">{t('geofenceEditor.add')}</Text>
         </Button>
-        {atLimit ? <Text testID="geofences-limit" className="text-sm font-normal text-muted">{t('geofenceEditor.limitNotice', { max: GEOFENCE_MAX_PER_PET })}</Text> : null}
+
         </>
       ) : null}
       {actionError ? (
