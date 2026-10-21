@@ -73,7 +73,11 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
         + 5 // #179 R3
         - 2 // #179 R5
         + 9 // #183 R1
-        + 1, // #180 R8
+        + 1 // #180 R8
+        + 4 // #186 R1
+        + 4 // #190 R9 (enmendado por #190 R9)
+        + 1 // #188 R18: -1 Prompt, +2 Lead y Body
+        + 3 - 1, // #191 R1
     );
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {
@@ -138,6 +142,22 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
       'Última señal {{date}}',
     );
   });
+});
+
+it('#191 R1: declara las claves del asistente de dos pasos en los dos idiomas', () => {
+  const translations = [
+    ['addPet.stepProgress', '{{current}} of {{total}}', '{{current}} de {{total}}'],
+    ['addPet.pingoGreeting', 'Hi. Tell me about your new companion.', '¡Hola! Cuéntame de tu nuevo compañero.'],
+    ['addPet.continue', 'Continue', 'Continuar'],
+  ];
+  for (const [key, english, spanish] of translations) {
+    expect((en as Record<string, string>)[key]).toBe(english);
+    expect((es as Record<string, string>)[key]).toBe(spanish);
+    expect(markerNames(english)).toEqual(markerNames(spanish));
+  }
+  for (const catalog of [en, es]) {
+    expect(Object.keys(catalog)).not.toContain(['addPet', 'avatarPreview'].join('.'));
+  }
 });
 
 describe('#179 R3: claves de Horario e Historial del canvas', () => {
@@ -800,5 +820,36 @@ describe('#180 R8: alerts.mapLabel', () => {
   ])('#180 R8.1: documenta %s y sus marcadores', (key, english, spanish) => {
     const design = readFileSync(join(process.cwd(), '../specs/mobile-ui-language/design.md'), 'utf8');
     expect(design).toContain('| — | `' + key + '` | `' + english + '` | `' + spanish + '` | ← añadida por #180 (R8)');
+  });
+});
+
+describe('#186 R1: el copy de validación de los formularios', () => {
+  it('#186 R1: declara las claves de validación en los dos idiomas y su registro', () => {
+    const english = en as Record<string, string>;
+    const spanish = es as Record<string, string>;
+    const languageDesign = readFileSync(
+      join(process.cwd(), '../specs/mobile-ui-language/design.md'),
+      'utf8',
+    );
+    const translations = [
+      ['validation.required', 'This field is required', 'Este campo es obligatorio'],
+      ['validation.invalidDate', 'Enter a valid date as YYYY-MM-DD', 'Escribe una fecha válida con formato AAAA-MM-DD'],
+      ['validation.weightRange', 'Weight must be above 0 and at most 999.99 kg', 'El peso debe ser mayor que 0 y como máximo 999,99 kg'],
+      ['validation.bodyConditionRange', 'Body condition is a whole number from 1 to 9', 'La condición corporal es un número entero del 1 al 9'],
+    ] as const;
+
+    for (const [key, englishValue, spanishValue] of translations) {
+      expect(english[key]).toBe(englishValue);
+      expect(spanish[key]).toBe(spanishValue);
+      expect(languageDesign).toMatch(
+        new RegExp(
+          '\\| — \\| `' + escapeRegExp(key) +
+            '`[^\\n]*← añadida por #186 \\(R1\\)',
+        ),
+      );
+    }
+    expect(languageDesign).toMatch(
+      /### §2\.\d+ — Añadidos por #186 — Validación de formularios de mascota, recordatorio, documento y peso/,
+    );
   });
 });

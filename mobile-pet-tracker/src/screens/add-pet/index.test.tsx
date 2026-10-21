@@ -1,9 +1,10 @@
-import { HeaderHeightContext } from 'expo-router/react-navigation';
+import { HeaderHeightContext, usePreventRemove } from 'expo-router/react-navigation';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { notificationAsync } from 'expo-haptics';
 import { HeroUINativeProvider } from 'heroui-native';
 import * as ImagePicker from 'expo-image-picker';
+import { Children, isValidElement } from 'react';
 import { DeviceEventEmitter, Platform } from 'react-native';
 
 import { requestPhotoUploadUrl, uploadPhotoToUrl } from '../../api/media';
@@ -16,6 +17,12 @@ import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { AddPetScreen } from '.';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { renderWithProviders } from '../../../test/render-with-providers';
+
+jest.mock('expo-router/react-navigation', () => ({
+  ...jest.requireActual('expo-router/react-navigation'),
+  usePreventRemove: jest.fn(),
+  __esModule: true,
+}));
 
 jest.mock('../../api/pets', () => ({ createPet: jest.fn(), listPets: jest.fn() }));
 jest.mock('../../api/media', () => ({
@@ -61,6 +68,7 @@ jest.mock('react-native-safe-area-context', () => ({
 }));
 
 const mockCreatePet = jest.mocked(createPet);
+const mockUsePreventRemove = jest.mocked(usePreventRemove);
 const mockListPets = jest.mocked(listPets);
 const mockNotificationAsync = jest.mocked(notificationAsync);
 const mockLaunchImageLibrary = jest.mocked(ImagePicker.launchImageLibraryAsync);
@@ -75,10 +83,10 @@ function pending<T>(): Promise<T> {
   return new Promise(() => undefined);
 }
 
-async function renderAddPet() {
+async function renderAddPet(language: 'en' | 'es' = 'es') {
   return renderWithProviders(
     <HeroUINativeProvider>
-      <LanguageProvider initial="es">
+      <LanguageProvider initial={language}>
         <HeaderHeightContext.Provider value={91}>
           <AddPetScreen />
         </HeaderHeightContext.Provider>
@@ -94,6 +102,12 @@ async function pressPickPhoto(): Promise<void> {
     );
   }
   await fireEvent.press(screen.getByTestId('add-pet-photo'));
+}
+
+async function goToStep2(name = 'Luna') {
+  await fireEvent.changeText(screen.getByTestId('name-input'), name);
+  await fireEvent.press(screen.getByTestId('add-pet-continue'));
+  await screen.findByTestId('add-pet-submit');
 }
 
 beforeEach(() => {
@@ -117,21 +131,268 @@ describe('R6: alta de mascota', () => {
     mockCreatePet.mockReturnValue(pending());
   });
 
-  it('renders the complete two-section form and deterministic preview', async () => {
+  it('#191 R4: el paso 1 pinta foto, burbuja y datos básicos', async () => {
     await renderAddPet();
-
-    expect(screen.getByTestId('screen-add-pet')).toBeVisible();
+    const photo = screen.getByTestId('add-pet-photo');
+    expect(photo.props.className).toBe('size-22 items-center justify-center rounded-full border-2 border-dashed border-accent bg-surface-secondary');
+    expect(photo.props.accessibilityRole).toBe('button');
+    expect(photo.props.accessibilityLabel).toBe(es['addPet.choosePhoto']);
+    expect(photo.props.hitSlop).toEqual(TOUCH_SLOP);
+    expect(photo).not.toBeDisabled();
+    expect(within(photo).getByText(es['addPet.choosePhoto']).props.className).toBe('text-11 font-extrabold text-accent-strong');
+    expect(screen.queryByTestId('pet-avatar')).toBeNull();
+    const bubble = screen.getByTestId('add-pet-bubble');
+    expect(bubble.props.className).toBe('flex-1 rounded-tile bg-surface-secondary px-3 py-2.5');
+    expect(bubble).toHaveStyle({ borderCurve: 'continuous' });
+    expect(bubble.parent!.props.className).toBe('flex-row items-center gap-3.5');
+    expect(screen.getByTestId('add-pet-bubble-tail').props.className).toBe('absolute -left-1.5 top-5.5 size-3 rotate-45 bg-surface-secondary');
+    expect(screen.getByTestId('add-pet-bubble-text')).toHaveTextContent('¡Hola! Cuéntame de tu nuevo compañero.');
+    expect(screen.getByTestId('add-pet-bubble-text').props.className).toBe('text-13 font-semibold text-foreground');
     expect(screen.getByText('Datos básicos')).toBeVisible();
-    expect(screen.getByText('Datos médicos')).toBeVisible();
-    expect(screen.getByTestId('species-dog').props.accessibilityState).toEqual({ selected: true });
-    expect(screen.getByTestId('species-cat')).toBeVisible();
-    expect(screen.getByTestId('name-input')).toBeVisible();
-    expect(screen.getByTestId('breed-input')).toBeVisible();
-    expect(screen.getByTestId('sex-female')).toBeVisible();
-    expect(screen.getByTestId('size-large')).toBeVisible();
-    expect(screen.getByTestId('sterilized-true')).toBeVisible();
-    expect(screen.getByTestId('microchip-input')).toBeVisible();
+    const ids = ['add-pet-photo', 'add-pet-bubble', 'species-dog', 'species-cat', 'name-input', 'breed-input', 'sex-female', 'sex-male', 'size-small', 'size-medium', 'size-large', 'add-pet-continue'];
+    expect(within(screen.getByTestId('add-pet-form')).getAllByTestId(new RegExp('^(' + ids.join('|') + ')$')).map(node => node.props.testID)).toEqual(ids);
+    for (const id of ['age-mode-date', 'age-mode-months', 'birth-date-field', 'sterilized-true', 'microchip-input', 'add-pet-submit']) {
+      expect(screen.queryByTestId(id)).toBeNull();
+    }
+    mockLaunchImageLibrary.mockResolvedValue({ canceled: false, assets: [{ uri: 'file:///luna.jpg', mimeType: 'image/jpeg' } as never] });
+    await pressPickPhoto();
+    await waitFor(() => expect(screen.getByTestId('pet-avatar').props.photoUrl).toBe('file:///luna.jpg'));
+    expect(within(screen.getByTestId('add-pet-photo')).getByTestId('pet-avatar').props.size).toBe(88);
     expect(screen.getByTestId('pet-avatar').props.name).toBe('Mascota');
+    expect(within(screen.getByTestId('add-pet-photo')).queryByText(es['addPet.choosePhoto'])).toBeNull();
+    await fireEvent.changeText(screen.getByTestId('name-input'), ' Luna ');
+    expect(screen.getByTestId('pet-avatar').props.name).toBe('Luna');
+  });
+
+  it('#191 R5: Tipo, Sexo y Tamaño usan el selector', async () => {
+    await renderAddPet();
+    expect(screen.getByTestId('species-dog').props.accessibilityState).toEqual({ selected: true });
+    for (const id of ['sex-female', 'sex-male', 'size-small', 'size-medium', 'size-large']) {
+      expect(screen.getByTestId(id).props.accessibilityState).toEqual({ selected: false });
+      expect(screen.getByTestId(id).parent!.props.className).toBe('flex-row gap-1 rounded-14 bg-default p-1');
+    }
+    await fireEvent.press(screen.getByTestId('species-dog'));
+    expect(screen.getByTestId('species-dog').props.accessibilityState).toEqual({ selected: true });
+    for (const id of ['sex-male', 'size-medium']) {
+      await fireEvent.press(screen.getByTestId(id));
+      expect(screen.getByTestId(id).props.accessibilityState).toEqual({ selected: true });
+      await fireEvent.press(screen.getByTestId(id));
+      expect(screen.getByTestId(id).props.accessibilityState).toEqual({ selected: false });
+    }
+  });
+
+  it('#191 R13: el campo de fecha usa la receta de fecha de add-reminder', async () => {
+    await renderAddPet();
+    const muted = screen.getByTestId('name-input').props.placeholderTextColor;
+    await goToStep2();
+    const date = screen.getByTestId('birth-date-field');
+    expect(date.props.className).toBe('h-12 flex-row items-center gap-2 rounded-xl border-2 border-transparent bg-default px-3.5');
+    expect(date).toHaveStyle({ borderCurve: 'continuous' });
+    expect(date.props.accessibilityRole).toBe('button');
+    const children = Children.toArray(date.props.children).filter(isValidElement<{ size?: number; color?: string }>);
+    const calendar = children.find(child => child.props.size === 18);
+    expect(calendar?.type).toHaveProperty('displayName', 'Calendar');
+    expect(calendar?.props).toMatchObject({ size: 18, color: muted });
+    expect(children[0]?.props).toMatchObject({ size: 18, color: muted });
+    expect(within(date).getByText(es['addPet.selectBirthDate']).props.className).toBe('text-15 font-semibold text-muted');
+    expect(date.props.className.split(' ')[0]).toBe('h-12');
+    await fireEvent.press(date);
+    await fireEvent(screen.getByTestId('birth-date-picker'), 'onValueChange', {}, new Date(2024, 3, 9, 12));
+    expect(within(screen.getByTestId('birth-date-field')).getByText('9/4/2024').props.className).toBe('text-15 font-semibold text-foreground');
+    await fireEvent.press(screen.getByTestId('age-mode-months'));
+    expect(screen.getByTestId('approx-age-input').props.className.split(' ')[0]).toBe('h-12');
+  });
+
+  it('#191 R3: el indicador de paso muestra el primero con un segmento lleno', async () => {
+    await renderAddPet();
+    expect(screen.getByTestId('add-pet-step-label')).toHaveTextContent('1 de 2');
+    expect(screen.getByTestId('add-pet-step-label').props.className).toBe('text-13 font-extrabold text-muted');
+    const bar = screen.getByTestId('add-pet-step-bar');
+    expect(bar.props.accessibilityRole).toBe('progressbar');
+    expect(bar.props.accessibilityValue).toEqual({ min: 1, max: 2, now: 1 });
+    expect(bar.props.className).toBe('flex-row gap-1.5');
+    expect(within(bar).getAllByTestId(/^add-pet-step-segment-/)).toHaveLength(2);
+    expect(screen.getByTestId('add-pet-step-segment-1').props.className).toBe('h-1.5 flex-1 rounded-full bg-accent');
+    expect(screen.getByTestId('add-pet-step-segment-2').props.className).toBe('h-1.5 flex-1 rounded-full bg-lip-gray');
+  });
+
+  it('#191 R3: el indicador de paso llena ambos segmentos en el segundo', async () => {
+    await renderAddPet();
+    await fireEvent.changeText(screen.getByTestId('name-input'), 'Luna');
+    await fireEvent.press(screen.getByTestId('add-pet-continue'));
+    expect(screen.getByTestId('add-pet-step-label')).toHaveTextContent('2 de 2');
+    expect(screen.getByTestId('add-pet-step-bar').props.accessibilityValue).toEqual({ min: 1, max: 2, now: 2 });
+    for (const n of [1, 2]) expect(screen.getByTestId(`add-pet-step-segment-${n}`).props.className).toBe('h-1.5 flex-1 rounded-full bg-accent');
+  });
+
+  it('#191 R3: el indicador de paso se traduce al inglés', async () => {
+    await renderAddPet('en');
+    expect(screen.getByTestId('add-pet-step-label')).toHaveTextContent('1 of 2');
+  });
+
+  it.each([
+    ['es', 'El nombre es obligatorio', '2 de 2'],
+    ['en', 'Name is required', '2 of 2'],
+  ] as const)('#191 R7: Continuar valida el nombre en %s y avanza al corregirlo', async (language, message, stepLabel) => {
+    await renderAddPet(language);
+    await fireEvent.press(screen.getByTestId('add-pet-continue'));
+    await waitFor(() => expect(screen.getByTestId('name-input-message')).toHaveTextContent(message));
+    expect(within(screen.getByTestId('name-input').parent!).getByTestId('name-input-message')).toHaveTextContent(message);
+    expect(screen.getByTestId('name-input')).toBeVisible();
+    expect(screen.queryByTestId('add-pet-submit')).toBeNull();
+    expect(screen.getByTestId('add-pet-continue')).not.toBeDisabled();
+    expect(mockCreatePet).not.toHaveBeenCalled();
+    await fireEvent.changeText(screen.getByTestId('name-input'), 'Luna');
+    expect(screen.getByTestId('name-input-message')).toHaveTextContent(message);
+    await fireEvent.press(screen.getByTestId('add-pet-continue'));
+    await screen.findByTestId('add-pet-submit');
+    expect(screen.getByTestId('add-pet-step-label')).toHaveTextContent(stepLabel);
+    expect(screen.queryByTestId('name-input-message')).toBeNull();
+    expect(mockCreatePet).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['birthDate', 'birth-date-field', 'Elige una fecha de nacimiento'],
+    ['months', 'approx-age-input', 'Introduce una edad de 0 a 480 meses'],
+  ] as const)('#191 R8: el paso 2 pinta datos médicos y guarda en modo %s', async (mode, base, message) => {
+    await renderAddPet();
+    await fireEvent.changeText(screen.getByTestId('name-input'), 'Luna');
+    await fireEvent.press(screen.getByTestId('add-pet-continue'));
+    await screen.findByTestId('add-pet-submit');
+    expect(screen.getByText('Datos médicos')).toBeVisible();
+    for (const id of ['age-mode-date', 'age-mode-months', 'birth-date-field', 'sterilized-true', 'sterilized-false', 'microchip-input', 'add-pet-submit']) expect(screen.getByTestId(id)).toBeVisible();
+    for (const id of ['add-pet-photo', 'add-pet-bubble', 'name-input', 'breed-input', 'species-dog', 'sex-female', 'size-small', 'add-pet-continue']) expect(screen.queryByTestId(id)).toBeNull();
+    if (mode === 'months') {
+      await fireEvent.press(screen.getByTestId('age-mode-months'));
+      await fireEvent.changeText(screen.getByTestId('approx-age-input'), '481');
+      expect(screen.queryByTestId('birth-date-field')).toBeNull();
+    }
+    await fireEvent.press(screen.getByTestId('add-pet-submit'));
+    await waitFor(() => expect(screen.getByTestId(`${base}-message`)).toHaveTextContent(message));
+    expect(screen.getByTestId('add-pet-step-label')).toHaveTextContent('2 de 2');
+    expect(screen.queryByTestId(mode === 'months' ? 'birth-date-field-message' : 'approx-age-input-message')).toBeNull();
+    expect(mockCreatePet).not.toHaveBeenCalled();
+  });
+
+  describe('#191 R9: atrás en el paso 2 vuelve al 1 con los datos', () => {
+    beforeEach(() => {
+      mockRouter.back.mockReset();
+      mockRouter.replace.mockReset();
+    });
+    afterEach(() => {
+      mockRouter.back.mockReset();
+      mockRouter.replace.mockReset();
+    });
+
+    function removal() {
+      const call = mockUsePreventRemove.mock.lastCall;
+      expect(call).toBeDefined();
+      return call!;
+    }
+    async function backToBasics() {
+      const lastCall = removal();
+      await act(async () => lastCall[1]({ data: { action: { type: 'GO_BACK' } } }));
+    }
+
+    it('no intercepta el paso 1 y sí el paso 2', async () => {
+      await renderAddPet();
+      expect(removal()[0]).toBe(false);
+      await goToStep2();
+      expect(removal()[0]).toBe(true);
+    });
+
+    it('conserva todos los valores y limpia el aviso al volver', async () => {
+      mockCreatePet.mockResolvedValue({ kind: 'invalid' });
+      mockLaunchImageLibrary.mockResolvedValue({ canceled: false, assets: [{ uri: 'file:///luna-back.jpg', mimeType: 'image/jpeg' } as never] });
+      await renderAddPet();
+      await fireEvent.press(screen.getByTestId('species-cat'));
+      await fireEvent.changeText(screen.getByTestId('breed-input'), 'Mestiza');
+      await fireEvent.press(screen.getByTestId('sex-female'));
+      await fireEvent.press(screen.getByTestId('size-large'));
+      await pressPickPhoto();
+      await waitFor(() => expect(screen.getByTestId('pet-avatar').props.photoUrl).toBe('file:///luna-back.jpg'));
+      await goToStep2('Luna');
+      await fireEvent.press(screen.getByTestId('birth-date-field'));
+      const picker = within(screen.getByTestId('expo-ui-picker-host')).getByTestId('birth-date-picker');
+      await fireEvent(picker, 'onValueChange', {}, new Date(2024, 3, 9, 12));
+      await fireEvent.press(screen.getByTestId('age-mode-months'));
+      await fireEvent.changeText(screen.getByTestId('approx-age-input'), '24');
+      await fireEvent.press(screen.getByTestId('sterilized-true'));
+      await fireEvent.changeText(screen.getByTestId('microchip-input'), '123');
+      await fireEvent.press(screen.getByTestId('add-pet-submit'));
+      await screen.findByTestId('add-pet-error');
+      await backToBasics();
+      expect(screen.getByTestId('add-pet-step-label')).toHaveTextContent('1 de 2');
+      expect(screen.getByTestId('name-input').props.value).toBe('Luna');
+      expect(screen.getByTestId('breed-input').props.value).toBe('Mestiza');
+      for (const id of ['species-cat', 'sex-female', 'size-large']) expect(screen.getByTestId(id).props.accessibilityState).toEqual({ selected: true });
+      expect(screen.getByTestId('pet-avatar').props.photoUrl).toBe('file:///luna-back.jpg');
+      expect(screen.queryByTestId('add-pet-error')).toBeNull();
+      expect(screen.queryAllByTestId(/-message-row$/)).toHaveLength(0);
+      await goToStep2('Luna');
+      expect(screen.getByTestId('age-mode-months').props.accessibilityState).toEqual({ selected: true });
+      expect(screen.getByTestId('approx-age-input').props.value).toBe('24');
+      expect(screen.getByTestId('sterilized-true').props.accessibilityState).toEqual({ selected: true });
+      expect(screen.getByTestId('microchip-input').props.value).toBe('123');
+      expect(screen.queryByTestId('add-pet-error')).toBeNull();
+      await fireEvent.press(screen.getByTestId('age-mode-date'));
+      expect(within(screen.getByTestId('birth-date-field')).getByText('9/4/2024')).toBeVisible();
+      expect(mockRouter.back).not.toHaveBeenCalled();
+    });
+
+    it('ignora el callback mientras createPet sigue pendiente', async () => {
+      mockCreatePet.mockReturnValue(pending());
+      await renderAddPet();
+      await goToStep2();
+      await fireEvent.press(screen.getByTestId('age-mode-months'));
+      await fireEvent.changeText(screen.getByTestId('approx-age-input'), '12');
+      await fireEvent.press(screen.getByTestId('add-pet-submit'));
+      await waitFor(() => expect(screen.getByTestId('add-pet-submit')).toBeDisabled());
+      expect(removal()[0]).toBe(false);
+      await backToBasics();
+      expect(screen.getByTestId('add-pet-step-label')).toHaveTextContent('2 de 2');
+      expect(screen.getByTestId('add-pet-submit')).toBeDisabled();
+      expect(screen.queryByTestId('name-input')).toBeNull();
+    });
+
+    it('llama router.back tras guardar con prevent ya falso', async () => {
+      let preventAtExit: boolean | undefined;
+      mockRouter.back.mockImplementation(() => { preventAtExit = mockUsePreventRemove.mock.lastCall?.[0]; });
+      mockCreatePet.mockResolvedValue({ kind: 'ok', pet: { id: 'pet-new', name: 'Luna' } as never });
+      await renderAddPet();
+      await goToStep2();
+      await fireEvent.press(screen.getByTestId('age-mode-months'));
+      await fireEvent.changeText(screen.getByTestId('approx-age-input'), '12');
+      await fireEvent.press(screen.getByTestId('add-pet-submit'));
+      await waitFor(() => expect(screen.getByTestId('add-pet-submit')).not.toBeDisabled());
+      expect(mockRouter.back).toHaveBeenCalledTimes(1);
+      expect(preventAtExit).toBe(false);
+    });
+
+    it.each(['later', 'pair'] as const)('la celebración deja salir por %s con prevent falso', async (action) => {
+      let preventAtExit: boolean | undefined;
+      const capture = () => { preventAtExit = mockUsePreventRemove.mock.lastCall?.[0]; };
+      mockRouter.back.mockImplementation(capture);
+      mockRouter.replace.mockImplementation(capture);
+      mockCreatePet.mockResolvedValue({ kind: 'ok', pet: { id: 'pet-new', name: 'Luna' } as never });
+      await renderWithPetList({ kind: 'ok', pets: [] });
+      await goToStep2();
+      await fireEvent.press(screen.getByTestId('age-mode-months'));
+      await fireEvent.changeText(screen.getByTestId('approx-age-input'), '12');
+      await fireEvent.press(screen.getByTestId('add-pet-submit'));
+      await screen.findByTestId('add-pet-celebration-modal');
+      expect(removal()[0]).toBe(false);
+      await fireEvent.press(screen.getByTestId(`add-pet-celebration-${action}`));
+      expect(preventAtExit).toBe(false);
+      if (action === 'later') {
+        expect(mockRouter.back).toHaveBeenCalledTimes(1);
+        expect(mockRouter.replace).not.toHaveBeenCalled();
+      } else {
+        expect(mockRouter.replace).toHaveBeenCalledTimes(1);
+        expect(mockRouter.replace).toHaveBeenCalledWith('/pairing');
+        expect(mockRouter.back).not.toHaveBeenCalled();
+      }
+    });
   });
 
   it('uses Host + community DateTimePicker and keeps exactly birthDate', async () => {
@@ -140,13 +401,14 @@ describe('R6: alta de mascota', () => {
       pet: { id: 'pet-new', name: 'Nala' } as never,
     });
     await renderAddPet();
-    await fireEvent.changeText(screen.getByTestId('name-input'), '  Nala  ');
+    await goToStep2('  Nala  ');
     await fireEvent.press(screen.getByTestId('birth-date-field'));
 
     const picker = within(screen.getByTestId('expo-ui-picker-host')).getByTestId('birth-date-picker');
     const selectedDate = new Date(2024, 3, 9, 12);
     await fireEvent(picker, 'onValueChange', {}, selectedDate);
     await fireEvent.press(screen.getByTestId('add-pet-submit'));
+    await waitFor(() => expect(screen.getByTestId('add-pet-submit')).not.toBeDisabled());
 
     await waitFor(() => expect(mockCreatePet).toHaveBeenCalledWith(
       'http://example.test/v1',
@@ -169,11 +431,13 @@ describe('R6: alta de mascota', () => {
     await fireEvent.changeText(screen.getByTestId('breed-input'), '   ');
     await fireEvent.press(screen.getByTestId('sex-male'));
     await fireEvent.press(screen.getByTestId('size-small'));
+    await goToStep2(screen.getByTestId('name-input').props.value);
     await fireEvent.press(screen.getByTestId('sterilized-false'));
     await fireEvent.changeText(screen.getByTestId('microchip-input'), ' CHIP-9 ');
     await fireEvent.press(screen.getByTestId('age-mode-months'));
     await fireEvent.changeText(screen.getByTestId('approx-age-input'), '15');
     await fireEvent.press(screen.getByTestId('add-pet-submit'));
+    await waitFor(() => expect(screen.getByTestId('add-pet-submit')).not.toBeDisabled());
 
     await waitFor(() => expect(mockCreatePet).toHaveBeenCalledWith(
       'http://example.test/v1',
@@ -190,45 +454,151 @@ describe('R6: alta de mascota', () => {
     ));
   });
 
-  it('validates exactly one age mode without posting', async () => {
-    mockCreatePet.mockResolvedValue({ kind: 'error' });
+  it('#186 R4: nombre vacío muestra su mensaje sin bloquear el botón ni llamar a la API', async () => {
     await renderAddPet();
-    await fireEvent.changeText(screen.getByTestId('name-input'), 'Luna');
-    await fireEvent.press(screen.getByTestId('add-pet-submit'));
-
-    expect(screen.getByTestId('add-pet-error')).toHaveTextContent(
-      'Elige una fecha de nacimiento',
-    );
+    await fireEvent.press(screen.getByTestId('add-pet-continue'));
+    await waitFor(() => expect(screen.queryByTestId('name-input-message')).toHaveTextContent('El nombre es obligatorio'));
+    expect(screen.queryByTestId('add-pet-error')).toBeNull();
+    expect(screen.getByTestId('add-pet-continue')).not.toBeDisabled();
     expect(mockCreatePet).not.toHaveBeenCalled();
   });
 
   it('disables submit while posting and preserves fields after an error', async () => {
     mockCreatePet.mockReturnValueOnce(pending());
     await renderAddPet();
-    await fireEvent.changeText(screen.getByTestId('name-input'), 'Luna');
+    await goToStep2('Luna');
     await fireEvent.press(screen.getByTestId('age-mode-months'));
     await fireEvent.changeText(screen.getByTestId('approx-age-input'), '12');
     await fireEvent.press(screen.getByTestId('add-pet-submit'));
-
-    await waitFor(() => expect(screen.getByTestId('add-pet-submit').props.accessibilityState).toEqual(
-      expect.objectContaining({ disabled: true }),
-    ));
-    expect(screen.getByTestId('name-input').props.value).toBe('Luna');
+    await waitFor(() => expect(screen.getByTestId('add-pet-submit').props.accessibilityState).toEqual(expect.objectContaining({ disabled: true })));
+    expect(mockCreatePet).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token', { name: 'Luna', species: 'dog', approxAgeMonths: 12 });
     expect(screen.getByTestId('approx-age-input').props.value).toBe('12');
   });
 
-  it('shows a backend error without losing typed values', async () => {
+  it('#186 R4: el 400 conserva el aviso de formulario y los valores sin mensajes de campo', async () => {
     mockCreatePet.mockResolvedValue({ kind: 'invalid' });
     await renderAddPet();
-    await fireEvent.changeText(screen.getByTestId('name-input'), 'Luna');
+    await goToStep2('Luna');
     await fireEvent.press(screen.getByTestId('age-mode-months'));
     await fireEvent.changeText(screen.getByTestId('approx-age-input'), '12');
     await fireEvent.press(screen.getByTestId('add-pet-submit'));
-
-    await waitFor(() => expect(screen.getByTestId('add-pet-error')).toBeVisible());
-    expect(screen.getByTestId('name-input').props.value).toBe('Luna');
+    await waitFor(() => expect(screen.queryByTestId('add-pet-error')).toHaveTextContent('Revisa los datos de la mascota'));
+    expect(screen.queryAllByTestId(/-message-row$/)).toHaveLength(0);
+    expect(mockCreatePet).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token', { name: 'Luna', species: 'dog', approxAgeMonths: 12 });
     expect(screen.getByTestId('approx-age-input').props.value).toBe('12');
   });
+
+  it.each([
+    ['birthDate', 'birth-date-field', 'Elige una fecha de nacimiento'],
+    ['months', 'approx-age-input', 'Introduce una edad de 0 a 480 meses'],
+  ] as const)('#186 R4: edad en modo %s muestra el mensaje de %s', async (mode, base, message) => {
+    await renderAddPet();
+    await goToStep2();
+    if (mode === 'months') {
+      await fireEvent.press(screen.getByTestId('age-mode-months'));
+      await fireEvent.changeText(screen.getByTestId('approx-age-input'), '500');
+    }
+    await fireEvent.press(screen.getByTestId('add-pet-submit'));
+    await waitFor(() => expect(screen.queryByTestId(`${base}-message`)).toHaveTextContent(message));
+    expect(screen.queryByTestId('add-pet-error')).toBeNull();
+    expect(mockCreatePet).not.toHaveBeenCalled();
+  });
+
+  it('#186 R4: nombre y fecha inválidos muestran su fila en cada paso (enmendado por #191 R10)', async () => {
+    await renderAddPet();
+    await fireEvent.press(screen.getByTestId('add-pet-continue'));
+    await waitFor(() => expect(screen.queryByTestId('name-input-message')).toHaveTextContent('El nombre es obligatorio'));
+    expect(screen.queryByTestId('name-input-message-row')).not.toBeNull();
+    expect(screen.queryByTestId('birth-date-field-message-row')).toBeNull();
+    await goToStep2();
+    await fireEvent.press(screen.getByTestId('add-pet-submit'));
+    await waitFor(() => expect(screen.getByTestId('birth-date-field-message-row')).toBeVisible());
+    expect(screen.queryByTestId('name-input-message-row')).toBeNull();
+    expect(mockCreatePet).not.toHaveBeenCalled();
+  });
+
+  it('#186 R4: corregir conserva el mensaje hasta reenviar y luego manda el mismo payload', async () => {
+    await renderAddPet();
+    await fireEvent.press(screen.getByTestId('add-pet-continue'));
+    await waitFor(() => expect(screen.queryByTestId('name-input-message')).toHaveTextContent('El nombre es obligatorio'));
+    await fireEvent.changeText(screen.getByTestId('name-input'), ' Luna ');
+    expect(screen.queryByTestId('name-input-message')).toHaveTextContent('El nombre es obligatorio');
+    await goToStep2(' Luna ');
+    await fireEvent.press(screen.getByTestId('age-mode-months'));
+    await fireEvent.changeText(screen.getByTestId('approx-age-input'), '12');
+    await fireEvent.press(screen.getByTestId('add-pet-submit'));
+    await waitFor(() => expect(screen.getByTestId('add-pet-submit')).toBeDisabled());
+    expect(screen.queryAllByTestId(/-message-row$/)).toHaveLength(0);
+    expect(mockCreatePet).toHaveBeenCalledTimes(1);
+    expect(mockCreatePet).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token', { name: 'Luna', species: 'dog', approxAgeMonths: 12 });
+  });
+
+  it.each(['birthDate', 'months'] as const)('#186 R4: modo %s no pinta el mensaje del modo inactivo', async (mode) => {
+    await renderAddPet();
+    await goToStep2();
+    if (mode === 'months') {
+      await fireEvent.press(screen.getByTestId('age-mode-months'));
+      await fireEvent.changeText(screen.getByTestId('approx-age-input'), '481');
+    }
+    await fireEvent.press(screen.getByTestId('add-pet-submit'));
+    await waitFor(() => expect(screen.getByTestId(mode === 'months' ? 'approx-age-input-message' : 'birth-date-field-message')).toBeVisible());
+    expect(screen.queryByTestId(mode === 'months' ? 'birth-date-field-message' : 'approx-age-input-message')).toBeNull();
+  });
+
+  it.each([
+    ['name-input', 'El nombre es obligatorio'],
+    ['birth-date-field', 'Elige una fecha de nacimiento'],
+    ['approx-age-input', 'Introduce una edad de 0 a 480 meses'],
+  ])('#186 R4: el mensaje de %s es el último hermano del control', async (base, message) => {
+    await renderAddPet();
+    if (base !== 'name-input') await goToStep2();
+    if (base === 'approx-age-input') {
+      await fireEvent.press(screen.getByTestId('age-mode-months'));
+      await fireEvent.changeText(screen.getByTestId('approx-age-input'), '500');
+    }
+    await fireEvent.press(screen.getByTestId(base === 'name-input' ? 'add-pet-continue' : 'add-pet-submit'));
+    await waitFor(() => expect(screen.queryByTestId(`${base}-message`)).toHaveTextContent(message));
+    const control = screen.getByTestId(base);
+    const wrapper = control.parent!;
+    expect(wrapper.props.className).toBe('gap-1.5');
+    expect(within(wrapper).queryByTestId(`${base}-message`)).toHaveTextContent(message);
+    expect(wrapper.children.map(child => typeof child === 'string' ? child : child.props.testID).at(-1)).toBe(`${base}-error`);
+    expect(within(control).queryByTestId(`${base}-message`)).toBeNull();
+  });
+
+  it('#186 R4: conserva maxLength 120 120 32 y 3', async () => {
+    await renderAddPet();
+    expect(screen.getByTestId('name-input').props.maxLength).toBe(120);
+    expect(screen.getByTestId('breed-input').props.maxLength).toBe(120);
+    await goToStep2();
+    expect(screen.getByTestId('microchip-input').props.maxLength).toBe(32);
+    await fireEvent.press(screen.getByTestId('age-mode-months'));
+    expect(screen.getByTestId('approx-age-input').props.maxLength).toBe(3);
+  });
+
+  it('#186 R4: el mensaje del nombre se traduce al inglés', async () => {
+    await renderAddPet('en');
+    await fireEvent.press(screen.getByTestId('add-pet-continue'));
+    await waitFor(() => expect(screen.queryByTestId('name-input-message')).toHaveTextContent('Name is required'));
+  });
+
+  it('#191 R10: el 400 se queda en el paso 2 con el aviso y los valores', async () => {
+    mockCreatePet.mockResolvedValue({ kind: 'invalid' });
+    await renderAddPet();
+    await goToStep2('Luna');
+    await fireEvent.press(screen.getByTestId('age-mode-months'));
+    await fireEvent.changeText(screen.getByTestId('approx-age-input'), '24');
+    await fireEvent.changeText(screen.getByTestId('microchip-input'), '123');
+    await fireEvent.press(screen.getByTestId('add-pet-submit'));
+    await screen.findByTestId('add-pet-error');
+    expect(screen.getByTestId('add-pet-error')).toHaveTextContent('Revisa los datos de la mascota');
+    expect(screen.getByTestId('add-pet-step-label')).toHaveTextContent('2 de 2');
+    expect(screen.getByTestId('approx-age-input').props.value).toBe('24');
+    expect(screen.getByTestId('microchip-input').props.value).toBe('123');
+    expect(screen.queryByTestId('name-input')).toBeNull();
+    expect(screen.getByTestId('add-pet-submit')).not.toBeDisabled();
+  });
+
 });
 
 describe('R7: foto opcional tras alta', () => {
@@ -271,10 +641,11 @@ describe('R7: foto opcional tras alta', () => {
         'file:///new-pet.jpg',
       ),
     );
-    await fireEvent.changeText(screen.getByTestId('name-input'), 'Nala');
+    await goToStep2('Nala');
     await fireEvent.press(screen.getByTestId('age-mode-months'));
     await fireEvent.changeText(screen.getByTestId('approx-age-input'), '8');
     await fireEvent.press(screen.getByTestId('add-pet-submit'));
+    await waitFor(() => expect(screen.getByTestId('add-pet-submit')).not.toBeDisabled());
 
     await waitFor(() => expect(mockCreatePet).toHaveBeenCalled());
     expect(mockRequestPhotoUploadUrl).toHaveBeenCalledWith(
@@ -352,13 +723,14 @@ describe('#90 R6: birthDate manda el día civil local del picker, no el UTC', ()
     });
 
     await renderAddPet();
-    await fireEvent.changeText(screen.getByTestId('name-input'), 'Nala');
+    await goToStep2('Nala');
     await fireEvent.press(screen.getByTestId('birth-date-field'));
     const picker = within(
       screen.getByTestId('expo-ui-picker-host'),
     ).getByTestId('birth-date-picker');
     await fireEvent(picker, 'onValueChange', {}, birthDate);
     await fireEvent.press(screen.getByTestId('add-pet-submit'));
+    await waitFor(() => expect(screen.getByTestId('add-pet-submit')).not.toBeDisabled());
 
     await waitFor(() =>
       expect(mockCreatePet).toHaveBeenCalledWith(
@@ -392,6 +764,7 @@ describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
     'age-mode-date',
   ])('%s llega a 44 pt sin crecer a la vista', async (testID) => {
     await renderAddPet();
+    if (testID === 'sterilized-true' || testID === 'age-mode-date') await goToStep2();
 
     await waitFor(() => expect(screen.getByTestId(testID)).toBeVisible());
 
@@ -399,7 +772,7 @@ describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
   });
 });
 
-describe('#62 R11: los chips de especie usan la receta única de chip', () => {
+describe('#62 R11: los selectores de especie usan la receta segmentada (enmendado por #191 R5)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
@@ -421,10 +794,10 @@ describe('#62 R11: los chips de especie usan la receta única de chip', () => {
 
     const chip = screen.getByTestId(testID);
 
-    expect(chip.props.className).toContain('px-3 py-2');
+    expect(chip.props.className).toBe('h-9.5 flex-1 items-center justify-center rounded-10' + (testID === 'species-dog' ? ' bg-surface shadow-sm' : ''));
     expect(chip.props.className).not.toContain('px-4');
     expect(within(chip).getByText(label).props.className).toBe(
-      'text-sm font-semibold text-foreground',
+      testID === 'species-dog' ? 'text-sm font-extrabold text-accent-strong' : 'text-sm font-extrabold text-muted',
     );
     expect(chip.props.hitSlop).toEqual(TOUCH_SLOP);
   });
@@ -460,10 +833,12 @@ describe('#62 R12: el placeholder del formulario sale del tema', () => {
   it('usa muted en los cuatro TextInput con placeholder', async () => {
     await renderAddPet();
 
-    for (const testID of ['name-input', 'breed-input', 'microchip-input']) {
+    for (const testID of ['name-input', 'breed-input']) {
       expect(screen.getByTestId(testID).props.placeholderTextColor).toBe(muted);
     }
 
+    await goToStep2();
+    expect(screen.getByTestId('microchip-input').props.placeholderTextColor).toBe(muted);
     await fireEvent.press(screen.getByTestId('age-mode-months'));
 
     expect(screen.getByTestId('approx-age-input').props.placeholderTextColor).toBe(
@@ -472,26 +847,58 @@ describe('#62 R12: el placeholder del formulario sale del tema', () => {
   });
 });
 
-describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
-  it('retira el botón y el título del cuerpo', async () => {
+describe('#191 R2: el título vive en el contenido', () => {
+  it('pinta el título antes de la foto y conserva el botón atrás nativo', async () => {
     process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
     mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
     mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet, clearPet: jest.fn(), });
     await renderAddPet();
     expect(screen.queryByTestId('add-pet-back')).toBeNull();
-    expect(screen.queryByText(es['addPet.addPet'])).toBeNull();
+    const title = screen.getByTestId('add-pet-title');
+    expect(title).toHaveTextContent(es['addPet.addPet']);
+    expect(title.props.accessibilityRole).toBe('header');
+    expect(title.props.className).toBe('text-2xl font-black tracking-title text-foreground');
+    expect(within(screen.getByTestId('add-pet-form')).getAllByTestId(/^add-pet-(title|photo)$/).map(node => node.props.testID)).toEqual(['add-pet-title', 'add-pet-photo']);
   });
 });
 
-describe('#95 R6: métricas bajo cabecera nativa', () => {
-  it('usa solo el inset inferior del dispositivo', async () => {
+describe('#191 R6: métricas y receta de campos', () => {
+  it('aplica las métricas, etiquetas y controles exactos en ambos pasos', async () => {
     process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
     mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
-    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet, clearPet: jest.fn(), });
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet, clearPet: jest.fn() });
     await renderAddPet();
-    expect(screen.getByTestId('add-pet-form').props.contentContainerStyle).toEqual({
-      padding: 24, gap: 16, paddingBottom: 48,
-    });
+    const metrics = () => expect(screen.getByTestId('add-pet-form').props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 12, gap: 12, paddingBottom: 48 });
+    const inputClasses = 'h-12 rounded-xl border-2 border-transparent bg-default px-3.5 text-15 font-semibold text-foreground';
+    const checkInput = (id: string, label: string, maxLength: number) => {
+      const input = screen.getByTestId(id);
+      expect(input.props.className).toBe(inputClasses);
+      expect(input.props.maxLength).toBe(maxLength);
+      expect(input).toHaveStyle({ borderCurve: 'continuous' });
+      expect(input.parent!.props.className).toBe('gap-1.5');
+      expect(within(input.parent!).getByText(label).props.className).toBe('text-13 font-extrabold text-foreground');
+    };
+    metrics();
+    checkInput('name-input', es['addPet.name'], 120);
+    checkInput('breed-input', es['addPet.breed'], 120);
+    for (const [id, label] of [['species-dog', es['addPet.species']], ['sex-female', es['addPet.sex']], ['size-small', es['addPet.size']]]) {
+      const wrapper = screen.getByTestId(id).parent!.parent!;
+      expect(wrapper.props.className).toBe('gap-1.5');
+      expect(within(wrapper).getByText(label).props.className).toBe('text-13 font-extrabold text-foreground');
+    }
+    await goToStep2();
+    metrics();
+    const date = screen.getByTestId('birth-date-field');
+    expect(date.props.className).toBe('h-12 flex-row items-center gap-2 rounded-xl border-2 border-transparent bg-default px-3.5');
+    expect(date).toHaveStyle({ borderCurve: 'continuous' });
+    expect(date.parent!.props.className).toBe('gap-1.5');
+    expect(within(date.parent!).getByText(es['addPet.age']).props.className).toBe('text-13 font-extrabold text-foreground');
+    const sterilized = screen.getByTestId('sterilized-true').parent!.parent!;
+    expect(sterilized.props.className).toBe('gap-1.5');
+    expect(within(sterilized).getByText(es['addPet.sterilized']).props.className).toBe('text-13 font-extrabold text-foreground');
+    checkInput('microchip-input', es['addPet.microchip'], 32);
+    await fireEvent.press(screen.getByTestId('age-mode-months'));
+    checkInput('approx-age-input', es['addPet.age'], 3);
   });
 });
 
@@ -538,12 +945,13 @@ describe('#123: picker de nacimiento de Añadir mascota en Android a las 20:00 d
       ['elegir el 1 de enero de 2026 manda 2026-01-01 (cruce de año)', [2025, 11, 31, 18, 0], [2026, 0, 1], '1/1/2026', '2026-01-01'],
     ] as [string, number[], number[], string, string][])('%s', async (_title, local, utc, etiqueta, birthDate) => {
       await renderAddPet();
-      await fireEvent.changeText(screen.getByTestId('name-input'), 'Nala');
+      await goToStep2('Nala');
       await fireEvent.press(screen.getByTestId('birth-date-field'));
       const picker = within(screen.getByTestId('expo-ui-picker-host')).getByTestId('birth-date-picker');
       await fireEvent(picker, 'onValueChange', {}, wallClock(local, utc));
       expect(within(screen.getByTestId('birth-date-field')).getByText(etiqueta)).toBeVisible();
       await fireEvent.press(screen.getByTestId('add-pet-submit'));
+      await waitFor(() => expect(screen.getByTestId('add-pet-submit')).not.toBeDisabled());
       await waitFor(() => expect(mockCreatePet).toHaveBeenCalledWith(
         'http://example.test/v1',
         'jwt-token',
@@ -555,6 +963,7 @@ describe('#123: picker de nacimiento de Añadir mascota en Android a las 20:00 d
   describe('#123 R7: el calendario de nacimiento abre en el día local y el máximo no se convierte', () => {
     it('abre en el 24, con el máximo en el instante actual', async () => {
       await renderAddPet();
+      await goToStep2();
       await fireEvent.press(screen.getByTestId('birth-date-field'));
       const picker = within(screen.getByTestId('expo-ui-picker-host')).getByTestId('birth-date-picker');
       expect((picker.props.value as Date).toISOString()).toBe('2026-09-24T00:00:00.000Z');
@@ -632,6 +1041,7 @@ async function saveNala() {
   await fireEvent.changeText(screen.getByTestId('breed-input'), '   ');
   await fireEvent.press(screen.getByTestId('sex-male'));
   await fireEvent.press(screen.getByTestId('size-small'));
+  await goToStep2(screen.getByTestId('name-input').props.value);
   await fireEvent.press(screen.getByTestId('sterilized-false'));
   await fireEvent.changeText(screen.getByTestId('microchip-input'), ' CHIP-9 ');
   await fireEvent.press(screen.getByTestId('age-mode-months'));
@@ -657,7 +1067,7 @@ function armNalaPhoto() {
 async function saveNalaWithPhoto() {
   await pressPickPhoto();
   await waitFor(() => expect(screen.getByTestId('pet-avatar').props.photoUrl).toBe('file:///new-pet.jpg'));
-  await fireEvent.changeText(screen.getByTestId('name-input'), 'Nala');
+  await goToStep2('Nala');
   await fireEvent.press(screen.getByTestId('age-mode-months'));
   await fireEvent.changeText(screen.getByTestId('approx-age-input'), '8');
   await fireEvent.press(screen.getByTestId('add-pet-submit'));

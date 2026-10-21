@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { router, type Href, useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Button, Skeleton, Switch } from 'heroui-native';
-import { useCallback, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Bell, Camera, FileText, Map as MapIcon, Plus, Wifi } from 'reicon-react-native';
@@ -147,6 +147,8 @@ export function ProfileScreen() {
   const locale = useLocale();
   const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
+  const selectedPetIdRef = useRef<string | null>(selectedPetId);
+  const photoBusyRef = useRef<boolean>(false);
   const { theme } = useUniwind();
   const switchTheme = useThemeTransition();
   const insets = useSafeAreaInsets();
@@ -171,10 +173,16 @@ export function ProfileScreen() {
   const refetchPets = pets.refetch;
   const refetchDetail = detail.refetch;
 
+  useEffect(() => {
+    selectedPetIdRef.current = selectedPetId;
+  }, [selectedPetId]);
+
   useFocusEffect(
     useCallback(() => {
       refetchPets();
-      refetchDetail();
+      if (selectedPetIdRef.current !== null) {
+        refetchDetail();
+      }
     }, [refetchDetail, refetchPets]),
   );
 
@@ -191,54 +199,60 @@ export function ProfileScreen() {
   async function handleChangePhoto() {
     if (!pet) return;
 
-    setPhotoError(null);
-    const picked = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      quality: 0.8,
-    });
-    if (picked.canceled || !picked.assets[0]) return;
-
-    const asset = picked.assets[0];
-    const contentType = resolvePhotoContentType(asset.mimeType, asset.uri);
-    if (!contentType) {
-      setPhotoError(t('profile.errorPhotoFormat'));
-      return;
-    }
-
-    setPhotoUploading(true);
+    if (photoBusyRef.current) return;
+    photoBusyRef.current = true;
     try {
-      const requested = await requestPhotoUploadUrl(
-        baseUrl,
-        token ?? '',
-        pet.id,
-        contentType,
-      );
-      if (requested.kind === 'unauthorized') {
-        await signOut();
-        return;
-      }
-      if (requested.kind !== 'ok') {
-        setPhotoError(t('profile.couldNotUploadPhoto'));
+      setPhotoError(null);
+      const picked = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        quality: 0.8,
+      });
+      if (picked.canceled || !picked.assets[0]) return;
+
+      const asset = picked.assets[0];
+      const contentType = resolvePhotoContentType(asset.mimeType, asset.uri);
+      if (!contentType) {
+        setPhotoError(t('profile.errorPhotoFormat'));
         return;
       }
 
-      const assetResponse = await fetch(asset.uri);
-      const body = await assetResponse.blob();
-      const uploaded = await uploadPhotoToUrl(
-        requested.uploadUrl,
-        body,
-        contentType,
-      );
-      if (uploaded.kind !== 'ok') {
-        setPhotoError(t('profile.couldNotUploadPhoto'));
-        return;
-      }
+      setPhotoUploading(true);
+      try {
+        const requested = await requestPhotoUploadUrl(
+          baseUrl,
+          token ?? '',
+          pet.id,
+          contentType,
+        );
+        if (requested.kind === 'unauthorized') {
+          await signOut();
+          return;
+        }
+        if (requested.kind !== 'ok') {
+          setPhotoError(t('profile.couldNotUploadPhoto'));
+          return;
+        }
 
-      detail.refetch();
-    } catch {
-      setPhotoError(t('profile.couldNotUploadPhoto'));
+        const assetResponse = await fetch(asset.uri);
+        const body = await assetResponse.blob();
+        const uploaded = await uploadPhotoToUrl(
+          requested.uploadUrl,
+          body,
+          contentType,
+        );
+        if (uploaded.kind !== 'ok') {
+          setPhotoError(t('profile.couldNotUploadPhoto'));
+          return;
+        }
+
+        detail.refetch();
+      } catch {
+        setPhotoError(t('profile.couldNotUploadPhoto'));
+      } finally {
+        setPhotoUploading(false);
+      }
     } finally {
-      setPhotoUploading(false);
+      photoBusyRef.current = false;
     }
   }
 

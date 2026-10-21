@@ -65,6 +65,11 @@ export const R2_TABS: UseRow[] = [
 ];
 
 export const R3_HOME: UseRow[] = [
+  // (enmendado por #190 R13): las cuatro frases viven en el helper puro.
+  { file: 'src/screens/home/pingo-phrase.ts', key: 'home.pingoPhraseWalkMeals' },
+  { file: 'src/screens/home/pingo-phrase.ts', key: 'home.pingoPhraseWalk' },
+  { file: 'src/screens/home/pingo-phrase.ts', key: 'home.pingoPhraseMeals' },
+  { file: 'src/screens/home/pingo-phrase.ts', key: 'home.pingoPhraseCalm' },
   { file: 'src/screens/home/index.tsx', key: 'home.noLocationDataYet' },
   { file: 'src/screens/home/index.tsx', key: 'home.lastSeen' },
   { file: 'src/screens/home/index.tsx', key: 'home.home' },
@@ -147,6 +152,10 @@ export const R4_MAP: UseRow[] = [
 ];
 
 export const R5_HEALTH: UseRow[] = [
+  { file: 'src/utils/form-rules.ts', key: 'weightLog.enterValidWeight' }, // #186 R2
+  { file: 'src/utils/form-rules.ts', key: 'validation.weightRange' }, // #186 R2
+  { file: 'src/utils/form-rules.ts', key: 'validation.bodyConditionRange' }, // #186 R2
+  { file: 'src/utils/form-rules.ts', key: 'validation.invalidDate' }, // #186 R2
   { file: 'src/app/_layout.tsx', key: 'weightLog.weightLog' }, // #95 R4
   { file: 'src/screens/health/index.tsx', key: 'health.health' },
   { file: 'src/screens/health/index.tsx', key: 'common.somethingWentWrong' },
@@ -166,7 +175,7 @@ export const R5_HEALTH: UseRow[] = [
   { file: 'src/screens/health/index.tsx', key: 'home.nextVaccineDays' },
   { file: 'src/screens/health/index.tsx', key: 'home.nextVaccineDaysLeft' },
   { file: 'src/screens/health/index.tsx', key: 'home.nextVaccineToday' },
-  { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.enterValidWeight' },
+  { file: 'src/screens/weight-log/index.tsx', key: 'validation.checkDetails' }, // #186 R7
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.errorForbidden' },
   { file: 'src/screens/weight-log/index.tsx', key: 'common.cannotReachServer' },
   { file: 'src/screens/weight-log/index.tsx', key: 'common.somethingWentWrong' },
@@ -259,6 +268,7 @@ export const R6_FOOD: UseRow[] = [
 ];
 
 export const R7_PROFILE: UseRow[] = [
+  { file: 'src/utils/form-rules.ts', key: 'validation.required' }, // #186 R2
   { file: 'src/screens/profile/index.tsx', key: 'common.noPetsBody' }, // #181 R5
   { file: 'src/screens/profile/index.tsx', key: 'profile.addPet' }, // #181 R5
   { file: 'src/screens/profile/index.tsx', key: 'map.justNow' }, // #173 R9
@@ -330,6 +340,9 @@ export const R7_PROFILE: UseRow[] = [
 ];
 
 export const R8_REMINDERS: UseRow[] = [
+  { file: 'src/utils/form-rules.ts', key: 'addReminder.titleIsRequired' }, // #186 R2
+  { file: 'src/utils/form-rules.ts', key: 'addReminder.pickDate' }, // #186 R2
+  { file: 'src/utils/form-rules.ts', key: 'addReminder.dateMustBeFuture' }, // #186 R2
   { file: 'src/screens/reminders/index.tsx', key: 'common.noPetsYet' }, // #181 R4
   { file: 'src/screens/reminders/index.tsx', key: 'common.noPetsBody' }, // #181 R4
   { file: 'src/screens/reminders/index.tsx', key: 'profile.addPet' }, // #181 R4
@@ -369,9 +382,6 @@ export const R8_REMINDERS: UseRow[] = [
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.advance1Day' },
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.advance3Days' },
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.advance7Days' },
-  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.titleIsRequired' },
-  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.pickDate' },
-  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.dateMustBeFuture' },
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.errorForbidden' },
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.dateMustBeFuture' },
   { file: 'src/screens/add-reminder/index.tsx', key: 'common.cannotReachServer' },
@@ -389,11 +399,14 @@ export const R8_REMINDERS: UseRow[] = [
 ];
 
 export const R9_ADD_PET: UseRow[] = [
-  { file: 'src/app/_layout.tsx', key: 'addPet.addPet' }, // #95 R4
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.continue' }, // #191 R7
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.pingoGreeting' }, // #191 R4
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.stepProgress' }, // #191 R3
+  { file: 'src/utils/form-rules.ts', key: 'addPet.nameIsRequired' }, // #186 R2
+  { file: 'src/utils/form-rules.ts', key: 'addPet.chooseBirthDate' }, // #186 R2
+  { file: 'src/utils/form-rules.ts', key: 'addPet.errorAgeRange' }, // #186 R2
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.addPet' }, // #95 R4
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.errorPhotoFormat' },
-  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.nameIsRequired' },
-  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.chooseBirthDate' },
-  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.errorAgeRange' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.errorPhotoAfterCreate' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.checkPetDetails' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.youCannotCreatePet' },
@@ -401,7 +414,6 @@ export const R9_ADD_PET: UseRow[] = [
   { file: 'src/screens/add-pet/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/add-pet/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.pet' },
-  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.avatarPreview' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.choosePhoto' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.basicDetails' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.species' },
@@ -462,7 +474,8 @@ export const R10_PAIRING: UseRow[] = [
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.viewOnMap' },
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.done' },
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.pairCollar' },
-  { file: 'src/screens/pairing/index.tsx', key: 'pairing.freePlanPairPrompt' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.freePlanPairLead' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.freePlanPairBody' },
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.activationCode' },
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.printedOnCollarBox' },
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.pairCollar' },

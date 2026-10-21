@@ -379,8 +379,7 @@ describe('R1: me card', () => {
 
     await renderProfile();
 
-    await waitFor(() => expect(screen.getByTestId('me-card')).toBeVisible());
-    expect(screen.getByText('Ada Lovelace')).toBeVisible();
+    expect(await screen.findByText('Ada Lovelace')).toBeVisible();
     expect(screen.getByText('ada@example.test')).toBeVisible();
     expect(mockGetMe).toHaveBeenCalledWith(apiUrl, 'jwt-token');
   });
@@ -1752,6 +1751,94 @@ describe('#168 R7 (enmendado por #173 R11): la identidad de la cuenta toma las m
   });
 });
 
+describe('Perfil: refetch de foco con selección vigente', () => {
+  let selectedPetId: string | null;
+
+  beforeEach(() => {
+    setupProfile168();
+    selectedPetId = null;
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    mockGetMe.mockResolvedValue({ kind: 'error' });
+    const realUseSelectedPet = selectedPetHooks.useSelectedPet;
+    jest.spyOn(selectedPetHooks, 'useSelectedPet').mockImplementation(() => ({
+      ...realUseSelectedPet(), selectedPetId,
+    }));
+  });
+
+  afterEach(() => jest.restoreAllMocks());
+
+  describe('#193 R4: Perfil sin mascota no pide detalle al enfocar', () => {
+    it('no llama a getPet durante el foco con selección nula', async () => {
+      const { queryClient } = await renderProfile();
+      await screen.findByTestId('profile-pets-empty');
+      await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+      const before = mockGetPet.mock.calls.length;
+      const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+      expect(focus).toBeDefined();
+
+      await act(async () => { focus?.(); });
+
+      expect(mockGetPet.mock.calls.slice(before)).toEqual([]);
+    });
+  });
+
+  describe('#193 R5: Perfil con mascota refresca el detalle al enfocar', () => {
+    it('la callback original pide una vez el id seleccionado después del montaje', async () => {
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+      const view = await renderProfile();
+      await screen.findByTestId('pet-chip-pet-1');
+      await waitFor(() => expect(view.queryClient.isFetching()).toBe(0));
+      const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+      expect(focus).toBeDefined();
+      selectedPetId = 'pet-1';
+      await view.rerender(<ProfileScreen />);
+      await waitFor(() => expect(screen.getByTestId('profile-pet-name')).toHaveTextContent('Luna'));
+      await waitFor(() => expect(view.queryClient.isFetching()).toBe(0));
+      const before = mockGetPet.mock.calls.length;
+
+      await act(async () => { focus?.(); });
+
+      expect(mockGetPet.mock.calls.slice(before)).toEqual([[apiUrl, 'jwt-token', 'pet-1']]);
+    });
+  });
+
+  describe('#193 R6: Perfil sin mascota conserva el refetch de la lista', () => {
+    it('llama una vez a listPets durante el foco', async () => {
+      const { queryClient } = await renderProfile();
+      await screen.findByTestId('profile-pets-empty');
+      await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+      const before = mockListPets.mock.calls.length;
+      const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+      expect(focus).toBeDefined();
+
+      await act(async () => { focus?.(); });
+
+      expect(mockListPets.mock.calls.slice(before)).toEqual([[apiUrl, 'jwt-token']]);
+    });
+  });
+
+  describe('#193 R10: Perfil conserva la identidad de su callback de foco', () => {
+    it('mantiene la misma función al seleccionar y deseleccionar una mascota', async () => {
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+      const view = await renderProfile();
+      await screen.findByTestId('pet-chip-pet-1');
+      await waitFor(() => expect(view.queryClient.isFetching()).toBe(0));
+      const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+      expect(focus).toBeDefined();
+
+      selectedPetId = 'pet-1';
+      await view.rerender(<ProfileScreen />);
+      await waitFor(() => expect(screen.getByTestId('profile-pet-name')).toHaveTextContent('Luna'));
+      expect(Object.is(focus, mockUseFocusEffect.mock.calls.at(-1)?.[0])).toBe(true);
+
+      selectedPetId = null;
+      await view.rerender(<ProfileScreen />);
+      await waitFor(() => expect(screen.getByTestId('selected-pet-id')).toHaveTextContent('none'));
+      expect(Object.is(focus, mockUseFocusEffect.mock.calls.at(-1)?.[0])).toBe(true);
+    });
+  });
+});
+
 describe('#181 R1: profile sin mascotas no muestra errores de detalle', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -1779,7 +1866,6 @@ describe('#181 R1: profile sin mascotas no muestra errores de detalle', () => {
       const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
       expect(focus).toBeDefined();
       await act(async () => { focus?.(); });
-      await waitFor(() => expect(mockGetPet).toHaveBeenCalledWith(apiUrl, 'jwt-token', null));
     }
     await screen.findByTestId('profile-pets-empty');
     if (scenario === 'S1') {
@@ -1788,6 +1874,7 @@ describe('#181 R1: profile sin mascotas no muestra errores de detalle', () => {
     }
     await screen.findByTestId('profile-pets-empty');
     await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    expect(mockGetPet).not.toHaveBeenCalledWith(apiUrl, 'jwt-token', null);
     expect(screen.queryByTestId('profile-pet-error')).toBeNull();
     expect(screen.queryByTestId('profile-pet-retry')).toBeNull();
     expect(screen.queryByTestId('profile-hero-skeleton')).toBeNull();
@@ -1800,9 +1887,9 @@ describe('#181 R1: profile sin mascotas no muestra errores de detalle', () => {
     const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
     expect(focus).toBeDefined();
     await act(async () => { focus?.(); });
-    await waitFor(() => expect(mockGetPet).toHaveBeenCalledWith(apiUrl, 'jwt-token', null));
     await screen.findByTestId('profile-pets-error');
     await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    expect(mockGetPet).not.toHaveBeenCalledWith(apiUrl, 'jwt-token', null);
     expect(screen.queryByTestId('profile-pet-error')).toBeNull();
     expect(screen.queryByTestId('profile-pet-retry')).toBeNull();
   });
@@ -1862,5 +1949,186 @@ describe('#181 R5: Perfil conserva la cuenta y compone el vacío ilustrado', () 
     for (const id of ['profile-pet-error', 'profile-pet-retry', 'profile-hero-skeleton', 'pet-info-skeleton']) {
       expect(screen.queryByTestId(id)).toBeNull();
     }
+  });
+});
+
+describe('#184 R1: la cámara no responde mientras sube', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: mockSignOut,
+    } satisfies AuthContextValue);
+    mockSignOut.mockResolvedValue();
+    mockGetMe.mockReturnValue(pending<MeState>());
+    const pet = makePet({ photoUrl: 'http://example.test/old.jpg' });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+  });
+
+  it('#184 R1: no responde a toques durante la subida', async () => {
+    let finish!: (value: { kind: 'error' }) => void;
+    const requested = new Promise<{ kind: 'error' }>((resolve) => { finish = resolve; });
+    mockLaunchImageLibrary.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file:///luna.webp', mimeType: 'image/webp' } as never],
+    });
+    mockRequestPhotoUploadUrl.mockReturnValue(requested);
+    await renderProfile();
+    await screen.findByTestId('profile-pet-card');
+    expect(screen.getByTestId('change-photo').props.onStartShouldSetResponder()).toBe(true);
+
+    await fireEvent.press(screen.getByTestId('change-photo'));
+
+    await waitFor(() => expect(screen.getByTestId('change-photo').props.accessibilityState).toEqual({ disabled: true }));
+    expect(screen.getByTestId('change-photo').props.onStartShouldSetResponder()).toBe(false);
+    await fireEvent.press(screen.getByTestId('change-photo'));
+    expect(mockLaunchImageLibrary).toHaveBeenCalledTimes(1);
+    expect(mockRequestPhotoUploadUrl).toHaveBeenCalledTimes(1);
+    await act(async () => { finish({ kind: 'error' }); });
+    await screen.findByTestId('photo-upload-error');
+    expect(screen.getByTestId('change-photo').props.onStartShouldSetResponder()).toBe(true);
+  });
+});
+
+describe('#184 R4: cerrar sesión conserva su botón danger-soft', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: mockSignOut,
+    } satisfies AuthContextValue);
+    mockSignOut.mockResolvedValue();
+    mockGetMe.mockReturnValue(pending<MeState>());
+    const pet = makePet({ photoUrl: 'http://example.test/old.jpg' });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+  });
+
+  it('#184 R4: conserva la variante y las clases', async () => {
+    await renderProfile();
+    await screen.findByTestId('profile-sign-out');
+
+    expect(screen.getByTestId('profile-sign-out').props.className).toBe('pressable-feedback__root button__root button__root--variant-danger-soft button__root--size-md rounded-xl bg-danger-soft');
+  });
+});
+
+describe('#184 R2: handleChangePhoto ignora toques mientras hay uno en curso', () => {
+  const originalFetch = globalThis.fetch;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: mockSignOut,
+    } satisfies AuthContextValue);
+    mockSignOut.mockResolvedValue();
+    mockGetMe.mockReturnValue(pending<MeState>());
+    const pet = makePet({ photoUrl: 'http://example.test/old.jpg' });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it('#184 R2: un segundo toque con el picker abierto no lanza otro picker', async () => {
+    mockLaunchImageLibrary.mockReturnValue(pending<ImagePicker.ImagePickerResult>());
+    await renderProfile();
+    await screen.findByTestId('profile-pet-card');
+
+    await fireEvent.press(screen.getByTestId('change-photo'));
+    await fireEvent.press(screen.getByTestId('change-photo'));
+
+    expect(mockLaunchImageLibrary).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    'picker cancelado',
+    'formato no soportado',
+    'URL denegada',
+    'sesión caducada',
+    'subida rechazada',
+    'excepción al leer el asset',
+    'subida correcta',
+  ])('#184 R2: libera la guardia tras %s', async (salida) => {
+    mockLaunchImageLibrary.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file:///luna.webp', mimeType: 'image/webp' } as never],
+    });
+    mockRequestPhotoUploadUrl.mockResolvedValue({
+      kind: 'ok',
+      uploadUrl: 'http://localstack.test/upload',
+      expiresInSeconds: 600,
+    });
+    mockUploadPhotoToUrl.mockResolvedValue({ kind: 'ok' });
+
+    switch (salida) {
+      case 'picker cancelado':
+        mockLaunchImageLibrary.mockResolvedValue({ canceled: true, assets: null });
+        break;
+      case 'formato no soportado':
+        mockLaunchImageLibrary.mockResolvedValue({
+          canceled: false,
+          assets: [{ uri: 'file:///luna.gif', mimeType: 'image/gif' } as never],
+        });
+        break;
+      case 'URL denegada':
+        mockRequestPhotoUploadUrl.mockResolvedValue({ kind: 'error' });
+        break;
+      case 'sesión caducada':
+        mockRequestPhotoUploadUrl.mockResolvedValue({ kind: 'unauthorized' });
+        break;
+      case 'subida rechazada':
+      case 'subida correcta':
+        globalThis.fetch = jest.fn().mockResolvedValue({
+          blob: jest.fn().mockResolvedValue(new Blob(['x'], { type: 'image/webp' })),
+        });
+        if (salida === 'subida rechazada') {
+          mockUploadPhotoToUrl.mockResolvedValue({ kind: 'error' });
+        } else {
+          mockGetPet
+            .mockResolvedValueOnce({ kind: 'ok', pet: makePet({ photoUrl: 'http://example.test/old.jpg' }) })
+            .mockResolvedValue({ kind: 'ok', pet: makePet({ photoUrl: 'http://example.test/new.jpg' }) });
+        }
+        break;
+      case 'excepción al leer el asset':
+        globalThis.fetch = jest.fn().mockRejectedValue(new Error('boom'));
+        break;
+    }
+
+    await renderProfile();
+    await screen.findByTestId('profile-pet-card');
+
+    await fireEvent.press(screen.getByTestId('change-photo'));
+
+    if (salida === 'subida correcta') {
+      await waitFor(() => expect(screen.getByTestId('profile-pet-avatar').props.source).toEqual([
+        { uri: 'http://example.test/new.jpg', cacheKey: 'pet-1' },
+      ]));
+      expect(mockGetPet).toHaveBeenCalledTimes(2);
+    } else if (salida !== 'picker cancelado' && salida !== 'sesión caducada') {
+      expect(await screen.findByTestId('photo-upload-error')).toBeVisible();
+    }
+    if (salida !== 'picker cancelado') {
+      await waitFor(() => expect(screen.getByTestId('change-photo').props.accessibilityState).toEqual({ disabled: false }));
+    }
+    if (salida === 'sesión caducada') {
+      expect(mockSignOut).toHaveBeenCalledTimes(1);
+    }
+
+    await fireEvent.press(screen.getByTestId('change-photo'));
+
+    expect(mockLaunchImageLibrary).toHaveBeenCalledTimes(2);
   });
 });

@@ -1,0 +1,61 @@
+---
+feature: "mobile-home-pingo-phrase"
+status: approved      # draft | approved
+tags: [harness, spec]
+---
+
+# Requisitos — [[mobile-home-pingo-phrase]]
+
+> Notación EARS. Cada requisito tiene id único R<n>, inmutable una vez aprobado.
+> Ver [[design]] para las decisiones técnicas y [[../../docs/architecture|architecture]]
+> para las reglas de arquitectura que la implementación debe respetar.
+
+Alcance: burbuja de Pingo con una frase del día en la pantalla Inicio con mascota seleccionada (artboard Inicio, hueco C5). Referencia visual: artboard `project/Inicio.dc.html` del canvas aprobado (https://claude.ai/artifact/VqaQQsRTtis9Dbttqy3z7j), leído directamente el 2026-10-19. Las rutas de código son relativas a `mobile-pet-tracker/`. El copy sigue la voz B de Pingo (`docs/ui-guidelines.md` §7). Reglas del humano: «el diseño final como el artifact» y «Píxel exacto».
+
+## Decisiones humanas pendientes
+
+Tres decisiones abiertas desde el registro de #190. Esta spec propone un defecto razonado para cada una y **no las da por cerradas**: el humano las confirma o las sustituye al firmar (casillas propias en §Aprobación). Si sustituye una, la spec se enmienda antes de implementar (columna «Si cambia»).
+
+| Id | Decisión | Defecto propuesto | Por qué | Si cambia |
+|---|---|---|---|---|
+| H1 | Contenido de la frase | **(a)** frase compuesta con lo que Inicio ya tiene: distancia de hoy (`DayEntry.distanceM`) y comidas servidas (`MealsToday {served,total}`), con una frase de respaldo cuando faltan ambos datos | No añade ninguna query (`MealsToday` ya viaja en `getPet`), no depende de #129 y no inventa una hora que el modelo no tiene. La frase del canvas («Le falta la comida de las 18:00.») exige la hora de la próxima comida, que `MealsToday` no trae | **(b)** consultar el plan de nutrición desde Inicio: R8 y R9 se reescriben, se añade una query y queda sujeta a #129. **(c)** pool fijo por estado: R8 cambia la selección y R9 el pool |
+| H2 | Cuándo se muestra | Solo con mascota seleccionada, detalle resuelto en `ok` y actividad ya resuelta (sea cual sea su resultado). Nunca en carga, error, sin mascotas ni sin selección (R1, R2) | Evita que la frase cambie al llegar la actividad y que Pingo hable de una mascota que aún no se conoce | «Siempre»: R2 pierde sus filas de carga. «Solo con datos»: R8 pierde la frase de respaldo y R1 añade condición de dato |
+| H3 | Pose | Placeholder `assets/images/pingo-talk.webp` (1024×1024, ya existe y la usa `EmptyState pose="talk"`), pintada a 64×64 | Las poses son placeholders por decisión previa; no hay pose dedicada a «hablar con burbuja» | Otra pose: solo cambia el `require` de R4 y su test |
+
+## Requisitos funcionales
+
+- **R1**: WHEN `selectedPetId !== null`, `detail.data?.kind === 'ok'` y `activity.data !== undefined` (cualquier `kind`) en `src/screens/home/index.tsx`, THE SYSTEM SHALL pintar, como **primer** hijo de `home-content` (antes de `home-entrance-summary`), un `HomeEntrance` con `index={0}` y `testID="home-entrance-pingo"` cuyo único hijo es una `View` `home-pingo-phrase`.
+- **R2**: IF `selectedPetId === null`, o `detail.data` es `undefined`, `error` o `unreachable`, o `activity.data === undefined`, o la cuenta no tiene mascotas, o las mascotas están cargando o en error, THEN THE SYSTEM SHALL no pintar `home-entrance-pingo` ni ningún descendiente suyo, y los demás bloques de Inicio quedan como hoy.
+- **R3**: WHILE `home-pingo-phrase` está pintada, THE SYSTEM SHALL darle la clase exacta `flex-row items-end gap-2.5` (10 px entre burbuja y pose, pose alineada al borde inferior) y exactamente dos hijos, en este orden: la burbuja `home-pingo-bubble` y el envoltorio de pose `home-pingo-float` (R5).
+- **R4**: WHILE la burbuja está pintada, THE SYSTEM SHALL pintar la pose como `Image` de `expo-image` con `testID="home-pingo"`, fuente `require('../../../assets/images/pingo-talk.webp')`, `style={{ width: 64, height: 64 }}` y sin `accessibilityLabel` (decorativa), hija directa de `home-pingo-float`. (H3 pendiente: pose placeholder.)
+- **R5**: WHILE la burbuja está pintada y reduce motion está desactivado, THE SYSTEM SHALL envolver la pose en `PingoFloat` (`src/components/pingo-float.tsx`) con `testID="home-pingo-float"`, que anima `translateY` de 0 a `-MOTION_PINGO_FLOAT_OFFSET_Y` (10 px) con `MOTION_PINGO_FLOAT_TIMING` (1500 ms por tramo) en bucle invertido; WHILE reduce motion está activado, THE SYSTEM SHALL pintar la pose en su sitio (`translateY` 0) sin arrancar ningún bucle. Precondición: Enmienda #190 aprobada (R14).
+- **R6**: WHEN Inicio pinta `home-entrance-pingo`, THE SYSTEM SHALL darle el índice 0 de `HomeEntrance` (retraso 0 ms) y desplazar en uno el índice de los seis bloques existentes: `home-entrance-summary` 1 (60 ms), `home-entrance-collar` 2 (120 ms), `home-entrance-quick-actions` 3 (180 ms), `home-entrance-weekly` 4 (240 ms), `home-entrance-reminders` 5 (300 ms), `home-entrance-last-position` 6 (360 ms). Los índices son fijos aunque un bloque no se pinte, como hoy.
+- **R7**: WHILE reduce motion está activado, THE SYSTEM SHALL construir la entrada de `home-entrance-pingo` con desplazamiento inicial 0 y conservar el fundido de opacidad (comportamiento ya existente de `HomeEntrance`; no se toca `src/screens/home/home-entrance.tsx` ni `src/theme/motion.ts`). La burbuja no añade animación de escala ni de «pop».
+- **R8**: WHEN Inicio compone la frase, THE SYSTEM SHALL elegirla con la función pura `homePingoPhrase(input)` exportada de `src/screens/home/pingo-phrase.ts`, con `input = { petName: string; distanceM: number | null; meals: MealsToday | null }` (`MealsToday` de `src/api/types.ts`) y retorno `{ labelKey: TranslationKey; params: Record<string, string | number> }`, por esta prioridad: (1) distancia válida y plan de comidas → `labelKey: 'home.pingoPhraseWalkMeals'`, `params: { petName, km, served, total }`; (2) solo distancia válida → `'home.pingoPhraseWalk'`, `params: { petName, km }`; (3) solo plan de comidas → `'home.pingoPhraseMeals'`, `params: { petName, served, total }`; (4) ninguno → `'home.pingoPhraseCalm'`, `params: { petName }`. «Distancia válida» = `distanceM !== null && distanceM >= 100`. «Plan de comidas» = `meals !== null && meals.total > 0`. `km` es `fmtKm(distanceM)` de `src/screens/home/format.ts` (p. ej. `'2.3 km'`, con punto decimal en ambos idiomas, igual que el tile de distancia). `served` y `total` pasan como número tal cual, sin corregir (`served > total` no se ajusta). La pantalla alimenta `distanceM` con `today?.distanceM ?? null` (el mismo `today` que ya usa el hero), `meals` con `mealsToday` y `petName` con `detail.data.pet.name`.
+- **R9**: WHEN el idioma activo es español o inglés, THE SYSTEM SHALL tener en `src/i18n/catalog.ts`, en `en` y en `es`, exactamente estas cuatro claves nuevas con estos literales (marcadores `{{...}}` idénticos en ambos idiomas, sin emoji, terminadas en punto): `home.pingoPhraseWalkMeals` = EN `{{petName}} has walked {{km}} today and has had {{served}} of {{total}} meals.` / ES `{{petName}} ya caminó {{km}} hoy y lleva {{served}} de {{total}} comidas.`; `home.pingoPhraseWalk` = EN `{{petName}} has walked {{km}} today.` / ES `{{petName}} ya caminó {{km}} hoy.`; `home.pingoPhraseMeals` = EN `{{petName}} has had {{served}} of {{total}} meals today.` / ES `{{petName}} lleva {{served}} de {{total}} comidas hoy.`; `home.pingoPhraseCalm` = EN `I'm keeping an eye on {{petName}}.` / ES `Estoy pendiente de {{petName}}.` El candado de longitud del catálogo (`src/providers/__tests__/language-provider.test.tsx`) suma `+ 4 // #190 R9`.
+- **R10**: WHEN la burbuja se pinta, THE SYSTEM SHALL mostrar dentro de `home-pingo-text` el texto `t(labelKey, params)` de R8 en el idioma activo, y WHEN el usuario cambia de idioma, THE SYSTEM SHALL repintar la misma frase en el otro idioma sin recargar datos.
+- **R11**: WHILE la burbuja está pintada, THE SYSTEM SHALL pintar `home-pingo-bubble` como `View` de `react-native` con la clase exacta `flex-1 rounded-tile rounded-br-4 bg-surface px-3.5 py-3 shadow-sm` (radio 18 px en tres esquinas y 4 px en la inferior derecha, la «cola» hacia Pingo; padding horizontal 14 y vertical 12; fondo y sombra de superficie) y como único hijo un `Text` de `react-native` con `testID="home-pingo-text"` y la clase exacta `text-15 font-semibold leading-5.25 text-foreground` (15 px, peso 600, interlínea 21 px = 5.25 × 4). El token `--radius-4: 4px` se declara una sola vez en `src/theme/global.css`, junto a los demás `--radius-*`. `text-15` va solo en `Text` de RN, nunca en un componente de HeroUI (Enmienda #187).
+- **R12**: WHEN la feature está mergeada, THE SYSTEM SHALL cumplir la regla grep-clean de `docs/ui-guidelines.md` §3 en los ficheros nuevos o tocados de `src/screens/home/`: cero literales hex fuera de `src/theme/`, cero clases arbitrarias `[...]`, cero `StyleSheet.create`, cero sombras o elevation legacy y cero emoji.
+- **R13**: WHEN la feature está mergeada, THE SYSTEM SHALL mantener cerrados los candados de inventario que la burbuja mueve: `text-15` pasa a vivir también en `screens/home/index.tsx` (inventario de `src/__tests__/alerts-canvas-fidelity.test.ts`), la tabla `src/__tests__/ui-copy-table.ts` registra las cuatro claves de R9 en `src/screens/home/pingo-phrase.ts`, y `src/__tests__/ui-language.test.ts` suma 4 a `R3_HOME` y 1 a `SCREEN_FILES` (detalle exacto en [[tasks]] §Tests enmendados).
+- **R14**: IF la Enmienda #190 de `docs/ui-guidelines.md` no está aprobada por el humano (casilla de §Aprobación sin firmar), THEN THE SYSTEM SHALL no implementar R5 y entregar la burbuja con la pose estática hasta que se apruebe; WHEN está aprobada, THE SYSTEM SHALL incorporar a `docs/ui-guidelines.md` el texto de [[design]] §Texto de la Enmienda #190, que amplía `PingoFloat` a la burbuja de Inicio con mascota y declara el token `--radius-4`.
+- **R15**: WHEN el humano prueba la pantalla en dev build Android (modo claro, modo oscuro y reduce motion activado), THE SYSTEM SHALL verse como el artboard Inicio en la zona de la burbuja: frase legible a 15/600 en hasta tres líneas, cola de 4 px abajo a la derecha, Pingo a 64 px a la derecha alineado al borde inferior de la burbuja, y sin que la burbuja salte al llegar los datos. **Solo puede cerrarlo el humano** (casilla propia en §Aprobación); ninguna IA lo da por hecho.
+
+## Fuera de alcance
+
+- Consultar el plan de nutrición o cualquier query nueva desde Inicio (opción (b) de H1) y la hora de la próxima comida: no está en `MealsToday`. Depende de #129 y es otra feature si el humano la quiere.
+- Un pool de frases por estado o rotatorio (opción (c) de H1) y cualquier frase del día aleatoria.
+- La animación «pop» de la burbuja del artboard (`scale .6 → 1.08 → 1`, 400 ms, retraso 450 ms): se sustituye por la entrada de `HomeEntrance` (R6, R7). Divergencia declarada, [[design]] Q2.
+- Colocar la burbuja dentro del hero del artboard (tarjeta única con foto): el hero de Inicio es `PetHeroHeader variant="bleed"` (Enmienda #67) y no se re-litiga; la burbuja es un bloque propio bajo el hero ([[design]] D2, Q1).
+- Los cuatro tiles sueltos del resumen y su orden respecto a la burbuja (N6 de `progress/explore_canvas-parity-2026-10-16.md`): si el humano confirma N6, el orden se acuerda allí; esta spec fija la burbuja **antes** de `home-entrance-summary`.
+- La guarda de refetch sin mascota (#193), el estado sin mascotas (#176, #181) y la receta de botón (#177).
+- Cambios en `src/screens/home/home-entrance.tsx`, `src/components/pingo-float.tsx` y `src/theme/motion.ts` (este último queda cerrado por `motion.test.ts`: sin exports nuevos).
+- Una pose nueva de Pingo (H3) y cualquier cambio de la pose en `EmptyState`.
+
+## Aprobación
+
+- [x] Aprobado por humano (fecha: 2026-10-19) ← gate obligatorio antes de implementar
+- [x] H1 contenido de la frase: confirmo el defecto (a), o lo sustituyo por: ____
+- [x] H2 cuándo se muestra: confirmo el defecto, o lo sustituyo por: ____
+- [x] H3 pose placeholder `pingo-talk.webp`: confirmada, o la sustituyo por: ____
+- [x] Enmienda #190 de `docs/ui-guidelines.md` aprobada por humano (precondición de R5; sin ella R5 no se implementa)
+- [X] Smoke de R15 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)

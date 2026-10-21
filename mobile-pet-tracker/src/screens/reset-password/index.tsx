@@ -2,7 +2,7 @@ import { useChunkyLip } from '../../theme/chunky-lip';
 import { Image } from 'expo-image';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Button, FieldError, Label, LinkButton, TextField } from 'heroui-native';
+import { Button, Label, LinkButton, TextField } from 'heroui-native';
 import { useContext, useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,6 +14,7 @@ import { PopIn } from '../../components/pop-in';
 import { PingoFloat } from '../../components/pingo-float';
 import { PasswordInput } from '../../components/password-input';
 import { FormError } from '../../components/form-error';
+import { FieldErrorMessage } from '../../components/field-error-message';
 import { useTranslate } from '../../providers/language-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { HomeEntrance } from '../home/home-entrance';
@@ -212,9 +213,7 @@ export function ResetPasswordScreen() {
               value={password}
               onChangeText={setPassword}
             />
-            <FieldError testID="reset-password-error">
-              {fieldErrors.password ? <FormError testID="reset-password-message" message={t(fieldErrors.password.labelKey, fieldErrors.password.params)} /> : null}
-            </FieldError>
+            <FieldErrorMessage testID="reset-password" issue={fieldErrors.password} />
           </TextField>
 
           <TextField isInvalid={Boolean(fieldErrors.passwordConfirmation)}>
@@ -230,9 +229,7 @@ export function ResetPasswordScreen() {
               value={passwordConfirmation}
               onChangeText={setPasswordConfirmation}
             />
-            <FieldError testID="reset-password-confirm-error">
-              {fieldErrors.passwordConfirmation ? <FormError testID="reset-password-confirm-message" message={t(fieldErrors.passwordConfirmation.labelKey, fieldErrors.passwordConfirmation.params)} /> : null}
-            </FieldError>
+            <FieldErrorMessage testID="reset-password-confirm" issue={fieldErrors.passwordConfirmation} />
           </TextField>
 
           {error ? (
