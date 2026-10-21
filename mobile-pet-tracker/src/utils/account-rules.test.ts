@@ -124,7 +124,7 @@ describe('#183 R2: reglas de cuenta iguales a los DTO', () => {
 
 describe('#194 R2: validateProfile comparte las reglas de registro', () => {
   const profile = { firstName: 'Ada', lastName: 'Lovelace', phone: '+525500000000', country: 'MX' };
-  const allInvalid = { firstName: '   ', lastName: '', phone: ' 123456 ', country: 'M1' };
+  const allInvalid = { firstName: '   ', lastName: '', phone: '123', country: 'M1' };
   const allIssues = {
     firstName: { labelKey: 'validation.firstNameRequired' },
     lastName: { labelKey: 'validation.lastNameRequired' },
