@@ -606,6 +606,9 @@ export const R15_GEOFENCE_EDITOR: UseRow[] = [
   { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.nameLabel' },
   { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.mapHint' },
   { file: 'src/screens/geofence-editor/index.tsx', key: 'geofences.radius' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.radiusTitle' }, // #189 R11
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.meters' }, // #189 R11
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.meters' }, // #189 R11
   { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.radiusLabel' },
   { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.resetNote' },
   { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.save' },

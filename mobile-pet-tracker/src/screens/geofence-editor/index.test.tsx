@@ -393,7 +393,7 @@ describe('#146 R8: Guardar crea o actualiza la zona y vuelve a la lista', () => 
 });
 
 describe('#146 R13: el interruptor del editor activa o desactiva la zona sin salir', () => {
-  it('pinta el interruptor de zona activa entre el slider y la nota de reinicio', async () => {
+  it('pinta el interruptor de zona activa entre el slider y la nota de reinicio (enmendado por #189 R11)', async () => {
     await edit(); const toggle = screen.getByTestId('geofence-editor-active');
     const row = screen.getByTestId('geofence-editor-active-row');
     expect(row.props.className).toBe('flex-row items-center justify-between gap-3');
@@ -403,7 +403,7 @@ describe('#146 R13: el interruptor del editor activa o desactiva la zona sin sal
     expect(toggle.props.accessibilityLabel).toBe(catalog.es['geofences.activeLabel'].replace('{{name}}', casa.name));
     expect(toggle.props.hitSlop).toBe(10);
     const ids = childTestIds(row.parent!);
-    expect(ids.slice(ids.indexOf('geofence-editor-radius'), ids.indexOf('geofence-editor-radius') + 3)).toEqual(['geofence-editor-radius', 'geofence-editor-active-row', 'geofence-editor-reset-note']);
+    expect(ids.slice(ids.indexOf('geofence-editor-radius-block'), ids.indexOf('geofence-editor-radius-block') + 3)).toEqual(['geofence-editor-radius-block', 'geofence-editor-active-row', 'geofence-editor-reset-note']);
   });
   it('desactivar escribe solo el estado, recarga la lista y se queda en el editor', async () => {
     mockList.mockResolvedValueOnce({ kind: 'ok', geofences: [casa, parque] }).mockResolvedValue({ kind: 'ok', geofences: [{ ...casa, active: false }, parque] });
@@ -473,9 +473,9 @@ describe('#146 R14: Eliminar en el editor borra la zona y vuelve a la lista', ()
     const ids = childTestIds(button.parent!);
     expect(ids.slice(ids.indexOf('geofence-editor-save'), ids.indexOf('geofence-editor-save') + 2)).toEqual(['geofence-editor-save', 'geofence-editor-delete']);
   });
-  it('ordena el formulario del dueño al editar (enmendado por #189 R9)', async () => {
+  it('ordena el formulario del dueño al editar (enmendado por #189 R9) (enmendado por #189 R11)', async () => {
     await edit();
-    expect(childTestIds(screen.getByTestId('geofence-editor-radius-value').parent!)).toEqual(['geofence-editor-grabber', undefined, 'geofence-editor-radius-value', 'geofence-editor-radius', 'geofence-editor-active-row', 'geofence-editor-reset-note', 'geofence-editor-save', 'geofence-editor-delete']);
+    expect(childTestIds(screen.getByTestId('geofence-editor-grabber', { includeHiddenElements: true }).parent!)).toEqual(['geofence-editor-grabber', undefined, 'geofence-editor-radius-block', 'geofence-editor-active-row', 'geofence-editor-reset-note', 'geofence-editor-save', 'geofence-editor-delete']);
   });
   it('al crear no pinta ni el interruptor ni Eliminar', async () => {
     await mount(); await screen.findByTestId('geofence-editor-save');
@@ -700,5 +700,52 @@ describe('#189 R10: campo Nombre con Label.Text e input del canvas', () => {
     expect(input.props.value).toBe('Casa');
     await fireEvent.changeText(input, 'Casa nueva');
     expect(input.props.value).toBe('Casa nueva');
+  });
+});
+
+
+describe('#189 R11: bloque Radio y extremos ligados al slider', () => {
+  it.each(['es', 'en'] as const)('#189 R11: orden, etiquetas y valor actualizable en %s', async (language) => {
+    await edit(language);
+    const block = screen.getByTestId('geofence-editor-radius-block');
+    expect(block.props.className).toBe('gap-2');
+    expect(block.children).toHaveLength(3);
+    expect(childTestIds(block)).toEqual([undefined, 'geofence-editor-radius', undefined]);
+    const header = block.children[0] as ReturnType<typeof screen.getByTestId>;
+    expect(header.props.className).toBe('flex-row justify-between');
+    expect(header.children).toHaveLength(2);
+    expect(childTestIds(header)).toEqual(['geofence-editor-radius-label', 'geofence-editor-radius-value']);
+    const label = screen.getByTestId('geofence-editor-radius-label');
+    expect(label).toHaveTextContent(language === 'es' ? 'Radio' : 'Radius');
+    expect(label.props.className).toBe('text-sm font-extrabold text-foreground');
+    const value = screen.getByTestId('geofence-editor-radius-value');
+    expect(value.props.className).toBe('text-sm font-extrabold text-accent-strong');
+    expect(value.props.selectable).toBe(true);
+    expect(value.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+    const slider = screen.getByTestId('geofence-editor-radius');
+    expect(slider.parent).toBe(block);
+    const endpoints = block.children[2] as ReturnType<typeof screen.getByTestId>;
+    expect(endpoints.props.className).toBe('flex-row justify-between');
+    expect(endpoints.children).toHaveLength(2);
+    expect(childTestIds(endpoints)).toEqual(['geofence-editor-radius-min', 'geofence-editor-radius-max']);
+    const min = screen.getByTestId('geofence-editor-radius-min');
+    expect(min.props.className).toBe('text-11 font-semibold text-muted');
+    expect(min).toHaveTextContent(`${slider.props.minValue} m`);
+    const max = screen.getByTestId('geofence-editor-radius-max');
+    expect(max.props.className).toBe('text-11 font-semibold text-muted');
+    expect(max).toHaveTextContent(`${slider.props.maxValue} m`);
+    await fireEvent(slider, 'change', 230);
+    expect(value).toHaveTextContent(language === 'es' ? 'Radio de 230 m' : '230 m radius');
+  });
+  it('#189 R11: en lectura conserva solo el valor sin bloque editable', async () => {
+    mockGetPet.mockResolvedValue(petState('family'));
+    await mount(casa.id);
+    const value = await screen.findByTestId('geofence-editor-radius-value');
+    expect(value.props.className).toBe('font-bold text-foreground');
+    expect(value.props.selectable).toBe(true);
+    expect(screen.getByTestId('geofence-editor-read-only')).toBeVisible();
+    expect(screen.queryByTestId('geofence-editor-radius-block')).toBeNull();
+    expect(screen.queryByTestId('geofence-editor-radius-min')).toBeNull();
+    expect(screen.queryByTestId('geofence-editor-radius-max')).toBeNull();
   });
 });

@@ -269,7 +269,7 @@ describe('#41 R10: las zonas seguras resuelven su copy por clave', () => {
 
 describe('#146 R10: el editor de zonas resuelve su copy por clave', () => {
   it('registra cada ocurrencia del editor y de sus entradas (enmendado por #189 R1)', () => {
-    expect(R15_GEOFENCE_EDITOR).toHaveLength(27 - 1 + 2); // #189 R8
+    expect(R15_GEOFENCE_EDITOR).toHaveLength(27 - 1 + 2 + 3); // #189 R11
     expect(R15_GEOFENCE_EDITOR.every(({ file }) =>
       file === 'src/app/_layout.tsx' || file === 'src/screens/geofences/index.tsx' || file === 'src/screens/geofence-editor/index.tsx',
     )).toBe(true);
