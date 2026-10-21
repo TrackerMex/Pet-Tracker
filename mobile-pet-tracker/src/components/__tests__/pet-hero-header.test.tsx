@@ -214,11 +214,12 @@ describe('R1: PetHeroHeader es el único hero compartido', () => {
 describe('R2: el hero pinta foto a sangre o blobatar', () => {
   afterEach(() => cleanup());
 
-  it('pinta la foto de la mascota con la clave de caché estable', async () => {
+  it('pinta la foto de la mascota con la clave de caché estable (enmendado por #195 R2)', async () => {
     const pet = makePet({ photoUrl: 'http://example.test/luna.jpg' });
 
     await renderHero(<PetHeroHeader pet={pet} variant="bleed" />);
 
+    expect(screen.getByTestId('pet-hero-media').props.contentPosition).toEqual({ top: 0, left: '50%' });
     expect(screen.getByTestId('pet-hero-media').props.source).toEqual([
       { uri: pet.photoUrl, cacheKey: pet.id },
     ]);
@@ -657,5 +658,36 @@ describe('#195 R1: frame de 330 y raíz estable', () => {
     expect(root.props.style).toEqual({ borderCurve: 'continuous' });
     expect(root.props.className).toBe(variant === 'card'
       ? 'overflow-hidden rounded-card bg-default' : 'overflow-hidden bg-default');
+  });
+});
+
+
+describe('#195 R2: foto alineada arriba y fundido por identidad', () => {
+  beforeEach(() => { mockUseReducedMotion.mockReturnValue(false); mockWithTiming.mockClear(); });
+  afterEach(() => cleanup());
+  it('pinta la foto como primera capa absoluta con tamaño y caché estables', async () => {
+    await renderHero(<PetHeroHeader pet={makePet({ photoUrl: 'http://example.test/luna.jpg' })} />);
+    const frame = screen.getByTestId('pet-hero-frame');
+    const photo = screen.getByTestId('pet-hero-photo');
+    expect(elementChild(frame, 0)).toBe(photo);
+    expect(photo.props.className).toBe('absolute inset-0');
+    const media = within(photo).getByTestId('pet-hero-media');
+    expect(media.props.contentPosition).toEqual({ top: 0, left: '50%' });
+    expect(media.props.source).toEqual([{ uri: 'http://example.test/luna.jpg', cacheKey: 'pet-1' }]);
+    expect(StyleSheet.flatten(media.props.style)).toEqual({ width: '100%', height: 330 });
+  });
+  it('funde al llegar la mascota y al cambiar su id, sin repetir por nombre', async () => {
+    const view = await renderHero(<PetHeroHeader pet={null} />);
+    expect(mockWithTiming).not.toHaveBeenCalled();
+    expect(screen.getByTestId('pet-hero-photo')).toHaveAnimatedStyle({ opacity: 1 }, { shouldMatchAllProps: true });
+    await view.rerender(<PetHeroHeader pet={makePet()} />);
+    expect(mockWithTiming).toHaveBeenCalledWith(1, expect.objectContaining({ duration: 500, easing: expect.any(Function), reduceMotion: ReduceMotion.System }));
+    mockWithTiming.mockClear();
+    await view.rerender(<PetHeroHeader pet={makePet({ id: 'pet-2' })} />);
+    expect(mockWithTiming).toHaveBeenCalledTimes(1);
+    expect(mockWithTiming).toHaveBeenCalledWith(1, expect.objectContaining({ duration: 500, reduceMotion: ReduceMotion.System }));
+    mockWithTiming.mockClear();
+    await view.rerender(<PetHeroHeader pet={makePet({ id: 'pet-2', name: 'Milo' })} />);
+    expect(mockWithTiming).not.toHaveBeenCalled();
   });
 });

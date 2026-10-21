@@ -139,3 +139,17 @@ describe('R2: PetAvatar acepta tamaño rectangular, cacheKey y degrada al fallar
     expect(view.getByTestId('pet-avatar').props.xml).toBe(blobatar('Luna'));
   });
 });
+
+
+describe('#195 R2: alineación opcional de la foto', () => {
+  afterEach(() => cleanup());
+  it('reenvía contentPosition solo cuando se solicita e ignora el blobatar', async () => {
+    const view = await render(<PetAvatar name="Luna" photoUrl="http://example.test/luna.jpg" size={36} contentPosition="top" />);
+    expect(view.getByTestId('pet-avatar').props.contentPosition).toEqual({ top: 0, left: '50%' });
+    await view.rerender(<PetAvatar name="Luna" photoUrl="http://example.test/luna.jpg" size={36} />);
+    expect(view.getByTestId('pet-avatar').props.contentPosition).toEqual({ top: '50%', left: '50%' });
+    await view.rerender(<PetAvatar name="Luna" photoUrl={null} size={36} contentPosition="top" />);
+    expect(view.getByTestId('pet-avatar').props.contentPosition).toBeUndefined();
+    expect(view.getByTestId('pet-avatar').props.xml).toBe(blobatar('Luna'));
+  });
+});
