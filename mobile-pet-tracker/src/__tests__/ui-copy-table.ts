@@ -567,6 +567,7 @@ export const R13_ALERT_DETAIL: UseRow[] = [
 export const R14_GEOFENCES: UseRow[] = [
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.title' },
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.counter' }, // #189 R1
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.progressLabel' }, // #189 R2
   { file: 'src/screens/geofences/index.tsx', key: 'common.cannotReachServer' },
   { file: 'src/screens/geofences/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/geofences/index.tsx', key: 'common.somethingWentWrong' },

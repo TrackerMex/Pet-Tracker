@@ -529,13 +529,13 @@ describe('#155 R8: sin zonas seguras, Pingo enseña el collar', () => {
     expect(screen.queryByTestId('geofences-loading')).toBeNull();
   });
 
-  it('queda en el sitio del vacío que sustituye (enmendado por #189 R1)', async () => {
+  it('queda en el sitio del vacío que sustituye (enmendado por #189 R1) (enmendado por #189 R2)', async () => {
     mockList.mockResolvedValue({ kind: 'ok', geofences: [] });
     await mount();
     await screen.findByTestId('geofences-empty-pose');
     const slot = screen.getByTestId('geofences-empty');
     expect(slot.parent?.parent?.props.testID).toBe('screen-geofences');
-    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['geofences-header', 'geofences-empty', 'geofences-add']);
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['geofences-header', 'geofences-progress', 'geofences-empty', 'geofences-add']);
   });
 
   it('no ofrece acción', async () => {
@@ -642,5 +642,32 @@ describe('#189 R1: título y contador en el contenido', () => {
     expect(header.children).toHaveLength(1);
     expect(childTestIds(header)).toEqual(['geofences-title']);
     expect(screen.queryByTestId('geofences-counter')).toBeNull();
+  });
+});
+
+
+describe('#189 R2: cinco segmentos indican las zonas usadas', () => {
+  it.each([['es', 0], ['es', 2], ['es', 5], ['en', 0], ['en', 2], ['en', 5]] as const)('#189 R2: %s con %i zonas', async (language, count) => {
+    if (language === 'en' && count === 2) mockGetPet.mockResolvedValue(petState('family'));
+    mockList.mockResolvedValue({ kind: 'ok', geofences: Array.from({ length: count }, (_, i) => makeGeofence({ id: `zone-${i}` })) });
+    await mount(language);
+    const progress = await screen.findByTestId('geofences-progress');
+    expect(progress.props.className).toBe('flex-row gap-1');
+    expect(progress.props.accessibilityRole).toBe('progressbar');
+    expect(progress.props.accessibilityValue).toEqual({ min: 0, max: 5, now: count });
+    expect(progress.props.accessibilityLabel).toBe(language === 'es' ? `${count} de 5 zonas usadas` : `${count} of 5 zones used`);
+    expect(progress.parent!.children[1]).toBe(progress);
+    expect(progress.children).toHaveLength(5);
+    expect(childTestIds(progress)).toEqual(Array.from({ length: 5 }, (_, i) => `geofences-progress-segment-${i}`));
+    for (let i = 0; i < 5; i++) {
+      expect(screen.getByTestId(`geofences-progress-segment-${i}`).props.className).toBe(`h-1.5 flex-1 rounded-full ${i < count ? 'bg-accent' : 'bg-default'}`);
+    }
+  });
+  it.each(['loading', 'no-tracking', 'error'] as const)('#189 R2: no muestra progreso con %s', async (kind) => {
+    if (kind === 'loading') mockList.mockReturnValue(new Promise(() => undefined));
+    else mockList.mockResolvedValue({ kind });
+    await mount();
+    await screen.findByTestId(kind === 'loading' ? 'geofences-loading' : kind === 'error' ? 'geofences-error' : 'geofences-no-tracking');
+    expect(screen.queryByTestId('geofences-progress')).toBeNull();
   });
 });
