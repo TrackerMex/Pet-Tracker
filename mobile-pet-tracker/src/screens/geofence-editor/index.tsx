@@ -194,12 +194,14 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
           onSelectedChange={(active) => void run(() => setGeofenceActive(baseUrl, token ?? '', petId, zone.id, active), refresh)} />
       </View> : null}
       {zone ? <Text testID="geofence-editor-reset-note" className="text-sm font-normal text-muted">{t('geofenceEditor.resetNote')}</Text> : null}
-      <Button testID="geofence-editor-save" className="h-14 rounded-16 bg-accent" style={chunkyLip.primary} isDisabled={busy || name.trim() === ''} onPress={() => void save()}>
-        <Text className="text-17 font-extrabold text-accent-foreground">{t('geofenceEditor.save')}</Text>
-      </Button>
-      {zone ? <Button testID="geofence-editor-delete" variant="danger-soft" className="rounded-xl bg-danger-soft" isDisabled={busy} onPress={confirmDelete}>
-        <Button.Label className="font-semibold text-danger">{t('geofences.delete')}</Button.Label>
+      <View testID="geofence-editor-actions" className="flex-row gap-2.5">
+      {zone ? <Button testID="geofence-editor-delete" variant="outline" className="flex-1 h-14 rounded-16 border-2 border-lip-gray bg-surface" style={chunkyLip.neutral} isDisabled={busy} onPress={confirmDelete}>
+        <Text className="text-base font-extrabold text-danger">{t('geofences.delete')}</Text>
       </Button> : null}
+      <Button testID="geofence-editor-save" className={name.trim() === '' ? 'flex-2 h-14 rounded-16 bg-default' : 'flex-2 h-14 rounded-16 bg-accent'} style={name.trim() === '' ? undefined : chunkyLip.primary} isDisabled={busy || name.trim() === ''} onPress={() => void save()}>
+        <Text className={name.trim() === '' ? 'text-17 font-extrabold text-muted' : 'text-17 font-extrabold text-accent-foreground'}>{t('geofenceEditor.save')}</Text>
+      </Button>
+      </View>
       {error ? <Text testID="geofence-editor-error" selectable className="text-danger">{error}</Text> : null}
       </>}
     </ScrollView>
