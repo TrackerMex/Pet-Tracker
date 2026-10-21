@@ -779,4 +779,4 @@ reporta, como en R6.
 **Rojo esperado.** Ninguno. Los tres deltas van en un commit propio de tests, antes
 del verde de R6 (ver la Reanudación 3 del handoff).
 
-- [ ] Enmienda E1 aprobada por humano (fecha: ____) ← el humano reabre el gate solo para esta enmienda
+- [x] Enmienda E1 aprobada por humano (fecha: 2026-10-21) ← el humano reabre el gate solo para esta enmienda
