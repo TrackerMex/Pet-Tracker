@@ -220,8 +220,8 @@ describe('#174 R12: inventarios', () => {
       token: 'tracking-title',
       pattern: /(?<![\w-])tracking-title\b/,
       files: [
-        'components/empty-state.tsx',
-        'components/pet-hero-header.tsx', // (enmendado por #176 R8)
+        'components/empty-state.tsx', // (enmendado por #176 R8)
+        'components/pet-hero-header.tsx', // #195 R6
         'screens/add-pet/index.tsx', // #191 R11
         'screens/add-reminder/index.tsx', // #178 R10
         'screens/alert-detail/index.tsx', // #180 R1
