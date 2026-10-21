@@ -9882,5 +9882,5 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   «el saludo termina en punto» y `docs/ui-guidelines.md` ~l.378 mantiene la regla general sin
   excepción para este saludo (ningún candado la verifica); D6 (el botón cambia de posición entre
   pasos) se dio por pasada: el humano completó el smoke y firmó sin reportar más.
-- **Estado final:** done. Notion: Implementado / Completado. La PR la mergea el humano; después se
+- **Estado final:** done. Notion: Implementado / Completado. PR #238; la mergea el humano y después se
   borra el worktree `Pet-Tracker-wt-191`.
