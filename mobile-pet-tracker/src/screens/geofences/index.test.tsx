@@ -529,13 +529,13 @@ describe('#155 R8: sin zonas seguras, Pingo enseña el collar', () => {
     expect(screen.queryByTestId('geofences-loading')).toBeNull();
   });
 
-  it('queda en el sitio del vacío que sustituye', async () => {
+  it('queda en el sitio del vacío que sustituye (enmendado por #189 R1)', async () => {
     mockList.mockResolvedValue({ kind: 'ok', geofences: [] });
     await mount();
     await screen.findByTestId('geofences-empty-pose');
     const slot = screen.getByTestId('geofences-empty');
     expect(slot.parent?.parent?.props.testID).toBe('screen-geofences');
-    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['geofences-empty', 'geofences-add']);
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['geofences-header', 'geofences-empty', 'geofences-add']);
   });
 
   it('no ofrece acción', async () => {
@@ -566,13 +566,13 @@ describe('#159 R5: Zonas seguras sin seguimiento presentan a Pingo', () => {
     expect(screen.getByTestId('geofences-no-tracking-body')).toHaveTextContent("Once your pet has a collar with an active plan, I'll let you know if they leave a safe zone.");
   });
 
-  it('queda en el sitio de la tarjeta que sustituye', async () => {
+  it('queda en el sitio de la tarjeta que sustituye (enmendado por #189 R1)', async () => {
     mockList.mockResolvedValue({ kind: 'no-tracking' });
     await mount();
     await screen.findByTestId('geofences-no-tracking-pose');
     const slot = screen.getByTestId('geofences-no-tracking');
     expect(slot.parent?.parent?.props.testID).toBe('screen-geofences');
-    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['geofences-no-tracking']);
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['geofences-header', 'geofences-no-tracking']);
     expect(screen.queryByTestId('geofences-retry')).toBeNull();
     expect(screen.queryByTestId('geofences-add')).toBeNull();
     expect(screen.queryByTestId('geofences-empty')).toBeNull();
@@ -594,5 +594,53 @@ describe('#159 R6: en Zonas seguras nadie ve el botón de emparejar', () => {
     await mount();
     await screen.findByTestId('geofences-no-tracking-title');
     expect(screen.queryByTestId('geofences-no-tracking-action')).toBeNull();
+  });
+});
+
+
+describe('#189 R1: título y contador en el contenido', () => {
+  it.each(['es', 'en'] as const)('#189 R1.2: el título de %s tiene clase, rol y posición exactos', async (language) => {
+    mockList.mockResolvedValue({ kind: 'ok', geofences: [makeGeofence()] });
+    await mount(language);
+    const row = await screen.findByTestId('geofence-geofence-1');
+    const header = screen.getByTestId('geofences-header');
+    expect(header.props.className).toBe('flex-row items-center gap-2');
+    expect(header.parent!.children[0]).toBe(header);
+    expect(header.parent).toBe(row.parent);
+    const title = screen.getByTestId('geofences-title');
+    expect(header.children[0]).toBe(title);
+    expect(title.props.className).toBe('flex-1 text-26 font-black tracking-title text-foreground');
+    expect(title.props.accessibilityRole).toBe('header');
+    expect(title).toHaveTextContent(language === 'es' ? 'Zonas seguras' : 'Safe zones');
+  });
+  it.each([0, 3, 5])('#189 R1.3: cuenta %i zonas con la lista cargada', async (count) => {
+    mockList.mockResolvedValue({ kind: 'ok', geofences: Array.from({ length: count }, (_, i) => makeGeofence({ id: `zone-${i}` })) });
+    await mount();
+    const counter = await screen.findByTestId('geofences-counter');
+    expect(counter).toHaveTextContent(`${count}/5`);
+    expect(counter.props.className).toBe('text-sm font-extrabold text-muted');
+    const header = screen.getByTestId('geofences-header');
+    expect(header.children).toHaveLength(2);
+    expect(header.children[1]).toBe(counter);
+  });
+  it('#189 R1.3: family recibe el contador en inglés', async () => {
+    mockGetPet.mockResolvedValue(petState('family'));
+    mockList.mockResolvedValue({ kind: 'ok', geofences: [makeGeofence()] });
+    await mount('en');
+    expect(await screen.findByTestId('geofences-counter')).toHaveTextContent('1/5');
+  });
+  it.each(['loading', 'no-tracking', 'error', 'unauthorized'] as const)('#189 R1.2/R1.3: %s conserva solo el título', async (kind) => {
+    if (kind === 'loading') mockList.mockReturnValue(new Promise(() => undefined));
+    else mockList.mockResolvedValue({ kind });
+    await mount();
+    if (kind === 'loading') expect(screen.getByTestId('geofences-loading')).toBeVisible();
+    else if (kind === 'no-tracking') await screen.findByTestId('geofences-no-tracking');
+    else if (kind === 'error') await screen.findByTestId('geofences-error');
+    else await waitFor(() => expect(childTestIds(screen.getByTestId('geofences-header').parent!)).toEqual(['geofences-header']));
+    const header = screen.getByTestId('geofences-header');
+    expect(header.parent!.children[0]).toBe(header);
+    expect(header.children).toHaveLength(1);
+    expect(childTestIds(header)).toEqual(['geofences-title']);
+    expect(screen.queryByTestId('geofences-counter')).toBeNull();
   });
 });

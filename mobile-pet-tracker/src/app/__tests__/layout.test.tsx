@@ -455,7 +455,7 @@ describe('#41 R4: la guarda de RootStack declara las zonas seguras tras el detal
     mockGetStoredLanguage.mockResolvedValue(undefined);
   });
 
-  it('declara pets/[petId]/geofences como undécimo hijo y no singular', async () => {
+  it('declara pets/[petId]/geofences como undécimo hijo y no singular (enmendado por #189 R1.1)', async () => {
     await render(<RootLayout />);
     await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
     const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
@@ -478,7 +478,7 @@ describe('#41 R4: la guarda de RootStack declara las zonas seguras tras el detal
     const detail = Children.toArray(group.props.children)[10];
     expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined).toEqual({
       headerShown: true,
-      title: 't:geofences.title',
+      title: '',
       headerStyle: { backgroundColor: 'token:background' },
       headerTintColor: 'token:foreground',
       headerTitleStyle: { fontFamily: 'Inter-Bold' },
@@ -494,7 +494,7 @@ describe('#146 R5: la guarda de RootStack declara el editor de zonas tras la lis
     mockGetStoredLanguage.mockResolvedValue(undefined);
   });
 
-  it('declara pets/[petId]/geofence-editor como duodécimo hijo y no singular', async () => {
+  it('declara pets/[petId]/geofence-editor como duodécimo hijo y no singular (enmendado por #189 R1.1)', async () => {
     await render(<RootLayout />);
     await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
     const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
@@ -517,7 +517,7 @@ describe('#146 R5: la guarda de RootStack declara el editor de zonas tras la lis
     const detail = Children.toArray(group.props.children)[11];
     expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined).toEqual({
       headerShown: true,
-      title: 't:geofenceEditor.title',
+      title: '',
       headerStyle: { backgroundColor: 'token:background' },
       headerTintColor: 'token:foreground',
       headerTitleStyle: { fontFamily: 'Inter-Bold' },
