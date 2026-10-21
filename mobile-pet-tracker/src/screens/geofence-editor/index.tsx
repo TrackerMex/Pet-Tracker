@@ -188,7 +188,7 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
       </View>
       </View>
       {zone ? <View testID="geofence-editor-active-row" className="flex-row items-center justify-between gap-3">
-        <Text className="font-semibold text-foreground">{t('geofences.statusActive')}</Text>
+        <Text className="text-15 font-bold text-foreground">{t('geofences.statusActive')}</Text>
         <Switch testID="geofence-editor-active" isSelected={zone.active} hitSlop={10} isDisabled={busy}
           accessibilityLabel={t('geofences.activeLabel', { name: zone.name })}
           onSelectedChange={(active) => void run(() => setGeofenceActive(baseUrl, token ?? '', petId, zone.id, active), refresh)} />
