@@ -2,6 +2,7 @@ import {
   EMAIL_PATTERN,
   validateLogin,
   validateRegister,
+  validateProfile,
   validateForgot,
   validateResetPassword,
 } from './account-rules';
@@ -117,5 +118,53 @@ describe('#183 R2: reglas de cuenta iguales a los DTO', () => {
     ['N7', '1234567', 'x', { password: tooShort(8), passwordConfirmation: mismatch }],
   ])('#183 R2: validateResetPassword %s', (_label, password, passwordConfirmation, expected) => {
     expect(validateResetPassword({ password, passwordConfirmation })).toStrictEqual(expected);
+  });
+});
+
+
+describe('#194 R2: validateProfile comparte las reglas de registro', () => {
+  const profile = { firstName: 'Ada', lastName: 'Lovelace', phone: '+525500000000', country: 'MX' };
+  const allInvalid = { firstName: '   ', lastName: '', phone: ' 123456 ', country: 'M1' };
+  const allIssues = {
+    firstName: { labelKey: 'validation.firstNameRequired' },
+    lastName: { labelKey: 'validation.lastNameRequired' },
+    phone: { labelKey: 'validation.tooShort', params: { min: 7 } },
+    country: { labelKey: 'validation.countryLetters' },
+  };
+
+  it.each<[string, { values: Partial<typeof profile>; expected: Record<string, unknown> }[]]>([
+    ['valid values', [{ values: {}, expected: {} }]],
+    ['required names', [
+      { values: { firstName: '   ' }, expected: { firstName: { labelKey: 'validation.firstNameRequired' } } },
+      { values: { lastName: '' }, expected: { lastName: { labelKey: 'validation.lastNameRequired' } } },
+    ]],
+    ['name boundaries', [
+      { values: { firstName: ' ' + 'a'.repeat(120) + ' ' }, expected: {} },
+      { values: { firstName: 'a'.repeat(121) }, expected: { firstName: { labelKey: 'validation.tooLong', params: { max: 120 } } } },
+      { values: { lastName: 'a'.repeat(120) }, expected: {} },
+      { values: { lastName: 'a'.repeat(121) }, expected: { lastName: { labelKey: 'validation.tooLong', params: { max: 120 } } } },
+    ]],
+    ['trimmed phone boundaries', [
+      { values: { phone: ' 123456 ' }, expected: { phone: { labelKey: 'validation.tooShort', params: { min: 7 } } } },
+      { values: { phone: '1234567' }, expected: {} },
+      { values: { phone: '1'.repeat(20) }, expected: {} },
+      { values: { phone: '1'.repeat(21) }, expected: { phone: { labelKey: 'validation.tooLong', params: { max: 20 } } } },
+    ]],
+    ['country length and letters', [
+      { values: { country: '' }, expected: { country: { labelKey: 'validation.countryLength' } } },
+      { values: { country: 'M' }, expected: { country: { labelKey: 'validation.countryLength' } } },
+      { values: { country: 'mx' }, expected: { country: { labelKey: 'validation.countryLetters' } } },
+      { values: { country: 'M1' }, expected: { country: { labelKey: 'validation.countryLetters' } } },
+      { values: { country: 'MEX' }, expected: { country: { labelKey: 'validation.countryLength' } } },
+    ]],
+    ['all invalid fields', [{ values: allInvalid, expected: allIssues }]],
+  ])('#194 R2: validates %s', (_name, cases) => {
+    for (const { values, expected } of cases) {
+      expect(validateProfile({ ...profile, ...values })).toEqual(expected);
+    }
+  });
+
+  it('#194 R2: validateRegister conserva las issues de perfil', () => {
+    expect(validateRegister({ ...VALID, ...allInvalid })).toEqual(allIssues);
   });
 });
