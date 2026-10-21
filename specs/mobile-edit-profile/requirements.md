@@ -818,4 +818,4 @@ corrida íntegra y reproducida por el leader. El delta va en un commit propio de
 sin tocar producción; su verde es el cierre de ese rojo. La sonda S-E2 (ver la
 Reanudación 5 del handoff) prueba que la entrada discrimina.
 
-- [ ] Enmienda E2 aprobada por humano (fecha: ____) ← el humano reabre el gate solo para esta enmienda
+- [x] Enmienda E2 aprobada por humano (fecha: 2026-10-21) ← el humano reabre el gate solo para esta enmienda
