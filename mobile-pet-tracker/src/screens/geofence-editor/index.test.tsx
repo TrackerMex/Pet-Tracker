@@ -749,3 +749,28 @@ describe('#189 R11: bloque Radio y extremos ligados al slider', () => {
     expect(screen.queryByTestId('geofence-editor-radius-max')).toBeNull();
   });
 });
+
+
+describe('#189 R12: fila Activa conserva interruptor y orden', () => {
+  it.each(['es', 'en'] as const)('#189 R12: etiqueta y estructura de la fila en %s', async (language) => {
+    await edit(language);
+    const row = screen.getByTestId('geofence-editor-active-row');
+    expect(row.props.className).toBe('flex-row items-center justify-between gap-3');
+    expect(row.children).toHaveLength(2);
+    expect(childTestIds(row)).toEqual([undefined, 'geofence-editor-active']);
+    const label = row.children[0] as ReturnType<typeof screen.getByTestId>;
+    expect(label).toHaveTextContent(language === 'es' ? 'Activa' : 'Active');
+    expect(label.props.className).toBe('text-15 font-bold text-foreground');
+    const ids = childTestIds(row.parent!);
+    expect(ids.slice(ids.indexOf('geofence-editor-radius-block'), ids.indexOf('geofence-editor-radius-block') + 3)).toEqual(['geofence-editor-radius-block', 'geofence-editor-active-row', 'geofence-editor-reset-note']);
+    const toggle = screen.getByTestId('geofence-editor-active');
+    expect(toggle.props.accessibilityState).toEqual({ checked: true, disabled: false });
+    expect(toggle.props.hitSlop).toBe(10);
+  });
+  it('#189 R12: no muestra la fila Activa al crear', async () => {
+    await mount();
+    await screen.findByTestId('geofence-editor-radius-block');
+    expect(screen.queryByTestId('geofence-editor-active-row')).toBeNull();
+    expect(screen.queryByTestId('geofence-editor-active')).toBeNull();
+  });
+});

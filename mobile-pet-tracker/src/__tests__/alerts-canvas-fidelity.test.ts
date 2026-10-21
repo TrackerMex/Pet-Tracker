@@ -208,6 +208,7 @@ describe('#174 R12: inventarios', () => {
         'screens/alerts/index.tsx', // #174 R12: delta sobre la lista medida en H0
         'screens/docs/index.tsx', // #175 R6
         'screens/forgot/index.tsx',
+        'screens/geofence-editor/index.tsx', // #189 R12
         'screens/home/index.tsx', // #190 R13 (enmendado por #190 R13)
         'screens/login/index.tsx',
         'screens/meal-schedule/index.tsx', // #179 R7
@@ -234,7 +235,7 @@ describe('#174 R12: inventarios', () => {
         'screens/reminders/index.tsx', // #178 R4
       ],
     },
-  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8)', ({ pattern, files }) => {
+  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12)', ({ pattern, files }) => {
     expect(filesMatching(pattern)).toEqual(files);
   });
 
