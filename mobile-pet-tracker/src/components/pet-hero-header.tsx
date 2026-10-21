@@ -102,7 +102,7 @@ export function PetHeroHeader({
   children,
 }: PetHeroHeaderProps) {
   const insets = useSafeAreaInsets();
-  const [background] = useThemeColors(['background']);
+  const [background, scrim] = useThemeColors(['background', 'scrim']);
   const reduceMotion = useReducedMotion();
   const petId = pet?.id;
   const photoOpacity = useSharedValue(reduceMotion || !pet ? 1 : 0);
@@ -198,20 +198,22 @@ export function PetHeroHeader({
         */}
         {children ? (
           <View
-            testID="pet-hero-fade-top"
+            testID="pet-hero-scrim-top"
+            pointerEvents="none"
             className="absolute inset-x-0 top-0"
             style={{
-              height: PET_HERO_FADE_HEIGHT,
-              experimental_backgroundImage: `linear-gradient(to bottom, ${background} 0%, ${background}00 100%)`,
+              height: PET_HERO_SCRIM_HEIGHT,
+              experimental_backgroundImage: `linear-gradient(to bottom, ${scrim}80 0%, ${scrim}00 100%)`,
             }}
           />
         ) : null}
         <View
           testID="pet-hero-fade-bottom"
+          pointerEvents="none"
           className="absolute inset-x-0 bottom-0"
           style={{
             height: PET_HERO_FADE_HEIGHT,
-            experimental_backgroundImage: `linear-gradient(to bottom, ${background}00 0%, ${background} 100%)`,
+            experimental_backgroundImage: `linear-gradient(to bottom, ${background}00 0%, ${background}59 35%, ${background}D9 65%, ${background} 100%)`,
           }}
         />
 
