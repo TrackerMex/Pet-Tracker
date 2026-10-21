@@ -97,14 +97,14 @@ describe('#41 R5: la pantalla pinta la lista de zonas y sus estados', () => {
     expect(screen.queryByTestId('geofences-empty')).toBeNull();
   });
 
-  it('respeta las métricas A11 bajo cabecera nativa', async () => {
+  it('respeta las métricas A11 bajo cabecera nativa (enmendado por #189 R3)', async () => {
     mockList.mockResolvedValue({ kind: 'ok', geofences: [makeGeofence()] });
     await mount();
     await screen.findByTestId('geofence-geofence-1');
     const root = screen.getByTestId('screen-geofences');
     expect(root.props.className).toBe('flex-1 bg-background');
     expect(root.props.contentInsetAdjustmentBehavior).toBe('automatic');
-    expect(root.props.contentContainerStyle).toEqual({ padding: 24, gap: 16, paddingBottom: 48 });
+    expect(root.props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 64, gap: 12, flexGrow: 1 });
   });
 
 
@@ -484,7 +484,7 @@ describe('#146 R9: el dueño entra al editor desde la lista', () => {
 
 describe('#146 R12: con el máximo de zonas la lista no ofrece añadir otra', () => {
   const fiveZones = Array.from({ length: GEOFENCE_MAX_PER_PET }, (_, i) => makeGeofence({ id: `geofence-${i + 1}` }));
-  it('con cinco zonas deshabilita Añadir zona y pinta el aviso del máximo justo después', async () => {
+  it('con cinco zonas deshabilita Añadir zona y pinta el aviso del máximo justo antes (enmendado por #189 R3)', async () => {
     mockList.mockResolvedValue({ kind: 'ok', geofences: fiveZones }); await mount();
     const add = await screen.findByTestId('geofences-add');
     expect(add.props.accessibilityState.disabled).toBe(true);
@@ -492,7 +492,7 @@ describe('#146 R12: con el máximo de zonas la lista no ofrece añadir otra', ()
     expect(notice).toHaveTextContent('Esta mascota ya tiene 5 zonas, el máximo. Elimina una para añadir otra.');
     expect(notice.props.className).toBe('text-sm font-normal text-muted');
     const ids = childTestIds(add.parent!);
-    expect(ids.slice(ids.indexOf('geofences-add'), ids.indexOf('geofences-add') + 2)).toEqual(['geofences-add', 'geofences-limit']);
+    expect(ids.slice(ids.indexOf('geofences-add') - 1, ids.indexOf('geofences-add') + 1)).toEqual(['geofences-limit-entrance', 'geofences-add']);
   });
   it('con cuatro zonas deja Añadir zona habilitada y sin aviso', async () => {
     mockList.mockResolvedValue({ kind: 'ok', geofences: fiveZones.slice(0, 4) }); await mount();
@@ -599,14 +599,14 @@ describe('#159 R6: en Zonas seguras nadie ve el botón de emparejar', () => {
 
 
 describe('#189 R1: título y contador en el contenido', () => {
-  it.each(['es', 'en'] as const)('#189 R1.2: el título de %s tiene clase, rol y posición exactos', async (language) => {
+  it.each(['es', 'en'] as const)('#189 R1.2: el título de %s tiene clase, rol y posición exactos (enmendado por #189 R3)', async (language) => {
     mockList.mockResolvedValue({ kind: 'ok', geofences: [makeGeofence()] });
     await mount(language);
     const row = await screen.findByTestId('geofence-geofence-1');
     const header = screen.getByTestId('geofences-header');
     expect(header.props.className).toBe('flex-row items-center gap-2');
     expect(header.parent!.children[0]).toBe(header);
-    expect(header.parent).toBe(row.parent);
+    expect(header.parent).toBe(row.parent?.parent);
     const title = screen.getByTestId('geofences-title');
     expect(header.children[0]).toBe(title);
     expect(title.props.className).toBe('flex-1 text-26 font-black tracking-title text-foreground');
@@ -669,5 +669,30 @@ describe('#189 R2: cinco segmentos indican las zonas usadas', () => {
     await mount();
     await screen.findByTestId(kind === 'loading' ? 'geofences-loading' : kind === 'error' ? 'geofences-error' : 'geofences-no-tracking');
     expect(screen.queryByTestId('geofences-progress')).toBeNull();
+  });
+});
+
+
+describe('#189 R3: métricas y orden del contenido', () => {
+  it.each(['owner-three', 'owner-five-error', 'family-three', 'empty'] as const)('#189 R3: ordena %s sin hijos adicionales', async (scenario) => {
+    const count = scenario === 'empty' ? 0 : scenario === 'owner-five-error' ? 5 : 3;
+    const zones = Array.from({ length: count }, (_, i) => makeGeofence({ id: `zone-${i}` }));
+    mockList.mockResolvedValue({ kind: 'ok', geofences: zones });
+    if (scenario === 'family-three') mockGetPet.mockResolvedValue(petState('family'));
+    mockSetActive.mockResolvedValue({ kind: 'error' });
+    await mount();
+    await screen.findByTestId('geofences-counter');
+    if (scenario === 'owner-five-error') {
+      await fireEvent.press(screen.getByTestId('geofence-zone-0-active'));
+      await screen.findByTestId('geofences-action-error');
+    }
+    const expected = ['geofences-header', 'geofences-progress',
+      ...(count ? zones.map(({ id }) => `geofence-${id}-entrance`) : ['geofences-empty']),
+      ...(scenario === 'owner-five-error' ? ['geofences-limit-entrance'] : []),
+      ...(scenario === 'family-three' ? [] : ['geofences-add']),
+      ...(scenario === 'owner-five-error' ? ['geofences-action-error'] : [])];
+    const content = screen.getByTestId('geofences-header').parent!;
+    expect(childTestIds(content)).toEqual(expected);
+    expect(content.children).toHaveLength(expected.length);
   });
 });
