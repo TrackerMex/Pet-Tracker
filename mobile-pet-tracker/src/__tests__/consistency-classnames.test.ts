@@ -690,3 +690,11 @@ it('#180 R7.5: el ack del detalle lleva rounded-16 con su labio (enmendado por #
   expect(tag).not.toContain('border-b-4');
   expect(tag).not.toContain('rounded-xl');
 });
+
+
+it('#189 R9: la hoja del Editor combina esquina continua y flex sin perderlos', () => {
+  const source = readSource(join('screens', 'geofence-editor', 'index.tsx'));
+  expect(source).toContain("import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';");
+  expect(source).toContain('style={[CONTINUOUS_CORNER, { flexGrow: 0, flexShrink: 1 }]}');
+  expect(source.match(/\bCONTINUOUS_CORNER\b/g)).toHaveLength(2);
+});
