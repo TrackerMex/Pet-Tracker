@@ -3,22 +3,19 @@ import { useEffect, type ReactNode } from 'react';
 import { Text, View } from 'react-native';
 import Animated, {
   cancelAnimation,
-  Easing,
-  ReduceMotion,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
-  withRepeat,
-  withSequence,
   withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { PetProfile } from '../api/types';
-import { MOTION_CELEBRATION_EASE_OUT, MOTION_HERO_FADE_MS } from '../theme/motion';
+import { MOTION_CELEBRATION_EASE_OUT, MOTION_HERO_FADE_MS, MOTION_HERO_PING_MS } from '../theme/motion';
 import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../theme/native-styles';
 import { useThemeColors } from '../theme/use-theme-colors';
 import { PetAvatar } from './pet-avatar';
+import { PingRing } from './ping-ring';
 
 /**
  * Alto visible de la fotografía. Valor de un solo uso y de un solo fichero: la
@@ -31,17 +28,6 @@ export const PET_HERO_MEDIA_HEIGHT = 330;
 export const PET_HERO_FADE_HEIGHT = 160
 
 export const PET_HERO_SCRIM_HEIGHT = 130;
-
-/**
- * Pulso del punto 'en línea' (#73 E2): animate-pulse de Tailwind traducido a
- * Reanimated; misma cadencia que el pulse del Skeleton de heroui que ya vive
- * en este hero.
- */
-export const STATUS_DOT_PULSE = {
-  duration: 1000,
-  easing: Easing.bezier(0.4, 0, 0.6, 1),
-  reduceMotion: ReduceMotion.System,
-} as const;
 
 const AnimatedView = Animated.createAnimatedComponent(View);
 
@@ -115,30 +101,8 @@ export function PetHeroHeader({
 
 
 
-  const dotOpacity = useSharedValue(1);
-  const dotStyle = useAnimatedStyle(() => ({ opacity: dotOpacity.get() }));
   const pulses = !reduceMotion && pet !== null && status?.tone === 'success';
   const tone = HERO_TONE_CLASSES[status?.tone ?? 'muted'];
-
-  useEffect(() => {
-    if (!pulses) return;
-
-    dotOpacity.set(
-      withRepeat(
-        withSequence(
-          withTiming(0.5, STATUS_DOT_PULSE),
-          withTiming(1, STATUS_DOT_PULSE),
-        ),
-        -1,
-        false,
-      ),
-    );
-
-    return () => {
-      cancelAnimation(dotOpacity);
-      dotOpacity.set(1);
-    };
-  }, [pulses, dotOpacity]);
 
   useEffect(() => {
     if (reduceMotion || !petId) {
@@ -238,18 +202,19 @@ export function PetHeroHeader({
                   accessibilityLabel={status.label}
                   className={`flex-row items-center gap-1.5 self-start rounded-full px-2.5 py-0.75 ${tone.surface}`}
                 >
-                  {pulses ? (
-                    <AnimatedView
-                      testID="pet-hero-status-dot"
-                      className={`relative size-2 rounded-full ${tone.dot}`}
-                      style={dotStyle}
-                    />
-                  ) : (
-                    <View
-                      testID="pet-hero-status-dot"
-                      className={`relative size-2 rounded-full ${tone.dot}`}
-                    />
-                  )}
+                  <View
+                    testID="pet-hero-status-dot"
+                    className={`relative size-2 rounded-full ${tone.dot}`}
+                  >
+                    {pulses ? (
+                      <PingRing
+                        testID="pet-hero-status-ping"
+                        className="inset-0 rounded-full bg-accent"
+                        delay={0}
+                        timing={{ ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_HERO_PING_MS }}
+                      />
+                    ) : null}
+                  </View>
                   <Text
                     testID="pet-hero-status-text"
                     className={`text-xs font-bold ${tone.text}`}
