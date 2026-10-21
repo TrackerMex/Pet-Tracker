@@ -83,6 +83,10 @@ export function GeofencesScreen({ petId }: { petId: string }) {
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{ padding: 24, gap: 16, paddingBottom: insets.bottom + 24 }}
     >
+      <View testID="geofences-header" className="flex-row items-center gap-2">
+        <Text testID="geofences-title" accessibilityRole="header" className="flex-1 text-26 font-black tracking-title text-foreground">{t('geofences.title')}</Text>
+        {geofences.data?.kind === 'ok' ? <Text testID="geofences-counter" className="text-sm font-extrabold text-muted">{t('geofences.counter', { count: geofences.data.geofences.length, max: GEOFENCE_MAX_PER_PET })}</Text> : null}
+      </View>
       {geofences.data === undefined || pet.data === undefined ? (
         <Skeleton testID="geofences-loading" className="h-24 w-full rounded-card" />
       ) : geofences.data.kind === 'ok' ? (
