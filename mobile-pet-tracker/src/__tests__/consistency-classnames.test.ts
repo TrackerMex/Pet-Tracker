@@ -252,7 +252,7 @@ describe('#62 R13: el color imperativo sale siempre de useThemeColors del repo',
 
 describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () => {
   const directUses = [
-    [join('screens', 'geofences', 'index.tsx'), 2], // #189 R5
+    [join('screens', 'geofences', 'index.tsx'), 3], // #189 R5, R6
     [join('screens', 'forgot', 'index.tsx'), 0], // #177 R10
     [join('components', 'pet-hero-header.tsx'), 1],
     [join('components', 'segmented-control.tsx'), 2], // #191 R11
@@ -319,7 +319,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     // #138 R3: minus one more, collar-pair-link's corner travels in its own.
     expect(
       directUses.reduce((total, [, count]) => total + count, 2),
-    ).toBe(33 + 1 + 1 - 1 - 1 + 1 + 1 - 1 + 4 + 1 - 1 - 7 + 1 + 1 + 2 + 2 - 1 + 1 + 3 + 2); // #189 R5 (enmendado por #190 R13) // #191 R11 // #177 R5 // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168 R3, R8, R6; #170 R16; #171 R3: ready-done; #173 R10: ProfileTile
+    ).toBe(33 + 1 + 1 - 1 - 1 + 1 + 1 - 1 + 4 + 1 - 1 - 7 + 1 + 1 + 2 + 2 - 1 + 1 + 3 + 2 + 1); // #189 R6; #189 R5 (enmendado por #190 R13) // #191 R11 // #177 R5 // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168 R3, R8, R6; #170 R16; #171 R3: ready-done; #173 R10: ProfileTile
   });
 });
 
@@ -404,7 +404,7 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
     // #138 R3 moved collar-pair-link's corner too; #190 R13 adds the bubble's.
     expect(home.match(/style=\{CONTINUOUS_CORNER\}/g) ?? []).toHaveLength(1); // (enmendado por #190 R13)
     expect(food.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(1);
-    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 4 + 1 - 1 - 7 + 1 + 1 + 2 + 2 - 1 + 1 + 3 + 2); // #189 R5 (enmendado por #190 R13) // #191 R11 // #177 R5 // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168; #170 R8: alert-detail-map; #171 R3: ready-done; #173 R10: ProfileTile
+    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 4 + 1 - 1 - 7 + 1 + 1 + 2 + 2 - 1 + 1 + 3 + 2 + 1); // #189 R6; #189 R5 (enmendado por #190 R13) // #191 R11 // #177 R5 // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168; #170 R8: alert-detail-map; #171 R3: ready-done; #173 R10: ProfileTile
     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(1); // #177 R10
     expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 2); // #191 R11 // #179 R6, R7, R11; #178 R5, R10, R12; #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6
     expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);

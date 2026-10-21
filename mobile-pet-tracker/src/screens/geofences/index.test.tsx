@@ -500,13 +500,13 @@ describe('#146 R9: el dueño entra al editor desde la lista', () => {
 
 describe('#146 R12: con el máximo de zonas la lista no ofrece añadir otra', () => {
   const fiveZones = Array.from({ length: GEOFENCE_MAX_PER_PET }, (_, i) => makeGeofence({ id: `geofence-${i + 1}` }));
-  it('con cinco zonas deshabilita Añadir zona y pinta el aviso del máximo justo antes (enmendado por #189 R3)', async () => {
+  it('con cinco zonas deshabilita Añadir zona y pinta el aviso del máximo justo antes (enmendado por #189 R3) (enmendado por #189 R6)', async () => {
     mockList.mockResolvedValue({ kind: 'ok', geofences: fiveZones }); await mount();
     const add = await screen.findByTestId('geofences-add');
     expect(add.props.accessibilityState.disabled).toBe(true);
     const notice = screen.getByTestId('geofences-limit');
     expect(notice).toHaveTextContent('Esta mascota ya tiene 5 zonas, el máximo. Elimina una para añadir otra.');
-    expect(notice.props.className).toBe('text-sm font-normal text-muted');
+    expect(notice.props.className).toBe('flex-row items-start gap-2.5 rounded-tile px-3.5 py-3 bg-category-amber');
     const ids = childTestIds(add.parent!);
     expect(ids.slice(ids.indexOf('geofences-add') - 1, ids.indexOf('geofences-add') + 1)).toEqual(['geofences-limit-entrance', 'geofences-add']);
   });
@@ -826,5 +826,36 @@ describe('#189 R5: filas con tile pastel, textos y controles', () => {
       expect(screen.queryByTestId(`${id}-active`)).toBeNull();
       expect(screen.queryByTestId(`${id}-delete`)).toBeNull();
     }
+  });
+});
+
+
+describe('#189 R6: aviso ámbar al alcanzar el límite', () => {
+  it.each(['es', 'en'] as const)('#189 R6: compone el aviso de %s tras las cinco filas', async (language) => {
+    mockList.mockResolvedValue({ kind: 'ok', geofences: Array.from({ length: 5 }, (_, i) => makeGeofence({ id: `zone-${i}` })) });
+    await mount(language);
+    const text = await screen.findByTestId('geofences-limit-text');
+    const entry = screen.getByTestId('geofences-limit-entrance');
+    expect(entry.props.index).toBe(5);
+    expect(entry.children).toHaveLength(1);
+    expect(childTestIds(entry)).toEqual(['geofences-limit']);
+    const notice = screen.getByTestId('geofences-limit');
+    expect(notice.props.className).toBe('flex-row items-start gap-2.5 rounded-tile px-3.5 py-3 bg-category-amber');
+    expect(notice).toHaveStyle({ borderCurve: 'continuous' });
+    expect(notice.children).toHaveLength(2);
+    expect(childTestIds(notice)).toEqual(['geofences-icon-alert', 'geofences-limit-text']);
+    const icon = within(notice).getByTestId('geofences-icon-alert');
+    expect(icon.props.size).toBe(20);
+    expect(icon.props.color).toBe('warning');
+    expect(text.props.className).toBe('flex-1 text-13 text-category-amber-strong');
+    expect(text).toHaveTextContent(language === 'es' ? 'Esta mascota ya tiene 5 zonas, el máximo. Elimina una para añadir otra.' : 'This pet already has 5 zones, the maximum. Delete one to add another.');
+    expect(childTestIds(entry.parent!).slice(-3)).toEqual(['geofence-zone-4-entrance', 'geofences-limit-entrance', 'geofences-add']);
+  });
+  it('#189 R6: el error de lista no muestra aviso', async () => {
+    mockList.mockResolvedValue({ kind: 'error' });
+    await mount();
+    await screen.findByTestId('geofences-error');
+    expect(screen.queryByTestId('geofences-limit-entrance')).toBeNull();
+    expect(screen.queryByTestId('geofences-limit')).toBeNull();
   });
 });

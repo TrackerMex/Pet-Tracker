@@ -47,7 +47,8 @@ describe('#173 R2: inventario de radios nuevos', () => {
   it('reserva rounded-tile a sus consumidores aprobados (enmendado por #190 R13)', () => {
     expect(filesMatching(/\brounded-tile\b/)).toEqual([
       'screens/add-pet/index.tsx', // #191 R11
-      'screens/add-reminder/index.tsx', // #178 R12
+      'screens/add-reminder/index.tsx',
+      'screens/geofences/index.tsx', // #189 R6 // #178 R12
       'screens/home/index.tsx', // (enmendado por #190 R13)
       'screens/pairing/index.tsx', // #188 R18
       'screens/profile/index.tsx',
