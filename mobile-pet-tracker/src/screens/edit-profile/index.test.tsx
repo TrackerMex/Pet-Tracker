@@ -296,3 +296,87 @@ describe('#194 R7: saving updates only changed profile values', () => {
     }
   });
 });
+
+
+describe('#194 R8: failed saves preserve the form and show catalog messages', () => {
+  it('#194 R8: shows a validation message without server details', async () => {
+    mockUpdateMe.mockResolvedValue({ kind: 'validation', message: 'Validation failed' } as UpdateMeState);
+    await renderEditor();
+    await changeField('first-name', 'Grace');
+    await saveProfile();
+    expect(await screen.findByTestId('edit-profile-error')).toHaveTextContent("Something in your details doesn't look right. Check them and try again.");
+    expect(screen.queryByText('Validation failed')).toBeNull();
+  });
+
+  it('#194 R8: shows the connection message without the raw network error', async () => {
+    mockUpdateMe.mockResolvedValue({ kind: 'unreachable', message: 'offline' });
+    await renderEditor();
+    await changeField('first-name', 'Grace');
+    await saveProfile();
+    expect(await screen.findByTestId('edit-profile-error')).toHaveTextContent('Cannot reach server');
+    expect(screen.queryByText('offline')).toBeNull();
+  });
+
+  it('#194 R8: uses the generic message for errors, missing config and exceptions', async () => {
+    for (const kind of ['error', 'missing-config', 'throw'] as const) {
+      if (kind === 'throw') mockUpdateMe.mockRejectedValue(new Error('boom'));
+      else mockUpdateMe.mockResolvedValue({ kind });
+      const { app } = await renderEditor();
+      await changeField('first-name', 'Grace');
+      await saveProfile();
+      expect(await screen.findByTestId('edit-profile-error')).toHaveTextContent('Something went wrong');
+      expect(screen.queryByText('boom')).toBeNull();
+      await app.unmount();
+    }
+  });
+
+  it('#194 R8: signs out once on unauthorized without a form message', async () => {
+    mockUpdateMe.mockResolvedValue({ kind: 'unauthorized' });
+    await renderEditor();
+    await changeField('first-name', 'Grace');
+    await saveProfile();
+    await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
+    expect(screen.queryByTestId('edit-profile-error')).toBeNull();
+  });
+
+  it('#194 R8: preserves values, navigation and cache and enables saving after every error', async () => {
+    for (const kind of ['validation', 'unreachable', 'error', 'missing-config', 'unauthorized', 'throw'] as const) {
+      if (kind === 'throw') mockUpdateMe.mockRejectedValue(new Error('boom'));
+      else if (kind === 'unreachable') mockUpdateMe.mockResolvedValue({ kind, message: 'offline' });
+      else mockUpdateMe.mockResolvedValue({ kind });
+      const { app, queryClient } = await renderEditor();
+      await changeField('first-name', 'Grace');
+      await saveProfile();
+      if (kind === 'unauthorized') await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
+      else await screen.findByTestId('edit-profile-error');
+      await waitFor(() => expect(screen.getByTestId('edit-profile-save')).toBeEnabled());
+      expect(screen.getByTestId('edit-profile-first-name')).toHaveProp('value', 'Grace');
+      expect(router.back).not.toHaveBeenCalled();
+      expect(queryClient.getQueryData(userKeys.me())).toEqual({ kind: 'ok', me });
+      await app.unmount();
+    }
+  });
+
+  it('#194 R8: clears a server error before displaying field validation', async () => {
+    mockUpdateMe.mockResolvedValue({ kind: 'unreachable', message: 'offline' });
+    await renderEditor();
+    await changeField('first-name', 'Grace');
+    await saveProfile();
+    expect(await screen.findByTestId('edit-profile-error')).toHaveTextContent('Cannot reach server');
+    await changeField('first-name', '');
+    await saveProfile();
+    expect(await screen.findByTestId('edit-profile-first-name-message')).toHaveTextContent('Enter your first name');
+    expect(screen.queryByTestId('edit-profile-error')).toBeNull();
+    expect(mockUpdateMe).toHaveBeenCalledTimes(1);
+  });
+
+  it('#194 R8: catches a rejected save without an unhandled rejection', async () => {
+    mockUpdateMe.mockRejectedValue(new Error('boom'));
+    await renderEditor();
+    await changeField('first-name', 'Grace');
+    await saveProfile();
+    expect(await screen.findByTestId('edit-profile-error')).toHaveTextContent('Something went wrong');
+    await waitFor(() => expect(screen.getByTestId('edit-profile-save')).toBeEnabled());
+    expect(screen.queryByText('boom')).toBeNull();
+  });
+});

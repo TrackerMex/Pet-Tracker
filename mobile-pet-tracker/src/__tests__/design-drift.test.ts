@@ -601,7 +601,7 @@ describe('#87 R19: use-' + 'api no deja huella', () => {
     'screens/home/index.tsx': 0,
     'screens/pairing/index.tsx': 2,
     'screens/profile/index.tsx': 2,
-    'screens/edit-profile/index.tsx': 0, // #194 R5
+    'screens/edit-profile/index.tsx': 1, // #194 R8
     'screens/reminders/index.tsx': 1,
   };
 
