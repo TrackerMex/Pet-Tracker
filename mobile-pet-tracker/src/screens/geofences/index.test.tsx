@@ -23,7 +23,7 @@ jest.mock('reicon-react-native', () => {
   const actual = jest.requireActual('reicon-react-native');
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
-  const icon = (name: string) => (props: Record<string, unknown>) => React.createElement(View, { ...props, testID: `geofences-icon-${name}` });
+  const icon = (name: string) => function MockIcon(props: Record<string, unknown>) { return React.createElement(View, { ...props, testID: `geofences-icon-${name}` }); };
   return { ...actual, __esModule: true, Map: icon('map'), Trash: icon('trash'), AlertCircle: icon('alert') };
 });
 jest.mock('../../theme/use-theme-colors', () => ({ useThemeColors: (tokens: string[]) => tokens }));
