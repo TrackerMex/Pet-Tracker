@@ -9,7 +9,9 @@ tags: [mobile, ui, spec]
 > Cada requisito de [[requirements]] sigue el ciclo TDD obligatorio:
 > (1) test rojo → (2) implementación mínima → (3) refactor con tests verdes.
 > Un commit por paso con el R-id en el mensaje (`test(mobile): … (R3)` el rojo, `feat(mobile): … (R3)` el verde). **El historial rojo a verde es parte del entregable** (C4 de `CHECKPOINTS.md`): un solo commit con tests, código y docs incumple.
-> Rutas relativas a `mobile-pet-tracker/`; abreviaturas de test (HERO, HOME, SW, GC, BP, GUARD, PA, PR, MOT, CSS) en [[requirements]] §Requisitos funcionales. El detalle técnico está en [[design]].
+> Rutas relativas a `mobile-pet-tracker/`; abreviaturas de test (HERO, HEROMOT, HOME, SW, GC, BP, GUARD, PA, PR, MOT, CSS) en [[requirements]] §Requisitos funcionales. El detalle técnico está en [[design]].
+>
+> **Enmienda A1 (2026-10-21).** Solo cambian los bloques R14 y R16, las notas del handoff que hablan de `toBeVisible` y de los mocks de movimiento, y dos filas de «Cuentas a re-medir». El orden global, los demás R y sus cifras no se tocan. Motivo y mecanismo: [[design]] §Hechos medidos H1.
 
 ## Orden recomendado
 
@@ -30,7 +32,7 @@ Notas del orden:
 El leader redacta el handoff; esta lista es lo que la spec exige que figure en él:
 
 - **Commits test-primero**, con el R-id, y un commit por paso.
-- **Citar `.claude/agents/leader.md` §Esperas**: los tests de movimiento usan Reanimated real con temporizadores falsos (BP, PR) o los mocks de `withTiming`/`withDelay` (HERO, HOME); no se espera a un contador de mock.
+- **Citar `.claude/agents/leader.md` §Esperas**: los tests de movimiento usan Reanimated real con temporizadores falsos (BP, PR y, desde la Enmienda A1, HEROMOT) o los mocks de `withTiming`/`withDelay` (HERO, HOME); no se espera a un contador de mock.
 - **Comandos de móvil con `bun`/`bunx`**, nunca `npx` ni `npm i`. No se añaden dependencias.
 - **Jest en paralelo con otras worktrees**: un timeout aislado se mide sin flag antes de tocar nada. `jest` posicional es un regex.
 - **RNTL 14**: `await fireEvent.press(…)` y `await act(…)`; sin `await`, el `it` siguiente se contamina.
@@ -41,7 +43,8 @@ El leader redacta el handoff; esta lista es lo que la spec exige que figure en �
 - **Verificación de lint**: `expo lint` puede morir por memoria con exit 0; la cadena es `… > log 2>&1 && test ! -s log`. Si falla con «Cannot find module», repetir con `--no-cache`.
 - **Prettier**: el backend lo usa; el móvil no. No se formatea el móvil con una herramienta que no tiene.
 - **Tras mergear `origin/main` con dependencias nuevas**: `bun install --frozen-lockfile`. No se rebasea después de rellenar [[traceability]]; si hace falta, se reapuntan los hashes.
-- **Si un `toBeVisible` falla por opacidad inicial 0**, el arreglo es del componente (valor inicial decidido por `useReducedMotion`), no del test.
+- **Regla de visibilidad (Enmienda A1, [[requirements]] R14 y R16, [[design]] H1).** Sobre `pet-hero-slot`, `pet-hero-caption`, `pet-hero-photo` (si el hero monta ya con mascota), `home-pingo-bubble` y **todos sus descendientes**, con reduce motion apagado, `toBeVisible` falla por construcción en Jest con Reanimated 4.5.1 (el `style` del host guarda el primer render, `opacity: 0`; el valor vivo solo está en `getAnimatedStyle`): ahí se afirma **`toBeOnTheScreen()`**, y la visibilidad real se prueba con la prueba (i) de movimiento (Reanimated real, temporizadores falsos, `getAnimatedStyle`) y la (ii) con reduce motion encendido (`toBeVisible()` síncrono). **Fuera** de esos nodos `toBeVisible` no se relaja: si falla allí, el arreglo es del componente. Esto sustituye a la regla anterior «si un `toBeVisible` falla por opacidad inicial 0, el arreglo es del componente», que era falsa para estos nodos. No se endurece ni se relaja una aserción para que pase una carrera de reloj: si un valor final no llega en la ventana, se amplía la ventana (16 → 32 ms) y se anota en `progress/`.
+- **`StyleSheet` no aparece en `screens/home/index.test.tsx`** (ni en código, ni en títulos, ni en comentarios): `design-drift` lo escanea (`#68 R18`, `#69 R13`, `#71 R13`, `#70 R17`, `#85 R12`). HOME aplana con `[node.props.style].flat(Infinity)` y `toContainEqual`; `StyleSheet.flatten` solo en HERO, HEROMOT y BP. Medir: `grep -c StyleSheet src/screens/home/index.test.tsx` devuelve 0 en la base y debe seguir en 0.
 - Si Codex puede o no correr `init.sh` lo decide el handoff del leader, no esta spec.
 
 ## Cuentas a re-medir al terminar (base + delta)
@@ -64,6 +67,10 @@ Cada cifra es la base medida en [[requirements]] §Base medida más el delta que
 | `grep -cE -e '--(color-)?(scrim\|photo-dim):' src/theme/global.css` | 0 | 8 (2 tokens, 2 formas, 2 temas) |
 | `grep -c 'Enmienda #195' ../docs/ui-guidelines.md` | 0 | lo fija el texto de [[design]] (se mide tras la firma y se anota en la trazabilidad) |
 | `test -e src/components/glass-circle.tsx && test -e src/screens/home/bubble-pop.tsx && test -e src/__tests__/home-photo-hero-canvas.test.ts` | ausentes | existen |
+| `test -e src/components/__tests__/pet-hero-header-motion.test.tsx && test -e src/screens/home/bubble-pop.test.tsx` | ausentes | existen (HEROMOT tras R14, BP tras R16) |
+| `grep -c "(enmendado por #195 R14)" src/components/__tests__/pet-hero-header.test.tsx` | 0 | 5 (una por título; un comentario con la misma cadena la inflaría) |
+| `grep -c "(enmendado por #195 R14)" src/screens/home/index.test.tsx` | 0 | 6 (idem) |
+| `grep -c "StyleSheet" src/screens/home/index.test.tsx` | 0 | 0 |
 
 Un `grep -c` cuenta líneas, no apariciones. Si una cuenta de la base ya no coincide con el árbol al empezar (otra feature mergeó entre medias), se anota la deriva y se avisa al leader antes de seguir.
 
@@ -175,11 +182,27 @@ Sonda: duplica el `testID` de la campana; GUARD rojo.
 
 ## R14 — Entradas del hero y reduce motion
 
-- [ ] (1) Escribir test que falla para R14 (HERO `#195 R14`: `withTiming`/`withDelay` con los argumentos exactos con reduce motion apagado; cero llamadas y estilo final con reduce motion encendido desde el primer render; solo claves `opacity` y `transform`; ningún `entering`). Enmienda: añadir `withDelay` al mock del hero.
-- [ ] (2) Implementación mínima que lo pasa.
-- [ ] (3) Refactor con tests verdes.
+Reescrito por la Enmienda A1: rojo / verde / mutación. Fuente de verdad de lo que se afirma: [[requirements]] R14 (regla de visibilidad y tiempos) y §Candados de visibilidad y de forma de style; mecanismo en [[design]] H1. Aquí solo se ordena el trabajo.
 
-Sonda: cambia el retraso del pie a 140; HERO rojo.
+- [ ] (1) **Rojo**, en un solo commit `test(mobile): … (R14)` (hay que verlo en rojo por el motivo correcto antes del verde):
+  - **HERO** (`components/__tests__/pet-hero-header.test.tsx`): el mock de Reanimated añade `withDelay: jest.fn((_ms, animation) => animation)` (candado «HERO › mock de `react-native-reanimated`»). `describe('#195 R14: …')` con, al menos: (a) con reduce motion apagado, `withTiming` recibe `(1, { ...MOTION_CELEBRATION_EASE_OUT, duration: 400 })` (el 400 como literal del test; el mismo objeto de opciones que ya usa la foto en R2 cambiando solo `duration`) y `withDelay` se llama **una sola vez**, con `80` como primer argumento y una animación `withTiming` de `duration: 400` como segundo (el pie); el slot no usa `withDelay`. No se prescribe si opacidad y desplazamiento comparten un valor compartido; las cuentas se miden **después** de `mockClear()` del montaje; (b) con reduce motion encendido, **cero** llamadas a `withTiming` y a `withDelay` y `StyleSheet.flatten(slot.props.style)` con `opacity: 1` y `transform: [{ translateY: 0 }]` desde el primer render, igual para el pie; (c) los estilos animados solo llevan las claves `opacity` y `transform`, y no hay ningún `entering` en el árbol; (d) **prueba (ii)**: con reduce motion encendido, `toBeVisible()` síncrono (sin `act`, sin `waitFor`) sobre `pet-hero-slot`, `pet-hero-caption`, `pet-hero-media`, un hijo del slot y `pet-hero-name`.
+  - **HEROMOT** (**fichero nuevo** `components/__tests__/pet-hero-header-motion.test.tsx`, prueba (i)): copia de HERO los mocks de `heroui-native` (`Skeleton`), `../ping-ring` y `react-native-safe-area-context` (insets `top` 40), `makePet`, `HeroWrapper` y `renderHero`; el mock de `react-native-reanimated` es el de `pop-in.test.tsx` (`...jest.requireActual('react-native-reanimated')`, `__esModule: true` y **solo** `useReducedMotion` sustituido): **no** se mockean `withTiming`, `withDelay` ni `withRepeat`. `jest.useFakeTimers()` en `beforeEach`, `jest.useRealTimers()` en `afterEach`, el avance con `await act(async () => { jest.advanceTimersByTime(n); })` y la lectura con `getAnimatedStyle` importado de `react-native-reanimated`. El tiempo es **acumulado** y todas las constantes son **literales del test**. `describe('#195 R14: movimiento real del hero')`, con reduce motion apagado, una mascota (para que la foto anime) y un hijo en el slot: (a) `pet-hero-slot`: `getAnimatedStyle` contiene `opacity: 0` y `transform: [{ translateY: 14 }]` antes de avanzar; a los 64 ms `opacity` es mayor que 0 y menor que 1 y `translateY` está entre 0 y 14; a los 416 ms (400 + 16) contiene `opacity: 1` y `transform: [{ translateY: 0 }]`; (b) `pet-hero-caption`: a los 64 ms sigue en `opacity: 0` y `translateY: 14` (el retraso de 80 ms no ha vencido); a los 496 ms (80 + 400 + 16) está en `opacity: 1` y `translateY: 0`; (c) `pet-hero-photo`: arranca en `opacity: 0` y a los 516 ms (500 + 16) está en `opacity: 1`; (d) presencia: el hijo del slot, `pet-hero-name` y `pet-hero-media` son `toBeOnTheScreen()` **antes y después** de avanzar el reloj (y en ningún `it` de este fichero se afirma `toBeVisible` con reduce motion apagado sobre ellos).
+  - **Enmiendas** (las 11 de [[requirements]] §Candados de visibilidad: 5 en HERO y 6 en HOME), con el sufijo `(enmendado por #195 R14)` **a continuación** del que ya lleve el título, cambiando solo las líneas que la tabla cita. Verifica con los comandos de §Cuentas a re-medir (5 y 6 títulos con el sufijo; `toBeVisible` de HOME en 73 tras este commit).
+  - Orden de los rojos esperados antes del verde: HERO (a) a (d) y HEROMOT (a) a (d) rojos (todavía no hay animación), la enmienda del `style` del slot de `#195 R5` rojo, y las enmiendas que solo cambian `toBeVisible` por `toBeOnTheScreen()` **verdes** (nacen verdes: lo anota el implementer en `progress/`, su valor lo demuestra la mutación (e) de abajo).
+- [ ] (2) **Verde**: implementación mínima. Slot y pie con valores compartidos y `useAnimatedStyle` (sin `entering`), foto con el valor inicial `reduceMotion || !pet ? 1 : 0` que ya tiene; con reduce motion encendido los tres nacen en su estado final y no se arranca ningún temporizador. Si el reloj simulado de Reanimated no entrega valores intermedios (los 64 ms de (a) y (b)), se conserva el par inicial y el final, se anota en `progress/` y se avisa al leader; si la animación arranca un fotograma después, el margen de 16 ms sube a 32 y se anota. **Nunca** se cambia un valor final ni se vuelve a `toBeVisible` para que pase.
+- [ ] (3) **Refactor** con todos los tests (HERO, HEROMOT, HOME) en verde.
+
+**Mutaciones plantadas, cada una vista en rojo y revertida** (se anotan en `progress/impl_…` con el nombre del `it` que se puso rojo):
+
+| # | Defecto plantado | Rojo esperado | Debe seguir verde |
+|---|---|---|---|
+| a | El valor inicial de `opacity` del slot pasa a 1 con reduce motion apagado (nada animaría) | HEROMOT (a) (el inicio en 0), y la enmienda del `style` del slot de `#195 R5` | HERO (d) |
+| b | Con reduce motion encendido, el valor inicial del slot pasa a 0 (un usuario con reduce motion vería el hero invisible) | HERO (b) y (d) | HEROMOT |
+| c | El retraso del pie pasa de 80 a 140 | HERO (a) (argumentos) y HEROMOT (b) (a los 496 ms aún no llega) | HEROMOT (a) |
+| d | El valor inicial de `pet-hero-photo` con mascota pasa a 1 | HEROMOT (c) | HERO (d) |
+| e | En `R3 › el slot flota sin fondo ni padding…` se vuelve a escribir `toBeVisible()` sobre `slot-child` | ese `it` (con el hero ya animado): demuestra que el fallo es real y que la enmienda hacía falta | el resto |
+
+La mutación (e) se hace **con el verde ya hecho** y es la sonda de la causa: si no se pone roja, la premisa de [[design]] H1 no se cumple en el árbol y hay que parar y avisar al leader.
 
 ## R15 — Hueco de 14 y scroll
 
@@ -189,11 +212,23 @@ Sonda: cambia el retraso del pie a 140; HERO rojo.
 
 ## R16 — Burbuja de Pingo y `pop`
 
-- [ ] (1) Escribir test que falla para R16 (BP `#195 R16`: estado inicial, valores a 450 ms + 20, pico, final con `toBeCloseTo`, reduce motion, sin `entering`; HOME `#190 R11`, `#190 R4` y `#190 R7` enmendados). `#190 R3`, `#190 R5` y `#190 R6` se conservan.
-- [ ] (2) Implementación mínima que lo pasa (`bubble-pop.tsx`; la clase de la burbuja; la pose de 56).
-- [ ] (3) Refactor con tests verdes.
+Reescrito por la Enmienda A1: rojo / verde / mutación. Fuente de verdad: [[requirements]] R16 (regla de visibilidad) y la fila `#190 R7` de §Candados; mecanismo en [[design]] H1.
 
-Sonda: devuelve `shadow-sm`; HOME rojo.
+- [ ] (1) **Rojo**, un solo commit `test(mobile): … (R16)`:
+  - **BP** (**fichero nuevo** `screens/home/bubble-pop.test.tsx`, Reanimated real): mismo preámbulo de movimiento que HEROMOT (el mock de `pop-in.test.tsx` con solo `useReducedMotion` sustituido, temporizadores falsos, `act`, `getAnimatedStyle`; constantes como literales del test). `describe('#195 R16: …')` con reduce motion apagado: (i) `getAnimatedStyle(bubble)` contiene `opacity: 0` y `transform: [{ scale: 0.6 }]` antes de avanzar y todavía a los 434 ms (450 − 16); a los 470 ms (450 + 20) `opacity` está entre 0 y 1 y `scale` entre .6 y 1.08; al pico (450 + 240 + 16 ms) `opacity` 1 y `scale` cercana a 1.08 y a los 866 ms (450 + 240 + 160 + 16) `scale` cercana a 1, todo con `toBeCloseTo`; `bubble` y `home-pingo-text` son `toBeOnTheScreen()` antes y después de avanzar (nunca `toBeVisible` con reduce motion apagado); y con reduce motion encendido (ii): `getAnimatedStyle` ya es `opacity: 1` y `transform: [{ scale: 1 }]` en el primer render, sin avanzar el reloj, y `toBeVisible()` síncrono sobre `home-pingo-bubble` y `home-pingo-text`. Además: pasa `testID`, `className`, `style` y `children`, y no hay `entering`.
+  - **HOME**: `#190 R11`, `#190 R4` y `#190 R7` enmendados con el sufijo `(enmendado por #195 R16)`. `#190 R7` se reescribe como dice su fila de §Candados: `entering` indefinido; `const styles = [bubble.props.style].flat(Infinity)` y `expect(styles).toContainEqual({ borderCurve: 'continuous' })`; con reduce motion encendido, `expect(styles).toContainEqual({ opacity: 1, transform: [{ scale: 1 }] })`. **Sin la cadena `StyleSheet`** en ningún sitio de `screens/home/index.test.tsx`. `#190 R3`, `#190 R5` y `#190 R6` se conservan. HOME no tiene ningún `toBeVisible` sobre la burbuja (medido): no se añade ninguno con reduce motion apagado.
+- [ ] (2) **Verde**: implementación mínima (`bubble-pop.tsx` con el patrón de `PopIn`; la clase de la burbuja sin `shadow-sm`; la pose de 56). La burbuja arranca en `opacity: 0` y `scale: .6` salvo con reduce motion, que la pinta en 1 y 1 desde el primer render sin temporizadores.
+- [ ] (3) **Refactor** con BP, HOME y los guardas agregados en verde.
+
+**Mutaciones plantadas, cada una vista en rojo y revertida** (anotadas en `progress/impl_…`):
+
+| # | Defecto plantado | Rojo esperado |
+|---|---|---|
+| a | `BubblePop` arranca en `opacity: 1` con reduce motion apagado | BP (i) (el inicio en 0) |
+| b | Con reduce motion encendido, `BubblePop` arranca en `opacity: 0` | BP (ii) y HOME `#190 R7` (`toContainEqual` con `opacity: 1`) |
+| c | Devuelve `shadow-sm` a la clase de la burbuja | HOME `#190 R11` |
+| d | `BubblePop` deja de aplicar la prop `style` (`CONTINUOUS_CORNER`) | HOME `#190 R7` (`toContainEqual({ borderCurve: 'continuous' })`); la cuenta de `home/index.tsx` sigue en 1, así que ningún otro guarda lo ve |
+| e | Se escribe `StyleSheet` en un comentario de `screens/home/index.test.tsx` | `design-drift` (`#68 R18`): demuestra la prohibición |
 
 ## R17 — Contraste
 

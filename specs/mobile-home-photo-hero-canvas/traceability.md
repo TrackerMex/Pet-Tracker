@@ -23,9 +23,9 @@ Rutas relativas a `mobile-pet-tracker/src/`. La columna de test lleva el `descri
 | R11 | `components/__tests__/glass-circle.test.tsx::#195 R11`; `screens/home/index.test.tsx::#195 R11`; `screens/home/index.test.tsx::#152 R5`; `__tests__/home-photo-hero-canvas.test.ts::#195 R19` (una sola `t('profile.addPet'`) | pendiente |
 | R12 | `screens/home/index.test.tsx::#195 R12`; `screens/home/index.test.tsx::#78 R10`, `#124 R1`, `#78 R11` | pendiente |
 | R13 | `theme/__tests__/motion.test.ts::#195 R13` | 2908e173 feat(mobile): add hero motion constants (R13) |
-| R14 | `components/__tests__/pet-hero-header.test.tsx::#195 R14` | pendiente |
+| R14 | `components/__tests__/pet-hero-header.test.tsx::#195 R14` (llamadas, reduce motion, prueba (ii)); `components/__tests__/pet-hero-header-motion.test.tsx::#195 R14` (prueba (i), fichero nuevo por la Enmienda A1); `screens/home/index.test.tsx::#152 R5` y los 11 `it` de HERO y HOME con sufijo `(enmendado por #195 R14)` ([[requirements]] §Candados de visibilidad) | pendiente |
 | R15 | `screens/home/index.test.tsx::#195 R15`; `screens/home/index.test.tsx::R5: Home usa el hero compartido` | pendiente |
-| R16 | `screens/home/bubble-pop.test.tsx::#195 R16`; `screens/home/index.test.tsx::#190 R11`, `#190 R4`, `#190 R7` | pendiente |
+| R16 | `screens/home/bubble-pop.test.tsx::#195 R16` (pruebas (i) y (ii), Reanimated real); `screens/home/index.test.tsx::#190 R11`, `#190 R4`, `#190 R7` (este último con la forma de `style` aplanada sin la cadena `StyleSheet`, Enmienda A1) | pendiente |
 | R17 | `__tests__/home-photo-hero-canvas.test.ts::#195 R17` | pendiente |
 | R18 | `components/__tests__/pet-hero-header.test.tsx::#195 R18`; `screens/home/index.test.tsx::#195 R18` | pendiente |
 | R19 | `__tests__/home-photo-hero-canvas.test.ts::#195 R19` | pendiente |
@@ -37,4 +37,4 @@ Convención de commit: `feat(<scope>): <desc> (R1,R2)`.
 El implementer actualiza esta tabla tras cada commit; el reviewer la valida
 al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).
 
-Implementación parcial parada antes de R14: la sonda fiel al AnimatedView del hero falla `toBeVisible` (supuesto 1 de design). No se declara done. R6 tiene tests verdes, pero falta la mutación de ALERTS. Evidencia, nombres completos, commits test-primero y pendientes en `progress/impl_mobile-home-photo-hero-canvas.md`.
+Implementación parcial parada antes de R14: la sonda fiel al AnimatedView del hero falló `toBeVisible` (supuesto 1 de design). La Enmienda A1 (2026-10-21) lo convierte en un hecho medido ([[design]] §Hechos medidos H1) y reescribe R14, R16 y los pasos de [[tasks]]; está pendiente de su casilla en [[requirements]] §Aprobación y, hasta que el humano la firme no se implementan R14 ni R16 (ni, por el orden de [[tasks]], nada que venga después de R14). Las filas de R14 y R16 siguen en «pendiente»: no llevan commit hasta que existan. R1 a R8 y R13 no cambian. No se declara done. R6 tiene tests verdes, pero falta la mutación de ALERTS. Evidencia, nombres completos, commits test-primero y pendientes en `progress/impl_mobile-home-photo-hero-canvas.md`.
