@@ -114,7 +114,7 @@ export function GeofencesScreen({ petId }: { petId: string }) {
           />
         ) : geofences.data.geofences.map((geofence, position) => {
           const slot = zoneCategory(position);
-          const tile = <View testID={`geofence-${geofence.id}-tile`} className={`size-11 items-center justify-center rounded-14 ${CATEGORY_SLOTS[slot].surface}`}
+          const tile = <View testID={`geofence-${geofence.id}-tile`} className={`size-11 items-center justify-center rounded-14 bg-category-green`}
             style={CONTINUOUS_CORNER} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
             <Map size={22} color={categoryColors[position % 5]} />
           </View>;
@@ -182,7 +182,7 @@ export function GeofencesScreen({ petId }: { petId: string }) {
         </HomeEntrance> : null}
         <Button testID="geofences-add" className={atLimit ? 'mt-auto h-14 rounded-16 bg-default' : 'mt-auto h-14 rounded-16 bg-accent'} style={atLimit ? undefined : chunkyLip.primary} isDisabled={busy || atLimit}
           onPress={() => router.push({ pathname: '/pets/[petId]/geofence-editor', params: { petId } })}>
-          <Text className={atLimit ? 'text-17 font-extrabold text-muted' : 'text-17 font-extrabold text-accent-foreground'}>{t('geofenceEditor.add')}</Text>
+          <Button.Label className={atLimit ? 'text-17 font-extrabold text-muted' : 'text-17 font-extrabold text-accent-foreground'}>{t('geofenceEditor.add')}</Button.Label>
         </Button>
 
         </>
