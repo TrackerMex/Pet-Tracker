@@ -193,6 +193,8 @@ Tres límites, no negociables:
 
     Fuera de la escala, por fidelidad al canvas (#177): `rounded-16` es el radio de todo botón de 56 de alto y del tile del candado; el compacto de 40 conserva `rounded-xl`.
 
+    Fuera de la escala, por fidelidad al canvas (#191): `rounded-10` (10 px) y `rounded-14` (14 px), segmentos y contenedor del selector segmentado de Nueva mascota; `rounded-tile` (18 px) de la burbuja de Pingo, que es un `View` y no un `Card`.
+
 13. **Botón con cuerpo** (feature #166, 2026-10-11). Los botones de acción
     llevan un labio inferior: una sombra sólida sin desenfoque en `--lip`
     (`--color-lip`, `--color-lip-gray`) que cuelga fuera del cuerpo. El hook
@@ -733,3 +735,87 @@ Cada envío reemplaza los errores de campo; corregir el texto los retira en el
 siguiente envío. Los errores de red conservan su aviso de formulario.
 
 - [X] Enmienda #186 aprobada por humano
+
+
+## Enmienda #191 — Nueva mascota en dos pasos
+
+Nueva mascota conserva una sola ruta con cabecera nativa de título vacío y dos
+pasos que se desmontan al cambiar. Atrás desde el segundo vuelve al primero
+con todos los valores; la salida después de guardar respeta la celebración.
+
+- **Indicador**: título `text-2xl font-black tracking-title text-foreground` y
+  progreso `text-13 font-extrabold text-muted`. Barra `flex-row gap-1.5` con dos
+  segmentos `h-1.5 flex-1 rounded-full`; el primero usa `bg-accent` y el segundo
+  `bg-lip-gray` hasta llegar al paso 2, cuando ambos usan `bg-accent`.
+  Declara `accessibilityRole="progressbar"` y valor de 1 a 2.
+- **Foto y burbuja**: fila `flex-row items-center gap-3.5`. La foto es un
+  `Pressable` `size-22 items-center justify-center rounded-full border-2
+  border-dashed border-accent bg-surface-secondary`, con cámara de 26 y etiqueta
+  `text-11 font-extrabold text-accent-strong`; muestra el avatar de 88 solo
+  cuando hay foto. La burbuja es un `View` `flex-1 rounded-tile
+  bg-surface-secondary px-3 py-2.5`, con `CONTINUOUS_CORNER`, cola `absolute
+  -left-1.5 top-5.5 size-3 rotate-45 bg-surface-secondary` y texto `text-13
+  font-semibold text-foreground`.
+- **Selector segmentado**: `SegmentedControl` compartido para Tipo, Sexo y
+  Tamaño. Contenedor `flex-row gap-1 rounded-14 bg-default p-1`; opciones
+  `Pressable` `h-9.5 flex-1 items-center justify-center rounded-10`, ambos con
+  `CONTINUOUS_CORNER`. El activo añade `bg-surface shadow-sm`; etiqueta
+  `text-sm font-extrabold text-accent-strong`, o `text-muted` si está inactivo.
+  Declara `TOUCH_SLOP`, rol botón y estado seleccionado. Tipo siempre conserva
+  una selección; Sexo y Tamaño permiten deseleccionar.
+- **Métricas por fidelidad al canvas**: contenido con `paddingHorizontal: 20`,
+  `paddingTop: 12`, `gap: 12` y `paddingBottom: insets.bottom + 24`. Cada campo
+  usa `gap-1.5`, etiqueta `text-13 font-extrabold text-foreground` e input
+  `h-12 rounded-xl border-2 border-transparent bg-default px-3.5`, esquina
+  continua y `text-15 font-semibold text-foreground` en los `TextInput`.
+  Los límites siguen siendo 120, 120, 3 y 32. `ScrollView key={step}` devuelve
+  el scroll arriba al cambiar de paso. Continuar y Guardar usan la receta
+  primaria con labio de la regla 13 al final del contenido.
+
+Desviaciones conscientes del canvas aprobadas en la spec:
+
+- El CTA termina el `ScrollView`; no hay pie fijo con degradado ni dependencia nueva.
+- El segmento activo usa `shadow-sm`, el token de sombra disponible.
+- La burbuja conserva el interlineado de `text-13`; no se añade un valor arbitrario de 1.4.
+- Los pasos cambian sin animación nueva.
+- El botón atrás pertenece a la cabecera nativa con `title: ''`.
+- `paddingTop: 12` sustituye los 56 del canvas porque la cabecera consume el inset superior.
+
+Los candados de `src/__tests__/add-pet-two-steps.test.ts` verifican esta
+ampliación y los inventarios de la pantalla y el selector.
+
+- [X] Enmienda #191 aprobada por humano
+
+## Enmienda #190 — Burbuja de Pingo en Inicio
+
+> Enmienda de `ui-guidelines` por `mobile-home-pingo-phrase` (#190). Directiva del humano: «el diseño final como el artifact».
+
+**Pingo flota en la burbuja de Inicio.** Con mascota seleccionada, la pose de la burbuja de Pingo de Inicio (`home-pingo`) usa `PingoFloat` (`src/components/pingo-float.tsx`) con `MOTION_PINGO_FLOAT_OFFSET_Y` (10 px) y `MOTION_PINGO_FLOAT_TIMING` (1500 ms por tramo). Con reduce motion no arranca. Esta enmienda no autoriza `PingoFloat` en ninguna otra pantalla.
+
+**Escala de radios.** Se añade `--radius-4: 4px` (`rounded-br-4`), la esquina de la «cola» de la burbuja. Un solo uso hoy.
+
+**La burbuja de Pingo.** `View` de superficie con radio 18 px (`rounded-tile`) y 4 px en la esquina inferior derecha, texto `text-15 font-semibold leading-5.25`. La frase sale de claves `home.pingoPhrase*`, en voz B.
+
+- [X] Enmienda #190 aprobada por humano
+
+## Enmienda #188 — Anillos de la vinculación de collar
+
+> Enmienda de `ui-guidelines` por `mobile-pairing-pingo-canvas-fidelity` (#188, 2026-10-19).
+> Directiva del humano: «el diseño final como el artifact» y «Píxel exacto».
+
+**Qué cambia**: la vista de vinculación sin dispositivo de `pairing` usa dos anillos con `PingRing` (`src/components/ping-ring.tsx`): escala de 0.55 a 1.5, opacidad de 0.55 a 0, 2400 ms, retardo de 1200 ms en el segundo, borde de 3 px en `accent`, 150 px. Bajo reduce motion, los anillos quedan en reposo (escala 1, opacidad 0.3). Esta enmienda cubre solo esa vista: la regla de #167, «Ninguna otra pantalla usa anillos de ping sin una enmienda propia», sigue vigente para el resto de pantallas.
+
+Detalle y tests en `specs/mobile-pairing-pingo-canvas-fidelity/requirements.md`.
+
+- [X] Enmienda #188 aprobada por humano
+
+## Enmienda #188 (E2) — Geometría de la vinculación de collar
+
+> Enmienda de `ui-guidelines` por `mobile-pairing-pingo-canvas-fidelity` (#188, E2, 2026-10-20).
+> Directiva del humano: «aplicalas tal cual como en artboard».
+
+**Qué cambia**: el input del código de activación de `pairing` usa `rounded-14` (14 px, `--radius-14`) con `h-15`, `border-2 border-accent` y `bg-default`, como el artboard «Vincular collar (19)». El avatar de la mascota de la fila superior usa el anillo de 2 px en `accent` con 3 px de separación (`border-2 border-accent p-0.75`), el mismo que el selector de avatares, y no es interactivo. El código se muestra en `font-mono` (`--font-mono: monospace`, familia genérica de Android) con `tracking-code` (0.14 em); no combina con `font-black` porque los pesos del proyecto son familias de fuente. Esta enmienda cubre solo esta pantalla: `rounded-14` sigue nombrado como excepción solo para las pantallas que ya lo citan.
+
+Detalle y tests en `specs/mobile-pairing-pingo-canvas-fidelity/requirements.md` (R15 a R20).
+
+- [X] Enmienda #188 (E2) aprobada por humano

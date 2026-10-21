@@ -65,6 +65,11 @@ export const R2_TABS: UseRow[] = [
 ];
 
 export const R3_HOME: UseRow[] = [
+  // (enmendado por #190 R13): las cuatro frases viven en el helper puro.
+  { file: 'src/screens/home/pingo-phrase.ts', key: 'home.pingoPhraseWalkMeals' },
+  { file: 'src/screens/home/pingo-phrase.ts', key: 'home.pingoPhraseWalk' },
+  { file: 'src/screens/home/pingo-phrase.ts', key: 'home.pingoPhraseMeals' },
+  { file: 'src/screens/home/pingo-phrase.ts', key: 'home.pingoPhraseCalm' },
   { file: 'src/screens/home/index.tsx', key: 'home.noLocationDataYet' },
   { file: 'src/screens/home/index.tsx', key: 'home.lastSeen' },
   { file: 'src/screens/home/index.tsx', key: 'home.home' },
@@ -394,10 +399,13 @@ export const R8_REMINDERS: UseRow[] = [
 ];
 
 export const R9_ADD_PET: UseRow[] = [
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.continue' }, // #191 R7
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.pingoGreeting' }, // #191 R4
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.stepProgress' }, // #191 R3
   { file: 'src/utils/form-rules.ts', key: 'addPet.nameIsRequired' }, // #186 R2
   { file: 'src/utils/form-rules.ts', key: 'addPet.chooseBirthDate' }, // #186 R2
   { file: 'src/utils/form-rules.ts', key: 'addPet.errorAgeRange' }, // #186 R2
-  { file: 'src/app/_layout.tsx', key: 'addPet.addPet' }, // #95 R4
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.addPet' }, // #95 R4
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.errorPhotoFormat' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.errorPhotoAfterCreate' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.checkPetDetails' },
@@ -406,7 +414,6 @@ export const R9_ADD_PET: UseRow[] = [
   { file: 'src/screens/add-pet/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/add-pet/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.pet' },
-  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.avatarPreview' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.choosePhoto' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.basicDetails' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.species' },
@@ -467,7 +474,8 @@ export const R10_PAIRING: UseRow[] = [
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.viewOnMap' },
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.done' },
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.pairCollar' },
-  { file: 'src/screens/pairing/index.tsx', key: 'pairing.freePlanPairPrompt' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.freePlanPairLead' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.freePlanPairBody' },
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.activationCode' },
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.printedOnCollarBox' },
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.pairCollar' },

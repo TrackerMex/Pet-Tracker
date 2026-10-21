@@ -9715,3 +9715,172 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   la enmienda de la carta (`50cc7875`).
 - **Estado final:** done. Notion: Implementado / Completado. La PR #234 la mergea el humano,
   después se borra el worktree.
+
+## Sesión 2026-10-20 — mobile-focus-refetch-guard-no-pet (id: 193)
+
+- **Feature:** Inicio, Perfil y Recordatorios no piden el detalle de la mascota ni la lista de
+  recordatorios al enfocarse sin mascota seleccionada (`selectedPetId === null`). Una ref
+  sincronizada por efecto y la guarda dentro de la callback de foco; sin cambios de JSX, estilos
+  ni dependencias. Antes, `refetch()` de TanStack Query v5 ejecutaba el `queryFn` aunque
+  `enabled` fuera false, y una cuenta sin mascotas enviaba `GET /pets/null`.
+- **Spec:** [[specs/mobile-focus-refetch-guard-no-pet/requirements|spec]], aprobada por el humano
+  el 2026-10-19 (firma `00925f6a`). Q1 la contestó el humano en el smoke; Q2 no aplica (CC2); Q3
+  sí (CC4).
+- **Acciones:** handoff a Codex (`29a8482d`). Codex: A `b7622910` (tests R1 a R11, rojo en R1, R4
+  y R7), B `8ebb6a13` (feat), C `cc3667f7` (mutaciones de control), D `c1094e6a` (revert de C) y
+  docs `4e62343a`. Merge de `origin/main` (`14ec7307`, con #176 y #186) en `7a470b7e`, sin
+  conflictos.
+- **Enmiendas:** en B se actualizaron seis aserciones existentes de #181 R1 (dos por pantalla)
+  que pedían el id nulo; el handoff lo autoriza (L58) y `design.md` lo prevé.
+- **Resultado:** `./init.sh` exit 0 en `7a470b7e`: backend 187/187 suites y 1474/1474 tests;
+  móvil 124/124 suites y 4163/4163 tests; e2e sin fallos; typecheck y lint sin errores (lint rc 0,
+  log vacío). Reviewer: primera pasada RECHAZADO sobre `4e62343a` (`current.md` obsoleto,
+  corregido); segunda pasada APROBADO sobre `4e62343a`; pasada de cierre APROBADO sobre
+  `7a470b7e`, 0 bloqueantes. Smoke CC4 firmado por el humano en OnePlus Nord 5 (2026-10-19) con
+  las cuentas A (sin mascotas) y B (con mascota), en `cc51f37e` y `8dafe2d2`. A1 repetida sobre
+  `7a470b7e`: OK (2026-10-20).
+- **Notas no bloqueantes:** el commit C no lleva la lista de R-id (lo prescribe el handoff; sin
+  acción). `design.md`, `tasks.md` y `traceability.md` quedan en `status: draft`; C6 exige
+  `approved` solo en `requirements.md`. Un flake de `#173 R9` visto una vez en B no reapareció en
+  `7a470b7e`; si reaparece, parar con el log entero. El handoff `29a8482d` no declara
+  `expo-overview` ni `expo-router`; sin impacto visible en esta feature.
+- **Estado final:** done. Notion: Implementado / Completado. La PR #235 la mergea el humano; después se
+  borra el worktree.
+
+## Sesión 2026-10-20 — mobile-home-pingo-phrase (id: 190)
+
+- **Feature:** Inicio gana una burbuja de Pingo bajo el hero: frase en voz B y en ES/EN a partir de
+  datos ya cargados (distancia de hoy y comidas), con frase de respaldo cuando faltan. Solo con
+  mascota seleccionada y con detalle y actividad resueltos. Pose `pingo-talk.webp` 64×64 con
+  `PingoFloat` (10 px, 1,5 s; inmóvil con reduce motion), séptimo bloque de la entrada
+  escalonada de `HomeEntrance` (índices fijos 0..6), token `--radius-4` para la cola y enmienda
+  #190 en `docs/ui-guidelines.md`.
+- **Spec:** [[specs/mobile-home-pingo-phrase/requirements|spec]], firmada por el humano vía Notion
+  (`81a964bc`, 2026-10-19). H1 a H3 y la Enmienda #190 firmadas.
+- **Acciones:** handoff a Codex (`845cc339`). Codex: pares rojo/verde por requisito en el orden
+  R9, R8, R11, R1, R2, R3, R4, R6, R10, R7, R13, R12, R5, R14 (R7 y R12 nacen verdes, con mutación
+  plantada en R12), más lint del probe R9 (`debf4467`), inventarios extra de R13 (`3ec3305b`) y
+  trazabilidad (`3fa9b613`). El reviewer APROBÓ R1-R14 con ~45 mutaciones fallidas por su
+  aserción. Hallazgo: el candado R14 comparaba la casilla `- [ ]` literal; ronda 2 de Codex
+  (`5f14c907`, solo test, sondas S0-S7) con la casilla aparte y tolerante a `[ xX]`. Merge de la
+  firma del humano (`b34082e1`, casillas con `[X]`) y de `origin/main` (`0ae4df6f`, con #193); un
+  conflicto mecánico en `home/index.tsx` (los dos bloques se conservan) lo resolvió el
+  `implementer` (fallback documentado; `progress/impl_merge_190_conflict.md`).
+- **Resultado:** `./init.sh` exit 0 en `a811d244`: backend 187/187 suites y 1474/1474 tests; móvil
+  126/126 suites y 4214/4214 tests; e2e 468 passed; typecheck y lint sin errores.
+- **Notas no bloqueantes:** el flake de `profile/index.test.tsx` (`R1: me card`) es preexistente
+  (1 de 8 en `origin/main` limpio, 0 de 8 en #190); el `selectable` de la burbuja no está en la
+  spec ni en ningún test; `traceability.md` queda en `status: draft`. Codex lanzó `init.sh` pese
+  al handoff (lo pide `AGENTS.md`).
+- **Drift tras el veredicto:** el veredicto es sobre `3fa9b613`; después solo cambian el test de la
+  ronda 2 (revisado por el leader con sondas), la firma del humano y el merge de main.
+- **Estado final:** done. Notion: Implementado / Completado. La PR #236 la mergea el humano; después se borra el worktree.
+
+## Sesión 2026-10-20 — mobile-profile-followups (id: 184)
+
+- **Feature:** deuda de Perfil de #173 (O1, O2, O6) y el flake del me-card. Candados de test para
+  `disabled={photoUploading}` de `change-photo` (sonda `onStartShouldSetResponder`), `size` 40 y
+  `cacheKey` por mascota de `PetSwitcher avatars` y la `className` exacta de `profile-sign-out`; el
+  it `R1: me card` espera con `findByText`. Único cambio de producción: guardia de reentrada
+  `photoBusyRef` (más `finally` externo) en `handleChangePhoto`; sin cambios de JSX.
+- **Spec:** [[specs/mobile-profile-followups/requirements|spec]], firmada por el humano vía Notion
+  (`816a66bb`, 2026-10-20). R2 incluida por defecto de la spec; sin enmiendas.
+- **Acciones:** handoff a Codex (`6a581de8`). Siete commits test-primero: R5, R1, R3, R4, R2 rojo
+  (`5221b327`, doble toque: 2 llamadas al picker), R2 verde (`1dbda4bd`) y trazabilidad
+  (`d9fc677d`). R1, R3, R4 y R5 nacen verdes, con 15 mutaciones (X1-X15) plantadas por Codex y
+  tres repetidas por el reviewer (X1, X3, X5, X9), todas rojas.
+- **Resultado:** `./init.sh` exit 0 en `d9fc677d`: backend 187/187 suites y 1474/1474 tests; móvil
+  126/126 suites y 4225/4225 tests; e2e 468 passed (log del scratchpad). Reviewer APROBADO sobre
+  `d9fc677d`, 0 bloqueantes (`progress/review_mobile-profile-followups.md`).
+- **Notas no bloqueantes:** X3 (`disabled={false}`) falla antes de la sonda, en la espera de
+  `accessibilityState`; no hay zona ciega y la celda de `design.md` se corrigió al cierre.
+  `traceability.md` queda en `status: draft`. Codex lanzó `init.sh` en el arranque y lo detuvo
+  (exit 143) antes de los tests. El `init.sh` de línea base salió rojo solo por carga (load 44, un
+  peer corriendo jest); sin carga, verde.
+- **Sin skills de Expo:** ninguna aplicaba (una ref y tests RN, sin diseño ni UI nueva).
+- **Estado final:** done. Notion: Implementado / Completado. La PR #237 la mergea el humano; después se
+  borra el worktree.
+
+## Sesión 2026-10-21 — mobile-pairing-pingo-canvas-fidelity (id: 188)
+
+- **Feature:** Vincular collar como su artboard «Vincular collar (19)» del canvas. Pingo (pose
+  collar) de 120 px con dos anillos de ping (2400 ms, retraso 1200 ms; `PingRing` extraído a
+  `src/components/ping-ring.tsx`) y flotación `PingoFloat`; título centrado de 28 px (token
+  `--text-28`); una fila superior con el avatar de la mascota seleccionada y sin el listado;
+  banner de plan gratuito como `View` con `pairing.freePlanPairPrompt` partida en Lead y Body;
+  botón anclado al borde inferior; etiqueta, campo y pista del código con `--tracking-code` y
+  `--font-mono`.
+- **Spec:** [[specs/mobile-pairing-pingo-canvas-fidelity/requirements|spec]], firmada por el humano
+  vía Notion (2026-10-19). Enmienda E2 (R15–R20, ED1–ED4 cerradas) aprobada en Notion el
+  2026-10-20 tras un smoke humano que no coincidía con el artboard (título sin centrar, Pingo a
+  150 px, selector de mascota entre título y banner, botón sin anclar). El texto de R17, R18 y R20 lo
+  derivó el leader de la instrucción del humano; el espejo que el humano vio tenía R17 con
+  `PetSwitcher variant="avatars"` y no tenía R20.
+- **Acciones:** handoff a Codex para R1–R14 (ronda E1) y segundo handoff para R15–R20 (ronda E2,
+  `progress/handoff_mobile-pairing-pingo-canvas-fidelity-e2.md`). Codex paró en R15: la guarda
+  `#68 R18` de `design-drift` lee también `screens/pairing/index.test.tsx` y rechaza
+  `StyleSheet.flatten`; el hueco era del handoff, no de Codex. Cierre de Codex en `22c4991c`
+  (12 rutas móviles) con las cinco migraciones de inventarios de `tasks.md`. Reviewer APROBADO
+  sobre `22c4991c` con mutaciones M1, M2a, M2b y M13 rojas (`progress/review_188.md`; el veredicto
+  de `db3bd5e3` queda como historia al final). El humano firmó la casilla «Enmienda #188 (E2)» de
+  `docs/ui-guidelines.md` y H1–H3 en `eaa0a9a9` (2026-10-21).
+- **Resultado:** `./init.sh` exit 0 en `22c4991c` (móvil 128/128 suites y 4256/4256 tests; e2e 468
+  passed) y exit 0 en el merge de main `55c93646`: backend 187/187 suites y 1474/1474 tests; móvil
+  128/128 suites y 4267/4267 tests; infra 14/14; e2e 468 passed; typecheck y lint sin errores.
+- **Primera corrida del merge en rojo** (log local `progress/init-188-55c93646-run1-e2e-rojo.log`, no versionado: `*.log` está en `.gitignore`): exit 1,
+  con 3 suites e2e y 6 tests rojos (`alerts-center-notifier` R23, `pet-reminders` R7 y R8,
+  `alerts-engine` R14 y R18; `connect ECONNREFUSED 127.0.0.1:4566`). Causa: un `init.sh` de otro
+  worktree (#191) corría a la vez sobre el mismo LocalStack y Postgres. El merge no toca
+  `backend-pet-tracker/` ni `infra/`. Repetida sin pares concurrentes: verde (log local
+  `progress/init-188-55c93646.log`). No es un flake sin causa: el peer estaba corriendo.
+- **Notas no bloqueantes:** B-3 (`screens/pairing/index.test.tsx` tiene una aserción circular) y B-4
+  (la rama reduce-motion de `components/ping-ring.tsx` es inalcanzable en producción); tres
+  hallazgos del reviewer: R17 solo candada los índices 0 y 1 del ciclo de colores, el candado de
+  tokens de `global.css` compara por texto y el avatar no lleva `accessible`. M-3 se conserva
+  (reescribir la historia rompería los hashes de `traceability.md`); los `.exit` de init no se
+  commitean. `traceability.md` queda en `status: draft`. El espejo de Codex en
+  `progress/impl_mobile-pairing-pingo-canvas-fidelity.md` (H1–H3) conserva sus casillas `[ ]`;
+  las firmas están en `requirements.md`. Fuera de #188: `progress/handoff_mobile-docs-upload.md`
+  tiene marcadores de conflicto en main.
+- **Drift tras el veredicto:** el veredicto es sobre `22c4991c`. Después cambian la firma del humano
+  (`eaa0a9a9`, solo `specs/`, `docs/` y `progress/`) y el merge de `origin/main` (`55c93646`, con
+  #184), cuyos únicos ficheros de código son `pet-switcher.test.tsx`, `profile/index.tsx` y
+  `profile/index.test.tsx`, ya revisados en #184. `git diff --stat 22c4991c HEAD --
+  mobile-pet-tracker backend-pet-tracker infra` confirma esos tres.
+- **Estado final:** done. Notion: Implementado / Completado. La PR #232 la mergea el humano; después se
+  borran los worktrees `Pet-Tracker-wt-188` y `Pet-Tracker-wt-188-probe`.
+
+## Sesión 2026-10-21 — mobile-add-pet-two-steps (id: 191)
+
+- **Feature:** Nueva mascota como el artboard «Nueva mascota (22)» del canvas, en dos pasos. Indicador
+  «1 de 2» con barra de dos segmentos; paso 1 con foto, burbuja de Pingo y Datos básicos (Tipo,
+  Nombre, Raza, Sexo, Tamaño) más Continuar; paso 2 con edad, esterilizado y microchip más Guardar
+  mascota; título en el contenido; `SegmentedControl` compartido; `validateAddPetBasics` en
+  `form-rules.ts`; atrás en el paso 2 vuelve al 1 conservando los datos; la celebración final es la
+  de #171. Enmienda E1 (R13): `birth-date-field` con la receta de `date-field` de add-reminder.
+- **Spec:** [[specs/mobile-add-pet-two-steps/requirements|spec]], firmada por el humano (2026-10-19,
+  D1–D5 con el valor por defecto). Enmienda E1 (R13) aprobada tras el smoke Android, donde el campo
+  de fecha y el botón de posición no coincidían con el canvas.
+- **Acciones:** Codex implementó R1–R11 test-primero (`921a6f89` … `b331fc88`), con el cierre en
+  `ed4462fd`; reviewer APROBADO (`31110d80`). Tras el smoke, E1 y R13 en rojo/verde (`eb83ca10`,
+  `68d3c45a`; el primer rojo `f3623bd0` era un TypeError y se corrigió con un rojo por aserción
+  real); reviewer APROBADO (`d3047c36`, O2 aceptada). El humano firmó las casillas de cierre y el
+  literal ES del saludo en `f486e691` (`¡Hola! Cuéntame de tu nuevo compañero.`, con exclamación,
+  como el canvas). Eso dejó dos tests rojos: docs del leader (`e60e9c64`: se retira la desviación
+  «Frase de la burbuja» de la spec y de la carta; `specs/mobile-ui-language/design.md` §2.37) y
+  tests por el fallback `implementer` (`e8b13b78`). Merge de `origin/main` (`79052141`, no rebase,
+  para conservar los hashes de `traceability.md`) con cuatro conflictos: docs resuelto por el
+  leader y tests por el `implementer`, sin relajar candados (fórmulas de `directUses` y
+  `CONTINUOUS_CORNER` suman main + 3; mínimos heroui 199/41/166; `en` = 436).
+- **Resultado:** `./init.sh` exit 0 sobre `79052141`: backend 187 suites / 1474 tests; móvil 130
+  suites / 4297 tests; e2e 468 passed; typecheck y lint sin errores. Reviewer APROBADO sobre el delta
+  posterior (`progress/review_mobile-add-pet-two-steps_post.md`, 0 bloqueantes).
+- **Flake de la primera corrida:** `init.sh` sobre `ad3b412e` salió en rojo (3 suites e2e de backend)
+  mientras otro worktree (#188) corría `init.sh` sobre el mismo Postgres y LocalStack. La rama no
+  toca `backend-pet-tracker/`. Repetido sin pares concurrentes sobre el mismo HEAD: exit 0.
+- **Notas no bloqueantes:** O1 y O2 del reviewer; `requirements.md:62` (bloque D3) sigue diciendo
+  «el saludo termina en punto» y `docs/ui-guidelines.md` ~l.378 mantiene la regla general sin
+  excepción para este saludo (ningún candado la verifica); D6 (el botón cambia de posición entre
+  pasos) se dio por pasada: el humano completó el smoke y firmó sin reportar más.
+- **Estado final:** done. Notion: Implementado / Completado. PR #238; la mergea el humano y después se
+  borra el worktree `Pet-Tracker-wt-191`.

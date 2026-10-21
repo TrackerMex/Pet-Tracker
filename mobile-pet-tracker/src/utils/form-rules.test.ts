@@ -7,6 +7,7 @@ type PetValues = {
   approxAgeMonths: string;
 };
 type Rules = {
+  validateAddPetBasics: (values: { name: string }) => FieldIssues<'name'>;
   validateAddPet: (values: PetValues) => FieldIssues<'name' | 'birthDate' | 'approxAgeMonths'>;
   validateReminder: (values: { title: string; dueAt: Date | null; nowMs: number }) => FieldIssues<'title' | 'date'>;
   validateDocument: (values: { type: string; name: string; date: string }) => FieldIssues<'type' | 'name' | 'date'>;
@@ -15,7 +16,7 @@ type Rules = {
 };
 
 const {
-  validateAddPet, validateReminder, validateDocument, validateWeight, parseDecimal,
+  validateAddPetBasics, validateAddPet, validateReminder, validateDocument, validateWeight, parseDecimal,
 } = jest.requireActual<Rules>('./form-rules');
 const { readFileSync } = jest.requireActual<{
   readFileSync: (path: string, encoding: 'utf8') => string;
@@ -155,5 +156,16 @@ describe('#186 R2: reglas puras de los cuatro formularios', () => {
   ])('#186 R2: declara una sola vez labelKey %s', (key) => {
     const source = readFileSync('src/utils/form-rules.ts', 'utf8');
     expect(source.split("labelKey: '" + key + "'").length - 1).toBe(1);
+  });
+});
+
+
+describe('#191 R7: validateAddPetBasics', () => {
+  it.each(['', '   ', 'a', 'a'.repeat(120)])('valida el nombre %p sin comprobar edad', (name) => {
+    const expected = name.trim() ? {} : { name: { labelKey: 'addPet.nameIsRequired' } };
+    expect(validateAddPetBasics({ name })).toEqual(expected);
+    if (!name.trim()) {
+      expect(validateAddPetBasics({ name }).name).toBe(validateAddPet({ ...validPet, name }).name);
+    }
   });
 });

@@ -1582,3 +1582,13 @@ Tres corolarios que nadie debe confundir con lo anterior:
 | — | `validation.invalidDate` | `Enter a valid date as YYYY-MM-DD` | `Escribe una fecha válida con formato AAAA-MM-DD` | ← añadida por #186 (R1) |
 | — | `validation.weightRange` | `Weight must be above 0 and at most 999.99 kg` | `El peso debe ser mayor que 0 y como máximo 999,99 kg` | ← añadida por #186 (R1) |
 | — | `validation.bodyConditionRange` | `Body condition is a whole number from 1 to 9` | `La condición corporal es un número entero del 1 al 9` | ← añadida por #186 (R1) |
+
+### §2.37 — Añadidos por #191 — Nueva mascota en dos pasos
+
+Copy del asistente de alta; se retira `addPet.avatarPreview` al integrar la foto en el primer paso.
+
+| Pantalla | Clave | Inglés | Español | Origen |
+|---|---|---|---|---|
+| — | `addPet.stepProgress` | `{{current}} of {{total}}` | `{{current}} de {{total}}` | ← añadida por #191 (R1) |
+| — | `addPet.pingoGreeting` | `Hi. Tell me about your new companion.` | `¡Hola! Cuéntame de tu nuevo compañero.` | ← añadida por #191 (R1) |
+| — | `addPet.continue` | `Continue` | `Continuar` | ← añadida por #191 (R1) |

@@ -153,6 +153,24 @@ const PAIRING_STYLE_ESCAPES = new RegExp(
   String.raw`${HEX_LITERAL}|${ARBITRARY_CLASS}|StyleSheet\.create|${SHADOW_ESCAPES}`,
   'i',
 );
+
+describe('#193 R11: grep-clean de Inicio, Perfil y Recordatorios', () => {
+  const featureFiles = [
+    'screens/home/index.tsx',
+    'screens/profile/index.tsx',
+    'screens/reminders/index.tsx',
+  ];
+
+  it('mantiene las tres pantallas sin escapes de estilo literales', () => {
+    const violations = featureFiles.flatMap((relativePath) => {
+      const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
+      return PAIRING_STYLE_ESCAPES.test(contents) ? [relativePath] : [];
+    });
+
+    expect(violations).toEqual([]);
+  });
+});
+
 const MEALS_BAR_STYLE_ESCAPES = new RegExp(
   String.raw`${HEX_LITERAL}|${ARBITRARY_CLASS}|StyleSheet(?:\.create)?|${SHADOW_ESCAPES}`,
   'i',
@@ -241,6 +259,7 @@ describe('R9: mobile-pets-profile sin drift', () => {
     'api/users.ts',
     'components/pet-avatar.tsx',
     'components/pet-hero-header.tsx',
+    'components/segmented-control.tsx', // #191 R11
     'screens/add-pet/index.tsx',
     'screens/docs/index.tsx',
     'screens/profile/index.tsx',
@@ -320,7 +339,8 @@ describe('R11 (mobile-device-pairing): pairing usa el Card compartido y las dime
   });
 
   it.each([
-    'padding: 24',
+    'paddingHorizontal: 20',
+    'paddingVertical: 24',
     'gap: 16',
     'insets.bottom + 24',
   ])('keeps the uniform screen metric %s', (metric) => {
@@ -1116,7 +1136,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     expect(rounded16).toEqual({
       'components/celebration.tsx': 2,
       'components/empty-state.tsx': 1,
-      'screens/add-pet/index.tsx': 1,
+      'screens/add-pet/index.tsx': 2, // #191 R11
       'screens/add-reminder/index.tsx': 1,
       'screens/alert-detail/index.tsx': 2,
       'screens/docs-upload-form/index.tsx': 2,
@@ -1132,8 +1152,10 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       'screens/welcome/index.tsx': 2,
     });
     expect(outsideReminders(/\brounded-14\b/)).toEqual([
+      join('components', 'segmented-control.tsx'), // #191 R11
       join('screens', 'meal-schedule', 'index.tsx'), // #179 R13 comparte rounded-14
       join('screens', 'meals-history', 'index.tsx'), // #179 R13 comparte rounded-14
+      join('screens', 'pairing', 'index.tsx'), // #188 R20 comparte rounded-14
     ]);
   });
 });
