@@ -32,6 +32,7 @@ export function GeofencesScreen({ petId }: { petId: string }) {
   });
 
   const isOwner = pet.data?.kind === 'ok' && pet.data.pet.myRole === 'owner';
+  const zoneCount = geofences.data?.kind === 'ok' ? geofences.data.geofences.length : 0;
   const atLimit = geofences.data?.kind === 'ok' && geofences.data.geofences.length >= GEOFENCE_MAX_PER_PET;
 
   async function write(request: () => Promise<GeofenceWriteState>) {
@@ -87,6 +88,12 @@ export function GeofencesScreen({ petId }: { petId: string }) {
         <Text testID="geofences-title" accessibilityRole="header" className="flex-1 text-26 font-black tracking-title text-foreground">{t('geofences.title')}</Text>
         {geofences.data?.kind === 'ok' ? <Text testID="geofences-counter" className="text-sm font-extrabold text-muted">{t('geofences.counter', { count: geofences.data.geofences.length, max: GEOFENCE_MAX_PER_PET })}</Text> : null}
       </View>
+      {geofences.data?.kind === 'ok' ? <View testID="geofences-progress" accessibilityRole="progressbar" className="flex-row gap-1"
+        accessibilityLabel={t('geofences.progressLabel', { count: zoneCount, max: GEOFENCE_MAX_PER_PET })}
+        accessibilityValue={{ min: 0, max: GEOFENCE_MAX_PER_PET, now: zoneCount }}>
+        {Array.from({ length: GEOFENCE_MAX_PER_PET }, (_, index) => <View key={index} testID={`geofences-progress-segment-${index}`}
+          className={index < zoneCount ? 'h-1.5 flex-1 rounded-full bg-accent' : 'h-1.5 flex-1 rounded-full bg-default'} />)}
+      </View> : null}
       {geofences.data === undefined || pet.data === undefined ? (
         <Skeleton testID="geofences-loading" className="h-24 w-full rounded-card" />
       ) : geofences.data.kind === 'ok' ? (
