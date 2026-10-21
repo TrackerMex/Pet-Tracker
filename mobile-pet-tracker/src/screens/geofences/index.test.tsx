@@ -867,7 +867,7 @@ describe('#189 R7: Añadir zona conserva una sola CTA anclada al pie', () => {
     await mount(language);
     const add = await screen.findByTestId('geofences-add');
     expect(screen.getAllByTestId('geofences-add')).toHaveLength(1);
-    expect(add.props.className).toBe(`pressable-feedback__root button__root button__root--variant-primary button__root--size-md mt-auto h-14 rounded-16 ${count === 5 ? 'bg-default' : 'bg-accent'}`);
+    expect(add.props.className).toBe(`pressable-feedback__root button__root button__root--variant-primary button__root--size-md ${count === 5 ? 'disabled:element-disabled ' : ''}mt-auto h-14 rounded-16 ${count === 5 ? 'bg-default' : 'bg-accent'}`);
     expect(add.props.accessibilityState.disabled).toBe(count === 5);
     const label = within(add).getByText(language === 'es' ? 'Añadir zona' : 'Add zone');
     expect(label.props.className).toBe(`text-17 font-extrabold ${count === 5 ? 'text-muted' : 'text-accent-foreground'}`);
