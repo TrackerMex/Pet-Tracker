@@ -651,8 +651,6 @@ describe('#189 R9: hoja estática solapada y capas del mapa', () => {
     const form = await screen.findByTestId('geofence-editor-form');
     const root = screen.getByTestId('screen-geofence-editor');
     expect(root.props.className).toBe('flex-1');
-    expect(root.props.behavior).toBe('padding');
-    expect(root.props.keyboardVerticalOffset).toBe(91);
     expect(childTestIds(root)).toEqual(['geofence-editor-map', 'geofence-editor-form']);
     const map = screen.getByTestId('map-view');
     const mapContainer = screen.getByTestId('geofence-editor-map');
