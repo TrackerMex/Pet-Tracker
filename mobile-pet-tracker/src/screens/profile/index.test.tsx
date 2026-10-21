@@ -2171,12 +2171,12 @@ describe('#194 R9: profile links to the editor and observes saved changes', () =
   it('#194 R9: shows cache updates without another profile request', async () => {
     const { queryClient } = await renderProfile();
     await act(() => queryClient.setQueryData(userKeys.me(), account));
-    expect(await screen.findByTestId('me-identity-text')).toHaveTextContent('Ada Lovelace');
+    expect(within(await screen.findByTestId('me-identity-text')).getByText('Ada Lovelace')).toBeVisible();
     const requests = mockGetMe.mock.calls.length;
     const updated = { ...account.me, firstName: 'Grace', lastName: 'Hopper' };
     await act(() => queryClient.setQueryData(userKeys.me(), { kind: 'ok', me: updated }));
-    await waitFor(() => expect(screen.getByTestId('me-identity-text')).toHaveTextContent('Grace Hopper'));
-    expect(screen.getByTestId('me-identity-text')).not.toHaveTextContent('Ada Lovelace');
+    await waitFor(() => expect(within(screen.getByTestId('me-identity-text')).getByText('Grace Hopper')).toBeVisible());
+    expect(within(screen.getByTestId('me-identity-text')).queryByText('Ada Lovelace')).toBeNull();
     expect(mockGetMe).toHaveBeenCalledTimes(requests);
   });
 });
