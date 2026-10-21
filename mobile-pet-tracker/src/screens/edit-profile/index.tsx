@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { userKeys } from '../../api/query-keys';
 import { getMe, updateMe, type ProfileResponse, type UpdateProfileInput } from '../../api/users';
 import { FieldErrorMessage } from '../../components/field-error-message';
+import { FormError } from '../../components/form-error';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { validateProfile, type FieldIssues, type ProfileValues } from '../../utils/account-rules';
@@ -49,7 +50,7 @@ export function EditProfileScreen() {
 
 function EditProfileForm({ me }: { me: ProfileResponse }) {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
-  const { token } = useAuth();
+  const { token, signOut } = useAuth();
   const queryClient = useQueryClient();
   const chunkyLip = useChunkyLip();
   const t = useTranslate();
@@ -60,9 +61,12 @@ function EditProfileForm({ me }: { me: ProfileResponse }) {
   const [fieldErrors, setFieldErrors] = useState<FieldIssues<keyof ProfileValues>>({});
 
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const genericError = t('common.somethingWentWrong');
 
   async function handleSubmit() {
     if (submitting) return;
+    setError(null);
     const issues = validateProfile({ firstName, lastName, phone, country });
     setFieldErrors(issues);
     if (Object.keys(issues).length > 0) return;
@@ -83,7 +87,17 @@ function EditProfileForm({ me }: { me: ProfileResponse }) {
       if (result.kind === 'ok') {
         queryClient.setQueryData(userKeys.me(), { kind: 'ok', me: result.me });
         router.back();
+      } else if (result.kind === 'unauthorized') {
+        await signOut();
+      } else if (result.kind === 'validation') {
+        setError(t('validation.checkDetails'));
+      } else if (result.kind === 'unreachable') {
+        setError(t('common.cannotReachServer'));
+      } else {
+        setError(genericError);
       }
+    } catch {
+      setError(genericError);
     } finally {
       setSubmitting(false);
     }
@@ -111,6 +125,7 @@ function EditProfileForm({ me }: { me: ProfileResponse }) {
         <Input testID="edit-profile-country" className="h-13 rounded-xl bg-default" value={country} onChangeText={(value) => setCountry(value.toUpperCase())} autoCapitalize="characters" maxLength={2} />
         <FieldErrorMessage testID="edit-profile-country" issue={fieldErrors.country} />
       </TextField>
+      {error ? <FormError testID="edit-profile-error" message={error} /> : null}
       <Button testID="edit-profile-save" className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary} isDisabled={submitting} onPress={() => void handleSubmit()}>
         <Text className="text-17 font-extrabold text-accent-foreground">{t('editProfile.save')}</Text>
       </Button>
