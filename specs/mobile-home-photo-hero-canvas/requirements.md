@@ -1,6 +1,6 @@
 ---
 feature: "mobile-home-photo-hero-canvas"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [mobile, ui, spec]
 ---
 
@@ -219,11 +219,13 @@ Lo que ningún test ni agente puede cerrar, y que el leader no marca por su cuen
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- [ ] Enmienda #195 aprobada por humano (precondición de R20: sin ella no se revierte ningún candado de §Candados; incluye aceptar que raza y etiqueta de paseos queden en 4,26 y 4,36 en light, o sustituirlas por `text-foreground`)
-- [ ] D1 cerrada: ____ (recomendada: padding lateral 24 hasta C13, hueco hero a contenido de 14, fila de Pingo 8 px más estrecha por lado)
-- [ ] D2 cerrada: ____ (recomendada: hero sin foto con el blobatar centrado y sin recortar, `bg-default` en las bandas)
-- [ ] D3 cerrada: ____ (recomendada: los no seleccionados muestran la letra del canvas en un círculo de vidrio, no la foto)
-- [ ] D4 cerrada: ____ (recomendada: 330 de alto, el hero se desplaza con el contenido, `paddingBottom` sin cambios)
-- [ ] D5 cerrada: ____ (recomendada: la cifra destacada sigue siendo el recuento de paseos de hoy)
+- [x] Aprobado por humano (fecha: 2026-10-21) ← gate obligatorio antes de implementar
+- [x] Enmienda #195 aprobada por humano (precondición de R20: sin ella no se revierte ningún candado de §Candados; incluye aceptar que raza y etiqueta de paseos queden en 4,26 y 4,36 en light, o sustituirlas por `text-foreground`)
+- [x] D1 cerrada: aceptada la recomendada (padding lateral 24 hasta C13, hueco hero a contenido de 14, fila de Pingo 8 px más estrecha por lado)
+- [x] D2 cerrada: aceptada la recomendada (hero sin foto con el blobatar centrado y sin recortar, `bg-default` en las bandas)
+- [x] D3 cerrada: aceptada la recomendada (los no seleccionados muestran la letra del canvas en un círculo de vidrio, no la foto)
+- [x] D4 cerrada: aceptada la recomendada (330 de alto, el hero se desplaza con el contenido, `paddingBottom` sin cambios)
+- [x] D5 cerrada: aceptada la recomendada (la cifra destacada sigue siendo el recuento de paseos de hoy)
 - [ ] Smoke de R21 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
+
+Firma del gate: página Notion «#195 mobile-home-photo-hero-canvas», `Estado del gate` = Aprobado, editada por última vez 2026-10-21T21:37:07.943Z. Las casillas de D1 a D5 y la de la enmienda estaban marcadas en esa página; D1 a D5 se cierran con el defecto propuesto en cada fila de §Decisiones humanas pendientes.

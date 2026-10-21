@@ -1,6 +1,6 @@
 ---
 feature: "mobile-home-photo-hero-canvas"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [mobile, ui, spec]
 ---
 
