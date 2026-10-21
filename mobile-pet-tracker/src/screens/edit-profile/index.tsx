@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { router } from 'expo-router';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { Button, Input, Label, Skeleton, TextField } from 'heroui-native';
 import { useContext, useState } from 'react';
@@ -6,7 +7,7 @@ import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { userKeys } from '../../api/query-keys';
-import { getMe, type ProfileResponse } from '../../api/users';
+import { getMe, updateMe, type ProfileResponse, type UpdateProfileInput } from '../../api/users';
 import { FieldErrorMessage } from '../../components/field-error-message';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
@@ -47,6 +48,9 @@ export function EditProfileScreen() {
 }
 
 function EditProfileForm({ me }: { me: ProfileResponse }) {
+  const baseUrl = process.env.EXPO_PUBLIC_API_URL;
+  const { token } = useAuth();
+  const queryClient = useQueryClient();
   const chunkyLip = useChunkyLip();
   const t = useTranslate();
   const [firstName, setFirstName] = useState(me.firstName);
@@ -55,10 +59,34 @@ function EditProfileForm({ me }: { me: ProfileResponse }) {
   const [country, setCountry] = useState(me.country);
   const [fieldErrors, setFieldErrors] = useState<FieldIssues<keyof ProfileValues>>({});
 
+  const [submitting, setSubmitting] = useState(false);
+
   async function handleSubmit() {
+    if (submitting) return;
     const issues = validateProfile({ firstName, lastName, phone, country });
     setFieldErrors(issues);
     if (Object.keys(issues).length > 0) return;
+
+    const changes: UpdateProfileInput = {};
+    if (firstName.trim() !== me.firstName) changes.firstName = firstName.trim();
+    if (lastName.trim() !== me.lastName) changes.lastName = lastName.trim();
+    if (phone.trim() !== me.phone) changes.phone = phone.trim();
+    if (country !== me.country) changes.country = country;
+    if (Object.keys(changes).length === 0) {
+      router.back();
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const result = await updateMe(baseUrl, token ?? '', changes);
+      if (result.kind === 'ok') {
+        queryClient.setQueryData(userKeys.me(), { kind: 'ok', me: result.me });
+        router.back();
+      }
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -83,7 +111,7 @@ function EditProfileForm({ me }: { me: ProfileResponse }) {
         <Input testID="edit-profile-country" className="h-13 rounded-xl bg-default" value={country} onChangeText={(value) => setCountry(value.toUpperCase())} autoCapitalize="characters" maxLength={2} />
         <FieldErrorMessage testID="edit-profile-country" issue={fieldErrors.country} />
       </TextField>
-      <Button testID="edit-profile-save" className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary} onPress={() => void handleSubmit()}>
+      <Button testID="edit-profile-save" className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary} isDisabled={submitting} onPress={() => void handleSubmit()}>
         <Text className="text-17 font-extrabold text-accent-foreground">{t('editProfile.save')}</Text>
       </Button>
     </View>
