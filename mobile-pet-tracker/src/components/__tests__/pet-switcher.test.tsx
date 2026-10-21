@@ -160,6 +160,22 @@ describe('#173 R4: variante avatars', () => {
     expect(screen.queryByTestId('pet-avatar-fallback-pet-2')).toBeNull();
   });
 
+  it('#184 R3: la foto usa size 40 y la cacheKey de cada mascota', async () => {
+    await renderAvatars([
+      makePet({ id: 'pet-1', name: 'Luna', photoUrl: 'http://example.test/luna.jpg' }),
+      makePet({ id: 'pet-2', name: 'Milo', photoUrl: 'http://example.test/milo.jpg' }),
+    ]);
+
+    expect(screen.getByTestId('pet-avatar-image-pet-1').props.source).toEqual([
+      { uri: 'http://example.test/luna.jpg', cacheKey: 'pet-1' },
+    ]);
+    expect(screen.getByTestId('pet-avatar-image-pet-2').props.source).toEqual([
+      { uri: 'http://example.test/milo.jpg', cacheKey: 'pet-2' },
+    ]);
+    expect(screen.getByTestId('pet-avatar-image-pet-1').props.style).toEqual({ width: 40, height: 40, borderRadius: 20 });
+    expect(screen.getByTestId('pet-avatar-image-pet-2').props.style).toEqual({ width: 40, height: 40, borderRadius: 20 });
+  });
+
   it('cada chip tiene un avatar y cada avatar un único hijo', async () => {
     const pets = [makePet(), makePet({ id: 'pet-2', photoUrl: 'http://example.test/milo.jpg' })];
     await renderAvatars(pets);
