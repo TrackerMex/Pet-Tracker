@@ -489,13 +489,13 @@ describe('R6: home carga pets y selecciona', () => {
     expect(screen.getByTestId('home-loading')).toBeVisible();
   });
 
-  it('pads the content below the status bar with the top safe-area inset', async () => {
+  it('pads the content below the status bar with the top safe-area inset (enmendado por #195 R15)', async () => {
     mockListPets.mockReturnValue(pending<PetsState>());
 
     await renderHome();
 
     expect(screen.getByTestId('screen-home').props.contentContainerStyle).toEqual({
-      gap: 16,
+      gap: 14,
       paddingBottom: 120,
     });
     expect(screen.getByTestId('home-states').props.style).toEqual({
