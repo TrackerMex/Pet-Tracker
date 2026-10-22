@@ -14,6 +14,8 @@ tags: [mobile, ui, spec]
 > **Enmienda A1 (2026-10-21).** Solo cambian los bloques R14 y R16, las notas del handoff que hablan de `toBeVisible` y de los mocks de movimiento, y dos filas de «Cuentas a re-medir». El orden global, los demás R y sus cifras no se tocan. Motivo y mecanismo: [[design]] §Hechos medidos H1.
 >
 > **Enmienda A2 (2026-10-22).** Solo cambian el bloque R14 (paso (1b), mutación (f) y las cuentas de 5 a 6 y de 11 a 12), la línea de test del bloque R2 y dos filas de «Cuentas a re-medir». Motivo: [[design]] §Hechos medidos H2.
+>
+> **Enmienda A3 (2026-10-22).** Solo cambian el bloque R15 (paso (1b), el verde, sus mutaciones) y una fila de «Cuentas a re-medir». El orden global, los demás R y sus cifras no se tocan. Motivo: [[design]] §Hechos medidos H3.
 
 ## Orden recomendado
 
@@ -73,6 +75,8 @@ Cada cifra es la base medida en [[requirements]] §Base medida más el delta que
 | `grep -c "(enmendado por #195 R14)" src/components/__tests__/pet-hero-header.test.tsx` | 0 | 6 (una por título: 5 de A1 y el `it` de R2 de A2; un comentario con la misma cadena la inflaría) |
 | `grep -c "(enmendado por #195 R14)" src/screens/home/index.test.tsx` | 0 | 6 (idem; A2 no añade ninguna en HOME) |
 | `grep -c "duration === 500" src/components/__tests__/pet-hero-header.test.tsx` | 0 | 1 (el filtro de la fila 12 de A2; los demás 500 del fichero se escriben `duration: 500`) |
+| `grep -c "(enmendado por #195 R15)" src/screens/home/index.test.tsx` | 0 | 2 (el `it` de `R5: Home usa el hero compartido`, enmendado en el commit de test de R15, y el de R6 de la fila 13 de A3; un comentario con la misma cadena la inflaría) |
+| `grep -c "(enmendado por #195 R15)" src/components/__tests__/pet-hero-header.test.tsx` | 0 | 0 (A3 no toca HERO) |
 | `grep -c "StyleSheet" src/screens/home/index.test.tsx` | 0 | 0 |
 
 Un `grep -c` cuenta líneas, no apariciones. Si una cuenta de la base ya no coincide con el árbol al empezar (otra feature mergeó entre medias), se anota la deriva y se avisa al leader antes de seguir.
@@ -211,9 +215,22 @@ La mutación (e) se hace **con el verde ya hecho** y es la sonda de la causa: si
 
 ## R15 — Hueco de 14 y scroll
 
-- [ ] (1) Escribir test que falla para R15 (HOME `#195 R15`: `home-content` en 24 y 16; el hero precede a `home-content`). Enmienda: `R5: Home usa el hero compartido › conserva gap y paddingBottom` (14 y 120).
-- [ ] (2) Implementación mínima que lo pasa.
-- [ ] (3) Refactor con tests verdes.
+Ampliado por la Enmienda A3: rojo / enmienda de la fila 13 / verde / mutación. Fuente de verdad de lo que se afirma: [[requirements]] R15 y la fila 13 de §Candados de visibilidad y de forma de style; medida en [[design]] H3.
+
+- [ ] (1) Escribir test que falla para R15 (HOME `#195 R15`: `home-content` en 24 y 16; el hero precede a `home-content`; el hueco de 14 también en la rama de estado sin hero, con `home-states` en su `gap` de 16). Enmienda: `R5: Home usa el hero compartido › conserva gap y paddingBottom` (14 y 120).
+- [ ] (1b) **Enmienda A3** (fila 13 de [[requirements]] §Candados de visibilidad y de forma de style), en un commit `test(mobile): … (R15)` **aparte**, posterior al commit de test del paso (1) (que no se reescribe) y **anterior** al verde. En HOME, `R6: home carga pets y selecciona › pads the content below the status bar with the top safe-area inset`: la primera aserción pasa a `expect(screen.getByTestId('screen-home').props.contentContainerStyle).toEqual({ gap: 14, paddingBottom: 120 })` (el 14 y el 120 como literales del test, escrita como hoy, en varias líneas) y el título gana el sufijo `(enmendado por #195 R15)` **a continuación** del texto actual. **No se toca ninguna otra línea del `it`**: la aserción de `home-states` (`{ paddingHorizontal: 24, paddingTop: 52, gap: 16 }`) se queda como está. Este `it` **nace rojo** (la producción sigue en `gap: 16`): lo anota el implementer en `progress/` con `Expected gap: 14` / `Received gap: 16`. Con la producción aún en 16, los rojos esperados de HOME son exactamente cuatro, los `it` que afirman `gap: 14`: el de R5 enmendado, el de R6 de esta fila y los dos de `#195 R15`; ningún otro.
+- [ ] (2) **Verde**: implementación mínima. En `src/screens/home/index.tsx`, el `gap` del `contentContainerStyle` de `screen-home` pasa de 16 a 14 (una línea); `paddingBottom: insets.bottom + 96` no cambia, y ni `home-content` ni `home-states` cambian su `gap` interno de 16 ni sus paddings. Si con el verde algún otro `it` de HOME se pone rojo, es una regresión: se arregla el componente (no se condiciona el `gap` por rama) y se avisa al leader, porque habría un candado más que la spec no nombra.
+- [ ] (3) **Refactor** con HOME completo en verde.
+
+**Mutaciones plantadas, cada una vista en rojo y revertida** (anotadas en `progress/impl_…` con el nombre del `it` que se puso rojo), todas con el verde ya hecho:
+
+| # | Defecto plantado | Rojo esperado | Debe seguir verde |
+|---|---|---|---|
+| a | En el `it` de R6 se vuelve a escribir `gap: 16` en la referencia de `screen-home` (el defecto está en el test, no en producción) | ese `it`, con `Expected gap: 16` y `Received gap: 14`: demuestra que el fallo es real y que la enmienda hacía falta | el resto de HOME |
+| b | En producción, el `gap` del `contentContainerStyle` de `screen-home` vuelve a 16 | los cuatro `it` de la lista del paso (1b) | el resto de HOME |
+| c | En producción, el `gap` interno de `home-states` pasa de 16 a 14 (R15 solo toca el del scroll) | el `it` de R6 de la fila 13 (su bloque de `home-states`, el que la enmienda no toca) y el segundo `it` de `#195 R15`: demuestra que la parte que no cambia sigue mirando | el de R5 y el primero de `#195 R15` |
+
+La mutación (a) es la sonda de la causa y la (c) la de la zona que la enmienda deja intacta: un `toEqual` de `home-states` que no se pusiera rojo con (c) estaría ciego. Si (a) no se pone roja, la premisa de [[design]] H3 no se cumple en el árbol y hay que parar y avisar al leader.
 
 ## R16 — Burbuja de Pingo y `pop`
 
