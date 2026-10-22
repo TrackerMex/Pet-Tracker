@@ -198,9 +198,9 @@ describe('R1: PetHeroHeader es el único hero compartido', () => {
   });
 
   it('exporta las constantes de dimensión del hero (enmendado por #195 R1)', () => {
-    expect(PET_HERO_MEDIA_HEIGHT).toBe(330);
-    expect(PET_HERO_FADE_HEIGHT).toBe(160);
-    expect(PET_HERO_SCRIM_HEIGHT).toBe(130);
+    expect(PET_HERO_MEDIA_HEIGHT).toBe(430);
+    expect(PET_HERO_FADE_HEIGHT).toBe(100);
+    expect(PET_HERO_SCRIM_HEIGHT).toBe(90);
   });
 
   it('no importa el selector de mascota ni la capa de API', () => {
@@ -286,7 +286,7 @@ describe('R3: el texto del hero va sobre fondo opaco', () => {
     const top = screen.getByTestId('pet-hero-scrim-top').props.style;
 
     expect(bottom.experimental_backgroundImage).toMatch(
-      /^linear-gradient\(to bottom, #[0-9A-Fa-f]{6}00 0%, #[0-9A-Fa-f]{6}59 35%, #[0-9A-Fa-f]{6}D9 65%, #[0-9A-Fa-f]{6} 100%\)$/,
+      /^linear-gradient\(to bottom, #[0-9A-Fa-f]{6}00 0%, #[0-9A-Fa-f]{6}59 24%, #[0-9A-Fa-f]{6}D9 44%, #[0-9A-Fa-f]{6} 100%\)$/,
     );
     expect(top.experimental_backgroundImage).toMatch(
       /^linear-gradient\(to bottom, #[0-9A-Fa-f]{6}80 0%, #[0-9A-Fa-f]{6}00 100%\)$/,
@@ -569,13 +569,13 @@ describe('#195 R8: anillo de estado sustituye el pulso de opacidad', () => {
 describe('#127 R2: el skeleton del hero lleva su receta en el árbol', () => {
   afterEach(() => cleanup());
 
-  it('pinta pet-hero-skeleton con la clase w-full sin radio y el alto de 330 como único estilo (enmendado por #195 R1)', async () => {
+  it('pinta pet-hero-skeleton con la clase w-full sin radio y el alto de 430 como único estilo (enmendado por #195 R1)', async () => {
     await renderHero(<PetHeroHeader pet={null} variant="bleed" />);
 
     const skeleton = screen.getByTestId('pet-hero-skeleton');
 
     expect(skeleton.props.className).toBe('w-full');
-    expect(skeleton.props.style).toStrictEqual({ height: 330 });
+    expect(skeleton.props.style).toStrictEqual({ height: 430 });
   });
 });
 
@@ -592,7 +592,7 @@ describe('#195 R4: capa de oscurecimiento', () => {
 });
 
 
-describe('#195 R1: frame de 330 y raíz estable', () => {
+describe('#195 R1: frame de 430 y raíz estable', () => {
   afterEach(() => cleanup());
   it.each([
     ['bleed', false, false], ['bleed', true, true],
@@ -604,7 +604,7 @@ describe('#195 R1: frame de 330 y raíz estable', () => {
     const root = screen.getByTestId('pet-hero');
     const frame = screen.getByTestId('pet-hero-frame');
     expect(root.children).toEqual([frame]);
-    expect(frame.props.style).toEqual({ height: 330 });
+    expect(frame.props.style).toEqual({ height: 430 });
     expect(root.props.style).toEqual({ borderCurve: 'continuous' });
     expect(root.props.className).toBe(variant === 'card'
       ? 'overflow-hidden rounded-card bg-default' : 'overflow-hidden bg-default');
@@ -624,7 +624,7 @@ describe('#195 R2: foto alineada arriba y fundido por identidad', () => {
     const media = within(photo).getByTestId('pet-hero-media');
     expect(media.props.contentPosition).toEqual({ top: 0, left: '50%' });
     expect(media.props.source).toEqual([{ uri: 'http://example.test/luna.jpg', cacheKey: 'pet-1' }]);
-    expect(StyleSheet.flatten(media.props.style)).toEqual({ width: '100%', height: 330 });
+    expect(StyleSheet.flatten(media.props.style)).toEqual({ width: '100%', height: 430 });
   });
   it('funde al llegar la mascota y al cambiar su id, sin repetir por nombre (enmendado por #195 R14)', async () => {
     const view = await renderHero(<PetHeroHeader pet={null} />);
@@ -653,8 +653,8 @@ describe('#195 R3: degradados exactos sobre la fotografía', () => {
     const bottom = screen.getByTestId('pet-hero-fade-bottom');
     expect(top.props.className).toBe('absolute inset-x-0 top-0');
     expect(bottom.props.className).toBe('absolute inset-x-0 bottom-0');
-    expect(top.props.style).toEqual({ height: 130, experimental_backgroundImage: 'linear-gradient(to bottom, #0D111780 0%, #0D111700 100%)' });
-    expect(bottom.props.style).toEqual({ height: 160, experimental_backgroundImage: 'linear-gradient(to bottom, #FFFFFF00 0%, #FFFFFF59 35%, #FFFFFFD9 65%, #FFFFFF 100%)' });
+    expect(top.props.style).toEqual({ height: 90, experimental_backgroundImage: 'linear-gradient(to bottom, #0D111780 0%, #0D111700 100%)' });
+    expect(bottom.props.style).toEqual({ height: 100, experimental_backgroundImage: 'linear-gradient(to bottom, #FFFFFF00 0%, #FFFFFF59 24%, #FFFFFFD9 44%, #FFFFFF 100%)' });
     expect(top.props.pointerEvents).toBe('none');
     expect(bottom.props.pointerEvents).toBe('none');
     expect(screen.queryByTestId('pet-hero-fade-top')).toBeNull();
@@ -802,7 +802,7 @@ describe('#195 R18: estados conservados del hero', () => {
     expect(skeleton).toBeVisible();
     expect(skeleton.props.className).toBe('w-full');
     expect(skeleton.props.className).not.toMatch(/\brounded-/);
-    expect(StyleSheet.flatten(skeleton.props.style)).toEqual({ height: 330 });
+    expect(StyleSheet.flatten(skeleton.props.style)).toEqual({ height: 430 });
     expect(screen.getByTestId('pet-hero-photo').children).toEqual([skeleton]);
   });
 
@@ -812,7 +812,7 @@ describe('#195 R18: estados conservados del hero', () => {
     expect(media).toBeOnTheScreen();
     expect(media.props.xml).toBe(blobatar('Luna'));
     expect(media.props.width).toBe('100%');
-    expect(media.props.height).toBe(330);
+    expect(media.props.height).toBe(430);
     expect(screen.getByTestId('pet-hero-dim', { includeHiddenElements: true })).toBeOnTheScreen();
     expect(screen.getByTestId('pet-hero-fade-bottom', { includeHiddenElements: true })).toBeOnTheScreen();
     expect(screen.getByTestId('pet-hero-scrim-top', { includeHiddenElements: true })).toBeOnTheScreen();
