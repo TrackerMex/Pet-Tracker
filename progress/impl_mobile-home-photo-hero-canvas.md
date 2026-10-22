@@ -443,3 +443,146 @@ index 8397b321..c7d74c66 100644
 El primer intento de commit correctivo no se ejecutó: `git diff --check` detectó espacios finales en las líneas de contexto del diff pegado a este reporte. Se normalizaron solo esos espacios de la sección nueva y se repite el commit con rutas explícitas.
 
 Commit correctivo confirmado: `25d5f984` — `test(mobile): traverse host children for hero entrance guard (R14)`; `Tests: 5 failed, 55 passed, 60 total` sobre el contenido exacto del commit sin la candidata. No hay commit verde de R14. `42f108dd` es únicamente el primer commit rojo.
+
+## Reanudación con Enmienda A2 — 2026-10-22
+
+- Primer comando ejecutado exactamente como se pidió: ruta `/home/claude/sites/Pet-Tracker-wt-195`, branch `feature/195-mobile-home-photo-hero-canvas`. HEAD inicial `13c32016`; A2 firmada en `ebc372d0`. Árbol inicial limpio.
+- Leídos enteros, en orden: los cuatro handoffs, requirements, design, tasks y traceability. Mandan el adendo 3 y las Enmiendas A1/A2 firmadas. No se repiten las sondas ya medidas ni la mutación ALERTS resuelta.
+- Skills cargadas: `building-native-ui`, `expo-tailwind-setup`, `appllama-app-design-skill`, `animate-expo` (estas dos en `.agents/skills/`) y `ponytail`. No disponibles según catálogo/handoff: `expo-overview`, `expo-animation`, `expo-router`, `expo-design-system`; no se buscan. Sin MCP Appllama. No se modifica la configuración de estilos: carta/spec prevalecen sobre los ejemplos de skills. Smoke Android R21 del humano.
+- Todas las anclas del adendo 3 coinciden: HERO/HOME visible 5/73, presencia 5/8, sufijos R14 5/6 y R16 0/0; filtro 500 ausente; HOME cadena prohibida 0; HEROMOT existe, BP ausente; producción sin withDelay/slotProgress/captionProgress. Pgrep de Jest e init vacíos antes de la corrida.
+- Paso (1b): solo título y primera aserción del it de R2, con filtro literal `call[1]?.duration === 500`; no se toca ninguna otra línea. Nace verde; también nacieron verdes las enmiendas A1 de mera presencia. Las mutaciones (f) y (e), respectivamente, demostrarán su valor tras el verde.
+
+- Paso (1b), commit `c3c51cd6` — `test(mobile): isolate initial photo fade counter by duration (R14)`. Corrida focalizada: `Tests: 57 skipped, 1 passed, 58 total`, exit 0. Diff exacto: dos líneas sustituidas; sufijos HERO/HOME pasan a 6/6 y filtro a 1. Se reaplica la candidata documentada sin cambios de valores.
+- Verde R14: `Tests: 318 passed, 318 total`, HERO + HEROMOT + HOME, 3 suites, exit 0. Las aserciones intactas de R2 `toHaveBeenCalledTimes(1)` tras cambiar id y `not.toHaveBeenCalled()` tras cambiar solo nombre PASAN; el efecto de entrada no se redispara. HEROMOT confirma lo ya medido, sin repetir sondas ni modificar tiempos. Ningún it anterior rojo; `pet-hero-media` conserva su visibilidad en HOME.
+- La primera guarda impidió correr Jest mientras había procesos del worktree 189. Se esperó a que ambos pgrep quedaran vacíos; no se ejecutaron corridas concurrentes por nuestra parte.
+
+### R14 — commit verde y mutaciones A2
+
+Commit verde: `80d621e9` — `feat(mobile): animate hero slot and caption on mount (R14)`. Medido antes de commit: `Tests: 318 passed, 318 total`.
+
+Cada mutación se plantó sola, se ejecutaron HERO + HEROMOT completos y se restauró el contenido en `finally`; exit Jest 1 en las seis:
+
+| Mutación | Defecto | It rojo | Tests |
+|---|---|---|---|
+| a | `slotStyle.opacity` inicial 1, desplazamiento aún 14 | HEROMOT `el slot sube en 400 ms y el pie espera 80 ms antes de subir` (inicio); HERO R5 `usa inset superior más 12 y laterales de 16 sin fondo ni padding` | `Tests: 2 failed, 58 passed, 60 total` |
+| b | progreso inicial del slot 0 también con reduce motion | HERO R14 `con reduce motion nace final sin temporizadores y sus descendientes son visibles` (estilo inicial: 0/14 en lugar de 1/0) | `Tests: 1 failed, 59 passed, 60 total` |
+| c | retraso del pie 140 ms | HERO R14 `anima el slot sin retraso y el pie con un único retraso de 80 ms`; HEROMOT `el slot sube…` en el final del pie a 496 ms (0.979593/0.285695 en vez de 1/0; el slot llegó a su final) | `Tests: 2 failed, 58 passed, 60 total` |
+| d | foto con opacidad inicial 1 ya con mascota | HEROMOT `la foto empieza en cero y termina su fundido a los 516 ms` | `Tests: 1 failed, 59 passed, 60 total` |
+| e | `slot-child` vuelve a `toBeVisible()` en R3 | HERO R3 `el slot flota sin fondo ni padding (enmendado por #195 R5) (enmendado por #195 R14)` — `Received instance is not visible` | `Tests: 1 failed, 59 passed, 60 total` |
+| f | quitar `!petId` de la guarda del fundido | HERO R2 `funde al llegar la mascota y al cambiar su id, sin repetir por nombre (enmendado por #195 R14)` — filtro recibe 1 llamada `{ duration: 500 }`, espera 0 | `Tests: 1 failed, 59 passed, 60 total` |
+
+HERO R14 de reduce motion pasó en a/c/d/e/f; HEROMOT pasó completo en b/e/f; HERO R14 pasó completo en f. La primera tentativa del script de (e) buscó la línea en todo HERO y encontró dos copias (R3 y R8); abortó su propia aserción antes de escribir o lanzar Jest. Corregido el script acotándolo al título exacto prescrito de R3, sin tocar R8. No es deriva del ancla de la spec.
+
+Mutaciones e/f confirman respectivamente H1 y que el filtro de A2 no está ciego. `git diff` de móvil vacío tras revertir las seis. R14 pasa a verificación agregada antes de iniciar R9.
+- R14 tras las seis reversiones, guardas agregadas completas del handoff: `Tests: 750 passed, 750 total`; 21 suites, snapshot 1/1, exit 0. R14 terminado sin refactor adicional. No se cumplen condiciones de parada. Búsqueda de selectores por regex antes del punto de R9: además de SW/food/health aparecen Home (escenario sin online) y pairing (sin selector); no se editan.
+
+### R9 — avatar y punto
+
+- `ba1a0f46` — `test(mobile): lock selected glass avatar and online dot (R9)`: `Tests: 3 failed, 10 passed, 13 total` (clase antigua y punto ausente).
+- `a9af1117` — `feat(mobile): add selected glass avatar and online dot (R9)`: `Tests: 13 passed, 13 total`. Cinco tests nuevos; default/avatars intactos, cardinalidad por hijos y decisiones con within.
+- Mutación punto también en no seleccionado: rojo en `solo el seleccionado tiene punto cuando selectedOnline es true`, `Tests: 1 failed, 12 passed, 13 total`, exit 1; revertida. Se sigue con R11 solo GC.
+
+### R11 — primera tanda, GlassCircle
+
+- `22fdc49d` — `test(mobile): define flat glass circle behavior (R11)`: rojo por módulo de producción aún inexistente, `Tests: 0 total`, 1 suite fallida.
+- Verde GC: `Tests: 2 passed, 2 total`, raíz/receta exactas, accesibilidad, hijo único, ausencia de desenfoque, evento real responderGrant para la opacidad pulsada .8 y opacidad inicial 1. Commit de producción registrado en la tabla final; se continúa con R10 antes de integrar Inicio.
+
+### R10 — fila del selector
+
+- `206a5f50` — `test(mobile): lock glass switcher row and trailing action (R10)`: `Tests: 1 failed, 14 passed, 15 total`, trailing aún ausente.
+- Corregido un error de API en el test nuevo: RNTL14 no expone `UNSAFE_getAllByType` en screen; se recorre el ancestro host del mismo row hasta el ScrollView horizontal. `a8bf303b` — `test(mobile): inspect rendered scroll ancestors (R10)`; medido otra vez sin candidata: `Tests: 1 failed, 14 passed, 15 total` (trailing ausente).
+- `3ca49df6` — `feat(mobile): render glass switcher row and trailing action (R10)`: `Tests: 17 passed, 17 total` en SW+GC. Default/avatars siguen intactos.
+- Mutación Avatar de HeroUI en no seleccionado: SW R10 `conserva orden, cardinalidad, iniciales y selección desde ambos chips` rojo (hijo extra), `Tests: 1 failed, 14 passed, 15 total`, revertida.
+- GC verde quedó en `2c19841d` — `feat(mobile): add reusable flat glass circle (R11)`.
+
+### R11 — integración de Inicio
+
+- `d759effe` — `test(mobile): lock home glass selector and add pet action (R11)`: `Tests: 5 failed, 256 skipped, 2 passed, 263 total`. Rojos: tres conexiones aún con selector default y dos inventarios entering aún con Avatar. GUARD copy y acción sin mascotas nacen verdes.
+- `7dbcdd48` — `feat(mobile): use glass selector and add pet action on home (R11)`: HOME+SW+GC+GUARD `Tests: 280 passed, 280 total` (4 suites), sin otros it anteriores rojos.
+- Mutación duplicar `t('profile.addPet'`: GUARD `resuelve profile.addPet una vez en Inicio` rojo, `Tests: 1 failed, 1 total`, revertida.
+- Mutación complementaria de R10 tras R11: Avatar de HeroUI en el seleccionado, HOME ambos inventarios #152 R5 rojos por `pet-avatar-fallback-pet-1`, `Tests: 2 failed, 260 skipped, 262 total`, revertida. Primera tentativa de esta mutación tuvo un recorte regex demasiado amplio y produjo JSX inválido (`Tests: 0 total`); no se cuenta como sonda. Restaurada en finally y repetida con tag acotado a la rama seleccionada glass. Producción sin cambios residuales.
+
+### R12 — campana e indicador
+
+- `dd4583d7` — `test(mobile): lock glass bell and alert indicator geometry (R12)`: `Tests: 7 failed, 258 skipped, 1 passed, 266 total` (clase, tipo raíz, icono/tinta e indicador antiguos).
+- `4c9953ab` — `feat(mobile): use glass bell with canvas alert indicator (R12)`: HOME+GC+GUARD `Tests: 268 passed, 268 total`; 3 suites. Pressed #122 R2 intacto pasa. Se mantienen dos hijos de actions, ancla única y rutas sin cast.
+- Mutación duplicar el testID de la campana: GUARD `declara home-alerts-bell una sola vez en Inicio` rojo, `Tests: 1 failed, 1 passed, 2 total`, revertida. Primer script usaba un View flex-1 ambiguo y abortó antes de escribir o lanzar Jest; se acotó a home-hero-actions y se midió correctamente.
+
+
+### R15 — rojo y PARADA obligatoria por otro it anterior
+
+**Estado vigente: PARADO en R15.** R14, R9, R10, R11 y R12 terminados con sus mutaciones. R15 solo tiene el commit de test rojo; R16 a R20 y el cierre siguen pendientes. No se crea `.done`.
+
+- Primer intento de edición de test R15: la búsqueda global de la expectativa de gap encontró dos copias y abortó antes de escribir. La shell continuó y Jest con el filtro aún inexistente saltó toda la suite: `Tests: 264 skipped, 264 total` (0 suites ejecutadas). NO se cuenta como rojo ni como verificación. Se acotó la edición al título R5 autorizado y se repitió.
+- `77da555b` — `test(mobile): lock home hero spacing and scroll layout (R15)`: `Tests: 3 failed, 263 skipped, 266 total` (rojo correcto: expectativa R5 autorizada y dos it nuevos de R15, todos por gap 16 en lugar de 14).
+- Candidata mínima R15: una sola línea de `contentContainerStyle`, gap 16 → 14; ni home-content ni home-states cambian su gap interno de 16 ni sus paddings.
+- HOME completo con candidata: `Tests: 1 failed, 265 passed, 266 total`, exit 1. Los tres rojos intencionales pasan. Único it anterior afectado, intacto:
+
+```text
+R6: home carga pets y selecciona
+  › pads the content below the status bar with the top safe-area inset
+src/screens/home/index.test.tsx:497
+expect(screen.getByTestId('screen-home').props.contentContainerStyle).toEqual({
+  gap: 16,
+  paddingBottom: 120,
+});
+Expected gap: 16
+Received gap: 14
+Tests: 1 failed, 265 passed, 266 total
+```
+
+Ese it monta mascotas pendientes. Requirements R15 exige explícitamente gap 14 también en `home-states`, pero §Candados solo autoriza en R15 `R5: Home usa el hero compartido › conserva gap y paddingBottom…`; no autoriza este it R6. La condición del adendo 3 «tras el verde de R14, otro it anterior distinto del de R2 se pone rojo» obliga a parar. No se enmienda R6 ni se introduce un gap condicional que contradiga R15. Se necesita ampliar la enmienda de la spec antes de reanudar.
+
+Diff exacto medido de la candidata R15 (se retira después de guardarlo aquí; no hay commit verde de R15):
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/home/index.tsx b/mobile-pet-tracker/src/screens/home/index.tsx
+index 130dac45..8c6da2eb 100644
+--- a/mobile-pet-tracker/src/screens/home/index.tsx
++++ b/mobile-pet-tracker/src/screens/home/index.tsx
+@@ -341,7 +341,7 @@ export function HomeScreen() {
+       className="flex-1 bg-background"
+       contentInsetAdjustmentBehavior="automatic"
+       contentContainerStyle={{
+-        gap: 16,
++        gap: 14,
+         paddingBottom: insets.bottom + 96,
+       }}
+     >
+```
+
+### Estado entregado tras la parada en R15
+
+- Candidata R15 retirada después de guardar el diff exacto: producción vuelve al último verde de R12. HEAD `77da555b` conserva los tests rojos de R15 como exige el historial test-primero; no hay commit verde de R15.
+- Comprobación de retirada, solo R15 y el it anterior R6: `Tests: 3 failed, 262 skipped, 1 passed, 266 total`, exit 1. El it antiguo `pads the content below the status bar with the top safe-area inset` vuelve a pasar; únicamente quedan los tres rojos intencionales de R15.
+- Diff sin commit de móvil/specs/docs: vacío. Único fichero modificado sin commit: este reporte, reservado al leader mientras la spec no permita continuar. `traceability.md` se conserva sin tocar para el commit final autorizado tras R20.
+- Inventario `git diff --name-only ab33dfd1..HEAD -- mobile-pet-tracker/ docs/`: 19 ficheros, todos de la lista cerrada (incluye HEROMOT, GC y GUARD; ningún fichero de docs aún). No se tocan arnés, estado, PR, mapas, Perfil, catálogo, dependencias ni lockfile.
+- No se ejecutan cierre global, suite móvil completa, typecheck, lint, graphify ni cuentas finales: la parada es obligatoria antes de completar R15. No se ejecutó `./init.sh` en ningún momento; corresponde al leader. Sin push, PR, merge ni rebase. `.done` no existe.
+- Siguiente paso requiere enmendar la spec para el it R6 citado y autorización humana. Después: verde R15 y R16–R20, cierre completo y lista de R21 para el humano. Las enmiendas A1/A2 están resueltas por las pruebas y mutaciones de R14; esta parada es una incompatibilidad distinta del inventario de candados de R15.
+
+### Tabla vigente R1–R20 (al parar en R15)
+
+| R | Tests | Commit de producción / estado |
+|---|---|---|
+| R1 | HERO `#195 R1` | `bd03f556` |
+| R2 | PA y HERO `#195 R2`; contador A2 validado por mutación f | `626ebc69`; enmienda test `c3c51cd6` |
+| R3 | HERO `#195 R3` | `964aac85` |
+| R4 | CSS y HERO `#195 R4` | `f308ea70` |
+| R5 | HERO `#195 R5` | `016e4749` |
+| R6 | HERO `#195 R6`; inventario tracking-title de ALERTS | `e17c14b3`; nota y mutación ALERTS resueltas en sesión previa |
+| R7 | HERO `#195 R7`; HOME `#73 R9` | `c9e578a9` |
+| R8 | HERO y PR `#195 R8` | `2b71c252` |
+| R9 | SW `#195 R9`: avatar con/sin foto y tres estados selectedOnline | `a9af1117` |
+| R10 | SW `#195 R10`: fila, cardinalidad, iniciales, navegación y trailing | `3ca49df6` |
+| R11 | GC `#195 R11`; HOME `#195 R11` y `#152 R5`; GUARD `#195 R11` | `2c19841d`, `7dbcdd48` |
+| R12 | HOME `#195 R12`, `#78 R10`, `#124 R1`, `#78 R11`; GUARD `#195 R12` | `4c9953ab` |
+| R13 | MOT `#195 R13` | `2908e173` |
+| R14 | HERO y HEROMOT `#195 R14`; doce enmiendas HERO/HOME | `80d621e9`; mutaciones a–f vistas rojas y revertidas |
+| R15 | HOME `#195 R15` y R5 enmendado | Solo rojo `77da555b`; parada por it R6 fuera del inventario |
+| R16 | BP y HOME previstos | Pendiente; no iniciado |
+| R17 | GUARD contraste previsto | Pendiente; no iniciado |
+| R18 | HERO y HOME estados previstos | Pendiente; no iniciado |
+| R19 | GUARD grep-clean previsto | Pendiente; no iniciado |
+| R20 | GUARD y carta previstos | Pendiente; no iniciado |
+
+Todos los commits de esta reanudación usaron `git commit --only` con rutas explícitas; los nuevos ficheros se añadieron con `git add` explícito. El reporte se amplió sin reescribir la evidencia histórica. No se declaró la feature terminada.
