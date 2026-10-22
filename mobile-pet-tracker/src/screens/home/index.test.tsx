@@ -5517,11 +5517,11 @@ describe('#181 R7: Inicio converge al crear la primera mascota', () => {
 describe('#190 R11: la burbuja sigue la receta del canvas', () => {
   beforeEach(setupHomeMotion);
 
-  it('usa View y Text de RN con las clases exactas y un único hijo', async () => {
+  it('usa View y Text de RN con las clases exactas y un único hijo (enmendado por #195 R16)', async () => {
     await renderHome();
     const text = await screen.findByTestId('home-pingo-text');
     const bubble = screen.getByTestId('home-pingo-bubble');
-    expect(bubble.props.className).toBe('flex-1 rounded-tile rounded-br-4 bg-surface px-3.5 py-3 shadow-sm');
+    expect(bubble.props.className).toBe('flex-1 rounded-tile rounded-br-4 border border-border bg-surface-secondary px-3.5 py-3');
     expect(bubble.children).toEqual([text]);
     expect(text.type).toBe('Text');
     expect(text.props.className).toBe('text-15 font-semibold leading-5.25 text-foreground');
@@ -5647,10 +5647,10 @@ describe('#190 R3: la fila alinea burbuja y pose al borde inferior', () => {
   });
 });
 
-describe('#190 R4: Pingo usa su pose decorativa de 64 px', () => {
+describe('#190 R4: Pingo usa su pose decorativa de 56 px', () => {
   beforeEach(setupHomeMotion);
 
-  it('pinta pingo-talk como único hijo directo del envoltorio y sin etiqueta', async () => {
+  it('pinta pingo-talk como único hijo directo del envoltorio y sin etiqueta (enmendado por #195 R16)', async () => {
     await renderHome();
     await screen.findByTestId('home-pingo-text');
     const pose = screen.getByTestId('home-pingo');
@@ -5658,7 +5658,7 @@ describe('#190 R4: Pingo usa su pose decorativa de 64 px', () => {
     expect(pose.props.source).toEqual([
       expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
     ]);
-    expect(pose.props.style).toEqual({ width: 64, height: 64 });
+    expect(pose.props.style).toEqual({ width: 56, height: 56 });
     expect(pose.props.accessibilityLabel).toBeUndefined();
   });
 });
@@ -5738,7 +5738,7 @@ describe('#190 R10: la frase usa los datos de Inicio y reacciona al idioma', () 
 describe('#190 R7: reduce motion conserva solo la entrada sin desplazamiento', () => {
   beforeEach(setupHomeMotion);
 
-  it('parte de translateY cero, conserva el fundido y no añade escala a la burbuja', async () => {
+  it('parte de translateY cero, conserva el fundido y no añade escala a la burbuja (enmendado por #195 R16)', async () => {
     mockUseReducedMotion.mockReturnValue(true);
     await renderHome();
     await screen.findByTestId('home-pingo-text');
@@ -5753,7 +5753,9 @@ describe('#190 R7: reduce motion conserva solo la entrada sin desplazamiento', (
     expect(jest.mocked(withSpring).mock.calls.map(([value]) => value)).toEqual([0]);
     const bubble = screen.getByTestId('home-pingo-bubble');
     expect(bubble.props.entering).toBeUndefined();
-    expect(bubble.props.style).toEqual({ borderCurve: 'continuous' });
+    const styles = [bubble.props.style].flat(Infinity);
+    expect(styles).toContainEqual({ borderCurve: 'continuous' });
+    expect(styles).toContainEqual({ opacity: 1, transform: [{ scale: 1 }] });
   });
 });
 
