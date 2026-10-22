@@ -626,9 +626,9 @@ describe('#195 R2: foto alineada arriba y fundido por identidad', () => {
     expect(media.props.source).toEqual([{ uri: 'http://example.test/luna.jpg', cacheKey: 'pet-1' }]);
     expect(StyleSheet.flatten(media.props.style)).toEqual({ width: '100%', height: 330 });
   });
-  it('funde al llegar la mascota y al cambiar su id, sin repetir por nombre', async () => {
+  it('funde al llegar la mascota y al cambiar su id, sin repetir por nombre (enmendado por #195 R14)', async () => {
     const view = await renderHero(<PetHeroHeader pet={null} />);
-    expect(mockWithTiming).not.toHaveBeenCalled();
+    expect(mockWithTiming.mock.calls.filter((call) => call[1]?.duration === 500)).toHaveLength(0);
     expect(screen.getByTestId('pet-hero-photo')).toHaveAnimatedStyle({ opacity: 1 }, { shouldMatchAllProps: true });
     await view.rerender(<PetHeroHeader pet={makePet()} />);
     expect(mockWithTiming).toHaveBeenCalledWith(1, expect.objectContaining({ duration: 500, easing: MOTION_CELEBRATION_EASE_OUT.easing, reduceMotion: ReduceMotion.System }));
