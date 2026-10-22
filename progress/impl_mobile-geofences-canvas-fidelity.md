@@ -698,3 +698,1197 @@ No se modifica legibility-classnames ni docs/conventions porque sus guardas no e
 - Traceability contiene las 18 filas completas, tests, hashes y mensajes; documenta los rojos de mutación de R17/R18 y E1/E2/E3. No hay filas pendientes. Commit documental final: `docs(geofences): record E3 closure and R1-R18 traceability`, solo traceability.md y este informe. Las líneas Tests: de los commits de código/tests de esta reanudación constan en E3 y en restauración R18; el commit documental no cambia código ni tests.
 - No se modifica feature_list.json, STATUS.md, current.md, history.md ni el handoff. No se ejecuta init.sh en esta tercera reanudación, no se publica PR, no se hace push/merge ni smoke Android. La revisión, el init y el bookkeeping del leader quedan fuera de este handoff.
 - El árbol se comprueba limpio con `git status --short -- mobile-pet-tracker/ specs/ docs/` tras el commit final. Handoff sin seguimiento y logs ignorados se conservan como exige el leader. El sentinel ignorado progress/impl_mobile-geofences-canvas-fidelity.done se crea como última acción, con una sola línea que apunta a este informe.
+
+## Enmienda E4 — cuarta reanudación (2026-10-22)
+
+**Estado: PARADA antes de implementar, por contradicción entre el candado R19.2 y el orden rojo → verde firmado.** Esta sección describe la cuarta reanudación; el cierre técnico de la cabecera del informe corresponde exclusivamente a R1-R18/E3.
+
+### Identidad, gate y árbol inicial
+
+Primeras órdenes efectivas, antes de lecturas o escrituras:
+
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker-wt-189
+$ git branch --show-current
+feature/189-mobile-geofences-canvas-fidelity
+$ grep -c '^- \[[xX]\] Enmienda E4' specs/mobile-geofences-canvas-fidelity/requirements.md
+1
+```
+
+- H0-E4: `cc175325` (`Approve E4 geofences fidelity amendment`), presente en el historial del HEAD inicial `9daf2703` (`chore(harness): #189 registra el estado de E4 en current.md`), expresamente permitido por el humano. H0 original del diff: `4204530e`.
+- Árbol inicial conforme: únicamente los cuatro ficheros sin seguimiento de progress indicados en el handoff (`explore_189-smoke-hallazgos.md`, `handoff_mobile-geofences-canvas-fidelity.md`, `review_mobile-geofences-canvas-fidelity.md`, `spec_189-E4.md`).
+- Se leyó la CUARTA REANUDACIÓN, requirements §4.4, design/tasks E4 y el informe anterior. La primera extracción con `sed` de §4.4 no devolvió texto porque el encabezado incluye `§`; se corrigió la lectura por contenido antes de cualquier escritura. Las decisiones DE4-1..DE4-5 conservan los valores por defecto cerrados por la firma.
+- Mocks verificados contra fuente: Editor línea 30, `jest.mock('expo-router', () => ({ router: { back: jest.fn() } }));`; Zonas línea 35, equivalente con `push`. Ambos sin `Stack`; no se han modificado.
+
+### Medidas H0-E4
+
+Medición por contenido en el árbol inicial, con Node sobre las fuentes. M11 cuenta ocurrencias (el `grep -o … | wc -l` de requirements), no solo líneas. Todas las bases coinciden con §4.4; al parar no hay delta de producción.
+
+| Medida | Base medida | Delta de esta reanudación | Actual |
+|---|---|---|---|
+| M10, isDisabled Zonas / Editor | 2 / 3 | 0 / 0 | 2 / 3 |
+| M11, KEEP_OPACITY Zonas / Editor / native-styles | 0 / 0 / 0 | 0 / 0 / 0 | 0 / 0 / 0 |
+| M12, HeaderHeightContext Editor | 2 | 0 | 2 |
+| M13, offset headerHeight / offset 0 | 1 / 0 | 0 / 0 | 1 / 0 |
+| M14, contentInsetAdjustmentBehavior Zonas / Editor | 1 / 1 | 0 / 0 | 1 / 1 |
+| M15, Stack.Screen Editor / Zonas | 0 / 0 | 0 / 0 | 0 / 0 |
+| M16, header-layout.ts | no existe | sin cambio | no existe |
+| M17, TRANSPARENT_HEADER_OPTIONS layout / Editor | 0 / 0 | 0 / 0 | 0 / 0 |
+| M18, títulos nativos traducidos | 0 | 0 | 0 |
+| M19, chunkyLip Zonas / Editor / design-drift | 2 / 3 / 0 | 0 / 0 / 0 | 2 / 3 / 0 |
+| export const en native-styles | 2 | 0 | 2 |
+
+No se presentan estas bases como medidas de cierre: los valores finales de E4 todavía no están implementados.
+
+### Bloqueo medido: R19 exige el cambio reservado a R20
+
+`requirements.md` §4.4, líneas 664-669, exige para el candado C de **R19.1/R19.2** que **toda** etiqueta de apertura de `Switch`/`Button` con `isDisabled=` lleve `KEEP_OPACITY`; fija dos etiquetas en Zonas y tres en el Editor, sin excepción de transición.
+
+El orden firmado del mismo fichero, líneas 932-935, y tasks E4 separan:
+
+1. R19: constante, los dos Switch, Eliminar y Guardar del Editor; enmiendas chunky del lado del Editor.
+2. R20: Añadir zona; enmiendas chunky del lado de Zonas.
+
+El handoff exige además que un bloque no empiece hasta que el anterior esté verde. Un barrido AST de las etiquetas actuales confirma exactamente el universo del candado:
+
+| Pantalla y línea | Etiqueta con isDisabled | KEEP_OPACITY actual | Cambio asignado |
+|---|---|---|---|
+| Zonas:136 | Switch geofence-<id>-active | ausente | R19 |
+| Zonas:183 | Button geofences-add | ausente | R20 |
+| Editor:192 | Switch geofence-editor-active | ausente | R19 |
+| Editor:198 | Button geofence-editor-delete | ausente | R19 |
+| Editor:201 | Button geofence-editor-save | ausente | R19 |
+
+Tras los cuatro cambios de elementos autorizados en R19, su candado universal seguiría encontrando `geofences-add` sin `KEEP_OPACITY`: Zonas tendría **1/2** etiquetas conformes y el Editor **3/3**. Por tanto R19 no puede quedar verde antes de R20. Adelantar el cambio de Añadir a R19, exceptuarlo en el barrido, aplazar parte del candado o aceptar una suite roja entre requisitos modificaría el contrato firmado; no se ha aplicado ninguna de esas alternativas.
+
+Se cumple la instrucción expresa del humano: «si […] algo no cuadra con la spec, PARA y reporta; no improvises». Hace falta que el leader concilie por escrito la incorporación del barrido universal con el orden R19 → R20 antes de reanudar. No se ha cambiado la spec ni ninguna casilla.
+
+### Skills, verificaciones y alcance al parar
+
+- Cargadas: `ponytail`, `appllama-app-design-skill` del repo, `building-native-ui` y `expo-tailwind-setup` del cache Expo (`/home/claude/.codex/plugins/cache/openai-curated/expo/11c74d6b/skills/`). Ninguna de las tres skills solicitadas quedó sin encontrar. Se aplican los valores de spec/carta sobre las recomendaciones genéricas; no se instala NativeWind ni se cambia Uniwind.
+- No cargadas ni buscadas, por instrucción: `expo-router`, `expo-overview`, `expo-animation`, `expo-design-system`. `animate-expo` no se recarga: E4 no cambia movimiento. El smoke Android queda al humano; no se invoca el MCP de Appllama.
+- Consultada la documentación versionada exigida por mobile-pet-tracker/AGENTS.md: https://docs.expo.dev/versions/v57.0.0/.
+- Commits E4: ninguno. No se inició R23 ni se plantó un rojo después de detectar el conflicto. No hay líneas `Tests:` nuevas: no se ejecutaron Jest, typecheck ni lint; tampoco graphify ni init.sh. La base de 131 suites / 4398 tests procede del leader, no de una corrida propia de esta reanudación.
+- Sondas P-E4-1, P-E4-2, P-E4-3, P-E4-4, P-E4-5, P-E4-6, P-E4-7, P-E4-8, P-E4-9, P-E4-10, P-E4-11, P-E4-12 y P-E4-13: **no ejecutadas**, por parada previa a la implementación de sus candados. No se afirma que estén verificadas ni que E4 esté cerrada.
+- Candados agregados enmendados: ninguno. consistency-classnames, design-drift y heroui-text-size-merge no se editaron ni ejecutaron. No hubo denegaciones del sandbox.
+- Única edición versionada de esta reanudación: esta sección del informe. Producción, tests, docs de UI, traceability, feature_list, STATUS, current, history y handoff permanecen intactos. No se hace push, PR, merge ni commit documental de cierre con trazabilidad incompleta.
+- El sentinel ignorado `.done` se recrea como última acción con la ruta de este informe; señala la finalización de esta ejecución con **bloqueo**, no la finalización de E4.
+
+### Reanudación tras el concilio
+
+Inicio 2026-10-22. Primeras órdenes: `pwd` → `/home/claude/sites/Pet-Tracker-wt-189`; `git branch --show-current` → `feature/189-mobile-geofences-canvas-fidelity`. Gate E4 = 1; H0-E4 sigue siendo la firma `cc175325`, HEAD de esta reanudación `a07a740c` (aclaración de tasks). Árbol inicial conforme: solo este informe modificado y los cuatro progress sin seguimiento del leader. Se conserva íntegra la parada anterior.
+
+Se leyó QUINTA REANUDACIÓN y la nota entre R19/R20: R23 rojo/verde, R19 rojo, R20 rojo, un verde conjunto R19 R20, luego R21/R22/R24. Las skills ya cargadas siguen vigentes: ponytail, building-native-ui, expo-tailwind-setup y appllama-app-design-skill; las cuatro ausentes prohibidas no se buscan. Sin init.sh, push, PR ni edición de casillas o bookkeeping del leader. Medidas H0-E4 y mocks: mismas bases documentadas arriba, sin cambios de producción entre ambas reanudaciones.
+
+#### R23 — constantes (primer ciclo tras el concilio)
+
+- Rojo `7e47e13a test(mobile): #189 E4 R23 rojo — lock shared header geometry`: módulo header-layout ausente, `Tests: 0 total`, suite fallida por resolución, exactamente el rojo previsto en tasks. Log e4-r23-red.log.
+- Verde `180594ec feat(mobile): #189 E4 R23 centralize header geometry`: seis export const, ventana independiente [34,50]/[62,78], alturas 56/44 y fila 6; `Tests: 21 passed, 21 total`, log e4-r23-green.log. Son 4 casos nuevos (dos instancias de barrido de literales incluidas).
+- Typecheck precedido de `test ! -e .expo/types/router.d.ts`: exit 0 (e4-r23-typecheck.log). Lint sin caché: exit 0, lint-189.log vacío. El commit verde se creó mientras el proceso de lint seguía activo; se esperó y verificó su exit 0 antes de continuar el siguiente bloque. No se altera el resultado ni se afirma que ya hubiese acabado al commitear.
+- Incidencia de lectura: se intentó leer jest.config.*; no existe porque Jest está configurado en package.json. Se corrigió consultando package.json; no ejecutó tests ni cambió archivos.
+
+#### R19 y R20 — rojos separados, verde conjunto autorizado
+
+Rojo R19 `297b9f4b test(mobile): #189 E4 R19 rojo — lock opacity while controls are disabled`, solo cuatro ficheros de tests. C `Tests: 3 failed, 21 passed, 24 total`; F `Tests: 1 failed, 94 passed, 95 total`; E `Tests: 4 failed, 105 passed, 109 total`; chunky `Tests: 4 failed, 72 passed, 76 total`. Fallan las aserciones de opacidad/fuente y las formas nuevas del Editor; sin ReferenceError de helpers. Logs e4-r19-red-{c,f,e,chunky}.log. El barrido C conserva las cinco etiquetas y se deja rojo hasta el verde conjunto, conforme al concilio.
+
+Rojo R20 `eace0652 test(mobile): #189 E4 R20 rojo — lock add-zone opacity and disabled recipe`, solo F y chunky. F `Tests: 9 failed, 87 passed, 96 total` (incluye el rojo previo de R19); chunky `Tests: 5 failed, 71 passed, 76 total` (incluye los cuatro previos). Logs e4-r20-red-{f,chunky}.log. La frase falsa de R7.2 ya está corregida en requirements §3 por el leader (líneas 253-256, enmendado por E4 R20); se conserva y no se edita requirements fuera de la lista cerrada. Los títulos de pruebas de la CTA y sus aserciones ya expresan el cancelador del atenuado.
+
+#### Nueva parada: igualdad exacta del estilo anfitrión de Button (R20.1)
+
+**Estado de esta reanudación: PARADA antes del verde conjunto R19 R20.** Se implementaron sin commitear los literales de producción prescritos por R19/R20: KEEP_OPACITY en native-styles, ambos Switch y los estilos de Eliminar, Guardar y Añadir. No se ha modificado ninguna prop adicional ni se han eliminado isDisabled, clases o feedback.
+
+Validación del intento de verde, con cada suite completa y sola y guardas de procesos vacías:
+
+- C: `Tests: 24 passed, 24 total`; log `progress/e4-r19-r20-green-c.log`.
+- F: `Tests: 3 failed, 93 passed, 96 total`; log `progress/e4-r19-r20-green-f.log`, exit 1. Los únicos fallos son R7 enmendado en el límite en ES/EN y el nuevo R20.1. R19 sobre los dos Switch y las comprobaciones de busy/opacity de Añadir ya pasan.
+- Se detuvo la secuencia al primer resultado inesperado. No se ejecutaron E, chunky ni las tres guardas agregadas sobre este intento de verde; no se presentan como verdes.
+
+La spec exige en R20.1 y en el Test F de R20 que `StyleSheet.flatten(add.props.style)` sea **exactamente** `{ opacity: 1 }`. El literal de producción aplicado es exactamente el exigido:
+
+```tsx
+style={atLimit ? KEEP_OPACITY : [chunkyLip.primary, KEEP_OPACITY]}
+```
+
+Sin embargo, el Button real de HeroUI compone estilos propios antes de la prop: `node_modules/heroui-native/src/components/button/button.tsx:294` usa `[buttonStyleSheet.buttonRoot, style]`; button.styles.ts define `buttonRoot: { borderCurve: 'continuous' }`. PressableFeedback añade además la transformación de escala. El diff medido por Jest en las tres aserciones es:
+
+```diff
+ Object {
++  "borderCurve": "continuous",
+   "opacity": 1,
++  "transform": Array [
++    Object {
++      "scale": 1,
++    },
++  ],
+ }
+```
+
+El estilo aplanado recibido es `{ borderCurve: 'continuous', transform: [{ scale: 1 }], opacity: 1 }`; carece de boxShadow, pero no es el objeto exacto que R20.1 prescribe. No es un ReferenceError ni un fallo del cancelador: la opacidad es 1 y la accesibilidad sigue bloqueada. La excepción documentada para un anfitrión Switch que no expone estilos no cubre esta igualdad exacta de Button. Cambiar a una comparación parcial, filtrar propiedades, sustituir el Button por un mock o alterar la composición de HeroUI relajaría/cambiaría el contrato sin autorización. No se hizo ninguna de esas cosas.
+
+Se para conforme a QUINTA REANUDACIÓN y a la orden del humano de reportar otra contradicción. Hace falta conciliar R20.1/Test F con las propiedades que añade el Button real. No se crea el commit verde conjunto ni se empiezan R21/R22/R24.
+
+#### Medidas y alcance al detener el intento de verde
+
+| Medida | Base + delta = árbol actual (incluye producción sin commit) |
+|---|---|
+| M10, isDisabled Zonas / Editor | 2 + 0 = 2 / 3 + 0 = 3 |
+| M11, KEEP_OPACITY Zonas / Editor / native-styles | 0 + 4 = 4 / 0 + 5 = 5 / 0 + 1 = 1 |
+| M12, HeaderHeightContext Editor | 2 + 0 = 2 (R22 no iniciado) |
+| M13, offset headerHeight / offset 0 | 1 + 0 = 1 / 0 + 0 = 0 |
+| M14, ajuste de inset Zonas / Editor | 1 + 0 = 1 / 1 + 0 = 1 |
+| M15, Stack.Screen Editor / Zonas | 0 + 0 = 0 / 0 + 0 = 0 |
+| M16, header-layout.ts | ausente → presente, 6 export const (R23) |
+| M17, TRANSPARENT_HEADER_OPTIONS layout / Editor | 0 + 0 = 0 / 0 + 0 = 0 |
+| M18, títulos nativos traducidos | 0 + 0 = 0 |
+| M19, chunkyLip Zonas / Editor / design-drift | 2 + 0 = 2 / 3 + 0 = 3 / 0 + 0 = 0 |
+| export const native-styles | 2 + 1 = 3 |
+
+Chunky se enmienda solo en los rojos de R19 y R20: R3.1 reconoce el ternario con KEEP_OPACITY para cada fila; R4.1 reconoce el array neutro solo para Eliminar del Editor; R7.5/R8.1 amplían el reconocimiento de los nuevos estilos sin cambiar los recuentos/ids esperados (un primario en cada pantalla y un neutro del Editor). La validación posterior quedó detenida antes de ejecutar chunky; no se afirma un cierre agregado. R16.1 y la carta todavía no se modifican.
+
+`git diff --name-only a07a740c -- mobile-pet-tracker/ docs/` muestra ocho ficheros, todos de la lista cerrada E4: chunky-cta-canvas-fidelity.test.ts, geofences-canvas-fidelity.test.ts, los dos tests de pantalla, las dos pantallas, header-layout.ts y native-styles.ts. Desde el último commit rojo `eace0652` quedan modificados **solo** los tres ficheros de producción de R19/R20 y este informe; se conservan los cuatro progress sin seguimiento del leader.
+
+Sondas P-E4-1..13: **ninguna ejecutada en esta reanudación**, al detenerse antes del verde conjunto. No se confunde un test rojo por ausencia de implementación con una sonda de mutación. R23 queda verde, pero sus subsondas de P-E4-8 también quedan pendientes. R19/R20 tienen sus dos rojos versionados y producción sin commit; R21/R22/R24 sin iniciar. No se marca E4 cerrada ni se rellena traceability con un verde inexistente.
+
+No se ejecutó suite completa, typecheck posterior al intento conjunto, lint posterior, graphify ni smoke. Typecheck/lint R23 constan arriba. Sin init.sh, denegaciones del sandbox, casillas, cambios en los tres candados agregados protegidos, bookkeeping, push, PR o merge. El .done se recrea como última acción y apunta a este informe de **ejecución detenida**, no de feature terminada.
+
+#### E5 — sexta reanudación (2026-10-22)
+
+HEAD inicial `ae69eee5` (firma humana E5), gate E4 = 1 y E5 = 1, branch y cwd conformes. Leída SEXTA REANUDACIÓN, requirements §4.5, tasks E5 y E4; manda sobre las paradas anteriores. El informe preserva esas paradas como historia, no como estado de esta ejecución. Skills cargadas: ponytail, building-native-ui, expo-tailwind-setup y appllama-app-design-skill (las cuatro encontradas); se consultó https://docs.expo.dev/versions/v57.0.0/ conforme al AGENTS móvil. Los valores de carta/spec prevalecen sobre las sugerencias de las skills; smoke Android al humano y sin MCP Appllama conforme al handoff.
+
+Producción preservada mediante `git diff` en `progress/e5-prod.patch`, sin stash; después `git checkout HEAD --` solo los tres ficheros indicados. Numstat previo: Editor +4/-4, Zonas +3/-2, native-styles +3/-0 (10 inserciones, 6 borrados). Se corrigen exclusivamente las tres igualdades de §4.5, conservando cierre de claves y el resto de aserciones.
+
+- R20 rojo-corrección `3a786a89`: `Tests: 9 failed, 87 passed, 96 total` (e5-r20-red.log), suite completa y sola. Los tres casos de igualdad corregidos reciben `{ borderCurve: 'continuous', transform: [{ scale: 1 }] }`; el diff es únicamente `- opacity: 1` respecto al esperado. Los demás rojos son R19/R20 por el mismo cancelador ausente. Sin fallo por claves de heroui.
+- R19 rojo-corrección `f3aa4094`: `Tests: 4 failed, 105 passed, 109 total` (e5-r19-red.log), suite completa y sola. Guardar vacío recibe las dos claves de heroui correctas y falta únicamente `opacity: 1`; los tres escenarios busy fallan también por `opacity` indefinida.
+- Se restauró `progress/e5-prod.patch` con `git apply`; numstat idéntico al previo: Editor +4/-4, Zonas +3/-2, native-styles +3/-0. `git diff --check` verde. El patch se conserva sin seguimiento; no se usó stash.
+- Validación del verde conjunto antes de la nueva parada: C `Tests: 24 passed, 24 total` (e5-r19-r20-green-c.log); F `Tests: 96 passed, 96 total` (e5-r19-r20-green-f.log). Ambas suites completas, solas, precedidas por las dos guardas pgrep vacías. No se ejecutaron E/chunky/guardas agregadas en esta validación; no se crea el commit verde conjunto con validación incompleta.
+
+#### Nueva parada — ancla de test de R21 (L) distinta del fichero
+
+**Estado actual: PARADA por discrepancia de ancla de la spec, detectada durante la lectura de R21 antes de editarlo.** Se conserva el verde conjunto R19/R20 sin commit y pendiente de completar su validación.
+
+requirements.md §4.4 R21 Test (L), líneas 727-734, y CUARTA REANUDACIÓN prescriben enmendar el `it` «declara pets/[petId]/geofences como undécimo hijo y no singular» y afirman que **su** `toEqual` de opciones cambia de la cabecera opaca a la transparente.
+
+Medida contra `src/app/__tests__/layout.test.tsx`:
+
+- Líneas 458-470: ese `it` existe (sufijo previo de R1.1), pero su único `toEqual` compara `[detail.type, detail.props.name, detail.props.dangerouslySingular]` con `[Stack.Screen, 'pets/[petId]/geofences', undefined]`. No contiene aserción de opciones.
+- Líneas 472-487: otro `it`, «le da la cabecera nativa de #95 R4 con el título de zonas seguras», es el que contiene el `toEqual` de opciones de la base que cita R21 (líneas 479-486).
+
+El nombre/ancla de test y la aserción citados por la spec no pertenecen al mismo `it`. Se cumple la regla expresa «si una cifra o ancla no coincide, PARA» y la orden de esta sexta reanudación «Ante otra contradicción, PARA y repórtala sin relajar ninguna aserción». No se cambia por iniciativa propia el test objetivo, no se traslada ni duplica su aserción y no se altera ninguna de las dos expectativas existentes. Hace falta conciliar el nombre del `it` a enmendar en R21 (L) con el fichero real, preservando la comprobación de posición/singularidad y la igualdad exacta de opciones solicitada.
+
+R21, R22 y R24 sin iniciar; sondas P-E4-1..13 sin ejecutar. No se presenta E4 como cerrada. Traceability permanece intacta, sin un verde conjunto inexistente. No se ejecutó suite global, typecheck, lint, graphify ni smoke durante esta sexta reanudación; tampoco init.sh, push, PR, casillas ni bookkeeping. No hubo denegaciones de sandbox. El sentinel `.done` se recrea como última acción para señalar fin de esta ejecución detenida, no cierre de E4.
+
+#### Séptima reanudación — aclaración de R21 (L), 2026-10-22
+
+Inicio en HEAD `31b7a082`, cwd y branch conformes. SÉPTIMA REANUDACIÓN y tasks §R21 resuelven el ancla anterior: se enmienda únicamente el `it` de opciones «le da la cabecera nativa de #95 R4 con el título de zonas seguras»; el de undécimo hijo y los del Editor permanecen intactos. Estado inicial conservado: tres ficheros de producción R19/R20 e informe modificados, patch E5 y cinco documentos del leader sin seguimiento. Las cuatro skills ya leídas siguen aplicadas: building-native-ui, expo-tailwind-setup, appllama-app-design-skill y ponytail; ninguna solicitada ausente. Sin init.sh/push/PR/casillas/bookkeeping. Se completan primero las verificaciones pendientes del verde conjunto; C/F ya constan arriba y no se han modificado desde entonces.
+
+Incidencia de invocación previa a Jest y sin ficheros tocados: se intentó añadir esta nota a progress/ desde el cwd móvil, donde la ruta no existe; además el pgrep coincidió con el texto de esa misma nota incluido en el comando de shell. Se separa la escritura desde la raíz de la invocación de guardas/Jest. No arrancó Jest ni hubo fallo de código.
+
+#### Nueva parada — consistency-classnames exige el import anterior a R19
+
+**Estado actual: PARADA en la validación restante del verde conjunto R19/R20. No se crea el commit verde.** La aclaración de R21 ya está aceptada y no es el bloqueo de esta ejecución.
+
+Verificaciones completas y solas, cada una precedida por las guardas pgrep vacías:
+
+| Suite | Resultado | Log |
+|---|---|---|
+| Editor (E) | `Tests: 109 passed, 109 total` | e7-r19-r20-green-e.log |
+| chunky-cta-canvas-fidelity | `Tests: 76 passed, 76 total` | e7-r19-r20-green-chunky-cta-canvas-fidelity.log |
+| consistency-classnames | `Tests: 1 failed, 74 passed, 75 total` | e7-r19-r20-green-consistency-classnames.log |
+
+Único fallo: `#189 R9: la hoja del Editor combina esquina continua y flex sin perderlos`, `src/__tests__/consistency-classnames.test.ts:698`. El test exige literalmente:
+
+```ts
+expect(source).toContain("import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';");
+```
+
+El Editor recibe la importación literal prescrita por E4 R19 (requirements §4.4, tabla «Candados agregados», línea 879):
+
+```diff
+-import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';
++import { CONTINUOUS_CORNER, KEEP_OPACITY, TABULAR_NUMS } from '../../theme/native-styles';
+```
+
+Esa misma fila de la spec afirma que las importaciones nuevas no están fijadas por ningún candado de texto y que los únicos imports exactos son los de history. La afirmación contradice el `toContain` real de la línea 698. La regla residual (requirements líneas 891-894 y CUARTA REANUDACIÓN) exige parar si consistency-classnames se pone rojo, con delta esperado cero; además ese fichero está fuera de la lista cerrada E4. Se para ante este resultado: ni se enmienda el candado ni se divide/reordena el import de producción para eludirlo.
+
+En la misma inspección del test aparece también un segundo ancla que R22 deberá conciliar: `consistency-classnames.test.ts:701` exige el literal completo de KeyboardAvoidingView con `keyboardVerticalOffset={headerHeight}`, mientras R22.3 prescribe `{0}` y retirar HeaderHeightContext/useContext. En esta ejecución esa aserción aún no falla (R22 no ha comenzado); se informa de la incompatibilidad textual ya visible en el mismo candado, sin atribuirle una ejecución futura.
+
+Validación detenida antes de design-drift y heroui-text-size-merge; tampoco typecheck/lint, suite completa, graphify ni smoke en esta reanudación. C y F conservan sus verdes 24/24 y 96/96 medidos en la sexta reanudación. No hay nuevos commits; R21/R22/R24 y P-E4-1..13 siguen sin iniciar. Producción R19/R20 conserva exactamente sus tres ficheros WIP; se mantiene el patch E5 sin seguimiento. Traceability intacta hasta resolver este conflicto y completar un verde real. No se ejecuta init.sh/push/PR/merge ni se cambian casillas, feature_list, STATUS, current, history o handoff. No se relaja ninguna aserción. Sin denegaciones del sandbox.
+
+El sentinel ignorado `.done` se recrea como última acción y señala fin de esta ejecución detenida, no cierre de E4.
+
+#### Octava reanudación — Enmienda E6, 2026-10-22
+
+H0-E6: `0babf646`, firma humana E6 verificada (también E4/E5). Cwd y branch `feature/189-mobile-geofences-canvas-fidelity` conformes; se conserva el WIP R19/R20 y los documentos del leader. Skills cargadas: building-native-ui y expo-tailwind-setup (cache oficial Expo 11c74d6b), appllama-app-design-skill del repo y ponytail; ninguna solicitada ausente. Consultada la referencia oficial Expo SDK 57 exigida por mobile/AGENTS.md. La carta y la spec mandan sobre las skills; smoke Android a cargo del humano. Sin init.sh/push/PR/casillas/bookkeeping.
+
+M20 ejecutado en H0: salida completa en `progress/e8-m20-h0-files.log` y `progress/e8-m20-h0-lines.log`. Se revisaron las 62 rutas y las 181 líneas: C1/C2 son los únicos literales incompatibles fuera de la lista E4; las demás coincidencias corresponden a las filas de no-choque de §4.6 (opciones de layout ya en lista, imports/usos de constantes sin variación y expectativas de otras pantallas/componentes). C1 se mueve en commit de test aparte tras demostrar su rojo con producción apartada mediante patch; C2 se reserva al rojo de R22.
+
+C1 rojo demostrado con la producción apartada: `Tests: 1 failed, 74 passed, 75 total` (`e8-c1-red.log`), único fallo en el import exacto. Commit de test separado; restaurado `e5-prod.patch` mediante git apply, numstat idéntico Editor +4/-4, Zonas +3/-2, native-styles +3/-0. Sin stash.
+
+C1 commit `889ed6fa`. Verde conjunto R19/R20 validado: C 24/24 y F 96/96 (sexta reanudación), E 109/109 y chunky 76/76 (séptima; producción idéntica restaurada), consistency 75/75, design-drift 115/115, heroui-text-size-merge 25/25 (octava, logs e8-r19-r20-*). Typecheck exit 0 con guarda `.expo/types/router.d.ts` ausente; lint sin caché exit 0, log vacío. `git diff --check` verde. Incidencia de lectura: se consultó jest.config.js inexistente; la configuración vive en package.json y se leyó allí; no afectó a Jest ni al código. Se crea ahora el único commit verde de R19/R20 (solo sus tres ficheros de producción).
+
+R19/R20 verde `cae47221`. R21 base medida: opciones de #95 R4 con fondo token:background, sin headerTransparent; F inset automático, paddingTop 24, encabezado flex-row sin alto/paddingLeft. R21 rojo enmienda exactamente esos tests, con sufijo E4 R21; posición/singularidad y Editor intactos.
+
+R21 rojo `8fae5abf`: F `Tests: 3 failed, 93 passed, 96 total` (solo inset/métricas y encabezado ES/EN); L `Tests: 1 failed, 27 passed, 28 total` (solo opciones de #95 R4). Logs e8-r21-red-{f,l}. Producción mínima: spread transparente después de headerOptions únicamente en Zonas; contenedor sin ajuste automático y con HEADER_ROW_TOP; fila h-11 con ZONES_TITLE_OFFSET.
+
+R21 verde: F `Tests: 96 passed, 96 total`, L `Tests: 28 passed, 28 total`, C `Tests: 24 passed, 24 total` (logs e8-r21-green-*). M14 Zonas 1→0, Editor sigue 1; M17 layout 0→2; título traducido nativo sigue 0. `git diff --check` verde. Se commitea solo producción.
+
+R22 base: Editor importa HeaderHeightContext/useContext y usa offset headerHeight; mapa contiene directamente title-blur con absolute left-4 top-3; mock expo-router solo contiene router.back. Se conserva Provider=91 como guarda inerte; se amplía el mock con Stack.Screen, tests de las ocho ramas, transición y dos identidades; C2 entra en este rojo, conservando las aserciones de esquina y recuento 2. Selectores regex existentes revisados: title-row no coincide con ninguno.
+
+R21 verde `e82549e3`. R22 rojo E: `Tests: 21 failed, 99 passed, 120 total` (teclado 291 recibido frente a 200, píldora antigua y opciones ausentes); consistency C2: `Tests: 1 failed, 74 passed, 75 total`, falla el literal completo de offset 0 (C1 ya verde). Sin fallos de invocación/mocks. Logs e8-r22-red-*.
+
+R22 rojo `d9077a65` (incluye C2): C `Tests: 1 failed, 24 passed, 25 total`, por HeaderHeightContext. Verde E `Tests: 120 passed, 120 total` (`e8-r22-green-e.log`). La producción declara Stack.Screen como hermano de cada raíz, memoiza opaqueHeader antes de las ramas y conserva el literal de KeyboardAvoidingView en una línea con offset 0. La píldora conserva intensidad/tinte/texto dentro de la nueva fila; las 2 llamadas a t('geofenceEditor.title') siguen intactas.
+
+M20 repetido tras R22: mismas 62 rutas; 181→184 líneas. Diferencias de contenido: C1 (import KEEP_OPACITY), C2 (offset 0) y tres coincidencias del nuevo candado negativo R22.3 en C, todos en las listas E4/E6. Las otras seis diferencias son únicamente números de línea desplazados en layout por R21. No aparece ningún literal ajeno/no clasificado; design-drift/heroui-text-size-merge permanecen a delta 0. Salidas completas e8-m20-r22-{files,lines}.log.
+
+R22 verde completo: E 120/120, C 25/25, consistency 75/75, typecheck exit 0 con guarda (logs e8-r22-*). M12 2→0; M13 1/0→0/1; M15 0/0→2/0; M17 Editor 0→2. Producción en commit verde aparte. R24 base: dos métricas de Zonas con paddingTop 24, sin las tres frases nuevas; nota A11 se insertará después de docs-upload, preservando #185 R10 y todo texto de títulos/R16.3 existente.
+
+R22 verde `b3c16b4c`. R24 rojo C: `Tests: 4 failed, 24 passed, 28 total`, solo métricas antiguas y las tres frases ausentes (e8-r24-red-c.log). Commit de test aparte; edición de carta/conventions sin casillas y con la nota después del bloque que menciona docs-upload.
+
+R24 rojo `a49eb6b0`; verde C `Tests: 28 passed, 28 total`, design-drift `Tests: 115 passed, 115 total`, chunky `Tests: 76 passed, 76 total` (e8-r24-green-*). Ningún candado protegido se enmienda; casillas intactas. Inicia la fase de sondas con restauración exacta de cada fichero tras cada mutación.
+
+Sonda P-E4-1 (c): exit 1; `Tests:       1 failed, 27 passed, 28 total`. Fallos: ● #189 R19: bloqueo sin atenuado en todas las etiquetas › #189 R19.2: geofences cancela la opacidad en todas sus etiquetas con isDisabled. Log `e8-probe-P-E4-1-c.log`. Rojo esperado; fichero restaurado tras la sonda.
+
+Sonda P-E4-2 (c): exit 1; `Tests:       1 failed, 27 passed, 28 total`. Fallos: ● #189 R19: bloqueo sin atenuado en todas las etiquetas › #189 R19.2: geofences cancela la opacidad en todas sus etiquetas con isDisabled. Log `e8-probe-P-E4-2-c.log`. Rojo esperado; fichero restaurado tras la sonda.
+
+Sonda P-E4-3 (f): exit 1; `Tests:       8 failed, 88 passed, 96 total`. Fallos: ● #189 R7: Añadir zona conserva una sola CTA anclada al pie › #189 R7: receta y navegación en es con 0 zonas (enmendado por E4 R20); ● #189 R7: Añadir zona conserva una sola CTA anclada al pie › #189 R7: receta y navegación en es con 4 zonas (enmendado por E4 R20); ● #189 R7: Añadir zona conserva una sola CTA anclada al pie › #189 R7: receta y navegación en es con 5 zonas (enmendado por E4 R20); ● #189 R7: Añadir zona conserva una sola CTA anclada al pie › #189 R7: receta y navegación en en con 0 zonas (enmendado por E4 R20); ● #189 R7: Añadir zona conserva una sola CTA anclada al pie › #189 R7: receta y navegación en en con 4 zonas (enmendado por E4 R20); ● #189 R7: Añadir zona conserva una sola CTA anclada al pie › #189 R7: receta y navegación en en con 5 zonas (enmendado por E4 R20); ● #189 R7: Añadir zona conserva una sola CTA anclada al pie › #189 R7: una escritura conserva la receta primaria sin atenuado (enmendado por E4 R20); ● #189 R20.1: el límite conserva disabled:element-disabled y cancela su opacidad por style. Log `e8-probe-P-E4-3-f.log`. Rojo esperado; fichero restaurado tras la sonda.
+
+Sonda P-E4-3 (chunky): exit 1; `Tests:       3 failed, 73 passed, 76 total`. Fallos: ● #177 R3.1: screens/geofences/index.tsx pinta la receta cta de testID="geofences-add" (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20); ● #177 R7.5: inventario de los tres estilos y el tile (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20); ● #177 R8.1: solo la tabla recibe chunkyLip.primary (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20). Log `e8-probe-P-E4-3-chunky.log`. Rojo esperado; fichero restaurado tras la sonda.
+
+Sonda P-E4-4 (f): exit 1; `Tests:       8 failed, 88 passed, 96 total`. Fallos: ● #189 R7: Añadir zona conserva una sola CTA anclada al pie › #189 R7: receta y navegación en es con 0 zonas (enmendado por E4 R20); ● #189 R7: Añadir zona conserva una sola CTA anclada al pie › #189 R7: receta y navegación en es con 4 zonas (enmendado por E4 R20); ● #189 R7: Añadir zona conserva una sola CTA anclada al pie › #189 R7: receta y navegación en es con 5 zonas (enmendado por E4 R20); ● #189 R7: Añadir zona conserva una sola CTA anclada al pie › #189 R7: receta y navegación en en con 0 zonas (enmendado por E4 R20); ● #189 R7: Añadir zona conserva una sola CTA anclada al pie › #189 R7: receta y navegación en en con 4 zonas (enmendado por E4 R20); ● #189 R7: Añadir zona conserva una sola CTA anclada al pie › #189 R7: receta y navegación en en con 5 zonas (enmendado por E4 R20); ● #189 R7: Añadir zona conserva una sola CTA anclada al pie › #189 R7: una escritura conserva la receta primaria sin atenuado (enmendado por E4 R20); ● #189 R20.1: el límite conserva disabled:element-disabled y cancela su opacidad por style. Log `e8-probe-P-E4-4-f.log`. Rojo esperado; fichero restaurado tras la sonda.
+
+Sonda P-E4-5 (f): exit 1; `Tests:       5 failed, 91 passed, 96 total`. Fallos: ● #146 R12: con el máximo de zonas la lista no ofrece añadir otra › con cinco zonas deshabilita Añadir zona y pinta el aviso del máximo justo antes (enmendado por #189 R3) (enmendado por #189 R6); ● #189 R7: Añadir zona conserva una sola CTA anclada al pie › #189 R7: receta y navegación en es con 5 zonas (enmendado por E4 R20); ● #189 R7: Añadir zona conserva una sola CTA anclada al pie › #189 R7: receta y navegación en en con 5 zonas (enmendado por E4 R20); ● #189 R7: Añadir zona conserva una sola CTA anclada al pie › #189 R7: una escritura conserva la receta primaria sin atenuado (enmendado por E4 R20); ● #189 R20.1: el límite conserva disabled:element-disabled y cancela su opacidad por style. Log `e8-probe-P-E4-5-f.log`. Rojo esperado; fichero restaurado tras la sonda.
+
+Sonda P-E4-6 (l): exit 1; `Tests:       1 failed, 27 passed, 28 total`. Fallos: ● #41 R4: la guarda de RootStack declara las zonas seguras tras el detalle de alerta › le da la cabecera nativa de #95 R4 con el título de zonas seguras (enmendado por E4 R21). Log `e8-probe-P-E4-6-l.log`. Rojo esperado; fichero restaurado tras la sonda.
+
+Sonda P-E4-7-inset (f): exit 1; `Tests:       1 failed, 95 passed, 96 total`. Fallos: ● #41 R5: la pantalla pinta la lista de zonas y sus estados › respeta las métricas A11 bajo cabecera nativa (enmendado por #189 R3) (enmendado por E4 R21). Log `e8-probe-P-E4-7-inset-f.log`. Rojo esperado; fichero restaurado tras la sonda.
+
+Sonda P-E4-7-padding (f): exit 1; `Tests:       1 failed, 95 passed, 96 total`. Fallos: ● #41 R5: la pantalla pinta la lista de zonas y sus estados › respeta las métricas A11 bajo cabecera nativa (enmendado por #189 R3) (enmendado por E4 R21). Log `e8-probe-P-E4-7-padding-f.log`. Rojo esperado; fichero restaurado tras la sonda.
+
+Sonda P-E4-8-window (c): exit 1; `Tests:       1 failed, 27 passed, 28 total`. Fallos: ● #189 R23: geometría compartida con ventana independiente › #189 R23.2: los offsets quedan en las ventanas propias del test. Log `e8-probe-P-E4-8-window-c.log`. Rojo esperado; fichero restaurado tras la sonda.
+
+Sonda P-E4-8-wiring (f): exit 1; `Tests:       2 failed, 94 passed, 96 total`. Fallos: ● #189 R1: título y contador en el contenido › #189 R1.2: el título de es tiene clase, rol y posición exactos (enmendado por #189 R3) (enmendado por E4 R21); ● #189 R1: título y contador en el contenido › #189 R1.2: el título de en tiene clase, rol y posición exactos (enmendado por #189 R3) (enmendado por E4 R21). Log `e8-probe-P-E4-8-wiring-f.log`. Rojo esperado; fichero restaurado tras la sonda.
+
+Sonda P-E4-8-literal (c): exit 0; `Tests:       28 passed, 28 total`. Fallos: . Log `e8-probe-P-E4-8-literal-c.log`. PARADA: resultado distinto al rojo prescrito; fichero restaurado tras la sonda.
+
+
+#### Parada de la octava reanudación — P-E4-8 no detecta el literal 50
+
+**Estado actual: PARADA por contradicción medida entre el rojo exigido por P-E4-8 y el alcance del candado de fuente R23.2. E4 no está cerrada.** HEAD `fb578f0b`; C1, verde conjunto R19/R20, R21, R22 (con C2) y R24 están commiteados. No se continúan las sondas restantes ni las comprobaciones del cierre tras esta contradicción, conforme a la orden del humano.
+
+requirements.md §4.4, tabla «Sondas de mutación», fila P-E4-8 (línea 913), prescribe tres subsondas: ventana con ZONES_TITLE_OFFSET=60, cableado sin paddingLeft, y `paddingLeft: 50` literal dentro de la ventana pero sin constante. La tercera debe poner en rojo «el barrido de literales de R23.2».
+
+Las dos primeras dan el rojo previsto:
+
+- Offset 60: C `Tests: 1 failed, 27 passed, 28 total`, falla la ventana independiente.
+- Sin paddingLeft: F `Tests: 2 failed, 94 passed, 96 total`, fallan las dos variantes de cableado R1.2.
+
+Tercera subsonda: se sustituyó únicamente `paddingLeft: ZONES_TITLE_OFFSET` por `paddingLeft: 50` en Zonas y se ejecutó la suite C completa y sola con las dos guardas vacías. Resultado **exit 0**, `Test Suites: 1 passed, 1 total`, `Tests: 28 passed, 28 total` (`progress/e8-probe-P-E4-8-literal-c.log`). El `it` «#189 R23.2: geofences no repite los literales de geometría» permanece verde. Su visitante AST, geofences-canvas-fidelity.test.ts:56, recoge exclusivamente los números `['42', '70', '56']`; no recoge `50`. El literal plantado queda fuera de su alcance.
+
+La propia cláusula R23.2 enumera 42/70/56 en el barrido de fuente, mientras la tabla P-E4-8 exige que ese barrido detecte también 50. Hace falta conciliar ese alcance y el rojo exigido. No se cambia la aserción, no se añade 50 ad hoc, no se cambia la mutación prescrita y no se presenta otra familia de tests como prueba del barrido de fuente. No se ejecutó F para esta tercera subsonda tras observar la contradicción: aunque el cableado podría detectarla, no sería el candado de fuente que la tabla nombra.
+
+El ejecutor de sondas restauró los bytes originales mediante finally antes de devolver la parada. Confirmado: Zonas vuelve a `paddingLeft: ZONES_TITLE_OFFSET`; `git status --short -- mobile-pet-tracker/ specs/ docs/` vacío y `git diff --check` verde. No quedan procesos Jest ni init.sh. Ninguna mutación se commiteó.
+
+Commits de esta reanudación y resultados del bloque:
+
+| Paso | Rojo separado | Verde separado | Verificación |
+|---|---|---|---|
+| C1 (E6 R19) | `889ed6fa` | comparte `cae47221` | consistency 1 failed/74 passed/75 → 75/75 |
+| R19/R20 | rojos previos `297b9f4b`, `eace0652`; E5 `3a786a89`, `f3aa4094` | `cae47221` | C 24/24, F 96/96, E 109/109, chunky 76/76, consistency 75/75, design 115/115, heroui 25/25; tipos/lint verdes |
+| R21 | `8fae5abf` | `e82549e3` | F 3 failed/93 passed/96 → 96/96; L 1 failed/27 passed/28 → 28/28; C 24/24 |
+| R22 (incluye C2) | `d9077a65` | `b3c16b4c` | E 21 failed/99 passed/120 → 120/120; consistency 1 failed/74 passed/75 → 75/75; C 1 failed/24 passed/25 → 25/25; tipos verdes |
+| R24 | `a49eb6b0` | `fb578f0b` | C 4 failed/24 passed/28 → 28/28; design 115/115 y chunky 76/76 |
+
+P-E4-1..7 dieron rojo y se restauraron (P-E4-3 ejecutada en F y chunky; P-E4-7 tanto inset como padding). P-E4-4 vuelve a probar la aserción corregida por E5: falla R20.1 por la clave extra boxShadow. P-E4-8: ventana y cableado rojos, barrido del literal 50 indebidamente verde. **P-E4-9..13 y P-E6-1..3 no ejecutadas**; no se afirma ninguna como probada.
+
+No se ejecutan suite completa, lint final, graphify, medidas finales ni smoke en esta reanudación detenida. Tipos/lint del verde R19/R20 y tipos de R22 sí constan arriba; no se confunden con un cierre final. Traceability permanece intacta: solo se puede editar en el commit final y el cierre está bloqueado. No se marca done ni se tocan feature_list, STATUS, current, history, handoff o casillas. No hubo init.sh/push/PR/merge, dependencias nuevas, recursos AWS ni denegaciones de sandbox. La lista de ficheros desde 4204530e se leyó y sigue dentro de las listas originales/ampliadas; no se toma como cierre.
+
+#### M20 — resultados íntegros de la octava reanudación
+
+Los dos comandos de requirements §4.6 se ejecutaron tanto en H0-E6 como tras el verde de R22. Las 62 rutas del primer comando son idénticas en ambos momentos. El segundo comando pasa de 181 a 184 líneas: C1/C2, tres coincidencias del nuevo candado R22.3 y seis desplazamientos de línea de layout ya clasificados; ningún literal no clasificado fuera de las listas autorizadas.
+
+Primer comando, rutas (H0 y R22 idénticas):
+
+```text
+src/__tests__/account-screens-polish.test.ts
+src/__tests__/add-pet-two-steps.test.ts
+src/__tests__/alert-detail-canvas-fidelity.test.ts
+src/__tests__/alerts-canvas-fidelity.test.ts
+src/__tests__/chunky-cta-canvas-fidelity.test.ts
+src/__tests__/consistency-classnames.test.ts
+src/__tests__/design-drift.test.ts
+src/__tests__/forms-validation-global.test.ts
+src/__tests__/geofences-canvas-fidelity.test.ts
+src/__tests__/hero-header-amendments.test.ts
+src/__tests__/heroui-text-size-merge.test.ts
+src/__tests__/home-pingo-phrase.test.ts
+src/__tests__/hosting-artifacts.test.ts
+src/__tests__/legibility-classnames.test.ts
+src/__tests__/no-pets-states.test.ts
+src/__tests__/pairing-canvas-fidelity.test.ts
+src/__tests__/profile-canvas-fidelity.test.ts
+src/__tests__/tab-headers-canvas.test.ts
+src/__tests__/ui-language.test.ts
+src/app/(auth)/__tests__/layout.test.tsx
+src/app/(tabs)/__tests__/alerts.test.tsx
+src/app/(tabs)/__tests__/food.test.tsx
+src/app/(tabs)/__tests__/layout.test.tsx
+src/app/__tests__/detail-stack.test.tsx
+src/app/__tests__/layout.test.tsx
+src/app/__tests__/tabs-layout.test.tsx
+src/components/__tests__/celebration.test.tsx
+src/components/__tests__/empty-state-hero.test.tsx
+src/components/__tests__/empty-state.test.tsx
+src/components/__tests__/field-error-message.test.tsx
+src/components/__tests__/floating-tab-bar.test.tsx
+src/components/__tests__/pet-hero-header.test.tsx
+src/components/__tests__/segmented-control.test.tsx
+src/hooks/use-pet-selection.test.tsx
+src/hooks/use-push-registration.navigation.test.tsx
+src/providers/__tests__/language-provider.test.tsx
+src/screens/add-pet/index.test.tsx
+src/screens/add-reminder/index.test.tsx
+src/screens/alert-detail/index.test.tsx
+src/screens/alerts/index.test.tsx
+src/screens/docs-upload-form/index.test.tsx
+src/screens/docs/index.test.tsx
+src/screens/forgot/index.test.tsx
+src/screens/geofence-editor/index.test.tsx
+src/screens/geofences/index.test.tsx
+src/screens/home/index.test.tsx
+src/screens/home/weekly-activity-chart.test.tsx
+src/screens/login/index.test.tsx
+src/screens/map/index.test.tsx
+src/screens/meal-schedule/index.test.tsx
+src/screens/meals-history/index.test.tsx
+src/screens/pairing/index.test.tsx
+src/screens/profile/index.test.tsx
+src/screens/register/index.test.tsx
+src/screens/reminders/index.test.tsx
+src/screens/reset-password/index.test.tsx
+src/screens/weight-log/index.test.tsx
+src/screens/welcome/index.test.tsx
+src/theme/__tests__/font-registration.test.ts
+src/theme/__tests__/global-css.test.ts
+src/theme/__tests__/motion.test.ts
+src/utils/form-rules.test.ts
+```
+
+Segundo comando, H0-E6:
+
+```text
+src/components/__tests__/floating-tab-bar.test.tsx:345:    expect(style).toMatchObject({ bottom: 46, left: 16, right: 16 });
+src/components/__tests__/celebration.test.tsx:169:      pointerEvents: 'none', importantForAccessibility: 'no-hide-descendants', accessibilityElementsHidden: true,
+src/components/__tests__/celebration.test.tsx:436:    expect(ring.props.pointerEvents).toBe('none');
+src/components/__tests__/celebration.test.tsx:514:    expect(hero.props.className).toBe('mt-10 items-center justify-center');
+src/components/__tests__/pet-switcher.test.tsx:133:        `size-10 items-center justify-center overflow-hidden rounded-full ${surfaces[index]}`,
+src/components/__tests__/pet-switcher.test.tsx:145:      'size-10 items-center justify-center overflow-hidden rounded-full bg-category-amber',
+src/components/__tests__/back-button.test.tsx:42:    expect(back.props.className).toBe('size-11 items-center justify-center rounded-full');
+src/components/__tests__/empty-state-hero.test.tsx:53:  expect(stage.props.className).toBe('h-65 w-70 items-center justify-center');
+src/components/__tests__/password-input.test.tsx:76:    expect(toggle.props.className).toBe('size-11 items-center justify-center');
+src/components/__tests__/pet-hero-header.test.tsx:454:  it('es una capsula rounded-full de text-2xs font-semibold, self-start, sin animate-pulse ni Chip', async () => {
+src/components/__tests__/pet-hero-header.test.tsx:468:      'flex-row items-center gap-1 self-start rounded-full px-2.5 py-0.5',
+src/components/__tests__/segmented-control.test.tsx:4:import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+src/components/__tests__/segmented-control.test.tsx:30:      expect(segment.props.className).toBe('h-9.5 flex-1 items-center justify-center rounded-10' + (selected ? ' bg-surface shadow-sm' : ''));
+src/app/__tests__/tabs-layout.test.tsx:38:      headerShown: false,
+src/app/__tests__/layout.test.tsx:307:    expect(props?.screenOptions).toEqual({ headerShown: false });
+src/app/__tests__/layout.test.tsx:315:      [Stack.Screen, 'index', undefined],
+src/app/__tests__/layout.test.tsx:316:      [Stack.Screen, '(tabs)', undefined],
+src/app/__tests__/layout.test.tsx:317:      [Stack.Screen, '(auth)', undefined],
+src/app/__tests__/layout.test.tsx:318:      [Stack.Screen, 'reset-password', undefined],
+src/app/__tests__/layout.test.tsx:329:      [Stack.Screen, 'add-reminder'],
+src/app/__tests__/layout.test.tsx:330:      [Stack.Screen, 'pets/add'],
+src/app/__tests__/layout.test.tsx:331:      [Stack.Screen, 'pets/[petId]/docs'],
+src/app/__tests__/layout.test.tsx:332:      [Stack.Screen, 'pets/[petId]/docs-upload'], // #185 R10
+src/app/__tests__/layout.test.tsx:333:      [Stack.Screen, 'weight-log'],
+src/app/__tests__/layout.test.tsx:334:      [Stack.Screen, 'meal-schedule'],
+src/app/__tests__/layout.test.tsx:335:      [Stack.Screen, 'pairing'],
+src/app/__tests__/layout.test.tsx:365:      headerShown: true,
+src/app/__tests__/layout.test.tsx:395:      [Stack.Screen, 'reminders', undefined],
+src/app/__tests__/layout.test.tsx:396:      [Stack.Screen, 'alerts', true],
+src/app/__tests__/layout.test.tsx:419:      : null).toEqual([Stack.Screen, 'alerts/[alertId]', true]);
+src/app/__tests__/layout.test.tsx:430:      headerShown: true,
+src/app/__tests__/layout.test.tsx:469:      : null).toEqual([Stack.Screen, 'pets/[petId]/geofences', undefined]);
+src/app/__tests__/layout.test.tsx:480:      headerShown: true,
+src/app/__tests__/layout.test.tsx:508:      : null).toEqual([Stack.Screen, 'pets/[petId]/geofence-editor', undefined]);
+src/app/__tests__/layout.test.tsx:519:      headerShown: true,
+src/app/__tests__/layout.test.tsx:549:      headerShown: true,
+src/app/__tests__/layout.test.tsx:576:      : undefined).toEqual([Stack.Screen, 'meals-history']);
+src/app/__tests__/layout.test.tsx:579:      : undefined).toMatchObject({ headerShown: true, title: '' });
+src/app/__tests__/layout.test.tsx:601:    )).toEqual([[Stack.Screen, 'welcome']]);
+src/app/(auth)/__tests__/layout.test.tsx:51:        headerShown: false,
+src/app/(tabs)/__tests__/food.test.tsx:574:    expect(toggle.props.className).toBe('min-h-11 justify-center');
+src/app/(tabs)/__tests__/food.test.tsx:1298:    expect(progress.props.className).toBe('size-26 items-center justify-center');
+src/app/(tabs)/__tests__/layout.test.tsx:79:      headerShown: false,
+src/hooks/use-push-registration.navigation.test.tsx:61:      <Stack screenOptions={{ headerShown: false }} />
+src/__tests__/alert-detail-canvas-fidelity.test.ts:31:  expect([...source.matchAll(/rounded-card|min-h-44|text-lg|text-2xs|text-sm|h-52([^.0-9]|$)|min-h-11/g)]).toEqual([]);
+src/__tests__/design-drift.test.ts:1197:    expect(history).toContain("import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';");
+src/__tests__/geofences-canvas-fidelity.test.ts:2:import { BACK_BUTTON_SIZE, EDITOR_PILL_LEFT, HEADER_BAR_HEIGHT, HEADER_ROW_TOP, TRANSPARENT_HEADER_OPTIONS, ZONES_TITLE_OFFSET } from '../theme/header-layout';
+src/__tests__/geofences-canvas-fidelity.test.ts:15:    expect(mainRules).toContain('Zonas seguras (#189): `paddingHorizontal: 20`, `paddingTop: 24`, `gap: 12`, `paddingBottom: insets.bottom + 40`.');
+src/__tests__/geofences-canvas-fidelity.test.ts:39:    const source = readFileSync(join(process.cwd(), 'src/theme/header-layout.ts'), 'utf8');
+src/__tests__/geofences-canvas-fidelity.test.ts:44:    expect(TRANSPARENT_HEADER_OPTIONS).toEqual({ headerTransparent: true, headerStyle: { backgroundColor: 'transparent' } });
+src/__tests__/geofences-canvas-fidelity.test.ts:92:    const source = readFileSync(join(process.cwd(), 'src/theme/native-styles.ts'), 'utf8');
+src/__tests__/consistency-classnames.test.ts:174:      'size-13 items-center justify-center bg-accent rounded-16',
+src/__tests__/consistency-classnames.test.ts:177:      'size-8 shrink-0 items-center justify-center rounded-xl ${tileClassName}',
+src/__tests__/consistency-classnames.test.ts:279:    const nativeStyles = readSource(join('theme', 'native-styles.ts'));
+src/__tests__/consistency-classnames.test.ts:294:      /import \{[^}]*\bCONTINUOUS_CORNER\b[^}]*\} from ['"].*theme\/native-styles['"];/,
+src/__tests__/consistency-classnames.test.ts:312:      "import { CONTINUOUS_CORNER } from '../theme/native-styles';",
+src/__tests__/consistency-classnames.test.ts:356:      /import \{[^}]*\bTABULAR_NUMS\b[^}]*\} from ['"].*theme\/native-styles['"];/,
+src/__tests__/consistency-classnames.test.ts:698:  expect(source).toContain("import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';");
+src/__tests__/consistency-classnames.test.ts:701:  expect(source).toContain('<KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={headerHeight}>');
+src/__tests__/account-screens-polish.test.ts:49:    expect(login.match(/testID="link-forgot"\s+className="min-h-11 self-end"/g) ?? []).toHaveLength(1);
+src/__tests__/chunky-cta-canvas-fidelity.test.ts:110:  for (const forbidden of ['border-b-4', 'border-black', 'rounded-xl', 'min-h-11']) expect(tag).not.toContain(forbidden);
+src/__tests__/chunky-cta-canvas-fidelity.test.ts:154:  expect(tag).toContain('className="size-13 items-center justify-center bg-accent rounded-16"');
+src/__tests__/alerts-canvas-fidelity.test.ts:61:    "change": "#100 R6: la columna de texto de la fila pasa a dos hijos (tipo y subtítulo) con justify-center y gap-0.5",
+src/screens/register/index.test.tsx:281:        .contentInsetAdjustmentBehavior,
+src/screens/docs/index.test.tsx:12:import { HeaderHeightContext } from 'expo-router/react-navigation';
+src/screens/docs/index.test.tsx:118:        <HeaderHeightContext.Provider value={91}>
+src/screens/docs/index.test.tsx:120:        </HeaderHeightContext.Provider>
+src/screens/docs/index.test.tsx:236:      'self-start rounded-full px-2 py-0.5 text-11 font-extrabold bg-category-blue text-category-blue-strong',
+src/screens/docs/index.test.tsx:284:      'self-start rounded-full px-2 py-0.5 text-11 font-extrabold bg-category-blue text-category-blue-strong',
+src/screens/docs/index.test.tsx:289:      'self-start rounded-full px-2 py-0.5 text-11 font-extrabold bg-default text-muted',
+src/screens/docs/index.test.tsx:359:      paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48,
+src/screens/docs/index.test.tsx:642:    expect(mosaic.props.className).toBe(`h-14 w-12 items-center justify-center rounded-xl ${surface}`);
+src/screens/docs/index.test.tsx:650:    expect(column.children[0]).toHaveProperty('props.className', `self-start rounded-full px-2 py-0.5 text-11 font-extrabold ${surface} ${ink}`);
+src/screens/docs/index.test.tsx:729:    expect(circle.props.className).toBe('size-12 items-center justify-center rounded-full bg-surface-secondary');
+src/screens/docs/index.test.tsx:805:    expect(chip.props.className).toBe(`h-8.5 items-center justify-center rounded-full px-3 ${surface}`);
+src/screens/docs/index.test.tsx:845:    expect(selected.props.className).toBe('h-8.5 items-center justify-center rounded-full px-3 bg-foreground');
+src/screens/docs/index.test.tsx:848:    expect(all.props.className).toBe('h-8.5 items-center justify-center rounded-full px-3 bg-default');
+src/screens/meal-schedule/index.test.tsx:284:    ).toEqual({ paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48 });
+src/screens/meal-schedule/index.test.tsx:1088:      paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48,
+src/screens/meal-schedule/index.test.tsx:1194:      expect(tile).toHaveProp('className', 'size-10.5 items-center justify-center rounded-14 bg-category-amber');
+src/screens/add-pet/index.test.tsx:1:import { HeaderHeightContext, usePreventRemove } from 'expo-router/react-navigation';
+src/screens/add-pet/index.test.tsx:90:        <HeaderHeightContext.Provider value={91}>
+src/screens/add-pet/index.test.tsx:92:        </HeaderHeightContext.Provider>
+src/screens/add-pet/index.test.tsx:137:    expect(photo.props.className).toBe('size-22 items-center justify-center rounded-full border-2 border-dashed border-accent bg-surface-secondary');
+src/screens/add-pet/index.test.tsx:797:    expect(chip.props.className).toBe('h-9.5 flex-1 items-center justify-center rounded-10' + (testID === 'species-dog' ? ' bg-surface shadow-sm' : ''));
+src/screens/home/index.test.tsx:34:import { TABULAR_NUMS } from '../../theme/native-styles';
+src/screens/home/index.test.tsx:208:      'size-11 items-center justify-center rounded-full',
+src/screens/home/index.test.tsx:2556:      expect(tile.props.className).toContain('min-h-11');
+src/screens/home/index.test.tsx:3218:        `size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS[slot].surface}`,
+src/screens/home/index.test.tsx:3235:      `size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.neutral.surface}`,
+src/screens/home/index.test.tsx:4107:            `size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.blue.surface}`,
+src/screens/home/index.test.tsx:4133:            `size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.neutral.surface}`,
+src/screens/home/index.test.tsx:4362:        `size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.rose.surface}`,
+src/screens/home/index.test.tsx:5477:    expect(container.props.className).toBe('flex-1 items-center justify-center px-5 py-6 bg-background'); // (enmendado por #176 R3)
+src/screens/home/weekly-activity-chart.test.tsx:21:import { TABULAR_NUMS } from '../../theme/native-styles';
+src/screens/home/weekly-activity-chart.test.tsx:843:      segments.every(({ props }) => props.className.includes('h-11')),
+src/screens/home/weekly-activity-chart.test.tsx:1028:    expect(spanishColumn.props.className).toContain('min-h-11');
+src/screens/home/weekly-activity-chart.test.tsx:1686:    const resting = 'min-h-11 flex-1 items-center justify-end';
+src/screens/home/weekly-activity-chart.test.tsx:1688:      'min-h-11 flex-1 items-center justify-end border-t-2 border-accent-strong';
+src/screens/home/weekly-activity-chart.test.tsx:2279:    const resting = 'min-h-11 flex-1 items-center justify-end';
+src/screens/home/weekly-activity-chart.test.tsx:2281:      'min-h-11 flex-1 items-center justify-end border-t-2 border-accent-strong';
+src/screens/pairing/index.test.tsx:1:import { HeaderHeightContext } from 'expo-router/react-navigation';
+src/screens/pairing/index.test.tsx:160:          <HeaderHeightContext.Provider value={91}>
+src/screens/pairing/index.test.tsx:162:          </HeaderHeightContext.Provider>
+src/screens/pairing/index.test.tsx:622:      expect(source).not.toContain('size-16 items-center justify-center rounded-full bg-accent-soft');
+src/screens/pairing/index.test.tsx:1213:      'size-9', 'items-center', 'justify-center', 'overflow-hidden', 'rounded-full', 'bg-category-amber',
+src/screens/pairing/index.test.tsx:1259:      'w-50', 'h-37.5', 'items-center', 'justify-center',
+src/screens/profile/index.test.tsx:1374:    expect(camera.props.className).toBe('absolute -bottom-0.5 -right-0.5 size-8.5 items-center justify-center rounded-full border-3 border-surface-secondary bg-accent');
+src/screens/profile/index.test.tsx:1548:    expect(root.props.className).toBe('flex-row flex-wrap justify-center gap-1.5');
+src/screens/profile/index.test.tsx:1730:      expect(avatar.props.className).toBe('size-8.5 items-center justify-center rounded-full bg-default');
+src/screens/add-reminder/index.test.tsx:1:import { HeaderHeightContext } from 'expo-router/react-navigation';
+src/screens/add-reminder/index.test.tsx:118:          <HeaderHeightContext.Provider value={91}>
+src/screens/add-reminder/index.test.tsx:120:          </HeaderHeightContext.Provider>
+src/screens/add-reminder/index.test.tsx:186:      paddingTop: 24,
+src/screens/add-reminder/index.test.tsx:569:      paddingHorizontal: 20, paddingTop: 24, gap: 16, paddingBottom: 48,
+src/screens/add-reminder/index.test.tsx:594:    expect(chip.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-accent border-b-3 border-black/25');
+src/screens/add-reminder/index.test.tsx:606:      expect(chip.props.className).toBe(`h-9.5 items-center justify-center rounded-full px-3.5 ${surface}`);
+src/screens/add-reminder/index.test.tsx:617:    expect(selected.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-accent border-b-3 border-black/25');
+src/screens/add-reminder/index.test.tsx:620:    expect(idle.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-category-blue');
+src/screens/add-reminder/index.test.tsx:713:const CHIP_SELECTED = 'h-9.5 items-center justify-center rounded-full px-3.5 bg-accent border-b-3 border-black/25';
+src/screens/add-reminder/index.test.tsx:714:const CHIP_IDLE = 'h-9.5 items-center justify-center rounded-full px-3.5 bg-default';
+src/screens/health/index.test.tsx:1067:    { id: 'overdue', surface: 'size-10 items-center justify-center rounded-xl bg-category-rose', icon: 'health-icon-clock', color: 'category-rose-strong', texts: ['Vencida', '2026-01-01', '2026-02-28'], dateClass: 'font-normal text-danger' },
+src/screens/health/index.test.tsx:1068:    { id: 'next', surface: 'size-10 items-center justify-center rounded-xl bg-category-amber', icon: 'health-icon-clock', color: 'category-amber-strong', texts: ['Próxima', '2026-01-02', '2026-03-31'], dateClass: 'font-normal text-muted' },
+src/screens/health/index.test.tsx:1069:    { id: 'future', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Futura', '2026-01-03', '2026-04-02'], dateClass: 'font-normal text-muted' },
+src/screens/health/index.test.tsx:1070:    { id: 'completed', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Sin próxima dosis', '2026-01-04'], dateClass: 'font-normal text-muted' },
+src/screens/weight-log/index.test.tsx:1:import { HeaderHeightContext } from 'expo-router/react-navigation';
+src/screens/weight-log/index.test.tsx:176:          <HeaderHeightContext.Provider value={91}>
+src/screens/weight-log/index.test.tsx:178:          </HeaderHeightContext.Provider>
+src/screens/weight-log/index.test.tsx:1042:    expect(toast.props.pointerEvents).toBe('none');
+src/screens/meals-history/index.test.tsx:120:    expect(screen.getByTestId('screen-meals-history')).toHaveProp('contentInsetAdjustmentBehavior', 'automatic');
+src/screens/meals-history/index.test.tsx:121:    expect(screen.getByTestId('screen-meals-history')).toHaveProp('contentContainerStyle', { paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48 });
+src/screens/meals-history/index.test.tsx:418:      paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48,
+src/screens/meals-history/index.test.tsx:457:      expect(arrow).toHaveProp('className', 'size-10 items-center justify-center rounded-xl bg-default');
+src/screens/meals-history/index.test.tsx:520:      ? 'h-11 flex-1 items-center justify-center gap-0.5 rounded-full bg-tab-pill'
+src/screens/meals-history/index.test.tsx:521:      : 'h-11 flex-1 items-center justify-center gap-0.5 rounded-full');
+src/screens/login/index.test.tsx:192:    expect(screenRoot.props.contentInsetAdjustmentBehavior).toBe('automatic');
+src/screens/forgot/index.test.tsx:155:    expect(screenRoot.props.contentInsetAdjustmentBehavior).toBe('automatic');
+src/screens/forgot/index.test.tsx:306:      (c) => (c as { props: { className?: string } }).props.className === 'size-13 items-center justify-center bg-accent rounded-16',
+src/screens/forgot/index.test.tsx:312:      (c) => (c as { props: { className?: string } }).props.className === 'size-13 items-center justify-center bg-accent rounded-16',
+src/screens/forgot/index.test.tsx:539:  it('forgot-form lleva className y contentInsetAdjustmentBehavior de la spec en los dos estados', async () => {
+src/screens/forgot/index.test.tsx:544:    expect(screen.getByTestId('forgot-form').props.contentInsetAdjustmentBehavior).toBe('automatic');
+src/screens/forgot/index.test.tsx:548:    expect(screen.getByTestId('forgot-form').props.contentInsetAdjustmentBehavior).toBe('automatic');
+src/screens/forgot/index.test.tsx:609:        className: 'size-13 items-center justify-center bg-accent rounded-16',
+src/screens/forgot/index.test.tsx:624:        className: 'size-13 items-center justify-center bg-accent rounded-16',
+src/screens/forgot/index.test.tsx:686:    expect(tile.props.className).toBe('size-13 items-center justify-center bg-accent rounded-16');
+src/screens/docs-upload-form/index.test.tsx:17:import { HeaderHeightContext } from 'expo-router/react-navigation';
+src/screens/docs-upload-form/index.test.tsx:142:            <Stack screenOptions={{ headerShown: false }} />
+src/screens/docs-upload-form/index.test.tsx:147:    'pets/[petId]/docs': () => <HeaderHeightContext.Provider value={91}><DocsRoute /></HeaderHeightContext.Provider>,
+src/screens/docs-upload-form/index.test.tsx:148:    'pets/[petId]/docs-upload': () => <HeaderHeightContext.Provider value={91}><DocsUploadRoute /></HeaderHeightContext.Provider>,
+src/screens/docs-upload-form/index.test.tsx:704:    expect(source).toContain('keyboardVerticalOffset={headerHeight}');
+src/screens/welcome/index.test.tsx:131:    expect(screen.getByTestId('screen-welcome').props.contentInsetAdjustmentBehavior).toBe('automatic');
+src/screens/welcome/index.test.tsx:194:    expect(screen.getByTestId('welcome-chips').props.className).toBe('flex-row justify-center gap-2');
+src/screens/welcome/index.test.tsx:771:    expect(screen.getByTestId('welcome-stage').props.className).toBe('items-center justify-center');
+src/screens/alert-detail/index.test.tsx:217:    expect(elementChild(card, 0).props.className).toBe(`size-18 items-center justify-center rounded-full ${solid}`);
+src/screens/alert-detail/index.test.tsx:218:    expect(icon.parent?.props.className).toBe(`size-18 items-center justify-center rounded-full ${solid}`);
+src/screens/alert-detail/index.test.tsx:273:    expect(root.props.contentInsetAdjustmentBehavior).toBe('automatic');
+src/screens/alert-detail/index.test.tsx:274:    expect(root.props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 64, gap: 14, flexGrow: 1 });
+src/screens/alert-detail/index.test.tsx:954:    expect(screen.getByTestId('screen-alert-detail').props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 24, paddingBottom: bottom + 40, gap: 14, flexGrow: 1 });
+src/screens/reset-password/index.test.tsx:321:    expect(screenRoot.props.contentInsetAdjustmentBehavior).toBe('automatic');
+src/screens/reset-password/index.test.tsx:605:    expect(disk.props.className).toBe('size-8 items-center justify-center rounded-full bg-accent');
+src/screens/reminders/index.test.tsx:299:      paddingTop: 24,
+src/screens/reminders/index.test.tsx:401:      paddingTop: 24,
+src/screens/reminders/index.test.tsx:549:      ['a', 'size-11.5 items-center justify-center rounded-14 bg-category-blue', 'reminders-icon-syringe', 'color:category-blue-strong'],
+src/screens/reminders/index.test.tsx:550:      ['b', 'size-11.5 items-center justify-center rounded-14 bg-category-amber', 'reminders-icon-pill', 'color:category-amber-strong'],
+src/screens/reminders/index.test.tsx:551:      ['c', 'size-11.5 items-center justify-center rounded-14 bg-default', 'reminders-icon-pin-tack', 'color:muted'],
+src/screens/reminders/index.test.tsx:1367:    expect(tile.props.className).toBe('size-14 items-center justify-center rounded-full bg-category-rose');
+src/screens/reminders/index.test.tsx:1667:    expect(container.props.className).toBe('flex-1 items-center justify-center p-6 bg-background');
+src/screens/map/index.test.tsx:619:        left: 16,
+src/screens/map/index.test.tsx:1223:        left: 16,
+src/screens/map/index.test.tsx:1250:        left: 16,
+src/screens/map/index.test.tsx:1636:      'flex-row items-center gap-2 self-start rounded-full border border-border bg-surface px-3 py-2 shadow-sm',
+src/screens/map/index.test.tsx:1964:    expect(slot.parent?.props.className).toBe('flex-1 items-center justify-center p-6 bg-background');
+src/screens/map/index.test.tsx:2000:    expect(slot.parent?.props.className).toBe('flex-1 items-center justify-center p-6 bg-background');
+src/screens/alerts/index.test.tsx:342:    expect(list.props.contentInsetAdjustmentBehavior).toBe('automatic');
+src/screens/alerts/index.test.tsx:345:      paddingTop: 24,
+src/screens/alerts/index.test.tsx:421:        `size-11 items-center justify-center rounded-full ${disc}`,
+src/screens/alerts/index.test.tsx:443:      expect(ack.props.className.split(' ')).not.toContain('min-h-11');
+src/screens/alerts/index.test.tsx:462:        'min-h-11 min-w-0 flex-1 justify-center gap-0.5',
+src/screens/alerts/index.test.tsx:499:        'min-h-11 min-w-0 flex-1 justify-center gap-0.5',
+src/screens/alerts/index.test.tsx:509:    expect(ack.props.className.split(' ')).not.toContain('min-h-11');
+src/screens/alerts/index.test.tsx:1257:    expect(link.props.className).toBe('min-h-11 min-w-0 flex-1 justify-center gap-0.5');
+```
+
+Segundo comando, después de R22:
+
+```text
+src/components/__tests__/floating-tab-bar.test.tsx:345:    expect(style).toMatchObject({ bottom: 46, left: 16, right: 16 });
+src/components/__tests__/celebration.test.tsx:169:      pointerEvents: 'none', importantForAccessibility: 'no-hide-descendants', accessibilityElementsHidden: true,
+src/components/__tests__/celebration.test.tsx:436:    expect(ring.props.pointerEvents).toBe('none');
+src/components/__tests__/celebration.test.tsx:514:    expect(hero.props.className).toBe('mt-10 items-center justify-center');
+src/components/__tests__/pet-switcher.test.tsx:133:        `size-10 items-center justify-center overflow-hidden rounded-full ${surfaces[index]}`,
+src/components/__tests__/pet-switcher.test.tsx:145:      'size-10 items-center justify-center overflow-hidden rounded-full bg-category-amber',
+src/components/__tests__/back-button.test.tsx:42:    expect(back.props.className).toBe('size-11 items-center justify-center rounded-full');
+src/components/__tests__/empty-state-hero.test.tsx:53:  expect(stage.props.className).toBe('h-65 w-70 items-center justify-center');
+src/components/__tests__/password-input.test.tsx:76:    expect(toggle.props.className).toBe('size-11 items-center justify-center');
+src/components/__tests__/pet-hero-header.test.tsx:454:  it('es una capsula rounded-full de text-2xs font-semibold, self-start, sin animate-pulse ni Chip', async () => {
+src/components/__tests__/pet-hero-header.test.tsx:468:      'flex-row items-center gap-1 self-start rounded-full px-2.5 py-0.5',
+src/components/__tests__/segmented-control.test.tsx:4:import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+src/components/__tests__/segmented-control.test.tsx:30:      expect(segment.props.className).toBe('h-9.5 flex-1 items-center justify-center rounded-10' + (selected ? ' bg-surface shadow-sm' : ''));
+src/app/__tests__/tabs-layout.test.tsx:38:      headerShown: false,
+src/app/__tests__/layout.test.tsx:307:    expect(props?.screenOptions).toEqual({ headerShown: false });
+src/app/__tests__/layout.test.tsx:315:      [Stack.Screen, 'index', undefined],
+src/app/__tests__/layout.test.tsx:316:      [Stack.Screen, '(tabs)', undefined],
+src/app/__tests__/layout.test.tsx:317:      [Stack.Screen, '(auth)', undefined],
+src/app/__tests__/layout.test.tsx:318:      [Stack.Screen, 'reset-password', undefined],
+src/app/__tests__/layout.test.tsx:329:      [Stack.Screen, 'add-reminder'],
+src/app/__tests__/layout.test.tsx:330:      [Stack.Screen, 'pets/add'],
+src/app/__tests__/layout.test.tsx:331:      [Stack.Screen, 'pets/[petId]/docs'],
+src/app/__tests__/layout.test.tsx:332:      [Stack.Screen, 'pets/[petId]/docs-upload'], // #185 R10
+src/app/__tests__/layout.test.tsx:333:      [Stack.Screen, 'weight-log'],
+src/app/__tests__/layout.test.tsx:334:      [Stack.Screen, 'meal-schedule'],
+src/app/__tests__/layout.test.tsx:335:      [Stack.Screen, 'pairing'],
+src/app/__tests__/layout.test.tsx:365:      headerShown: true,
+src/app/__tests__/layout.test.tsx:395:      [Stack.Screen, 'reminders', undefined],
+src/app/__tests__/layout.test.tsx:396:      [Stack.Screen, 'alerts', true],
+src/app/__tests__/layout.test.tsx:419:      : null).toEqual([Stack.Screen, 'alerts/[alertId]', true]);
+src/app/__tests__/layout.test.tsx:430:      headerShown: true,
+src/app/__tests__/layout.test.tsx:469:      : null).toEqual([Stack.Screen, 'pets/[petId]/geofences', undefined]);
+src/app/__tests__/layout.test.tsx:480:      headerShown: true,
+src/app/__tests__/layout.test.tsx:509:      : null).toEqual([Stack.Screen, 'pets/[petId]/geofence-editor', undefined]);
+src/app/__tests__/layout.test.tsx:520:      headerShown: true,
+src/app/__tests__/layout.test.tsx:550:      headerShown: true,
+src/app/__tests__/layout.test.tsx:577:      : undefined).toEqual([Stack.Screen, 'meals-history']);
+src/app/__tests__/layout.test.tsx:580:      : undefined).toMatchObject({ headerShown: true, title: '' });
+src/app/__tests__/layout.test.tsx:602:    )).toEqual([[Stack.Screen, 'welcome']]);
+src/app/(auth)/__tests__/layout.test.tsx:51:        headerShown: false,
+src/app/(tabs)/__tests__/food.test.tsx:574:    expect(toggle.props.className).toBe('min-h-11 justify-center');
+src/app/(tabs)/__tests__/food.test.tsx:1298:    expect(progress.props.className).toBe('size-26 items-center justify-center');
+src/app/(tabs)/__tests__/layout.test.tsx:79:      headerShown: false,
+src/hooks/use-push-registration.navigation.test.tsx:61:      <Stack screenOptions={{ headerShown: false }} />
+src/__tests__/alert-detail-canvas-fidelity.test.ts:31:  expect([...source.matchAll(/rounded-card|min-h-44|text-lg|text-2xs|text-sm|h-52([^.0-9]|$)|min-h-11/g)]).toEqual([]);
+src/__tests__/design-drift.test.ts:1197:    expect(history).toContain("import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';");
+src/__tests__/geofences-canvas-fidelity.test.ts:2:import { BACK_BUTTON_SIZE, EDITOR_PILL_LEFT, HEADER_BAR_HEIGHT, HEADER_ROW_TOP, TRANSPARENT_HEADER_OPTIONS, ZONES_TITLE_OFFSET } from '../theme/header-layout';
+src/__tests__/geofences-canvas-fidelity.test.ts:15:    expect(mainRules).toContain('Zonas seguras (#189): `paddingHorizontal: 20`, `paddingTop: 24`, `gap: 12`, `paddingBottom: insets.bottom + 40`.');
+src/__tests__/geofences-canvas-fidelity.test.ts:39:    const source = readFileSync(join(process.cwd(), 'src/theme/header-layout.ts'), 'utf8');
+src/__tests__/geofences-canvas-fidelity.test.ts:44:    expect(TRANSPARENT_HEADER_OPTIONS).toEqual({ headerTransparent: true, headerStyle: { backgroundColor: 'transparent' } });
+src/__tests__/geofences-canvas-fidelity.test.ts:92:    const source = readFileSync(join(process.cwd(), 'src/theme/native-styles.ts'), 'utf8');
+src/__tests__/geofences-canvas-fidelity.test.ts:149:it('#189 R22.3: el Editor no consume HeaderHeightContext ni useContext', () => {
+src/__tests__/geofences-canvas-fidelity.test.ts:151:  expect(editor.source).not.toContain('HeaderHeightContext');
+src/__tests__/geofences-canvas-fidelity.test.ts:152:  expect(editor.source).not.toMatch(/\buseContext\b/);
+src/__tests__/consistency-classnames.test.ts:174:      'size-13 items-center justify-center bg-accent rounded-16',
+src/__tests__/consistency-classnames.test.ts:177:      'size-8 shrink-0 items-center justify-center rounded-xl ${tileClassName}',
+src/__tests__/consistency-classnames.test.ts:279:    const nativeStyles = readSource(join('theme', 'native-styles.ts'));
+src/__tests__/consistency-classnames.test.ts:294:      /import \{[^}]*\bCONTINUOUS_CORNER\b[^}]*\} from ['"].*theme\/native-styles['"];/,
+src/__tests__/consistency-classnames.test.ts:312:      "import { CONTINUOUS_CORNER } from '../theme/native-styles';",
+src/__tests__/consistency-classnames.test.ts:356:      /import \{[^}]*\bTABULAR_NUMS\b[^}]*\} from ['"].*theme\/native-styles['"];/,
+src/__tests__/consistency-classnames.test.ts:698:  expect(source).toContain("import { CONTINUOUS_CORNER, KEEP_OPACITY, TABULAR_NUMS } from '../../theme/native-styles';");
+src/__tests__/consistency-classnames.test.ts:701:  expect(source).toContain('<KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={0}>');
+src/__tests__/account-screens-polish.test.ts:49:    expect(login.match(/testID="link-forgot"\s+className="min-h-11 self-end"/g) ?? []).toHaveLength(1);
+src/__tests__/chunky-cta-canvas-fidelity.test.ts:110:  for (const forbidden of ['border-b-4', 'border-black', 'rounded-xl', 'min-h-11']) expect(tag).not.toContain(forbidden);
+src/__tests__/chunky-cta-canvas-fidelity.test.ts:154:  expect(tag).toContain('className="size-13 items-center justify-center bg-accent rounded-16"');
+src/__tests__/alerts-canvas-fidelity.test.ts:61:    "change": "#100 R6: la columna de texto de la fila pasa a dos hijos (tipo y subtítulo) con justify-center y gap-0.5",
+src/screens/register/index.test.tsx:281:        .contentInsetAdjustmentBehavior,
+src/screens/docs/index.test.tsx:12:import { HeaderHeightContext } from 'expo-router/react-navigation';
+src/screens/docs/index.test.tsx:118:        <HeaderHeightContext.Provider value={91}>
+src/screens/docs/index.test.tsx:120:        </HeaderHeightContext.Provider>
+src/screens/docs/index.test.tsx:236:      'self-start rounded-full px-2 py-0.5 text-11 font-extrabold bg-category-blue text-category-blue-strong',
+src/screens/docs/index.test.tsx:284:      'self-start rounded-full px-2 py-0.5 text-11 font-extrabold bg-category-blue text-category-blue-strong',
+src/screens/docs/index.test.tsx:289:      'self-start rounded-full px-2 py-0.5 text-11 font-extrabold bg-default text-muted',
+src/screens/docs/index.test.tsx:359:      paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48,
+src/screens/docs/index.test.tsx:642:    expect(mosaic.props.className).toBe(`h-14 w-12 items-center justify-center rounded-xl ${surface}`);
+src/screens/docs/index.test.tsx:650:    expect(column.children[0]).toHaveProperty('props.className', `self-start rounded-full px-2 py-0.5 text-11 font-extrabold ${surface} ${ink}`);
+src/screens/docs/index.test.tsx:729:    expect(circle.props.className).toBe('size-12 items-center justify-center rounded-full bg-surface-secondary');
+src/screens/docs/index.test.tsx:805:    expect(chip.props.className).toBe(`h-8.5 items-center justify-center rounded-full px-3 ${surface}`);
+src/screens/docs/index.test.tsx:845:    expect(selected.props.className).toBe('h-8.5 items-center justify-center rounded-full px-3 bg-foreground');
+src/screens/docs/index.test.tsx:848:    expect(all.props.className).toBe('h-8.5 items-center justify-center rounded-full px-3 bg-default');
+src/screens/meal-schedule/index.test.tsx:284:    ).toEqual({ paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48 });
+src/screens/meal-schedule/index.test.tsx:1088:      paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48,
+src/screens/meal-schedule/index.test.tsx:1194:      expect(tile).toHaveProp('className', 'size-10.5 items-center justify-center rounded-14 bg-category-amber');
+src/screens/add-pet/index.test.tsx:1:import { HeaderHeightContext, usePreventRemove } from 'expo-router/react-navigation';
+src/screens/add-pet/index.test.tsx:90:        <HeaderHeightContext.Provider value={91}>
+src/screens/add-pet/index.test.tsx:92:        </HeaderHeightContext.Provider>
+src/screens/add-pet/index.test.tsx:137:    expect(photo.props.className).toBe('size-22 items-center justify-center rounded-full border-2 border-dashed border-accent bg-surface-secondary');
+src/screens/add-pet/index.test.tsx:797:    expect(chip.props.className).toBe('h-9.5 flex-1 items-center justify-center rounded-10' + (testID === 'species-dog' ? ' bg-surface shadow-sm' : ''));
+src/screens/home/index.test.tsx:34:import { TABULAR_NUMS } from '../../theme/native-styles';
+src/screens/home/index.test.tsx:208:      'size-11 items-center justify-center rounded-full',
+src/screens/home/index.test.tsx:2556:      expect(tile.props.className).toContain('min-h-11');
+src/screens/home/index.test.tsx:3218:        `size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS[slot].surface}`,
+src/screens/home/index.test.tsx:3235:      `size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.neutral.surface}`,
+src/screens/home/index.test.tsx:4107:            `size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.blue.surface}`,
+src/screens/home/index.test.tsx:4133:            `size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.neutral.surface}`,
+src/screens/home/index.test.tsx:4362:        `size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.rose.surface}`,
+src/screens/home/index.test.tsx:5477:    expect(container.props.className).toBe('flex-1 items-center justify-center px-5 py-6 bg-background'); // (enmendado por #176 R3)
+src/screens/home/weekly-activity-chart.test.tsx:21:import { TABULAR_NUMS } from '../../theme/native-styles';
+src/screens/home/weekly-activity-chart.test.tsx:843:      segments.every(({ props }) => props.className.includes('h-11')),
+src/screens/home/weekly-activity-chart.test.tsx:1028:    expect(spanishColumn.props.className).toContain('min-h-11');
+src/screens/home/weekly-activity-chart.test.tsx:1686:    const resting = 'min-h-11 flex-1 items-center justify-end';
+src/screens/home/weekly-activity-chart.test.tsx:1688:      'min-h-11 flex-1 items-center justify-end border-t-2 border-accent-strong';
+src/screens/home/weekly-activity-chart.test.tsx:2279:    const resting = 'min-h-11 flex-1 items-center justify-end';
+src/screens/home/weekly-activity-chart.test.tsx:2281:      'min-h-11 flex-1 items-center justify-end border-t-2 border-accent-strong';
+src/screens/pairing/index.test.tsx:1:import { HeaderHeightContext } from 'expo-router/react-navigation';
+src/screens/pairing/index.test.tsx:160:          <HeaderHeightContext.Provider value={91}>
+src/screens/pairing/index.test.tsx:162:          </HeaderHeightContext.Provider>
+src/screens/pairing/index.test.tsx:622:      expect(source).not.toContain('size-16 items-center justify-center rounded-full bg-accent-soft');
+src/screens/pairing/index.test.tsx:1213:      'size-9', 'items-center', 'justify-center', 'overflow-hidden', 'rounded-full', 'bg-category-amber',
+src/screens/pairing/index.test.tsx:1259:      'w-50', 'h-37.5', 'items-center', 'justify-center',
+src/screens/profile/index.test.tsx:1374:    expect(camera.props.className).toBe('absolute -bottom-0.5 -right-0.5 size-8.5 items-center justify-center rounded-full border-3 border-surface-secondary bg-accent');
+src/screens/profile/index.test.tsx:1548:    expect(root.props.className).toBe('flex-row flex-wrap justify-center gap-1.5');
+src/screens/profile/index.test.tsx:1730:      expect(avatar.props.className).toBe('size-8.5 items-center justify-center rounded-full bg-default');
+src/screens/add-reminder/index.test.tsx:1:import { HeaderHeightContext } from 'expo-router/react-navigation';
+src/screens/add-reminder/index.test.tsx:118:          <HeaderHeightContext.Provider value={91}>
+src/screens/add-reminder/index.test.tsx:120:          </HeaderHeightContext.Provider>
+src/screens/add-reminder/index.test.tsx:186:      paddingTop: 24,
+src/screens/add-reminder/index.test.tsx:569:      paddingHorizontal: 20, paddingTop: 24, gap: 16, paddingBottom: 48,
+src/screens/add-reminder/index.test.tsx:594:    expect(chip.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-accent border-b-3 border-black/25');
+src/screens/add-reminder/index.test.tsx:606:      expect(chip.props.className).toBe(`h-9.5 items-center justify-center rounded-full px-3.5 ${surface}`);
+src/screens/add-reminder/index.test.tsx:617:    expect(selected.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-accent border-b-3 border-black/25');
+src/screens/add-reminder/index.test.tsx:620:    expect(idle.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-category-blue');
+src/screens/add-reminder/index.test.tsx:713:const CHIP_SELECTED = 'h-9.5 items-center justify-center rounded-full px-3.5 bg-accent border-b-3 border-black/25';
+src/screens/add-reminder/index.test.tsx:714:const CHIP_IDLE = 'h-9.5 items-center justify-center rounded-full px-3.5 bg-default';
+src/screens/health/index.test.tsx:1067:    { id: 'overdue', surface: 'size-10 items-center justify-center rounded-xl bg-category-rose', icon: 'health-icon-clock', color: 'category-rose-strong', texts: ['Vencida', '2026-01-01', '2026-02-28'], dateClass: 'font-normal text-danger' },
+src/screens/health/index.test.tsx:1068:    { id: 'next', surface: 'size-10 items-center justify-center rounded-xl bg-category-amber', icon: 'health-icon-clock', color: 'category-amber-strong', texts: ['Próxima', '2026-01-02', '2026-03-31'], dateClass: 'font-normal text-muted' },
+src/screens/health/index.test.tsx:1069:    { id: 'future', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Futura', '2026-01-03', '2026-04-02'], dateClass: 'font-normal text-muted' },
+src/screens/health/index.test.tsx:1070:    { id: 'completed', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Sin próxima dosis', '2026-01-04'], dateClass: 'font-normal text-muted' },
+src/screens/weight-log/index.test.tsx:1:import { HeaderHeightContext } from 'expo-router/react-navigation';
+src/screens/weight-log/index.test.tsx:176:          <HeaderHeightContext.Provider value={91}>
+src/screens/weight-log/index.test.tsx:178:          </HeaderHeightContext.Provider>
+src/screens/weight-log/index.test.tsx:1042:    expect(toast.props.pointerEvents).toBe('none');
+src/screens/meals-history/index.test.tsx:120:    expect(screen.getByTestId('screen-meals-history')).toHaveProp('contentInsetAdjustmentBehavior', 'automatic');
+src/screens/meals-history/index.test.tsx:121:    expect(screen.getByTestId('screen-meals-history')).toHaveProp('contentContainerStyle', { paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48 });
+src/screens/meals-history/index.test.tsx:418:      paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48,
+src/screens/meals-history/index.test.tsx:457:      expect(arrow).toHaveProp('className', 'size-10 items-center justify-center rounded-xl bg-default');
+src/screens/meals-history/index.test.tsx:520:      ? 'h-11 flex-1 items-center justify-center gap-0.5 rounded-full bg-tab-pill'
+src/screens/meals-history/index.test.tsx:521:      : 'h-11 flex-1 items-center justify-center gap-0.5 rounded-full');
+src/screens/login/index.test.tsx:192:    expect(screenRoot.props.contentInsetAdjustmentBehavior).toBe('automatic');
+src/screens/forgot/index.test.tsx:155:    expect(screenRoot.props.contentInsetAdjustmentBehavior).toBe('automatic');
+src/screens/forgot/index.test.tsx:306:      (c) => (c as { props: { className?: string } }).props.className === 'size-13 items-center justify-center bg-accent rounded-16',
+src/screens/forgot/index.test.tsx:312:      (c) => (c as { props: { className?: string } }).props.className === 'size-13 items-center justify-center bg-accent rounded-16',
+src/screens/forgot/index.test.tsx:539:  it('forgot-form lleva className y contentInsetAdjustmentBehavior de la spec en los dos estados', async () => {
+src/screens/forgot/index.test.tsx:544:    expect(screen.getByTestId('forgot-form').props.contentInsetAdjustmentBehavior).toBe('automatic');
+src/screens/forgot/index.test.tsx:548:    expect(screen.getByTestId('forgot-form').props.contentInsetAdjustmentBehavior).toBe('automatic');
+src/screens/forgot/index.test.tsx:609:        className: 'size-13 items-center justify-center bg-accent rounded-16',
+src/screens/forgot/index.test.tsx:624:        className: 'size-13 items-center justify-center bg-accent rounded-16',
+src/screens/forgot/index.test.tsx:686:    expect(tile.props.className).toBe('size-13 items-center justify-center bg-accent rounded-16');
+src/screens/docs-upload-form/index.test.tsx:17:import { HeaderHeightContext } from 'expo-router/react-navigation';
+src/screens/docs-upload-form/index.test.tsx:142:            <Stack screenOptions={{ headerShown: false }} />
+src/screens/docs-upload-form/index.test.tsx:147:    'pets/[petId]/docs': () => <HeaderHeightContext.Provider value={91}><DocsRoute /></HeaderHeightContext.Provider>,
+src/screens/docs-upload-form/index.test.tsx:148:    'pets/[petId]/docs-upload': () => <HeaderHeightContext.Provider value={91}><DocsUploadRoute /></HeaderHeightContext.Provider>,
+src/screens/docs-upload-form/index.test.tsx:704:    expect(source).toContain('keyboardVerticalOffset={headerHeight}');
+src/screens/welcome/index.test.tsx:131:    expect(screen.getByTestId('screen-welcome').props.contentInsetAdjustmentBehavior).toBe('automatic');
+src/screens/welcome/index.test.tsx:194:    expect(screen.getByTestId('welcome-chips').props.className).toBe('flex-row justify-center gap-2');
+src/screens/welcome/index.test.tsx:771:    expect(screen.getByTestId('welcome-stage').props.className).toBe('items-center justify-center');
+src/screens/alert-detail/index.test.tsx:217:    expect(elementChild(card, 0).props.className).toBe(`size-18 items-center justify-center rounded-full ${solid}`);
+src/screens/alert-detail/index.test.tsx:218:    expect(icon.parent?.props.className).toBe(`size-18 items-center justify-center rounded-full ${solid}`);
+src/screens/alert-detail/index.test.tsx:273:    expect(root.props.contentInsetAdjustmentBehavior).toBe('automatic');
+src/screens/alert-detail/index.test.tsx:274:    expect(root.props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 64, gap: 14, flexGrow: 1 });
+src/screens/alert-detail/index.test.tsx:954:    expect(screen.getByTestId('screen-alert-detail').props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 24, paddingBottom: bottom + 40, gap: 14, flexGrow: 1 });
+src/screens/reset-password/index.test.tsx:321:    expect(screenRoot.props.contentInsetAdjustmentBehavior).toBe('automatic');
+src/screens/reset-password/index.test.tsx:605:    expect(disk.props.className).toBe('size-8 items-center justify-center rounded-full bg-accent');
+src/screens/reminders/index.test.tsx:299:      paddingTop: 24,
+src/screens/reminders/index.test.tsx:401:      paddingTop: 24,
+src/screens/reminders/index.test.tsx:549:      ['a', 'size-11.5 items-center justify-center rounded-14 bg-category-blue', 'reminders-icon-syringe', 'color:category-blue-strong'],
+src/screens/reminders/index.test.tsx:550:      ['b', 'size-11.5 items-center justify-center rounded-14 bg-category-amber', 'reminders-icon-pill', 'color:category-amber-strong'],
+src/screens/reminders/index.test.tsx:551:      ['c', 'size-11.5 items-center justify-center rounded-14 bg-default', 'reminders-icon-pin-tack', 'color:muted'],
+src/screens/reminders/index.test.tsx:1367:    expect(tile.props.className).toBe('size-14 items-center justify-center rounded-full bg-category-rose');
+src/screens/reminders/index.test.tsx:1667:    expect(container.props.className).toBe('flex-1 items-center justify-center p-6 bg-background');
+src/screens/map/index.test.tsx:619:        left: 16,
+src/screens/map/index.test.tsx:1223:        left: 16,
+src/screens/map/index.test.tsx:1250:        left: 16,
+src/screens/map/index.test.tsx:1636:      'flex-row items-center gap-2 self-start rounded-full border border-border bg-surface px-3 py-2 shadow-sm',
+src/screens/map/index.test.tsx:1964:    expect(slot.parent?.props.className).toBe('flex-1 items-center justify-center p-6 bg-background');
+src/screens/map/index.test.tsx:2000:    expect(slot.parent?.props.className).toBe('flex-1 items-center justify-center p-6 bg-background');
+src/screens/alerts/index.test.tsx:342:    expect(list.props.contentInsetAdjustmentBehavior).toBe('automatic');
+src/screens/alerts/index.test.tsx:345:      paddingTop: 24,
+src/screens/alerts/index.test.tsx:421:        `size-11 items-center justify-center rounded-full ${disc}`,
+src/screens/alerts/index.test.tsx:443:      expect(ack.props.className.split(' ')).not.toContain('min-h-11');
+src/screens/alerts/index.test.tsx:462:        'min-h-11 min-w-0 flex-1 justify-center gap-0.5',
+src/screens/alerts/index.test.tsx:499:        'min-h-11 min-w-0 flex-1 justify-center gap-0.5',
+src/screens/alerts/index.test.tsx:509:    expect(ack.props.className.split(' ')).not.toContain('min-h-11');
+src/screens/alerts/index.test.tsx:1257:    expect(link.props.className).toBe('min-h-11 min-w-0 flex-1 justify-center gap-0.5');
+```
+
+El sentinel .done señala fin de esta ejecución detenida, no cierre ni aprobación de E4. El informe conserva los estados históricos de las reanudaciones anteriores; el estado vigente es esta parada.
+
+#### Novena reanudación — cierre E4/E6, 2026-10-22
+
+Inicio en HEAD `93785dc43be9dd253909b39fe9f510c9e4517aeb`, cwd `/home/claude/sites/Pet-Tracker-wt-189`, branch `feature/189-mobile-geofences-canvas-fidelity`. NOVENA REANUDACIÓN y tasks §Aclaración P-E4-8 mandan sobre la atribución anterior: 42 literal se prueba en C y 50 literal en F ES/EN. Firmas E4/E5/E6 verificadas (una cada una); árbol de código/spec/docs limpio, informe WIP y documentos del leader conservados.
+
+Skills leídas: `building-native-ui`, `expo-tailwind-setup` (cache oficial Expo 11c74d6b), `appllama-app-design-skill` del repo y `ponytail`; ninguna solicitada ausente. Consultada la [referencia oficial SDK 57](https://docs.expo.dev/versions/v57.0.0/) exigida por mobile/AGENTS.md. Los valores y patrones de la spec/carta prevalecen; MCP appllama y smoke Android reservados según handoff. No se ejecutan init.sh/push/PR ni se modifican casillas o bookkeeping.
+
+Se ejecutan sondas secuenciales con ambas guardas pgrep vacías y restauración exacta en `finally`; cada salida roja debe nombrar el candado previsto.
+
+##### Parada obligatoria — guarda de procesos ocupada antes de P-E4-8
+
+El ejecutor `/tmp/e4-probe-189.cjs` abortó en su primera llamada a `guard()`, ANTES de escribir la mutación de `paddingLeft: 42`. `pgrep -f '[n]ode_modules/(.bin/jest|jest-worker)'` devolvió los PID `293150`, `293207`, `293208`, `293209`. Verificación read-only con `ps -p … -o pid,ppid,args`:
+
+```text
+293150 293143 node /home/claude/sites/Pet-Tracker-wt-195/mobile-pet-tracker/node_modules/.bin/jest src/components/__tests__/pet-hero-header(-motion)?.test.tsx|src/screens/home/index.test.tsx --testTimeout=30000 --silent
+293207 293150 /usr/bin/node /home/claude/sites/Pet-Tracker-wt-195/mobile-pet-tracker/node_modules/jest-worker/build/workers/processChild.js
+293208 293150 /usr/bin/node /home/claude/sites/Pet-Tracker-wt-195/mobile-pet-tracker/node_modules/jest-worker/build/workers/processChild.js
+293209 293150 /usr/bin/node /home/claude/sites/Pet-Tracker-wt-195/mobile-pet-tracker/node_modules/jest-worker/build/workers/processChild.js
+```
+
+No es una contradicción nueva de la spec ni un error de invocación: la guarda detectó procesos reales del worktree vecino. Se aplica la regla vigente del handoff «Solo PARA si falla el código, una cifra de esta lista o una guarda». No se estrecha el patrón, no se detienen procesos ajenos y no se reintenta eludiendo la parada. El ejecutor no alcanzó la segunda guarda; no se afirma que estuviera vacía.
+
+Resultado de esta ejecución: ninguna mutación plantada; ninguna línea `Tests:` nueva. Las dos sustituciones de P-E4-8, P-E4-9..13 y P-E6-1..3 quedan sin ejecutar. Medidas finales, suite completa, typecheck, lint, graphify, traceability y commit documental de cierre E4/E6 quedan sin ejecutar por esta parada. `git diff --stat -- mobile-pet-tracker/ specs/ docs/` vacío; HEAD permanece `93785dc43be9dd253909b39fe9f510c9e4517aeb`. Solo se añade esta subsección al informe; documentos del leader y patch preexistente conservados.
+
+El sentinel `.done` indica el fin de esta ejecución detenida, sin afirmar cierre o aprobación de E4/E6. El estado vigente es esta parada por guarda ocupada.
+
+##### Reanudación autorizada tras liberarse la guarda
+
+Se mantiene HEAD `93785dc4` y la branch indicada; código/spec/docs sin modificaciones. Ambas guardas, con sus patrones originales, comprobadas vacías (pgrep exit 1). Se retoman las dos mutaciones P-E4-8 y las sondas pendientes, sin repetir las ya registradas. Las cuatro skills siguen cargadas; no se estrechan patrones ni se alteran aserciones.
+
+Sonda P-E4-9-offset (src/screens/geofence-editor/index.test.tsx): exit 1; `Tests:       1 failed, 119 passed, 120 total`. Fallos: ● #146 R6: el editor pinta el formulario sobre el mapa y sus estados › compone mapa y formulario sin fondo sobre el mapa y con las métricas A11 en el formulario (enmendado por #189 R9) (enmendado por E4 R22). Log `e4-e9-P-E4-9-offset-0.log`. Rojo esperado; restauración exacta en finally.
+
+P-E4-9 import: ancla negativa M12 mutada = 1 (base final 0).
+
+Sonda P-E4-9-import (src/__tests__/geofences-canvas-fidelity.test.ts): exit 1; `Tests:       1 failed, 27 passed, 28 total`. Fallos: ● #189 R22.3: el Editor no consume HeaderHeightContext ni useContext. Log `e4-e9-P-E4-9-import-0.log`. Rojo esperado; restauración exacta en finally.
+
+P-E4-8 sustitución literal42: exit 1; `Tests:       1 failed, 27 passed, 28 total`. ● #189 R23: geometría compartida con ventana independiente › #189 R23.2: geofences no repite los literales de geometría. Fuente restaurada exactamente por finally; log `e4-e9-P-E4-8-literal42-0.log`.
+
+P-E4-8 sustitución literal50: exit 1; `Tests:       2 failed, 94 passed, 96 total`. ● #189 R1: título y contador en el contenido › #189 R1.2: el título de es tiene clase, rol y posición exactos (enmendado por #189 R3) (enmendado por E4 R21); ● #189 R1: título y contador en el contenido › #189 R1.2: el título de en tiene clase, rol y posición exactos (enmendado por #189 R3) (enmendado por E4 R21). Fuente restaurada exactamente por finally; log `e4-e9-P-E4-8-literal50-0.log`.
+
+Sonda P-E4-10-left (src/screens/geofence-editor/index.test.tsx): exit 1; `Tests:       6 failed, 114 passed, 120 total`. Fallos: ● #189 R8: título en contenido y píldora de cristal sobre el mapa › #189 R8: título del formulario al editar en es (light) (enmendado por E4 R22); ● #189 R8: título en contenido y píldora de cristal sobre el mapa › #189 R8: título del formulario al crear en es (light) (enmendado por E4 R22); ● #189 R8: título en contenido y píldora de cristal sobre el mapa › #189 R8: título del formulario al lectura en es (light) (enmendado por E4 R22); ● #189 R8: título en contenido y píldora de cristal sobre el mapa › #189 R8: título del formulario al editar en en (dark) (enmendado por E4 R22); ● #189 R8: título en contenido y píldora de cristal sobre el mapa › #189 R8: título del formulario al crear en en (dark) (enmendado por E4 R22); ● #189 R8: título en contenido y píldora de cristal sobre el mapa › #189 R8: título del formulario al lectura en en (dark) (enmendado por E4 R22). Log `e4-e9-P-E4-10-left-0.log`. Rojo esperado; restauración exacta en finally.
+
+Sonda P-E4-10-blur (src/screens/geofence-editor/index.test.tsx): exit 1; `Tests:       6 failed, 114 passed, 120 total`. Fallos: ● #189 R8: título en contenido y píldora de cristal sobre el mapa › #189 R8: título del formulario al editar en es (light) (enmendado por E4 R22); ● #189 R8: título en contenido y píldora de cristal sobre el mapa › #189 R8: título del formulario al crear en es (light) (enmendado por E4 R22); ● #189 R8: título en contenido y píldora de cristal sobre el mapa › #189 R8: título del formulario al lectura en es (light) (enmendado por E4 R22); ● #189 R8: título en contenido y píldora de cristal sobre el mapa › #189 R8: título del formulario al editar en en (dark) (enmendado por E4 R22); ● #189 R8: título en contenido y píldora de cristal sobre el mapa › #189 R8: título del formulario al crear en en (dark) (enmendado por E4 R22); ● #189 R8: título en contenido y píldora de cristal sobre el mapa › #189 R8: título del formulario al lectura en en (dark) (enmendado por E4 R22). Log `e4-e9-P-E4-10-blur-0.log`. Rojo esperado; restauración exacta en finally.
+
+Sonda P-E4-11-state (src/screens/geofence-editor/index.test.tsx): exit 1; `Tests:       7 failed, 113 passed, 120 total`. Fallos: ● #189 R22: opciones estables por rama de la cabecera › #189 R22.2: cabecera opaca en carga; ● #189 R22: opciones estables por rama de la cabecera › #189 R22.2: cabecera opaca en no-tracking; ● #189 R22: opciones estables por rama de la cabecera › #189 R22.2: cabecera opaca en error; ● #189 R22: opciones estables por rama de la cabecera › #189 R22.2: cabecera opaca en no-encontrada; ● #189 R22: opciones estables por rama de la cabecera › #189 R22.2: cabecera opaca en solo-dueño; ● #189 R22: opciones estables por rama de la cabecera › #189 R22.2: restaura la cabecera opaca al pasar del formulario a estado; ● #189 R22: opciones estables por rama de la cabecera › #189 R22.1/R22.2: identidad estable de opciones en estado. Log `e4-e9-P-E4-11-state-0.log`. Rojo esperado; restauración exacta en finally.
+
+Sonda P-E4-11-form (src/screens/geofence-editor/index.test.tsx): exit 1; `Tests:       5 failed, 115 passed, 120 total`. Fallos: ● #189 R22: opciones estables por rama de la cabecera › #189 R22.1: cabecera transparente al editar; ● #189 R22: opciones estables por rama de la cabecera › #189 R22.1: cabecera transparente al crear; ● #189 R22: opciones estables por rama de la cabecera › #189 R22.1: cabecera transparente al lectura; ● #189 R22: opciones estables por rama de la cabecera › #189 R22.2: restaura la cabecera opaca al pasar del formulario a estado; ● #189 R22: opciones estables por rama de la cabecera › #189 R22.1/R22.2: identidad estable de opciones en formulario. Log `e4-e9-P-E4-11-form-0.log`. Rojo esperado; restauración exacta en finally.
+
+Sonda P-E4-12-form (src/screens/geofence-editor/index.test.tsx): exit 1; `Tests:       1 failed, 119 passed, 120 total`. Fallos: ● #189 R22: opciones estables por rama de la cabecera › #189 R22.1/R22.2: identidad estable de opciones en formulario. Log `e4-e9-P-E4-12-form-0.log`. Rojo esperado; restauración exacta en finally.
+
+Sonda P-E4-12-state (src/screens/geofence-editor/index.test.tsx): exit 1; `Tests:       1 failed, 119 passed, 120 total`. Fallos: ● #189 R22: opciones estables por rama de la cabecera › #189 R22.1/R22.2: identidad estable de opciones en estado. Log `e4-e9-P-E4-12-state-0.log`. Rojo esperado; restauración exacta en finally.
+
+Sonda P-E4-13 (src/screens/geofences/index.test.tsx): exit 1; `Tests:       2 failed, 94 passed, 96 total`. Fallos: ● #189 R1: título y contador en el contenido › #189 R1.2: el título de es tiene clase, rol y posición exactos (enmendado por #189 R3) (enmendado por E4 R21); ● #189 R1: título y contador en el contenido › #189 R1.2: el título de en tiene clase, rol y posición exactos (enmendado por #189 R3) (enmendado por E4 R21). Log `e4-e9-P-E4-13-0.log`. Rojo esperado; restauración exacta en finally.
+
+Sonda P-E6-1 (src/__tests__/consistency-classnames.test.ts): exit 1; `Tests:       1 failed, 74 passed, 75 total`. Fallos: ● #189 R9: la hoja del Editor combina esquina continua y flex sin perderlos (enmendado por E4 R19) (enmendado por E4 R22). Log `e4-e9-P-E6-1-0.log`. Rojo esperado; restauración exacta en finally.
+
+Sonda P-E6-2 (src/__tests__/consistency-classnames.test.ts): exit 1; `Tests:       1 failed, 74 passed, 75 total`. Fallos: ● #189 R9: la hoja del Editor combina esquina continua y flex sin perderlos (enmendado por E4 R19) (enmendado por E4 R22). Log `e4-e9-P-E6-2-0.log`. Rojo esperado; restauración exacta en finally.
+
+Sonda P-E6-2 (src/screens/geofence-editor/index.test.tsx): exit 1; `Tests:       1 failed, 119 passed, 120 total`. Fallos: ● #146 R6: el editor pinta el formulario sobre el mapa y sus estados › compone mapa y formulario sin fondo sobre el mapa y con las métricas A11 en el formulario (enmendado por #189 R9) (enmendado por E4 R22). Log `e4-e9-P-E6-2-1.log`. Rojo esperado; restauración exacta en finally.
+
+Sonda P-E6-3 (src/__tests__/consistency-classnames.test.ts): exit 1; `Tests:       1 failed, 74 passed, 75 total`. Fallos: ● #189 R9: la hoja del Editor combina esquina continua y flex sin perderlos (enmendado por E4 R19) (enmendado por E4 R22). Log `e4-e9-P-E6-3-0.log`. Rojo esperado; restauración exacta en finally.
+
+Suite completa de cierre (`bun run test`, guardas originales vacías): exit 0; `Test Suites: 131 passed, 131 total`; `Tests:       4426 passed, 4426 total`; `Snapshots:   1 passed, 1 total`; `Time:        130.18 s, estimated 134 s`. Log `e9-closure-test-189.log`.
+
+##### Cierre automatizado E4/E5/E6 — estado vigente
+
+**Completado** sobre código `93785dc4`. Este estado sustituye las paradas históricas preservadas arriba. H0-E4: `cc175325fb42632e48254569af21e89dbc362843`; H0-E5: `ae69eee5857acdc9766509621dd479ef05067bb3`; H0-E6: `0babf6460c115dd5218f3757efa0cc417a62d2cf`. H0 original del diff: `4204530e`.
+
+Los 28 casos nuevos se reparten: C 17→28 (+11), F 94→96 (+2), E 105→120 (+15); sin casos borrados. Total 4398 + 28 = 4426, 131 suites y 1 snapshot. `chunky` conserva sus 76 casos (las 74 de algunas notas antiguas eran anteriores a esta base). La suite completa valida también todos los candados agregados; logs rojos/verdes por commit se conservan arriba.
+
+Medidas obtenidas comparando las fuentes versionadas de la firma H0-E4 con HEAD; ninguna mutación entra en ellas. Evidencia íntegra en `e9-final-measures-189.log`, revalidada tras las sondas.
+
+| Medida | Base + delta = final |
+|---|---|
+| M10: isDisabled Zonas/Editor | 2 +0 = 2 / 3 +0 = 3 |
+| M11: KEEP_OPACITY Zonas/Editor/native-styles | 0 +4 = 4 / 0 +5 = 5 / 0 +1 = 1 |
+| M12: HeaderHeightContext Editor | 2 -2 = 0 |
+| M13: offset headerHeight/0 | 1 -1 = 0 / 0 +1 = 1 |
+| M14: inset automático Zonas/Editor | 1 -1 = 0 / 1 +0 = 1 |
+| M15: Stack.Screen Editor/Zonas | 0 +2 = 2 / 0 +0 = 0 |
+| M16: header-layout | ausente → existe, seis export const |
+| M17: TRANSPARENT_HEADER_OPTIONS layout/Editor | 0 +2 = 2 / 0 +2 = 2 |
+| M18: títulos nativos traducidos | 0 +0 = 0 |
+| M19: chunkyLip Zonas/Editor/design-drift | 2 +0 = 2 / 3 +0 = 3 / 0 +0 = 0 |
+| export const native-styles | 2 + 1 = 3 |
+| Forma vieja `? undefined : chunkyLip.primary` Zonas/Editor | 1/1 − 1/1 = 0/0; probada por P-E4-3 |
+
+##### Candados agregados: base E4 + delta = final
+
+Se miden las cifras sin adaptar código ni tests. `design-drift` y `heroui-text-size-merge` tienen diff vacío desde H0-E4. `consistency` solo mueve C1/C2 en su único it autorizado.
+
+| Inventario | Base + delta = final |
+|---|---|
+| rounded-16 global; Zonas/Editor | 30 + 0 = 30; 2/3 + 0/0 = 2/3 |
+| style CONTINUOUS_CORNER directo global; refs Zonas/Editor | 41 + 0 = 41; 4/2 + 0/0 = 4/2 |
+| TABULAR_NUMS directo global | 34 + 0 = 34; Editor 1, Zonas 0 |
+| Primarios semánticos; primarios literales | 17 + 0 = 17; 15 + 0 = 15 |
+| Neutros semánticos por fila NEUTRAL_ROWS; primaryCompact | siete ficheros, uno cada uno, delta 0; reminders 1 + 0 = 1 |
+| NEUTRAL_ROWS / inventario secundarios | 7/10 + 0/0 = 7/10 |
+| Button.Label aperturas / menciones | 17/46 + 0/0 = 17/46 |
+| text-17 / Text acento / foreground / bold accent-strong | 26/15/6/1 + 0 = 26/15/6/1 |
+| border-lip-gray | 11 + 0 = 11 |
+| HeroUI / className / Card / ficheros HeroUI | 197/163/41/30 + 0 = 197/163/41/30; pisos 197/163/41/28 intactos; cero findings |
+| expo-blur | 3 + 0 = 3 consumidores |
+| rounded-14 / rounded-tile / rounded-hero | 6/6/3 + 0 = 6/6/3 consumidores |
+| text-26 / text-13 / text-15 / tracking-title | 8/15/14/12 + 0 = 8/15/14/12 consumidores |
+| copy / idiomas / catálogo | sin cambio desde E4; Editor title exactamente 2; tablas 22/31 |
+
+Enmiendas E4: `#177 R3.1` mueve las dos formas condicionales; `R4.1` mueve solo el neutro del Editor; `R7.5`/`R8.1` amplían predicados manteniendo todos los inventarios/ids. E5 cierra las tres igualdades con borderCurve, transform y opacity; P-E4-4 confirma que boxShadow extra falla. E6 mueve solo el import C1 y la etiqueta C2; esquina y recuento CONTINUOUS_CORNER=2 permanecen.
+
+##### M20 final — barrido y clasificación
+
+Comandos exactos de §4.6 ejecutados de nuevo: `e9-m20-final-files.log` y `e9-m20-final-lines.log`. H0-E6: 62 rutas/181 líneas; tras R22: 62/184; cierre: 62/184. Comparación normalizando únicamente números de línea: tras R22, R24 retira una coincidencia del literal paddingTop:24 en R16.1 y añade una coincidencia de la frase de transparencia R24.1. Ambas pertenecen a C, en la lista cerrada y en R24. C1/C2 y el candado negativo R22.3 explican el delta restante desde H0-E6. No hay línea nueva no clasificada que fije un literal de E4. Se pega la salida completa final de los dos comandos:
+
+```text
+src/__tests__/account-screens-polish.test.ts
+src/__tests__/add-pet-two-steps.test.ts
+src/__tests__/alert-detail-canvas-fidelity.test.ts
+src/__tests__/alerts-canvas-fidelity.test.ts
+src/__tests__/chunky-cta-canvas-fidelity.test.ts
+src/__tests__/consistency-classnames.test.ts
+src/__tests__/design-drift.test.ts
+src/__tests__/forms-validation-global.test.ts
+src/__tests__/geofences-canvas-fidelity.test.ts
+src/__tests__/hero-header-amendments.test.ts
+src/__tests__/heroui-text-size-merge.test.ts
+src/__tests__/home-pingo-phrase.test.ts
+src/__tests__/hosting-artifacts.test.ts
+src/__tests__/legibility-classnames.test.ts
+src/__tests__/no-pets-states.test.ts
+src/__tests__/pairing-canvas-fidelity.test.ts
+src/__tests__/profile-canvas-fidelity.test.ts
+src/__tests__/tab-headers-canvas.test.ts
+src/__tests__/ui-language.test.ts
+src/app/(auth)/__tests__/layout.test.tsx
+src/app/(tabs)/__tests__/alerts.test.tsx
+src/app/(tabs)/__tests__/food.test.tsx
+src/app/(tabs)/__tests__/layout.test.tsx
+src/app/__tests__/detail-stack.test.tsx
+src/app/__tests__/layout.test.tsx
+src/app/__tests__/tabs-layout.test.tsx
+src/components/__tests__/celebration.test.tsx
+src/components/__tests__/empty-state-hero.test.tsx
+src/components/__tests__/empty-state.test.tsx
+src/components/__tests__/field-error-message.test.tsx
+src/components/__tests__/floating-tab-bar.test.tsx
+src/components/__tests__/pet-hero-header.test.tsx
+src/components/__tests__/segmented-control.test.tsx
+src/hooks/use-pet-selection.test.tsx
+src/hooks/use-push-registration.navigation.test.tsx
+src/providers/__tests__/language-provider.test.tsx
+src/screens/add-pet/index.test.tsx
+src/screens/add-reminder/index.test.tsx
+src/screens/alert-detail/index.test.tsx
+src/screens/alerts/index.test.tsx
+src/screens/docs-upload-form/index.test.tsx
+src/screens/docs/index.test.tsx
+src/screens/forgot/index.test.tsx
+src/screens/geofence-editor/index.test.tsx
+src/screens/geofences/index.test.tsx
+src/screens/home/index.test.tsx
+src/screens/home/weekly-activity-chart.test.tsx
+src/screens/login/index.test.tsx
+src/screens/map/index.test.tsx
+src/screens/meal-schedule/index.test.tsx
+src/screens/meals-history/index.test.tsx
+src/screens/pairing/index.test.tsx
+src/screens/profile/index.test.tsx
+src/screens/register/index.test.tsx
+src/screens/reminders/index.test.tsx
+src/screens/reset-password/index.test.tsx
+src/screens/weight-log/index.test.tsx
+src/screens/welcome/index.test.tsx
+src/theme/__tests__/font-registration.test.ts
+src/theme/__tests__/global-css.test.ts
+src/theme/__tests__/motion.test.ts
+src/utils/form-rules.test.ts
+```
+
+```text
+src/components/__tests__/floating-tab-bar.test.tsx:345:    expect(style).toMatchObject({ bottom: 46, left: 16, right: 16 });
+src/components/__tests__/celebration.test.tsx:169:      pointerEvents: 'none', importantForAccessibility: 'no-hide-descendants', accessibilityElementsHidden: true,
+src/components/__tests__/celebration.test.tsx:436:    expect(ring.props.pointerEvents).toBe('none');
+src/components/__tests__/celebration.test.tsx:514:    expect(hero.props.className).toBe('mt-10 items-center justify-center');
+src/components/__tests__/pet-switcher.test.tsx:133:        `size-10 items-center justify-center overflow-hidden rounded-full ${surfaces[index]}`,
+src/components/__tests__/pet-switcher.test.tsx:145:      'size-10 items-center justify-center overflow-hidden rounded-full bg-category-amber',
+src/components/__tests__/back-button.test.tsx:42:    expect(back.props.className).toBe('size-11 items-center justify-center rounded-full');
+src/components/__tests__/empty-state-hero.test.tsx:53:  expect(stage.props.className).toBe('h-65 w-70 items-center justify-center');
+src/components/__tests__/password-input.test.tsx:76:    expect(toggle.props.className).toBe('size-11 items-center justify-center');
+src/components/__tests__/pet-hero-header.test.tsx:454:  it('es una capsula rounded-full de text-2xs font-semibold, self-start, sin animate-pulse ni Chip', async () => {
+src/components/__tests__/pet-hero-header.test.tsx:468:      'flex-row items-center gap-1 self-start rounded-full px-2.5 py-0.5',
+src/components/__tests__/segmented-control.test.tsx:4:import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+src/components/__tests__/segmented-control.test.tsx:30:      expect(segment.props.className).toBe('h-9.5 flex-1 items-center justify-center rounded-10' + (selected ? ' bg-surface shadow-sm' : ''));
+src/app/__tests__/tabs-layout.test.tsx:38:      headerShown: false,
+src/app/__tests__/layout.test.tsx:307:    expect(props?.screenOptions).toEqual({ headerShown: false });
+src/app/__tests__/layout.test.tsx:315:      [Stack.Screen, 'index', undefined],
+src/app/__tests__/layout.test.tsx:316:      [Stack.Screen, '(tabs)', undefined],
+src/app/__tests__/layout.test.tsx:317:      [Stack.Screen, '(auth)', undefined],
+src/app/__tests__/layout.test.tsx:318:      [Stack.Screen, 'reset-password', undefined],
+src/app/__tests__/layout.test.tsx:329:      [Stack.Screen, 'add-reminder'],
+src/app/__tests__/layout.test.tsx:330:      [Stack.Screen, 'pets/add'],
+src/app/__tests__/layout.test.tsx:331:      [Stack.Screen, 'pets/[petId]/docs'],
+src/app/__tests__/layout.test.tsx:332:      [Stack.Screen, 'pets/[petId]/docs-upload'], // #185 R10
+src/app/__tests__/layout.test.tsx:333:      [Stack.Screen, 'weight-log'],
+src/app/__tests__/layout.test.tsx:334:      [Stack.Screen, 'meal-schedule'],
+src/app/__tests__/layout.test.tsx:335:      [Stack.Screen, 'pairing'],
+src/app/__tests__/layout.test.tsx:365:      headerShown: true,
+src/app/__tests__/layout.test.tsx:395:      [Stack.Screen, 'reminders', undefined],
+src/app/__tests__/layout.test.tsx:396:      [Stack.Screen, 'alerts', true],
+src/app/__tests__/layout.test.tsx:419:      : null).toEqual([Stack.Screen, 'alerts/[alertId]', true]);
+src/app/__tests__/layout.test.tsx:430:      headerShown: true,
+src/app/__tests__/layout.test.tsx:469:      : null).toEqual([Stack.Screen, 'pets/[petId]/geofences', undefined]);
+src/app/__tests__/layout.test.tsx:480:      headerShown: true,
+src/app/__tests__/layout.test.tsx:509:      : null).toEqual([Stack.Screen, 'pets/[petId]/geofence-editor', undefined]);
+src/app/__tests__/layout.test.tsx:520:      headerShown: true,
+src/app/__tests__/layout.test.tsx:550:      headerShown: true,
+src/app/__tests__/layout.test.tsx:577:      : undefined).toEqual([Stack.Screen, 'meals-history']);
+src/app/__tests__/layout.test.tsx:580:      : undefined).toMatchObject({ headerShown: true, title: '' });
+src/app/__tests__/layout.test.tsx:602:    )).toEqual([[Stack.Screen, 'welcome']]);
+src/app/(auth)/__tests__/layout.test.tsx:51:        headerShown: false,
+src/app/(tabs)/__tests__/food.test.tsx:574:    expect(toggle.props.className).toBe('min-h-11 justify-center');
+src/app/(tabs)/__tests__/food.test.tsx:1298:    expect(progress.props.className).toBe('size-26 items-center justify-center');
+src/app/(tabs)/__tests__/layout.test.tsx:79:      headerShown: false,
+src/hooks/use-push-registration.navigation.test.tsx:61:      <Stack screenOptions={{ headerShown: false }} />
+src/__tests__/alert-detail-canvas-fidelity.test.ts:31:  expect([...source.matchAll(/rounded-card|min-h-44|text-lg|text-2xs|text-sm|h-52([^.0-9]|$)|min-h-11/g)]).toEqual([]);
+src/__tests__/design-drift.test.ts:1197:    expect(history).toContain("import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';");
+src/__tests__/geofences-canvas-fidelity.test.ts:2:import { BACK_BUTTON_SIZE, EDITOR_PILL_LEFT, HEADER_BAR_HEIGHT, HEADER_ROW_TOP, TRANSPARENT_HEADER_OPTIONS, ZONES_TITLE_OFFSET } from '../theme/header-layout';
+src/__tests__/geofences-canvas-fidelity.test.ts:40:    const source = readFileSync(join(process.cwd(), 'src/theme/header-layout.ts'), 'utf8');
+src/__tests__/geofences-canvas-fidelity.test.ts:45:    expect(TRANSPARENT_HEADER_OPTIONS).toEqual({ headerTransparent: true, headerStyle: { backgroundColor: 'transparent' } });
+src/__tests__/geofences-canvas-fidelity.test.ts:93:    const source = readFileSync(join(process.cwd(), 'src/theme/native-styles.ts'), 'utf8');
+src/__tests__/geofences-canvas-fidelity.test.ts:150:it('#189 R22.3: el Editor no consume HeaderHeightContext ni useContext', () => {
+src/__tests__/geofences-canvas-fidelity.test.ts:152:  expect(editor.source).not.toContain('HeaderHeightContext');
+src/__tests__/geofences-canvas-fidelity.test.ts:153:  expect(editor.source).not.toMatch(/\buseContext\b/);
+src/__tests__/geofences-canvas-fidelity.test.ts:159:    expect(mainRules).toContain("Cabecera nativa transparente (#189 E4): Zonas seguras y la rama de formulario del Editor usan `headerTransparent: true` con `headerStyle: { backgroundColor: 'transparent' }`; el contenido empieza bajo la cabecera, el título comparte fila con la flecha, el `paddingTop` suma `insets.top` y no se usa `contentInsetAdjustmentBehavior`. Las ramas de estado del Editor conservan la cabecera opaca.");
+src/__tests__/consistency-classnames.test.ts:174:      'size-13 items-center justify-center bg-accent rounded-16',
+src/__tests__/consistency-classnames.test.ts:177:      'size-8 shrink-0 items-center justify-center rounded-xl ${tileClassName}',
+src/__tests__/consistency-classnames.test.ts:279:    const nativeStyles = readSource(join('theme', 'native-styles.ts'));
+src/__tests__/consistency-classnames.test.ts:294:      /import \{[^}]*\bCONTINUOUS_CORNER\b[^}]*\} from ['"].*theme\/native-styles['"];/,
+src/__tests__/consistency-classnames.test.ts:312:      "import { CONTINUOUS_CORNER } from '../theme/native-styles';",
+src/__tests__/consistency-classnames.test.ts:356:      /import \{[^}]*\bTABULAR_NUMS\b[^}]*\} from ['"].*theme\/native-styles['"];/,
+src/__tests__/consistency-classnames.test.ts:698:  expect(source).toContain("import { CONTINUOUS_CORNER, KEEP_OPACITY, TABULAR_NUMS } from '../../theme/native-styles';");
+src/__tests__/consistency-classnames.test.ts:701:  expect(source).toContain('<KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={0}>');
+src/__tests__/account-screens-polish.test.ts:49:    expect(login.match(/testID="link-forgot"\s+className="min-h-11 self-end"/g) ?? []).toHaveLength(1);
+src/__tests__/chunky-cta-canvas-fidelity.test.ts:110:  for (const forbidden of ['border-b-4', 'border-black', 'rounded-xl', 'min-h-11']) expect(tag).not.toContain(forbidden);
+src/__tests__/chunky-cta-canvas-fidelity.test.ts:154:  expect(tag).toContain('className="size-13 items-center justify-center bg-accent rounded-16"');
+src/__tests__/alerts-canvas-fidelity.test.ts:61:    "change": "#100 R6: la columna de texto de la fila pasa a dos hijos (tipo y subtítulo) con justify-center y gap-0.5",
+src/screens/register/index.test.tsx:281:        .contentInsetAdjustmentBehavior,
+src/screens/docs/index.test.tsx:12:import { HeaderHeightContext } from 'expo-router/react-navigation';
+src/screens/docs/index.test.tsx:118:        <HeaderHeightContext.Provider value={91}>
+src/screens/docs/index.test.tsx:120:        </HeaderHeightContext.Provider>
+src/screens/docs/index.test.tsx:236:      'self-start rounded-full px-2 py-0.5 text-11 font-extrabold bg-category-blue text-category-blue-strong',
+src/screens/docs/index.test.tsx:284:      'self-start rounded-full px-2 py-0.5 text-11 font-extrabold bg-category-blue text-category-blue-strong',
+src/screens/docs/index.test.tsx:289:      'self-start rounded-full px-2 py-0.5 text-11 font-extrabold bg-default text-muted',
+src/screens/docs/index.test.tsx:359:      paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48,
+src/screens/docs/index.test.tsx:642:    expect(mosaic.props.className).toBe(`h-14 w-12 items-center justify-center rounded-xl ${surface}`);
+src/screens/docs/index.test.tsx:650:    expect(column.children[0]).toHaveProperty('props.className', `self-start rounded-full px-2 py-0.5 text-11 font-extrabold ${surface} ${ink}`);
+src/screens/docs/index.test.tsx:729:    expect(circle.props.className).toBe('size-12 items-center justify-center rounded-full bg-surface-secondary');
+src/screens/docs/index.test.tsx:805:    expect(chip.props.className).toBe(`h-8.5 items-center justify-center rounded-full px-3 ${surface}`);
+src/screens/docs/index.test.tsx:845:    expect(selected.props.className).toBe('h-8.5 items-center justify-center rounded-full px-3 bg-foreground');
+src/screens/docs/index.test.tsx:848:    expect(all.props.className).toBe('h-8.5 items-center justify-center rounded-full px-3 bg-default');
+src/screens/meal-schedule/index.test.tsx:284:    ).toEqual({ paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48 });
+src/screens/meal-schedule/index.test.tsx:1088:      paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48,
+src/screens/meal-schedule/index.test.tsx:1194:      expect(tile).toHaveProp('className', 'size-10.5 items-center justify-center rounded-14 bg-category-amber');
+src/screens/add-pet/index.test.tsx:1:import { HeaderHeightContext, usePreventRemove } from 'expo-router/react-navigation';
+src/screens/add-pet/index.test.tsx:90:        <HeaderHeightContext.Provider value={91}>
+src/screens/add-pet/index.test.tsx:92:        </HeaderHeightContext.Provider>
+src/screens/add-pet/index.test.tsx:137:    expect(photo.props.className).toBe('size-22 items-center justify-center rounded-full border-2 border-dashed border-accent bg-surface-secondary');
+src/screens/add-pet/index.test.tsx:797:    expect(chip.props.className).toBe('h-9.5 flex-1 items-center justify-center rounded-10' + (testID === 'species-dog' ? ' bg-surface shadow-sm' : ''));
+src/screens/home/index.test.tsx:34:import { TABULAR_NUMS } from '../../theme/native-styles';
+src/screens/home/index.test.tsx:208:      'size-11 items-center justify-center rounded-full',
+src/screens/home/index.test.tsx:2556:      expect(tile.props.className).toContain('min-h-11');
+src/screens/home/index.test.tsx:3218:        `size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS[slot].surface}`,
+src/screens/home/index.test.tsx:3235:      `size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.neutral.surface}`,
+src/screens/home/index.test.tsx:4107:            `size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.blue.surface}`,
+src/screens/home/index.test.tsx:4133:            `size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.neutral.surface}`,
+src/screens/home/index.test.tsx:4362:        `size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.rose.surface}`,
+src/screens/home/index.test.tsx:5477:    expect(container.props.className).toBe('flex-1 items-center justify-center px-5 py-6 bg-background'); // (enmendado por #176 R3)
+src/screens/home/weekly-activity-chart.test.tsx:21:import { TABULAR_NUMS } from '../../theme/native-styles';
+src/screens/home/weekly-activity-chart.test.tsx:843:      segments.every(({ props }) => props.className.includes('h-11')),
+src/screens/home/weekly-activity-chart.test.tsx:1028:    expect(spanishColumn.props.className).toContain('min-h-11');
+src/screens/home/weekly-activity-chart.test.tsx:1686:    const resting = 'min-h-11 flex-1 items-center justify-end';
+src/screens/home/weekly-activity-chart.test.tsx:1688:      'min-h-11 flex-1 items-center justify-end border-t-2 border-accent-strong';
+src/screens/home/weekly-activity-chart.test.tsx:2279:    const resting = 'min-h-11 flex-1 items-center justify-end';
+src/screens/home/weekly-activity-chart.test.tsx:2281:      'min-h-11 flex-1 items-center justify-end border-t-2 border-accent-strong';
+src/screens/pairing/index.test.tsx:1:import { HeaderHeightContext } from 'expo-router/react-navigation';
+src/screens/pairing/index.test.tsx:160:          <HeaderHeightContext.Provider value={91}>
+src/screens/pairing/index.test.tsx:162:          </HeaderHeightContext.Provider>
+src/screens/pairing/index.test.tsx:622:      expect(source).not.toContain('size-16 items-center justify-center rounded-full bg-accent-soft');
+src/screens/pairing/index.test.tsx:1213:      'size-9', 'items-center', 'justify-center', 'overflow-hidden', 'rounded-full', 'bg-category-amber',
+src/screens/pairing/index.test.tsx:1259:      'w-50', 'h-37.5', 'items-center', 'justify-center',
+src/screens/profile/index.test.tsx:1374:    expect(camera.props.className).toBe('absolute -bottom-0.5 -right-0.5 size-8.5 items-center justify-center rounded-full border-3 border-surface-secondary bg-accent');
+src/screens/profile/index.test.tsx:1548:    expect(root.props.className).toBe('flex-row flex-wrap justify-center gap-1.5');
+src/screens/profile/index.test.tsx:1730:      expect(avatar.props.className).toBe('size-8.5 items-center justify-center rounded-full bg-default');
+src/screens/add-reminder/index.test.tsx:1:import { HeaderHeightContext } from 'expo-router/react-navigation';
+src/screens/add-reminder/index.test.tsx:118:          <HeaderHeightContext.Provider value={91}>
+src/screens/add-reminder/index.test.tsx:120:          </HeaderHeightContext.Provider>
+src/screens/add-reminder/index.test.tsx:186:      paddingTop: 24,
+src/screens/add-reminder/index.test.tsx:569:      paddingHorizontal: 20, paddingTop: 24, gap: 16, paddingBottom: 48,
+src/screens/add-reminder/index.test.tsx:594:    expect(chip.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-accent border-b-3 border-black/25');
+src/screens/add-reminder/index.test.tsx:606:      expect(chip.props.className).toBe(`h-9.5 items-center justify-center rounded-full px-3.5 ${surface}`);
+src/screens/add-reminder/index.test.tsx:617:    expect(selected.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-accent border-b-3 border-black/25');
+src/screens/add-reminder/index.test.tsx:620:    expect(idle.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-category-blue');
+src/screens/add-reminder/index.test.tsx:713:const CHIP_SELECTED = 'h-9.5 items-center justify-center rounded-full px-3.5 bg-accent border-b-3 border-black/25';
+src/screens/add-reminder/index.test.tsx:714:const CHIP_IDLE = 'h-9.5 items-center justify-center rounded-full px-3.5 bg-default';
+src/screens/health/index.test.tsx:1067:    { id: 'overdue', surface: 'size-10 items-center justify-center rounded-xl bg-category-rose', icon: 'health-icon-clock', color: 'category-rose-strong', texts: ['Vencida', '2026-01-01', '2026-02-28'], dateClass: 'font-normal text-danger' },
+src/screens/health/index.test.tsx:1068:    { id: 'next', surface: 'size-10 items-center justify-center rounded-xl bg-category-amber', icon: 'health-icon-clock', color: 'category-amber-strong', texts: ['Próxima', '2026-01-02', '2026-03-31'], dateClass: 'font-normal text-muted' },
+src/screens/health/index.test.tsx:1069:    { id: 'future', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Futura', '2026-01-03', '2026-04-02'], dateClass: 'font-normal text-muted' },
+src/screens/health/index.test.tsx:1070:    { id: 'completed', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Sin próxima dosis', '2026-01-04'], dateClass: 'font-normal text-muted' },
+src/screens/weight-log/index.test.tsx:1:import { HeaderHeightContext } from 'expo-router/react-navigation';
+src/screens/weight-log/index.test.tsx:176:          <HeaderHeightContext.Provider value={91}>
+src/screens/weight-log/index.test.tsx:178:          </HeaderHeightContext.Provider>
+src/screens/weight-log/index.test.tsx:1042:    expect(toast.props.pointerEvents).toBe('none');
+src/screens/meals-history/index.test.tsx:120:    expect(screen.getByTestId('screen-meals-history')).toHaveProp('contentInsetAdjustmentBehavior', 'automatic');
+src/screens/meals-history/index.test.tsx:121:    expect(screen.getByTestId('screen-meals-history')).toHaveProp('contentContainerStyle', { paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48 });
+src/screens/meals-history/index.test.tsx:418:      paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48,
+src/screens/meals-history/index.test.tsx:457:      expect(arrow).toHaveProp('className', 'size-10 items-center justify-center rounded-xl bg-default');
+src/screens/meals-history/index.test.tsx:520:      ? 'h-11 flex-1 items-center justify-center gap-0.5 rounded-full bg-tab-pill'
+src/screens/meals-history/index.test.tsx:521:      : 'h-11 flex-1 items-center justify-center gap-0.5 rounded-full');
+src/screens/login/index.test.tsx:192:    expect(screenRoot.props.contentInsetAdjustmentBehavior).toBe('automatic');
+src/screens/forgot/index.test.tsx:155:    expect(screenRoot.props.contentInsetAdjustmentBehavior).toBe('automatic');
+src/screens/forgot/index.test.tsx:306:      (c) => (c as { props: { className?: string } }).props.className === 'size-13 items-center justify-center bg-accent rounded-16',
+src/screens/forgot/index.test.tsx:312:      (c) => (c as { props: { className?: string } }).props.className === 'size-13 items-center justify-center bg-accent rounded-16',
+src/screens/forgot/index.test.tsx:539:  it('forgot-form lleva className y contentInsetAdjustmentBehavior de la spec en los dos estados', async () => {
+src/screens/forgot/index.test.tsx:544:    expect(screen.getByTestId('forgot-form').props.contentInsetAdjustmentBehavior).toBe('automatic');
+src/screens/forgot/index.test.tsx:548:    expect(screen.getByTestId('forgot-form').props.contentInsetAdjustmentBehavior).toBe('automatic');
+src/screens/forgot/index.test.tsx:609:        className: 'size-13 items-center justify-center bg-accent rounded-16',
+src/screens/forgot/index.test.tsx:624:        className: 'size-13 items-center justify-center bg-accent rounded-16',
+src/screens/forgot/index.test.tsx:686:    expect(tile.props.className).toBe('size-13 items-center justify-center bg-accent rounded-16');
+src/screens/docs-upload-form/index.test.tsx:17:import { HeaderHeightContext } from 'expo-router/react-navigation';
+src/screens/docs-upload-form/index.test.tsx:142:            <Stack screenOptions={{ headerShown: false }} />
+src/screens/docs-upload-form/index.test.tsx:147:    'pets/[petId]/docs': () => <HeaderHeightContext.Provider value={91}><DocsRoute /></HeaderHeightContext.Provider>,
+src/screens/docs-upload-form/index.test.tsx:148:    'pets/[petId]/docs-upload': () => <HeaderHeightContext.Provider value={91}><DocsUploadRoute /></HeaderHeightContext.Provider>,
+src/screens/docs-upload-form/index.test.tsx:704:    expect(source).toContain('keyboardVerticalOffset={headerHeight}');
+src/screens/welcome/index.test.tsx:131:    expect(screen.getByTestId('screen-welcome').props.contentInsetAdjustmentBehavior).toBe('automatic');
+src/screens/welcome/index.test.tsx:194:    expect(screen.getByTestId('welcome-chips').props.className).toBe('flex-row justify-center gap-2');
+src/screens/welcome/index.test.tsx:771:    expect(screen.getByTestId('welcome-stage').props.className).toBe('items-center justify-center');
+src/screens/alert-detail/index.test.tsx:217:    expect(elementChild(card, 0).props.className).toBe(`size-18 items-center justify-center rounded-full ${solid}`);
+src/screens/alert-detail/index.test.tsx:218:    expect(icon.parent?.props.className).toBe(`size-18 items-center justify-center rounded-full ${solid}`);
+src/screens/alert-detail/index.test.tsx:273:    expect(root.props.contentInsetAdjustmentBehavior).toBe('automatic');
+src/screens/alert-detail/index.test.tsx:274:    expect(root.props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 64, gap: 14, flexGrow: 1 });
+src/screens/alert-detail/index.test.tsx:954:    expect(screen.getByTestId('screen-alert-detail').props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 24, paddingBottom: bottom + 40, gap: 14, flexGrow: 1 });
+src/screens/reset-password/index.test.tsx:321:    expect(screenRoot.props.contentInsetAdjustmentBehavior).toBe('automatic');
+src/screens/reset-password/index.test.tsx:605:    expect(disk.props.className).toBe('size-8 items-center justify-center rounded-full bg-accent');
+src/screens/reminders/index.test.tsx:299:      paddingTop: 24,
+src/screens/reminders/index.test.tsx:401:      paddingTop: 24,
+src/screens/reminders/index.test.tsx:549:      ['a', 'size-11.5 items-center justify-center rounded-14 bg-category-blue', 'reminders-icon-syringe', 'color:category-blue-strong'],
+src/screens/reminders/index.test.tsx:550:      ['b', 'size-11.5 items-center justify-center rounded-14 bg-category-amber', 'reminders-icon-pill', 'color:category-amber-strong'],
+src/screens/reminders/index.test.tsx:551:      ['c', 'size-11.5 items-center justify-center rounded-14 bg-default', 'reminders-icon-pin-tack', 'color:muted'],
+src/screens/reminders/index.test.tsx:1367:    expect(tile.props.className).toBe('size-14 items-center justify-center rounded-full bg-category-rose');
+src/screens/reminders/index.test.tsx:1667:    expect(container.props.className).toBe('flex-1 items-center justify-center p-6 bg-background');
+src/screens/map/index.test.tsx:619:        left: 16,
+src/screens/map/index.test.tsx:1223:        left: 16,
+src/screens/map/index.test.tsx:1250:        left: 16,
+src/screens/map/index.test.tsx:1636:      'flex-row items-center gap-2 self-start rounded-full border border-border bg-surface px-3 py-2 shadow-sm',
+src/screens/map/index.test.tsx:1964:    expect(slot.parent?.props.className).toBe('flex-1 items-center justify-center p-6 bg-background');
+src/screens/map/index.test.tsx:2000:    expect(slot.parent?.props.className).toBe('flex-1 items-center justify-center p-6 bg-background');
+src/screens/alerts/index.test.tsx:342:    expect(list.props.contentInsetAdjustmentBehavior).toBe('automatic');
+src/screens/alerts/index.test.tsx:345:      paddingTop: 24,
+src/screens/alerts/index.test.tsx:421:        `size-11 items-center justify-center rounded-full ${disc}`,
+src/screens/alerts/index.test.tsx:443:      expect(ack.props.className.split(' ')).not.toContain('min-h-11');
+src/screens/alerts/index.test.tsx:462:        'min-h-11 min-w-0 flex-1 justify-center gap-0.5',
+src/screens/alerts/index.test.tsx:499:        'min-h-11 min-w-0 flex-1 justify-center gap-0.5',
+src/screens/alerts/index.test.tsx:509:    expect(ack.props.className.split(' ')).not.toContain('min-h-11');
+src/screens/alerts/index.test.tsx:1257:    expect(link.props.className).toBe('min-h-11 min-w-0 flex-1 justify-center gap-0.5');
+```
+
+##### Resumen consolidado de sondas
+
+Todas las mutaciones se restauraron exactamente. Los rojos de P-E4-1..7, ventana/cableado de P-E4-8 y P-E4-4 tras E5 constan en la octava reanudación; las sondas restantes están registradas en esta novena. El verde intermedio del literal 50 en C se conserva como evidencia de la contradicción corregida por `93785dc4`, sin cambiar R ni aserción.
+
+| Sonda | Rojo observado |
+|---|---|
+| P-E4-1 / 2 | C 1 failed/28 en cada una |
+| P-E4-3 | F 8 failed/96; chunky 3 failed/76 |
+| P-E4-4 (E5) | F 8 failed/96; R20.1 detecta boxShadow extra |
+| P-E4-5 | F 5 failed/96, bloqueos disabled |
+| P-E4-6 | L 1 failed/28, opciones exactas |
+| P-E4-7 inset / padding | F 1 failed/96 en cada una |
+| P-E4-8 ventana / sin cable / literal42 / literal50 | C 1/28; F 2/96; C 1/28 R23.2; F 2/96 R1.2 ES/EN |
+| P-E4-9 offset / import | E 1/120 (291≠200); C 1/28 y M12 mutada=1 |
+| P-E4-10 left / BlurView | E 6/120 en cada una |
+| P-E4-11 sin Stack.Screen estado / formulario | E 7/120 y 5/120, transición incluida |
+| P-E4-12 identidad formulario / estado | E 1/120 en cada una |
+| P-E4-13 sin h-11 | F 2/96, ES/EN |
+| P-E6-1 orden import | consistency 1/75, C1 |
+| P-E6-2 offset headerHeight | consistency 1/75, C2; E 1/120 teclado |
+| P-E6-3 etiqueta en varias líneas con 0 | consistency 1/75, C2 |
+
+##### Commits E4/E5/E6 y trazabilidad R19-R24
+
+Cada hash se resolvió contra Git y es ancestro de HEAD. La tabla principal de traceability usa los mismos hashes reales y el nombre real del it de opciones de #95 R4. Ninguna fila R19-R24/E4/E5/E6 queda sin resolver.
+
+| R | Rojo(s) y verde |
+|---|---|
+| R23 | `7e47e13a test(mobile): #189 E4 R23 rojo — lock shared header geometry`; `180594ec feat(mobile): #189 E4 R23 centralize header geometry` |
+| R19 | `297b9f4b test(mobile): #189 E4 R19 rojo — lock opacity while controls are disabled`; `f3aa4094 test(mobile): #189 E5 R19 rojo-corrección — flatten real de Guardar vacío`; `889ed6fa test(mobile): #189 E6 R19 rojo-corrección — import de KEEP_OPACITY en el candado de la hoja del Editor`; `cae47221 feat(mobile): #189 E4 R19 R20 keep disabled controls fully opaque` |
+| R20 | `eace0652 test(mobile): #189 E4 R20 rojo — lock add-zone opacity and disabled recipe`; `3a786a89 test(mobile): #189 E5 R20 rojo-corrección — flatten real de Añadir zona en el límite`; `cae47221 feat(mobile): #189 E4 R19 R20 keep disabled controls fully opaque` |
+| R21 | `8fae5abf test(mobile): #189 E4 R21 rojo — lock transparent zones header and title geometry`; `e82549e3 feat(mobile): #189 E4 R21 align zones title with transparent header` |
+| R22 | `d9077a65 test(mobile): #189 E4 R22 rojo — lock editor headers keyboard and pill row`; `b3c16b4c feat(mobile): #189 E4 R22 align editor header pill and keyboard` |
+| R24 | `a49eb6b0 test(mobile): #189 E4 R24 rojo — lock charter amendments for transparent headers`; `fb578f0b feat(mobile): #189 E4 R24 document transparent headers and opaque disabled controls` |
+
+##### Lista final de ficheros desde H0
+
+`git diff --name-only 4204530e..HEAD -- mobile-pet-tracker/ docs/`: 24 ficheros, todos en la lista cerrada ampliada E4+E5+E6 y las ampliaciones anteriores. legibility-classnames está autorizada pero sin cambios; no se fuerza una edición. Registro íntegro en `e9-final-files-189.log`.
+
+```text
+docs/conventions.md
+docs/ui-guidelines.md
+mobile-pet-tracker/src/__tests__/alert-detail-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/chunky-cta-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/__tests__/geofences-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/heroui-text-size-merge.test.ts
+mobile-pet-tracker/src/__tests__/profile-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/app/__tests__/layout.test.tsx
+mobile-pet-tracker/src/app/_layout.tsx
+mobile-pet-tracker/src/i18n/catalog.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx
+mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+mobile-pet-tracker/src/screens/geofences/index.test.tsx
+mobile-pet-tracker/src/screens/geofences/index.tsx
+mobile-pet-tracker/src/theme/header-layout.ts
+mobile-pet-tracker/src/theme/native-styles.ts
+mobile-pet-tracker/src/utils/__tests__/category-palette.test.ts
+mobile-pet-tracker/src/utils/category-palette.ts
+```
+
+##### Verificaciones finales, límites y entrega
+
+- `bun run test` completo: exit 0, `Test Suites: 131 passed, 131 total`, `Tests: 4426 passed, 4426 total`, `Snapshots: 1 passed, 1 total`, 130.18 s. Las dos guardas originales estaban vacías justo antes de iniciarlo. Guardas agregadas design-drift, consistency-classnames, legibility-classnames, heroui-text-size-merge, chunky-cta-canvas-fidelity, profile-canvas-fidelity, ui-language, language-provider, alert-detail-canvas-fidelity, alerts-canvas-fidelity y geofences-canvas-fidelity constan PASS en el log completo. Sin flake de home en esta ejecución.
+- `test ! -e .expo/types/router.d.ts` pasó; después `bun run typecheck` exit 0 (`e9-typecheck-189.log`). No se borra/regenera el fichero de tipos.
+- `bunx expo lint --no-cache > ../progress/lint-189.log 2>&1 && test ! -s ../progress/lint-189.log`: exit 0, log vacío.
+- `graphify update .`: exit 0, solo AST, sin LLM. `e9-graphify-189.log`: 916 ficheros extraídos, 27506 nodos, 35551 aristas, 1794 comunidades; artefactos en graphify-out ignorados por Git. Limitación del entorno: 20 SQL no contribuyen por ausencia de tree_sitter_sql; etiquetas de comunidades previas requieren actualización semántica si se desea. No se instalan dependencias ni se lanza etiquetado LLM.
+- M10-M19, inventarios agregados y M20 se volvieron a medir tras el último verde; todas las cifras esperadas coinciden. Las anclas negativas se observaron fallar con sus mutaciones y vuelven a cero tras restaurar.
+- Sin nuevas contradicciones de requisito/aserción. La parada anterior por guarda ocupada y el verde intermedio erróneo de la vieja P-E4-8 permanecen documentados como historia; no alteran los resultados finales.
+- Smoke Android §6 pasos 6-10 y comparación visual de la flecha: a cargo del humano; no ejecutados ni declarados aprobados. Si la geometría excede ±8 dp, la enmienda posterior es E7. No se cambia ninguna casilla ni el status de la feature/spec; revisión y merge corresponden al humano/leader.
+- Código de producción y tests permanecen idénticos a `93785dc4` tras todas las sondas. Solo se entregan este informe y traceability.md en un commit `docs(geofences): record E4 E6 closure and mutation evidence`; este commit documental no cambia el código validado ni requiere repetir la suite. Se conservan el patch E5 y los documentos sin seguimiento del leader. Sin init.sh, push ni PR. La última acción recrea el sentinel .done con la ruta de este informe, sin commitearlo.
