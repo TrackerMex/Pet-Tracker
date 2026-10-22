@@ -205,6 +205,7 @@ de tocar y registra base + delta en `progress/impl_mobile-geofences-canvas-fidel
 ## R21 — Zonas, cabecera transparente
 
 - [ ] (1) Rojo: (L) `layout.test.tsx` con `headerStyle` transparente y `headerTransparent: true`; (F) `paddingTop: 46`, sin `contentInsetAdjustmentBehavior`, `h-11 flex-row items-center gap-2` y `paddingLeft` = `ZONES_TITLE_OFFSET`.
+- Aclaración del leader (2026-10-22, sin cambio de R): el ancla de (L) en requirements §4.4 nombra mal el `it`. El `toEqual` de opciones de la ruta vive en `layout.test.tsx` → «le da la cabecera nativa de #95 R4 con el título de zonas seguras»; ESE `it` es el que se enmienda (sufijo `(enmendado por E4 R21)`, opciones transparentes + `headerTransparent: true`). El `it` «declara pets/[petId]/geofences como undécimo hijo y no singular» (posición, singularidad) NO se toca. El `it` del Editor tampoco. Las opciones esperadas son las de requirements §4.4 R21 (L), sin cambios.
 - [ ] (2) Implementación mínima: `_layout.tsx` y pantalla de Zonas.
 - [ ] (3) Refactor.
 
