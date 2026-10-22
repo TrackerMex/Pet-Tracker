@@ -6,7 +6,7 @@ import {
   within,
 } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
 import type { PetProfile } from '../../api/types';
 import { PetSwitcher } from '../pet-switcher';
@@ -270,7 +270,9 @@ describe('#195 R10: fila de vidrio con acción al final', () => {
     expect(row.props.className).toBe('flex-row items-center gap-2 p-1');
     expect(row.children).toEqual([first, second, trailing]);
     expect(row.children).toHaveLength(pets.length + 1);
-    const scroll = screen.UNSAFE_getAllByType(ScrollView)[0];
+    let scroll = row.parent;
+    while (scroll && !scroll.props.horizontal) scroll = scroll.parent;
+    if (!scroll) throw new Error('horizontal scroll missing');
     expect(scroll.props.horizontal).toBe(true);
     expect(scroll.props.showsHorizontalScrollIndicator).toBe(false);
     expect(scroll.props.className).toBe('-m-1');
