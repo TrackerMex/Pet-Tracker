@@ -144,3 +144,10 @@ describe('#189 R18: candados de fuente de ambas pantallas', () => {
     expect(source).not.toMatch(/text-\$\{|text-['"`]\s*\+/);
   });
 });
+
+
+it('#189 R22.3: el Editor no consume HeaderHeightContext ni useContext', () => {
+  const editor = screens.find(({ name }) => name === 'geofence-editor')!;
+  expect(editor.source).not.toContain('HeaderHeightContext');
+  expect(editor.source).not.toMatch(/\buseContext\b/);
+});

@@ -13,6 +13,7 @@ import { getLastPosition } from '../../api/positions';
 import type { LastPosition, PetProfile } from '../../api/types';
 import { catalog, type Language } from '../../i18n/catalog';
 import { LanguageProvider } from '../../providers/language-provider';
+import { EDITOR_PILL_LEFT, HEADER_BAR_HEIGHT } from '../../theme/header-layout';
 import { GeofenceEditorScreen } from '.';
 
 jest.mock('../../theme/use-theme-colors', () => ({ useThemeColors: (tokens: string[]) => tokens }));
@@ -27,7 +28,8 @@ const mockSignOut = jest.fn().mockResolvedValue(undefined);
 jest.mock('../../providers/auth-provider', () => ({
   useAuth: () => ({ status: 'authenticated', token: 'token-1', signOut: mockSignOut }),
 }));
-jest.mock('expo-router', () => ({ router: { back: jest.fn() } }));
+const mockStackScreen = jest.fn<null, [{ options: object }]>(() => null);
+jest.mock('expo-router', () => ({ router: { back: jest.fn() }, Stack: { Screen: (props: { options: object }) => mockStackScreen(props) } }));
 jest.mock('expo-maps', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
@@ -199,7 +201,7 @@ describe('#146 R6: el editor pinta el formulario sobre el mapa y sus estados', (
     expect(screen.queryByTestId('geofence-editor-load-error')).toBeNull();
     expect(screen.queryByTestId('geofence-editor-name')).toBeNull();
   });
-  it('compone mapa y formulario sin fondo sobre el mapa y con las métricas A11 en el formulario (enmendado por #189 R9)', async () => {
+  it('compone mapa y formulario sin fondo sobre el mapa y con las métricas A11 en el formulario (enmendado por #189 R9) (enmendado por E4 R22)', async () => {
     await edit();
     const root = screen.getByTestId('screen-geofence-editor');
     expect(root.props.className).toBe('flex-1');
@@ -223,7 +225,7 @@ describe('#146 R6: el editor pinta el formulario sobre el mapa y sus estados', (
         duration: 0, easing: 'keyboard', isEventFromThisApp: true,
       });
     });
-    await waitFor(() => expect(screen.getByTestId('screen-geofence-editor')).toHaveStyle({ paddingBottom: 291 }));
+    await waitFor(() => expect(screen.getByTestId('screen-geofence-editor')).toHaveStyle({ paddingBottom: 200 }));
   });
   it('pinta el formulario en inglés', async () => {
     await edit('en');
@@ -605,7 +607,7 @@ describe('#189 R8: título en contenido y píldora de cristal sobre el mapa', ()
   it.each([
     ['editar', 'es', 'light'], ['crear', 'es', 'light'], ['lectura', 'es', 'light'],
     ['editar', 'en', 'dark'], ['crear', 'en', 'dark'], ['lectura', 'en', 'dark'],
-  ] as const)('#189 R8: título del formulario al %s en %s (%s)', async (kind, language, theme) => {
+  ] as const)('#189 R8: título del formulario al %s en %s (%s) (enmendado por E4 R22)', async (kind, language, theme) => {
     mockTheme = theme;
     if (kind === 'lectura') mockGetPet.mockResolvedValue(petState('family'));
     await mount(kind === 'crear' ? undefined : casa.id, language);
@@ -616,15 +618,22 @@ describe('#189 R8: título en contenido y píldora de cristal sobre el mapa', ()
     expect(title.props.className).toBe('bg-glass-surface-strong px-4 py-2.5 text-base font-extrabold text-foreground');
     const blur = screen.getByTestId('geofence-editor-title-blur');
     expect(title.parent).toBe(blur);
-    expect(blur.props.className).toBe('absolute left-4 top-3 overflow-hidden rounded-full');
+    expect(blur.props.className).toBe('self-start overflow-hidden rounded-full');
     expect(blur.props.intensity).toBe(48);
     expect(blur.props.blurMethod).toBe('dimezisBlurViewSdk31Plus');
     expect(blur.props.tint).toBe(theme);
     expect(blur.children).toHaveLength(1);
     expect(childTestIds(blur)).toEqual(['geofence-editor-title']);
     const map = screen.getByTestId('geofence-editor-map');
-    expect(blur.parent).toBe(map);
-    expect(childTestIds(map).slice(0, 2)).toEqual(['map-view', 'geofence-editor-title-blur']);
+    const row = screen.getByTestId('geofence-editor-title-row');
+    expect(blur.parent).toBe(row);
+    expect(row.parent).toBe(map);
+    expect(row.props.className).toBe('absolute justify-center');
+    expect(row.props.pointerEvents).toBe('box-none');
+    expect(StyleSheet.flatten(row.props.style)).toEqual({ top: 40, left: 70, height: 56 });
+    expect(StyleSheet.flatten(row.props.style)).toEqual({ top: 40, left: EDITOR_PILL_LEFT, height: HEADER_BAR_HEIGHT });
+    expect(childTestIds(row)).toEqual(['geofence-editor-title-blur']);
+    expect(childTestIds(map).slice(0, 2)).toEqual(['map-view', 'geofence-editor-title-row']);
   });
   it.each(['carga', 'no-tracking', 'error', 'no-encontrada', 'solo-dueño'] as const)('#189 R8: título plano primero en %s', async (kind) => {
     if (kind === 'carga') mockList.mockReturnValue(new Promise(() => undefined));
@@ -647,7 +656,7 @@ describe('#189 R8: título en contenido y píldora de cristal sobre el mapa', ()
 
 
 describe('#189 R9: hoja estática solapada y capas del mapa', () => {
-  it.each(['editar', 'crear', 'lectura'] as const)('#189 R9: compone la hoja al %s sin fondo que tape el mapa', async (kind) => {
+  it.each(['editar', 'crear', 'lectura'] as const)('#189 R9: compone la hoja al %s sin fondo que tape el mapa (enmendado por E4 R22)', async (kind) => {
     if (kind === 'lectura') mockGetPet.mockResolvedValue(petState('family'));
     await mount(kind === 'crear' ? undefined : casa.id);
     const form = await screen.findByTestId('geofence-editor-form');
@@ -672,7 +681,7 @@ describe('#189 R9: hoja estática solapada y capas del mapa', () => {
     if (kind === 'lectura') {
       expect(screen.queryByTestId('geofence-editor-map-hint')).toBeNull();
       expect(screen.queryByTestId('geofence-editor-map-hint-blur')).toBeNull();
-      expect(childTestIds(mapContainer)).toEqual(['map-view', 'geofence-editor-title-blur']);
+      expect(childTestIds(mapContainer)).toEqual(['map-view', 'geofence-editor-title-row']);
     } else {
       const hint = screen.getByTestId('geofence-editor-map-hint');
       expect(hint.props.className).toBe('bg-glass-surface-strong px-3 py-1.5 text-xs font-bold text-foreground');
@@ -684,7 +693,7 @@ describe('#189 R9: hoja estática solapada y capas del mapa', () => {
       expect(blur.props.intensity).toBe(48);
       expect(blur.props.blurMethod).toBe('dimezisBlurViewSdk31Plus');
       expect(blur.props.tint).toBe('light');
-      expect(childTestIds(mapContainer)).toEqual(['map-view', 'geofence-editor-title-blur', 'geofence-editor-map-hint-blur']);
+      expect(childTestIds(mapContainer)).toEqual(['map-view', 'geofence-editor-title-row', 'geofence-editor-map-hint-blur']);
     }
   });
 });
@@ -888,5 +897,53 @@ describe('#189 R19: los controles bloqueados conservan la opacidad', () => {
     expect(StyleSheet.flatten(save.props.style)).toEqual({ borderCurve: 'continuous', transform: [{ scale: 1 }], opacity: 1 });
     expect(screen.getByTestId('geofence-editor-active').props.accessibilityState.disabled).toBe(false);
     expect(screen.getByTestId('geofence-editor-delete').props.accessibilityState.disabled).toBe(false);
+  });
+});
+
+
+describe('#189 R22: opciones estables por rama de la cabecera', () => {
+  const transparent = { headerTransparent: true, headerStyle: { backgroundColor: 'transparent' } };
+  const opaque = { headerTransparent: false, headerStyle: { backgroundColor: 'background' } };
+  const lastOptions = () => mockStackScreen.mock.calls.at(-1)?.[0].options;
+
+  it.each(['editar', 'crear', 'lectura'] as const)('#189 R22.1: cabecera transparente al %s', async (kind) => {
+    if (kind === 'lectura') mockGetPet.mockResolvedValue(petState('family'));
+    await mount(kind === 'crear' ? undefined : casa.id);
+    await screen.findByTestId('geofence-editor-form');
+    expect(lastOptions()).toEqual(transparent);
+    expect(childTestIds(screen.getByTestId('screen-geofence-editor'))).toEqual(['geofence-editor-map', 'geofence-editor-form']);
+  });
+
+  it.each(['carga', 'no-tracking', 'error', 'no-encontrada', 'solo-dueño'] as const)('#189 R22.2: cabecera opaca en %s', async (kind) => {
+    if (kind === 'carga') mockList.mockReturnValue(new Promise(() => undefined));
+    if (kind === 'no-tracking') mockList.mockResolvedValue({ kind: 'no-tracking' });
+    if (kind === 'error') mockList.mockResolvedValue({ kind: 'error' });
+    if (kind === 'solo-dueño') mockGetPet.mockResolvedValue(petState('family'));
+    await mount(kind === 'solo-dueño' ? undefined : kind === 'no-encontrada' ? 'missing' : casa.id);
+    const stateId = { carga: 'loading', 'no-tracking': 'no-tracking', error: 'load-error', 'no-encontrada': 'not-found', 'solo-dueño': 'owner-only' }[kind];
+    await screen.findByTestId(`geofence-editor-${stateId}`);
+    expect(lastOptions()).toEqual(opaque);
+    expect(childTestIds(screen.getByTestId('geofence-editor-title').parent!)[0]).toBe('geofence-editor-title');
+  });
+
+  it('#189 R22.2: restaura la cabecera opaca al pasar del formulario a estado', async () => {
+    const { queryClient } = await edit();
+    expect(lastOptions()).toEqual(transparent);
+    await act(async () => { queryClient.setQueryData(expectedListKey, { kind: 'no-tracking' }); });
+    await screen.findByTestId('geofence-editor-no-tracking');
+    expect(lastOptions()).toEqual(opaque);
+    expect(screen.queryByTestId('geofence-editor-form')).toBeNull();
+  });
+
+  it.each(['formulario', 'estado'] as const)('#189 R22.1/R22.2: identidad estable de opciones en %s', async (kind) => {
+    if (kind === 'estado') mockList.mockResolvedValue({ kind: 'no-tracking' });
+    const { rerender } = await mount(casa.id);
+    const stateId = kind === 'formulario' ? 'form' : 'no-tracking';
+    await screen.findByTestId(`geofence-editor-${stateId}`);
+    const previous = lastOptions();
+    expect(previous).toEqual(kind === 'formulario' ? transparent : opaque);
+    await rerender(<GeofenceEditorScreen petId="pet-1" geofenceId={casa.id} />);
+    expect(screen.getByTestId(`geofence-editor-${stateId}`)).toBeVisible();
+    expect(Object.is(previous, lastOptions())).toBe(true);
   });
 });
