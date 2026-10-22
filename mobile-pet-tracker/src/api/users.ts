@@ -1,4 +1,4 @@
-import { getJson, readJson } from './http';
+import { getJson, patchJson, readJson } from './http';
 
 export interface ProfileResponse {
   id: string;
@@ -58,6 +58,35 @@ export async function getMe(
   if (result.response.status !== 200) {
     return { kind: 'error' };
   }
+
+  const body = await readJson(result.response);
+  return isProfileResponse(body) ? { kind: 'ok', me: body } : { kind: 'error' };
+}
+
+
+export type UpdateProfileInput = Partial<Pick<ProfileResponse, 'firstName' | 'lastName' | 'phone' | 'country'>>;
+
+export type UpdateMeState =
+  | { kind: 'ok'; me: ProfileResponse }
+  | { kind: 'unauthorized' }
+  | { kind: 'validation' }
+  | { kind: 'error' }
+  | { kind: 'unreachable'; message: string }
+  | { kind: 'missing-config' };
+
+export async function updateMe(
+  baseUrl: string | undefined,
+  token: string,
+  changes: UpdateProfileInput,
+  fetchFn: typeof fetch = fetch,
+): Promise<UpdateMeState> {
+  if (!baseUrl) return { kind: 'missing-config' };
+
+  const result = await patchJson(baseUrl, '/me', token, changes, fetchFn);
+  if (result.kind === 'unreachable') return result;
+  if (result.response.status === 401) return { kind: 'unauthorized' };
+  if (result.response.status === 400) return { kind: 'validation' };
+  if (result.response.status !== 200) return { kind: 'error' };
 
   const body = await readJson(result.response);
   return isProfileResponse(body) ? { kind: 'ok', me: body } : { kind: 'error' };

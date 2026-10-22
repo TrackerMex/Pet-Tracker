@@ -601,6 +601,7 @@ describe('#87 R19: use-' + 'api no deja huella', () => {
     'screens/home/index.tsx': 0,
     'screens/pairing/index.tsx': 2,
     'screens/profile/index.tsx': 2,
+    'screens/edit-profile/index.tsx': 1, // #194 R8
     'screens/reminders/index.tsx': 1,
   };
 
@@ -1140,6 +1141,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       'screens/add-reminder/index.tsx': 1,
       'screens/alert-detail/index.tsx': 2,
       'screens/docs-upload-form/index.tsx': 2,
+      'screens/edit-profile/index.tsx': 1, // #194 R6
       'screens/forgot/index.tsx': 3,
       'screens/geofence-editor/index.tsx': 1,
       'screens/geofences/index.tsx': 1,
@@ -1234,6 +1236,7 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
       'screens/add-reminder/index.tsx',
       'screens/alert-detail/index.tsx',
       'screens/docs-upload-form/index.tsx',
+      'screens/edit-profile/index.tsx',
       'screens/forgot/index.tsx',
       'screens/geofence-editor/index.tsx',
       'screens/geofences/index.tsx',

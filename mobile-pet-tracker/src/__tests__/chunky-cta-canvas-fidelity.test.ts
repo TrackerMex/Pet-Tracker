@@ -47,6 +47,7 @@ function inventory(pattern: RegExp): Record<string, number> {
 const count = (pattern: RegExp) => Object.values(inventory(pattern)).reduce((sum, n) => sum + n, 0);
 
 const CTA_ROWS = [
+  ['screens/edit-profile/index.tsx', literalId('edit-profile-save'), 'w-full h-14 rounded-16 bg-accent', ['onPress={() => void handleSubmit()}', 'isDisabled={submitting}']], // #194 R7
   ['screens/login/index.tsx', literalId('login-submit'), 'w-full h-14 rounded-16 bg-accent', ['isDisabled={submitting}', 'onPress={() => void handleSubmit()}']],
   ['screens/register/index.tsx', literalId('register-submit'), 'w-full h-14 rounded-16 bg-accent', ['isDisabled={!terms || submitting}', 'onPress={() => void handleSubmit()}']],
   ['screens/forgot/index.tsx', literalId('forgot-submit'), 'w-full h-14 rounded-16 bg-accent', ["isDisabled={email.trim() === '' || submitting}", 'onPress={() => void submit()}']],
@@ -79,6 +80,7 @@ const ctaFiles = [...new Set(CTA_ROWS.map(([path]) => path))].sort(); // #191 R1
 const consumers = [...ctaFiles, 'screens/reminders/index.tsx'].sort();
 const neutralInventory = ['${rowId}-ack', 'add-meal-time-button', 'alert-detail-view-map', 'docs-upload-cancel', 'forgot-resend', 'meal-time-edit-${index}', 'reminders-delete-cancel', 'secondary.testID', 'welcome-have-account'];
 const radii = {
+  'screens/edit-profile/index.tsx': 1, // #194 R6
   'components/celebration.tsx': 2,
   'components/empty-state.tsx': 1,
   'screens/add-pet/index.tsx': 2, // #191 R11
@@ -154,8 +156,8 @@ it('#177 R6.2: recuentos de etiquetas', () => {
   // #177 R6
   expect(count(/<Button\.Label/g)).toBe(35 - 15 - 1); // #191 R11
   expect(count(/Button\.Label/g)).toBe(82 - 30 - 2); // #191 R11
-  expect(count(/text-17/g)).toBe(8 + 15 + 1); // #191 R11
-  expect(count(/<Text className="text-17 font-extrabold text-accent-foreground">/g)).toBe(5 + 11 + 1); // #191 R11
+  expect(count(/text-17/g)).toBe(8 + 15 + 1 + 1); // #194 R6 // #191 R11
+  expect(count(/<Text className="text-17 font-extrabold text-accent-foreground">/g)).toBe(5 + 11 + 1 + 1); // #194 R6 // #191 R11
   expect(count(/text-17 font-extrabold text-foreground/g)).toBe(3 + 3);
   expect(count(/<Text className="text-17 font-bold text-accent-strong">/g)).toBe(0 + 1);
 });
@@ -171,7 +173,7 @@ it('#177 R7.2: inventarios de las dos recetas de primario', () => {
 });
 it('#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por #191 R11)', () => {
   expect(inventory(/\brounded-16\b/g)).toEqual(radii);
-  expect(count(/\brounded-16\b/g)).toBe(26 + 1); // #191 R11
+  expect(count(/\brounded-16\b/g)).toBe(26 + 1 + 1); // #194 R6 // #191 R11
 });
 it('#177 R7.4: solo la definición y los diecisiete consumidores usan el hook', () => {
   expect(Object.keys(inventory(/useChunkyLip/g)).sort()).toEqual([...consumers, 'theme/chunky-lip.ts'].sort());
