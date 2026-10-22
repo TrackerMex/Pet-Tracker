@@ -35,10 +35,14 @@ describe('#195 R16: pop de la burbuja con movimiento real', () => {
     expect(intermediate.opacity).toBeLessThan(1);
     expect(intermediate.transform[0].scale).toBeGreaterThan(0.6);
     expect(intermediate.transform[0].scale).toBeLessThan(1.08);
-    await act(async () => { jest.advanceTimersByTime(236); });
+    await act(async () => { jest.advanceTimersByTime(220); });
+    expect(getAnimatedStyle(bubble)).toEqual({ opacity: 1, transform: [{ scale: 1.08 }] });
+    await act(async () => { jest.advanceTimersByTime(16); });
     const peak = getAnimatedStyle(bubble) as { opacity: number; transform: { scale: number }[] };
     expect(peak.opacity).toBeCloseTo(1);
-    expect(peak.transform[0].scale).toBeCloseTo(1.08);
+    // #195 R16: a los 706 ms el retorno ya lleva un fotograma; el pico exacto se afirma arriba.
+    expect(peak.transform[0].scale).toBeCloseTo(1.08, 1);
+    expect(peak.transform[0].scale).toBeGreaterThan(1);
     await act(async () => { jest.advanceTimersByTime(160); });
     const final = getAnimatedStyle(bubble) as { opacity: number; transform: { scale: number }[] };
     expect(final.opacity).toBeCloseTo(1);
