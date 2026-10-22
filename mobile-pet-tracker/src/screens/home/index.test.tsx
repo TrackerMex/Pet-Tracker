@@ -166,6 +166,7 @@ jest.mock('reicon-react-native', () => {
     Syringe: mockIcon('icon-syringe'),
     Bacteria: mockIcon('icon-bacteria'),
     Pill: mockIcon('icon-pill'),
+    Plus: mockIcon('icon-plus'),
     Stethoscope: mockIcon('icon-stethoscope'),
     Bone: mockIcon('icon-bone'),
     Bell: mockIcon('icon-bell'),
@@ -4850,7 +4851,6 @@ describe('#152 R5: la Home envuelve cada bloque en su entrada escalonada', () =>
   ];
 
   const homeEnteringIds = [
-    'pet-avatar-fallback-pet-1',
     'home-entrance-pingo', // (enmendado por #190 R1)
     'home-entrance-summary',
     'summary-reveal',
@@ -4895,12 +4895,12 @@ describe('#152 R5: la Home envuelve cada bloque en su entrada escalonada', () =>
     expect(screen.queryByTestId('home-entrance-last-position')).toBeNull();
   });
 
-  it('solo da entrada a los envoltorios, al fundido y al avatar del selector', async () => {
+  it('solo da entrada a los envoltorios y al fundido (enmendado por #195 R11)', async () => {
     await renderMotionHome();
     expect(enteringIds(screen.container)).toEqual(homeEnteringIds);
   });
 
-  it('no da entrada al hero con alertas abiertas', async () => {
+  it('no da entrada al hero con alertas abiertas (enmendado por #195 R11)', async () => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
     await renderMotionHome();
     await screen.findByTestId('home-alerts-dot');
@@ -5786,5 +5786,46 @@ describe('#190 R5: la pose reutiliza PingoFloat', () => {
     expect(screen.getByTestId('home-pingo-float')).toHaveAnimatedStyle({ transform: [{ translateY: 0 }] }, { shouldMatchAllProps: true });
     expect(jest.mocked(withRepeat)).not.toHaveBeenCalledWith(-10, -1, true);
     expect(mockWithTiming.mock.calls.filter(([value]) => value === -10)).toEqual([]);
+  });
+});
+
+
+describe('#195 R11: selector de vidrio y botón de añadir mascota', () => {
+  beforeEach(setupHomeMotion);
+  afterEach(() => jest.restoreAllMocks());
+
+  it.each(['online', 'offline', null])('pinta el selector glass y el punto solo con conexión %s', async (connectivity) => {
+    const base = makeMotionPet();
+    const pet = makeMotionPet(82, { device: connectivity === null ? null : { ...base.device!, connectivity } });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    jest.spyOn(Uniwind, 'getCSSVariable').mockImplementation((token) => token);
+    await renderHome();
+    await screen.findByTestId('pet-hero-name');
+    const selected = screen.getByTestId('pet-chip-pet-1');
+    expect(selected.props.className).toBe('size-11 rounded-full border-2 border-accent bg-background p-0.5');
+    expect(selected).toBeOnTheScreen();
+    if (connectivity === 'online') expect(within(selected).getByTestId('pet-chip-online-pet-1')).toBeOnTheScreen();
+    else expect(within(selected).queryByTestId('pet-chip-online-pet-1')).toBeNull();
+    const add = screen.getByTestId('home-add-pet');
+    const row = selected.parent!;
+    expect(row.children).toEqual([selected, add]);
+    expect(add.props.accessibilityLabel).toBe(es['profile.addPet']);
+    expect(add.props.className).toBe('size-11 items-center justify-center rounded-full bg-glass-surface-strong');
+    const icon = within(add).getByTestId('icon-plus');
+    expect(add.children).toEqual([icon]);
+    expect(icon.props.size).toBe(20);
+    expect(icon.props.strokeWidth).toBe(2.4);
+    expect(icon.props.color).toBe('--color-muted');
+    await fireEvent.press(add);
+    expect(mockRouter.push.mock.calls).toEqual([['/pets/add']]);
+  });
+
+  it('el estado sin mascotas conserva su acción de alta', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderHome();
+    await screen.findByTestId('home-no-pets-screen');
+    await fireEvent.press(screen.getByText(es['profile.addPet']));
+    expect(mockRouter.push.mock.calls).toEqual([['/pets/add']]);
+    expect(screen.queryByTestId('home-add-pet')).toBeNull();
   });
 });
