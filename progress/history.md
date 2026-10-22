@@ -9913,5 +9913,5 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
 - **Lección:** E1 y E2 salieron del mismo hueco: la spec declaró «sin cambio» sin cruzar cada clase de
   la pantalla nueva contra los inventarios de `src/__tests__` (`filesMatching`, mapas por fichero). La
   próxima spec de una pantalla nueva hace ese grep antes de firmar.
-- **Estado final:** done. Notion: Implementado / Completado. PR pendiente de número; la mergea el
+- **Estado final:** done. Notion: Implementado / Completado. PR #239; la mergea el
   humano y después se borra el worktree `Pet-Tracker-wt-194`.
