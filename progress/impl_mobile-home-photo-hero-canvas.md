@@ -309,3 +309,137 @@ Time: 3.463 s, estimated 6 s
 ```
 
 Comando: `bunx jest 'src/components/__tests__/pet-hero-header.test.tsx|src/__tests__/alerts-canvas-fidelity.test.ts' --testTimeout=30000 --silent`, ambos pgrep previos vacíos, exit 0. Este verde verifica la retirada de las sondas; no confirma el supuesto 1. El commit de documentación de esta parada no es el commit final de R1–R20 y no contiene traceability.
+
+## Reanudación con Enmienda A1 — 2026-10-22
+
+- Primer comando exacto confirmado: `/home/claude/sites/Pet-Tracker-wt-195` y `feature/195-mobile-home-photo-hero-canvas`. HEAD inicial `e0d3ff82`; firma A1 `058c465a`. Leídos enteros los tres handoffs, requirements, design y tasks, en ese orden. No se repiten sondas ni ALERTS resuelto.
+- Skills cargadas: ponytail, building-native-ui, expo-tailwind-setup, appllama-app-design-skill y animate-expo (las dos últimas desde `.agents/skills/`). No disponibles según catálogo/handoff: expo-overview, expo-animation, expo-router y expo-design-system. Sin MCP Appllama; la carta y la spec mandan.
+- Anclas A1 comprobadas: HERO/HOME `toBeVisible` 9/80; `toBeOnTheScreen` 0/0; sufijos R14/R16 0/0; HOME cadena prohibida 0; HERO withDelay 0; inventario de nodos solo HERO/HOME. Tras enmiendas: sufijos R14 5/6 y HOME `toBeVisible` 73, cadena prohibida 0.
+- R14 rojo: HEROMOT monta con Reanimated real y los tres mocks copiados de HERO, sin mocks adicionales. El host del slot aún sin animación aplana a `{ top: 52 }`; falla contra el futuro `{ top: 52, opacity: 0, transform: [{ translateY: 14 }] }`. No se ajusta ningún valor final. Los tests de argumentos, claves animadas y estado final reducido de HERO fallan por ausencia de animación. Las enmiendas de mera presencia nacen verdes; HEROMOT foto también nace verde porque R2 ya implementó ese fundido. Su valor se comprobará con mutación (d).
+
+### R14 — mediciones del rojo y de la candidata
+
+- Rojo inicial: `Tests: 5 failed, 313 passed, 318 total`, suites 2 rojas / 1 verde. Commit `42f108dd` — `test(mobile): lock hero entrances and amended visibility (R14)` (solo HERO, HEROMOT y HOME, `git commit --only`). Los rojos son el estilo futuro de R5, los tres tests nuevos HERO y el test slot/pie de HEROMOT. HOME completo verde; las enmiendas de presencia nacen verdes.
+- Candidata: slot y pie con progreso compartido, `withTiming(1, …400)`, un único `withDelay(80, …)` en el pie, sin `entering`. HEROMOT pasa ambos tests: estilos iniciales exactos, valores intermedios de slot a 64 ms, pie aún quieto a 64 ms, finales a 416/496/516 ms. Sin plan B ni margen de 32 ms; ningún valor final cambiado.
+- Primera corrida candidata HERO + HEROMOT + HOME: `Tests: 2 failed, 316 passed, 318 total`. HOME `PASS` (26,463 s), incluidas las aserciones conservadas de `pet-hero-media`; ningún it anterior rojo por opacidad inicial. HEROMOT `PASS`.
+- Corregidos dos errores en mi test NUEVO, sin tocar tests anteriores: eliminada una aserción adicional de estado final sobre el doble de HERO (leía 0/14); se conserva la comprobación exacta de claves, y los finales se prueban en HEROMOT. El recorrido usaba `findAll`, inexistente en TestInstance de RNTL 14; se sustituye por recorrido recursivo de `children`. Corrida focalizada antes de corregir el recorrido: `Tests: 2 failed, 58 passed, 60 total` (R2 + error de API del test nuevo).
+- Tras corregirlos, candidata HERO + HEROMOT: `Tests: 1 failed, 59 passed, 60 total`. Solo falla el it anterior de R2 detallado abajo. Los tres nuevos de HERO y los dos de HEROMOT pasan, incluida visibilidad síncrona con reduce motion. No se cambia ningún valor final ni aserción fuera de los nodos animados.
+- Error de invocación inocuo de functions.exec: `SyntaxError: missing ) after argument list`; no arrancó ningún comando ni se tocó ningún fichero. Se corrigió la llamada.
+
+### PARADA — contador global anterior de R2 no contemplado en las enmiendas
+
+**Estado vigente: PARADO en R14; no hay verde de R14 ni implementación completa.** Requirements §Candados dice «Los it que no figuran aquí no se tocan». La tabla A1 autoriza 11 enmiendas, pero no esta aserción de llamadas de R2. No se ha editado ni se omite su comprobación.
+
+Único it anterior afectado en la candidata:
+
+```text
+HERO › #195 R2: foto alineada arriba y fundido por identidad
+  › funde al llegar la mascota y al cambiar su id, sin repetir por nombre
+expect(mockWithTiming).not.toHaveBeenCalled();
+Expected number of calls: 0
+Received number of calls: 2
+1: 1, { duration: 400, easing: …, reduceMotion: system }
+2: 1, { duration: 400, easing: …, reduceMotion: system }
+```
+
+El test monta `<PetHeroHeader pet={null} />` y observa TODAS las animaciones del hero. R2 exige que la foto no arranque temporizadores con pet=null; R14 añade entradas del slot/pie al montar. El contador global confunde esas entradas de 400 ms con el fundido de la foto de 500 ms. Para conservar R14 no se debe suprimir la entrada ni cambiar valores finales. Hace falta que el leader amplíe explícitamente las enmiendas permitidas para que ese it observe las llamadas del fundido de R2 (p. ej. filtradas por duración 500), conservando sus aserciones de identidad y caché. No se realiza ese cambio sin la autorización de la spec.
+
+Diff exacto de la candidata que produjo el conflicto (se guarda como evidencia y se retira del fichero de producción antes de cerrar):
+
+```diff
+diff --git a/mobile-pet-tracker/src/components/pet-hero-header.tsx b/mobile-pet-tracker/src/components/pet-hero-header.tsx
+index 8397b321..c7d74c66 100644
+--- a/mobile-pet-tracker/src/components/pet-hero-header.tsx
++++ b/mobile-pet-tracker/src/components/pet-hero-header.tsx
+@@ -7,11 +7,12 @@ import Animated, {
+   useReducedMotion,
+   useSharedValue,
+   withTiming,
++  withDelay,
+ } from 'react-native-reanimated';
+ import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+ import type { PetProfile } from '../api/types';
+-import { MOTION_CELEBRATION_EASE_OUT, MOTION_HERO_FADE_MS, MOTION_HERO_PING_MS } from '../theme/motion';
++import { MOTION_CELEBRATION_EASE_OUT, MOTION_CELEBRATION_RISE_OFFSET_Y, MOTION_HERO_CAPTION_DELAY_MS, MOTION_HERO_FADE_MS, MOTION_HERO_PING_MS, MOTION_SURFACE_MS } from '../theme/motion';
+ import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../theme/native-styles';
+ import { useThemeColors } from '../theme/use-theme-colors';
+ import { PetAvatar } from './pet-avatar';
+@@ -98,6 +99,31 @@ export function PetHeroHeader({
+   const petId = pet?.id;
+   const photoOpacity = useSharedValue(reduceMotion || !pet ? 1 : 0);
+   const photoStyle = useAnimatedStyle(() => ({ opacity: photoOpacity.get() }));
++  const slotProgress = useSharedValue(reduceMotion ? 1 : 0);
++  const captionProgress = useSharedValue(reduceMotion ? 1 : 0);
++  const slotStyle = useAnimatedStyle(() => ({
++    opacity: slotProgress.get(),
++    transform: [{ translateY: MOTION_CELEBRATION_RISE_OFFSET_Y * (1 - slotProgress.get()) }],
++  }));
++  const captionStyle = useAnimatedStyle(() => ({
++    opacity: captionProgress.get(),
++    transform: [{ translateY: MOTION_CELEBRATION_RISE_OFFSET_Y * (1 - captionProgress.get()) }],
++  }));
++
++  useEffect(() => {
++    if (reduceMotion) {
++      slotProgress.set(1);
++      captionProgress.set(1);
++      return;
++    }
++    const timing = { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_SURFACE_MS };
++    slotProgress.set(withTiming(1, timing));
++    captionProgress.set(withDelay(MOTION_HERO_CAPTION_DELAY_MS, withTiming(1, timing)));
++    return () => {
++      cancelAnimation(slotProgress);
++      cancelAnimation(captionProgress);
++    };
++  }, [captionProgress, reduceMotion, slotProgress]);
+
+
+
+@@ -179,18 +205,19 @@ export function PetHeroHeader({
+         />
+
+       {children ? (
+-        <View
++        <AnimatedView
+           testID="pet-hero-slot"
+           className="absolute inset-x-4"
+-          style={{ top: insets.top + 12 }}
++          style={[{ top: insets.top + 12 }, slotStyle]}
+         >
+           {children}
+-        </View>
++        </AnimatedView>
+       ) : null}
+
+-      <View
++      <AnimatedView
+         testID="pet-hero-caption"
+         className="absolute inset-x-4 bottom-1.5 flex-row items-end justify-between gap-3"
++        style={captionStyle}
+       >
+         <View className="min-w-0 flex-1 gap-1">
+           {pet ? (
+@@ -258,7 +285,7 @@ export function PetHeroHeader({
+             </Text>
+           </View>
+         ) : null}
+-      </View>
++      </AnimatedView>
+       </View>
+     </View>
+   );
+```
+
+### Estado entregado tras la parada de R14
+
+- Candidata de producción retirada mediante restauración del contenido exacto de HEAD, después de guardar arriba el diff medido: no queda cambio sin commit en móvil, specs o docs. El código de producción conserva el último verde previo; HEAD contiene los tests rojos de R14 a propósito.
+- Comprobación tras retirar la candidata (HERO + HEROMOT): `Tests: 5 failed, 55 passed, 60 total`, exit 1. R2 vuelve a pasar; quedan exclusivamente los cinco rojos intencionales de R14. Commit correctivo de test `fijado abajo` — `test(mobile): traverse host children for hero entrance guard (R14)`; sin producción ni reporte en ese commit y con `git commit --only`.
+- Las mutaciones a–e de R14 no se ejecutaron: no existe aún un verde completo. En particular, NO se afirma que (e) esté validada. No se avanza a R9 ni se cambia otro R.
+- No se ejecutan suite completa, tsc, lint, guardas finales, graphify ni cuentas de cierre porque la sesión se detiene en R14. No init, PR, push, merge, rebase ni dependencias nuevas. Sin ficheros fuera de lista cerrada. Reporte añadido sin reescribir lo anterior; traceability reservada para el único commit final `docs(home)` tras completar R1–R20.
+- `.done` NO se crea. Este reporte queda modificado sin commit para que el leader revise el bloqueo; no se crea un segundo commit parcial `docs(home)`.
+
+El primer intento de commit correctivo no se ejecutó: `git diff --check` detectó espacios finales en las líneas de contexto del diff pegado a este reporte. Se normalizaron solo esos espacios de la sección nueva y se repite el commit con rutas explícitas.
+
+Commit correctivo confirmado: `25d5f984` — `test(mobile): traverse host children for hero entrance guard (R14)`; `Tests: 5 failed, 55 passed, 60 total` sobre el contenido exacto del commit sin la candidata. No hay commit verde de R14. `42f108dd` es únicamente el primer commit rojo.
