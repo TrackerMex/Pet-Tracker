@@ -26,6 +26,7 @@ import {
   Map,
   Moon,
   Pill,
+  Plus,
   Stethoscope,
   Syringe,
   Walk,
@@ -53,6 +54,7 @@ import {
   type PetHeroStatusTone,
 } from '../../components/pet-hero-header';
 import { PetSwitcher } from '../../components/pet-switcher';
+import { GlassCircle } from '../../components/glass-circle';
 import { PingoFloat } from '../../components/pingo-float';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import type { TranslationKey } from '../../i18n/catalog';
@@ -312,6 +314,8 @@ export function HomeScreen() {
     }, [refetchDetail, refetchOpenAlerts, refetchPets]),
   );
 
+  const addPetLabel = t('profile.addPet');
+
   if (pets.data?.kind === 'ok' && pets.data.pets.length === 0) {
     return (
       <View testID="home-no-pets-screen" className="flex-1 items-center justify-center px-5 py-6 bg-background">
@@ -322,7 +326,7 @@ export function HomeScreen() {
           title={t('common.noPetsYet')}
           body={t('common.noPetsBody')}
           action={{
-            label: t('profile.addPet'),
+            label: addPetLabel,
             onPress: () => router.push('/pets/add'),
           }}
         />
@@ -369,6 +373,13 @@ export function HomeScreen() {
                 pets={petList}
                 selectedPetId={selectedPetId}
                 onSelect={selectPet}
+                variant="glass"
+                selectedOnline={connection === 'online'}
+                trailing={
+                  <GlassCircle testID="home-add-pet" accessibilityLabel={addPetLabel} onPress={() => router.push('/pets/add')}>
+                    <Plus size={20} strokeWidth={2.4} color={muted} />
+                  </GlassCircle>
+                }
               />
             </View>
             <Pressable
