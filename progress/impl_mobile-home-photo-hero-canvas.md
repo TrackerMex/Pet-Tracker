@@ -586,3 +586,59 @@ index 130dac45..8c6da2eb 100644
 | R20 | GUARD y carta previstos | Pendiente; no iniciado |
 
 Todos los commits de esta reanudación usaron `git commit --only` con rutas explícitas; los nuevos ficheros se añadieron con `git add` explícito. El reporte se amplió sin reescribir la evidencia histórica. No se declaró la feature terminada.
+
+## Reanudación con Enmienda A3 — 2026-10-22
+
+- Primer comando confirmó `/home/claude/sites/Pet-Tracker-wt-195` y `feature/195-mobile-home-photo-hero-canvas`. HEAD inicial `90caad02`, firma A3 `0db0ec01`; árbol inicial limpio. No se ejecuta init.sh.
+- Leídos los cinco handoffs enteros y en orden, fila 13 y R15 de requirements, H3 de design y tasks (1b y mutaciones a/b/c). Todas las anclas del adendo 4 coinciden. Feature 195 sigue in_progress; no se modifica el arnés del leader.
+- Skills cargadas: `ponytail:ponytail`, `building-native-ui`, `expo-tailwind-setup`, `appllama-app-design-skill`, `animate-expo`. Las dos de Expo están en el plugin local del catálogo Codex; las de diseño/movimiento en `.agents/skills/`. No disponibles según catálogo/handoff: `expo-overview`, `expo-animation`, `expo-router`, `expo-design-system`; no se buscan. Sin MCP Appllama. Carta/spec prevalecen; smoke R21 del humano. Esperas según conventions §Esperas sobre el árbol renderizado.
+- R15 (1b): sustitución acotada al it R6 prescrito, solo título y primer gap 16 a 14. Bloque home-states intacto (24/52/16); se mide HOME completo antes del verde.
+
+### R15 (1b) — rojo A3 y PARADA por cinco fallos en HOME
+
+**Estado vigente: PARADO en el paso (1b) de R15, por la regla explícita del adendo 4.** No hay verde R15; no se inician R16–R20 ni el cierre. No se crea `.done`.
+
+- Se esperó al Jest y después al init.sh del worktree 189; no se lanzó Jest hasta que ambos pgrep prescritos quedaron vacíos. No se interrumpió ningún proceso ajeno.
+- Comando: `bunx jest src/screens/home/index.test.tsx --testTimeout=30000` desde mobile-pet-tracker, HOME completo sin filtro. Log: `progress/r15-a3-red-195.log` (ignorado). Exit 1, `Test Suites: 1 failed, 1 total`; **`Tests: 5 failed, 261 passed, 266 total`**, `Snapshots: 0 total`, 42.89 s. No hay suite saltada.
+- El it R6 enmendado nace rojo por el motivo correcto: **Expected gap: 14 / Received gap: 16**, index.test.tsx:497. Solo cambian el sufijo del título y el primer gap; su bloque home-states permanece 24/52/16.
+- Commit test-primero (1b): `6519704f` — `test(mobile): amend home pending-state scroll spacing (R15)`, con `git commit --only mobile-pet-tracker/src/screens/home/index.test.tsx`. La línea Tests anterior mide el contenido exacto del commit. Producción no tocada, todavía gap 16; `77da555b` no se reescribe.
+
+Los cinco it rojos medidos:
+
+1. `R6: home carga pets y selecciona › pads the content below the status bar with the top safe-area inset (enmendado por #195 R15)` — Expected gap 14, Received gap 16 (línea 497).
+2. `R5: Home usa el hero compartido › conserva gap y paddingBottom y saca el padding horizontal a un envoltorio (enmendado por #195 R15)` — Expected gap 14, Received gap 16 (línea 1701).
+3. `#190 R5: la pose reutiliza PingoFloat › usa Animated.View y repite solo translateY -10 en tramos de 1500 ms invertidos` — Expected `{"transform":[{"translateY":-10}]}`, Received `{"transform":[{"translateY":0}]}`; falla `toHaveAnimatedStyle(..., { shouldMatchAllProps: true })` en la línea 5767. It anterior intacto; está fuera de las tablas de enmiendas autorizadas.
+4. `#195 R15: hueco del hero y contenido que se desplaza › deja el hero primero y conserva el relleno interior y la holgura de la barra` — Expected gap 14, Received gap 16 (línea 5873).
+5. `#195 R15: hueco del hero y contenido que se desplaza › aplica también el hueco de 14 a las ramas de estado sin hero` — Expected gap 14, Received gap 16 (línea 5879).
+
+Se cumple literalmente la regla del adendo 4: «Si miden tres o cinco […] PARA y avisa con la lista». El quinto fallo no afirma gap sino el movimiento del PingoFloat anterior. El handoff original menciona un rojo #190 R5 bajo carga durante el cierre, pero su permiso de corrida aislada está acotado al cierre; no se usa para eludir la condición vigente de (1b). No se repite la corrida ni se relaja, omite o modifica ese it. No se atribuye el fallo a una causa no demostrada.
+
+Diff exacto del paso (1b), único cambio móvil de esta reanudación:
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/home/index.test.tsx b/mobile-pet-tracker/src/screens/home/index.test.tsx
+index e32bfb4a..659da4f0 100644
+--- a/mobile-pet-tracker/src/screens/home/index.test.tsx
++++ b/mobile-pet-tracker/src/screens/home/index.test.tsx
+@@ -489,13 +489,13 @@ describe('R6: home carga pets y selecciona', () => {
+     expect(screen.getByTestId('home-loading')).toBeVisible();
+   });
+
+-  it('pads the content below the status bar with the top safe-area inset', async () => {
++  it('pads the content below the status bar with the top safe-area inset (enmendado por #195 R15)', async () => {
+     mockListPets.mockReturnValue(pending<PetsState>());
+
+     await renderHome();
+
+     expect(screen.getByTestId('screen-home').props.contentContainerStyle).toEqual({
+-      gap: 16,
++      gap: 14,
+       paddingBottom: 120,
+     });
+     expect(screen.getByTestId('home-states').props.style).toEqual({
+```
+
+- Tras (1b), sufijos R15 HERO/HOME 0/2; R14 6/6; visible 5/73; presencia 5/10; contentContainerStyle HOME 4 líneas; filtro duration 500 HERO 1; cadena prohibida HOME 0; hex-like Inicio/pingo-phrase 0/0. No cambia ningún contador fuera de lo previsto.
+- Mutaciones R15 (a), (b) y (c) NO ejecutadas: requieren el verde, que no se aplica tras la parada. R16–R20 pendientes, sin ficheros BP ni cambios nuevos en GUARD/carta/traceability.
+- No se ejecutan suite móvil completa, typecheck, lint, graphify ni cuentas finales porque no se alcanzó el cierre. No se ejecutó init.sh; no push, PR, merge, rebase, dependencias ni cambios del arnés. Se conserva el reporte añadido para revisión del leader, sin commit docs parcial.
+- Siguiente paso: el leader revisa el quinto rojo y determina cómo reabrir la condición de (1b); no se crea .done ni se declara completada la feature.

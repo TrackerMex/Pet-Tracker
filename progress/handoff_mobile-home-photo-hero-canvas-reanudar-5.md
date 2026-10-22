@@ -1,0 +1,22 @@
+Worktree: /home/claude/sites/Pet-Tracker-wt-195
+NO lances ./init.sh aunque AGENTS.md lo pida: lo corre el leader (comparte LocalStack y Postgres con otros worktrees).
+Primer comando, antes de nada: `cd /home/claude/sites/Pet-Tracker-wt-195 && pwd && git branch --show-current`. Confirma en el reporte que la salida es esa ruta y la branch `feature/195-mobile-home-photo-hero-canvas`.
+
+Este es el ADENDO Nº 5 de reanudación, y es corto: no cambia la spec ni el código, solo resuelve tu parada en el paso (1b) de R15. Siguen vigentes los cinco handoffs anteriores (`progress/handoff_mobile-home-photo-hero-canvas.md` y los adendos `-reanudar.md`, `-reanudar-2.md`, `-reanudar-3.md` y `-reanudar-4.md`), salvo lo que este fichero sustituye. Relee el adendo 4 entero: todo lo que no esté aquí sigue igual.
+
+Estado
+- Tu commit `6519704f` (`test(mobile): amend home pending-state scroll spacing (R15)`, el paso (1b)) es **correcto y se queda**. No lo reescribas. El diff que dejaste en el reporte es exactamente el que pide la fila 13 de [[requirements]]: título con el sufijo ` (enmendado por #195 R15)` y `gap: 14` en la primera aserción del `it` de R6, con el bloque de `home-states` intacto.
+- El leader revisó tu parada y **no hay enmienda nueva**. Tu corrida midió cinco rojos: los cuatro esperados más `#190 R5: la pose reutiliza PingoFloat › usa Animated.View y repite solo translateY -10 en tramos de 1500 ms invertidos` (recibió `translateY: 0`). El leader corrió HOME completo dos veces en `6519704f` (`bunx jest src/screens/home/index.test.tsx --testTimeout=30000`, la segunda tras borrar `/tmp/jest_ru/perf-cache-*`) y las dos dieron `Tests: 4 failed, 262 passed, 266 total`, con exactamente los cuatro `it` del paso (1b) (R6 enmendado, R5 enmendado y los dos de `#195 R15`) y la diferencia `gap: 14` esperado / `gap: 16` recibido en cada uno. `#190 R5` pasó las dos veces. Tu corrida coincidió con un `jest` de otro worktree (la carga de la máquina estaba en 6); el handoff original ya avisa de que ese `it` se pone rojo bajo carga. Causa no demostrada más allá de eso: el `it` no lee el `gap` y ningún commit de R15 lo toca.
+- Por tanto el paso (1b) **está cumplido**: cuatro rojos medidos, los correctos.
+
+Lo que cambia respecto al adendo 4
+1. Sigue en el **paso (2), el verde de R15**, tal como lo dice el adendo 4 (una línea: `gap: 16` a `gap: 14` en el `contentContainerStyle` de `screen-home`, sin condicional por rama), y luego las mutaciones (a), (b) y (c), el refactor, R16 a R20 y el cierre.
+2. Antes de **cada** corrida de jest, espera con un comando propio (no en el mismo comando que lanza jest): `pgrep -f 'node_modules/(\.bin/jest|jest-worker)|[i]nit\.sh'` vacío, con un bucle de `sleep 20` y tope de 15 minutos. No uses `pgrep -f jest` a secas: casa con la propia shell si la línea contiene «jest». Las corridas de HOME y de las mutaciones llevan `--testTimeout=30000`.
+3. Si `#190 R5` (o cualquier `it` que no sea de los nombrados en el adendo 4) se pone rojo en una corrida:
+   - Guarda el log entero (`> log 2>&1`, exit code sin pipe) y anota el nombre y el mensaje.
+   - Espera a que `pgrep` esté vacío, borra `/tmp/jest_ru/perf-cache-*` y repite **la misma corrida una vez más**. Anota las dos líneas `Tests:`.
+   - Es una **PARADA** solo si reproduce las dos veces con la máquina libre. Si no reproduce, anótalo como carga y sigue; esa segunda corrida verde no absuelve el rojo (queda escrito en el reporte para el reviewer), pero tampoco cuenta como un `it` fuera de la tabla.
+   - En ningún caso relajes, omitas ni modifiques ese `it`.
+4. Tu reporte con la sección «R15 (1b) — rojo A3 y PARADA por cinco fallos en HOME» ya está en el repo (lo commiteó el leader encima de `6519704f`). **No lo reescribas.** Añade una sección «Reanudación con adendo 5 — 2026-10-22» con el verde y las mutaciones. Al terminar el verde de R15, sustituye la línea «Estado vigente: PARADO en el paso (1b) de R15…» de esa sección por una nota de que el leader resolvió la parada (cuatro rojos medidos, quinto rojo no reproducido).
+
+Cuándo PARAR: las del adendo 4, salvo que el quinto rojo de `#190 R5` ya no es motivo por sí solo (ver el punto 3). Sigue sin ser tuyo: `progress/current.md`, `history.md`, `STATUS.md`, el campo `status` de `feature_list.json`, la PR y R21. No crees `progress/impl_mobile-home-photo-hero-canvas.done` hasta que R1 a R20 estén en verde y el cierre completo hecho.
