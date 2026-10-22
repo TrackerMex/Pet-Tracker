@@ -893,3 +893,19 @@ describe('#189 R7: Añadir zona conserva una sola CTA anclada al pie', () => {
     expect(mockPush).not.toHaveBeenCalled();
   });
 });
+
+
+describe('#189 R19: el bloqueo de los interruptores conserva la opacidad', () => {
+  it('#189 R19.2: las dos filas siguen bloqueadas y opacas durante una escritura', async () => {
+    mockList.mockResolvedValue({ kind: 'ok', geofences: [makeGeofence(), makeGeofence({ id: 'geofence-2' })] });
+    mockSetActive.mockReturnValue(new Promise(() => undefined));
+    await mount();
+    await fireEvent.press(await screen.findByTestId('geofence-geofence-1-active'));
+    await waitFor(() => expect(screen.getByTestId('geofence-geofence-2-active').props.accessibilityState.disabled).toBe(true));
+    for (const id of ['geofence-1', 'geofence-2']) {
+      const node = screen.getByTestId(`geofence-${id}-active`);
+      expect(node.props.accessibilityState.disabled).toBe(true);
+      expect(StyleSheet.flatten(node.props.style)?.opacity).toBe(1);
+    }
+  });
+});

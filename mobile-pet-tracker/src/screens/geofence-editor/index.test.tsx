@@ -854,3 +854,39 @@ describe('#189 R14: métricas y avisos conservados en las ramas de estado', () =
     expect(childTestIds(title.parent!).slice(0, 2)).toEqual(['geofence-editor-title', `geofence-editor-${stateId}`]);
   });
 });
+
+
+describe('#189 R19: los controles bloqueados conservan la opacidad', () => {
+  it.each(['guardar', 'activar', 'eliminar'] as const)('#189 R19.2: bloquea los tres controles sin atenuarlos al %s, incluso al vaciar el nombre', async (action) => {
+    mockUpdate.mockReturnValue(new Promise(() => undefined));
+    mockSetActive.mockReturnValue(new Promise(() => undefined));
+    mockDelete.mockReturnValue(new Promise(() => undefined));
+    const alert = jest.spyOn(Alert, 'alert');
+    await edit();
+    if (action === 'guardar') await fireEvent.press(screen.getByTestId('geofence-editor-save'));
+    if (action === 'activar') await fireEvent.press(screen.getByTestId('geofence-editor-active'));
+    if (action === 'eliminar') {
+      await fireEvent.press(screen.getByTestId('geofence-editor-delete'));
+      await act(async () => { alert.mock.calls.at(-1)?.[2]?.find(button => button.style === 'destructive')?.onPress?.(); });
+    }
+    await waitFor(() => expect(screen.getByTestId('geofence-editor-active').props.accessibilityState.disabled).toBe(true));
+    for (const empty of [false, true]) {
+      if (empty) await fireEvent.changeText(screen.getByTestId('geofence-editor-name'), '');
+      for (const id of ['active', 'delete', 'save']) {
+        const node = screen.getByTestId(`geofence-editor-${id}`);
+        expect(node.props.accessibilityState.disabled).toBe(true);
+        expect(StyleSheet.flatten(node.props.style)?.opacity).toBe(1);
+      }
+    }
+    alert.mockRestore();
+  });
+  it('#189 R19.2: Guardar vacío permanece gris, bloqueado y con opacidad 1 sin busy', async () => {
+    await edit();
+    await fireEvent.changeText(screen.getByTestId('geofence-editor-name'), '');
+    const save = screen.getByTestId('geofence-editor-save');
+    expect(save.props.accessibilityState.disabled).toBe(true);
+    expect(StyleSheet.flatten(save.props.style)).toEqual({ opacity: 1 });
+    expect(screen.getByTestId('geofence-editor-active').props.accessibilityState.disabled).toBe(false);
+    expect(screen.getByTestId('geofence-editor-delete').props.accessibilityState.disabled).toBe(false);
+  });
+});

@@ -87,6 +87,23 @@ function numericTextClasses(ast: ts.SourceFile) {
   return { findings, customTags };
 }
 
+describe('#189 R19: bloqueo sin atenuado en todas las etiquetas', () => {
+  it('#189 R19.1: KEEP_OPACITY cancela el atenuado de heroui', () => {
+    const source = readFileSync(join(process.cwd(), 'src/theme/native-styles.ts'), 'utf8');
+    expect(source).toContain('export const KEEP_OPACITY = { opacity: 1 } as const;');
+  });
+  it.each(screens)('#189 R19.2: $name cancela la opacidad en todas sus etiquetas con isDisabled', ({ name, ast }) => {
+    const tags: string[] = [];
+    function visit(node: ts.Node) {
+      if ((ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) && ['Switch', 'Button'].includes(node.tagName.getText(ast)) && node.attributes.properties.some(attribute => ts.isJsxAttribute(attribute) && attribute.name.getText(ast) === 'isDisabled')) tags.push(node.getText(ast));
+      ts.forEachChild(node, visit);
+    }
+    visit(ast);
+    expect(tags).toHaveLength(name === 'geofences' ? 2 : 3);
+    for (const tag of tags) expect(tag).toContain('KEEP_OPACITY');
+  });
+});
+
 describe('#189 R18: candados de fuente de ambas pantallas', () => {
   it.each(screens)('#189 R18: $name no escribe hex', ({ source }) => {
     expect(source).not.toMatch(/#[\da-f]{3,8}\b/i);
