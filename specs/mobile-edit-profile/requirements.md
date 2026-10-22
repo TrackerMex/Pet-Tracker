@@ -654,7 +654,7 @@ el humano, no un test. Guion mínimo:
 5. Con el teléfono en modo avión, Guardar muestra «No se pudo conectar con el servidor» y conserva lo escrito.
 6. Con sesión caducada (borrar el token o esperar), Guardar cierra sesión.
 
-- [ ] Prueba de humo (R11) cerrada por humano (fecha: ____) ← el leader no marca `done` sin esta casilla
+- [X] Prueba de humo (R11) cerrada por humano (fecha: 2026-10-22) ← el leader no marca `done` sin esta casilla
 
 ## Deltas de candados
 
