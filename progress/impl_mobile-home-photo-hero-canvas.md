@@ -866,3 +866,200 @@ expect(screen.getByTestId('visibility-probe')).toBeVisible();
 - Se retiraron únicamente las líneas obsoletas de parada indicadas por los handoffs; el bloque inicial de bloqueo se sustituyó por la resolución A1/A2/A3/adendo 5 y su evidencia íntegra se archivó al final. El resto del reporte conserva su historia y añade las mediciones nuevas.
 - R1–R20 completos para revisión del leader. R21 sigue sin ejecución ni firma del agente; checklist arriba. No se marca la feature done, no se ejecuta init.sh y no se cambian current/history/STATUS/feature_list ni PR. Sin push, merge ni rebase.
 - Este reporte y traceability se entregan juntos en el commit final `docs(home)`, sin archivos de arnés. Tras comprobar commit y árbol limpio, la última acción crea el marcador .done ignorado con la ruta absoluta de este reporte.
+
+
+## Reanudación con Enmienda A4 — 2026-10-22
+
+**Estado: PARADO tras el commit A por una cuenta A4 distinta de la exigida.** No se ha iniciado B, no hay producción A4 ni mutaciones ni cierre, y no se crea `.done`. No se modifica la spec para resolver la discrepancia.
+
+Primer comando ejecutado, antes de cualquier otra acción:
+
+```bash
+cd /home/claude/sites/Pet-Tracker-wt-195 && pwd && git branch --show-current
+```
+
+Salida confirmada:
+
+```text
+/home/claude/sites/Pet-Tracker-wt-195
+feature/195-mobile-home-photo-hero-canvas
+```
+
+Árbol inicial limpio, HEAD `17e93061`; base de comparación A4 `98c7a192`. Leídos el adendo 6 y los anteriores, el handoff original y las secciones de la spec aplicables (D6, fila 14, H4 y cadena A–E). Firma humana A4 presente. No se ejecutó `./init.sh`.
+
+Skills cargadas: `building-native-ui` (catálogo Expo local, `/home/claude/.codex/plugins/cache/openai-curated/expo/11c74d6b/skills/building-native-ui/SKILL.md`), `appllama-app-design-skill` y `animate-expo` (ambas en `.agents/skills/`), y `ponytail` (catálogo local). `expo-overview`, `expo-animation`, `expo-router` y `expo-design-system` no existen en el catálogo de Codex y no se buscaron ni cargaron, conforme al adendo. No se cargó `expo-tailwind-setup`: este paso solo cambia los literales de tests enumerados por la spec y no toca estilos ni configuración de Tailwind. No se usó MCP de Appllama ni se delegó trabajo.
+
+Esperas aplicadas: `docs/conventions.md` §Esperas sobre el árbol renderizado dice «La condición que termina una espera debe ser la misma observación que hacen las aserciones posteriores» y «si el test asevera el árbol, espera al árbol». No se añadieron esperas ni contadores de mock. Antes de la única corrida de Jest, comando independiente con `pgrep -f 'node_modules/(\.bin/jest|jest-worker)|[i]nit\.sh'`, bucle `sleep 20` y tope de 900 s; terminó con salida vacía y exit 0. La corrida llevó `--testTimeout=30000`, redirección completa y exit code sin pipe.
+
+### Base y commit A
+
+Base medida por esta sesión, antes de editar:
+
+```bash
+bunx jest src/components/__tests__/pet-hero-header.test.tsx src/__tests__/home-photo-hero-canvas.test.ts --testTimeout=30000 > /tmp/a4-base.log 2>&1
+```
+
+Exit 0. `Test Suites: 2 passed, 2 total`; `Tests: 88 passed, 88 total`.
+
+Commit A: `21e404c3` — `test(mobile): enmienda a 430, 100, 90 y paradas 24/44 los ocho it de HERO (R1)`. Creado con `git commit --only mobile-pet-tracker/src/components/__tests__/pet-hero-header.test.tsx -m '…'`. Solo cambia ese fichero, 13 líneas sustituidas. Se comprobaron por `grep -n` las sustituciones acotadas antes del commit. Los ocho `it` son exactamente 14a a 14h; se conservan el título `%s con mascota %s y slot %s`, el sufijo de 14b y todas las comparaciones simbólicas.
+
+**Tests tras A: no ejecutados.** La medición de cuentas inmediatamente posterior al commit encontró el motivo obligatorio de parada antes de lanzar Jest. No se afirma haber observado los doce rojos de A: siguen pendientes de medir con la discrepancia resuelta por el leader/humano. B, C, D y E no existen en esta sesión.
+
+### Las 18 cuentas A4 medidas
+
+Comandos literales de `tasks.md` §Cuentas a re-medir (alternancias con `|`, sin la barra de escape de Markdown), desde `mobile-pet-tracker/` salvo las dos cuentas de la carta, desde la raíz. Un `grep -c` cuenta líneas. Todas las bases coinciden con el adendo; tras A, solo la fila 7 discrepa.
+
+| Fila A4, en orden de tasks.md | Base medida | Tras A medido | Exigido tras A |
+|---|---:|---:|---:|
+| 1: `330` en HERO | 8 | 0 | 0 |
+| 2: `430` en HERO | 0 | 8 | 8 |
+| 3: `160` o `130` en HERO | 4 | 0 | 0 |
+| 4: `35%` o `65%` en HERO | 2 | 0 | 0 |
+| 5: `24%` o `44%` en HERO | 0 | 2 | 2 |
+| 6: `height: 90` o `height: 100` en HERO | 0 | 2 | 2 |
+| 7: `toBe(430/100/90)` en HERO | 0 | **4** | **3** |
+| 8: ficheros de src con `330` | 2 (HERO 8, producción 1) | 1 (producción 1) | 1 hasta C |
+| 9: constantes antiguas de producción | 3 | 3 | 3 hasta C |
+| 10: constantes nuevas de producción | 0 | 0 | 0 hasta C |
+| 11: paradas antiguas de producción | 1 | 1 | 1 hasta C |
+| 12: paradas nuevas de producción | 0 | 0 | 0 hasta C |
+| 13: `104` o `160` en GUARD | 2 | 2 | 2 hasta B |
+| 14: `10.79` o `9.77` en GUARD | 2 | 2 | 2 hasta B |
+| 15: `7.75` o `6.74` en GUARD | 0 | 0 | 0 hasta B |
+| 16: medidas antiguas en la carta | 1 | 1 | 1 hasta E |
+| 17: frase nueva de medidas en la carta | 0 | 0 | 0 hasta E |
+| 18: ficheros con los cuatro testID de geometría | 4 | 4 | 4 |
+
+Fila 18, mismos cuatro ficheros antes y después: `components/__tests__/pet-hero-header.test.tsx`, `components/pet-hero-header.tsx`, `__tests__/consistency-classnames.test.ts` y `screens/home/index.test.tsx`.
+
+### Discrepancia reproducible y causa
+
+Comando de la fila 7, ejecutado tras el commit A:
+
+```bash
+grep -cE "toBe\((430|100|90)\)" src/components/__tests__/pet-hero-header.test.tsx
+```
+
+Resultado **4**, frente a **3** exigido por tasks.md. El listado de coincidencias identifica por completo la diferencia:
+
+```text
+201:    expect(PET_HERO_MEDIA_HEIGHT).toBe(430);
+202:    expect(PET_HERO_FADE_HEIGHT).toBe(100);
+203:    expect(PET_HERO_SCRIM_HEIGHT).toBe(90);
+815:    expect(media.props.height).toBe(430);
+```
+
+Las primeras tres son 14a, `exporta las constantes de dimensión del hero (enmendado por #195 R1)`. La cuarta es 14h, `sin foto conserva el blobatar rectangular y los degradados`, dentro de `#195 R18: estados conservados del hero`. La fila 14h exige literalmente pasar `media.props.height.toBe(330)` a `toBe(430)`, por lo que la regex de la cuenta también la incluye. La tabla describe su esperado 3 como «las tres de la fila 14a», pero el comando no acota el bloque a 14a.
+
+No se ha alterado 14h, la regex de la cuenta ni el formato de la aserción para ocultar la cuarta coincidencia. Se necesita que el leader/humano concilie el esperado de la cuenta con el alcance de su regex. La implementación permanece detenida; no hay `it` fallidos medidos tras A, porque no se corrió Jest después de detectar la cuenta incorrecta.
+
+### Diff medido de A frente a 98c7a192
+
+```diff
+diff --git a/mobile-pet-tracker/src/components/__tests__/pet-hero-header.test.tsx b/mobile-pet-tracker/src/components/__tests__/pet-hero-header.test.tsx
+index 3f0f7a2e..33b2cee6 100644
+--- a/mobile-pet-tracker/src/components/__tests__/pet-hero-header.test.tsx
++++ b/mobile-pet-tracker/src/components/__tests__/pet-hero-header.test.tsx
+@@ -198,9 +198,9 @@ describe('R1: PetHeroHeader es el único hero compartido', () => {
+   });
+ 
+   it('exporta las constantes de dimensión del hero (enmendado por #195 R1)', () => {
+-    expect(PET_HERO_MEDIA_HEIGHT).toBe(330);
+-    expect(PET_HERO_FADE_HEIGHT).toBe(160);
+-    expect(PET_HERO_SCRIM_HEIGHT).toBe(130);
++    expect(PET_HERO_MEDIA_HEIGHT).toBe(430);
++    expect(PET_HERO_FADE_HEIGHT).toBe(100);
++    expect(PET_HERO_SCRIM_HEIGHT).toBe(90);
+   });
+ 
+   it('no importa el selector de mascota ni la capa de API', () => {
+@@ -286,7 +286,7 @@ describe('R3: el texto del hero va sobre fondo opaco', () => {
+     const top = screen.getByTestId('pet-hero-scrim-top').props.style;
+ 
+     expect(bottom.experimental_backgroundImage).toMatch(
+-      /^linear-gradient\(to bottom, #[0-9A-Fa-f]{6}00 0%, #[0-9A-Fa-f]{6}59 35%, #[0-9A-Fa-f]{6}D9 65%, #[0-9A-Fa-f]{6} 100%\)$/,
++      /^linear-gradient\(to bottom, #[0-9A-Fa-f]{6}00 0%, #[0-9A-Fa-f]{6}59 24%, #[0-9A-Fa-f]{6}D9 44%, #[0-9A-Fa-f]{6} 100%\)$/,
+     );
+     expect(top.experimental_backgroundImage).toMatch(
+       /^linear-gradient\(to bottom, #[0-9A-Fa-f]{6}80 0%, #[0-9A-Fa-f]{6}00 100%\)$/,
+@@ -569,13 +569,13 @@ describe('#195 R8: anillo de estado sustituye el pulso de opacidad', () => {
+ describe('#127 R2: el skeleton del hero lleva su receta en el árbol', () => {
+   afterEach(() => cleanup());
+ 
+-  it('pinta pet-hero-skeleton con la clase w-full sin radio y el alto de 330 como único estilo (enmendado por #195 R1)', async () => {
++  it('pinta pet-hero-skeleton con la clase w-full sin radio y el alto de 430 como único estilo (enmendado por #195 R1)', async () => {
+     await renderHero(<PetHeroHeader pet={null} variant="bleed" />);
+ 
+     const skeleton = screen.getByTestId('pet-hero-skeleton');
+ 
+     expect(skeleton.props.className).toBe('w-full');
+-    expect(skeleton.props.style).toStrictEqual({ height: 330 });
++    expect(skeleton.props.style).toStrictEqual({ height: 430 });
+   });
+ });
+ 
+@@ -592,7 +592,7 @@ describe('#195 R4: capa de oscurecimiento', () => {
+ });
+ 
+ 
+-describe('#195 R1: frame de 330 y raíz estable', () => {
++describe('#195 R1: frame de 430 y raíz estable', () => {
+   afterEach(() => cleanup());
+   it.each([
+     ['bleed', false, false], ['bleed', true, true],
+@@ -604,7 +604,7 @@ describe('#195 R1: frame de 330 y raíz estable', () => {
+     const root = screen.getByTestId('pet-hero');
+     const frame = screen.getByTestId('pet-hero-frame');
+     expect(root.children).toEqual([frame]);
+-    expect(frame.props.style).toEqual({ height: 330 });
++    expect(frame.props.style).toEqual({ height: 430 });
+     expect(root.props.style).toEqual({ borderCurve: 'continuous' });
+     expect(root.props.className).toBe(variant === 'card'
+       ? 'overflow-hidden rounded-card bg-default' : 'overflow-hidden bg-default');
+@@ -624,7 +624,7 @@ describe('#195 R2: foto alineada arriba y fundido por identidad', () => {
+     const media = within(photo).getByTestId('pet-hero-media');
+     expect(media.props.contentPosition).toEqual({ top: 0, left: '50%' });
+     expect(media.props.source).toEqual([{ uri: 'http://example.test/luna.jpg', cacheKey: 'pet-1' }]);
+-    expect(StyleSheet.flatten(media.props.style)).toEqual({ width: '100%', height: 330 });
++    expect(StyleSheet.flatten(media.props.style)).toEqual({ width: '100%', height: 430 });
+   });
+   it('funde al llegar la mascota y al cambiar su id, sin repetir por nombre (enmendado por #195 R14)', async () => {
+     const view = await renderHero(<PetHeroHeader pet={null} />);
+@@ -653,8 +653,8 @@ describe('#195 R3: degradados exactos sobre la fotografía', () => {
+     const bottom = screen.getByTestId('pet-hero-fade-bottom');
+     expect(top.props.className).toBe('absolute inset-x-0 top-0');
+     expect(bottom.props.className).toBe('absolute inset-x-0 bottom-0');
+-    expect(top.props.style).toEqual({ height: 130, experimental_backgroundImage: 'linear-gradient(to bottom, #0D111780 0%, #0D111700 100%)' });
+-    expect(bottom.props.style).toEqual({ height: 160, experimental_backgroundImage: 'linear-gradient(to bottom, #FFFFFF00 0%, #FFFFFF59 35%, #FFFFFFD9 65%, #FFFFFF 100%)' });
++    expect(top.props.style).toEqual({ height: 90, experimental_backgroundImage: 'linear-gradient(to bottom, #0D111780 0%, #0D111700 100%)' });
++    expect(bottom.props.style).toEqual({ height: 100, experimental_backgroundImage: 'linear-gradient(to bottom, #FFFFFF00 0%, #FFFFFF59 24%, #FFFFFFD9 44%, #FFFFFF 100%)' });
+     expect(top.props.pointerEvents).toBe('none');
+     expect(bottom.props.pointerEvents).toBe('none');
+     expect(screen.queryByTestId('pet-hero-fade-top')).toBeNull();
+@@ -802,7 +802,7 @@ describe('#195 R18: estados conservados del hero', () => {
+     expect(skeleton).toBeVisible();
+     expect(skeleton.props.className).toBe('w-full');
+     expect(skeleton.props.className).not.toMatch(/\brounded-/);
+-    expect(StyleSheet.flatten(skeleton.props.style)).toEqual({ height: 330 });
++    expect(StyleSheet.flatten(skeleton.props.style)).toEqual({ height: 430 });
+     expect(screen.getByTestId('pet-hero-photo').children).toEqual([skeleton]);
+   });
+ 
+@@ -812,7 +812,7 @@ describe('#195 R18: estados conservados del hero', () => {
+     expect(media).toBeOnTheScreen();
+     expect(media.props.xml).toBe(blobatar('Luna'));
+     expect(media.props.width).toBe('100%');
+-    expect(media.props.height).toBe(330);
++    expect(media.props.height).toBe(430);
+     expect(screen.getByTestId('pet-hero-dim', { includeHiddenElements: true })).toBeOnTheScreen();
+     expect(screen.getByTestId('pet-hero-fade-bottom', { includeHiddenElements: true })).toBeOnTheScreen();
+     expect(screen.getByTestId('pet-hero-scrim-top', { includeHiddenElements: true })).toBeOnTheScreen();
+```
+
+### Alcance y pendientes de reanudación
+
+Inventario de código/docs/specs contra `98c7a192` en esta parada: solo `mobile-pet-tracker/src/components/__tests__/pet-hero-header.test.tsx` (autorizado para A). Este reporte se añade sin reescribir lo previo. `traceability.md` conserva sus pendientes A4: no se rellena un cierre que no ocurrió. Producción conserva 330/160/130 y 35%/65%.
+
+Pendientes: medir el rojo de A después de resolver la cuenta; B–E con sus rojos/verdes exactos; m1–m7 (incluidas las dos pasadas de m2) y r1–r6; suite completa 134/4381/1, typecheck con precondición del router, lint sin caché y log vacío, graphify, trazabilidad y cierre final. Ninguna de las trece mutaciones está ejecutada en esta reanudación. No se ejecutaron typecheck, lint ni graphify, y no se creó `.done`.
+
+No se tocaron `progress/current.md`, `progress/history.md`, `STATUS.md`, `feature_list.json`, PR, canvas ni R21; tampoco `home/index.tsx` ni `pingo-phrase.ts`. No hubo denegaciones del sandbox. No se ejecutó prettier ni se añadieron dependencias. El commit de reporte de esta parada es parcial y no sustituye el `docs(home)` del cierre completo que sigue pendiente.
