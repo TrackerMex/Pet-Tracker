@@ -469,7 +469,7 @@ describe('#41 R4: la guarda de RootStack declara las zonas seguras tras el detal
       : null).toEqual([Stack.Screen, 'pets/[petId]/geofences', undefined]);
   });
 
-  it('le da la cabecera nativa de #95 R4 con el título de zonas seguras', async () => {
+  it('le da la cabecera nativa de #95 R4 con el título de zonas seguras (enmendado por E4 R21)', async () => {
     await render(<RootLayout />);
     await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
     const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
@@ -479,10 +479,11 @@ describe('#41 R4: la guarda de RootStack declara las zonas seguras tras el detal
     expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined).toEqual({
       headerShown: true,
       title: '',
-      headerStyle: { backgroundColor: 'token:background' },
+      headerStyle: { backgroundColor: 'transparent' },
       headerTintColor: 'token:foreground',
       headerTitleStyle: { fontFamily: 'Inter-Bold' },
       headerShadowVisible: false,
+      headerTransparent: true,
     });
   });
 });

@@ -12,6 +12,7 @@ import { petKeys } from '../../api/query-keys';
 import type { PetProfile } from '../../api/types';
 import type { Language } from '../../i18n/catalog';
 import { LanguageProvider } from '../../providers/language-provider';
+import { HEADER_ROW_TOP, ZONES_TITLE_OFFSET } from '../../theme/header-layout';
 import { GeofencesScreen } from '.';
 
 jest.mock('../home/home-entrance', () => {
@@ -111,14 +112,15 @@ describe('#41 R5: la pantalla pinta la lista de zonas y sus estados', () => {
     expect(screen.queryByTestId('geofences-empty')).toBeNull();
   });
 
-  it('respeta las métricas A11 bajo cabecera nativa (enmendado por #189 R3)', async () => {
+  it('respeta las métricas A11 bajo cabecera nativa (enmendado por #189 R3) (enmendado por E4 R21)', async () => {
     mockList.mockResolvedValue({ kind: 'ok', geofences: [makeGeofence()] });
     await mount();
     await screen.findByTestId('geofence-geofence-1');
     const root = screen.getByTestId('screen-geofences');
     expect(root.props.className).toBe('flex-1 bg-background');
-    expect(root.props.contentInsetAdjustmentBehavior).toBe('automatic');
-    expect(root.props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 64, gap: 12, flexGrow: 1 });
+    expect(root.props.contentInsetAdjustmentBehavior).toBeUndefined();
+    expect(root.props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 46, paddingBottom: 64, gap: 12, flexGrow: 1 });
+    expect(root.props.contentContainerStyle.paddingTop).toBe(40 + HEADER_ROW_TOP);
   });
 
 
@@ -615,12 +617,13 @@ describe('#159 R6: en Zonas seguras nadie ve el botón de emparejar', () => {
 
 
 describe('#189 R1: título y contador en el contenido', () => {
-  it.each(['es', 'en'] as const)('#189 R1.2: el título de %s tiene clase, rol y posición exactos (enmendado por #189 R3)', async (language) => {
+  it.each(['es', 'en'] as const)('#189 R1.2: el título de %s tiene clase, rol y posición exactos (enmendado por #189 R3) (enmendado por E4 R21)', async (language) => {
     mockList.mockResolvedValue({ kind: 'ok', geofences: [makeGeofence()] });
     await mount(language);
     const row = await screen.findByTestId('geofence-geofence-1');
     const header = screen.getByTestId('geofences-header');
-    expect(header.props.className).toBe('flex-row items-center gap-2');
+    expect(header.props.className).toBe('h-11 flex-row items-center gap-2');
+    expect(StyleSheet.flatten(header.props.style)).toEqual({ paddingLeft: ZONES_TITLE_OFFSET });
     expect(header.parent!.children[0]).toBe(header);
     expect(header.parent).toBe(row.parent?.parent);
     const title = screen.getByTestId('geofences-title');
