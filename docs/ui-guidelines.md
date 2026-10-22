@@ -836,4 +836,4 @@ en `userKeys.me()` y cierra la pantalla; Perfil refleja el cambio sin otra
 petición. Los errores conservan lo escrito y muestran mensajes del catálogo,
 nunca texto crudo del servidor.
 
-- [ ] Enmienda #194 aprobada por humano
+- [X] Enmienda #194 aprobada por humano

@@ -649,7 +649,7 @@ compite con `bun.lock`. `init.sh` ya corre la parte móvil con
 - Spec enmendada: docs/conventions.md
 - Qué cambia: enmienda A22 de #194: añade `edit-profile` a las pantallas empujadas de A11, con cabecera nativa, `padding: 24`, `gap: 16` y `paddingBottom: insets.bottom + 24`.
 - Qué NO cambia: las métricas generales, las otras excepciones y las pantallas existentes de A11.
-- [ ] Enmienda A22 aprobada por humano (fecha: ____)
+- [X] Enmienda A22 aprobada por humano (fecha: 2026-10-22)
 
 ## Enmienda #67 — cabecera fotográfica compartida
 
