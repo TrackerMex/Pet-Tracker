@@ -1692,14 +1692,14 @@ describe('R5: Home usa el hero compartido', () => {
     expect(screen.queryByTestId('pet-card-retry')).toBeNull();
   });
 
-  it('conserva gap y paddingBottom y saca el padding horizontal a un envoltorio', async () => {
+  it('conserva gap y paddingBottom y saca el padding horizontal a un envoltorio (enmendado por #195 R15)', async () => {
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
 
     await renderHome();
 
     await screen.findByTestId('collar-card');
     expect(screen.getByTestId('screen-home').props.contentContainerStyle).toEqual({
-      gap: 16,
+      gap: 14,
       paddingBottom: 120,
     });
     expect(screen.getByTestId('home-content').props.style).toEqual({
@@ -5858,5 +5858,26 @@ describe('#195 R12: campana de vidrio e indicador de alertas', () => {
     } else expect(bell.children).toEqual([icon]);
     await fireEvent.press(bell);
     expect(mockRouter.push.mock.calls).toEqual([['/alerts']]);
+  });
+});
+
+describe('#195 R15: hueco del hero y contenido que se desplaza', () => {
+  beforeEach(setupHomeMotion);
+  it('deja el hero primero y conserva el relleno interior y la holgura de la barra', async () => {
+    await renderMotionHome();
+    const hero = screen.getByTestId('pet-hero');
+    const content = screen.getByTestId('home-content');
+    expect(content.props.style).toEqual({ paddingHorizontal: 24, gap: 16 });
+    expect(content.parent).toBe(hero.parent);
+    expect(hero.parent!.children[0]).toBe(hero);
+    expect(screen.getByTestId('screen-home').props.contentContainerStyle).toEqual({ gap: 14, paddingBottom: 120 });
+  });
+  it('aplica también el hueco de 14 a las ramas de estado sin hero', async () => {
+    mockListPets.mockReturnValue(pending<PetsState>());
+    await renderHome();
+    await screen.findByTestId('home-loading');
+    expect(screen.getByTestId('screen-home').props.contentContainerStyle).toEqual({ gap: 14, paddingBottom: 120 });
+    expect(screen.getByTestId('home-states').props.style).toEqual({ paddingHorizontal: 24, paddingTop: 52, gap: 16 });
+    expect(screen.queryByTestId('pet-hero')).toBeNull();
   });
 });
