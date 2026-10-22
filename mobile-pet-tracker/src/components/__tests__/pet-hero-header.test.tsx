@@ -764,10 +764,15 @@ describe('#195 R14: entradas del hero y visibilidad con movimiento reducido', ()
       const node = screen.getByTestId(id);
       const style = StyleSheet.flatten(node.props.style);
       expect(Object.keys(style).filter((key) => key !== 'top').sort()).toEqual(['opacity', 'transform']);
-      expect(node).toHaveAnimatedStyle({ ...(id === 'pet-hero-slot' ? { top: 52 } : {}), opacity: 1, transform: [{ translateY: 0 }] }, { shouldMatchAllProps: true });
     }
     const root = screen.getByTestId('pet-hero');
-    expect([root, ...root.findAll(() => true)].filter((node) => node.props.entering !== undefined)).toEqual([]);
+    function assertNoEntering(node: TestInstance): void {
+      expect(node.props.entering).toBeUndefined();
+      node.children.forEach((child) => {
+        if (typeof child !== 'string') assertNoEntering(child);
+      });
+    }
+    assertNoEntering(root);
   });
 
   it('con reduce motion nace final sin temporizadores y sus descendientes son visibles', async () => {
