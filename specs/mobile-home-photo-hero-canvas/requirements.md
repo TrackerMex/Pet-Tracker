@@ -259,7 +259,7 @@ Lo que ningún test ni agente puede cerrar, y que el leader no marca por su cuen
 
 - [x] Aprobado por humano (fecha: 2026-10-21) ← gate obligatorio antes de implementar
 - [x] Enmienda #195 aprobada por humano (precondición de R20: sin ella no se revierte ningún candado de §Candados; incluye aceptar que raza y etiqueta de paseos queden en 4,26 y 4,36 en light, o sustituirlas por `text-foreground`)
-- [ ] Enmienda A1 de #195 (supuesto 1) aprobada por humano (reabre el gate solo para R14, R16, §Candados de visibilidad y de forma de style, [[design]] H1 y las filas de [[tasks]] y [[traceability]] que dependen de ellos; no reabre nada más)
+- [x] Enmienda A1 de #195 (supuesto 1) aprobada por humano (reabre el gate solo para R14, R16, §Candados de visibilidad y de forma de style, [[design]] H1 y las filas de [[tasks]] y [[traceability]] que dependen de ellos; no reabre nada más)
 - [x] D1 cerrada: aceptada la recomendada (padding lateral 24 hasta C13, hueco hero a contenido de 14, fila de Pingo 8 px más estrecha por lado)
 - [x] D2 cerrada: aceptada la recomendada (hero sin foto con el blobatar centrado y sin recortar, `bg-default` en las bandas)
 - [x] D3 cerrada: aceptada la recomendada (los no seleccionados muestran la letra del canvas en un círculo de vidrio, no la foto)
