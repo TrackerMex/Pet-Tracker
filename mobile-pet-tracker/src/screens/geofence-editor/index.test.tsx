@@ -885,7 +885,7 @@ describe('#189 R19: los controles bloqueados conservan la opacidad', () => {
     await fireEvent.changeText(screen.getByTestId('geofence-editor-name'), '');
     const save = screen.getByTestId('geofence-editor-save');
     expect(save.props.accessibilityState.disabled).toBe(true);
-    expect(StyleSheet.flatten(save.props.style)).toEqual({ opacity: 1 });
+    expect(StyleSheet.flatten(save.props.style)).toEqual({ borderCurve: 'continuous', transform: [{ scale: 1 }], opacity: 1 });
     expect(screen.getByTestId('geofence-editor-active').props.accessibilityState.disabled).toBe(false);
     expect(screen.getByTestId('geofence-editor-delete').props.accessibilityState.disabled).toBe(false);
   });
