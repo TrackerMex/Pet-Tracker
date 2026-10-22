@@ -791,3 +791,36 @@ describe('#195 R14: entradas del hero y visibilidad con movimiento reducido', ()
     }
   });
 });
+
+describe('#195 R18: estados conservados del hero', () => {
+  beforeEach(() => mockUseReducedMotion.mockReturnValue(false));
+  afterEach(() => cleanup());
+
+  it.each(['bleed', 'card'] as const)('sin mascota conserva skeleton sin radio en %s', async (variant) => {
+    await renderHero(<PetHeroHeader pet={null} variant={variant} />);
+    const skeleton = screen.getByTestId('pet-hero-skeleton');
+    expect(skeleton).toBeVisible();
+    expect(skeleton.props.className).toBe('w-full');
+    expect(skeleton.props.className).not.toMatch(/\brounded-/);
+    expect(StyleSheet.flatten(skeleton.props.style)).toEqual({ height: 330 });
+    expect(screen.getByTestId('pet-hero-photo').children).toEqual([skeleton]);
+  });
+
+  it('sin foto conserva el blobatar rectangular y los degradados', async () => {
+    await renderHero(<PetHeroHeader pet={makePet({ photoUrl: null })}><Text>selector</Text></PetHeroHeader>);
+    const media = screen.getByTestId('pet-hero-media');
+    expect(media).toBeOnTheScreen();
+    expect(media.props.xml).toBe(blobatar('Luna'));
+    expect(media.props.width).toBe('100%');
+    expect(media.props.height).toBe(330);
+    expect(screen.getByTestId('pet-hero-dim', { includeHiddenElements: true })).toBeOnTheScreen();
+    expect(screen.getByTestId('pet-hero-fade-bottom', { includeHiddenElements: true })).toBeOnTheScreen();
+    expect(screen.getByTestId('pet-hero-scrim-top', { includeHiddenElements: true })).toBeOnTheScreen();
+  });
+
+  it('card conserva el radio de tarjeta', async () => {
+    await renderHero(<PetHeroHeader pet={makePet()} variant="card" />);
+    expect(screen.getByTestId('pet-hero')).toBeVisible();
+    expect(screen.getByTestId('pet-hero').props.className.split(' ')).toContain('rounded-card');
+  });
+});

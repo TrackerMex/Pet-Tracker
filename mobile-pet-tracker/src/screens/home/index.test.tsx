@@ -5883,3 +5883,39 @@ describe('#195 R15: hueco del hero y contenido que se desplaza', () => {
     expect(screen.queryByTestId('pet-hero')).toBeNull();
   });
 });
+
+describe('#195 R18: estados conservados de Inicio', () => {
+  beforeEach(setupHomeMotion);
+
+  it('conserva la carga de mascotas', async () => {
+    mockListPets.mockReturnValue(pending<PetsState>());
+    await renderHome();
+    expect(await screen.findByTestId('home-loading')).toBeVisible();
+    expect(screen.queryByTestId('pet-hero')).toBeNull();
+  });
+
+  it('conserva el error de mascotas y su reintento', async () => {
+    mockListPets.mockResolvedValue({ kind: 'unreachable', message: 'down' });
+    await renderHome();
+    expect(await screen.findByTestId('home-error')).toBeVisible();
+    expect(screen.getByTestId('home-retry')).toBeVisible();
+    expect(screen.queryByTestId('pet-hero')).toBeNull();
+  });
+
+  it('conserva el estado sin mascotas', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderHome();
+    expect(await screen.findByTestId('home-no-pets-screen')).toBeVisible();
+    expect(screen.getByTestId('home-empty')).toBeVisible();
+    expect(screen.queryByTestId('pet-hero')).toBeNull();
+  });
+
+  it('conserva el error de detalle con selector y skeleton alcanzables', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'unreachable', message: 'down' });
+    await renderHome();
+    expect(await screen.findByTestId('pet-hero-error')).toBeVisible();
+    expect(screen.getByTestId('pet-hero-retry')).toBeVisible();
+    expect(screen.getByTestId('pet-hero-skeleton')).toBeVisible();
+    expect(screen.getByTestId('pet-chip-pet-1')).toBeOnTheScreen();
+  });
+});
