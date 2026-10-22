@@ -315,6 +315,8 @@ imagen, **el texto que va encima pasa AA**.
 > degradado: la da la **banda opaca** bajo el texto (#67 R3), porque ningún
 > velo sobre una foto arbitraria llega a 4,5:1.
 
+> **Enmendado por #195.** Desde la Enmienda #195 (2026-10-21) la garantía de AA del texto del hero de Inicio ya no la da una banda opaca bajo el texto (#67 R3) sino los degradados del propio hero, medidos contra el peor caso (foto negra o blanca) en `specs/mobile-home-photo-hero-canvas/design.md` §Contraste, con la excepción nombrada de la raza y la etiqueta de paseos en light. El párrafo anterior se conserva como historia.
+
 **3. Las siete preguntas de la Home.** El brief fija qué debe responder la
 pantalla principal: ¿está segura?, ¿dónde está?, ¿el collar está conectado?,
 ¿tiene batería?, ¿tiene algún recordatorio pendiente?, ¿cómo fue su actividad
@@ -819,3 +821,22 @@ Detalle y tests en `specs/mobile-pairing-pingo-canvas-fidelity/requirements.md`.
 Detalle y tests en `specs/mobile-pairing-pingo-canvas-fidelity/requirements.md` (R15 a R20).
 
 - [X] Enmienda #188 (E2) aprobada por humano
+
+## Enmienda #195 — cabecera fotográfica de Inicio fiel al canvas
+
+> Enmienda de `ui-guidelines` por `mobile-home-photo-hero-canvas` (#195, 2026-10-21).
+> Directiva del humano: «el diseño final como el artifact» y «Píxel exacto».
+
+**Qué cambia**: la cabecera de Inicio sigue la del artboard `Inicio.dc.html` del canvas aprobado (versión 85). El hero fotográfico de #67 se conserva y se ajusta: alto 330, foto alineada arriba, velo oscuro superior de 130 px (`scrim`) y degradado inferior de 160 px hacia el fondo, ambos sobre la foto y sin banda opaca. La fila superior (avatares, «+» y campana) y el pie (píldora «En línea», nombre, raza y cifra de paseos) van **encima** de la foto, no en bandas aparte. Se añaden los tokens `scrim` y `photo-dim` (capa negra al 14 % en dark, equivalente al `brightness(.86)` del artboard).
+
+**Qué se revierte, de forma nombrada**: la banda opaca bajo el texto (#67 R3 y R3b) y, con ella, la frase de A8 «la garantía de AA la da la banda opaca». La garantía de AA pasa a darla el degradado, medido contra el peor caso (foto negra o blanca) en `specs/mobile-home-photo-hero-canvas/design.md` §Contraste. Excepción nombrada: la raza y la etiqueta de paseos, en light, quedan en 4,26:1 y 4,36:1 (suelo 4,2:1) en lugar de 4,5:1; si el humano lo rechaza, pasan a `text-foreground`.
+
+**Vidrio plano**: los círculos de 44 de la fila superior usan `bg-glass-surface-strong` sin desenfoque (`expo-blur` en Android exige un `blurTarget` y con alfa .86 el desenfoque no se aprecia).
+
+**Anillo de ping en Inicio**: la píldora «En línea» del hero de Inicio pinta un anillo con `PingRing` (escala de .55 a 1.5, opacidad de .55 a 0, 1600 ms, sin retraso). Esta excepción cubre solo esa píldora; la regla de #167, «Ninguna otra pantalla usa anillos de ping sin una enmienda propia», sigue vigente para el resto. Bajo reduce motion el hero de Inicio y la burbuja de Pingo quedan en su estado final (el artboard pone `animation: none`), sin anillo: esto difiere de la convención de conservar los fundidos y vale solo para esas piezas.
+
+**Hueco de 14 px entre el hero y el contenido**: el `gap` del artboard, por la enmienda de fidelidad del 2026-10-13. El padding lateral del resto de Inicio no cambia (24) hasta que otra feature rehaga esas secciones.
+
+Detalle y tests en `specs/mobile-home-photo-hero-canvas/requirements.md` (R1 a R20).
+
+- [ ] Enmienda #195 aprobada por humano
