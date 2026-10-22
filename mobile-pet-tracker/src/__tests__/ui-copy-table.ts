@@ -565,7 +565,9 @@ export const R13_ALERT_DETAIL: UseRow[] = [
 ];
 
 export const R14_GEOFENCES: UseRow[] = [
-  { file: 'src/app/_layout.tsx', key: 'geofences.title' },
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.title' },
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.counter' }, // #189 R1
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.progressLabel' }, // #189 R2
   { file: 'src/screens/geofences/index.tsx', key: 'common.cannotReachServer' },
   { file: 'src/screens/geofences/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/geofences/index.tsx', key: 'common.somethingWentWrong' },
@@ -577,7 +579,7 @@ export const R14_GEOFENCES: UseRow[] = [
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.emptyBody' }, // #155 R8
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.radius' },
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.activeLabel' },
-  { file: 'src/screens/geofences/index.tsx', key: 'geofences.delete' },
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.deleteLabel' }, // #189 R5
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.statusActive' },
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.statusInactive' },
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.noTrackingTitle' }, // #159 R5
@@ -588,7 +590,8 @@ export const R14_GEOFENCES: UseRow[] = [
 ];
 
 export const R15_GEOFENCE_EDITOR: UseRow[] = [
-  { file: 'src/app/_layout.tsx', key: 'geofenceEditor.title' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.title' }, // #189 R8
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.title' }, // #189 R8
   { file: 'src/screens/geofences/index.tsx', key: 'geofenceEditor.editLabel' },
   { file: 'src/screens/geofences/index.tsx', key: 'geofenceEditor.add' },
   { file: 'src/screens/geofences/index.tsx', key: 'geofenceEditor.limitNotice' },
@@ -603,6 +606,9 @@ export const R15_GEOFENCE_EDITOR: UseRow[] = [
   { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.nameLabel' },
   { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.mapHint' },
   { file: 'src/screens/geofence-editor/index.tsx', key: 'geofences.radius' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.radiusTitle' }, // #189 R11
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.meters' }, // #189 R11
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.meters' }, // #189 R11
   { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.radiusLabel' },
   { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.resetNote' },
   { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.save' },

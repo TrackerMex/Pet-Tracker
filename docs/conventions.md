@@ -631,6 +631,7 @@ compite con `bun.lock`. `init.sh` ya corre la parte móvil con
   `contentContainerStyle` es `padding: 24`, `gap: 16` y `paddingBottom:
   insets.bottom + 24`, la misma holgura inferior que `(auth)` y
   `reset-password`.
+  `pets/[petId]/geofences` queda fuera de esta excepción desde #189 E4 (cabecera transparente, ver más abajo).
 
   **Excepción nombrada (fidelidad al canvas, 2026-10-13)**: una pantalla llevada al canvas aprobado (directiva del humano «el diseño final debe de quedar como el artifact») usa las métricas de su artboard: padding lateral 20 en vez de 24 y el `gap` que el artboard dibuja. El resto de reglas de esta viñeta se mantiene; la spec de cada pantalla nombra sus valores.
 

@@ -456,7 +456,7 @@ describe('#41 R4: la guarda de RootStack declara las zonas seguras tras el detal
     mockGetStoredLanguage.mockResolvedValue(undefined);
   });
 
-  it('#194 R4: declara pets/[petId]/geofences como undécimo hijo y no singular', async () => {
+  it('#194 R4: declara pets/[petId]/geofences como undécimo hijo y no singular (enmendado por #189 R1.1)', async () => {
     await render(<RootLayout />);
     await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
     const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
@@ -470,7 +470,7 @@ describe('#41 R4: la guarda de RootStack declara las zonas seguras tras el detal
       : null).toEqual([Stack.Screen, 'pets/[petId]/geofences', undefined]);
   });
 
-  it('le da la cabecera nativa de #95 R4 con el título de zonas seguras', async () => {
+  it('le da la cabecera nativa de #95 R4 con el título de zonas seguras (enmendado por E4 R21)', async () => {
     await render(<RootLayout />);
     await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
     const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
@@ -479,11 +479,12 @@ describe('#41 R4: la guarda de RootStack declara las zonas seguras tras el detal
     const detail = Children.toArray(group.props.children)[10];
     expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined).toEqual({
       headerShown: true,
-      title: 't:geofences.title',
-      headerStyle: { backgroundColor: 'token:background' },
+      title: '',
+      headerStyle: { backgroundColor: 'transparent' },
       headerTintColor: 'token:foreground',
       headerTitleStyle: { fontFamily: 'Inter-Bold' },
       headerShadowVisible: false,
+      headerTransparent: true,
     });
   });
 });
@@ -495,7 +496,7 @@ describe('#146 R5: la guarda de RootStack declara el editor de zonas tras la lis
     mockGetStoredLanguage.mockResolvedValue(undefined);
   });
 
-  it('#194 R4: declara pets/[petId]/geofence-editor como duodécimo hijo y no singular', async () => {
+  it('#194 R4: declara pets/[petId]/geofence-editor como duodécimo hijo y no singular (enmendado por #189 R1.1)', async () => {
     await render(<RootLayout />);
     await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
     const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
@@ -518,7 +519,7 @@ describe('#146 R5: la guarda de RootStack declara el editor de zonas tras la lis
     const detail = Children.toArray(group.props.children)[11];
     expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined).toEqual({
       headerShown: true,
-      title: 't:geofenceEditor.title',
+      title: '',
       headerStyle: { backgroundColor: 'token:background' },
       headerTintColor: 'token:foreground',
       headerTitleStyle: { fontFamily: 'Inter-Bold' },

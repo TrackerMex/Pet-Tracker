@@ -9915,3 +9915,34 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   próxima spec de una pantalla nueva hace ese grep antes de firmar.
 - **Estado final:** done. Notion: Implementado / Completado. PR #239; la mergea el
   humano y después se borra el worktree `Pet-Tracker-wt-194`.
+
+## Sesión 2026-10-22 — mobile-geofences-canvas-fidelity (id: 189)
+
+- **Feature:** Zonas seguras y Editor de zona como sus artboards del canvas (R1–R24). Cabecera
+  transparente con el título en la fila de la flecha, `Stack.Screen` por rama en el Editor, hoja sin
+  `HeaderHeightContext`, `KEEP_OPACITY` en los controles `isDisabled` y en `geofences-add` al límite,
+  constantes en `src/theme/header-layout.ts` y enmienda #189 de la carta y de `docs/conventions.md`.
+- **Spec:** `specs/mobile-geofences-canvas-fidelity/`, firmada por el humano. Enmiendas E1–E6
+  firmadas por el humano: E1–E3 (premisas falsas e inventarios omitidos), E4 (R19–R24, nacida del
+  smoke: parpadeo por `disabled:element-disabled`, «Añadir zona» doblemente apagado, títulos bajo la
+  cabecera), E5 (tres aserciones de R20.1 con el estilo real de HeroUI) y E6 (el `it` de R9 en
+  `consistency-classnames` sigue los literales de E4). La tolerancia de geometría más allá de ±8 dp
+  quedó nombrada como «enmienda E7».
+- **Acciones:** Codex implementó test-primero; paró en guardas del handoff y en huecos de la spec.
+  Aclaraciones del leader sin firma (R19/R20 en un único verde, ancla de R21, tercera sonda de P-E4-8
+  como dos mutaciones). Merge de `origin/main` (46 commits) sin rebase, para conservar los hashes de
+  trazabilidad: `docs/ui-guidelines.md` por el leader (conviven las enmiendas #189 y #194) y tres
+  tests por el fallback `implementer` (`progress/merge_main_mobile-geofences-canvas-fidelity.md`),
+  sin relajar candados.
+- **Resultado:** `./init.sh` exit 0 sobre el merge (`659850dc`): backend 187 suites / 1474 tests;
+  móvil 133 / 4485; e2e 468 passed; lint y typecheck limpios (`progress/init-leader-189-merge.log`).
+  Reviewer APROBADO sobre `18f86849`, sobre `67f12234` (E4/E5/E6) y sobre el delta del merge
+  (`progress/review_mobile-geofences-canvas-fidelity_post.md`). Smoke en dev build de Android firmado
+  por el humano («perfecto»).
+- **Notas no bloqueantes:** el `Slider` queda fuera del barrido de R19.2 (punto ciego); el barrido de
+  R23.2 cubre solo 42/70/56; iOS sin verificar (DE4-3); más las ocho observaciones de la primera
+  revisión (ver el informe del reviewer).
+- **Lección:** las premisas de la spec sobre el aspecto de componentes de terceros (HeroUI) se miden
+  antes de firmar; y un candado de inventario («delta 0») se cruza contra el `it` real que lo cuenta.
+- **Estado final:** done. Notion: Implementado / Completado. PR #240; la mergea el
+  humano y después se borra el worktree `Pet-Tracker-wt-189`.

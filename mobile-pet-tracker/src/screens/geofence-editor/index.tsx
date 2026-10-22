@@ -1,9 +1,9 @@
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { router } from 'expo-router';
-import { HeaderHeightContext } from 'expo-router/react-navigation';
+import { BlurView } from 'expo-blur';
+import { router, Stack } from 'expo-router';
 import { Button, Input, Label, Skeleton, Slider, Switch, TextField } from 'heroui-native';
-import { useContext, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Alert, KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
@@ -16,8 +16,13 @@ import { Card } from '../../components/card';
 import { DEFAULT_CENTER, PetMap, type MapCoordinates } from '../../components/pet-map';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
-import { TABULAR_NUMS } from '../../theme/native-styles';
+import { EDITOR_PILL_LEFT, HEADER_BAR_HEIGHT, TRANSPARENT_HEADER_OPTIONS } from '../../theme/header-layout';
+import { CONTINUOUS_CORNER, KEEP_OPACITY, TABULAR_NUMS } from '../../theme/native-styles';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { zoomForRadius } from '../../utils/zoom-for-radius';
+
+const MIN_RADIUS = 20;
+const MAX_RADIUS = 2000;
 
 function messageFor(t: ReturnType<typeof useTranslate>, kind: GeofenceSaveState['kind']): string {
   switch (kind) {
@@ -32,6 +37,8 @@ function messageFor(t: ReturnType<typeof useTranslate>, kind: GeofenceSaveState[
 }
 
 export function GeofenceEditorScreen({ petId, geofenceId }: { petId: string; geofenceId?: string }) {
+  const [background] = useThemeColors(['background']);
+  const opaqueHeader = useMemo(() => ({ headerTransparent: false, headerStyle: { backgroundColor: background } }), [background]);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
   const t = useTranslate();
@@ -80,11 +87,14 @@ export function GeofenceEditorScreen({ petId, geofenceId }: { petId: string; geo
       initialCenter={zone ? { latitude: zone.centerLat, longitude: zone.centerLng } : last ? { latitude: last.lat, longitude: last.lng } : DEFAULT_CENTER}
     />;
   }
-  return <ScrollView testID="screen-geofence-editor" className="flex-1 bg-background"
+  return <>
+    <Stack.Screen options={opaqueHeader} />
+    <ScrollView testID="screen-geofence-editor" className="flex-1 bg-background"
     contentInsetAdjustmentBehavior="automatic"
-    contentContainerStyle={{ padding: 24, gap: 16, paddingBottom: insets.bottom + 24 }}>
+    contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: insets.bottom + 40, gap: 12 }}>
+    <Text testID="geofence-editor-title" accessibilityRole="header" className="text-26 font-black tracking-title text-foreground">{t('geofenceEditor.title')}</Text>
     {content}
-  </ScrollView>;
+  </ScrollView></>;
 }
 
 function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, initialCenter, initialRadius }: {
@@ -93,7 +103,6 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
   const chunkyLip = useChunkyLip();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
-  const headerHeight = useContext(HeaderHeightContext);
   const { theme } = useUniwind();
   const queryClient = useQueryClient();
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
@@ -137,49 +146,72 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
     ]);
   };
 
-  return <KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={headerHeight}>
+  const radiusValue = <Text testID="geofence-editor-radius-value" selectable style={TABULAR_NUMS} className={readOnly ? 'font-bold text-foreground' : 'text-sm font-extrabold text-accent-strong'}>{t('geofences.radius', { meters: Math.round(readOnly ? initialRadius : radius) })}</Text>;
+
+  return <>
+    <Stack.Screen options={TRANSPARENT_HEADER_OPTIONS} />
+    <KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={0}>
     <View testID="geofence-editor-map" className="flex-1">
       <PetMap onPress={readOnly ? undefined : setCenter} center={readOnly ? initialCenter : camera.center} zoom={readOnly ? zoomForRadius(initialRadius) : camera.zoom} marker={null} polylines={[]} circles={circles} colorScheme={theme === 'dark' ? 'dark' : 'light'} />
+      <View testID="geofence-editor-title-row" className="absolute justify-center" pointerEvents="box-none" style={{ top: insets.top, left: EDITOR_PILL_LEFT, height: HEADER_BAR_HEIGHT }}>
+      <BlurView testID="geofence-editor-title-blur" intensity={48} blurMethod="dimezisBlurViewSdk31Plus" tint={theme === 'dark' ? 'dark' : 'light'} className="self-start overflow-hidden rounded-full">
+        <Text testID="geofence-editor-title" accessibilityRole="header" className="bg-glass-surface-strong px-4 py-2.5 text-base font-extrabold text-foreground">{t('geofenceEditor.title')}</Text>
+      </BlurView>
+      </View>
+      {readOnly ? null : <BlurView testID="geofence-editor-map-hint-blur" intensity={48} blurMethod="dimezisBlurViewSdk31Plus" tint={theme === 'dark' ? 'dark' : 'light'} className="absolute bottom-9 self-center overflow-hidden rounded-full">
+        <Text testID="geofence-editor-map-hint" className="bg-glass-surface-strong px-3 py-1.5 text-xs font-bold text-foreground">{t('geofenceEditor.mapHint')}</Text>
+      </BlurView>}
     </View>
-    <ScrollView testID="geofence-editor-form" className="bg-background"
-      style={{ flexGrow: 0, flexShrink: 1 }} keyboardShouldPersistTaps="handled"
-      contentContainerStyle={{ padding: 24, gap: 16, paddingBottom: insets.bottom + 24 }}>
-      {readOnly ? <Text testID="geofence-editor-name-text" selectable className="font-bold text-foreground">{zone?.name}</Text> : <>
+    <ScrollView testID="geofence-editor-form" className="-mt-6.5 rounded-t-hero bg-surface"
+      style={[CONTINUOUS_CORNER, { flexGrow: 0, flexShrink: 1 }]} keyboardShouldPersistTaps="handled"
+      contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 12, gap: 14, paddingBottom: insets.bottom + 36 }}>
+      <View testID="geofence-editor-grabber" className="h-1.25 w-10 self-center rounded-full bg-lip-gray" importantForAccessibility="no-hide-descendants" accessibilityElementsHidden />
+      {readOnly ? <Text testID="geofence-editor-name-text" selectable className="text-base font-extrabold text-foreground">{zone?.name}</Text> : <>
       <TextField>
-        <Label className="text-xs font-semibold text-foreground">{t('geofenceEditor.nameLabel')}</Label>
-        <Input testID="geofence-editor-name" className="rounded-xl bg-default" maxLength={120} value={name} onChangeText={setName} />
+        <Label><Label.Text className="text-sm font-extrabold text-foreground">{t('geofenceEditor.nameLabel')}</Label.Text></Label>
+        <Input testID="geofence-editor-name" className="h-12.5 rounded-xl bg-default px-3.5" maxLength={120} value={name} onChangeText={setName} />
       </TextField>
-      <Text testID="geofence-editor-map-hint" className="text-sm font-normal text-muted">{t('geofenceEditor.mapHint')}</Text>
       </>}
-      <Text testID="geofence-editor-radius-value" selectable style={TABULAR_NUMS} className="font-bold text-foreground">{t('geofences.radius', { meters: Math.round(readOnly ? initialRadius : radius) })}</Text>
-      {readOnly ? <Text testID="geofence-editor-read-only" className="text-sm font-normal text-muted">{t('geofenceEditor.ownerOnly')}</Text> : <>
-      <Slider testID="geofence-editor-radius" value={radius} minValue={20} maxValue={2000} step={10}
+      {readOnly ? <>{radiusValue}<Text testID="geofence-editor-read-only" className="text-sm font-normal text-muted">{t('geofenceEditor.ownerOnly')}</Text></> : <>
+      <View testID="geofence-editor-radius-block" className="gap-2">
+      <View className="flex-row justify-between">
+        <Text testID="geofence-editor-radius-label" className="text-sm font-extrabold text-foreground">{t('geofenceEditor.radiusTitle')}</Text>
+        {radiusValue}
+      </View>
+      <Slider testID="geofence-editor-radius" value={radius} minValue={MIN_RADIUS} maxValue={MAX_RADIUS} step={10}
         onChange={(v) => setRadius(Array.isArray(v) ? v[0] : v)}
         onChangeEnd={(v) => setCamera({ center, zoom: zoomForRadius(Array.isArray(v) ? v[0] : v) })}>
         <Slider.Track><Slider.Fill /><Slider.Thumb testID="geofence-editor-radius-thumb" accessibilityLabel={t('geofenceEditor.radiusLabel')}
           accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
           onAccessibilityAction={({ nativeEvent: { actionName } }) => {
             if (actionName !== 'increment' && actionName !== 'decrement') return;
-            const next = actionName === 'increment' ? Math.min(2000, radius + 10) : Math.max(20, radius - 10);
+            const next = actionName === 'increment' ? Math.min(MAX_RADIUS, radius + 10) : Math.max(MIN_RADIUS, radius - 10);
             setRadius(next);
             setCamera({ center, zoom: zoomForRadius(next) });
           }} /></Slider.Track>
       </Slider>
+      <View className="flex-row justify-between">
+        <Text testID="geofence-editor-radius-min" className="text-11 font-semibold text-muted">{t('geofenceEditor.meters', { meters: MIN_RADIUS })}</Text>
+        <Text testID="geofence-editor-radius-max" className="text-11 font-semibold text-muted">{t('geofenceEditor.meters', { meters: MAX_RADIUS })}</Text>
+      </View>
+      </View>
       {zone ? <View testID="geofence-editor-active-row" className="flex-row items-center justify-between gap-3">
-        <Text className="font-semibold text-foreground">{t('geofences.statusActive')}</Text>
-        <Switch testID="geofence-editor-active" isSelected={zone.active} hitSlop={10} isDisabled={busy}
+        <Text className="text-15 font-bold text-foreground">{t('geofences.statusActive')}</Text>
+        <Switch testID="geofence-editor-active" isSelected={zone.active} hitSlop={10} isDisabled={busy} style={KEEP_OPACITY}
           accessibilityLabel={t('geofences.activeLabel', { name: zone.name })}
           onSelectedChange={(active) => void run(() => setGeofenceActive(baseUrl, token ?? '', petId, zone.id, active), refresh)} />
       </View> : null}
       {zone ? <Text testID="geofence-editor-reset-note" className="text-sm font-normal text-muted">{t('geofenceEditor.resetNote')}</Text> : null}
-      <Button testID="geofence-editor-save" className="h-14 rounded-16 bg-accent" style={chunkyLip.primary} isDisabled={busy || name.trim() === ''} onPress={() => void save()}>
-        <Text className="text-17 font-extrabold text-accent-foreground">{t('geofenceEditor.save')}</Text>
-      </Button>
-      {zone ? <Button testID="geofence-editor-delete" variant="danger-soft" className="rounded-xl bg-danger-soft" isDisabled={busy} onPress={confirmDelete}>
-        <Button.Label className="font-semibold text-danger">{t('geofences.delete')}</Button.Label>
+      <View testID="geofence-editor-actions" className="flex-row gap-2.5">
+      {zone ? <Button testID="geofence-editor-delete" variant="outline" className="flex-1 h-14 rounded-16 border-2 border-lip-gray bg-surface" style={[chunkyLip.neutral, KEEP_OPACITY]} isDisabled={busy} onPress={confirmDelete}>
+        <Text className="text-base font-extrabold text-danger">{t('geofences.delete')}</Text>
       </Button> : null}
+      <Button testID="geofence-editor-save" className={name.trim() === '' ? 'flex-2 h-14 rounded-16 bg-default' : 'flex-2 h-14 rounded-16 bg-accent'} style={name.trim() === '' ? KEEP_OPACITY : [chunkyLip.primary, KEEP_OPACITY]} isDisabled={busy || name.trim() === ''} onPress={() => void save()}>
+        <Text className={name.trim() === '' ? 'text-17 font-extrabold text-muted' : 'text-17 font-extrabold text-accent-foreground'}>{t('geofenceEditor.save')}</Text>
+      </Button>
+      </View>
       {error ? <Text testID="geofence-editor-error" selectable className="text-danger">{error}</Text> : null}
       </>}
     </ScrollView>
-  </KeyboardAvoidingView>;
+  </KeyboardAvoidingView></>;
 }

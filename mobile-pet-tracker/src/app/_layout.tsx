@@ -13,6 +13,7 @@ import { AuthProvider, useAuth } from '../providers/auth-provider';
 import { LanguageProvider, useTranslate } from '../providers/language-provider';
 import { QueryProvider } from '../providers/query-provider';
 import { SelectedPetProvider } from '../providers/selected-pet-provider';
+import { TRANSPARENT_HEADER_OPTIONS } from '../theme/header-layout';
 import { useThemeColors } from '../theme/use-theme-colors';
 import { getStoredLanguage } from '../utils/language-preference';
 import { getStoredTheme } from '../utils/theme-preference';
@@ -102,8 +103,8 @@ function RootStack() {
         <Stack.Screen name="reminders" options={{ ...headerOptions, title: '' }} />
         <Stack.Screen name="alerts" dangerouslySingular options={{ ...headerOptions, title: '' }} />
         <Stack.Screen name="alerts/[alertId]" dangerouslySingular options={{ ...headerOptions, title: '', contentStyle: { backgroundColor: background } }} />
-        <Stack.Screen name="pets/[petId]/geofences" options={{ ...headerOptions, title: t('geofences.title') }} />
-        <Stack.Screen name="pets/[petId]/geofence-editor" options={{ ...headerOptions, title: t('geofenceEditor.title') }} />
+        <Stack.Screen name="pets/[petId]/geofences" options={{ ...headerOptions, title: '', ...TRANSPARENT_HEADER_OPTIONS }} />
+        <Stack.Screen name="pets/[petId]/geofence-editor" options={{ ...headerOptions, title: '' }} />
         <Stack.Screen name="meals-history" options={{ ...headerOptions, title: '' }} />
         <Stack.Screen name="edit-profile" options={{ ...headerOptions, title: '' }} />
       </Stack.Protected>

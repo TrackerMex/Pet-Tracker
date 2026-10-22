@@ -1,6 +1,6 @@
 import { Drop, ForkKnife, Pill, PinTack, Stethoscope, Syringe, Weight } from 'reicon-react-native';
 
-import { documentCategory } from '../category-palette';
+import { documentCategory, zoneCategory, ZONE_SLOT_ORDER } from '../category-palette';
 import { REMINDER_TYPE_META } from '../reminder-meta';
 
 describe('#64 R5: cada tipo de recordatorio resuelve un único hueco de la paleta', () => {
@@ -68,4 +68,22 @@ describe('#64 R6: el tipo de documento resuelve su hueco y cae en neutral si es 
       expect(documentCategory(type)).toBe('neutral');
     },
   );
+});
+
+
+describe('#189 R4: las zonas reparten cinco ranuras por posición', () => {
+  it('#189 R4: asigna cada posición y vuelve a verde sin neutral', () => {
+    expect(zoneCategory(0)).toBe('green');
+    expect(zoneCategory(1)).toBe('blue');
+    expect(zoneCategory(2)).toBe('amber');
+    expect(zoneCategory(3)).toBe('violet');
+    expect(zoneCategory(4)).toBe('rose');
+    expect(zoneCategory(5)).toBe('green');
+    for (let index = 0; index < 6; index++) expect(zoneCategory(index)).not.toBe('neutral');
+  });
+  it('#189 R4: declara cinco ranuras distintas en el orden del canvas', () => {
+    expect(ZONE_SLOT_ORDER).toEqual(['green', 'blue', 'amber', 'violet', 'rose']);
+    expect(ZONE_SLOT_ORDER).toHaveLength(5);
+    expect(new Set(ZONE_SLOT_ORDER).size).toBe(5);
+  });
 });
