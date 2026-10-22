@@ -10,8 +10,6 @@
 
 ## Ejecución
 
-**Estado: PARADO antes de R14 por caída del supuesto 1. Implementación parcial; no apta para merge ni para declarar done.**
-
 - R13: rojo `Tests: 2 failed, 24 passed, 26 total`; verde `Tests: 26 passed, 26 total`. Inventario ampliado de 31 a 35 exportaciones, valores literales independientes.
 - R4 verifica la segunda capa respecto al contenedor de medios existente; R1 nombra el frame y R6 cierra el orden completo de capas con/sin slot (el frame no existe antes de R1).
 - R4: rojo `Tests: 3 failed, 108 passed, 111 total`; verde `Tests: 111 passed, 111 total`. Mutación dark .14 → .41: roja y revertida (1 test rojo).
@@ -27,36 +25,17 @@
 - R6: rojo `Tests: 4 failed, 78 passed, 82 total`; verde `Tests: 82 passed, 82 total`. Mutación quitar tracking-title del nombre: 2 rojos, revertida. La mutación de ALERTS NO se ejecutó: el script buscó una línea sin su comentario final y su aserción de búsqueda abortó antes de escribir. No se cuenta como sonda superada. No había it anteriores con las otras tres cadenas tipográficas del pie (búsqueda por contenido realizada).
 
 
-## Bloqueo obligatorio — supuesto 1 (R14 / R16)
+## Bloqueos resueltos — A1, A2, A3 y adendo 5
 
-El handoff manda: «confirma el 1 (visibilidad de hijos con entrada en opacidad 0) antes del primer test rojo que lo use» y «Si el 1 cae, PARA y avisa».
+El supuesto 1 quedó refutado con tres sondas fieles:
 
-La primera sonda usó `m.default.View` del doble (View plano). Pasó, pero no reproducía el nodo de producción: `Animated.createAnimatedComponent(View)`. Al preparar R14 se repitió con ese nodo real. Resultado:
+- `Tests: 1 failed, 1 total` — (a) temporizadores reales y waitFor sobre el nodo visible.
+- `Tests: 1 failed, 1 total` — (b) temporizadores falsos y act de 500 ms.
+- `Tests: 1 passed, 1 total` — (c) reduce motion inicia en uno y visibilidad síncrona.
 
-```text
-FAIL src/components/__tests__/pet-hero-header.test.tsx
-#195 R14: sonda fiel al nodo AnimatedView del hero
-  el hijo de un AnimatedView inicialmente oculto termina visible
-expect(instance).toBeVisible()
-Received instance is not visible: <Text testID="visibility-probe">hijo</Text>
-Tests: 1 failed, 55 skipped, 56 total
-```
+A1 firmada resolvió el mecanismo de Jest con presencia sobre nodos animados, movimiento real en HEROMOT/BP y visibilidad síncrona con reduce motion. A2 firmada separó el contador de fundido por duración 500 sin tocar las aserciones posteriores; mutación f roja. A3 firmada enmendó el gap del scroll en R6 sin modificar home-states; mutaciones a/b/c rojas. El adendo 5 validó el paso (1b): cuatro rojos medidos dos veces por el leader, quinto rojo PingoFloat no reproducido. En esta reanudación #190 R5 pasa en todas las corridas HOME completas y en la suite completa.
 
-Sonda efímera añadida a HERO, ejecutada sola y retirada en `finally`:
-
-```tsx
-const ProbeView = Animated.createAnimatedComponent(View);
-function Probe() {
-  const opacity = m.useSharedValue(0);
-  React.useEffect(() => { opacity.set(m.withTiming(1)); }, [opacity]);
-  const style = m.useAnimatedStyle(() => ({ opacity: opacity.get() }));
-  return <ProbeView style={style}><Text testID="visibility-probe">hijo</Text></ProbeView>;
-}
-await renderHero(<Probe />);
-expect(screen.getByTestId('visibility-probe')).toBeVisible();
-```
-
-`m` es `jest.requireMock('react-native-reanimated')`; React es requireActual; Animated es el import por defecto ya usado por producción. Comando desde mobile: `bunx jest src/components/__tests__/pet-hero-header.test.tsx --testTimeout=30000 --silent -t '#195 R14: sonda fiel'`, con ambos pgrep vacíos. No se relajó ningún `toBeVisible`, no se escribió el rojo de R14 ni se implementó ese bloque. La sonda correcta invalida la confirmación inicial. El leader debe revisar el montaje/doble y la spec antes de reanudar, según la orden de parada.
+Se conserva íntegra la evidencia inicial en el archivo histórico al final de este reporte y las secciones de cada reanudación. El estado vigente es el cierre automático R1–R20; R21 corresponde al humano.
 
 ## Commits y líneas Tests medidas
 
@@ -511,8 +490,6 @@ Mutaciones e/f confirman respectivamente H1 y que el filtro de A2 no está ciego
 
 ### R15 — rojo y PARADA obligatoria por otro it anterior
 
-**Estado vigente: PARADO en R15.** R14, R9, R10, R11 y R12 terminados con sus mutaciones. R15 solo tiene el commit de test rojo; R16 a R20 y el cierre siguen pendientes. No se crea `.done`.
-
 - Primer intento de edición de test R15: la búsqueda global de la expectativa de gap encontró dos copias y abortó antes de escribir. La shell continuó y Jest con el filtro aún inexistente saltó toda la suite: `Tests: 264 skipped, 264 total` (0 suites ejecutadas). NO se cuenta como rojo ni como verificación. Se acotó la edición al título R5 autorizado y se repitió.
 - `77da555b` — `test(mobile): lock home hero spacing and scroll layout (R15)`: `Tests: 3 failed, 263 skipped, 266 total` (rojo correcto: expectativa R5 autorizada y dos it nuevos de R15, todos por gap 16 en lugar de 14).
 - Candidata mínima R15: una sola línea de `contentContainerStyle`, gap 16 → 14; ni home-content ni home-states cambian su gap interno de 16 ni sus paddings.
@@ -596,7 +573,7 @@ Todos los commits de esta reanudación usaron `git commit --only` con rutas expl
 
 ### R15 (1b) — rojo A3 y PARADA por cinco fallos en HOME
 
-**Estado vigente: PARADO en el paso (1b) de R15, por la regla explícita del adendo 4.** No hay verde R15; no se inician R16–R20 ni el cierre. No se crea `.done`.
+**Parada de (1b) resuelta por el leader (adendo 5): cuatro rojos correctos medidos dos veces; quinto rojo PingoFloat no reproducido.** Se conserva la evidencia de aquella corrida y se reanuda en el verde R15.
 
 - Se esperó al Jest y después al init.sh del worktree 189; no se lanzó Jest hasta que ambos pgrep prescritos quedaron vacíos. No se interrumpió ningún proceso ajeno.
 - Comando: `bunx jest src/screens/home/index.test.tsx --testTimeout=30000` desde mobile-pet-tracker, HOME completo sin filtro. Log: `progress/r15-a3-red-195.log` (ignorado). Exit 1, `Test Suites: 1 failed, 1 total`; **`Tests: 5 failed, 261 passed, 266 total`**, `Snapshots: 0 total`, 42.89 s. No hay suite saltada.
@@ -642,3 +619,250 @@ index e32bfb4a..659da4f0 100644
 - Mutaciones R15 (a), (b) y (c) NO ejecutadas: requieren el verde, que no se aplica tras la parada. R16–R20 pendientes, sin ficheros BP ni cambios nuevos en GUARD/carta/traceability.
 - No se ejecutan suite móvil completa, typecheck, lint, graphify ni cuentas finales porque no se alcanzó el cierre. No se ejecutó init.sh; no push, PR, merge, rebase, dependencias ni cambios del arnés. Se conserva el reporte añadido para revisión del leader, sin commit docs parcial.
 - Siguiente paso: el leader revisa el quinto rojo y determina cómo reabrir la condición de (1b); no se crea .done ni se declara completada la feature.
+
+## Reanudación con adendo 5 — 2026-10-22
+
+- Primer comando: `/home/claude/sites/Pet-Tracker-wt-195`, branch `feature/195-mobile-home-photo-hero-canvas`. Leídos enteros los adendos 5 y 4. El leader valida `6519704f`: dos corridas con cuatro rojos correctos (`Tests: 4 failed, 262 passed, 266 total` cada una); quinto rojo PingoFloat no reproducido. No hay enmienda nueva y el commit se conserva.
+- Se mantienen las skills ya cargadas (`ponytail:ponytail`, `building-native-ui`, `expo-tailwind-setup`, `appllama-app-design-skill`, `animate-expo`) y las limitaciones del catálogo registradas en A3. No init.sh; esperas según conventions §Esperas.
+- Verde R15: solo gap 16 a 14 del contentContainerStyle, sin condicional por rama; paddings y gaps interiores intactos. Cada corrida Jest va precedida de pgrep en comando propio, con espera de 20 s y límite de 15 min según adendo 5.
+
+- Verde R15: HOME completo, `Tests: 266 passed, 266 total`, exit 0. Los cuatro it de A3 pasan; ningún it anterior rojo. Comando sin filtro y log completo `progress/r15-green-195.log`. Consulta de lectura de `jest.config.js` inexistente produjo ENOENT, sin modificación ni ejecución de tests; no se usa esa ruta.
+
+- Commit verde R15 `2bf5b932` — `feat(mobile): match home hero scroll spacing (R15)`, `Tests: 266 passed, 266 total`. Mutación (a): solo referencia de R6 vuelve a 16, ese it rojo `Expected gap: 16 / Received gap: 14`; `Tests: 1 failed, 265 passed, 266 total`, exit 1. Revertida; resto HOME verde, H3 demostrado.
+
+- Mutación R15 (b): gap del scroll vuelve a 16, exactamente los cuatro it del paso (1b) rojos (R6, R5 y los dos #195 R15), Expected 14 / Received 16; `Tests: 4 failed, 262 passed, 266 total`, exit 1. Resto HOME verde; revertida.
+
+- Mutación R15 (c): gap interno de home-states 16 a 14, rojos solo R6 (bloque home-states) y segundo #195 R15, `Tests: 2 failed, 264 passed, 266 total`, exit 1. R5 y primero #195 R15 verdes; bloque intacto no está ciego. Revertida; diff móvil vacío. Sin refactor adicional: una línea ya es mínima.
+
+### R16 — rojo y verde
+
+- R15 tras reversiones: `Tests: 266 passed, 266 total`, exit 0 (`r15-restored-195.log`), sin refactor adicional.
+- Rojo R16 BP+HOME: `Tests: 3 failed, 263 passed, 266 total`; 2 suites fallidas. BP falla por módulo BubblePop inexistente; HOME rojos exclusivamente #190 R11 (clase), #190 R4 (56 frente a 64), #190 R7 (falta estilo animado final). Ningún it anterior ajeno rojo. Tests nuevos con Reanimated real, solo useReducedMotion sustituido; constantes y tiempos literales.
+
+- Commit rojo R16 `44b5cd43` — `test(mobile): lock Pingo bubble pop and reduced motion (R16)`. Primera candidata: BP+HOME `Tests: 1 failed, 268 passed, 269 total` (HOME completo verde). Único fallo nuevo: lectura de pico a 706 ms, esperado cercano a 1.08 con precisión por defecto 2, recibido 1.0671542276609973.
+- Medición del reloj real en BP: **a 690 ms da exactamente opacity 1 y scale 1.08**; a 706 ms el segundo tramo ya ha avanzado 16 ms y da 1.0671542276609973. `Tests: 1 failed, 2 passed, 3 total` de la sonda temporal (`r16-clock-195.log`). No se cambia ningún valor final ni tiempo de producción. Se retira console.info y se añade una aserción más fuerte del pico exacto a 690 ms; a 706 ms se mantiene `toBeCloseTo(1.08, 1)` más `scale > 1` (cercanía durante el retorno), pues la spec prescribe «cercana» sin precisión decimal. El estado final a 866 ms conserva la precisión 2 por defecto. No se relaja ninguna aserción fuera de los nodos animados.
+- Dos búsquedas de solo lectura usaron globs de celebration inexistentes y devolvieron ENOENT, sin escritura ni ejecución Jest; no se usan esas rutas.
+
+- Corrección de test `d330637e` — `test(mobile): sample bubble peak before its return frame (R16)` antes del verde. BP+HOME `Tests: 269 passed, 269 total`, 2 suites, exit 0 (`r16-green-final-195.log`). Primer render reduce motion visible, pico exacto y final sin cambios de valores.
+
+- Verde R16 `0c02fc69` — `feat(mobile): animate canvas Pingo bubble with reduced motion (R16)`, `Tests: 269 passed, 269 total`. Sin refactor adicional.
+
+| Mutación R16 | It rojo medido | Tests (exit 1) |
+|---|---|---|
+| a: opacity inicial 1 | BP `espera 450 ms…` y `reenvía testID…` | `Tests: 2 failed, 1 passed, 3 total` |
+| b: reduce motion opacity inicial 0 | BP `con reduce motion nace final…` y HOME #190 R7 | `Tests: 2 failed, 263 skipped, 4 passed, 269 total` |
+| c: shadow-sm vuelve a la burbuja | HOME #190 R11 `usa View y Text…` | `Tests: 1 failed, 265 skipped, 266 total` |
+| d: BubblePop descarta style | HOME #190 R7, falta `{ borderCurve: 'continuous' }` | `Tests: 1 failed, 265 skipped, 266 total` |
+| e: cadena prohibida en comentario HOME | design-drift #68 R18 `keeps arbitrary text, hex colors, and StyleSheet out of feature sources` | `Tests: 1 failed, 113 skipped, 1 passed, 115 total` |
+
+Cada mutación vista roja y revertida antes de la siguiente. Los filtros ejecutaron tests (ninguna suite saltada entera); HOME/mutaciones con testTimeout 30000. Solo paths autorizados; diff móvil vacío tras restaurar.
+
+- R16 tras restaurar mutaciones, guardas agregadas: `Tests: 774 passed, 774 total`, 25 suites verdes, snapshot 1/1 (`r16-guards-195.log`). No regresiones.
+
+### R17 — modelo de contraste
+
+- GUARD nace verde tal como permite tasks R17: `Tests: 4 passed, 4 total`, exit 0. Dos it nuevos (light/dark) con 9 pares cada uno, tokens leídos de CSS, constantes literales y tolerancia ±0.05 más suelos. El test es el entregable: no necesita producción nueva. Se demuestra rojo por mutaciones; no se inventa un cambio de producción para crear un commit vacío.
+
+- Commit R17 `3ee46612` — `test(mobile): verify worst-case hero contrast model (R17)`, baseline `Tests: 4 passed, 4 total`. Mutación (a), muted light más claro, pone rojo `mantiene referencias y suelos en light`, `Tests: 1 failed, 3 passed, 4 total`. Mutación (b), alfa 0.15 a 0.25 del primer tramo, pone rojos ambos temas por tolerancia, `Tests: 2 failed, 2 passed, 4 total`. Ambas exit 1 y revertidas. Valores/referencias/suelos originales conservados.
+
+- R17 restaurado: `Tests: 4 passed, 4 total`, exit 0, sin refactor/producción nueva.
+
+### R18 — estados conservados
+
+- Primera corrida HERO+HOME `Tests: 1 failed, 331 passed, 332 total`, HOME completo verde. El único rojo era un error del test nuevo: imponía orden de clases de card que R18 no prescribe (bg-default antes de rounded-card); se corrige para afirmar la presencia de rounded-card, como pide R18. No se modifica ninguna aserción anterior ni producción. Un intento previo de apply_patch con contexto inexistente abortó antes de escribir; se añadió el bloque al final sin tocar código anterior.
+
+- R18 `a45ce63f` — `test(mobile): preserve hero fallbacks and home states (R18)`. Nace verde tras corregir el error del test: HERO `Tests: 62 passed, 62 total`; HOME `Tests: 270 passed, 270 total` (suite verde de `r18-baseline-195.log`). Ocho it nuevos; sin implementación necesaria, como prevé tasks R18.
+- Mutación rounded-xl en skeleton: ambos it nuevos de skeleton (bleed/card) rojos, `Tests: 2 failed, 60 passed, 62 total`, exit 1. Revertida. El primer script tenía indentación incorrecta en su ancla y abortó antes de escribir/Jest; se corrigió a la indentación real sin tocar nada más.
+
+Corrección del recuento R18 anterior: el resultado real de la mutación fue `Tests: 3 failed, 59 passed, 62 total`: además de los dos it nuevos falló el candado anterior #127 R2 de la misma receta del skeleton. Es una detección adicional del defecto plantado, no una regresión. Tras restaurar, `Tests: 62 passed, 62 total`, exit 0. Los logs íntegros son la fuente del recuento.
+
+### R19 — guardas de fuente e inventarios
+
+- GUARD `Tests: 23 passed, 23 total`, exit 0. Diecinueve it nuevos sobre siete ficheros, cuentas por líneas y tokens/tiempos. El código ya cumple por R1–R16: no se añade producción ni se fabrica un cambio vacío. Se valida el rojo real de cada guarda con las seis mutaciones prescritas.
+
+- Commit R19 `a4300199` — `test(mobile): guard hero style inventory and source rules (R19)`, `Tests: 23 passed, 23 total`.
+
+| Mutación R19 | It rojo | Tests (exit 1) |
+|---|---|---|
+| a hex FF0000 en GC | R19 glass-circle conserva tokens | `Tests: 1 failed, 22 passed, 23 total` |
+| b clase h-[330px] en hero | R19 pet-hero-header conserva tokens | `Tests: 1 failed, 22 passed, 23 total` |
+| c shadow-md en selector | R19 pet-switcher conserva tokens y cuenta shadow- | `Tests: 2 failed, 21 passed, 23 total` |
+| d import BlurView en GC | R19 glass-circle conserva tokens | `Tests: 1 failed, 22 passed, 23 total` |
+| e segunda resolución profile.addPet | R11 resuelve profile.addPet y R19 cuenta por líneas | `Tests: 2 failed, 21 passed, 23 total` |
+| f comentario con referencia desnuda en hero | design-drift: inventario de fuentes de media/hero | `Tests: 1 failed, 114 passed, 115 total` |
+
+Todas vistas rojas y revertidas, sin cambios residuales de producción. No se escribe ninguna referencia de feature en los dos ficheros de Inicio prohibidos (la f se planta en hero).
+
+- R19 restaurado GUARD+design-drift: `Tests: 138 passed, 138 total`, exit 0. Nombre exacto de la mutación f: `R9: mobile-pets-profile sin drift › keeps arbitrary text, hex colors, and StyleSheet out of feature sources`.
+
+### R20 — carta
+
+- Antes del rojo se verifica casilla firmada de la enmienda original en requirements (gate cumplido). Test lee bloques canónicos de design, normaliza solo casilla, fija última sección y preserva el párrafo A8 byte a byte como literal independiente con la cita nueva inmediata.
+
+- Rojo R20: `Tests: 3 failed, 23 passed, 26 total`, exit 1, solo los tres nuevos it (sección ausente, cita ausente y casilla de carta ausente). Los otros guardas quedan verdes. La implementación copia literalmente los dos bloques de design, con la casilla nueva [ ] sin autofirma.
+
+- Rojo R20 `00472596` — `test(mobile): lock charter amendment and A8 continuation (R20)`. Verde GUARD+hero-header-amendments+home-pingo-phrase: `Tests: 37 passed, 37 total`, 3 suites, exit 0 (`r20-green-195.log`). Enmiendas #190/#67/#167 intactas; nueva sección #195 es la última y la continuación de A8 es un párrafo separado. Sin refactor adicional.
+
+### Cierre automático R1–R20
+
+- Se inicia solo tras todos los requisitos verdes y las mutaciones restauradas. No se ejecuta init.sh (leader), ni se modifica estado/PR/arnés. Suite móvil completa, tipos, lint, graphify, cuentas y trazabilidad a continuación.
+
+#### Cuentas de cierre (comandos de tasks, desde mobile-pet-tracker)
+
+Se desescapa únicamente el `\|` de la celda Markdown al ejecutar el patrón ERE scrim|photo-dim. Los grep cuentan líneas, no apariciones.
+
+| Comando | Base | Delta | Resultado |
+|---|---|---|---|
+| `grep -c 'style={CONTINUOUS_CORNER}' src/components/pet-hero-header.tsx` | 1 | +0 | 1 |
+| `grep -c 'style={CONTINUOUS_CORNER}' src/screens/home/index.tsx` | 1 | +0 | 1 |
+| `grep -c 'TABULAR_NUMS' src/components/pet-hero-header.tsx` | 2 | +0 | 2 |
+| `grep -c 'TABULAR_NUMS' src/screens/home/index.tsx` | 9 | +0 | 9 |
+| `grep -c 'text-accent-strong' src/components/pet-hero-header.tsx` | 1 | +0 | 1 |
+| `grep -c 'text-accent-strong' src/screens/home/index.tsx` | 2 | +0 | 2 |
+| `grep -c 'bg-accent-soft' src/screens/home/index.tsx` | 3 | +0 | 3 |
+| `grep -c 'bg-accent-soft' src/components/pet-switcher.tsx` | 1 | +0 | 1 |
+| `grep -c "t('profile.addPet'" src/screens/home/index.tsx` | 1 | +0 | 1 |
+| `grep -c 'shadow-' src/components/pet-switcher.tsx` | 0 | +0 | 0 |
+| `grep -cE '^export const MOTION_HERO_' src/theme/motion.ts` | 0 | +4 | 4 |
+| `grep -cE -e '--(color-)?(scrim\|photo-dim):' src/theme/global.css` | 0 | +8 | 8 |
+| `grep -c 'Enmienda #195' ../docs/ui-guidelines.md` | 0 | +3 | 3 |
+| `test -e src/components/glass-circle.tsx && test -e src/screens/home/bubble-pop.tsx && test -e src/__tests__/home-photo-hero-canvas.test.ts` | ausentes | creados | existen |
+| `test -e src/components/__tests__/pet-hero-header-motion.test.tsx && test -e src/screens/home/bubble-pop.test.tsx` | ausentes | creados | existen |
+| `grep -c "(enmendado por #195 R14)" src/components/__tests__/pet-hero-header.test.tsx` | 0 | +6 | 6 |
+| `grep -c "(enmendado por #195 R14)" src/screens/home/index.test.tsx` | 0 | +6 | 6 |
+| `grep -c "duration === 500" src/components/__tests__/pet-hero-header.test.tsx` | 0 | +1 | 1 |
+| `grep -c "(enmendado por #195 R15)" src/screens/home/index.test.tsx` | 0 | +2 | 2 |
+| `grep -c "(enmendado por #195 R15)" src/components/__tests__/pet-hero-header.test.tsx` | 0 | +0 | 0 |
+| `grep -c "StyleSheet" src/screens/home/index.test.tsx` | 0 | +0 | 0 |
+
+#### Inventario exacto desde H0
+
+`git diff --name-only ab33dfd1..HEAD -- mobile-pet-tracker/ docs/`: 22 ficheros, coincide exactamente con la lista cerrada (21 móviles + carta, incluye HEROMOT y BP).
+
+```text
+docs/ui-guidelines.md
+mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/home-photo-hero-canvas.test.ts
+mobile-pet-tracker/src/components/__tests__/glass-circle.test.tsx
+mobile-pet-tracker/src/components/__tests__/pet-avatar.test.tsx
+mobile-pet-tracker/src/components/__tests__/pet-hero-header-motion.test.tsx
+mobile-pet-tracker/src/components/__tests__/pet-hero-header.test.tsx
+mobile-pet-tracker/src/components/__tests__/pet-switcher.test.tsx
+mobile-pet-tracker/src/components/__tests__/ping-ring.test.tsx
+mobile-pet-tracker/src/components/glass-circle.tsx
+mobile-pet-tracker/src/components/pet-avatar.tsx
+mobile-pet-tracker/src/components/pet-hero-header.tsx
+mobile-pet-tracker/src/components/pet-switcher.tsx
+mobile-pet-tracker/src/components/ping-ring.tsx
+mobile-pet-tracker/src/screens/home/bubble-pop.test.tsx
+mobile-pet-tracker/src/screens/home/bubble-pop.tsx
+mobile-pet-tracker/src/screens/home/index.test.tsx
+mobile-pet-tracker/src/screens/home/index.tsx
+mobile-pet-tracker/src/theme/__tests__/global-css.test.ts
+mobile-pet-tracker/src/theme/__tests__/motion.test.ts
+mobile-pet-tracker/src/theme/global.css
+mobile-pet-tracker/src/theme/motion.ts
+```
+
+Sin cambios de package.json, bun.lock, ui-copy-table, mapa ni Perfil respecto a H0. R3_HOME/SCREEN_FILES y copy intactos.
+
+- Suite móvil completa `bun run test` (`progress/full-test-195.log`), exit 0: **`Test Suites: 134 passed, 134 total`**, **`Tests: 4379 passed, 4379 total`**, **`Snapshots: 1 passed, 1 total`**. Base T0 130/4297/1: delta +4 suites, +82 tests, snapshot intacto. Cero FAIL; #190 R5 pasa, sin necesidad de repetir corrida ni borrar caché en esta reanudación.
+- R20 verde `852f4b35` — `feat(mobile): adopt canvas hero charter amendment (R20)`; línea del commit: `Tests: 37 passed, 37 total`.
+- Comparación adicional contra H0: secciones completas de carta #67/#167/#190 idénticas (solo se añaden los dos bloques autorizados de #195).
+
+- Typecheck: precondición `test ! -e .expo/types/router.d.ts` pasa; después `bun run typecheck`, exit 0 (`progress/typecheck-195.log`, solo `$ tsc --noEmit`, sin errores). No se elimina ni genera router.d.ts.
+- En la suite completa constan PASS de las nueve guardas requeridas (design-drift, consistency-classnames, legibility-classnames, hero-header-amendments, tab-headers-canvas, alerts-canvas-fidelity, ui-language, home-photo-hero-canvas y home-pingo-phrase) y de `src/screens/map/index.test.tsx` / `components/__tests__/pet-map.test.tsx`.
+
+#### Tabla final R1–R20 a test y commit
+
+Esta tabla sustituye como estado vigente las tablas parciales anteriores; la evidencia histórica se conserva.
+
+| Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
+|---|---|---|
+| R1 | `components/__tests__/pet-hero-header.test.tsx::#195 R1`; it: `%s con mascota %s y slot %s` | bd03f556 feat(mobile): contain hero in a 330 point frame (R1) |
+| R2 | `components/__tests__/pet-avatar.test.tsx::#195 R2`; `components/__tests__/pet-hero-header.test.tsx::#195 R2` (su `it` `funde al llegar la mascota y al cambiar su id, sin repetir por nombre` queda enmendado por R14: Enmienda A2, [[requirements]] §Candados de visibilidad y de forma de style, fila 12); it: `funde al llegar la mascota y al cambiar su id, sin repetir por nombre (enmendado por #195 R14)` | 626ebc69 feat(mobile): align hero photo and fade on pet identity (R2); c3c51cd6 test(mobile): isolate initial photo fade counter by duration (R14) |
+| R3 | `components/__tests__/pet-hero-header.test.tsx::#195 R3`; it: `resuelve ambos colores en una llamada y conserva alfa, geometría y toques` | 964aac85 feat(mobile): match canvas gradient stops and scrim (R3) |
+| R4 | `theme/__tests__/global-css.test.ts::#195 R4`; `components/__tests__/pet-hero-header.test.tsx::#195 R4`; it: `superpone el token photo-dim sin interceptar toques, tras la foto` | f308ea70 feat(mobile): add theme-aware photo dim layer (R4) |
+| R5 | `components/__tests__/pet-hero-header.test.tsx::#195 R5`; it: `usa inset superior más 12 y laterales de 16 sin fondo ni padding (enmendado por #195 R14)` | 016e4749 feat(mobile): float hero slot above photo (R5) |
+| R6 | `components/__tests__/pet-hero-header.test.tsx::#195 R6`; `__tests__/alerts-canvas-fidelity.test.ts::limita $token a su inventario de producción` (fila `tracking-title`); it: `capas con slot %s y clases exactas del pie; sin datos conserva los dos skeletons y omite la cifra` | e17c14b3 feat(mobile): place hero caption over the gradient (R6); bc14d41b test(mobile): restore empty-state amendment note and tag hero row (R6) |
+| R7 | `components/__tests__/pet-hero-header.test.tsx::#195 R7`; `screens/home/index.test.tsx::#73 R9`; it: `fija las tres recetas exactas de %s` | c9e578a9 feat(mobile): derive hero pill accent tone and spacing (R7) |
+| R8 | `components/__tests__/pet-hero-header.test.tsx::#195 R8`; `components/__tests__/ping-ring.test.tsx::#195 R8`; it: `success con mascota pinta un único ping con timing propio; conserva 2400 ms por defecto y usa el timing recibido en ambas propiedades` | 2b71c252 feat(mobile): use configurable ping ring for online status (R8) |
+| R9 | `components/__tests__/pet-switcher.test.tsx::#195 R9`; it: `el seleccionado usa avatar 36 con foto %s y un aro de 44` | a9af1117 feat(mobile): add selected glass avatar and online dot (R9) |
+| R10 | `components/__tests__/pet-switcher.test.tsx::#195 R10`; it: `conserva orden, cardinalidad, iniciales y selección desde ambos chips` | 3ca49df6 feat(mobile): render glass switcher row and trailing action (R10) |
+| R11 | `components/__tests__/glass-circle.test.tsx::#195 R11`; `screens/home/index.test.tsx::#195 R11`; `screens/home/index.test.tsx::#152 R5`; `__tests__/home-photo-hero-canvas.test.ts::#195 R19` (una sola `t('profile.addPet'`); it: `conserva raíz accesible, clase exacta e hijo único sin desenfoque; invoca onPress y atenúa a 0.8 al pulsar desde opacidad 1` | 2c19841d feat(mobile): add reusable flat glass circle (R11); 7dbcdd48 feat(mobile): use glass selector and add pet action on home (R11) |
+| R12 | `screens/home/index.test.tsx::#195 R12`; `screens/home/index.test.tsx::#78 R10`, `#124 R1`, `#78 R11`; it: `con alertas abiertas %s mantiene icono, orden y navegación` | 4c9953ab feat(mobile): use glass bell with canvas alert indicator (R12) |
+| R13 | `theme/__tests__/motion.test.ts::#195 R13`; it: `declara fundido, retrasos y ping sin acoplarlos a la celebración` | 2908e173 feat(mobile): add hero motion constants (R13) |
+| R14 | `components/__tests__/pet-hero-header.test.tsx::#195 R14` (llamadas, reduce motion, prueba (ii)); `components/__tests__/pet-hero-header-motion.test.tsx::#195 R14` (prueba (i), fichero nuevo por la Enmienda A1); `screens/home/index.test.tsx::#152 R5` y los 12 `it` de HERO y HOME con sufijo `(enmendado por #195 R14)` (6 y 6; uno de los de HERO es el `it` de R2 de la Enmienda A2) ([[requirements]] §Candados de visibilidad); it: `anima el slot sin retraso y el pie con un único retraso de 80 ms; el slot sube en 400 ms y el pie espera 80 ms antes de subir; la foto empieza en cero y termina su fundido a los 516 ms` | 80d621e9 feat(mobile): animate hero slot and caption on mount (R14); c3c51cd6 test(mobile): isolate initial photo fade counter by duration (R14) |
+| R15 | `screens/home/index.test.tsx::#195 R15`; `screens/home/index.test.tsx::R5: Home usa el hero compartido`; `screens/home/index.test.tsx::R6: home carga pets y selecciona` (su `it` `pads the content below the status bar with the top safe-area inset` queda enmendado por R15: Enmienda A3, [[requirements]] §Candados de visibilidad y de forma de style, fila 13); it: `deja el hero primero y conserva el relleno interior y la holgura de la barra; aplica también el hueco de 14 a las ramas de estado sin hero; conserva gap y paddingBottom y saca el padding horizontal a un envoltorio (enmendado por #195 R15)` | 77da555b test(mobile): lock home hero spacing and scroll layout (R15); 6519704f test(mobile): amend home pending-state scroll spacing (R15); 2bf5b932 feat(mobile): match home hero scroll spacing (R15) |
+| R16 | `screens/home/bubble-pop.test.tsx::#195 R16` (pruebas (i) y (ii), Reanimated real); `screens/home/index.test.tsx::#190 R11`, `#190 R4`, `#190 R7` (este último con la forma de `style` aplanada sin la cadena `StyleSheet`, Enmienda A1); it: `espera 450 ms, alcanza el pico en 240 ms y vuelve en 160 ms; con reduce motion nace final y visible sin avanzar el reloj; reenvía testID, className, style y su único hijo sin entering` | 44b5cd43 test(mobile): lock Pingo bubble pop and reduced motion (R16); d330637e test(mobile): sample bubble peak before its return frame (R16); 0c02fc69 feat(mobile): animate canvas Pingo bubble with reduced motion (R16) |
+| R17 | `__tests__/home-photo-hero-canvas.test.ts::#195 R17`; it: `mantiene referencias y suelos en %s (light y dark)` | 3ee46612 test(mobile): verify worst-case hero contrast model (R17); nace verde; sin producción nueva; mutaciones rojas y revertidas |
+| R18 | `components/__tests__/pet-hero-header.test.tsx::#195 R18`; `screens/home/index.test.tsx::#195 R18`; it: `sin mascota conserva skeleton sin radio en %s; sin foto conserva el blobatar rectangular y los degradados; card conserva el radio de tarjeta; conserva la carga de mascotas; conserva el error de mascotas y su reintento; conserva el estado sin mascotas; conserva el error de detalle con selector y skeleton alcanzables` | a45ce63f test(mobile): preserve hero fallbacks and home states (R18); nace verde; sin producción nueva; mutaciones rojas y revertidas |
+| R19 | `__tests__/home-photo-hero-canvas.test.ts::#195 R19`; it: `%s conserva tokens y primitivas permitidas; %s conserva %s en %s líneas; mantiene cuatro tiempos propios y ocho declaraciones de tokens nuevos` | a4300199 test(mobile): guard hero style inventory and source rules (R19); producción ya conforme; seis mutaciones rojas y revertidas |
+| R20 | `__tests__/home-photo-hero-canvas.test.ts::#195 R20`; it: `añade una sola sección completa y es la última cabecera de nivel dos; conserva A8 entero y añade la cita nueva como párrafo aparte inmediato; detecta las casillas con una expresión tolerante a la firma` | 00472596 test(mobile): lock charter amendment and A8 continuation (R20); 852f4b35 feat(mobile): adopt canvas hero charter amendment (R20) |
+| R21 | Humano: checklist de dev build Android en el reporte; sin test automatizado | Ejecución y firma a cargo del humano; fuera del cierre automático |
+
+#### R21 — checklist para el humano en dev build Android
+
+R21 no automatizado y sin firma por el agente. Ejecutar en el PC/dispositivo del humano:
+
+- [ ] Repetir en claro, oscuro y reduce motion, con mascota de foto oscura, foto clara y sin foto (nueve combinaciones).
+- [ ] Foto alineada arriba, hero de 330, degradado sin banda gris, vidrio legible y blobatar centrado sin recortar.
+- [ ] Supuesto 2: comprobar posiciones reales del punto en línea y de alertas (origen Yoga respecto al borde).
+- [ ] Supuesto 3: comprobar que el punto de 14 px no se recorta al desplazar horizontalmente los avatares, incluidos los extremos de la fila.
+- [ ] Supuesto 4: tipografía efectiva 30/34 y tracking, raza/etiqueta legibles sin recortes; nombre de 25 caracteres y texto ampliado.
+- [ ] Supuesto 5: fundido de foto acompasado con su decodificación, sin salto al llegar el dato.
+- [ ] Revisar ritmo de ping, pop, float, rise y fundido; con reduce motion hero/burbuja finales desde el primer render y sin anillo.
+- [ ] Scroll del hero con el contenido, solape con barra de estado, fila superior alcanzable y holgura con barra flotante.
+- [ ] Selección de mascotas, botón +, campana e indicador de alertas funcionan y mantienen su lectura.
+- [ ] Firmar R21 en requirements o comunicar al leader cualquier discrepancia para su corrección.
+
+Riesgo que queda: verificación visual, posiciones/recorte reales y decodificación de imagen en Android. El leader resuelve la posición de la nueva sección final de la carta en el merge con las otras features; no se hace merge/rebase aquí.
+
+- Lint exacto prescrito: `bunx expo lint --no-cache > ../progress/lint-195.log 2>&1 && test ! -s ../progress/lint-195.log`, exit 0 y log de **0 bytes**. Sin prettier, sin caché ni pipe.
+
+#### Archivo histórico del bloqueo inicial (evidencia conservada)
+
+<details>
+<summary>Sonda inicial previa a las enmiendas; resuelta por A1/A2/A3</summary>
+
+## Bloqueo obligatorio — supuesto 1 (R14 / R16)
+
+El handoff manda: «confirma el 1 (visibilidad de hijos con entrada en opacidad 0) antes del primer test rojo que lo use» y «Si el 1 cae, PARA y avisa».
+
+La primera sonda usó `m.default.View` del doble (View plano). Pasó, pero no reproducía el nodo de producción: `Animated.createAnimatedComponent(View)`. Al preparar R14 se repitió con ese nodo real. Resultado:
+
+```text
+FAIL src/components/__tests__/pet-hero-header.test.tsx
+#195 R14: sonda fiel al nodo AnimatedView del hero
+  el hijo de un AnimatedView inicialmente oculto termina visible
+expect(instance).toBeVisible()
+Received instance is not visible: <Text testID="visibility-probe">hijo</Text>
+Tests: 1 failed, 55 skipped, 56 total
+```
+
+Sonda efímera añadida a HERO, ejecutada sola y retirada en `finally`:
+
+```tsx
+const ProbeView = Animated.createAnimatedComponent(View);
+function Probe() {
+  const opacity = m.useSharedValue(0);
+  React.useEffect(() => { opacity.set(m.withTiming(1)); }, [opacity]);
+  const style = m.useAnimatedStyle(() => ({ opacity: opacity.get() }));
+  return <ProbeView style={style}><Text testID="visibility-probe">hijo</Text></ProbeView>;
+}
+await renderHero(<Probe />);
+expect(screen.getByTestId('visibility-probe')).toBeVisible();
+```
+
+`m` es `jest.requireMock('react-native-reanimated')`; React es requireActual; Animated es el import por defecto ya usado por producción. Comando desde mobile: `bunx jest src/components/__tests__/pet-hero-header.test.tsx --testTimeout=30000 --silent -t '#195 R14: sonda fiel'`, con ambos pgrep vacíos. No se relajó ningún `toBeVisible`, no se escribió el rojo de R14 ni se implementó ese bloque. La sonda correcta invalida la confirmación inicial. El leader debe revisar el montaje/doble y la spec antes de reanudar, según la orden de parada.
+
+</details>
+
+#### Resultado vigente del cierre automático
+
+- `graphify update .`, exit 0 (`progress/graphify-195.log`): 2371 ficheros AST, grafo de 27453 nodos / 35494 aristas / 1791 comunidades actualizado en graphify-out (ignorado). Aviso: 20 SQL omitidos por falta de tree_sitter_sql; no se añaden dependencias. Sin extracción semántica ni coste API.
+- Build de tipos móvil y lint verdes; suite completa 134/4379/1 verde; guardas y mapa verdes; cuentas 21/21 e inventario 22/22 conformes. No queda ninguna mutación ni sonda temporal en código. El aviso final de worker force-exit no apareció en esta corrida.
+- R17/R18/R19 son entregables de tests sobre producción ya conforme: constan sus commits propios y los rojos por mutación; no hay cambios ni commits vacíos de producción. R16 incorpora la medición del pico exacto y la cercanía un fotograma después, manteniendo todos los valores/títulos/nodos prescritos. No se tocan tests anteriores fuera de las enmiendas autorizadas.
+- Se retiraron únicamente las líneas obsoletas de parada indicadas por los handoffs; el bloque inicial de bloqueo se sustituyó por la resolución A1/A2/A3/adendo 5 y su evidencia íntegra se archivó al final. El resto del reporte conserva su historia y añade las mediciones nuevas.
+- R1–R20 completos para revisión del leader. R21 sigue sin ejecución ni firma del agente; checklist arriba. No se marca la feature done, no se ejecuta init.sh y no se cambian current/history/STATUS/feature_list ni PR. Sin push, merge ni rebase.
+- Este reporte y traceability se entregan juntos en el commit final `docs(home)`, sin archivos de arnés. Tras comprobar commit y árbol limpio, la última acción crea el marcador .done ignorado con la ruta absoluta de este reporte.
