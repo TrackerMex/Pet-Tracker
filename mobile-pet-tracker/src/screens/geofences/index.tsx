@@ -14,7 +14,7 @@ import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
-import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import { CONTINUOUS_CORNER, KEEP_OPACITY } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS, zoneCategory } from '../../utils/category-palette';
 import { HomeEntrance } from '../home/home-entrance';
@@ -138,6 +138,7 @@ export function GeofencesScreen({ petId }: { petId: string }) {
                 isSelected={geofence.active}
                 hitSlop={10}
                 isDisabled={busy}
+                style={KEEP_OPACITY}
                 accessibilityLabel={t('geofences.activeLabel', { name: geofence.name })}
                 onSelectedChange={(active) => void write(() => setGeofenceActive(baseUrl, token ?? '', petId, geofence.id, active))}
               />
@@ -180,7 +181,7 @@ export function GeofencesScreen({ petId }: { petId: string }) {
             <Text testID="geofences-limit-text" className={`flex-1 text-13 ${CATEGORY_SLOTS.amber.ink}`}>{t('geofenceEditor.limitNotice', { max: GEOFENCE_MAX_PER_PET })}</Text>
           </View>
         </HomeEntrance> : null}
-        <Button testID="geofences-add" className={atLimit ? 'mt-auto h-14 rounded-16 bg-default' : 'mt-auto h-14 rounded-16 bg-accent'} style={atLimit ? undefined : chunkyLip.primary} isDisabled={busy || atLimit}
+        <Button testID="geofences-add" className={atLimit ? 'mt-auto h-14 rounded-16 bg-default' : 'mt-auto h-14 rounded-16 bg-accent'} style={atLimit ? KEEP_OPACITY : [chunkyLip.primary, KEEP_OPACITY]} isDisabled={busy || atLimit}
           onPress={() => router.push({ pathname: '/pets/[petId]/geofence-editor', params: { petId } })}>
           <Text className={atLimit ? 'text-17 font-extrabold text-muted' : 'text-17 font-extrabold text-accent-foreground'}>{t('geofenceEditor.add')}</Text>
         </Button>

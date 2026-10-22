@@ -12,3 +12,6 @@ export const CONTINUOUS_CORNER = { borderCurve: 'continuous' } as const;
 export const TABULAR_NUMS = {
   fontVariant: ['tabular-nums'] as ['tabular-nums'],
 } as const;
+
+// #189 R19: cancela disabled:element-disabled de heroui; el elemento sigue bloqueado.
+export const KEEP_OPACITY = { opacity: 1 } as const;
