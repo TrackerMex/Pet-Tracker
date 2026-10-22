@@ -16,6 +16,8 @@ tags: [mobile, ui, spec]
 > **Enmienda A2 (2026-10-22).** Solo cambian el bloque R14 (paso (1b), mutación (f) y las cuentas de 5 a 6 y de 11 a 12), la línea de test del bloque R2 y dos filas de «Cuentas a re-medir». Motivo: [[design]] §Hechos medidos H2.
 >
 > **Enmienda A3 (2026-10-22).** Solo cambian el bloque R15 (paso (1b), el verde, sus mutaciones) y una fila de «Cuentas a re-medir». El orden global, los demás R y sus cifras no se tocan. Motivo: [[design]] §Hechos medidos H3.
+>
+> **Enmienda A4 (2026-10-22, decisión del humano D6).** Cambian los bloques R1, R3, R17, R18 y R20, la nota del orden sobre el alto del frame, una nota del handoff, las filas de «Cuentas a re-medir» y se añade la sección «Enmienda A4: cadena de commits» (cinco commits A a E y siete mutaciones, más las seis del ancla negativa en el bloque R20). El orden global, R2, R4 a R16, R19 y R21 (salvo la lista de lo que mira el humano) no se tocan. A diferencia de A1 a A3 no es un hallazgo de Codex: R1 a R20 ya están implementados con 330, 160 y 130 y A4 se aplica **encima**, con commits nuevos; no se reescribe ningún commit. Motivo y medida: [[design]] §Hechos medidos H4.
 
 ## Orden recomendado
 
@@ -26,7 +28,7 @@ Los requisitos van numerados por tema, no por dependencia. Para que el test de u
 Notas del orden:
 
 - **Antes de R1 hay que tener la casilla `Enmienda #195 aprobada por humano` firmada** (precondición de R20). Sin ella, el implementer no revierte ningún candado y se detiene.
-- **Los commits intermedios no tienen que verse bien en pantalla**, solo ir en verde: tras R1 el frame mide 330 pero las capas viejas siguen dentro hasta que su R las cambia. Nada se mergea a medias.
+- **Los commits intermedios no tienen que verse bien en pantalla**, solo ir en verde: tras R1 el frame mide 330 en el orden original (la Enmienda A4 lo lleva a 430 con commits nuevos encima, ver «Enmienda A4: cadena de commits») pero las capas viejas siguen dentro hasta que su R las cambia. Nada se mergea a medias.
 - **Cada candado de [[requirements]] §Candados se enmienda en el commit del R que lo invalida**, con el comentario `(enmendado por #195 R<n>)` en el `it`. No se enmienda en bloque al final ni antes de que su comportamiento cambie. No hay que reescribir los `it` que la tabla marca como «se conservan»: si uno se pone rojo, es una regresión y se arregla el componente, nunca el `it`.
 - **Comentarios con la forma `#195 R<n>`**, nunca `#195` desnudo (el exento de `HEX_LITERAL` en `design-drift` es solo `#NNN R<n>`).
 - El ciclo de cada R termina con `git add <rutas>` explícito, no `git add -A`; el árbol debe quedar limpio al terminar.
@@ -43,6 +45,7 @@ El leader redacta el handoff; esta lista es lo que la spec exige que figure en �
 - **`toHaveAnimatedStyle` con `shouldMatchAllProps`** cuando se afirma que no hay claves de más (opacidad colada).
 - **Mocks de Reanimated**: HERO añade `withDelay: jest.fn((_ms, animation) => animation)` a su mock (R14); HOME ya lo tiene; el mock de `reicon-react-native` de HOME añade `Plus: mockIcon('icon-plus')` (R11). Las cuentas de llamadas a `withTiming` se miden **después** de `mockClear()` del montaje. Excepción (Enmienda A2): el `it` de R2 `funde al llegar la mascota…` afirma sobre el propio montaje con `pet=null` y no puede medir después de un `mockClear()`; su contador cuenta solo las llamadas de **duración 500** (`call[1]?.duration === 500`, con el 500 como literal del test), porque R14 añade al montar dos de 400 ms. No se amplía ese filtro a las demás aserciones del `it`.
 - **Constantes de modelo literales en los tests** (R13, R17): nunca importadas de producción (candado tautológico).
+- **Enmienda A4 (D6).** (a) Precondición: la casilla `Enmienda A4 de #195` de [[requirements]] §Aprobación firmada por el humano; sin ella no se empieza la cadena A a E. (b) Los literales 430, 100, 90, `24%`, `44%`, 7,75 y 6,74 se **escriben en el test**; ninguno se importa de producción. Los `it` de HERO que ya comparan contra `PET_HERO_MEDIA_HEIGHT`, `PET_HERO_FADE_HEIGHT` o `PET_HERO_SCRIM_HEIGHT` de forma simbólica se quedan como están (nacen verdes y no se tocan: [[requirements]] §Candados de medida y de paradas). (c) El `it` nuevo de GUARD R17 lee el **texto** de `pet-hero-header.tsx`, no importa ningún símbolo de él. (d) Antes del commit A se miden las bases de «Cuentas a re-medir» marcadas A4; si alguna no coincide con el árbol, se anota la deriva y se avisa al leader antes de seguir. (e) Los commits siguen la cadena de «Enmienda A4: cadena de commits»: cinco commits, los dos de test de HERO y GUARD R17 y el de GUARD R20 antes de su verde, y **un solo** commit de docs para la carta y el bloque de [[design]]. (f) `StyleSheet` no entra en `screens/home/index.test.tsx` (regla de arriba); A4 no toca ese fichero.
 - **Cada ancla «= 0» o «= N» lleva su mutación plantada** (lista abajo): la guarda no vale si no se ha visto rojo con el defecto presente.
 - **Verificación de lint**: `expo lint` puede morir por memoria con exit 0; la cadena es `… > log 2>&1 && test ! -s log`. Si falla con «Cannot find module», repetir con `--no-cache`.
 - **Prettier**: el backend lo usa; el móvil no. No se formatea el móvil con una herramienta que no tiene.
@@ -78,20 +81,68 @@ Cada cifra es la base medida en [[requirements]] §Base medida más el delta que
 | `grep -c "(enmendado por #195 R15)" src/screens/home/index.test.tsx` | 0 | 2 (el `it` de `R5: Home usa el hero compartido`, enmendado en el commit de test de R15, y el de R6 de la fila 13 de A3; un comentario con la misma cadena la inflaría) |
 | `grep -c "(enmendado por #195 R15)" src/components/__tests__/pet-hero-header.test.tsx` | 0 | 0 (A3 no toca HERO) |
 | `grep -c "StyleSheet" src/screens/home/index.test.tsx` | 0 | 0 |
+| **A4.** `grep -cE "\b330\b" src/components/__tests__/pet-hero-header.test.tsx` | 8 | 0 tras el commit A |
+| **A4.** `grep -cE "\b430\b" src/components/__tests__/pet-hero-header.test.tsx` | 0 | 8 tras el commit A |
+| **A4.** `grep -cE "\b(160\|130)\b" src/components/__tests__/pet-hero-header.test.tsx` | 4 | 0 tras el commit A |
+| **A4.** `grep -cE "\b(35\|65)%" src/components/__tests__/pet-hero-header.test.tsx` | 2 | 0 tras el commit A |
+| **A4.** `grep -cE "\b(24\|44)%" src/components/__tests__/pet-hero-header.test.tsx` | 0 | 2 tras el commit A (las líneas de 14e y 14f) |
+| **A4.** `grep -cE "height: (90\|100)\b" src/components/__tests__/pet-hero-header.test.tsx` | 0 | 2 tras el commit A (las líneas de `top` y `bottom` de 14e) |
+| **A4.** `grep -cE "toBe\((430\|100\|90)\)" src/components/__tests__/pet-hero-header.test.tsx` | 0 | 3 tras el commit A (las tres de 14a) |
+| **A4.** `grep -rcE "\b330\b" src --include=*.ts --include=*.tsx \| grep -v ":0"` | 2 ficheros (`pet-hero-header.tsx` 1, `pet-hero-header.test.tsx` 8) | salida vacía tras el commit C |
+| **A4.** `grep -cE "(MEDIA\|FADE\|SCRIM)_HEIGHT = (330\|160\|130)\b" src/components/pet-hero-header.tsx` | 3 | 0 tras el commit C |
+| **A4.** `grep -cE "(MEDIA\|FADE\|SCRIM)_HEIGHT = (430\|100\|90)\b" src/components/pet-hero-header.tsx` | 0 | 3 tras el commit C |
+| **A4.** `grep -cE "59 35%\|D9 65%" src/components/pet-hero-header.tsx` | 1 | 0 tras el commit C |
+| **A4.** `grep -cE "59 24%.*D9 44%" src/components/pet-hero-header.tsx` | 0 | 1 tras el commit C |
+| **A4.** `grep -cE "\b(104\|160)\b" src/__tests__/home-photo-hero-canvas.test.ts` | 2 | 0 tras el commit B |
+| **A4.** `grep -cE "10\.79\|9\.77" src/__tests__/home-photo-hero-canvas.test.ts` | 2 | 0 tras el commit B |
+| **A4.** `grep -cE "7\.75\|6\.74" src/__tests__/home-photo-hero-canvas.test.ts` | 0 | 2 tras el commit B |
+| **A4.** (desde la raíz del repo) `grep -cE "alto 330\|130 px\|160 px" docs/ui-guidelines.md` | 1 | 0 tras el commit E |
+| **A4.** (desde la raíz del repo) `grep -cE "alto 430.*velo oscuro superior de 90 px.*degradado inferior de 100 px" docs/ui-guidelines.md` | 0 | 1 tras el commit E |
+| **A4.** `grep -rlE "pet-hero-fade-bottom\|pet-hero-scrim-top\|pet-hero-frame\|pet-hero-skeleton" src` | 4 ficheros | los mismos 4 (`pet-hero-header.tsx`, `pet-hero-header.test.tsx`, `consistency-classnames.test.ts`, `screens/home/index.test.tsx`) |
 
-Un `grep -c` cuenta líneas, no apariciones. Si una cuenta de la base ya no coincide con el árbol al empezar (otra feature mergeó entre medias), se anota la deriva y se avisa al leader antes de seguir.
+Las filas **A4** escriben `\|` porque la tabla de Markdown lo exige; en la terminal se teclea `|` (alternancia de `grep -E` o tubería), sin la barra. Cada «0» de A4 se creyó solo tras plantar **una** aparición del literal viejo en una copia del fichero y ver 1. Un `grep -c` cuenta líneas, no apariciones. Si una cuenta de la base ya no coincide con el árbol al empezar (otra feature mergeó entre medias), se anota la deriva y se avisa al leader antes de seguir.
 
 ## Tests enmendados
 
 La lista completa de candados que cambian, con lo que afirman hoy y lo que pasarán a afirmar, vive en [[requirements]] §Candados que esta feature revierte. **No se duplica aquí**: una sola fuente. Cada bloque de abajo nombra los que le tocan.
 
-## R1 — Frame de 330 y raíz
+## Enmienda A4: cadena de commits
 
-- [ ] (1) Escribir test que falla para R1 (HERO `#195 R1`: `pet-hero` con un solo hijo `pet-hero-frame` con `style` igual a `{ height: 330 }`; constantes 330/160/130; clases de la raíz en `bleed` y `card`). Enmienda en el mismo commit: `R1 › exporta las dos constantes…` y `#127 R2`.
+Fuente de verdad de lo que se afirma: [[requirements]] R1, R3, R17, R18, R20 y §Candados de medida y de paradas (fila 14); medidas y razones en [[design]] §Hechos medidos H4. Aquí solo se ordena el trabajo. **Precondición:** la casilla `Enmienda A4 de #195` de §Aprobación firmada por el humano; sin ella el implementer no empieza. R1 a R20 ya están implementados con 330, 160, 130 y las paradas `35 %` y `65 %` (base `44ea637f`): A4 se aplica **encima**, con cinco commits nuevos, y no reescribe ninguno. Se parte del árbol limpio y con las bases «A4» de §Cuentas a re-medir medidas.
+
+| Commit | Mensaje (R-id) | Qué cambia | Rojo esperado, o por qué nace verde |
+|---|---|---|---|
+| A | `test(mobile): enmienda a 430, 100, 90 y paradas 24/44 los ocho it de HERO (R1)` | Solo `components/__tests__/pet-hero-header.test.tsx`: las filas 14a a 14h de [[requirements]] §Candados de medida y de paradas. Cambian literales, la regex de 14f y los títulos de 14b y 14c (330 pasa a 430, sin sufijo nuevo). No se toca HEROMOT ni HOME. | **Rojos**: los ocho `it`, doce casos (14a 1, 14b 1, 14c 4, 14d 1, 14e 1, 14f 1, 14g 2, 14h 1) y ningún otro. Mensajes: `Expected: 430` / `Received: 330` en 14a, 14b, 14c, 14d, 14g y 14h; en 14e el primer `expect` que falle (`90`/`130`, `100`/`160` o la cadena con `24%`); en 14f, la regex que no casa con `35%`. |
+| B | `test(mobile): fadeAlpha de 100 px, referencias del nombre y enlace con producción (R17)` | Solo `src/__tests__/home-photo-hero-canvas.test.ts`, `describe` de R17: `fadeAlpha`, las dos referencias del nombre y el `it` nuevo (ver R17 abajo). | **Rojo**: solo el `it` nuevo `enlaza el modelo con las paradas y la altura del degradado de producción (Enmienda A4)` (producción aún dice `PET_HERO_FADE_HEIGHT = 160` y `35%`/`65%`). Los dos casos de `mantiene referencias y suelos en %s` **nacen verdes** (modelo puro: no leen producción); su valor lo demuestra la mutación m7. |
+| C | `feat(mobile): hero de 430 con degradado de 100 px y velo de 90 px (R1)` | Solo `components/pet-hero-header.tsx`: `PET_HERO_MEDIA_HEIGHT = 430`, `PET_HERO_FADE_HEIGHT = 100` (con o sin `;`: hoy no lo lleva y ningún candado lo exige), `PET_HERO_SCRIM_HEIGHT = 90` y, en la cadena del degradado inferior, `59 24%` y `D9 44%`. Nada más: ni clases, ni `testID`, ni la cadena del velo, ni los comentarios. | **Todo verde**: HERO (los doce casos), GUARD R17 (el `it` nuevo y los dos casos), `consistency-classnames`, HOME y el resto. Si algo más se pone rojo, es un candado que esta spec no nombra: se arregla el componente y se avisa al leader. |
+| D | `test(mobile): la carta lleva las medidas de la Enmienda A4 (R20)` | Solo el mismo GUARD, `describe` de R20: el `it` nuevo `la sección de la carta lleva las medidas de la Enmienda A4 y ninguna de las antiguas` (ver R20 abajo). | **Rojo**: solo ese `it`, en su primera aserción (`alto 430`); la carta aún dice la altura original. |
+| E | `docs(mobile): carta y bloque de design.md con las medidas de la Enmienda A4 (R20)` | **Un solo commit** que reescribe a la vez `docs/ui-guidelines.md` (la última sección `## `) y el **primer** bloque Markdown de [[design]] §Texto de la Enmienda #195, con las frases de [[design]] §Texto de la Enmienda A4 de #195. Ningún otro fichero. | **Verde**: los tres `it` de R20 (byte a byte, A8 y cita, ancla negativa) y `hero-header-amendments.test.ts` sin tocar. En medio no hay commit rojo del byte a byte porque las dos ediciones van juntas. |
+
+A y B van antes de C y entre sí en cualquier orden; D va antes de E; C y D son independientes. El commit E no tiene rojo propio: su rojo es el de D. Quién teclea E (el implementer, como la copia original de R20, o el propio leader, que puede editar `docs/` y `specs/`) lo decide el handoff del leader. Las cuentas de A4 de §Cuentas a re-medir se miden al terminar cada commit, no solo al final.
+
+**Mutaciones de A4**, cada una plantada con el verde de C y E ya hecho, vista en rojo y revertida (se anotan en `progress/impl_…` con el nombre del `it` que se puso rojo). Entre las ocho filas de HERO y los dos `it` nuevos de GUARD, cada uno se pone rojo con al menos una:
+
+| # | Defecto plantado | Rojo esperado | Debe seguir verde |
+|---|---|---|---|
+| m1 | `PET_HERO_MEDIA_HEIGHT = 431` en `pet-hero-header.tsx` | 14a, 14b, 14c (4 casos), 14d, 14g (2 casos) y 14h: seis `it`, diez casos | 14e, 14f, GUARD R17, y el `it` simbólico `R2 › reserva el alto de la zona de medios en las dos ramas` (compara contra la constante: demuestra que la fila 14 hace falta) |
+| m2 | `PET_HERO_FADE_HEIGHT = 101`. Dos pasadas: (i) solo producción; (ii) producción **y** las líneas de 14a (`toBe(101)`) y 14e (`height: 101`) de HERO | (i) 14a, 14e y la rama de la altura del `it` nuevo de GUARD R17; (ii) **solo** esa rama de GUARD R17: demuestra que el enlace cierra la zona ciega de R1 y R3 | en (i), 14b, 14c, 14d, 14g, 14h y 14f (compara contra la constante, no contra un literal) |
+| m3 | `PET_HERO_SCRIM_HEIGHT = 91` | 14a y 14e (`top.height`) | 14f, GUARD R17 |
+| m4 | `59 24%` pasa a `59 25%` en la cadena de producción | 14e, 14f y la rama de la primera parada del `it` nuevo de GUARD R17 | 14a a 14d |
+| m5 | `D9 44%` pasa a `D9 45%` | 14e, 14f y la rama de la segunda parada del `it` nuevo de GUARD R17 | 14a a 14d |
+| m6 | Producción **y** HERO a la vez vuelven a `35 %` y `65 %`: la cadena de producción y las dos cadenas de 14e y 14f (el defecto está en producción y en su candado) | **solo** el `it` nuevo de GUARD R17, en las ramas de las dos paradas: demuestra que R17 y producción ya no pueden derivar sin que algún test lo vea | HERO completo |
+| m7 | En GUARD, `fadeAlpha` vuelve a los tramos de 104 y 160 y se dejan las referencias nuevas 7,75 y 6,74 | `mantiene referencias y suelos en light` y `…en dark` (nombre: 10,79 frente a 7,75 y 9,77 frente a 6,74) | el `it` nuevo de GUARD R17 y HERO |
+
+Las mutaciones del ancla negativa de R20 (seis) están en el bloque R20. m6 y m2 (ii) son las que prueban que el `it` nuevo no es tautológico: lee el texto de producción, no un símbolo importado.
+
+## R1 — Frame de 430 y raíz
+
+- [ ] (1) Escribir test que falla para R1 (HERO `#195 R1`: `pet-hero` con un solo hijo `pet-hero-frame` con `style` igual a `{ height: 430 }`; constantes 430/100/90; clases de la raíz en `bleed` y `card`). Enmienda en el mismo commit: `R1 › exporta las dos constantes…` y `#127 R2`.
 - [ ] (2) Implementación mínima que lo pasa (envolver el contenido en `pet-hero-frame`; constantes; el resto, incluido el pulso de opacidad del punto, sigue dentro del frame sin reordenar hasta que su R lo cambie).
 - [ ] (3) Refactor con tests verdes.
 
-Sonda: sube el alto a 331 en el componente y comprueba que HERO se pone rojo; revierte.
+**Enmienda A4 (D6).** El cuerpo de arriba describe el estado final. R1 ya está implementado con 330, 160 y 130 (el commit original los exportó así); llegar a 430, 100 y 90 son los commits A (test: filas 14a a 14d) y C (verde) de «Enmienda A4: cadena de commits». Los literales 430, 100 y 90 se escriben en el test; no se importan de producción.
+
+Sondas: m1, m2 y m3 de la cadena (431, 101 y 91 en cada constante, una por una); HERO se pone rojo con cada una; revierte.
 
 ## R2 — Foto alineada arriba y fundido
 
@@ -103,11 +154,13 @@ Sonda: cambia 500 por 400 en `MOTION_HERO_FADE_MS`; MOT (R13) y HERO deben poner
 
 ## R3 — Degradados
 
-- [ ] (1) Escribir test que falla para R3 (HERO `#195 R3`: cadenas exactas de los dos degradados con los hex que devuelve el hook mockeado, `pointerEvents="none"`, clases `absolute inset-x-0 top-0|bottom-0`, alturas 130 y 160, `pet-hero-scrim-top` ausente sin `children`, `pet-hero-fade-top` ausente, sin la palabra `\btransparent\b` en el fuente sin comentarios). Enmienda: `R3 › funde la imagen hacia el fondo opaco por arriba y por abajo`; el `it.each` de hex6 añade `scrim`.
+- [ ] (1) Escribir test que falla para R3 (HERO `#195 R3`: cadenas exactas de los dos degradados con los hex que devuelve el hook mockeado, `pointerEvents="none"`, clases `absolute inset-x-0 top-0|bottom-0`, alturas 90 y 100, paradas `59 24%` y `D9 44%` en la cadena inferior, `pet-hero-scrim-top` ausente sin `children`, `pet-hero-fade-top` ausente, sin la palabra `\btransparent\b` en el fuente sin comentarios). Enmienda: `R3 › funde la imagen hacia el fondo opaco por arriba y por abajo`; el `it.each` de hex6 añade `scrim`.
 - [ ] (2) Implementación mínima que lo pasa (`useThemeColors(['background', 'scrim'])`; dos capas con `experimental_backgroundImage`).
 - [ ] (3) Refactor con tests verdes.
 
-Sondas: (a) cambia `D9` por `99` en la cadena inferior, HERO rojo; (b) escribe `transparent` en la cadena superior, HERO rojo; (c) escribe `transparent` solo en un comentario, HERO sigue verde (el comentario está exento).
+**Enmienda A4 (D6).** El cuerpo de arriba describe el estado final. R3 ya está implementado con alturas 130 y 160 y las paradas `35%` y `65%` del artboard; pasar a 90, 100, `24%` y `44%` son los commits A (test: filas 14e y 14f de [[requirements]] §Candados de medida y de paradas; la cadena del velo `${scrim}80 0%, ${scrim}00 100%` no cambia) y C (verde) de «Enmienda A4: cadena de commits». Las paradas no son proporcionales a las del artboard porque con 100 px esas posiciones incumplen R17 ([[design]] H4); el enlace que lo vigila vive en GUARD R17, no aquí. El literal `24%` y `44%` se escribe en el test.
+
+Sondas: (a) cambia `D9` por `99` en la cadena inferior, HERO rojo; (b) escribe `transparent` en la cadena superior, HERO rojo; (c) escribe `transparent` solo en un comentario, HERO sigue verde (el comentario está exento); (d) A4: m3, m4, m5 y m6 de la cadena (velo 91, `59 25%`, `D9 45%` y las paradas proporcionales plantadas a la vez en producción y en HERO).
 
 ## R4 — Tokens `scrim` y `photo-dim` y capa
 
@@ -258,13 +311,21 @@ Reescrito por la Enmienda A1: rojo / verde / mutación. Fuente de verdad: [[requ
 - [ ] (2) Implementación mínima que lo pasa (el test es el entregable; no hay código de producción nuevo).
 - [ ] (3) Refactor con tests verdes.
 
-Mutaciones: (a) cambia el token `muted` de light en `global.css` a un gris más claro, GUARD rojo; (b) cambia un alfa del modelo en el test, la tolerancia sobre la referencia lo pone rojo.
+**Enmienda A4 (D6), commit B de «Enmienda A4: cadena de commits».** R17 ya está implementado con el degradado de 160 px; en `src/__tests__/home-photo-hero-canvas.test.ts`, `describe('#195 R17: contraste WCAG contra la peor foto')`, y solo ahí:
+
+- [ ] (1-A4) `fadeAlpha(d)` pasa a los tres tramos de 100 px, con **56, 76 y 100 como literales del test**: `d <= 56` → `1 - (d / 56) * 0.15`; `d <= 76` → `0.85 - ((d - 56) / 20) * 0.5`; en otro caso → `0.35 * (100 - d) / 24`. Desaparecen los literales 104 y 160 (cuenta de §Cuentas a re-medir). Los `d` de cada texto (26, 64, 22, 54) no cambian: el pie sigue en `bottom-1.5`.
+- [ ] (2-A4) De las referencias de `mantiene referencias y suelos en %s` cambia **una por tema**: el nombre, 10.79 a 7.75 en light y 9.77 a 6.74 en dark. Las otras ocho de cada tema se conservan, incluidas 4.26 y 4.36. La tolerancia sigue en 0.05, el factor 0,86 de dark, los suelos (`textFloor` 4.2 y 4.5, 4.5, 3) y el resto del `it`. Nace **verde**: es un modelo puro que no lee producción.
+- [ ] (3-A4) `it` nuevo, mismo `describe`: `enlaza el modelo con las paradas y la altura del degradado de producción (Enmienda A4)`. Lee `src/components/pet-hero-header.tsx` con `read(...)` y le quita los comentarios con `source.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, '')` (la misma expresión que `code` en el `describe` de R19; se repite aquí o se sube al ámbito del fichero, a elección). Con `FADE_HEIGHT = 100`, `KNEE_NEAR = 56` y `KNEE_FAR = 76` como literales del test (los mismos de `fadeAlpha`), afirma **tres cosas, cada una con su propio `expect`** (un candado por rama): (i) el texto casa con `` new RegExp(`PET_HERO_FADE_HEIGHT = ${FADE_HEIGHT}\\b`) `` (sin `export const` y sin exigir `;`); (ii) contiene `` `59 ${Math.round(((FADE_HEIGHT - KNEE_FAR) / FADE_HEIGHT) * 100)}%` `` (que vale `59 24%`); (iii) contiene `` `D9 ${Math.round(((FADE_HEIGHT - KNEE_NEAR) / FADE_HEIGHT) * 100)}%` `` (que vale `D9 44%`). `59` y `D9` son los bytes de alfa .35 y .85 (R3; este `it` no los deriva). Las posiciones **se calculan** de los puntos de quiebre del modelo, no se escriben: si alguien reajusta el modelo, producción tiene que seguirlo. Lo que se lee de producción es **texto**, nunca un símbolo importado. Nace **rojo** en el commit B (producción aún dice 160, `35%` y `65%`).
+
+Mutaciones: (a) cambia el token `muted` de light en `global.css` a un gris más claro, GUARD rojo; (b) cambia un alfa del modelo en el test, la tolerancia sobre la referencia lo pone rojo. **A4**: (c) m7, m2, m4, m5 y m6 de la cadena. m7 demuestra que las dos referencias nuevas del nombre se leen (los dos casos del modelo nacen verdes y sin ella no se sabría); m2 (ii) y m6 demuestran que el `it` nuevo cierra la zona ciega (producción y HERO cambian a la vez y solo GUARD R17 lo ve).
 
 ## R18 — Estados conservados
 
-- [ ] (1) Escribir test que falla para R18 (HERO `#195 R18`: skeleton con 330 y sin `rounded-`, blobatar sin foto, `card` con `rounded-card`; HOME `#195 R18`: los cuatro estados). Es probable que nazca verde: anotarlo en la trazabilidad y demostrar su valor con una mutación (añade `rounded-xl` al skeleton del hero: rojo).
+- [ ] (1) Escribir test que falla para R18 (HERO `#195 R18`: skeleton con 430 y sin `rounded-`, blobatar sin foto con `media.props.height` 430, `card` con `rounded-card`; HOME `#195 R18`: los cuatro estados). Es probable que nazca verde: anotarlo en la trazabilidad y demostrar su valor con una mutación (añade `rounded-xl` al skeleton del hero: rojo).
 - [ ] (2) Implementación mínima que lo pasa (si ya lo cumple, no hay código).
 - [ ] (3) Refactor con tests verdes.
+
+**Enmienda A4 (D6).** El cuerpo de arriba describe el estado final. R18 ya está implementado con 330; los `it` de HERO que lo afirman se enmiendan en el commit A de «Enmienda A4: cadena de commits» y se ponen verdes con el commit C, sin código propio de R18 (el skeleton y el blobatar leen `PET_HERO_MEDIA_HEIGHT`). Son tres filas de [[requirements]] §Candados de medida y de paradas: 14b (`#127 R2`, título y `toStrictEqual({ height: 430 })`; el título pasa de 330 a 430 y conserva su sufijo `(enmendado por #195 R1)`), 14g (`sin mascota conserva skeleton sin radio en %s`, 2 casos) y 14h (`sin foto conserva el blobatar rectangular y los degradados`, `media.props.height` `toBe(430)`). **Nacen rojos** en A (`Expected: 430` / `Received: 330`) y su mutación es m1 (431). HOME `#195 R18` no cambia: no mide ningún alto.
 
 ## R19 — Grep-clean y guardas
 
@@ -282,8 +343,27 @@ Mutaciones plantadas, cada una vista en rojo y revertida: (a) un hex `#FF0000` e
 
 Comprobar además que `hero-header-amendments.test.ts` y los tests que fijan `Enmienda #190` siguen en verde sin tocarse.
 
+**Enmienda A4 (D6), commits D y E de «Enmienda A4: cadena de commits».** La sección de la carta y el bloque de [[design]] ya existen con «alto 330… 130 px… 160 px» (R20 está implementado); las frases que cambian y las cadenas que la carta debe y no debe contener están en [[design]] §Texto de la Enmienda A4 de #195.
+
+- [ ] (1-A4) **Commit D, test rojo.** En `src/__tests__/home-photo-hero-canvas.test.ts`, `describe('#195 R20: …')`, `it` nuevo `la sección de la carta lleva las medidas de la Enmienda A4 y ninguna de las antiguas`. El texto de la sección se obtiene como el `it` de la sección completa: `heading = blocks[0].split('\n')[0]` y `section = charter.slice(charter.indexOf(heading))` (nada de cabeceras escritas a mano). Seis `expect` separados, uno por rama de la cláusula: `section` contiene `alto 430`; contiene `velo oscuro superior de 90 px`; contiene `degradado inferior de 100 px`; **no** contiene `alto 330`; **no** contiene `130 px`; **no** contiene `160 px`. Las seis cadenas son literales del test. Nace **rojo** (en la primera aserción, `alto 430`). Los otros tres `it` de R20 siguen verdes: la carta y el bloque de design.md todavía coinciden entre sí.
+- [ ] (2-A4) **Commit E, docs.** Un solo commit, dos ediciones idénticas: el **primer** bloque Markdown de [[design]] §Texto de la Enmienda #195 y la última sección `## ` de `docs/ui-guidelines.md`, con la frase 1 y la frase 2 de [[design]] §Texto de la Enmienda A4 de #195. Ni el segundo bloque, ni la frase de la excepción de contraste (4,26:1 y 4,36:1, suelo 4,2:1), ni la línea `Detalle y tests…`, ni la casilla `- [ ] Enmienda #195 aprobada por humano`, ni nada de `Enmienda #190`, `#67` o `#167` se tocan. Con la frase 2 escrita como dice [[design]] («la altura original», «el degradado original»), la sección no vuelve a nombrar las cifras antiguas.
+- [ ] (3-A4) Refactor con tests verdes. Comprobar con los comandos «A4» de §Cuentas a re-medir (carta: 1 a 0 y 0 a 1) y que `hero-header-amendments.test.ts` sigue en verde sin tocarse.
+
+**Mutaciones del ancla negativa**, con el commit E hecho, vistas en rojo y revertidas con `git checkout HEAD -- <rutas>` (y `git diff --cached` en 0). Cada defecto se planta **en la carta y en el primer bloque de design.md a la vez**, para que la comparación byte a byte siga en verde y el único rojo sea el `it` nuevo; sin esa precaución se ponen rojos dos `it` y no se sabría cuál prueba qué:
+
+| # | Defecto plantado en la sección | Rojo esperado (solo el `it` nuevo) |
+|---|---|---|
+| r1 | `alto 430` pasa a `alto 431` | la aserción de `alto 430` |
+| r2 | `velo oscuro superior de 90 px` pasa a `velo oscuro superior de 91 px` | la aserción del velo |
+| r3 | `degradado inferior de 100 px` pasa a `degradado inferior de 101 px` | la aserción del degradado |
+| r4 | se añade «(antes alto 330)» al final de la frase 2 | la aserción `not` de `alto 330` |
+| r5 | se añade «(antes 130 px)» al final de la frase 2 | la aserción `not` de `130 px` |
+| r6 | se añade «(antes 160 px)» al final de la frase 2 | la aserción `not` de `160 px` |
+
+Las tres cuentas «= 0» de la carta se creyeron tras plantar **una** aparición en una copia y ver 1 (r4 a r6 son esa misma prueba hecha sobre el `it`). Las seis mutaciones demuestran además que ninguna rama del `it` está ciega.
+
 ## R21 — Smoke del humano
 
-- [ ] (1) No hay test automatizado. Preparar la lista de comprobación del dev build (modo claro, oscuro y reduce motion; mascota con foto oscura, con foto clara y sin foto; nombre de 25 caracteres).
+- [ ] (1) No hay test automatizado. Preparar la lista de comprobación del dev build (modo claro, oscuro y reduce motion; mascota con foto oscura, con foto clara y sin foto; nombre de 25 caracteres). **Enmienda A4:** añadir la foto real del humano (3:4, 960×1280) con el recorte alineado arriba a 430 de alto; nombre y raza legibles sobre el degradado de 100 px; la fila superior legible bajo el velo de 90 px con el `insets.top` real del teléfono (el velo es más corto que la fila desde `insets.top` ≈ 35); y, para el nombre de 25 caracteres, anotar si ocupa dos líneas y cómo queda sobre un degradado casi transparente. Esto último **no es criterio de aceptación** ([[requirements]] §Fuera de alcance): se mira y se anota para la decisión del humano sobre `numberOfLines={1}`.
 - [ ] (2) El humano lo ejecuta en el dev build Android de su PC y firma la casilla de [[requirements]] §Aprobación.
 - [ ] (3) Si algo falla, se abre la corrección como enmienda de esta spec o como feature nueva; un fallo de R21 no invalida R1 a R20.
