@@ -7,11 +7,12 @@ import Animated, {
   useReducedMotion,
   useSharedValue,
   withTiming,
+  withDelay,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { PetProfile } from '../api/types';
-import { MOTION_CELEBRATION_EASE_OUT, MOTION_HERO_FADE_MS, MOTION_HERO_PING_MS } from '../theme/motion';
+import { MOTION_CELEBRATION_EASE_OUT, MOTION_CELEBRATION_RISE_OFFSET_Y, MOTION_HERO_CAPTION_DELAY_MS, MOTION_HERO_FADE_MS, MOTION_HERO_PING_MS, MOTION_SURFACE_MS } from '../theme/motion';
 import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../theme/native-styles';
 import { useThemeColors } from '../theme/use-theme-colors';
 import { PetAvatar } from './pet-avatar';
@@ -98,6 +99,31 @@ export function PetHeroHeader({
   const petId = pet?.id;
   const photoOpacity = useSharedValue(reduceMotion || !pet ? 1 : 0);
   const photoStyle = useAnimatedStyle(() => ({ opacity: photoOpacity.get() }));
+  const slotProgress = useSharedValue(reduceMotion ? 1 : 0);
+  const captionProgress = useSharedValue(reduceMotion ? 1 : 0);
+  const slotStyle = useAnimatedStyle(() => ({
+    opacity: slotProgress.get(),
+    transform: [{ translateY: MOTION_CELEBRATION_RISE_OFFSET_Y * (1 - slotProgress.get()) }],
+  }));
+  const captionStyle = useAnimatedStyle(() => ({
+    opacity: captionProgress.get(),
+    transform: [{ translateY: MOTION_CELEBRATION_RISE_OFFSET_Y * (1 - captionProgress.get()) }],
+  }));
+
+  useEffect(() => {
+    if (reduceMotion) {
+      slotProgress.set(1);
+      captionProgress.set(1);
+      return;
+    }
+    const timing = { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_SURFACE_MS };
+    slotProgress.set(withTiming(1, timing));
+    captionProgress.set(withDelay(MOTION_HERO_CAPTION_DELAY_MS, withTiming(1, timing)));
+    return () => {
+      cancelAnimation(slotProgress);
+      cancelAnimation(captionProgress);
+    };
+  }, [captionProgress, reduceMotion, slotProgress]);
 
 
 
@@ -179,18 +205,19 @@ export function PetHeroHeader({
         />
 
       {children ? (
-        <View
+        <AnimatedView
           testID="pet-hero-slot"
           className="absolute inset-x-4"
-          style={{ top: insets.top + 12 }}
+          style={[{ top: insets.top + 12 }, slotStyle]}
         >
           {children}
-        </View>
+        </AnimatedView>
       ) : null}
 
-      <View
+      <AnimatedView
         testID="pet-hero-caption"
         className="absolute inset-x-4 bottom-1.5 flex-row items-end justify-between gap-3"
+        style={captionStyle}
       >
         <View className="min-w-0 flex-1 gap-1">
           {pet ? (
@@ -258,7 +285,7 @@ export function PetHeroHeader({
             </Text>
           </View>
         ) : null}
-      </View>
+      </AnimatedView>
       </View>
     </View>
   );
