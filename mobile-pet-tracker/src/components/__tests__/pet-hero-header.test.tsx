@@ -11,6 +11,7 @@ import { StyleSheet, Text } from 'react-native';
 import {
   ReduceMotion,
   withTiming,
+  withDelay,
 } from 'react-native-reanimated';
 import * as heroExports from '../pet-hero-header';
 import type { TestInstance } from 'test-renderer';
@@ -80,6 +81,7 @@ jest.mock('react-native-reanimated', () => {
     withRepeat: jest.fn((animation: unknown) => animation),
     withSequence: jest.fn((...steps: unknown[]) => steps.at(-1)),
     withTiming: jest.fn((value: number) => value),
+    withDelay: jest.fn((_ms: number, animation: unknown) => animation),
     cancelAnimation: jest.fn(),
   };
 });
@@ -260,7 +262,7 @@ describe('R3: el texto del hero va sobre fondo opaco', () => {
     expect(caption).not.toMatch(/\bbg-/);
   });
 
-  it('el slot flota sin fondo ni padding (enmendado por #195 R5)', async () => {
+  it('el slot flota sin fondo ni padding (enmendado por #195 R5) (enmendado por #195 R14)', async () => {
     await renderHero(
       <PetHeroHeader pet={makePet()} variant="bleed">
         <Text testID="slot-child">selector</Text>
@@ -270,7 +272,7 @@ describe('R3: el texto del hero va sobre fondo opaco', () => {
     const slot = screen.getByTestId('pet-hero-slot').props.className;
 
     expect(slot).toBe('absolute inset-x-4');
-    expect(screen.getByTestId('slot-child')).toBeVisible();
+    expect(screen.getByTestId('slot-child')).toBeOnTheScreen();
   });
 
   it('funde la imagen con scrim superior y degradado inferior (enmendado por #195 R3)', async () => {
@@ -328,7 +330,7 @@ describe('R3: el texto del hero va sobre fondo opaco', () => {
     },
   );
 
-  it('no renderiza texto sobre la capa de medios', async () => {
+  it('no renderiza texto sobre la capa de medios (enmendado por #195 R14)', async () => {
     const pet = makePet({ photoUrl: 'http://example.test/luna.jpg' });
 
     await renderHero(<PetHeroHeader pet={pet} variant="bleed" />);
@@ -340,21 +342,21 @@ describe('R3: el texto del hero va sobre fondo opaco', () => {
       within(screen.getByTestId('pet-hero-caption')).getByTestId(
         'pet-hero-name',
       ),
-    ).toBeVisible();
+    ).toBeOnTheScreen();
   });
 });
 
 describe('R4: el slot superior respeta la safe area', () => {
   afterEach(() => cleanup());
 
-  it('baja el slot con insets.top + 12, nunca con un valor fijo (enmendado por #195 R5)', async () => {
+  it('baja el slot con insets.top + 12, nunca con un valor fijo (enmendado por #195 R5) (enmendado por #195 R14)', async () => {
     await renderHero(
       <PetHeroHeader pet={makePet()} variant="bleed">
         <Text testID="slot-child">selector</Text>
       </PetHeroHeader>,
     );
 
-    expect(screen.getByTestId('pet-hero-slot').props.style).toMatchObject({
+    expect(StyleSheet.flatten(screen.getByTestId('pet-hero-slot').props.style)).toMatchObject({
       top: 52,
     });
   });
@@ -390,15 +392,15 @@ describe('R8: el hero sin mascota es un skeleton dimensionado', () => {
     expect(screen.queryByTestId('pet-hero-media')).toBeNull();
   });
 
-  it('sigue montando el slot mientras el detalle carga', async () => {
+  it('sigue montando el slot mientras el detalle carga (enmendado por #195 R14)', async () => {
     await renderHero(
       <PetHeroHeader pet={null} variant="bleed">
         <Text testID="slot-child">selector</Text>
       </PetHeroHeader>,
     );
 
-    expect(screen.getByTestId('pet-hero-slot')).toBeVisible();
-    expect(screen.getByTestId('slot-child')).toBeVisible();
+    expect(screen.getByTestId('pet-hero-slot')).toBeOnTheScreen();
+    expect(screen.getByTestId('slot-child')).toBeOnTheScreen();
     expect(screen.getByTestId('pet-hero-skeleton')).toBeVisible();
   });
 
@@ -668,12 +670,12 @@ describe('#195 R3: degradados exactos sobre la fotografía', () => {
 
 describe('#195 R5: fila superior flotante', () => {
   afterEach(() => cleanup());
-  it('usa inset superior más 12 y laterales de 16 sin fondo ni padding', async () => {
+  it('usa inset superior más 12 y laterales de 16 sin fondo ni padding (enmendado por #195 R14)', async () => {
     await renderHero(<PetHeroHeader pet={makePet()}><Text testID="floating-child">selector</Text></PetHeroHeader>);
     const slot = screen.getByTestId('pet-hero-slot');
     expect(slot.props.className).toBe('absolute inset-x-4');
-    expect(slot.props.style).toEqual({ top: 52 });
-    expect(within(slot).getByTestId('floating-child')).toBeVisible();
+    expect(StyleSheet.flatten(slot.props.style)).toEqual({ top: 52, opacity: 0, transform: [{ translateY: 14 }] });
+    expect(within(slot).getByTestId('floating-child')).toBeOnTheScreen();
   });
   it('sin children no reserva slot ni scrim', async () => {
     await renderHero(<PetHeroHeader pet={null} />);
@@ -737,5 +739,50 @@ describe('#195 R6: pie y orden exacto de capas', () => {
     expect(caption.children).toHaveLength(1);
     expect(elementChild(caption, 0).children.map((child) => typeof child === 'string' ? child : child.props.className)).toEqual(['h-9 w-40 rounded-xl', 'h-6 w-24 rounded-xl']);
     expect(screen.queryByTestId('pet-hero-highlight-value')).toBeNull();
+  });
+});
+
+describe('#195 R14: entradas del hero y visibilidad con movimiento reducido', () => {
+  beforeEach(() => mockUseReducedMotion.mockReturnValue(false));
+  afterEach(() => { cleanup(); mockUseReducedMotion.mockReturnValue(false); });
+
+  it('anima el slot sin retraso y el pie con un único retraso de 80 ms', async () => {
+    const view = await renderHero(<Text>montaje del proveedor</Text>);
+    mockWithTiming.mockClear();
+    jest.mocked(withDelay).mockClear();
+    await view.rerender(<PetHeroHeader pet={null}><Text>selector</Text></PetHeroHeader>);
+    const timing = { ...MOTION_CELEBRATION_EASE_OUT, duration: 400 };
+    expect(mockWithTiming).toHaveBeenCalledWith(1, timing);
+    expect(jest.mocked(withDelay)).toHaveBeenCalledTimes(1);
+    expect(jest.mocked(withDelay)).toHaveBeenCalledWith(80, 1);
+    expect(mockWithTiming.mock.calls.filter((call) => call[1]?.duration === 400)).toHaveLength(2);
+  });
+
+  it('solo anima opacidad y transformación y no añade entering', async () => {
+    await renderHero(<PetHeroHeader pet={makePet()}><Text>selector</Text></PetHeroHeader>);
+    for (const id of ['pet-hero-slot', 'pet-hero-caption']) {
+      const node = screen.getByTestId(id);
+      const style = StyleSheet.flatten(node.props.style);
+      expect(Object.keys(style).filter((key) => key !== 'top').sort()).toEqual(['opacity', 'transform']);
+      expect(node).toHaveAnimatedStyle({ ...(id === 'pet-hero-slot' ? { top: 52 } : {}), opacity: 1, transform: [{ translateY: 0 }] }, { shouldMatchAllProps: true });
+    }
+    const root = screen.getByTestId('pet-hero');
+    expect([root, ...root.findAll(() => true)].filter((node) => node.props.entering !== undefined)).toEqual([]);
+  });
+
+  it('con reduce motion nace final sin temporizadores y sus descendientes son visibles', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    const view = await renderHero(<Text>montaje del proveedor</Text>);
+    mockWithTiming.mockClear();
+    jest.mocked(withDelay).mockClear();
+    await view.rerender(<PetHeroHeader pet={makePet()}><Text testID="reduced-child">selector</Text></PetHeroHeader>);
+    expect(mockWithTiming).not.toHaveBeenCalled();
+    expect(jest.mocked(withDelay)).not.toHaveBeenCalled();
+    expect(StyleSheet.flatten(screen.getByTestId('pet-hero-slot').props.style)).toEqual({ top: 52, opacity: 1, transform: [{ translateY: 0 }] });
+    expect(StyleSheet.flatten(screen.getByTestId('pet-hero-caption').props.style)).toEqual({ opacity: 1, transform: [{ translateY: 0 }] });
+    expect(screen.getByTestId('pet-hero-photo')).toHaveAnimatedStyle({ opacity: 1 }, { shouldMatchAllProps: true });
+    for (const id of ['pet-hero-slot', 'pet-hero-caption', 'pet-hero-media', 'reduced-child', 'pet-hero-name']) {
+      expect(screen.getByTestId(id)).toBeVisible();
+    }
   });
 });

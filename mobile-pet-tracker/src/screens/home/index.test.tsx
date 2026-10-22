@@ -188,7 +188,7 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
   });
 
-  it('compone el selector y la campana como dos hijos en ese orden', async () => {
+  it('compone el selector y la campana como dos hijos en ese orden (enmendado por #195 R14)', async () => {
     await renderHome();
 
     const actions = await screen.findByTestId('home-hero-actions');
@@ -199,7 +199,7 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
       throw new Error('Expected element children');
     }
     expect(switcherWrapper.props.className).toBe('flex-1');
-    expect(within(switcherWrapper).getByTestId('pet-chip-pet-1')).toBeVisible();
+    expect(within(switcherWrapper).getByTestId('pet-chip-pet-1')).toBeOnTheScreen();
     expect(bellChild.props.testID).toBe('home-alerts-bell');
 
     const bell = within(actions).getByTestId('home-alerts-bell');
@@ -555,14 +555,14 @@ describe('R6: home carga pets y selecciona', () => {
     expect(mockGetDailyActivity).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1');
   });
 
-  it('selects a pressed pet and reloads its detail and activity', async () => {
+  it('selects a pressed pet and reloads its detail and activity (enmendado por #195 R14)', async () => {
     mockListPets.mockResolvedValue({
       kind: 'ok',
       pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo' })],
     });
 
     await renderHome();
-    await waitFor(() => expect(screen.getByTestId('pet-chip-pet-1')).toBeVisible());
+    await waitFor(() => expect(screen.getByTestId('pet-chip-pet-1')).toBeOnTheScreen());
     await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
 
     await waitFor(() => {
@@ -1501,7 +1501,7 @@ describe('R10: preserva la mascota durante el refetch', () => {
     jest.restoreAllMocks();
   });
 
-  it('does not replace a new selection while the stale pet list refreshes', async () => {
+  it('does not replace a new selection while the stale pet list refreshes (enmendado por #195 R14)', async () => {
     const existingPet = makePet({ id: 'pet-old' });
     const createdPet = makePet({ id: 'pet-new', name: 'Nala' });
     const selectPet = jest.fn();
@@ -1542,7 +1542,7 @@ describe('R10: preserva la mascota durante el refetch', () => {
     );
 
     expect(selectPet).not.toHaveBeenCalled();
-    expect(screen.getByTestId(`pet-chip-${existingPet.id}`)).toBeVisible();
+    expect(screen.getByTestId(`pet-chip-${existingPet.id}`)).toBeOnTheScreen();
 
     await act(async () => {
       resolvePets({ kind: 'ok', pets: [existingPet, createdPet] });
@@ -1674,7 +1674,7 @@ describe('R5: Home usa el hero compartido', () => {
     mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
   });
 
-  it('monta el hero con el selector dentro y sin rastro de la pet card', async () => {
+  it('monta el hero con el selector dentro y sin rastro de la pet card (enmendado por #195 R14)', async () => {
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
 
     await renderHome();
@@ -1682,8 +1682,8 @@ describe('R5: Home usa el hero compartido', () => {
     await screen.findByTestId('pet-hero-media');
     const hero = screen.getByTestId('pet-hero');
     expect(within(hero).getByTestId('pet-hero-media')).toBeVisible();
-    expect(within(hero).getByTestId('pet-hero-slot')).toBeVisible();
-    expect(within(hero).getByTestId('pet-chip-pet-1')).toBeVisible();
+    expect(within(hero).getByTestId('pet-hero-slot')).toBeOnTheScreen();
+    expect(within(hero).getByTestId('pet-chip-pet-1')).toBeOnTheScreen();
     expect(screen.queryByTestId('pet-card')).toBeNull();
     expect(screen.queryByTestId('pet-card-photo')).toBeNull();
     expect(screen.queryByTestId('pet-card-name')).toBeNull();
@@ -1712,7 +1712,7 @@ describe('R5: Home usa el hero compartido', () => {
     ).toBeVisible();
   });
 
-  it('conserva intactos los testID que la spec no sustituye', async () => {
+  it('conserva intactos los testID que la spec no sustituye (enmendado por #195 R14)', async () => {
     mockGetPet.mockResolvedValue({
       kind: 'ok',
       pet: makePet({
@@ -1735,10 +1735,10 @@ describe('R5: Home usa el hero compartido', () => {
       'collar-battery',
       'summary-card',
       'last-position-card',
-      'pet-avatar-fallback-pet-1',
     ]) {
       expect(screen.getByTestId(testId)).toBeVisible();
     }
+    expect(screen.getByTestId('pet-avatar-fallback-pet-1')).toBeOnTheScreen();
   });
 });
 
@@ -1759,7 +1759,7 @@ describe('R8: el error del detalle deja el selector alcanzable', () => {
     mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
   });
 
-  it('mantiene el hero y los chips montados cuando el detalle falla', async () => {
+  it('mantiene el hero y los chips montados cuando el detalle falla (enmendado por #195 R14)', async () => {
     mockGetPet.mockResolvedValue({ kind: 'unreachable', message: 'down' });
 
     await renderHome();
@@ -1767,8 +1767,8 @@ describe('R8: el error del detalle deja el selector alcanzable', () => {
     await waitFor(() => expect(screen.getByTestId('pet-hero-error')).toBeVisible());
     expect(screen.getByTestId('pet-hero')).toBeVisible();
     expect(screen.getByTestId('pet-hero-retry')).toBeVisible();
-    expect(screen.getByTestId('pet-chip-pet-1')).toBeVisible();
-    expect(screen.getByTestId('pet-chip-pet-2')).toBeVisible();
+    expect(screen.getByTestId('pet-chip-pet-1')).toBeOnTheScreen();
+    expect(screen.getByTestId('pet-chip-pet-2')).toBeOnTheScreen();
     expect(screen.getByTestId('pet-hero-skeleton')).toBeVisible();
   });
 
