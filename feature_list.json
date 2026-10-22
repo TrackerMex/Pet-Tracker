@@ -3404,7 +3404,7 @@
   {
     "id": 189,
     "name": "mobile-geofences-canvas-fidelity",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P2",
     "description": "Artboards Zonas seguras (20) y Editor de zona (21), sin el breathe. Zonas: título en contenido, contador n/5 y barra de 5 segmentos, filas con tile pastel + icono reicon + nombre + radio + Switch, botón Añadir zona deshabilitado con aviso de límite. Editor: título en contenido, hoja sobre el mapa con Nombre, Radio, Activa, Eliminar/Guardar. Ficheros dueños: src/screens/geofences/index.tsx, src/screens/geofence-editor/index.tsx, las dos Stack.Screen de src/app/_layout.tsx, src/utils/category-palette.ts, catalog.ts, ui-copy-table.ts. Solapes: #177, #181, #186. Decisiones abiertas del humano: paleta/icono por zona (el modelo Geofence no tiene categoría: ¿por índice, por radio, fijo?); título nativo por «equivalencia» o título en contenido; Editor como hoja con arrastre o mapa + formulario. Registrada el 2026-10-16 desde la re-auditoría de paridad con el canvas aprobado (https://claude.ai/artifact/VqaQQsRTtis9Dbttqy3z7j), informe progress/explore_canvas-parity-2026-10-16.md (base 44acd74b). Reglas del humano: «el diseño final como el artifact» y «Píxel exacto». Va después de #177 (receta de botón) y #187; coordina con #186. Verificar cada ancla del informe contra el árbol al arrancar (los recuentos caducan). Registrada sin spec; no se arranca."
   },
