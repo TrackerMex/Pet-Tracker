@@ -123,3 +123,30 @@ describe('#195 R19: grep-clean y cuentas conservadas', () => {
     expect(read('src/theme/global.css').match(/--(?:color-)?(?:scrim|photo-dim):/g)).toHaveLength(8);
   });
 });
+
+describe('#195 R20: enmienda canónica y continuación de A8', () => {
+  const design = read('../specs/mobile-home-photo-hero-canvas/design.md').split('## Texto de la Enmienda #195')[1];
+  const blocks = Array.from(design.matchAll(/```markdown\n([\s\S]*?)\n```/g), (match) => match[1]);
+  const charter = read('../docs/ui-guidelines.md');
+  const normalize = (text: string) => text.replace(/^- \[[ xX]\] Enmienda #195 aprobada por humano$/gm, '- [ ] Enmienda #195 aprobada por humano');
+  const historicalA8 = "> **Enmendado por #67 (A8) — corrección de un hecho falso.** Hasta el\n> 2026-09-06 este punto decía *\"el respaldo es degradado con la inicial —el\n> patrón que ya usa `pet-avatar`—, decidido por el humano el 2026-09-04\"*.\n> Era falso de origen: `src/components/pet-avatar.tsx` pinta `blobatar(name)`\n> con `SvgXml` y nunca una inicial, y la R5 aprobada de #40 (2026-08-21)\n> sustituyó explícitamente el fallback de inicial por el blobatar. El error\n> venía de `progress/explore_design-gap-vs-make.md` y se propagó también al\n> enunciado de #67 en `feature_list.json`. Y la garantía de AA no la da el\n> degradado: la da la **banda opaca** bajo el texto (#67 R3), porque ningún\n> velo sobre una foto arbitraria llega a 4,5:1.";
+
+  it('añade una sola sección completa y es la última cabecera de nivel dos', () => {
+    expect(blocks).toHaveLength(2);
+    const heading = blocks[0].split('\n')[0];
+    expect(charter.split(heading)).toHaveLength(2);
+    expect(charter.match(/^## .+$/gm)?.at(-1)).toBe(heading);
+    expect(normalize(charter.slice(charter.indexOf(heading)).trimEnd())).toBe(normalize(blocks[0]));
+  });
+
+  it('conserva A8 entero y añade la cita nueva como párrafo aparte inmediato', () => {
+    expect(charter.split(historicalA8)).toHaveLength(2);
+    expect(charter).toContain(historicalA8 + '\n\n' + blocks[1] + '\n\n');
+  });
+
+  it('detecta las casillas con una expresión tolerante a la firma', () => {
+    const checkbox = /- \[[ xX]\] Enmienda #195 aprobada por humano/;
+    expect(read('../specs/mobile-home-photo-hero-canvas/requirements.md')).toMatch(checkbox);
+    expect(charter).toMatch(checkbox);
+  });
+});
