@@ -186,7 +186,7 @@ de tocar y registra base + delta en `progress/impl_mobile-geofences-canvas-fidel
 
 ## R19 — Bloqueado no es atenuado
 
-- [ ] (1) Rojo: (C) barrido de `isDisabled` ⇒ `KEEP_OPACITY` y definición en `native-styles.ts`; (F)/(E) `opacity === 1` bajo `busy`; enmendar `#177 R3.1` (fila Guardar), `R4.1` (Eliminar), `R7.5`, `R8.1` del lado del Editor.
+- [ ] (1) Rojo: (C) barrido de `isDisabled` ⇒ `KEEP_OPACITY` y definición en `native-styles.ts`; (F)/(E) `opacity === 1` bajo `busy` (Guardar vacío sin `busy`: igualdad del flatten real, corregida por E5); enmendar `#177 R3.1` (fila Guardar), `R4.1` (Eliminar), `R7.5`, `R8.1` del lado del Editor.
 - [ ] (2) Implementación mínima: `KEEP_OPACITY` + los dos `Switch` + Eliminar + Guardar del Editor.
 - [ ] (3) Refactor.
 
@@ -198,7 +198,7 @@ de tocar y registra base + delta en `progress/impl_mobile-geofences-canvas-fidel
 
 ## R20 — «Añadir zona»
 
-- [ ] (1) Rojo (F): límite `toEqual({ opacity: 1 })`, `busy` con receta primaria y opacidad 1, clase `disabled:element-disabled` presente; enmendar `#177 R3.1` (fila Añadir), `R7.5`, `R8.1` del lado de Zonas; corregir la frase falsa de R7.2.
+- [ ] (1) Rojo (F): límite `toEqual({ borderCurve: 'continuous', transform: [{ scale: 1 }], opacity: 1 })` (corregido por E5; antes `toEqual({ opacity: 1 })`), `busy` con receta primaria y opacidad 1, clase `disabled:element-disabled` presente; enmendar `#177 R3.1` (fila Añadir), `R7.5`, `R8.1` del lado de Zonas; corregir la frase falsa de R7.2.
 - [ ] (2) Implementación mínima: `style={atLimit ? KEEP_OPACITY : [chunkyLip.primary, KEEP_OPACITY]}`.
 - [ ] (3) Refactor.
 
@@ -226,3 +226,25 @@ de tocar y registra base + delta en `progress/impl_mobile-geofences-canvas-fidel
 - [ ] Sondas P-E4-1..13 ejecutadas y registradas en el informe.
 - [ ] `traceability.md` sin filas «pendiente» de R19-R24.
 - [ ] Smoke §6 pasos 6-10: lo corre el humano; no se afirma ejecutado.
+
+## Enmienda E5 (§4.5): no empieces sin la casilla E5 firmada
+
+Solo toca la aserción del estilo aplanado de un `Button` de heroui; la producción de R19/R20 no cambia y el
+orden rojo → verde de E4 tampoco. Lista cerrada: `src/screens/geofences/index.test.tsx` y
+`src/screens/geofence-editor/index.test.tsx` (desde `mobile-pet-tracker/`), solo las tres aserciones de
+requirements §4.5. Mismas reglas de commits y esperas que E4; sin `./init.sh`.
+
+## R20 rojo-corrección (E5)
+
+- [ ] Verificar contra el fichero las dos aserciones `toEqual({ opacity: 1 })` de `geofences/index.test.tsx` (rama `count === 5` del `it.each` de R7 y `it` «#189 R20.1») y sustituirlas por `toEqual({ borderCurve: 'continuous', transform: [{ scale: 1 }], opacity: 1 })`. Un commit de test: `test(mobile): #189 E5 R20 rojo-corrección — …`.
+- [ ] Comprobar que el test sigue **rojo** por la ausencia de `KEEP_OPACITY` (recibido sin `opacity`), no por el literal esperado.
+
+## R19 rojo-corrección (E5)
+
+- [ ] Misma corrección en `geofence-editor/index.test.tsx`, `it` «Guardar vacío permanece gris…» (`geofence-editor-save`). Un commit de test aparte: `test(mobile): #189 E5 R19 rojo-corrección — …`. Sigue rojo hasta el verde conjunto.
+- [ ] Los demás `?.opacity` `toBe(1)` y los `toHaveStyle` **no se tocan**.
+
+## Cierre E5
+
+- [ ] Los dos commits de corrección van **antes** del verde conjunto `feat(mobile): #189 E4 R19 R20 …`.
+- [ ] Tras el verde, replantar P-E4-4 (`style={chunkyLip.primary}` en el límite): el `toEqual` corregido debe ponerse rojo por la clave `boxShadow`; registrar la salida en el informe.

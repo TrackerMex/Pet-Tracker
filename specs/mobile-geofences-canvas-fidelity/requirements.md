@@ -109,6 +109,10 @@ recuentos caducan al mergear otra feature, así que se **re-miden** al arrancar)
 > mapa), R12, R13.1/R13.2 y R16.1 quedan sustituidos en los puntos que lista la tabla «Texto que E4
 > sustituye» de §4.4 (los R-ids no cambian; los requisitos nuevos son R19-R24). Donde el texto de abajo
 > choque con esa tabla, manda §4.4.
+>
+> **Enmendado por E5 (§4.5, 2026-10-22):** solo la aserción del estilo aplanado de `geofences-add` en el
+> límite y de Guardar vacío (R19.2 (E), R20.1 y su Test (F)); la producción de R19/R20 no cambia. Donde el
+> texto de E4 diga `{ opacity: 1 }` exacto para esos nodos, manda §4.5.
 
 Convención de etiquetas de test (R-id → fichero), todos desde `src/`:
 
@@ -660,7 +664,8 @@ la píldora (R22.4). No cambia ningún otro `testID`; `geofences-header`, `geofe
     - **(E)** `describe('#189 R19: …')` en `screens/geofence-editor/index.test.tsx`: con `busy` y con el
       nombre vacío, `geofence-editor-active`, `geofence-editor-delete` y `geofence-editor-save` están
       bloqueados (`accessibilityState.disabled === true`) y su estilo aplanado tiene `opacity === 1`;
-      con el nombre vacío y sin `busy` Guardar también (`opacity === 1`).
+      con el nombre vacío y sin `busy` Guardar también (`opacity === 1`; **enmendado por E5**: en este
+      `it`, que aserta el estilo aplanado completo, la igualdad exacta es la de §4.5 y no `{ opacity: 1 }`).
     - **(C)** `geofences-canvas-fidelity.test.ts`, `#189 R19.1/R19.2`: `native-styles.ts` contiene
       `export const KEEP_OPACITY = { opacity: 1 } as const;`; en cada una de las dos pantallas, **toda
       etiqueta de apertura** de `<Switch` y `<Button` que contiene `isDisabled=` contiene también
@@ -678,16 +683,20 @@ la píldora (R22.4). No cambia ningún otro `testID`; `geofences-header`, `geofe
   isDisabled={busy || atLimit} …>`, con la etiqueta `<Text className={atLimit ? 'text-17 font-extrabold
   text-muted' : 'text-17 font-extrabold text-accent-foreground'}>` **sin cambios**.
   - **R20.1** WHILE `zonas >= 5`: gris del artboard (`bg-default`, texto `text-muted`), sin labio y **sin
-    atenuado**: `StyleSheet.flatten(add.props.style)` es exactamente `{ opacity: 1 }` (no contiene
-    `boxShadow`), `accessibilityState.disabled === true`, y el `className` renderizado **conserva**
-    `disabled:element-disabled` (la clase de heroui sigue ahí; la cancela el `style`).
+    atenuado**: `StyleSheet.flatten(add.props.style)` es exactamente `{ borderCurve: 'continuous', transform:
+    [{ scale: 1 }], opacity: 1 }` (las dos primeras claves las pone el `Button`/`PressableFeedback` de
+    heroui, no la pantalla; en particular `opacity === 1` y **no** tiene `boxShadow`),
+    `accessibilityState.disabled === true`, y el `className` renderizado **conserva**
+    `disabled:element-disabled` (la clase de heroui sigue ahí; la cancela el `style`). *(Redacción
+    sustituida por E5: la de E4 decía «exactamente `{ opacity: 1 }`», premisa falsa; ver §4.5.)*
   - **R20.2** WHILE `busy` con menos de 5 zonas: receta primaria completa (`bg-accent`, labio
     `chunkyLip.primary`) **y** `opacity: 1`, con `accessibilityState.disabled === true`. Es la
     corrección de R7.2: `busy` **sí** cambiaba el aspecto (lo atenuaba heroui); ahora no.
   - **R20.3** WHILE `zonas < 5` y no `busy` (también con la lista vacía): receta primaria con labio; el
     `opacity: 1` no tiene efecto visible.
   - **Test (F)**: el `it` «#189 R7» (clases por conteo) se enmienda (`(enmendado por E4 R20)`): para
-    `count === 5` el estilo aplanado `toEqual({ opacity: 1 })` (hoy: `boxShadow` indefinido), para
+    `count === 5` el estilo aplanado `toEqual({ borderCurve: 'continuous', transform: [{ scale: 1 }],
+    opacity: 1 })` (E5; cualquier clave extra, p. ej. `boxShadow`, lo pone en rojo), para
     `count < 5` `toHaveStyle` del labio **y** `opacity: 1`; el `it` «busy» (hoy `toContain('mt-auto h-14
     rounded-16 bg-accent')` + labio) añade `opacity: 1`; nuevo `it` que con 5 zonas comprueba
     `className` `toContain('disabled:element-disabled')`. Sondas: P-E4-3 y P-E4-4.
@@ -891,7 +900,7 @@ rojo, PARA y reporta (el delta esperado es cero).
 | P-E4-1 | quitar `style={KEEP_OPACITY}` del `Switch` `geofence-<id>-active` | el candado de fuente R19.2 (y, si el nodo lo expone, el `it` (F) de opacidad bajo `busy`) |
 | P-E4-2 | añadir un `Button`/`Switch` con `isDisabled` y sin `KEEP_OPACITY` (p. ej. `isDisabled={busy}` en `geofences-retry`) | el barrido de **todas** las etiquetas de R19.2 (y el conteo 2 / 3 de M10) |
 | P-E4-3 | `geofences-add` con `style={atLimit ? undefined : chunkyLip.primary}` (forma vieja) | el `it` de R20 (`opacity` bajo `busy` y con 5) y `#177 R3.1` |
-| P-E4-4 | `geofences-add` con `style={chunkyLip.primary}` también en el límite | R20.1 (`toEqual({ opacity: 1 })` falla por `boxShadow`) |
+| P-E4-4 | `geofences-add` con `style={chunkyLip.primary}` también en el límite | R20.1 (el `toEqual` del flatten, §4.5, falla porque aparece la clave `boxShadow`) |
 | P-E4-5 | quitar `isDisabled` de `geofences-add` o del `Switch` «para arreglar el parpadeo» | `accessibilityState.disabled` y los bloqueos de R17 (`bloquea los dos interruptores mientras escribe`, `no abre el editor mientras una escritura está en vuelo`) |
 | P-E4-6 | la ruta de Zonas con `headerTransparent: true` pero **sin** `headerStyle: { backgroundColor: 'transparent' }` | `layout.test.tsx` (`toEqual`) |
 | P-E4-7 | restaurar `contentInsetAdjustmentBehavior="automatic"` o `paddingTop: 24` en Zonas | el `it` de métricas (F) y la ancla M14 |
@@ -938,6 +947,88 @@ Orden, porque cada paso usa el anterior:
 
 **Smoke de E4**: los pasos 6-10 de §6 los corre el humano; el 0.5 real y la posición real de la flecha nativa
 **no** los puede ver ningún test.
+
+### §4.5 Enmienda E5 (2026-10-22): premisa falsa sobre el estilo aplanado de un `Button` de heroui (R20.1)
+
+Base de medida: `eace0652` (HEAD de la branch al redactar; rojo versionado de R20). Los recuentos y las
+líneas caducan: se anclan por contenido y se re-miden en el H0 de la enmienda.
+
+**Origen.** Al pasar a verde R19 y R20, Codex midió que el `it` de R20.1 y el `it` (F) de «Añadir zona» en
+el límite no pueden pasar con producción correcta, y el leader lo verificó contra la fuente de heroui. R20.1
+y Test (F)/P-E4-4 de E4 prescribían que `StyleSheet.flatten(add.props.style)` fuese exactamente
+`{ opacity: 1 }`. Es falso: el `Button` de heroui compone `[buttonStyleSheet.buttonRoot, style]`
+(`node_modules/heroui-native/src/components/button/button.tsx`, ~l. 294) con `buttonRoot = { borderCurve:
+'continuous' }` (`button.styles.ts`, ~l. 106), y `PressableFeedback` añade `transform: [{ scale: 1 }]`. El
+flatten real en el límite (5 zonas) es `{ borderCurve: 'continuous', transform: [{ scale: 1 }], opacity: 1 }`,
+**sin** `boxShadow`. **La producción literal de R20 no cambia** (`style={atLimit ? KEEP_OPACITY :
+[chunkyLip.primary, KEEP_OPACITY]}` es correcta); cambia **solo la aserción**. La intención se conserva: sin
+labio, sin atenuado y detectar claves coladas.
+
+**Medido por el spec_author (no de memoria)** sobre el árbol de `eace0652` más el WIP de Codex: la misma
+igualdad exacta aparece en **tres** sitios, todos sobre un `Button` de heroui:
+
+| Fichero (desde `mobile-pet-tracker/`) | Aserción actual | Nodo |
+|---|---|---|
+| `src/screens/geofences/index.test.tsx`, `it.each` «#189 R7: receta y navegación…», rama `count === 5` | `expect(StyleSheet.flatten(add.props.style)).toEqual({ opacity: 1 })` | `geofences-add` |
+| ídem, `it` «#189 R20.1: el límite conserva disabled:element-disabled…» | ídem | `geofences-add` |
+| `src/screens/geofence-editor/index.test.tsx`, `it` «#189 R19.2: Guardar vacío permanece gris, bloqueado y con opacidad 1 sin busy» | `expect(StyleSheet.flatten(save.props.style)).toEqual({ opacity: 1 })` | `geofence-editor-save` (Guardar, `style={KEEP_OPACITY}` con el nombre vacío); la ejecución del `it` muestra recibido `{ borderCurve: 'continuous', opacity: 1, transform: [{ scale: 1 }] }` |
+
+**No tienen el defecto** (aserciones parciales sobre `opacity`, que no se tocan): los `Switch`
+`geofence-<id>-active` (`StyleSheet.flatten(node.props.style)?.opacity` `toBe(1)`) y `geofence-editor-active`,
+`geofence-editor-delete` y `geofence-editor-save` bajo `busy` (el mismo `?.opacity` `toBe(1)` del bucle de
+R19.2 (E)); Añadir zona con `count < 5` y bajo `busy` (`toHaveStyle`, parcial); y
+`StyleSheet.flatten(save.props.style)?.boxShadow` `toBeUndefined()` del Editor (parcial). Los candados de
+fuente (`geofences-canvas-fidelity.test.ts` l. ~93, `toContain` del texto de `KEEP_OPACITY`) y
+`chunky-cta-canvas-fidelity.test.ts` no contienen igualdad de flatten (grep de `flatten` y `opacity`): no se
+tocan. Las ocurrencias de `toHaveStyle({ opacity: 1 })` sobre otros nodos (p. ej. `column` en Zonas) son
+ajenas a `geofences-add` y no se tocan.
+
+**Texto que E5 sustituye (antes → después)**
+
+| Cláusula | Antes (E4) | Después | R |
+|---|---|---|---|
+| R20.1 | `StyleSheet.flatten(add.props.style)` es exactamente `{ opacity: 1 }` (no contiene `boxShadow`) | es exactamente `{ borderCurve: 'continuous', transform: [{ scale: 1 }], opacity: 1 }` (las dos primeras claves las pone heroui, no la pantalla); `opacity === 1` y **sin** `boxShadow` | R20.1 |
+| R20 Test (F), `count === 5` | `toEqual({ opacity: 1 })` | `expect(StyleSheet.flatten(add.props.style)).toEqual({ borderCurve: 'continuous', transform: [{ scale: 1 }], opacity: 1 })` (conserva el cierre de claves: cualquier clave extra, p. ej. `boxShadow`, lo pone en rojo). Los `toHaveStyle` de `count < 5` y de `busy` **no cambian** | R20 |
+| `it` «#189 R20.1» | `toEqual({ opacity: 1 })` | el mismo `toEqual` de la fila anterior | R20.1 |
+| R19 Test (E), «Guardar vacío» sin `busy` | `toEqual({ opacity: 1 })` | `expect(StyleSheet.flatten(save.props.style)).toEqual({ borderCurve: 'continuous', transform: [{ scale: 1 }], opacity: 1 })` (el mismo cierre: sin labio, sin atenuado) | R19.2 |
+| P-E4-4 | el `toEqual` «falla por `boxShadow`» | sigue poniendo en rojo R20.1, ahora porque aparece la clave `boxShadow` en el flatten (recibido `{ borderCurve, transform, boxShadow, opacity }` ≠ esperado) | R20.1 |
+
+Las claves `borderCurve` y `transform` son de heroui: si una actualización de `heroui-native` las cambia,
+el `toEqual` se pone rojo y la enmienda es de aserción, no de producción. Es el precio de conservar el
+cierre de claves, que es lo que detecta un `boxShadow` o una opacidad colados.
+
+**Lección.** Premisa de composición de estilos de un componente de terceros **no verificada contra su
+fuente al especificar** (R20.1): E4 verificó el *orden* (`[buttonRoot, style]`, que `style` gana) pero no
+*qué claves* aporta el componente al estilo aplanado, y prescribió una igualdad exacta sobre ese resultado.
+Regla para futuras specs: una aserción de igualdad exacta sobre el estilo aplanado de un nodo de heroui
+(`Button`, `Switch`, `Card`…) enumera **también** las claves que pone el componente, medidas contra su
+fuente o con una ejecución real, no solo las que pone la pantalla.
+
+**Sin cambio de producción ni de otros R.** `KEEP_OPACITY`, `isDisabled`, la clase
+`disabled:element-disabled`, M10-M19, las sondas P-E4-1..3 y P-E4-5..13, los candados agregados y la
+lista de E4 no se mueven. Una referencia de R23.2 / DE4-2 a «enmienda E5» (geometría fuera de ±8 dp) se
+lee ahora «enmienda posterior» (E6 si hace falta): E5 ya es esta.
+
+**Orden rojo → verde (E5 solo toca la aserción; el orden de E4 no cambia).** Los rojos de R19 (`297b9f4b`)
+y R20 (`eace0652`) ya están versionados con la aserción defectuosa. Antes del verde conjunto `feat(mobile):
+#189 E4 R19 R20 …` se añaden **dos commits de test** (solo tests, sin producción):
+
+1. `test(mobile): #189 E5 R20 rojo-corrección — flatten real de Añadir zona en el límite`: los dos `toEqual`
+   de `geofences/index.test.tsx` (**«R20 rojo-corrección (E5)»**).
+2. `test(mobile): #189 E5 R19 rojo-corrección — flatten real de Guardar vacío`: el `toEqual` de
+   `geofence-editor/index.test.tsx`.
+
+Ambos siguen **rojos** hasta el verde conjunto (la producción de R19/R20 aún no está commiteada): se
+verifica que el rojo es por la ausencia de `KEEP_OPACITY` y no por el literal del `toEqual`; el verde
+conjunto de R19 y R20 sigue siendo uno solo (aclaración de `tasks.md`). La probe P-E4-4 se vuelve a plantar
+tras el verde para confirmar que el `toEqual` corregido sigue cerrando claves.
+
+**Lista cerrada de ficheros que Codex puede tocar para E5** (desde `mobile-pet-tracker/`):
+`src/screens/geofences/index.test.tsx` y `src/screens/geofence-editor/index.test.tsx`, únicamente las
+aserciones de la tabla de arriba. **No** hay que tocar `chunky-cta-canvas-fidelity.test.ts` ni
+`geofences-canvas-fidelity.test.ts` (el grep no muestra la misma igualdad). Producción, docs y el resto de la
+lista de E4 no cambian. Registro: `progress/impl_mobile-geofences-canvas-fidelity.md` y
+`specs/mobile-geofences-canvas-fidelity/traceability.md`.
 
 ## §5. Fuera de alcance
 
@@ -996,3 +1087,4 @@ Pasos añadidos por E4 (§4.4), mismo dev build Android, claro y oscuro:
 - [X] Enmienda E2 (§4.2) aprobada por humano (fecha: 2026-10-21) ← gate obligatorio antes de reanudar la comprobación previa
 - [X] Enmienda E3 (§4.3) aprobada por humano (fecha: 2026-10-21) ← gate obligatorio antes de reanudar R18
 - [X] Enmienda E4 (§4.4) aprobada por humano (fecha: 2026-10-22) ← gate obligatorio antes de reanudar R23 (y resolver DE4-1..DE4-5)
+- [ ] Enmienda E5 (§4.5) aprobada por humano (fecha: ____) ← gate obligatorio antes de reanudar el verde de R19 y R20 (corrección de la aserción de R20.1)

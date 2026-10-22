@@ -184,3 +184,21 @@ Las opciones del formulario se aplican en un efecto, así que el primer fotogram
 cabecera opaca de la ruta. Se comprueba en el smoke (§6, paso 9). **Fallback** si aparece: declarar la ruta
 del Editor con `TRANSPARENT_HEADER_OPTIONS` y que las ramas de estado sean las que fijen la opaca (otra
 enmienda: cambia `layout.test.tsx` y R22.2).
+
+## Enmienda E5 (2026-10-22): aserción del estilo aplanado de un `Button` de heroui
+
+Decisiones técnicas de alto nivel; detalle en `requirements.md` §4.5.
+
+- **Causa**: la spec de E4 asumió que el estilo aplanado de `geofences-add` en el límite era exactamente
+  `{ opacity: 1 }`. El `Button` de heroui compone `[buttonRoot, style]` con `buttonRoot = { borderCurve:
+  'continuous' }` y `PressableFeedback` añade `transform: [{ scale: 1 }]`: el flatten real es `{ borderCurve:
+  'continuous', transform: [{ scale: 1 }], opacity: 1 }`.
+- **Solución**: cambia solo la aserción (igualdad exacta con las tres claves; sigue cerrando claves, así que un
+  `boxShadow` colado la pone en rojo). Producción, capas y archivos de E4 no cambian. Afecta a tres `toEqual`
+  de dos tests de pantalla (Zonas ×2, Editor ×1: Guardar vacío).
+- **Alternativas descartadas**: `toHaveStyle({ opacity: 1 })` + `boxShadow` indefinido (pierde el cierre de
+  claves: no detecta una clave colada distinta de `boxShadow`); `expect.objectContaining` (ídem); tocar la
+  producción para quitar las claves de heroui (no se puede: las pone el componente).
+- **Lección**: verificar contra la fuente de un componente de terceros qué claves aporta al estilo
+  aplanado antes de prescribir una igualdad exacta (E4 verificó solo el orden de composición).
+
