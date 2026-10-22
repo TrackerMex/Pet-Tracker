@@ -1,10 +1,9 @@
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BlurView } from 'expo-blur';
-import { router } from 'expo-router';
-import { HeaderHeightContext } from 'expo-router/react-navigation';
+import { router, Stack } from 'expo-router';
 import { Button, Input, Label, Skeleton, Slider, Switch, TextField } from 'heroui-native';
-import { useContext, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Alert, KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
@@ -17,7 +16,9 @@ import { Card } from '../../components/card';
 import { DEFAULT_CENTER, PetMap, type MapCoordinates } from '../../components/pet-map';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
+import { EDITOR_PILL_LEFT, HEADER_BAR_HEIGHT, TRANSPARENT_HEADER_OPTIONS } from '../../theme/header-layout';
 import { CONTINUOUS_CORNER, KEEP_OPACITY, TABULAR_NUMS } from '../../theme/native-styles';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { zoomForRadius } from '../../utils/zoom-for-radius';
 
 const MIN_RADIUS = 20;
@@ -36,6 +37,8 @@ function messageFor(t: ReturnType<typeof useTranslate>, kind: GeofenceSaveState[
 }
 
 export function GeofenceEditorScreen({ petId, geofenceId }: { petId: string; geofenceId?: string }) {
+  const [background] = useThemeColors(['background']);
+  const opaqueHeader = useMemo(() => ({ headerTransparent: false, headerStyle: { backgroundColor: background } }), [background]);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
   const t = useTranslate();
@@ -84,12 +87,14 @@ export function GeofenceEditorScreen({ petId, geofenceId }: { petId: string; geo
       initialCenter={zone ? { latitude: zone.centerLat, longitude: zone.centerLng } : last ? { latitude: last.lat, longitude: last.lng } : DEFAULT_CENTER}
     />;
   }
-  return <ScrollView testID="screen-geofence-editor" className="flex-1 bg-background"
+  return <>
+    <Stack.Screen options={opaqueHeader} />
+    <ScrollView testID="screen-geofence-editor" className="flex-1 bg-background"
     contentInsetAdjustmentBehavior="automatic"
     contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: insets.bottom + 40, gap: 12 }}>
     <Text testID="geofence-editor-title" accessibilityRole="header" className="text-26 font-black tracking-title text-foreground">{t('geofenceEditor.title')}</Text>
     {content}
-  </ScrollView>;
+  </ScrollView></>;
 }
 
 function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, initialCenter, initialRadius }: {
@@ -98,7 +103,6 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
   const chunkyLip = useChunkyLip();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
-  const headerHeight = useContext(HeaderHeightContext);
   const { theme } = useUniwind();
   const queryClient = useQueryClient();
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
@@ -144,12 +148,16 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
 
   const radiusValue = <Text testID="geofence-editor-radius-value" selectable style={TABULAR_NUMS} className={readOnly ? 'font-bold text-foreground' : 'text-sm font-extrabold text-accent-strong'}>{t('geofences.radius', { meters: Math.round(readOnly ? initialRadius : radius) })}</Text>;
 
-  return <KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={headerHeight}>
+  return <>
+    <Stack.Screen options={TRANSPARENT_HEADER_OPTIONS} />
+    <KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={0}>
     <View testID="geofence-editor-map" className="flex-1">
       <PetMap onPress={readOnly ? undefined : setCenter} center={readOnly ? initialCenter : camera.center} zoom={readOnly ? zoomForRadius(initialRadius) : camera.zoom} marker={null} polylines={[]} circles={circles} colorScheme={theme === 'dark' ? 'dark' : 'light'} />
-      <BlurView testID="geofence-editor-title-blur" intensity={48} blurMethod="dimezisBlurViewSdk31Plus" tint={theme === 'dark' ? 'dark' : 'light'} className="absolute left-4 top-3 overflow-hidden rounded-full">
+      <View testID="geofence-editor-title-row" className="absolute justify-center" pointerEvents="box-none" style={{ top: insets.top, left: EDITOR_PILL_LEFT, height: HEADER_BAR_HEIGHT }}>
+      <BlurView testID="geofence-editor-title-blur" intensity={48} blurMethod="dimezisBlurViewSdk31Plus" tint={theme === 'dark' ? 'dark' : 'light'} className="self-start overflow-hidden rounded-full">
         <Text testID="geofence-editor-title" accessibilityRole="header" className="bg-glass-surface-strong px-4 py-2.5 text-base font-extrabold text-foreground">{t('geofenceEditor.title')}</Text>
       </BlurView>
+      </View>
       {readOnly ? null : <BlurView testID="geofence-editor-map-hint-blur" intensity={48} blurMethod="dimezisBlurViewSdk31Plus" tint={theme === 'dark' ? 'dark' : 'light'} className="absolute bottom-9 self-center overflow-hidden rounded-full">
         <Text testID="geofence-editor-map-hint" className="bg-glass-surface-strong px-3 py-1.5 text-xs font-bold text-foreground">{t('geofenceEditor.mapHint')}</Text>
       </BlurView>}
@@ -205,5 +213,5 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
       {error ? <Text testID="geofence-editor-error" selectable className="text-danger">{error}</Text> : null}
       </>}
     </ScrollView>
-  </KeyboardAvoidingView>;
+  </KeyboardAvoidingView></>;
 }
