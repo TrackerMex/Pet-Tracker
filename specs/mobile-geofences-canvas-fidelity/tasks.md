@@ -202,6 +202,10 @@ de tocar y registra base + delta en `progress/impl_mobile-geofences-canvas-fidel
 - [ ] (2) Implementación mínima: `style={atLimit ? KEEP_OPACITY : [chunkyLip.primary, KEEP_OPACITY]}`.
 - [ ] (3) Refactor.
 
+## Aclaración del leader (2026-10-22, sin cambio de R): sonda P-E4-8, tercera subsonda
+
+La fila P-E4-8 de requirements §4.4 atribuye el rojo de `paddingLeft: 50` literal al barrido de fuente de R23.2, pero ese barrido (R23.2 y el test) recoge solo los literales `42`, `70` y `56`; el `50` nunca podía ponerlo en rojo ahí (medido: 28/28 verde). El `50` lo cubre el cableado (F: `paddingLeft` = `ZONES_TITLE_OFFSET`). Se ejecutan dos mutaciones en lugar de una, sin cambiar ninguna aserción ni R: (i) `paddingLeft: 42` literal en Zonas → rojo en el barrido de fuente (C, `#189 R23.2: … no repite los literales`); (ii) `paddingLeft: 50` literal en Zonas → rojo en el cableado (F, R1.2 ES/EN). Ambas se restauran tras la sonda y se registran.
+
 ## R21 — Zonas, cabecera transparente
 
 - [ ] (1) Rojo: (L) `layout.test.tsx` con `headerStyle` transparente y `headerTransparent: true`; (F) `paddingTop: 46`, sin `contentInsetAdjustmentBehavior`, `h-11 flex-row items-center gap-2` y `paddingLeft` = `ZONES_TITLE_OFFSET`.
