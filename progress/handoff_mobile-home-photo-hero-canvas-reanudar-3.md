@@ -1,0 +1,50 @@
+Worktree: /home/claude/sites/Pet-Tracker-wt-195
+NO lances ./init.sh aunque AGENTS.md lo pida: lo corre el leader (comparte LocalStack y Postgres con otros worktrees).
+Primer comando, antes de nada: `cd /home/claude/sites/Pet-Tracker-wt-195 && pwd && git branch --show-current`. Confirma en el reporte que la salida es esa ruta y la branch `feature/195-mobile-home-photo-hero-canvas`.
+
+Este es el ADENDO Nº 3 de reanudación. Siguen vigentes `progress/handoff_mobile-home-photo-hero-canvas.md` (reglas críticas, sondas, cuentas de cierre, H0 = `ab33dfd1`), `progress/handoff_mobile-home-photo-hero-canvas-reanudar.md` y `progress/handoff_mobile-home-photo-hero-canvas-reanudar-2.md`, salvo lo que este fichero sustituye. Léelos los cuatro enteros antes de tocar nada.
+
+Estado
+- HEAD de este adendo: `ebc372d0` (los commits del adendo y de `progress/current.md` van encima y solo tocan `progress/`). R13, R4, R1, R2, R3, R5, R7, R8 y R6 están hechos y validados. De R14 existen solo los commits **rojos** `42f108dd` y `25d5f984` (HERO, HEROMOT y HOME con las enmiendas de A1). **No hay commit verde de R14** y la candidata de producción está retirada: `src/components/pet-hero-header.tsx` está como lo dejó R6.
+- El humano firmó la **Enmienda A2** el 2026-10-22 desde Notion; la firma es el commit `ebc372d0`. Qué cambia: [[requirements]] §Candados de visibilidad y de forma de style gana la **fila 12**; [[design]] gana H2; [[tasks]] R14 gana el paso (1b), la mutación (f) y las cuentas 6 y 6; [[traceability]] cambia las filas de R2 y R14. Lee la fila 12, H2 y el bloque R14 de tasks.md (incluidos (1b) y la tabla de mutaciones) **antes** de seguir. Todo lo demás de la spec sigue como en el adendo 2.
+- Causa de tu segunda parada, ya diagnosticada y verificada por el leader: R14 dice «WHEN el hero se monta» sin condición de mascota, así que las entradas del slot y del pie arrancan dos `withTiming` de 400 ms también con `pet=null`. El `it` anterior de R2 `funde al llegar la mascota y al cambiar su id, sin repetir por nombre` monta `<PetHeroHeader pet={null} />` y afirma `expect(mockWithTiming).not.toHaveBeenCalled()` sobre el montaje, sin `mockClear()` previo. No hay forma de medir «después» de ese montaje, así que la aserción se filtra por duración.
+
+Lo que cambia respecto al adendo 2
+1. Paso (1b), antes del verde. En `src/components/__tests__/pet-hero-header.test.tsx`, `it('funde al llegar la mascota y al cambiar su id, sin repetir por nombre', …)` (línea 629 en `ebc372d0`):
+   - La primera aserción de contador, la de la línea 631 que sigue a `renderHero(<PetHeroHeader pet={null} />)`, pasa a exactamente `expect(mockWithTiming.mock.calls.filter((call) => call[1]?.duration === 500)).toHaveLength(0);`. El `500` es un literal del test: **no lo importes de producción** (`MOTION_HERO_FADE_MS`), porque sería tautológico.
+   - El título gana el sufijo ` (enmendado por #195 R14)` a continuación de lo que ya lleve.
+   - **No toques ninguna otra línea del `it`.** En particular las aserciones de las líneas 637 (`toHaveBeenCalledTimes(1)`) y 641 (`not.toHaveBeenCalled()`), que corren tras `mockClear()` y un `rerender`, **no** se filtran ni se amplían. Esas dos líneas no se han ejecutado nunca (el `it` abortaba en la 631): si tras el verde alguna se pone roja, es una regresión de la implementación (un efecto de entrada que se re-ejecuta al cambiar `pet`). Arregla el componente, anota la medida en el reporte y no cambies la aserción.
+   - Va en un commit `test(mobile): … (R14)` aparte, antes del verde (el commit rojo de R14 ya existe sin la enmienda). Nace **verde** (sin la candidata, con `pet=null` nada llama a `withTiming` con 500): anótalo en el reporte, no es un fallo. Su valor lo demuestra la mutación (f).
+2. Mutación nueva (f) de R14, con el verde hecho: haz que el fundido de la foto arranque también con `pet === null` (quita la guarda de `pet` de modo que `photoOpacity.set(withTiming(1, { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_HERO_FADE_MS }))` corra al montar sin mascota). Ese `it` de R2 debe ponerse rojo en la aserción filtrada. **Si no se pone rojo, PARA y avisa**: el filtro estaría ciego. Revierte y anota el nombre del `it` que se puso rojo. Las mutaciones a-e siguen como en el adendo 2 y la (e) sigue siendo la sonda de H1.
+3. Cuentas nuevas, medidas por el leader en `ebc372d0` desde `mobile-pet-tracker/` (si alguna no coincide, anota la deriva y avisa antes de seguir):
+   - `grep -c "toBeVisible" src/components/__tests__/pet-hero-header.test.tsx src/screens/home/index.test.tsx` devuelve 5 y 73.
+   - `grep -c "toBeOnTheScreen" src/components/__tests__/pet-hero-header.test.tsx src/screens/home/index.test.tsx` devuelve 5 y 8.
+   - `grep -c "enmendado por #195 R14" src/components/__tests__/pet-hero-header.test.tsx src/screens/home/index.test.tsx` devuelve 5 y 6. **Tras el paso (1b) devuelve 6 y 6.**
+   - `grep -c "enmendado por #195 R16" src/components/__tests__/pet-hero-header.test.tsx src/screens/home/index.test.tsx` devuelve 0 y 0 (R16 aún no está hecho).
+   - `grep -c "duration === 500" src/components/__tests__/pet-hero-header.test.tsx` devuelve 0. **Tras el paso (1b) devuelve 1.**
+   - `grep -c "StyleSheet" src/screens/home/index.test.tsx` devuelve 0 y debe seguir en 0.
+   - `test -e src/components/__tests__/pet-hero-header-motion.test.tsx` existe (HEROMOT); `test -e src/screens/home/bubble-pop.test.tsx` no existe (BP llega con R16).
+   - `grep -c "withDelay\|slotProgress\|captionProgress" src/components/pet-hero-header.tsx` devuelve 0 (producción sin la candidata).
+4. Candidata de producción. Tu diff de la candidata está en `progress/impl_mobile-home-photo-hero-canvas.md` (sección «PARADA — contador global anterior de R2…», bloque «Diff exacto de la candidata»). Puedes reaplicarlo, ajustando lo que haga falta; lo que manda es R14 de requirements.md. Ya se midió contra HERO, HEROMOT y HOME: salvo el `it` de R2 de arriba, todo pasó (HEROMOT con valores intermedios a los 64 ms y finales a 416, 496 y 516 ms; sin plan B y sin subir el margen a 32 ms). No repitas esas mediciones: confirma con una corrida de HERO, HEROMOT y HOME tras el verde y anota la línea `Tests:`.
+
+Orden dentro de R14
+(a) commit `test(mobile): … (R14)` con el paso (1b); (b) anota las dos cosas que nacen verdes (las enmiendas que solo cambian `toBeVisible` por `toBeOnTheScreen()` y el `it` de R2); (c) commit verde `feat(mobile): … (R14)`; (d) corrida de HERO + HEROMOT + HOME y anota las líneas 637 y 641 del `it` de R2 (pasan o no); (e) mutaciones a-f, cada una vista en rojo y revertida; (f) refactor si hace falta. Después sigue el orden del adendo 2: R9, R11 (solo `GlassCircle` y su test GC), R10, R11 (resto: botón «+» en Inicio), R12, R15, R16, R17, R18, R19, R20 y el Cierre. R21 es del humano.
+
+Reglas que no cambian (las del adendo 2)
+- Regla de visibilidad: `toBeOnTheScreen()` sobre `pet-hero-slot`, `pet-hero-caption`, `pet-hero-photo` (si el hero se monta con mascota), `home-pingo-bubble` y todos sus descendientes con reduce motion apagado; nunca `toBeVisible` ahí. Fuera de esos nodos `toBeVisible` no se relaja nunca.
+- La cadena `StyleSheet` no aparece en `src/screens/home/index.test.tsx` (ni en código, ni en títulos, ni en comentarios).
+- Comentarios y títulos nuevos: solo la forma `#195 R<n>`, nunca `#195` desnudo.
+- Skills con los nombres del catálogo de Codex: `building-native-ui`, `appllama-app-design-skill` y `animate-expo` de `.agents/skills/`; `expo-overview`, `expo-animation`, `expo-router` y `expo-design-system` NO existen en Codex, no las busques. En el reporte lista cuáles cargaste y cuáles no encontraste. Esperas: `docs/conventions.md` §Esperas (tasks.md dice «leader.md §Esperas»: la sección vive en conventions.md).
+- Lista cerrada de ficheros: la del adendo 2 (incluye HEROMOT). Cualquier otro fichero fuera de la lista: PARA y avisa.
+- Rojo con commit propio antes de la producción, un commit por paso con el R-id, `Tests:` tras cada commit, `git commit --only <rutas>` (nunca `-am`), `await` en `fireEvent`, `act` y `render` (RNTL 14), jest posicional con paréntesis escapados, `test ! -e .expo/types/router.d.ts` antes de `tsc`, lint con `--no-cache > log 2>&1 && test ! -s log`, sin prettier en móvil, `bun`/`bunx`.
+
+Cuándo PARAR (deja el diff medido y la lista de `it` afectados en el reporte y no crees `.done`)
+- Las de siempre del adendo 2 (un `it` anterior fuera de la tabla se pone rojo; la mutación (e) no se pone roja; habría que cambiar un valor final o relajar una aserción fuera de los nodos animados; `pet-hero-media` falla `toBeVisible` en HOME; fichero fuera de la lista).
+- **Nuevas:** la mutación (f) no se pone roja; o, tras el verde de R14, **otro** `it` anterior distinto del de R2 se pone rojo. Las líneas 637 y 641 del `it` de R2 **no** cuentan como «otro `it`»: son parte del mismo `it` y se arreglan en el componente (ver paso 1).
+
+Reporte y cierre
+- Sigue en `progress/impl_mobile-home-photo-hero-canvas.md`: añade, no reescribas. Añade una sección «Reanudación con Enmienda A2 — 2026-10-22» con el paso (1b), las líneas `Tests:` y los nombres de los `it` que se pusieron rojos en las mutaciones. Al terminar R1 a R20, quita la línea «Estado: PARADO …» y sustituye el bloque «Bloqueo obligatorio» por un resumen de cómo se resolvió (las tres sondas de A1 y las enmiendas A1 y A2 como solución).
+- Cierre completo del handoff original: `bun run test` completo, typecheck, lint con log, `graphify update .`, re-medir las cuentas base + delta (con las filas nuevas de tasks.md: sufijos 6 y 6, 12 enmiendas de R14), lista de ficheros desde H0 contra la lista cerrada.
+- Commit final `docs(home): …` con `traceability.md` y el reporte. En la tabla de trazabilidad, R14 y R16 llevan HEROMOT y BP además de HERO y HOME.
+- Crea `progress/impl_mobile-home-photo-hero-canvas.done` (una línea con la ruta del reporte) SOLO cuando R1 a R20 estén en verde y el cierre completo hecho. Si paras a medias, no lo crees.
+- Sigue sin ser tuyo: progress/current.md, history.md, STATUS.md, el campo `status` de feature_list.json, la PR y R21.
