@@ -77,6 +77,7 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/alert-detail/index.tsx', // #180 R3
       'screens/alerts/index.tsx', // #174 R4, R6
       'screens/docs/index.tsx', // #175 R8
+      'screens/edit-profile/index.tsx', // #194 R5
       'screens/forgot/index.tsx',
       'screens/geofences/index.tsx', // #189 R6
       'screens/login/index.tsx',

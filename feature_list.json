@@ -3435,5 +3435,12 @@
     "status": "done",
     "priority": "P2",
     "description": "Registrada el 2026-10-18 por la respuesta del humano a la pregunta de la guarda en §5 de la spec de #181. Inicio y Perfil llaman a refetchDetail() dentro de useFocusEffect, y Recordatorios a refetchReminders(), también con selectedPetId === null. TanStack Query v5 ejecuta el queryFn en refetch() aunque enabled sea false (medido en query-core 5.102.8: 0 llamadas al suscribirse, 1 tras refetch). Una cuenta recién creada envía GET /pets/null. #181 (R3 a R5) oculta la tarjeta de error pero no esa petición. Alcance: no hacer el refetch al enfocar sin mascota seleccionada (selectedPetId !== null) en las tres pantallas; no toca las ramas de la tarjeta de #181. Va después de #181. Registrada sin spec; no se arranca."
+  },
+  {
+    "id": 194,
+    "name": "mobile-edit-profile",
+    "status": "done",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-19 a petición del humano al aprobar la spec de #186 («agrega editar perfil en una nueva feature»). Pantalla de edición de perfil en la app móvil. Premisas medidas en el árbol: profile/index.tsx solo muestra datos y no existe pantalla de edición; el backend ya expone PATCH /v1/me con UpdateProfileSchema (backend-pet-tracker/src/modules/users/application/dto/update-profile.dto.ts: firstName y lastName trim 1..120, phone trim 7..20, country del catálogo, timezone IANA; todos opcionales, body vacío es no-op); src/api/users.ts del móvil solo tiene getMe, así que falta el cliente del PATCH. Alcance: pantalla y ruta de edición accesible desde Perfil, cliente updateMe, validación en cliente con las reglas del DTO (reusar src/utils/account-rules.ts para nombre, teléfono y país si encajan) y mensaje por campo con FieldErrorMessage de #186, refresco del perfil tras guardar, copy en es/en. Depende de #186 mergeada (FieldErrorMessage y form-rules.ts); la spec decide si timezone se edita o se deja automática, y los campos editables. Choca en ficheros con #184 (tests de Perfil) y puede tocar el lienzo de Perfil: medir con ambas en main. Rutas del móvil relativas a mobile-pet-tracker/. Los guards de la carta (design-drift, legibility-classnames, ui-copy-table) cuentan toda clase y fila nueva. Smoke humano en dev build de Android. Registrada sin spec; no se arranca."
   }
 ]

@@ -19,6 +19,7 @@ import {
   R14_GEOFENCES,
   R15_GEOFENCE_EDITOR,
   R16_WELCOME,
+  R17_EDIT_PROFILE,
   type UseRow,
 } from './ui-copy-table';
 
@@ -493,7 +494,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
     checkUses(ALL_USES);
   });
 
-  it('no deja ningún valor fijo del catálogo como literal entero en las pantallas', () => {
+  it('#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas', () => {
     expect(SCREEN_FILES).toHaveLength(
       19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1 // #100 R10, #41 R10, #146 R10, #105 R5
         + 1 - 1 // #117 R10: sale app/(auth)/forgot.tsx, entra screens/forgot/index.tsx
@@ -505,6 +506,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
         + 1 // #185 R2: screens/docs-upload-form/index.tsx
         + 1 // #186 R2: utils/form-rules.ts
         + 1 // #190 R13: screens/home/pingo-phrase.ts (enmendado por #190 R13)
+        + 1 // #194 R5: screens/edit-profile/index.tsx
     );
 
     for (const file of SCREEN_FILES) {
@@ -536,5 +538,13 @@ describe('#147 R9: el copy del horario editable queda registrado', () => {
     expect(rows.map(({ key }) => key)).toEqual(keys);
     expect(rows.every(({ file }) => file === 'src/screens/meal-schedule/index.tsx')).toBe(true);
     checkUses(rows);
+  });
+});
+
+
+describe('#194 R5: la pantalla de edición resuelve su copy por clave', () => {
+  it('#194 R6: resolves the editor copy', () => {
+    expect(R17_EDIT_PROFILE).toHaveLength(6 + 1 + 3 + 1);
+    checkUses(R17_EDIT_PROFILE);
   });
 });

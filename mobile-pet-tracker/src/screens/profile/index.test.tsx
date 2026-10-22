@@ -589,10 +589,10 @@ describe('#173 R11: cuenta en Card flat con Switch e idioma', () => {
     children: string[];
   }>([
     { name: 'pendiente', state: undefined, children: ['me-card-skeleton', 'theme-row', 'language-toggle'] },
-    { name: 'ok', state: account, children: ['me-identity', 'theme-row', 'language-toggle'] },
+    { name: 'ok', state: account, children: ['me-identity', 'edit-profile-link', 'theme-row', 'language-toggle'] }, // #194 R9
     { name: 'error', state: { kind: 'error' }, children: ['me-card-state', 'theme-row', 'language-toggle'] },
     { name: 'unauthorized', state: { kind: 'unauthorized' }, children: ['theme-row', 'language-toggle'] },
-  ])('ordena los hijos de la cuenta $name sin etiqueta de sección', async ({ state, children }) => {
+  ])('#194 R9: orders the account children for $name without a section label', async ({ state, children }) => {
     if (state !== undefined) mockGetMe.mockResolvedValue(state);
     await renderProfile();
     const card = screen.getByTestId('me-card');
@@ -2130,5 +2130,53 @@ describe('#184 R2: handleChangePhoto ignora toques mientras hay uno en curso', (
     await fireEvent.press(screen.getByTestId('change-photo'));
 
     expect(mockLaunchImageLibrary).toHaveBeenCalledTimes(2);
+  });
+});
+
+
+describe('#194 R9: profile links to the editor and observes saved changes', () => {
+  const account: MeState = { kind: 'ok', me: {
+    id: 'user-1', email: 'ada@example.test', firstName: 'Ada', lastName: 'Lovelace',
+    phone: '+525500000000', country: 'MX', timezone: 'America/Mexico_City',
+    createdAt: '2026-08-20T00:00:00.000Z', updatedAt: '2026-08-21T00:00:00.000Z',
+  } };
+  beforeEach(setupProfile168);
+
+  it('#194 R9: opens the editor from the account row', async () => {
+    mockGetMe.mockResolvedValue(account);
+    await renderProfile();
+    await screen.findByTestId('me-identity');
+    await fireEvent.press(screen.getByTestId('language-toggle'));
+    const link = await screen.findByTestId('edit-profile-link');
+    expect(await within(link).findByText('Edit profile')).toBeVisible();
+    expect(link).toHaveProp('accessibilityRole', 'button');
+    await fireEvent.press(link);
+    expect(mockRouter.push).toHaveBeenCalledTimes(1);
+    expect(mockRouter.push).toHaveBeenCalledWith('/edit-profile');
+  });
+
+  it('#194 R9: hides editing while the account is pending or unavailable', async () => {
+    for (const kind of ['pending', 'error', 'unauthorized'] as const) {
+      if (kind === 'pending') mockGetMe.mockReturnValue(pending<MeState>());
+      else mockGetMe.mockResolvedValue({ kind });
+      const app = await renderProfile();
+      if (kind === 'pending') await screen.findByTestId('me-card-skeleton');
+      else if (kind === 'error') await screen.findByTestId('me-card-state');
+      else await waitFor(() => expect(screen.getByTestId('me-card').children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['theme-row', 'language-toggle']));
+      expect(screen.queryByTestId('edit-profile-link')).toBeNull();
+      await app.unmount();
+    }
+  });
+
+  it('#194 R9: shows cache updates without another profile request', async () => {
+    const { queryClient } = await renderProfile();
+    await act(() => queryClient.setQueryData(userKeys.me(), account));
+    expect(within(await screen.findByTestId('me-identity-text')).getByText('Ada Lovelace')).toBeVisible();
+    const requests = mockGetMe.mock.calls.length;
+    const updated = { ...account.me, firstName: 'Grace', lastName: 'Hopper' };
+    await act(() => queryClient.setQueryData(userKeys.me(), { kind: 'ok', me: updated }));
+    await waitFor(() => expect(within(screen.getByTestId('me-identity-text')).getByText('Grace Hopper')).toBeVisible());
+    expect(within(screen.getByTestId('me-identity-text')).queryByText('Ada Lovelace')).toBeNull();
+    expect(mockGetMe).toHaveBeenCalledTimes(requests);
   });
 });

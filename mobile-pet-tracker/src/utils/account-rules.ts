@@ -39,6 +39,18 @@ export function validateRegister(values: RegisterValues): FieldIssues<keyof Regi
     ...validateForgot(values),
     ...validateResetPassword(values),
   };
+  return { ...issues, ...validateProfile(values) };
+}
+
+export type ProfileValues = {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  country: string;
+};
+
+export function validateProfile(values: ProfileValues): FieldIssues<keyof ProfileValues> {
+  const issues: FieldIssues<keyof ProfileValues> = {};
   if (values.firstName.trim().length < 1) issues.firstName = firstNameRequired;
   else if (values.firstName.trim().length > 120) issues.firstName = tooLong(120);
   if (values.lastName.trim().length < 1) issues.lastName = lastNameRequired;

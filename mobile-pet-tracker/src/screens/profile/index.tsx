@@ -475,6 +475,16 @@ export function ProfileScreen() {
             {t('profile.accountUnavailable')}
           </Text>
         ) : null}
+        {me.data?.kind === 'ok' ? (
+          <Pressable
+            testID="edit-profile-link"
+            accessibilityRole="button"
+            className="flex-row items-center justify-between gap-4 border-t border-separator py-2.5"
+            onPress={() => router.push('/edit-profile' as Href)}
+          >
+            <Text className="text-sm font-semibold text-foreground">{t('profile.editProfile')}</Text>
+          </Pressable>
+        ) : null}
         <View testID="theme-row" className="flex-row items-center justify-between gap-4 border-t border-separator py-2.5">
           <Text className="text-sm font-semibold text-foreground">{useDarkThemeLabel}</Text>
           <Switch

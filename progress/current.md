@@ -28,3 +28,10 @@
   smoke §6 pasos 6-10 del humano -> cierre (done + PR).
 
 > Al cerrar la sesion, mueve este contenido a progress/history.md y deja solo la plantilla.
+
+## Fallback al `implementer` — merge de origin/main (2026-10-22)
+
+`git merge origin/main` dejó 3 ficheros de test con conflicto textual
+(`chunky-cta-canvas-fidelity.test.ts`, `layout.test.tsx`, `language-provider.test.tsx`).
+Los resuelve el subagente `implementer` (fallback, Codex no aplica a un merge);
+no se relaja ningún candado. Informe: `progress/merge_main_mobile-geofences-canvas-fidelity.md`.
