@@ -78,3 +78,48 @@ describe('#195 R17: contraste WCAG contra la peor foto', () => {
     });
   });
 });
+
+describe('#195 R19: grep-clean y cuentas conservadas', () => {
+  const files = [
+    'src/components/pet-hero-header.tsx',
+    'src/components/pet-switcher.tsx',
+    'src/components/pet-avatar.tsx',
+    'src/components/ping-ring.tsx',
+    'src/components/glass-circle.tsx',
+    'src/screens/home/index.tsx',
+    'src/screens/home/bubble-pop.tsx',
+  ];
+  const code = (source: string) => source.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, '');
+
+  it.each(files)('%s conserva tokens y primitivas permitidas', (file) => {
+    const source = code(read(file));
+    expect(source).not.toMatch(/#[\da-f]{3,8}\b/i);
+    expect(source).not.toMatch(/[A-Za-z0-9_-]+-\[[^\]]+\]/);
+    expect(source).not.toMatch(/StyleSheet\.create|shadowColor|shadowOffset|shadowOpacity|shadowRadius|\belevation\s*:/);
+    expect(source).not.toMatch(/\bshadow-(?:sm|md|lg|xl|2xl)\b/);
+    expect(source).not.toMatch(/\p{Extended_Pictographic}/u);
+    expect(source).not.toMatch(/\bBlurView\b/);
+    if (file.endsWith('pet-hero-header.tsx')) expect(source).not.toMatch(/\btransparent\b/);
+  });
+
+  it.each([
+    ['src/components/pet-hero-header.tsx', 'style={CONTINUOUS_CORNER}', 1],
+    ['src/screens/home/index.tsx', 'style={CONTINUOUS_CORNER}', 1],
+    ['src/components/pet-hero-header.tsx', 'TABULAR_NUMS', 2],
+    ['src/screens/home/index.tsx', 'TABULAR_NUMS', 9],
+    ['src/components/pet-hero-header.tsx', 'text-accent-strong', 1],
+    ['src/screens/home/index.tsx', 'text-accent-strong', 2],
+    ['src/screens/home/index.tsx', 'bg-accent-soft', 3],
+    ['src/components/pet-switcher.tsx', 'bg-accent-soft', 1],
+    ['src/components/pet-switcher.tsx', 'shadow-', 0],
+    ['src/screens/home/index.tsx', "t('profile.addPet'", 1],
+    ['src/screens/home/index.tsx', 'testID="home-alerts-bell"', 1],
+  ] as const)('%s conserva %s en %s líneas', (file, literal, count) => {
+    expect(read(file).split('\n').filter((line) => line.includes(literal))).toHaveLength(count);
+  });
+
+  it('mantiene cuatro tiempos propios y ocho declaraciones de tokens nuevos', () => {
+    expect(read('src/theme/motion.ts').match(/^export const MOTION_HERO_/gm)).toHaveLength(4);
+    expect(read('src/theme/global.css').match(/--(?:color-)?(?:scrim|photo-dim):/g)).toHaveLength(8);
+  });
+});
