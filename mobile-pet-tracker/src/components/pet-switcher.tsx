@@ -9,7 +9,8 @@ interface PetSwitcherProps {
   pets: PetProfile[];
   selectedPetId: string | null;
   onSelect: (petId: string) => void;
-  variant?: 'default' | 'avatars';
+  variant?: 'default' | 'avatars' | 'glass';
+  selectedOnline?: boolean;
 }
 
 export function PetSwitcher({
@@ -17,6 +18,7 @@ export function PetSwitcher({
   selectedPetId,
   onSelect,
   variant = 'default',
+  selectedOnline,
 }: PetSwitcherProps) {
   if (variant === 'avatars') {
     return (
@@ -63,6 +65,36 @@ export function PetSwitcher({
       <View className="flex-row gap-2">
         {pets.map((pet) => {
           const selected = pet.id === selectedPetId;
+
+          if (variant === 'glass' && selected) {
+            return (
+              <Pressable
+                key={pet.id}
+                testID={`pet-chip-${pet.id}`}
+                accessibilityLabel={pet.name}
+                accessibilityRole="button"
+                accessibilityState={{ selected: true }}
+                className="size-11 rounded-full border-2 border-accent bg-background p-0.5"
+                onPress={() => onSelect(pet.id)}
+              >
+                <View className="size-9 overflow-hidden rounded-full">
+                  <PetAvatar
+                    name={pet.name}
+                    photoUrl={pet.photoUrl}
+                    cacheKey={pet.id}
+                    size={36}
+                    testID={`pet-avatar-${pet.photoUrl ? 'image' : 'fallback'}-${pet.id}`}
+                  />
+                </View>
+                {selectedOnline ? (
+                  <View
+                    testID={`pet-chip-online-${pet.id}`}
+                    className="absolute -bottom-0.75 -right-0.75 size-3.5 rounded-full border-2 border-background bg-accent"
+                  />
+                ) : null}
+              </Pressable>
+            );
+          }
 
           return (
             <Pressable
