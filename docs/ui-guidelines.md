@@ -128,10 +128,12 @@ Tres límites, no negociables:
    `contentContainerStyle` es `padding: 24`, `gap: 16` y `paddingBottom:
    insets.bottom + 24`, la misma holgura inferior que `(auth)` y
    `reset-password`.
+   `pets/[petId]/geofences` queda fuera de esta excepción desde #189 E4 (cabecera transparente, ver más abajo).
 
    **Excepción nombrada (fidelidad al canvas, 2026-10-13)**: una pantalla llevada al canvas aprobado usa padding lateral 20 y el `gap` de su artboard; ver conventions.md §Dimensiones, misma excepción.
-   Zonas seguras (#189): `paddingHorizontal: 20`, `paddingTop: 24`, `gap: 12`, `paddingBottom: insets.bottom + 40`.
+   Zonas seguras (#189): `paddingHorizontal: 20`, `paddingTop: insets.top + 6`, `gap: 12`, `paddingBottom: insets.bottom + 40`.
    Hoja del Editor (#189): `paddingHorizontal: 20`, `paddingTop: 12`, `gap: 14`, `paddingBottom: insets.bottom + 36`.
+   Cabecera nativa transparente (#189 E4): Zonas seguras y la rama de formulario del Editor usan `headerTransparent: true` con `headerStyle: { backgroundColor: 'transparent' }`; el contenido empieza bajo la cabecera, el título comparte fila con la flecha, el `paddingTop` suma `insets.top` y no se usa `contentInsetAdjustmentBehavior`. Las ramas de estado del Editor conservan la cabecera opaca.
 7. **Estados de carga**: Skeleton de heroui dimensionado como el contenido
    final. Prohibido Spinner suelto que salte el layout.
 8. **Estructura**: route delgado en `src/app/` + pantalla en `src/screens/`
@@ -225,6 +227,7 @@ Tres límites, no negociables:
       `text-17 font-extrabold text-muted`, sin labio; la aplican #189: Añadir zona en el límite y Guardar con nombre vacío.
     El tamaño 17 se pinta con `Text` plano de React Native por la regla de la
     Enmienda #187; no se pasa `text-17` a `Button.Label`.
+    El bloqueo (`isDisabled`) no atenúa: en #189 los `Switch` y `Button` de heroui cancelan el 50 % de `disabled:element-disabled` con `KEEP_OPACITY`, y la receta gris del límite no lleva opacidad.
     - **Chip seleccionado** (fidelidad al canvas, #178): cápsula `rounded-full bg-accent border-b-3 border-black/25`; el chip sin seleccionar no lleva labio.
     - **Secundarios de Horario** (fidelidad al canvas, #179): «Editar» `h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface` y «Añadir comida» `h-13.5 rounded-14 border-2 border-b-6 border-lip-gray bg-surface`, con el labio dentro del alto; «Generar plan» es tonal de la categoría violeta y sin labio, porque el labio del artboard (`rgba(91,63,163,0.35)`) no tiene token.
     - **Sin labio**: los tonales (`bg-accent-soft`, `bg-default`), los
@@ -832,7 +835,7 @@ Detalle y tests en `specs/mobile-pairing-pingo-canvas-fidelity/requirements.md` 
 
 > Enmienda de `ui-guidelines` por `mobile-geofences-canvas-fidelity` (#189). Directiva del humano: «el diseño final como el artifact». La firma de esta casilla autoriza las ediciones de R16 de `specs/mobile-geofences-canvas-fidelity/requirements.md`; nada más.
 
-- **Métricas por fidelidad al canvas (A11).** Zonas: `paddingHorizontal: 20`, `paddingTop: 24`, `gap: 12`, `paddingBottom: insets.bottom + 40`. Hoja del Editor: `paddingHorizontal: 20`, `paddingTop: 12`, `gap: 14`, `paddingBottom: insets.bottom + 36`.
+- **Métricas por fidelidad al canvas (A11).** Zonas: `paddingHorizontal: 20`, `paddingTop: insets.top + 6`, `gap: 12`, `paddingBottom: insets.bottom + 40`. Hoja del Editor: `paddingHorizontal: 20`, `paddingTop: 12`, `gap: 14`, `paddingBottom: insets.bottom + 36`.
 - **Radios fuera de la escala (regla 12).** `rounded-14` (tile de la zona), `rounded-tile` (aviso de límite), `rounded-t-hero` (hoja del Editor) y `rounded-16` (botones). Las líneas de #175 a #180 no se tocan.
 - **Botón (regla 13).** La receta deshabilitada (`h-14 rounded-16 bg-default`, etiqueta `text-17 font-extrabold text-muted`, sin labio) la aplican «Añadir zona» en el límite y «Guardar» con el nombre vacío. «Eliminar» del Editor sale de «Sin labio»: es secundario neutro con etiqueta `text-base font-extrabold text-danger`, excepción a la etiqueta `text-17 … text-foreground` del neutro. La papelera de la fila de zona es una excepción solo-icono (`size-11 rounded-xl bg-danger-soft`).
 - **Paleta categórica.** `zoneCategory` (orden `green, blue, amber, violet, rose`) es el único reparto categoría → ranura de las zonas; el color es de la posición en la lista, no de la zona.
