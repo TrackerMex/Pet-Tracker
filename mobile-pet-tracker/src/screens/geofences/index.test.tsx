@@ -871,7 +871,7 @@ describe('#189 R7: Añadir zona conserva una sola CTA anclada al pie', () => {
     expect(add.props.accessibilityState.disabled).toBe(count === 5);
     const label = within(add).getByText(language === 'es' ? 'Añadir zona' : 'Add zone');
     expect(label.props.className).toBe(`text-17 font-extrabold ${count === 5 ? 'text-muted' : 'text-accent-foreground'}`);
-    if (count === 5) expect(StyleSheet.flatten(add.props.style)).toEqual({ opacity: 1 });
+    if (count === 5) expect(StyleSheet.flatten(add.props.style)).toEqual({ borderCurve: 'continuous', transform: [{ scale: 1 }], opacity: 1 });
     else expect(add).toHaveStyle({ boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: 'lip' }], opacity: 1 });
     expect(childTestIds(add.parent!).at(-1)).toBe('geofences-add');
     expect(screen.getByTestId('screen-geofences').props.contentContainerStyle.flexGrow).toBe(1);
@@ -917,5 +917,5 @@ it('#189 R20.1: el límite conserva disabled:element-disabled y cancela su opaci
   const add = await screen.findByTestId('geofences-add');
   expect(add.props.className).toContain('disabled:element-disabled');
   expect(add.props.accessibilityState.disabled).toBe(true);
-  expect(StyleSheet.flatten(add.props.style)).toEqual({ opacity: 1 });
+  expect(StyleSheet.flatten(add.props.style)).toEqual({ borderCurve: 'continuous', transform: [{ scale: 1 }], opacity: 1 });
 });
