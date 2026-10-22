@@ -1087,4 +1087,4 @@ Pasos añadidos por E4 (§4.4), mismo dev build Android, claro y oscuro:
 - [X] Enmienda E2 (§4.2) aprobada por humano (fecha: 2026-10-21) ← gate obligatorio antes de reanudar la comprobación previa
 - [X] Enmienda E3 (§4.3) aprobada por humano (fecha: 2026-10-21) ← gate obligatorio antes de reanudar R18
 - [X] Enmienda E4 (§4.4) aprobada por humano (fecha: 2026-10-22) ← gate obligatorio antes de reanudar R23 (y resolver DE4-1..DE4-5)
-- [ ] Enmienda E5 (§4.5) aprobada por humano (fecha: ____) ← gate obligatorio antes de reanudar el verde de R19 y R20 (corrección de la aserción de R20.1)
+- [X] Enmienda E5 (§4.5) aprobada por humano (fecha: 2026-10-22) ← gate obligatorio antes de reanudar el verde de R19 y R20 (corrección de la aserción de R20.1)
