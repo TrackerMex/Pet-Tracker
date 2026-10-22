@@ -862,7 +862,7 @@ describe('#189 R6: aviso ámbar al alcanzar el límite', () => {
 
 
 describe('#189 R7: Añadir zona conserva una sola CTA anclada al pie', () => {
-  it.each([['es', 0], ['es', 4], ['es', 5], ['en', 0], ['en', 4], ['en', 5]] as const)('#189 R7: receta y navegación en %s con %i zonas', async (language, count) => {
+  it.each([['es', 0], ['es', 4], ['es', 5], ['en', 0], ['en', 4], ['en', 5]] as const)('#189 R7: receta y navegación en %s con %i zonas (enmendado por E4 R20)', async (language, count) => {
     mockList.mockResolvedValue({ kind: 'ok', geofences: Array.from({ length: count }, (_, i) => makeGeofence({ id: `zone-${i}` })) });
     await mount(language);
     const add = await screen.findByTestId('geofences-add');
@@ -871,15 +871,15 @@ describe('#189 R7: Añadir zona conserva una sola CTA anclada al pie', () => {
     expect(add.props.accessibilityState.disabled).toBe(count === 5);
     const label = within(add).getByText(language === 'es' ? 'Añadir zona' : 'Add zone');
     expect(label.props.className).toBe(`text-17 font-extrabold ${count === 5 ? 'text-muted' : 'text-accent-foreground'}`);
-    if (count === 5) expect(StyleSheet.flatten(add.props.style)?.boxShadow).toBeUndefined();
-    else expect(add).toHaveStyle({ boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: 'lip' }] });
+    if (count === 5) expect(StyleSheet.flatten(add.props.style)).toEqual({ opacity: 1 });
+    else expect(add).toHaveStyle({ boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: 'lip' }], opacity: 1 });
     expect(childTestIds(add.parent!).at(-1)).toBe('geofences-add');
     expect(screen.getByTestId('screen-geofences').props.contentContainerStyle.flexGrow).toBe(1);
     await fireEvent.press(add);
     if (count === 5) expect(mockPush).not.toHaveBeenCalled();
     else expect(mockPush).toHaveBeenCalledWith({ pathname: '/pets/[petId]/geofence-editor', params: { petId: 'pet-1' } });
   });
-  it('#189 R7: una escritura bloquea la CTA sin cambiar su receta primaria', async () => {
+  it('#189 R7: una escritura conserva la receta primaria sin atenuado (enmendado por E4 R20)', async () => {
     mockList.mockResolvedValue({ kind: 'ok', geofences: [makeGeofence()] });
     mockSetActive.mockReturnValue(new Promise(() => undefined));
     await mount();
@@ -888,7 +888,7 @@ describe('#189 R7: Añadir zona conserva una sola CTA anclada al pie', () => {
     expect(add.props.accessibilityState.disabled).toBe(true);
     expect(add.props.className).toContain('mt-auto h-14 rounded-16 bg-accent');
     expect(within(add).getByText('Añadir zona').props.className).toBe('text-17 font-extrabold text-accent-foreground');
-    expect(add).toHaveStyle({ boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: 'lip' }] });
+    expect(add).toHaveStyle({ boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: 'lip' }], opacity: 1 });
     await fireEvent.press(add);
     expect(mockPush).not.toHaveBeenCalled();
   });
@@ -908,4 +908,14 @@ describe('#189 R19: el bloqueo de los interruptores conserva la opacidad', () =>
       expect(StyleSheet.flatten(node.props.style)?.opacity).toBe(1);
     }
   });
+});
+
+
+it('#189 R20.1: el límite conserva disabled:element-disabled y cancela su opacidad por style', async () => {
+  mockList.mockResolvedValue({ kind: 'ok', geofences: Array.from({ length: 5 }, (_, i) => makeGeofence({ id: `zone-${i}` })) });
+  await mount();
+  const add = await screen.findByTestId('geofences-add');
+  expect(add.props.className).toContain('disabled:element-disabled');
+  expect(add.props.accessibilityState.disabled).toBe(true);
+  expect(StyleSheet.flatten(add.props.style)).toEqual({ opacity: 1 });
 });
