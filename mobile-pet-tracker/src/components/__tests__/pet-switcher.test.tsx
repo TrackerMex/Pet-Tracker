@@ -6,7 +6,7 @@ import {
   within,
 } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
-import { StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, Text } from 'react-native';
 
 import type { PetProfile } from '../../api/types';
 import { PetSwitcher } from '../pet-switcher';
@@ -254,5 +254,43 @@ describe('#195 R9: avatar seleccionado y punto en línea', () => {
     expect(within(other).queryByTestId('pet-chip-online-pet-2')).toBeNull();
     expect(other.children).toHaveLength(1);
     expect(other.props.accessibilityState).toEqual({ selected: false });
+  });
+});
+
+
+describe('#195 R10: fila de vidrio con acción al final', () => {
+  it('conserva orden, cardinalidad, iniciales y selección desde ambos chips', async () => {
+    const onSelect = jest.fn();
+    const pets = [makePet(), makePet({ id: 'pet-2', name: 'milo', photoUrl: 'http://example.test/milo.jpg' })];
+    await render(<HeroUINativeProvider><PetSwitcher pets={pets} selectedPetId="pet-1" onSelect={onSelect} variant="glass" trailing={<Text testID="trailing">+</Text>} /></HeroUINativeProvider>);
+    const first = screen.getByTestId('pet-chip-pet-1');
+    const second = screen.getByTestId('pet-chip-pet-2');
+    const trailing = screen.getByTestId('trailing');
+    const row = first.parent!;
+    expect(row.props.className).toBe('flex-row items-center gap-2 p-1');
+    expect(row.children).toEqual([first, second, trailing]);
+    expect(row.children).toHaveLength(pets.length + 1);
+    const scroll = screen.UNSAFE_getAllByType(ScrollView)[0];
+    expect(scroll.props.horizontal).toBe(true);
+    expect(scroll.props.showsHorizontalScrollIndicator).toBe(false);
+    expect(scroll.props.className).toBe('-m-1');
+    expect(second.props.className).toBe('size-11 items-center justify-center rounded-full bg-glass-surface-strong');
+    expect(second.props.accessibilityLabel).toBe('milo');
+    expect(second.props.accessibilityRole).toBe('button');
+    expect(second.props.accessibilityState).toEqual({ selected: false });
+    const letter = within(second).getByTestId('pet-avatar-fallback-pet-2');
+    expect(second.children).toEqual([letter]);
+    expect(letter).toHaveTextContent('M');
+    expect(letter.props.className).toBe('text-base font-extrabold text-foreground');
+    expect(within(second).queryByTestId('pet-avatar-image-pet-2')).toBeNull();
+    await fireEvent.press(first);
+    await fireEvent.press(second);
+    expect(onSelect.mock.calls).toEqual([['pet-1'], ['pet-2']]);
+  });
+
+  it('sin trailing deja exactamente un hijo por mascota', async () => {
+    await render(<HeroUINativeProvider><PetSwitcher pets={[makePet()]} selectedPetId="pet-1" onSelect={jest.fn()} variant="glass" /></HeroUINativeProvider>);
+    const chip = screen.getByTestId('pet-chip-pet-1');
+    expect(chip.parent!.children).toEqual([chip]);
   });
 });
