@@ -9944,5 +9944,5 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   revisión (ver el informe del reviewer).
 - **Lección:** las premisas de la spec sobre el aspecto de componentes de terceros (HeroUI) se miden
   antes de firmar; y un candado de inventario («delta 0») se cruza contra el `it` real que lo cuenta.
-- **Estado final:** done. Notion: Implementado / Completado. PR pendiente de número; la mergea el
+- **Estado final:** done. Notion: Implementado / Completado. PR #240; la mergea el
   humano y después se borra el worktree `Pet-Tracker-wt-189`.
