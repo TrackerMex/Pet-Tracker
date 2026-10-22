@@ -190,6 +190,12 @@ de tocar y registra base + delta en `progress/impl_mobile-geofences-canvas-fidel
 - [ ] (2) Implementación mínima: `KEEP_OPACITY` + los dos `Switch` + Eliminar + Guardar del Editor.
 - [ ] (3) Refactor.
 
+> **Aclaración del leader (2026-10-22, parada de Codex en R19; sin cambio de ningún R):** el candado (C) de R19.1/R19.2 barre
+> **todas** las etiquetas con `isDisabled=`, y eso incluye `geofences-add` (R20), así que R19 no puede quedar verde antes de R20.
+> Los pasos de R19 y R20 se ejecutan así: (1) commit rojo de R19; (2) commit rojo de R20; (3) **un solo commit verde
+> `feat(mobile): #189 E4 R19 R20 …`** con `KEEP_OPACITY`, los dos `Switch`, Eliminar, Guardar y Añadir zona. Cada R conserva su rojo
+> propio antes del verde (C4); las filas R19 y R20 de `traceability.md` comparten el hash verde.
+
 ## R20 — «Añadir zona»
 
 - [ ] (1) Rojo (F): límite `toEqual({ opacity: 1 })`, `busy` con receta primaria y opacidad 1, clase `disabled:element-disabled` presente; enmendar `#177 R3.1` (fila Añadir), `R7.5`, `R8.1` del lado de Zonas; corregir la frase falsa de R7.2.
