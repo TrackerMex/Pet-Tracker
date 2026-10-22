@@ -341,7 +341,7 @@ export function HomeScreen() {
       className="flex-1 bg-background"
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{
-        gap: 16,
+        gap: 14,
         paddingBottom: insets.bottom + 96,
       }}
     >
