@@ -189,7 +189,7 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
   });
 
-  it('compone el selector y la campana como dos hijos en ese orden (enmendado por #195 R14)', async () => {
+  it('compone el selector y la campana como dos hijos en ese orden (enmendado por #195 R14) (enmendado por #195 R12)', async () => {
     await renderHome();
 
     const actions = await screen.findByTestId('home-hero-actions');
@@ -206,10 +206,10 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
     const bell = within(actions).getByTestId('home-alerts-bell');
     expect(bell.props.accessibilityRole).toBe('button');
     expect(bell.props.className).toBe(
-      'size-11 items-center justify-center rounded-full',
+      'size-11 items-center justify-center rounded-full bg-glass-surface-strong',
     );
     const icon = within(bell).getByTestId('icon-bell');
-    expect(icon.props.size).toBe(24);
+    expect(icon.props.size).toBe(22);
     expect(icon.props.color).toBeDefined();
   });
 
@@ -223,7 +223,7 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
     expect(mockRouter.push).toHaveBeenCalledWith('/alerts');
   });
 
-  it('#121 R1: usa la ruta real sin cast Href y conserva el feedback de pulsado, acotado a su tag de apertura, con ancla única (#122 R1)', () => {
+  it('#121 R1: usa la ruta real sin cast Href y conserva el feedback de pulsado, acotado a su tag de apertura, con ancla única (#122 R1) (enmendado por #195 R12)', () => {
     const source = readFileSync(
       join(process.cwd(), 'src/screens/home/index.tsx'),
       'utf8',
@@ -243,14 +243,12 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
     // #122 R1: the slice assumes one anchor. A second copy (a decoy, the other
     // branch of a ternary, a comment) would be the one sliced.
     expect(source.lastIndexOf('testID="home-alerts-bell"')).toBe(anchor);
-    expect(block).toMatch(
-      /style=\{\(\{ pressed \}\) => \(\{ opacity: pressed \? 0\.8 : 1 \}\)\}/,
-    );
+    expect(block).toMatch(/<GlassCircle\b/);
     // #124 R1: this matches the whole file, so any other copy of the icon lends
     // it the green. The colour itself is locked in the tree by the #124 R1
     // describe below. This line stays for what the tree cannot see: a platform
     // branch, or a CSS variable name written by hand.
-    expect(source).toContain('<Bell size={24} color={muted} />');
+    expect(source).toContain('<Bell size={22} strokeWidth={2} color={foreground} />');
   });
 
   it('#122 R2: la campana baja a opacidad 0.8 mientras se pulsa', async () => {
@@ -267,7 +265,7 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
     expect(bell).toHaveStyle({ opacity: 0.8 });
   });
 
-  describe('#124 R1: el icono de la campana se pinta con la tinta muted', () => {
+  describe('#124 R1: el icono de la campana se pinta con la tinta foreground', () => {
     beforeEach(() => {
       // #124 R1: each CSS variable resolves to its own name, so muted and
       // accent-strong stop being the same fallback colour in the tree.
@@ -280,16 +278,16 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
       jest.restoreAllMocks();
     });
 
-    it('sin alertas abiertas', async () => {
+    it('sin alertas abiertas (enmendado por #195 R12)', async () => {
       await renderHome();
       const bell = await screen.findByTestId('home-alerts-bell');
 
       expect(within(bell).getByTestId('icon-bell').props.color).toBe(
-        '--color-muted',
+        '--color-foreground',
       );
     });
 
-    it('con alertas abiertas', async () => {
+    it('con alertas abiertas (enmendado por #195 R12)', async () => {
       mockListAlerts.mockResolvedValue({
         kind: 'ok',
         items: [makeAlert()],
@@ -301,7 +299,7 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
       await within(bell).findByTestId('home-alerts-dot');
 
       expect(within(bell).getByTestId('icon-bell').props.color).toBe(
-        '--color-muted',
+        '--color-foreground',
       );
     });
   });
@@ -4559,7 +4557,7 @@ describe('#78 R11: el punto rojo sigue a las alertas abiertas', () => {
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
   });
 
-  it('pinta el punto y anuncia alertas sin leer cuando hay abiertas', async () => {
+  it('pinta el punto y anuncia alertas sin leer cuando hay abiertas (enmendado por #195 R12)', async () => {
     mockListAlerts.mockResolvedValue({
       kind: 'ok',
       items: [makeAlert()],
@@ -4571,7 +4569,7 @@ describe('#78 R11: el punto rojo sigue a las alertas abiertas', () => {
     const bell = await screen.findByTestId('home-alerts-bell');
     const dot = await within(bell).findByTestId('home-alerts-dot');
     expect(dot.props.className).toBe(
-      'absolute right-1 top-1 size-2.5 rounded-full bg-danger',
+      'absolute right-2.5 top-2.25 size-2.25 rounded-full border-2 border-background bg-danger',
     );
     expect(dot.children).toHaveLength(0);
     expect(bell.props.accessibilityLabel).toBe(es['home.alertsBellUnread']);
@@ -5827,5 +5825,38 @@ describe('#195 R11: selector de vidrio y botón de añadir mascota', () => {
     await fireEvent.press(screen.getByText(es['profile.addPet']));
     expect(mockRouter.push.mock.calls).toEqual([['/pets/add']]);
     expect(screen.queryByTestId('home-add-pet')).toBeNull();
+  });
+});
+
+
+describe('#195 R12: campana de vidrio e indicador de alertas', () => {
+  beforeEach(() => {
+    setupHomeMotion();
+    jest.spyOn(Uniwind, 'getCSSVariable').mockImplementation((token) => token);
+  });
+  afterEach(() => jest.restoreAllMocks());
+  it.each([false, true])('con alertas abiertas %s mantiene icono, orden y navegación', async (unread) => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: unread ? [makeAlert()] : [], nextCursor: null });
+    await renderHome();
+    await screen.findByTestId('pet-hero-name');
+    const actions = screen.getByTestId('home-hero-actions');
+    const bell = within(actions).getByTestId('home-alerts-bell');
+    expect(actions.props.className).toBe('flex-row items-center gap-3');
+    expect(actions.children).toHaveLength(2);
+    expect(actions.children[1]).toBe(bell);
+    expect(actions.children[0]).toHaveProperty('props.className', 'flex-1');
+    expect(bell.props.className).toBe('size-11 items-center justify-center rounded-full bg-glass-surface-strong');
+    expect(bell.props.accessibilityLabel).toBe(es[unread ? 'home.alertsBellUnread' : 'home.alertsBell']);
+    const icon = within(bell).getByTestId('icon-bell');
+    expect(icon.props.size).toBe(22);
+    expect(icon.props.strokeWidth).toBe(2);
+    expect(icon.props.color).toBe('--color-foreground');
+    if (unread) {
+      const dot = await within(bell).findByTestId('home-alerts-dot');
+      expect(dot.props.className).toBe('absolute right-2.5 top-2.25 size-2.25 rounded-full border-2 border-background bg-danger');
+      expect(bell.children).toEqual([icon, dot]);
+    } else expect(bell.children).toEqual([icon]);
+    await fireEvent.press(bell);
+    expect(mockRouter.push.mock.calls).toEqual([['/alerts']]);
   });
 });
