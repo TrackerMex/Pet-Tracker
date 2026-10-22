@@ -249,3 +249,32 @@ requirements §4.5. Mismas reglas de commits y esperas que E4; sin `./init.sh`.
 
 - [ ] Los dos commits de corrección van **antes** del verde conjunto `feat(mobile): #189 E4 R19 R20 …`.
 - [ ] Tras el verde, replantar P-E4-4 (`style={chunkyLip.primary}` en el límite): el `toEqual` corregido debe ponerse rojo por la clave `boxShadow`; registrar la salida en el informe.
+
+## Enmienda E6 (§4.6): no empieces sin la casilla E6 firmada
+
+Solo cambian dos literales de un test de fuente; producción y orden de E4 no cambian. Lista cerrada:
+`src/__tests__/consistency-classnames.test.ts` (desde `mobile-pet-tracker/`), solo el `it` «#189 R9: la hoja
+del Editor combina esquina continua y flex sin perderlos». Mismas reglas de commits y esperas que E4; sin
+`./init.sh`. **Cada línea va en un commit distinto y ninguna comparte commit con producción (C4).**
+
+## H0-E6 — Barrido M20
+
+- [ ] Ejecutar los dos `grep` de M20 de requirements §4.6, clasificar cada línea nueva y pegar el resultado en `progress/impl_mobile-geofences-canvas-fidelity.md`. Cualquier línea no clasificada que fije un literal que E4 cambie: PARA y reporta (no se enmienda en el verde).
+
+## R19 rojo-corrección (E6) — import de `KEEP_OPACITY`
+
+- [ ] (1) Rojo: cambiar solo la aserción `toContain` del import del Editor a `import { CONTINUOUS_CORNER, KEEP_OPACITY, TABULAR_NUMS } from '../../theme/native-styles';` y añadir `(enmendado por E4 R19)` al nombre del `it`. Un commit de test: `test(mobile): #189 E6 R19 rojo-corrección — import de KEEP_OPACITY en el candado de la hoja del Editor`. Va **antes** del verde conjunto `feat(mobile): #189 E4 R19 R20 …` y después de los dos commits de E5.
+- [ ] Demostrar el rojo apartando solo la producción (`git stash push -m "189-E6-wip" -- mobile-pet-tracker/src/screens mobile-pet-tracker/src/theme`), ejecutar el `it` y comprobar que falla por el literal del import; `git stash pop` tras mirar `git stash list`.
+- [ ] (2) Implementación mínima: ninguna propia; el `it` pasa a verde con el verde conjunto de R19 y R20. R19 y R20 conservan su rojo propio (C4).
+
+## R22 rojo (E6) — etiqueta del `KeyboardAvoidingView`
+
+- [ ] (1) Dentro del commit `test(mobile): #189 E4 R22 rojo — …` (no en el verde): cambiar solo la aserción de la etiqueta a `<KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={0}>` y añadir `(enmendado por E4 R22)` al nombre del `it`. Rojo porque la producción conserva `{headerHeight}`.
+- [ ] (2) Implementación mínima (la de R22): etiqueta en una sola línea, atributos `testID`, `className`, `behavior`, `keyboardVerticalOffset` en ese orden, sin otro atributo.
+- [ ] No se tocan las aserciones de `style={[CONTINUOUS_CORNER, { flexGrow: 0, flexShrink: 1 }]}` ni del recuento de `CONTINUOUS_CORNER` (2).
+
+## Cierre E6
+
+- [ ] Volver a ejecutar M20 al cerrar R22 y comparar con el H0-E6.
+- [ ] Sondas P-E6-1..3 plantadas tras el verde y registradas en el informe (la P-E6-3 demuestra que una etiqueta partida en líneas pone el `it` en rojo).
+- [ ] Referencias de geometría fuera de ±8 dp: «enmienda E7» (E5 y E6 ya están usadas).

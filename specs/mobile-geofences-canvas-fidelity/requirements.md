@@ -113,6 +113,12 @@ recuentos caducan al mergear otra feature, así que se **re-miden** al arrancar)
 > **Enmendado por E5 (§4.5, 2026-10-22):** solo la aserción del estilo aplanado de `geofences-add` en el
 > límite y de Guardar vacío (R19.2 (E), R20.1 y su Test (F)); la producción de R19/R20 no cambia. Donde el
 > texto de E4 diga `{ opacity: 1 }` exacto para esos nodos, manda §4.5.
+>
+> **Enmendado por E6 (§4.6, 2026-10-22):** el «delta cero» de `consistency-classnames.test.ts` era falso para un
+> `it` (import del Editor con `KEEP_OPACITY` y `keyboardVerticalOffset={0}`); ese fichero entra en la lista
+> de E4 solo para ese `it`. Toda referencia a «enmienda E5» por geometría fuera de ±8 dp (R23.2, DE4-2) se
+> lee **«enmienda E7»**. Donde el texto de E4 diga que ningún candado fija por texto esas importaciones,
+> manda §4.6.
 
 Convención de etiquetas de test (R-id → fichero), todos desde `src/`:
 
@@ -1030,6 +1036,139 @@ aserciones de la tabla de arriba. **No** hay que tocar `chunky-cta-canvas-fideli
 lista de E4 no cambian. Registro: `progress/impl_mobile-geofences-canvas-fidelity.md` y
 `specs/mobile-geofences-canvas-fidelity/traceability.md`.
 
+### §4.6 Enmienda E6 (2026-10-22): premisa falsa «delta cero» sobre `consistency-classnames` (R19, R22.3)
+
+Base de medida: `31b7a082` (HEAD de la branch al redactar) más el WIP sin commitear de Codex (producción de
+R19/R20 en el árbol: `KEEP_OPACITY` y sus importaciones). Los números de línea caducan: se anclan por
+contenido y se re-miden en el H0 de la enmienda.
+
+**Origen.** En el verde conjunto de R19 y R20, la ejecución de `consistency-classnames.test.ts`
+(`progress/e7-r19-r20-green-consistency-classnames.log`: 1 fallo de 75) puso en rojo un `it` que E4
+declaró «delta cero» y dejó **fuera** de su lista de edición. La premisa estaba en tres sitios de E4: la fila
+«Candados agregados que se mueven» de `consistency-classnames.test.ts` (las importaciones de las pantallas
+cambian «que ningún candado fija por texto (los únicos candados de import exacto son los de `history`)»), la
+«Regla de H0-E4» («los tres ficheros de candados agregados … **no** están en la lista de edición … el delta
+esperado es cero») y la «Lista cerrada» («Fuera de la lista: … `consistency-classnames.test.ts`»). Es falsa
+para **un** `it` y **dos** aserciones. **La producción de R19/R20/R22 no cambia**; cambian solo dos
+literales de un test de fuente.
+
+**Medido por el spec_author (no de memoria)**: barrido M20 (comandos abajo) sobre el árbol de `31b7a082` más
+el WIP, más lectura de cada `it` que casó. El único `it` que choca está en
+`src/__tests__/consistency-classnames.test.ts`: «#189 R9: la hoja del Editor combina esquina continua y flex
+sin perderlos» (l. ~696-703):
+
+| # | Aserción (ancla por contenido) | Literal actual | Literal nuevo | Causa | Estado hoy |
+|---|---|---|---|---|---|
+| C1 | `expect(source).toContain("import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';")` (l. ~698) | `import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';` | `import { CONTINUOUS_CORNER, KEEP_OPACITY, TABULAR_NUMS } from '../../theme/native-styles';` | R19 (el Editor importa `KEEP_OPACITY`, en orden alfabético) | **rojo medido** contra el WIP de R19 (el log) |
+| C2 | `expect(source).toContain('<KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={headerHeight}>')` (l. ~701) | `… keyboardVerticalOffset={headerHeight}>` | `… keyboardVerticalOffset={0}>` (resto de la etiqueta idéntico) | R22.3 | verde hoy; **rojo previsto** al aterrizar R22 (predicho por lectura de R22.3 y M13, no medido: R22 aún no está en el árbol) |
+
+Sin cambio en el mismo `it`: `style={[CONTINUOUS_CORNER, { flexGrow: 0, flexShrink: 1 }]}` (l. ~699) y
+`source.match(/\bCONTINUOUS_CORNER\b/g)` con longitud 2 (l. ~700): R19 y R22 no añaden usos de
+`CONTINUOUS_CORNER` (el recuento sigue en import + un uso).
+
+**Barrido M20 (obligatorio en el H0 de E6 y de nuevo al cerrar R22; los comandos se ejecutan, no se
+recuerdan).** Desde `mobile-pet-tracker/`:
+
+```
+grep -rlE "native-styles|HeaderHeightContext|useContext|useHeaderHeight|keyboardVerticalOffset|contentInsetAdjustmentBehavior|paddingTop: 24|left-4 top-3|left: 16|TRANSPARENT_HEADER_OPTIONS|header-layout|headerShown|geofence-editor-title|chunkyLip|readFileSync" src --include=*.test.ts --include=*.test.tsx | sort
+grep -rnE "native-styles|HeaderHeightContext|useContext|useHeaderHeight|keyboardVerticalOffset|contentInsetAdjustmentBehavior|paddingTop: 24|left-4 top-3|left: 16|headerShown|Stack\.Screen|TRANSPARENT_HEADER|header-layout|h-11|self-start|justify-center|pointerEvents|box-none" src --include=*.test.ts --include=*.test.tsx | grep -v "screens/geofence"
+```
+
+El segundo comando excluye los dos tests de pantalla (en la lista de E4). Cada línea que case se clasifica
+en las tablas de esta enmienda; **si una línea nueva casa contra un literal que algún R de E4 cambia y no está
+clasificada aquí, PARA y reporta** (no se enmienda dentro del verde). Resultado en `31b7a082` + WIP: 45 tests
+leen fuente (`readFileSync`/`readSource`), 16 de ellos casan algún literal de arriba. Los que fijan un literal
+de los ficheros de E4 son los de C1/C2, los de la lista de E4 y los siguientes, que **no** chocan:
+
+| Fichero (ancla) | Qué fija | Por qué no choca |
+|---|---|---|
+| `consistency-classnames.test.ts`, `declara las dos constantes nativas compartidas` (l. ~278) | `toContain` de `export const CONTINUOUS_CORNER = …` y del bloque `TABULAR_NUMS` | `KEEP_OPACITY` se **añade** a `native-styles.ts` sin tocar esos dos bloques; `toContain` no ve el añadido |
+| ídem, `directUses` / `style={CONTINUOUS_CORNER}` global y por fichero, `TABULAR_NUMS` (l. ~289-310, ~346-360, ~392-407) | recuentos de usos y regex `import \{[^}]*\bCONTINUOUS_CORNER\b[^}]*\} from …native-styles` | la regex de import tolera más miembros; R19/R22 no añaden usos (recuentos intactos) |
+| ídem, `card.tsx` `import { CONTINUOUS_CORNER } from '../theme/native-styles';` (l. ~312) | import exacto del `Card` | `card.tsx` no es fichero de E4 |
+| ídem, `rounded-full` ausente en una etiqueta (l. ~304) | `not.toContain('rounded-full')` en una etiqueta de otra pantalla | ajena a las dos pantallas |
+| ídem, labios y neutros (l. ~555-556, ~566-645, ~659) | inventarios de `border-b-*`, `chunkyLip` y neutros | E4 no cambia clases ni recuentos de labio; los `style=` los fija `chunky-cta` (en la lista de E4) |
+| `design-drift.test.ts` (import de `history`, l. ~1197; frases de la carta; `it` de #185 R10) | import exacto de `history`; frases de la carta | `history` no es de E4; las frases de la carta no se tocan salvo lo que añade R24, que va **después** de la mención de docs-upload del `it` de #185 R10 |
+| `heroui-text-size-merge.test.ts` (pisos 197 y 163), `legibility-classnames.test.ts` | nodos HeroUI / `className` por fichero | E4 no añade ni quita componentes de heroui ni clases `text-NN` (R21 añade `h-11`, R22 `self-start`/`absolute`: no son `text-NN`) |
+| `ui-language.test.ts` + `ui-copy-table.ts`, `language-provider.test.tsx` | recuento de `t('geofenceEditor.title')` (exactamente 2 en el Editor) y claves | R22 **no** añade ni quita llamadas `t(…)`: la píldora y las ramas de estado conservan las 2 existentes |
+| `alert-detail-canvas-fidelity.test.ts` (`expo-blur`, l. ~24) | ficheros que importan `expo-blur` (3, con el Editor desde E3) | R22 conserva el `BlurView` de la píldora; el conjunto no cambia |
+| `profile-canvas-fidelity.test.ts` (`rounded-tile`, `text-26`, `text-13`), `alerts-canvas-fidelity.test.ts` (`text-15`, `tracking-title`, `border-b-5`) | inventarios por clase | R21/R22 añaden `h-11`, `gap-2`, `justify-center`, `self-start`, `absolute`, `overflow-hidden`, `rounded-full`: ninguna inventariada |
+| `empty-state.test.tsx` (`<EmptyState` ×2 en Zonas; prohibidos `reanimated`/`MOTION_`, l. ~204, ~219, ~373-377) | recuentos y ausencias en Zonas | R21/R22 no tocan los `EmptyState` ni añaden movimiento |
+| `app/__tests__/layout.test.tsx`, `chunky-cta-canvas-fidelity.test.ts`, `geofences-canvas-fidelity.test.ts` | opciones de ruta, `style=` de los CTA, candados de la carta | **ya en la lista de E4** (R21, R19/R20, R23/R24): E6 no los toca |
+| `detail-stack.test.tsx`, `detail-stack.guard.test.tsx`, `font-registration.test.ts`, `welcome`/`docs`/`docs-upload-form`/`pairing`/`home`/`map` `index.test.tsx` y el resto de la salida de M20 | rutas declaradas, `_layout.tsx` leído por texto, copy y recuentos | ninguno fija un literal que E4 cambie |
+
+**Cambios de contrato: ninguno.** Los dos literales son valores de producción que E4 ya prescribe (R19 importa
+`KEEP_OPACITY`; R22.3 fija `keyboardVerticalOffset={0}`); el test solo los sigue. Si el barrido del H0 de E6
+encontrara algo que **no** sea una actualización de literal, no entra en esta enmienda: PARA y reporta al leader.
+
+**Texto que E6 sustituye (antes → después)**
+
+| Cláusula | Antes (E4) | Después | R |
+|---|---|---|---|
+| E4 §4.4, fila de `consistency-classnames.test.ts` («Candados agregados que se mueven») | «sin cambio … que ningún candado fija por texto (los únicos candados de import exacto son los de `history`)» | **Falsa para un `it`**: `consistency-classnames.test.ts`, «#189 R9: la hoja del Editor combina esquina continua y flex sin perderlos», fija el import exacto del Editor (C1) y la etiqueta del `KeyboardAvoidingView` (C2). Los candados de `style={CONTINUOUS_CORNER}`, `TABULAR_NUMS` y la declaración de las constantes sí quedan sin cambio | R19, R22 |
+| E4 §4.4, «Regla de H0-E4» (regla residual de §4.2) | los tres ficheros de candados agregados no están en la lista de edición; delta esperado cero | `consistency-classnames.test.ts` entra en la lista **solo para ese `it`** (C1, C2). `design-drift.test.ts` y `heroui-text-size-merge.test.ts` siguen fuera con delta esperado cero; si alguno se pone rojo, PARA. **Nueva regla**: el «delta cero» de un fichero de candados agregados se afirma con el barrido M20 ejecutado, no con una lectura de la lista | R19, R22 |
+| E4 §4.4, «Lista cerrada de ficheros que E4 puede tocar», «Fuera de la lista» | `consistency-classnames.test.ts` fuera | dentro, únicamente C1 y C2 (lista de E6, abajo) | R19, R22 |
+| E4 R22.3 y M13 | `keyboardVerticalOffset={0}` en la etiqueta | además, la **etiqueta de apertura** del `KeyboardAvoidingView` conserva su forma: una sola línea, atributos `testID`, `className`, `behavior`, `keyboardVerticalOffset` en ese orden y sin otro atributo (C2 la fija como texto). Si R22 necesitara otro atributo, es una enmienda de C2 | R22 |
+
+**Colisión de nombre.** La tolerancia de geometría de R23.2 / DE4-2 («Fuera de 8 dp se necesita enmienda E5
+con nueva firma» en R23.2 y en la tabla DE4-2; «fuera, enmienda E5 (DE4-2)» en `design.md`) ya se leía
+«enmienda posterior (E6 si hace falta)» desde E5, porque E5 pasó a ser la corrección del `toEqual` de
+heroui. **E6 es esta enmienda**: esa referencia se lee ahora **«enmienda E7»** (la siguiente que haga
+falta, con nueva firma). No se edita el texto firmado de E4/E5 en su sitio: manda esta nota, igual que la
+de E5.
+
+**Lección.** La premisa «delta cero» sobre candados agregados se afirmó **sin barrer** todas las aserciones de
+fuente del repo contra los literales que cada R cambia: E4 buscó los candados de *uso* (`style={…}`,
+recuentos) y no los de *texto exacto* de una importación o de una etiqueta. Regla para futuras specs: antes
+de escribir «sin cambio» o «delta esperado cero» sobre un candado agregado, enumerar con `grep` (comando y
+resultado en la spec) **cada** `toContain`/`toMatch`/`toEqual` de fuente que mencione un literal de un
+fichero que el R toca (importaciones, etiquetas de apertura con atributos, `export const`, opciones de
+ruta) y clasificarlo; una importación de un fichero de producción cuyos miembros cambian es un literal
+fijado hasta que el grep demuestre lo contrario.
+
+**Sin cambio de producción ni de otros R.** `KEEP_OPACITY`, `header-layout.ts`, las pantallas, `_layout.tsx`,
+M10-M19, las sondas P-E4-1..13 y los demás candados agregados de E4 no se mueven. La única restricción nueva
+es la forma de la etiqueta del `KeyboardAvoidingView` (fila R22.3 de arriba), que el texto de E4 ya cumple.
+
+**Orden rojo → verde (C4: ningún test en el mismo commit que su producción).** La enmienda no altera el
+orden de E4 (R23, R19+R20 con un verde conjunto, R21, R22, R24); añade dos movimientos de test:
+
+1. **C1 (R19)**: un commit de test aparte, **antes** del verde conjunto `feat(mobile): #189 E4 R19 R20 …` y
+   después de los dos commits de E5: `test(mobile): #189 E6 R19 rojo-corrección — import de KEEP_OPACITY en
+   el candado de la hoja del Editor`. Cambia solo la línea del import (C1) y añade al nombre del `it` el
+   sufijo `(enmendado por E4 R19)`. Es rojo de verdad contra la producción commiteada (el `HEAD` del Editor
+   aún importa `{ CONTINUOUS_CORNER, TABULAR_NUMS }`), pero con el WIP de Codex en el árbol sale verde: el
+   rojo se demuestra apartando solo la producción (`git stash push -m "189-E6-wip" -- mobile-pet-tracker/src/screens
+   mobile-pet-tracker/src/theme`, ejecutar el `it`, comprobar que falla por el literal del import y
+   `git stash pop`; mirar `git stash list` y el mensaje antes de soltar: el stash es del repo, no del
+   worktree). Frente a «en el mismo commit que el verde» (mezcla test y producción, incumple C4) y a «un
+   commit ya verde con la producción presente» (nace verde, sin historial rojo→verde), este orden deja a R19
+   y R20 con su rojo propio (`297b9f4b`, `eace0652`, más este) y el verde conjunto sigue siendo uno solo; el
+   `it` pasa a verde con ese commit.
+2. **C2 (R22)**: **dentro del commit rojo de R22** (`test(mobile): #189 E4 R22 rojo — …`), no en el verde.
+   Cambia solo la línea de la etiqueta (C2) y añade el sufijo `(enmendado por E4 R22)`. Es rojo por la razón
+   correcta (la producción conserva `{headerHeight}` hasta el verde de R22) y pasa a verde con
+   `feat(mobile): #189 E4 R22 …`. R22 conserva su rojo propio (C4). *(La instrucción de partida situaba C2
+   «con el verde de R22»; se coloca en su rojo porque el commit verde es solo producción y docs por regla
+   de E4. El efecto es el mismo: C2 y la producción de R22 cambian a la vez desde el punto de vista del
+   verde, y el rojo precede.)*
+
+Sondas (candados no tautológicos; se plantan tras el verde y se registran en el informe):
+
+| # | Mutación plantada | Debe poner en rojo |
+|---|---|---|
+| P-E6-1 | el import del Editor con los miembros en otro orden (`{ KEEP_OPACITY, CONTINUOUS_CORNER, TABULAR_NUMS }`) | C1 (el `toContain` exacto) |
+| P-E6-2 | tras R22, `keyboardVerticalOffset={headerHeight}` restaurado | C2 (y el `it` de teclado de P-E4-9) |
+| P-E6-3 | tras R22, la etiqueta del `KeyboardAvoidingView` partida en varias líneas (formato de prettier) con `{0}` | C2: demuestra que la restricción de forma es real y no una frase |
+
+**Lista cerrada de ficheros que Codex puede tocar para E6** (desde `mobile-pet-tracker/`):
+`src/__tests__/consistency-classnames.test.ts`, únicamente el `it` «#189 R9: la hoja del Editor combina
+esquina continua y flex sin perderlos» (C1, C2 y el sufijo del nombre; **no** se tocan las líneas de
+`style={[CONTINUOUS_CORNER, …]}` ni del recuento 2). Se **suma** a la lista cerrada de E4. **No** hay que
+tocar `design-drift.test.ts`, `heroui-text-size-merge.test.ts` ni los demás tests de la tabla de no-choque.
+Producción, docs y el resto de la lista de E4 no cambian. Registro:
+`progress/impl_mobile-geofences-canvas-fidelity.md` (resultado de M20, base + delta) y
+`specs/mobile-geofences-canvas-fidelity/traceability.md`.
+
 ## §5. Fuera de alcance
 
 - **La animación `breathe`** del círculo del mapa (explícita en la descripción; spike N2/N3b).
@@ -1088,3 +1227,4 @@ Pasos añadidos por E4 (§4.4), mismo dev build Android, claro y oscuro:
 - [X] Enmienda E3 (§4.3) aprobada por humano (fecha: 2026-10-21) ← gate obligatorio antes de reanudar R18
 - [X] Enmienda E4 (§4.4) aprobada por humano (fecha: 2026-10-22) ← gate obligatorio antes de reanudar R23 (y resolver DE4-1..DE4-5)
 - [X] Enmienda E5 (§4.5) aprobada por humano (fecha: 2026-10-22) ← gate obligatorio antes de reanudar el verde de R19 y R20 (corrección de la aserción de R20.1)
+- [ ] Enmienda E6 (§4.6) aprobada por humano (fecha: ____) ← gate obligatorio antes de reanudar el verde de R19 y R20 (el candado de consistency-classnames cambia con la producción)

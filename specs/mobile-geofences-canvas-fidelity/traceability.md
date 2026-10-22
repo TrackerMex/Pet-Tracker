@@ -32,10 +32,10 @@ El smoke Android de requirements §6 corresponde al humano; no se afirma ejecuta
 | R16 | src/__tests__/geofences-canvas-fidelity.test.ts::#189 R16.1/R16.2/R16.3/R16.4 | `644472be feat(mobile): #189 R16 document approved geofence canvas exceptions (R16)` |
 | R17 | src/screens/geofences/index.test.tsx::#41 R5-R8, #146, #155 R8, #159 R5/R6; src/screens/geofence-editor/index.test.tsx::#146 R6/R7/R8/R13/R14/R16 conservados; sonda real owner→family y restauración | `de23d7e5 feat(mobile): #189 R17 restore owner gate and verify unchanged behavior (R17)` |
 | R18 | src/__tests__/geofences-canvas-fidelity.test.ts::#189 R18: candados de fuente de ambas pantallas (13 casos; 14 sondas reales documentadas en el informe) | `cd26b658 feat(mobile): #189 R18 restore compliant zone sources (R18)` |
-| R19 | src/__tests__/geofences-canvas-fidelity.test.ts::#189 R19; src/screens/geofences/index.test.tsx::#189 R19; src/screens/geofence-editor/index.test.tsx::#189 R19; chunky-cta-canvas-fidelity.test.ts::#177 R3.1/R4.1/R7.5/R8.1 enmendados | pendiente |
+| R19 | src/__tests__/geofences-canvas-fidelity.test.ts::#189 R19; src/screens/geofences/index.test.tsx::#189 R19; src/screens/geofence-editor/index.test.tsx::#189 R19; chunky-cta-canvas-fidelity.test.ts::#177 R3.1/R4.1/R7.5/R8.1 enmendados; src/__tests__/consistency-classnames.test.ts::#189 R9 hoja del Editor (import de KEEP_OPACITY, enmendado por E6) | pendiente |
 | R20 | src/screens/geofences/index.test.tsx::#189 R7 enmendado por E4 R20 y por E5 (flatten real en el límite); #189 R20.1 | pendiente |
 | R21 | src/app/__tests__/layout.test.tsx (enmendado por E4 R21); src/screens/geofences/index.test.tsx::#189 R1/R3 enmendados por E4 R21 | pendiente |
-| R22 | src/screens/geofence-editor/index.test.tsx::#189 R22; #189 R8/R9 y #146 R6 enmendados por E4 R22 | pendiente |
+| R22 | src/screens/geofence-editor/index.test.tsx::#189 R22; #189 R8/R9 y #146 R6 enmendados por E4 R22; src/__tests__/consistency-classnames.test.ts::#189 R9 hoja del Editor (etiqueta con keyboardVerticalOffset={0}, enmendado por E6) | pendiente |
 | R23 | src/__tests__/geofences-canvas-fidelity.test.ts::#189 R23 | pendiente |
 | R24 | src/__tests__/geofences-canvas-fidelity.test.ts::#189 R16.1 enmendado y #189 R24.1/R24.2/R24.3 | pendiente |
 
@@ -51,6 +51,7 @@ producción; `cd26b658` las restaura. Ese HEAD intermedio contiene deliberadamen
 | E3 §4.3 | `75c6bb6f test(mobile): #189 E3 pisos HeroUI y expo-blur del Editor` | Pisos HeroUI 199→197 y className 166→163; expo-blur 2→3 ficheros. Pisos de ficheros/Card y candado text-NN intactos |
 | E4 §4.4 | pendiente (firma humana sin dar; H0-E4 = commit del handoff de E4) | Medidas M10-M19 base + delta, sondas P-E4-1..13 y candados agregados de §4.4 en el informe; smoke §6 pasos 6-10 del humano |
 | E5 §4.5 | pendiente (firma humana sin dar; dos commits `test(mobile): #189 E5 R20 rojo-corrección` y `R19 rojo-corrección` antes del verde conjunto R19 R20) | Aserción del flatten real de `geofences-add` en el límite y de Guardar vacío (`borderCurve`, `transform`, `opacity`; sin `boxShadow`); P-E4-4 replantada tras el verde; producción sin cambio |
+| E6 §4.6 | pendiente (firma humana sin dar; commit `test(mobile): #189 E6 R19 rojo-corrección` antes del verde conjunto R19 R20, y la línea de la etiqueta dentro del commit rojo de R22) | Un `it` de `consistency-classnames.test.ts`: import del Editor con `KEEP_OPACITY` (R19) y `keyboardVerticalOffset={0}` (R22.3); barrido M20 base + delta, sondas P-E6-1..3; producción sin cambio |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(mobile): #189 R<n> <desc>`; el rojo previo `test(mobile): #189 R<n> rojo — <desc>`.

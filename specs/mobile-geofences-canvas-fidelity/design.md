@@ -202,3 +202,31 @@ Decisiones técnicas de alto nivel; detalle en `requirements.md` §4.5.
 - **Lección**: verificar contra la fuente de un componente de terceros qué claves aporta al estilo
   aplanado antes de prescribir una igualdad exacta (E4 verificó solo el orden de composición).
 
+
+## Enmienda E6 (2026-10-22): premisa «delta cero» sobre `consistency-classnames`
+
+Decisiones técnicas de alto nivel; detalle en `requirements.md` §4.6.
+
+- **Causa**: E4 declaró «sin cambio» (delta cero) a `consistency-classnames.test.ts`, `design-drift.test.ts` y
+  `heroui-text-size-merge.test.ts` sin barrer las aserciones de fuente por texto exacto. Un barrido con `grep`
+  (M20) muestra que solo un `it` de `consistency-classnames.test.ts` («#189 R9: la hoja del Editor combina
+  esquina continua y flex sin perderlos») fija literales que E4 cambia: el import del Editor (R19, ahora con
+  `KEEP_OPACITY`) y la etiqueta del `KeyboardAvoidingView` (R22.3, `keyboardVerticalOffset={0}`).
+- **Solución**: cambian dos literales de ese test; producción, capas y el resto de la lista de E4 no cambian.
+  Ese fichero entra en la lista de E4 únicamente para ese `it`. R22 debe conservar la etiqueta del
+  `KeyboardAvoidingView` en una línea con sus cuatro atributos en el orden actual (el candado la fija como
+  texto).
+- **Orden**: el literal del import va en un commit de test aparte antes del verde conjunto de R19 y R20 (rojo
+  contra producción commiteada); el de la etiqueta va en el commit rojo de R22. Ninguno comparte commit con
+  producción (C4).
+- **Archivos afectados por E6**: solo `src/__tests__/consistency-classnames.test.ts` (ese `it`). Esta sección
+  supone una excepción a «Sin cambios: … `consistency-classnames`» de la lista de archivos de E4 (que no se
+  edita en su sitio); `design-drift` y `heroui-text-size-merge` siguen con delta esperado cero.
+- **Nombre de la enmienda de geometría**: la referencia de R23.2 / DE4-2 / «fuera, enmienda E5 (DE4-2)» de
+  más arriba se lee ahora **«enmienda E7»**: E5 es la corrección del `toEqual` de heroui y E6 es esta.
+- **Alternativas descartadas**: relajar los dos `toContain` a una regex que tolere cualquier miembro u offset
+  (pierde el candado: el valor `0` y el orden del import dejarían de fijarse); mover el cambio al commit verde
+  (mezcla test y producción, C4); dejar el rojo para el reviewer (el verde conjunto de R19/R20 no se cierra).
+- **Lección**: afirmar «delta cero» sobre un candado agregado exige ejecutar el barrido y pegarlo en la spec;
+  una importación cuyos miembros cambian, o una etiqueta cuyo atributo cambia, es un literal fijado hasta
+  demostrar lo contrario.
