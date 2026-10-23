@@ -8,7 +8,7 @@ tags: [mobile, ui, traceability]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | src/__tests__/canvas-foundations.test.ts::#197 R1; src/theme/__tests__/global-css.test.ts::paleta light/espejos (enmendado por #197 R1) | 03de724e test(#197): R1 lock light colors to frozen canvas<br>28fa2d22 feat(#197): R1 align light semantic colors with canvas |
+| R1 | src/__tests__/canvas-foundations.test.ts::#197 R1; src/theme/__tests__/global-css.test.ts::paleta light/espejos (enmendado por #197 R1); src/__tests__/home-photo-hero-canvas.test.ts::#195 R17 (enmendado por #197 R1) | 03de724e test(#197): R1 lock light colors to frozen canvas<br>28fa2d22 feat(#197): R1 align light semantic colors with canvas<br>7da0e950 test(#197): amend #195 contrast and charter-section locks (R1, R21) |
 | R2 | src/__tests__/canvas-foundations.test.ts::#197 R2; src/theme/__tests__/global-css.test.ts::#61 R5 y #64 R4 (enmendado por #197 R2) | f0aa3db8 test(#197): R2 verify updated state color contrast |
 | R3 | src/__tests__/canvas-foundations.test.ts::#197 R3; src/theme/__tests__/global-css.test.ts::#197 R3 | 4a792781 test(#197): R3 lock canvas tracking and line heights<br>3bfbbebf feat(#197): R3 add canvas typography tokens |
 | R4 | src/__tests__/canvas-foundations.test.ts::#197 R4; src/__tests__/tab-headers-canvas.test.ts::#168 R1; src/__tests__/alerts-canvas-fidelity.test.ts::#174 R12; src/app/(tabs)/__tests__/food.test.tsx, src/screens/profile/index.test.tsx, src/screens/health/index.test.tsx::pinta el título grande; src/components/__tests__/celebration.test.tsx::R20.4 (enmendados por #197 R4) | c702f6fd test(#197): R4 align title tracking guards with canvas<br>1fa7db78 feat(#197): R4 use canvas tracking for large titles |
@@ -27,42 +27,16 @@ tags: [mobile, ui, traceability]
 | R17 | src/components/__tests__/toggle-switch.test.tsx::#197 R17 | c456bd7e test(#197): R17 verify controlled and disabled switch interactions |
 | R18 | src/components/__tests__/back-button.test.tsx::#197 R18 | f25046b2 test(#197): R18 cover optional back chevron stroke width<br>ec1f969c feat(#197): R18 forward optional chevron stroke width |
 | R19 | src/components/__tests__/screen-header.test.tsx::#197 R19; src/__tests__/canvas-foundations.test.ts::#197 R19; src/__tests__/profile-canvas-fidelity.test.ts::#173 R2.4 y src/__tests__/alerts-canvas-fidelity.test.ts::#174 R12 (enmendados por #197 R19) | 98cf944b test(#197): R19 lock the content header structure and typography<br>6cd3b1d8 test(#197): R19 assert accessory presence before its row position<br>67c55afb feat(#197): R19 add the canvas content header component |
-| R20 | src/__tests__/canvas-foundations.test.ts::#197 R20; src/__tests__/legibility-classnames.test.ts::accent (enmendado por #197 R20) | 66f9d00f test(#197): R20 keep the new foundations unwired |
-| R21 | src/__tests__/canvas-foundations.test.ts::#197 R21; src/__tests__/design-drift.test.ts::#178 R2/#179 R2; src/__tests__/chunky-cta-canvas-fidelity.test.ts::#177 R11.1; src/__tests__/alerts-canvas-fidelity.test.ts::#174 R11 (enmendados por #197 R21) | 9c2d837b test(#197): R21 require the canonical canvas charter amendment<br>66065bef feat(#197): R21 apply the canonical canvas foundations charter |
-| R22 | src/__tests__/canvas-foundations.test.ts::#197 R22 (11 casos) | e74076a9 test(#197): R22 guard clean sources and unchanged dependency counts |
-| R24 | src/components/__tests__/rise-in.test.tsx::#197 R24; src/__tests__/canvas-foundations.test.ts::#197 R20 y #197 R22 (caso rise-in) | pendiente |
+| R20 | src/__tests__/canvas-foundations.test.ts::#197 R20; src/__tests__/legibility-classnames.test.ts::accent (enmendado por #197 R20) | 66f9d00f test(#197): R20 keep the new foundations unwired<br>3b96b769 test(#197): R24 lock the shared rise entrance (R24), caso rise-in |
+| R21 | src/__tests__/canvas-foundations.test.ts::#197 R21; src/__tests__/design-drift.test.ts::#178 R2/#179 R2; src/__tests__/chunky-cta-canvas-fidelity.test.ts::#177 R11.1; src/__tests__/alerts-canvas-fidelity.test.ts::#174 R11 (enmendados por #197 R21); src/__tests__/home-photo-hero-canvas.test.ts::#195 R20 (dos it enmendados por #197 R21) | 9c2d837b test(#197): R21 require the canonical canvas charter amendment<br>66065bef feat(#197): R21 apply the canonical canvas foundations charter<br>7da0e950 test(#197): amend #195 contrast and charter-section locks (R1, R21) |
+| R22 | src/__tests__/canvas-foundations.test.ts::#197 R22 (12 casos) | e74076a9 test(#197): R22 guard clean sources and unchanged dependency counts<br>3b96b769 test(#197): R24 lock the shared rise entrance (R24), caso rise-in |
+| R24 | src/components/__tests__/rise-in.test.tsx::#197 R24; src/__tests__/canvas-foundations.test.ts::#197 R20 y #197 R22 (caso rise-in) | 3b96b769 test(#197): R24 lock the shared rise entrance (R24)<br>ece57bea feat(#197): R24 add the shared RiseIn entrance (R24) |
 | R23 | smoke humano (requirements.md § Cierre del humano) | pendiente |
 
-Regla: el reviewer no aprueba si alguna fila de R1 a R22 queda "pendiente";
+Regla: el reviewer no aprueba si alguna fila de R1 a R22 o R24 queda "pendiente";
 R23 la cierra el humano tras el veredicto.
 Convención de commit: `test(#197): <desc> (R<n>)` para el rojo y
 `feat(#197): <desc> (R<n>)` para el verde; la fila cita los dos hashes.
 Rutas de test relativas a `mobile-pet-tracker/`. El implementer actualiza esta
 tabla tras cada commit y no rebasea después de rellenarla; el reviewer la
 valida al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).
-
-
-## Verificación final del implementador — bloqueada
-
-R1–R22 tienen implementación, tests de requisito verdes y commits test/feat
-separados. **La suite global no está verde**: 140 suites pasan, una falla;
-4675 tests pasan, dos fallan (4677 total), snapshot 1/1.
-
-Los dos fallos están en src/__tests__/home-photo-hero-canvas.test.ts,
-fuera de la lista cerrada del handoff:
-
-- #195 R17, mantiene referencias y suelos en light: el nuevo danger de R1
-  da 4.831413489227404 sobre blanco; la referencia es 3.76 (tolerancia 0.05).
-  El contraste mejora, pero falla el candado numérico.
-- #195 R20, añade una sola sección completa y es la última cabecera de nivel dos:
-  exige que #195 sea la última sección y compara su slice hasta EOF. R21
-  exige añadir #197 al final conservando #195 intacta. Falta autorizar la
-  delimitación de la sección antigua y la actualización del ancla final.
-
-No se modifica ese archivo ni se declara la feature done. El leader debe
-autorizarlo e inventariar ambas enmiendas. No se altera producción para
-satisfacer expectativas que contradicen R1/R21. R23 sigue siendo humano.
-
-Reporte: progress/impl_mobile-canvas-foundations.md.
-Log: progress/final-test-197.log. Tipos, lint y las nueve guardas pasan;
-graphify update termina con exit 0.
