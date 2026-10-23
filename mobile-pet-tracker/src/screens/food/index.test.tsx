@@ -1019,9 +1019,9 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
   it.each([
     ['food-meals-title', 'text-17 font-extrabold text-foreground'],
     ['food-ai-title', 'text-sm font-extrabold text-category-violet-strong'],
-    ['meal-schedule-link-title', 'text-base font-bold text-foreground'],
+    ['meal-schedule-link-title', 'text-15 font-extrabold text-foreground'],
   ])(
-    'aplica la receta canónica al título %s (enmendado por #200 R5 y #200 R8)',
+    'aplica la receta canónica al título %s (enmendado por #200 R5 y #200 R8 y #200 R9)',
     async (testID, className) => {
       await renderFood();
 
@@ -1146,12 +1146,12 @@ describe('#105 R14: Food opens served meals history', () => {
     mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
   });
 
-  it('shows the history card immediately after the schedule and pushes its route', async () => {
+  it('shows the history card immediately after the schedule and pushes its route (enmendado por #200 R9)', async () => {
     await renderFood();
     await waitFor(() => expect(screen.getByTestId('meals-history-link')).toBeVisible());
     const card = screen.getByTestId('meals-history-link');
     expect(screen.getByTestId('meals-history-link-title')).toHaveTextContent('Historial de comidas');
-    expect(screen.getByTestId('meals-history-link-title')).toHaveProp('className', 'text-base font-bold text-foreground');
+    expect(screen.getByTestId('meals-history-link-title')).toHaveProp('className', 'text-15 font-extrabold text-foreground');
     expect(within(card).getByText('Ver qué días se sirvieron comidas')).toBeVisible();
     expect(within(card).getByTestId('food-icon-chevron-right')).toHaveStyle({ color: 'foreground' });
     const siblings = card.parent?.children ?? [];
@@ -1210,13 +1210,13 @@ describe('#155 R9: sin plan de comidas, Pingo enseña el cuenco', () => {
     expect(screen.getByTestId('food-plan-empty-body')).toHaveTextContent('Cuando haya un plan, te ayudo a llevar la cuenta de cada comida.');
   });
 
-  it('queda en el sitio del vacío que sustituye', async () => {
+  it('queda en el sitio del vacío que sustituye (enmendado por #200 R9)', async () => {
     mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
     await renderFood();
     await screen.findByTestId('food-plan-empty-pose');
     const slot = screen.getByTestId('food-plan-empty');
     expect(slot.parent?.parent?.parent?.props.testID).toBe('screen-food');
-    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['food-plan-empty', 'meal-schedule-link', 'meals-history-link']);
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['food-plan-empty', 'food-links']);
   });
 
   it('no ofrece acción', async () => {
@@ -1733,4 +1733,42 @@ it('#200 R8: la recomendación es la tarjeta violeta del canvas', async () => {
   expect(body).toHaveTextContent('Plan explicado.');
   expect(within(card).getAllByTestId(/^(food-icon-sparkles|food-ai-title|food-ai-body)$/).map(n => n.props.testID))
     .toEqual(['food-icon-sparkles', 'food-ai-title', 'food-ai-body']);
+});
+
+
+describe('#200 R9: enlaces del canvas', () => {
+  beforeEach(setupFood200Warnings);
+  it.each([
+    ['meal-schedule-link', 'meal-schedule-link-title', es['food.mealScheduleLinkSubtitle']],
+    ['meals-history-link', 'meals-history-link-title', es['food.mealsHistoryLinkSubtitle']],
+  ])('#200 R9: los enlaces son filas neutras de radio 16 (%s)', async (id, titleID, subtitle) => {
+    await renderFood();
+    const link = await screen.findByTestId(id);
+    expect(screen.getByTestId('food-links').props.className).toBe('gap-2');
+    expect(link.props.className).toBe('flex-row items-center gap-3 rounded-16 bg-default px-3.5 py-3');
+    expect(link.props.accessibilityRole).toBe('button');
+    expect(link).toHaveStyle(CONTINUOUS_CORNER);
+    const title = within(link).getByTestId(titleID);
+    expect(title.props.className).toBe('text-15 font-extrabold text-foreground');
+    expect(title.parent?.props.className).toBe('flex-1 gap-0.5');
+    expect(within(link).getByText(subtitle).props.className).toBe('text-xs text-muted');
+    expect(within(link).getByTestId('food-icon-chevron-right', { includeHiddenElements: true }).props)
+      .toMatchObject({ size: 18, strokeWidth: 2.4, color: 'foreground' });
+  });
+  it.each([
+    ['meal-schedule-link', '/meal-schedule'], ['meals-history-link', '/meals-history'],
+  ])('#200 R9: pulsar cada enlace navega como hoy (%s)', async (id, route) => {
+    await renderFood();
+    const link = await screen.findByTestId(id);
+    await fireEvent.press(link);
+    expect(mockRouter.push).toHaveBeenCalledWith(route);
+  });
+});
+
+it('#200 R11: las piezas siguen el orden del canvas', async () => {
+  setupFood200Warnings();
+  await renderFood();
+  await screen.findByTestId('food-ai-card');
+  expect(screen.getAllByTestId(/^(food-plan-card|food-meals-section|food-warnings|food-ai-card|food-links)$/).map(n => n.props.testID))
+    .toEqual(['food-plan-card', 'food-meals-section', 'food-warnings', 'food-ai-card', 'food-links']);
 });

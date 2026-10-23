@@ -227,17 +227,14 @@ describe('R3: Card compartido elimina rounded arbitrario', () => {
 
   it.each([
     'home',
-    'food',
     'meal-schedule',
     'health',
     'weight-log',
     'profile',
     'map',
-  ])('%s importa el Card compartido (enmendado por #200 R1)', (screen) => {
+  ])('%s importa el Card compartido (enmendado por #200 R1 y #200 R9)', (screen) => {
     const contents = readFileSync(
-      screen === 'food'
-        ? join(sourceRoot, 'screens', screen, 'index.tsx')
-        : join(sourceRoot, 'screens', screen, 'index.tsx'),
+      join(sourceRoot, 'screens', screen, 'index.tsx'),
       'utf8',
     );
 
