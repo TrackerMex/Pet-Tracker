@@ -124,15 +124,25 @@ export function FoodScreen() {
       className="flex-1 bg-background"
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{
-        padding: 24,
-        gap: 16,
+        paddingHorizontal: 20,
+        gap: 14,
         paddingTop: insets.top + 12,
         paddingBottom: insets.bottom + 96,
       }}
     >
-      <Text testID="food-title" className="text-3xl font-black tracking-title text-foreground">
-        {t('food.food')}
-      </Text>
+      <View testID="food-title-row" className="flex-row items-center justify-between">
+        <Text testID="food-title" className="text-3xl font-black tracking-title text-foreground">
+          {t('food.food')}
+        </Text>
+        {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
+          <PetSwitcher
+            variant="avatars"
+            pets={pets.data.pets}
+            selectedPetId={selectedPetId}
+            onSelect={selectPet}
+          />
+        ) : null}
+      </View>
 
       {pets.data === undefined ? (
         <View className="h-10 items-center justify-center">
@@ -167,14 +177,6 @@ export function FoodScreen() {
         />
       ) : null}
 
-      {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
-        <PetSwitcher
-          pets={pets.data.pets}
-          selectedPetId={selectedPetId}
-          onSelect={selectPet}
-        />
-      ) : null}
-
       {showPlanSkeletons ? (
         <View className="gap-4">
           <Skeleton
@@ -195,7 +197,7 @@ export function FoodScreen() {
       ) : null}
 
       {selectedPetId ? (
-        <View className="gap-4">
+        <View className="gap-3.5">
           {loadedPlan !== null ? (
             <>
               <Card
