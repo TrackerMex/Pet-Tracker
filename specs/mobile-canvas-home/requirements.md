@@ -198,7 +198,7 @@ Restricciones de los tests (cruzadas con los guards; incumplirlas pone en rojo `
   `<Card testID="collar-card" className="flex-row items-center gap-3 border-0 bg-default px-3.5 py-3 shadow-none">` con tres
   hijos en este orden: (1) `collar-icon`, `View` con `className` exactamente
   `size-10 items-center justify-center rounded-full bg-tab-pill` y el icono de hoy por estado (`Wifi` en `online`, `WifiOff` en
-  `offline`, `Moon` en `unknown`) con `size={20}` y la tinta `accent-strong`; (2) una columna `flex-1 gap-1.5` con
+  `offline` y en `unknown`; errata del leader 2026-10-23: `Moon` solo sale en `none`, la rama sin dispositivo de R13) con `size={20}` y la tinta `accent-strong`; (2) una columna `flex-1 gap-1.5` con
   `collar-status` (`text-15 font-bold text-foreground`, copy sin cambios: `t(HOME_CONNECTION[connection].labelKey)`, D3) y,
   cuando hay porcentaje, `CollarBatteryBar`; (3) `collar-battery` con `TABULAR_NUMS`, `text-15 font-extrabold` y la tinta de R4.
   El icono `Battery` se retira (D4).

@@ -69,7 +69,7 @@ Desde `mobile-pet-tracker/`. Base medida en 71ff81a1 (requirements §Base medida
 | `grep -cF 'TABULAR_NUMS' src/screens/home/index.tsx` | 9 | 0 | 9 |
 | `grep -cF 'home.loadPetsError' src/i18n/catalog.ts` | 0 | +4 | 4 (dos claves × es/en; si el catálogo declara las claves en otro sitio, reportar la cifra) |
 | `grep -cF 'home.loadPetsError' src/__tests__/ui-copy-table.ts` | 0 | +2 | 2 |
-| `grep -cF "key: 'common.somethingWentWrong'" src/__tests__/ui-copy-table.ts` (filas de `index.tsx`) | 2 | −1 | 1 |
+| `grep -cF "{ file: 'src/screens/home/index.tsx', key: 'common.somethingWentWrong' }" src/__tests__/ui-copy-table.ts` (errata del leader: el patrón corto cuenta toda la tabla, 48) | 2 | −1 | 1 |
 | total de `bg-accent-soft` en CN (expresión de K27) | 7 | −3 | 4 |
 | LG `index.tsx` / suma `#61 R4` | 2 / 13 | +1 / +1 | 3 / 14 |
 | `grep -rcF '#198 R' src --include=*.test.ts --include=*.test.tsx \| awk -F: '{s+=$2} END {print s}'` | 0 | + | ≥ 18 |
