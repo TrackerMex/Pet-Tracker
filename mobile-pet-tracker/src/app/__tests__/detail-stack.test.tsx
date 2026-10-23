@@ -97,3 +97,16 @@ describe('#105 R8: meals history has a thin root route', () => {
     expect(source).toContain('return <MealsHistoryScreen />;');
   });
 });
+
+
+describe('#194 R4: edit-profile vive en la raíz de src/app', () => {
+  it('#194 R4: exposes a thin route importing the profile editor', () => {
+    const route = join(app, 'edit-profile.tsx');
+    expect(existsSync(route)).toBe(true);
+    const source = readFileSync(route, 'utf8');
+    expect(source).toContain("from '../screens/edit-profile'");
+    expect(source).toContain('export default function EditProfileRoute()');
+    expect(source).toContain('return <EditProfileScreen />;');
+    expect(source.trim().split('\n').length).toBeLessThan(10);
+  });
+});

@@ -625,12 +625,13 @@ compite con `bun.lock`. `init.sh` ya corre la parte móvil con
   **Excepción nombrada (enmienda A11 de #95, 2026-09-23)**: una pantalla empujada
   sobre el Stack raíz con cabecera nativa (`headerShown: true`) —hoy
   `add-reminder`, `pets/add`, `pets/[petId]/docs`, `pets/[petId]/docs-upload` (por #185), `weight-log`,
-  `meal-schedule`, `pairing`, `reminders`, `alerts` (estas dos por la enmienda A13 de #114, 2026-09-23), `alerts/[alertId]` (por la enmienda A15 de #100, 2026-09-28), `pets/[petId]/geofences` (por la enmienda A18 de #41, 2026-10-02) y `pets/[petId]/geofence-editor` (por la enmienda A19 de #146, 2026-10-02)— no lleva `paddingTop: insets.top + 12`, porque
+  `meal-schedule`, `pairing`, `reminders`, `alerts` (estas dos por la enmienda A13 de #114, 2026-09-23), `alerts/[alertId]` (por la enmienda A15 de #100, 2026-09-28), `pets/[petId]/geofences` (por la enmienda A18 de #41, 2026-10-02) y `pets/[petId]/geofence-editor` (por la enmienda A19 de #146, 2026-10-02) y `edit-profile` (por la enmienda A22 de #194, 2026-10-21) — no lleva `paddingTop: insets.top + 12`, porque
   el inset superior lo consume la cabecera, ni `paddingBottom: insets.bottom +
   96`, porque sobre ella no flota el `FloatingTabBar`. Su
   `contentContainerStyle` es `padding: 24`, `gap: 16` y `paddingBottom:
   insets.bottom + 24`, la misma holgura inferior que `(auth)` y
   `reset-password`.
+  `pets/[petId]/geofences` queda fuera de esta excepción desde #189 E4 (cabecera transparente, ver más abajo).
 
   **Excepción nombrada (fidelidad al canvas, 2026-10-13)**: una pantalla llevada al canvas aprobado (directiva del humano «el diseño final debe de quedar como el artifact») usa las métricas de su artboard: padding lateral 20 en vez de 24 y el `gap` que el artboard dibuja. El resto de reglas de esta viñeta se mantiene; la spec de cada pantalla nombra sus valores.
 
@@ -645,6 +646,11 @@ compite con `bun.lock`. `init.sh` ya corre la parte móvil con
 - Qué cambia: excepción A20 de #181 R9
 - Qué NO cambia: A9, A10, A11, ni la excepción de fidelidad al canvas
 - [X] Enmienda A20 aprobada por humano (fecha: 2026-10-18)
+
+- Spec enmendada: docs/conventions.md
+- Qué cambia: enmienda A22 de #194: añade `edit-profile` a las pantallas empujadas de A11, con cabecera nativa, `padding: 24`, `gap: 16` y `paddingBottom: insets.bottom + 24`.
+- Qué NO cambia: las métricas generales, las otras excepciones y las pantallas existentes de A11.
+- [X] Enmienda A22 aprobada por humano (fecha: 2026-10-22)
 
 ## Enmienda #67 — cabecera fotográfica compartida
 

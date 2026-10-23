@@ -9884,3 +9884,65 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   pasos) se dio por pasada: el humano completó el smoke y firmó sin reportar más.
 - **Estado final:** done. Notion: Implementado / Completado. PR #238; la mergea el humano y después se
   borra el worktree `Pet-Tracker-wt-191`.
+
+## Sesión 2026-10-22 — mobile-edit-profile (id: 194)
+
+- **Feature:** pantalla `/edit-profile` para editar nombre, apellido, teléfono y país (la zona horaria
+  sigue automática). Fila «Editar perfil» en la tarjeta de cuenta de Perfil; `updateMe` envía
+  `PATCH /v1/me` solo con los campos que cambiaron y refresca el perfil en caché; `validateProfile`
+  comparte con el registro las reglas de nombre, teléfono y país, con un `FieldErrorMessage` bajo cada
+  campo; los errores de servidor y de red no muestran texto crudo ni pierden lo escrito. Copy en es/en.
+- **Spec:** [[specs/mobile-edit-profile/requirements|spec]], firmada por el humano desde Notion
+  (`8662635f`, 2026-10-21). Enmiendas E1 (tres inventarios de R6 omitidos) y E2 (lista `text-13` de
+  `profile-canvas-fidelity` omitida) aprobadas también desde Notion: huecos de la spec, no fallos de
+  Codex.
+- **Acciones:** Codex implementó R1–R10 test-primero (`5f6b09ca` … `d5171291`/`cefbdffc`), con
+  paradas en R2 (literal del teléfono, error del leader: `'123'` pasó a `'123456'`), en R6 (E1:
+  `7b92c44c`, firma `2382b929`, rojo `4ff95035`, verde `8df447ed`; regla de sondas de la Reanudación
+  4, que sustituye los recuentos de la tabla) y en el Cierre (E2: `b69303f9`, firma `69d0e5ed`, fix
+  `0816a95a`). Informe y trazabilidad en `923f9875`.
+- **Resultado:** `./init.sh` exit 0 sobre `923f9875`: backend 187 suites / 1474 tests; móvil 132 suites
+  / 4356 tests; e2e 468 passed; typecheck y lint sin errores. Reviewer APROBADO sobre `923f9875`
+  (`progress/review_mobile-edit-profile.md`, 0 bloqueantes; 7 mutaciones, 6 rojas). El humano firmó
+  las casillas de la Enmienda #194 (`docs/ui-guidelines.md`) y A22 (`docs/conventions.md`) en
+  `bd0dacfe` y el smoke R11 en dev build de Android en `90d55c6e`. Sin deriva de código entre el
+  veredicto y la cabeza firmada (solo docs, spec y progress); la suite móvil completa repetida sobre
+  `90d55c6e`: exit 0, 132 / 4356.
+- **Notas no bloqueantes:** M5 sobrevive (`FormError` colocado tras el botón; la spec no fija su
+  posición); `country` se envía sin recortar; doble línea en blanco en `src/api/users.ts`.
+- **Lección:** E1 y E2 salieron del mismo hueco: la spec declaró «sin cambio» sin cruzar cada clase de
+  la pantalla nueva contra los inventarios de `src/__tests__` (`filesMatching`, mapas por fichero). La
+  próxima spec de una pantalla nueva hace ese grep antes de firmar.
+- **Estado final:** done. Notion: Implementado / Completado. PR #239; la mergea el
+  humano y después se borra el worktree `Pet-Tracker-wt-194`.
+
+## Sesión 2026-10-22 — mobile-geofences-canvas-fidelity (id: 189)
+
+- **Feature:** Zonas seguras y Editor de zona como sus artboards del canvas (R1–R24). Cabecera
+  transparente con el título en la fila de la flecha, `Stack.Screen` por rama en el Editor, hoja sin
+  `HeaderHeightContext`, `KEEP_OPACITY` en los controles `isDisabled` y en `geofences-add` al límite,
+  constantes en `src/theme/header-layout.ts` y enmienda #189 de la carta y de `docs/conventions.md`.
+- **Spec:** `specs/mobile-geofences-canvas-fidelity/`, firmada por el humano. Enmiendas E1–E6
+  firmadas por el humano: E1–E3 (premisas falsas e inventarios omitidos), E4 (R19–R24, nacida del
+  smoke: parpadeo por `disabled:element-disabled`, «Añadir zona» doblemente apagado, títulos bajo la
+  cabecera), E5 (tres aserciones de R20.1 con el estilo real de HeroUI) y E6 (el `it` de R9 en
+  `consistency-classnames` sigue los literales de E4). La tolerancia de geometría más allá de ±8 dp
+  quedó nombrada como «enmienda E7».
+- **Acciones:** Codex implementó test-primero; paró en guardas del handoff y en huecos de la spec.
+  Aclaraciones del leader sin firma (R19/R20 en un único verde, ancla de R21, tercera sonda de P-E4-8
+  como dos mutaciones). Merge de `origin/main` (46 commits) sin rebase, para conservar los hashes de
+  trazabilidad: `docs/ui-guidelines.md` por el leader (conviven las enmiendas #189 y #194) y tres
+  tests por el fallback `implementer` (`progress/merge_main_mobile-geofences-canvas-fidelity.md`),
+  sin relajar candados.
+- **Resultado:** `./init.sh` exit 0 sobre el merge (`659850dc`): backend 187 suites / 1474 tests;
+  móvil 133 / 4485; e2e 468 passed; lint y typecheck limpios (`progress/init-leader-189-merge.log`).
+  Reviewer APROBADO sobre `18f86849`, sobre `67f12234` (E4/E5/E6) y sobre el delta del merge
+  (`progress/review_mobile-geofences-canvas-fidelity_post.md`). Smoke en dev build de Android firmado
+  por el humano («perfecto»).
+- **Notas no bloqueantes:** el `Slider` queda fuera del barrido de R19.2 (punto ciego); el barrido de
+  R23.2 cubre solo 42/70/56; iOS sin verificar (DE4-3); más las ocho observaciones de la primera
+  revisión (ver el informe del reviewer).
+- **Lección:** las premisas de la spec sobre el aspecto de componentes de terceros (HeroUI) se miden
+  antes de firmar; y un candado de inventario («delta 0») se cruza contra el `it` real que lo cuenta.
+- **Estado final:** done. Notion: Implementado / Completado. PR #240; la mergea el
+  humano y después se borra el worktree `Pet-Tracker-wt-189`.

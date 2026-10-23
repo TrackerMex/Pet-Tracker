@@ -47,7 +47,8 @@ describe('#173 R2: inventario de radios nuevos', () => {
   it('reserva rounded-tile a sus consumidores aprobados (enmendado por #190 R13)', () => {
     expect(filesMatching(/\brounded-tile\b/)).toEqual([
       'screens/add-pet/index.tsx', // #191 R11
-      'screens/add-reminder/index.tsx', // #178 R12
+      'screens/add-reminder/index.tsx',
+      'screens/geofences/index.tsx', // #189 R6 // #178 R12
       'screens/home/index.tsx', // (enmendado por #190 R13)
       'screens/pairing/index.tsx', // #188 R18
       'screens/profile/index.tsx',
@@ -56,17 +57,19 @@ describe('#173 R2: inventario de radios nuevos', () => {
 });
 
 describe('#173 R2.4: inventario de tamaños nuevos', () => {
-  it('reserva text-26 al nombre de la mascota en Perfil (enmendado por #176 R8)', () => {
+  it('reserva text-26 al nombre de la mascota en Perfil (enmendado por #176 R8) (enmendado por #189 R1) (enmendado por #189 R8)', () => {
     expect(filesMatching(/\btext-26\b/)).toEqual([
       'components/empty-state.tsx', // (enmendado por #176 R8)
       'screens/alert-detail/index.tsx', // #180 R1
       'screens/alerts/index.tsx', // #174 R3
       'screens/docs/index.tsx', // #175 R5
+      'screens/geofence-editor/index.tsx', // #189 R8
+      'screens/geofences/index.tsx', // #189 R1
       'screens/profile/index.tsx',
       'screens/reminders/index.tsx', // #178 R4
     ]);
   });
-  it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8)', () => {
+  it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8) (enmendado por #189 R6)', () => {
     expect(filesMatching(/\btext-13\b/)).toEqual([
       'components/form-error.tsx',
       'screens/add-pet/index.tsx', // #191 R11
@@ -74,7 +77,9 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/alert-detail/index.tsx', // #180 R3
       'screens/alerts/index.tsx', // #174 R4, R6
       'screens/docs/index.tsx', // #175 R8
+      'screens/edit-profile/index.tsx', // #194 R5
       'screens/forgot/index.tsx',
+      'screens/geofences/index.tsx', // #189 R6
       'screens/login/index.tsx',
       'screens/meal-schedule/index.tsx', // #179 R6
       'screens/pairing/index.tsx', // #188 R18

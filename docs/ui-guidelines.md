@@ -122,14 +122,18 @@ Tres límites, no negociables:
    **Excepción nombrada (enmienda A11 de #95, 2026-09-23)**: una pantalla empujada
    sobre el Stack raíz con cabecera nativa (`headerShown: true`) —hoy
    `add-reminder`, `pets/add`, `pets/[petId]/docs`, `pets/[petId]/docs-upload` (por #185), `weight-log`,
-   `meal-schedule`, `pairing`, `reminders`, `alerts` (estas dos por la enmienda A13 de #114, 2026-09-23), `alerts/[alertId]` (por la enmienda A15 de #100, 2026-09-28), `pets/[petId]/geofences` (por la enmienda A18 de #41, 2026-10-02) y `pets/[petId]/geofence-editor` (por la enmienda A19 de #146, 2026-10-02) y `meals-history` (por la enmienda A20 de #105, 2026-10-04)— no lleva `paddingTop: insets.top + 12`, porque
+   `meal-schedule`, `pairing`, `reminders`, `alerts` (estas dos por la enmienda A13 de #114, 2026-09-23), `alerts/[alertId]` (por la enmienda A15 de #100, 2026-09-28), `pets/[petId]/geofences` (por la enmienda A18 de #41, 2026-10-02) y `pets/[petId]/geofence-editor` (por la enmienda A19 de #146, 2026-10-02) y `meals-history` (por la enmienda A20 de #105, 2026-10-04) y `edit-profile` (por la enmienda A22 de #194, 2026-10-21) — no lleva `paddingTop: insets.top + 12`, porque
    el inset superior lo consume la cabecera, ni `paddingBottom: insets.bottom +
    96`, porque sobre ella no flota el `FloatingTabBar`. Su
    `contentContainerStyle` es `padding: 24`, `gap: 16` y `paddingBottom:
    insets.bottom + 24`, la misma holgura inferior que `(auth)` y
    `reset-password`.
+   `pets/[petId]/geofences` queda fuera de esta excepción desde #189 E4 (cabecera transparente, ver más abajo).
 
    **Excepción nombrada (fidelidad al canvas, 2026-10-13)**: una pantalla llevada al canvas aprobado usa padding lateral 20 y el `gap` de su artboard; ver conventions.md §Dimensiones, misma excepción.
+   Zonas seguras (#189): `paddingHorizontal: 20`, `paddingTop: insets.top + 6`, `gap: 12`, `paddingBottom: insets.bottom + 40`.
+   Hoja del Editor (#189): `paddingHorizontal: 20`, `paddingTop: 12`, `gap: 14`, `paddingBottom: insets.bottom + 36`.
+   Cabecera nativa transparente (#189 E4): Zonas seguras y la rama de formulario del Editor usan `headerTransparent: true` con `headerStyle: { backgroundColor: 'transparent' }`; el contenido empieza bajo la cabecera, el título comparte fila con la flecha, el `paddingTop` suma `insets.top` y no se usa `contentInsetAdjustmentBehavior`. Las ramas de estado del Editor conservan la cabecera opaca.
 7. **Estados de carga**: Skeleton de heroui dimensionado como el contenido
    final. Prohibido Spinner suelto que salte el layout.
 8. **Estructura**: route delgado en `src/app/` + pantalla en `src/screens/`
@@ -191,6 +195,8 @@ Tres límites, no negociables:
     Fuera de la escala, por fidelidad al canvas (#179): `rounded-10` (10 px), «Editar» de la fila de Horario; `rounded-14` (14 px), mosaico de la fila y botones de acción de Horario y horas del panel del día de Historial; `rounded-24` (24 px), resumen de Horario y calendario y panel del día de Historial, que son `View` y no `Card` porque `twMerge` no sustituye `rounded-card` por un radio con nombre de valor.
     Fuera de la escala, por fidelidad al canvas (#180): `rounded-24` (24 px), mapa del detalle de alerta, que es un View y no un Card; `rounded-16` (16 px), ack y «Ver en el mapa» del detalle de alerta.
 
+    Fuera de la escala, por fidelidad al canvas (#189): `rounded-14` (tile de la zona), `rounded-tile` (aviso de límite), `rounded-t-hero` (hoja del Editor) y `rounded-16` (botones).
+
     Fuera de la escala, por fidelidad al canvas (#177): `rounded-16` es el radio de todo botón de 56 de alto y del tile del candado; el compacto de 40 conserva `rounded-xl`.
 
     Fuera de la escala, por fidelidad al canvas (#191): `rounded-10` (10 px) y `rounded-14` (14 px), segmentos y contenedor del selector segmentado de Nueva mascota; `rounded-tile` (18 px) de la burbuja de Pingo, que es un `View` y no un `Card`.
@@ -209,6 +215,8 @@ Tres límites, no negociables:
       `text-17 font-extrabold text-foreground`; «Ya tengo cuenta» conserva
       `text-17 font-bold text-accent-strong`. «Ver en el mapa» del detalle
       conserva `h-13` y su `Button.Label` `text-base font-extrabold text-foreground`.
+    «Eliminar» del Editor es secundario neutro con etiqueta `text-base font-extrabold text-danger`, excepción a `text-17 … text-foreground` del neutro; sale de «Sin labio».
+    La papelera de la fila de zona es una excepción solo-icono (`size-11 rounded-xl bg-danger-soft`).
     - **Compacto**: `reminders-add-link` conserva `h-10`, `rounded-xl`,
       `gap-1.5 px-3.5`, su icono y `Button.Label` `text-sm font-extrabold text-accent-foreground`;
       usa `style={chunkyLip.primaryCompact}` (`chunkyLip.primaryCompact`, labio de 3).
@@ -216,9 +224,10 @@ Tres límites, no negociables:
       `bg-accent rounded-16`, con `style={[CONTINUOUS_CORNER, chunkyLip.primary]}`.
       El tile del candado lleva `bg-accent` antes de `rounded-16` para no contar como primario.
     - **Deshabilitado**: `h-14 rounded-16 bg-default`, etiqueta
-      `text-17 font-extrabold text-muted`, sin labio; lo aplica #189.
+      `text-17 font-extrabold text-muted`, sin labio; la aplican #189: Añadir zona en el límite y Guardar con nombre vacío.
     El tamaño 17 se pinta con `Text` plano de React Native por la regla de la
     Enmienda #187; no se pasa `text-17` a `Button.Label`.
+    El bloqueo (`isDisabled`) no atenúa: en #189 los `Switch` y `Button` de heroui cancelan el 50 % de `disabled:element-disabled` con `KEEP_OPACITY`, y la receta gris del límite no lleva opacidad.
     - **Chip seleccionado** (fidelidad al canvas, #178): cápsula `rounded-full bg-accent border-b-3 border-black/25`; el chip sin seleccionar no lleva labio.
     - **Secundarios de Horario** (fidelidad al canvas, #179): «Editar» `h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface` y «Añadir comida» `h-13.5 rounded-14 border-2 border-b-6 border-lip-gray bg-surface`, con el labio dentro del alto; «Generar plan» es tonal de la categoría violeta y sin labio, porque el labio del artboard (`rgba(91,63,163,0.35)`) no tiene token.
     - **Sin labio**: los tonales (`bg-accent-soft`, `bg-default`), los
@@ -297,6 +306,8 @@ consume estos tokens; ninguna inventa un hex ni una clase arbitraria:
 El reparto vive en `src/utils/category-palette.ts` y es el **único** sitio donde
 se escriben esos nombres de clase. El color nunca es el único portador de la
 categoría: la superficie siempre acompaña a un icono de reicon-react-native y a un texto.
+
+`zoneCategory` (orden `green, blue, amber, violet, rose`) es el único reparto categoría → ranura de las zonas; el color es de la posición en la lista, no de la zona.
 
 **2. Fotografía y su respaldo.** Las cabeceras fotográficas asumen que la
 mascota tiene foto. Cuando no la tiene, el respaldo es el **blobatar**
@@ -821,6 +832,34 @@ Detalle y tests en `specs/mobile-pairing-pingo-canvas-fidelity/requirements.md`.
 Detalle y tests en `specs/mobile-pairing-pingo-canvas-fidelity/requirements.md` (R15 a R20).
 
 - [X] Enmienda #188 (E2) aprobada por humano
+
+## Enmienda #189 — Zonas seguras y Editor de zona
+
+> Enmienda de `ui-guidelines` por `mobile-geofences-canvas-fidelity` (#189). Directiva del humano: «el diseño final como el artifact». La firma de esta casilla autoriza las ediciones de R16 de `specs/mobile-geofences-canvas-fidelity/requirements.md`; nada más.
+
+- **Métricas por fidelidad al canvas (A11).** Zonas: `paddingHorizontal: 20`, `paddingTop: insets.top + 6`, `gap: 12`, `paddingBottom: insets.bottom + 40`. Hoja del Editor: `paddingHorizontal: 20`, `paddingTop: 12`, `gap: 14`, `paddingBottom: insets.bottom + 36`.
+- **Radios fuera de la escala (regla 12).** `rounded-14` (tile de la zona), `rounded-tile` (aviso de límite), `rounded-t-hero` (hoja del Editor) y `rounded-16` (botones). Las líneas de #175 a #180 no se tocan.
+- **Botón (regla 13).** La receta deshabilitada (`h-14 rounded-16 bg-default`, etiqueta `text-17 font-extrabold text-muted`, sin labio) la aplican «Añadir zona» en el límite y «Guardar» con el nombre vacío. «Eliminar» del Editor sale de «Sin labio»: es secundario neutro con etiqueta `text-base font-extrabold text-danger`, excepción a la etiqueta `text-17 … text-foreground` del neutro. La papelera de la fila de zona es una excepción solo-icono (`size-11 rounded-xl bg-danger-soft`).
+- **Paleta categórica.** `zoneCategory` (orden `green, blue, amber, violet, rose`) es el único reparto categoría → ranura de las zonas; el color es de la posición en la lista, no de la zona.
+
+- [X] Enmienda #189 aprobada por humano
+
+## Enmienda #194 — Editar perfil
+
+El perfil se edita en `/edit-profile`, ruta protegida con cabecera nativa y
+accesible desde la fila `edit-profile-link` de `me-card` en Perfil. Sigue la
+excepción A11 con padding 24, gap 16 y holgura inferior `insets.bottom + 24`.
+
+Los campos editables son nombres, apellidos, teléfono y país. El correo y la
+zona horaria no se editan en la app. La validación al pulsar Guardar muestra
+los mensajes debajo de cada campo con `FieldErrorMessage`.
+
+Solo se envían los campos cambiados. El éxito escribe la respuesta completa
+en `userKeys.me()` y cierra la pantalla; Perfil refleja el cambio sin otra
+petición. Los errores conservan lo escrito y muestran mensajes del catálogo,
+nunca texto crudo del servidor.
+
+- [X] Enmienda #194 aprobada por humano
 
 ## Enmienda #195 — cabecera fotográfica de Inicio fiel al canvas
 

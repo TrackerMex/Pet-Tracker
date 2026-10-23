@@ -53,3 +53,9 @@ const DOCUMENT_TYPE_SLOTS: Record<string, CategorySlot> = {
 export function documentCategory(type: string): CategorySlot {
   return DOCUMENT_TYPE_SLOTS[type.trim().toLowerCase()] ?? 'neutral';
 }
+
+export const ZONE_SLOT_ORDER: readonly CategorySlot[] = ['green', 'blue', 'amber', 'violet', 'rose'];
+
+export function zoneCategory(index: number): CategorySlot {
+  return ZONE_SLOT_ORDER[index % 5];
+}

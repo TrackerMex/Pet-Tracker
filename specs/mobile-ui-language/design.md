@@ -1592,3 +1592,10 @@ Copy del asistente de alta; se retira `addPet.avatarPreview` al integrar la foto
 | — | `addPet.stepProgress` | `{{current}} of {{total}}` | `{{current}} de {{total}}` | ← añadida por #191 (R1) |
 | — | `addPet.pingoGreeting` | `Hi. Tell me about your new companion.` | `¡Hola! Cuéntame de tu nuevo compañero.` | ← añadida por #191 (R1) |
 | — | `addPet.continue` | `Continue` | `Continuar` | ← añadida por #191 (R1) |
+
+### §2.38 — Añadidos por #194 — Editar perfil
+
+| Diseño | Clave | en | es | Cambio |
+|---|---|---|---|---|
+| — | `profile.editProfile` | `Edit profile` | `Editar perfil` | ← añadida por #194 (R1) |
+| — | `editProfile.save` | `Save changes` | `Guardar cambios` | ← añadida por #194 (R1) |

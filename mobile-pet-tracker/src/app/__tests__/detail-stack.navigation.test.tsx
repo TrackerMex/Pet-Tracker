@@ -102,7 +102,7 @@ describe('#105 R8: meals history pushes above tabs', () => {
 describe('#95 R2: push y back apilan y desapilan sobre (tabs)', () => {
   afterEach(() => jest.useRealTimers());
 
-  it('apila cada detalle, monta de nuevo al reentrar y vuelve al mapa sin duplicar tabs', async () => {
+  it('#194 R4: apila cada detalle, monta de nuevo al reentrar y vuelve al mapa sin duplicar tabs', async () => {
     mockAuthState = { status: 'authenticated', token: 'token-a' };
     mockAddReminderMounts = 0;
     const app = renderRouter(routes(), { initialUrl: '/home' });
@@ -118,6 +118,7 @@ describe('#95 R2: push y back apilan y desapilan sobre (tabs)', () => {
       ['/weight-log', 'weight-log'],
       ['/meal-schedule', 'meal-schedule'],
       ['/pairing', 'pairing'],
+      ['/edit-profile', 'edit-profile'], // #194 R4
     ]) {
       await act(async () => router.push(href as Href));
       await waitFor(() => expect(app.getPathname()).toBe(href));

@@ -352,9 +352,10 @@ describe('#95 R4: cada pantalla de detalle declara su cabecera nativa', () => {
     ['weight-log', 't:weightLog.weightLog'],
     ['meal-schedule', ''],
     ['pairing', ''],
-  ])('%s usa exactamente las opciones de cabecera acordadas', async (name, title) => {
+    ['edit-profile', ''], // #194 R4
+  ])('#194 R4: %s usa exactamente las opciones de cabecera acordadas', async (name, title) => {
     await render(<RootLayout />);
-    await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
+    await waitFor(() => expect(screen.getByTestId('root-stack')).toBeVisible());
     const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
     const group = Children.toArray(stack?.children)[4];
     if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
@@ -379,14 +380,14 @@ describe('#114 R1: la guarda de RootStack declara reminders y alerts tras las se
     mockGetStoredLanguage.mockResolvedValue(undefined);
   });
 
-  it('declara ocho rutas protegidas y alerts singular', async () => {
+  it('#194 R4: declara ocho rutas protegidas y alerts singular', async () => {
     await render(<RootLayout />);
     await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
     const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
     const group = Children.toArray(stack?.children)[4];
     if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
     const children = Children.toArray(group.props.children);
-    expect(children).toHaveLength(8 + 1 + 1 + 1 + 1 + 1); // #185 R10 // #100 R2, #41 R4, #146 R5, #105 R8
+    expect(children).toHaveLength(8 + 1 + 1 + 1 + 1 + 1 + 1); // #194 R4 // #185 R10 // #100 R2, #41 R4, #146 R5, #105 R8
     expect(children.slice(7, 9).map((child) =>
       isValidElement<{ name: string; dangerouslySingular?: boolean }>(child)
         ? [child.type, child.props.name, child.props.dangerouslySingular]
@@ -405,14 +406,14 @@ describe('#100 R2: la guarda de RootStack declara el detalle de alerta tras aler
     mockGetStoredLanguage.mockResolvedValue(undefined);
   });
 
-  it('declara alerts/[alertId] como décimo hijo y singular', async () => {
+  it('#194 R4: declara alerts/[alertId] como décimo hijo y singular', async () => {
     await render(<RootLayout />);
     await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
     const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
     const group = Children.toArray(stack?.children)[4];
     if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
     const children = Children.toArray(group.props.children);
-    expect(children).toHaveLength(9 + 1 + 1 + 1 + 1); // #185 R10 // #41 R4, #146 R5, #105 R8
+    expect(children).toHaveLength(9 + 1 + 1 + 1 + 1 + 1); // #194 R4 // #185 R10 // #41 R4, #146 R5, #105 R8
     const detail = children[9];
     expect(isValidElement<{ name: string; dangerouslySingular?: boolean }>(detail)
       ? [detail.type, detail.props.name, detail.props.dangerouslySingular]
@@ -455,21 +456,21 @@ describe('#41 R4: la guarda de RootStack declara las zonas seguras tras el detal
     mockGetStoredLanguage.mockResolvedValue(undefined);
   });
 
-  it('declara pets/[petId]/geofences como undécimo hijo y no singular', async () => {
+  it('#194 R4: declara pets/[petId]/geofences como undécimo hijo y no singular (enmendado por #189 R1.1)', async () => {
     await render(<RootLayout />);
     await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
     const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
     const group = Children.toArray(stack?.children)[4];
     if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
     const children = Children.toArray(group.props.children);
-    expect(children).toHaveLength(10 + 1 + 1 + 1); // #185 R10 // #146 R5, #105 R8
+    expect(children).toHaveLength(10 + 1 + 1 + 1 + 1); // #194 R4 // #185 R10 // #146 R5, #105 R8
     const detail = children[10];
     expect(isValidElement<{ name: string; dangerouslySingular?: boolean }>(detail)
       ? [detail.type, detail.props.name, detail.props.dangerouslySingular]
       : null).toEqual([Stack.Screen, 'pets/[petId]/geofences', undefined]);
   });
 
-  it('le da la cabecera nativa de #95 R4 con el título de zonas seguras', async () => {
+  it('le da la cabecera nativa de #95 R4 con el título de zonas seguras (enmendado por E4 R21)', async () => {
     await render(<RootLayout />);
     await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
     const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
@@ -478,11 +479,12 @@ describe('#41 R4: la guarda de RootStack declara las zonas seguras tras el detal
     const detail = Children.toArray(group.props.children)[10];
     expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined).toEqual({
       headerShown: true,
-      title: 't:geofences.title',
-      headerStyle: { backgroundColor: 'token:background' },
+      title: '',
+      headerStyle: { backgroundColor: 'transparent' },
       headerTintColor: 'token:foreground',
       headerTitleStyle: { fontFamily: 'Inter-Bold' },
       headerShadowVisible: false,
+      headerTransparent: true,
     });
   });
 });
@@ -494,14 +496,14 @@ describe('#146 R5: la guarda de RootStack declara el editor de zonas tras la lis
     mockGetStoredLanguage.mockResolvedValue(undefined);
   });
 
-  it('declara pets/[petId]/geofence-editor como duodécimo hijo y no singular', async () => {
+  it('#194 R4: declara pets/[petId]/geofence-editor como duodécimo hijo y no singular (enmendado por #189 R1.1)', async () => {
     await render(<RootLayout />);
     await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
     const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
     const group = Children.toArray(stack?.children)[4];
     if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
     const children = Children.toArray(group.props.children);
-    expect(children).toHaveLength(11 + 1 + 1); // #185 R10 // #105 R8
+    expect(children).toHaveLength(11 + 1 + 1 + 1); // #194 R4 // #185 R10 // #105 R8
     const detail = children[11];
     expect(isValidElement<{ name: string; dangerouslySingular?: boolean }>(detail)
       ? [detail.type, detail.props.name, detail.props.dangerouslySingular]
@@ -517,7 +519,7 @@ describe('#146 R5: la guarda de RootStack declara el editor de zonas tras la lis
     const detail = Children.toArray(group.props.children)[11];
     expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined).toEqual({
       headerShown: true,
-      title: 't:geofenceEditor.title',
+      title: '',
       headerStyle: { backgroundColor: 'token:background' },
       headerTintColor: 'token:foreground',
       headerTitleStyle: { fontFamily: 'Inter-Bold' },
@@ -599,5 +601,27 @@ describe('#118 R3: RootStack declara welcome bajo su propia guarda', () => {
     expect(Children.toArray(group.props.children).map((child) =>
       isValidElement<{ name: string }>(child) ? [child.type, child.props.name] : null,
     )).toEqual([[Stack.Screen, 'welcome']]);
+  });
+});
+
+
+describe('#194 R4: the profile editor is protected', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetStoredTheme.mockResolvedValue(undefined);
+    mockGetStoredLanguage.mockResolvedValue(undefined);
+  });
+
+  it('#194 R4: edit-profile es la última pantalla protegida', async () => {
+    await render(<RootLayout />);
+    await waitFor(() => expect(screen.getByTestId('root-stack')).toBeVisible());
+    const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
+    const group = Children.toArray(stack?.children)[4];
+    if (!isValidElement<{ guard: boolean; children: ReactNode }>(group)) throw new Error('Expected protected group');
+    expect(group.type).toBe(Stack.Protected);
+    expect(group.props.guard).toBe(true);
+    const detail = Children.toArray(group.props.children).at(-1);
+    expect(isValidElement<{ name: string }>(detail) ? [detail.type, detail.props.name] : undefined)
+      .toEqual([Stack.Screen, 'edit-profile']);
   });
 });

@@ -104,7 +104,7 @@ describe('#105 R8: meals history requires a session', () => {
 describe('#95 R3: la guarda protege las seis y deja libres (auth) y reset-password', () => {
   afterEach(() => jest.useRealTimers());
 
-  it('expulsa el detalle al cerrar sesión y no agrega rutas protegidas al historial', async () => {
+  it('#194 R4: expulsa el detalle al cerrar sesión y no agrega rutas protegidas al historial', async () => {
     mockAuthState = { status: 'authenticated', token: 'token-a' };
     const app = renderRouter(routes(), { initialUrl: '/home' });
     await app;
@@ -126,6 +126,7 @@ describe('#95 R3: la guarda protege las seis y deja libres (auth) y reset-passwo
       '/weight-log',
       '/meal-schedule',
       '/pairing',
+      '/edit-profile', // #194 R4
     ]) {
       await act(async () => router.push(href as Href));
       await act(async () => {
@@ -177,7 +178,8 @@ describe('#149 R3: cerrar sesión en un detalle aterriza en welcome', () => {
     '/pets/pet-1/geofences',
     '/pets/pet-1/geofence-editor',
     '/meals-history',
-  ])('#149 R3: cierra sesión en %s, aterriza en welcome y no reabre el detalle', async (href) => {
+    '/edit-profile', // #194 R4
+  ])('#194 R4: cierra sesión en %s, aterriza en welcome y no reabre el detalle', async (href) => {
     mockAuthState = { status: 'authenticated', token: 'token-a' };
     const app = renderRouter(routes(), { initialUrl: '/home' });
     await app;
