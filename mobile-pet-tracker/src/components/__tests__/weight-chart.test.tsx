@@ -437,7 +437,7 @@ describe('#199 R5: gráfica completa', () => {
     await renderFull();
     expect(screen.getAllByTestId('weight-chart-point', { includeHiddenElements: true })).toHaveLength(1);
     expect(screen.getAllByTestId('weight-chart-point', { includeHiddenElements: true })[0].props).toMatchObject({ cx: 310, cy: 60, fill: 'accent-strong' });
-    expect(pointRadius()).toBe(5);
+    await waitFor(() => expect(pointRadius()).toBe(5));
   });
   it('#199 R5 el punto sigue oculto a los 1299 ms, llega a radio 5.4 a los 1540 y a 5 a los 1700', async () => {
     realAnimations();
