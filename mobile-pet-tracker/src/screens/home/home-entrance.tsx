@@ -39,7 +39,7 @@ export function HomeEntrance({ index, testID, className, children }: {
     <Animated.View
       testID={testID}
       className={className}
-      entering={homeEntering(index * MOTION_STAGGER_MS, reducedMotion ? 0 : MOTION_RISE_OFFSET_Y)}
+      entering={reducedMotion ? undefined : homeEntering(index * MOTION_STAGGER_MS, MOTION_RISE_OFFSET_Y)}
     >
       {children}
     </Animated.View>
