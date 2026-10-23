@@ -28,7 +28,7 @@ import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
-const SELECTED_CHIP = 'h-9.5 items-center justify-center rounded-full px-3.5 bg-accent border-b-3 border-black/25';
+const SELECTED_CHIP = 'h-9.5 items-center justify-center rounded-full px-3.5 bg-accent';
 
 const ADVANCE_OPTIONS = [
   { minutes: 0, labelKey: 'addReminder.advanceSameDay' },
@@ -167,6 +167,7 @@ function AddReminderContent({ petId }: { petId: string }) {
                   accessibilityState={{ selected }}
                   testID={`type-chip-${reminderType}`}
                   hitSlop={TOUCH_SLOP}
+                  style={selected ? chunkyLip.primaryCompact : undefined}
                   className={
                     selected
                       ? SELECTED_CHIP
@@ -297,6 +298,7 @@ function AddReminderContent({ petId }: { petId: string }) {
                   accessibilityState={{ selected }}
                   testID={`advance-chip-${option.minutes}`}
                   hitSlop={TOUCH_SLOP}
+                  style={selected ? chunkyLip.primaryCompact : undefined}
                   disabled={disabled}
                   className={`${selected ? SELECTED_CHIP : 'h-9.5 items-center justify-center rounded-full px-3.5 bg-default'}${disabled ? ' opacity-50' : ''}`}
                   onPress={() => setAdvanceMinutes(option.minutes)}

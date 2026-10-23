@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Recordatorios</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+<style>
+body{margin:0}
+a{color:#107148;text-decoration:none}a:hover{color:#0B5C3A}
+.pt{--bg:#FFFFFF;--fg:#0D1117;--surface:#FFFFFF;--surface2:#F0FBF6;--default:#F5F6F8;--muted:#667085;--border:rgba(13,17,23,0.08);--lip-gray:#E4E7EC;--accent:#178255;--accent-strong:#107148;--lip:#0E5E3C;--blue:#EFF6FF;--blue-s:#0768E0;--amber:#FFF7ED;--amber-s:#A55E07;--green:#F0FBF6;--green-s:#107148;--violet:#F5F3FF;--violet-s:#7549F7;--rose:#FFF0F3;--rose-s:#D80B34;--danger:#D92D20;--warning:#B54708;--glass:rgba(255,255,255,0.86);--pill:rgba(23,130,85,0.14);--shadow:0 1px 2px rgba(13,17,23,0.04),0 8px 24px rgba(13,17,23,0.06)}
+.pt.dark{--bg:#0D1117;--fg:#F7F8FA;--surface:#161B22;--surface2:#12231B;--default:#1F242B;--muted:#9CA3AF;--border:rgba(255,255,255,0.08);--lip-gray:#0A0D12;--accent-strong:#2AB87C;--lip:#0B4D31;--blue:#0B203A;--blue-s:#4A8DDF;--amber:#271E14;--amber-s:#C17B22;--green:#12231B;--green-s:#2AB87C;--violet:#221C33;--violet-s:#9579E7;--rose:#39131A;--rose-s:#E35E78;--danger:#F87171;--warning:#FBBF24;--glass:rgba(22,27,34,0.86);--pill:rgba(23,130,85,0.22);--shadow:0 1px 2px rgba(0,0,0,0.4)}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes ping{0%{transform:scale(.55);opacity:.55}100%{transform:scale(1.5);opacity:0}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fill{from{width:0}}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+@keyframes fall{0%{transform:translateY(-40px) rotate(0);opacity:0}10%{opacity:1}100%{transform:translateY(760px) rotate(540deg);opacity:0}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+.ov.off{display:none!important}
+</style>
+</helmet>
+<div class="pt {{theme}}" style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: var(--bg); color: var(--fg); font-family: Inter, 'Helvetica Neue', system-ui, sans-serif; padding: 56px 20px 32px; display: flex; flex-direction: column; gap: 14px">
+<header style="display: flex; align-items: center; gap: 8px">
+<a href="Perfil.dc.html" aria-label="Volver" style="width: 44px; height: 44px; margin-left: -10px; display: flex; align-items: center; justify-content: center; color: var(--fg)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></a>
+<h1 style="flex: 1; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.02em">Recordatorios</h1>
+<a href="NuevoRecordatorio.dc.html" style="height: 40px; padding: 0 14px; border-radius: 12px; background: var(--accent); color: #FFFFFF; box-shadow: 0 3px 0 var(--lip); display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 800; text-decoration: none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>Nuevo</a>
+</header>
+<div role="group" aria-label="Mascotas" style="display: flex; gap: 8px">
+<button type="button" aria-label="Rocky, seleccionada" aria-pressed="true" style="width: 44px; height: 44px; box-sizing: border-box; padding: 4px; border-radius: 50%; border: 2px solid var(--accent); background: var(--pill)"><img src="/_blob/1c2f4686b9d008230e4702139d418a08" alt="" style="display: block; width: 100%; height: 100%; border-radius: 50%; object-fit: cover"></button>
+<button type="button" aria-label="Luna" aria-pressed="false" style="width: 44px; height: 44px; box-sizing: border-box; padding: 4px; border-radius: 50%; border: 2px solid transparent; background: var(--default)"><span style="width: 100%; height: 100%; border-radius: 50%; background: var(--surface); color: var(--fg); display: flex; align-items: center; justify-content: center; font: 800 14px Inter, system-ui, sans-serif">L</span></button>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<div style="border-radius: 16px; background: var(--surface2); padding: 10px 12px; display: flex; flex-direction: column"><span style="font-size: 24px; font-weight: 900; color: var(--accent-strong)">4</span><span style="font-size: 12px; font-weight: 700; color: var(--muted)">Activos</span></div>
+<div style="border-radius: 16px; background: var(--amber); padding: 10px 12px; display: flex; flex-direction: column"><span style="font-size: 24px; font-weight: 900; color: var(--amber-s)">2</span><span style="font-size: 12px; font-weight: 700; color: var(--amber-s)">Esta semana</span></div>
+<div style="border-radius: 16px; background: var(--default); padding: 10px 12px; display: flex; flex-direction: column"><span style="font-size: 24px; font-weight: 900; color: var(--muted)">1</span><span style="font-size: 12px; font-weight: 700; color: var(--muted)">Inactivos</span></div>
+</div>
+<article style="border-radius: 22px; background: var(--surface); border: 2px solid var(--amber); padding: 14px; display: flex; gap: 12px; animation: rise 400ms ease-out both">
+<span style="width: 46px; height: 46px; border-radius: 14px; background: var(--blue); color: var(--blue-s); display: flex; align-items: center; justify-content: center; flex: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 2 4 4M17 7l3-3M19 9 8.7 19.3a2.4 2.4 0 0 1-3.4 0l-.6-.6a2.4 2.4 0 0 1 0-3.4L15 5M9 11l4 4M5 19l-3 3M14 4l6 6"></path></svg></span>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 3px">
+<div style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 12px; font-weight: 800; color: var(--blue-s)">Vacuna</span><span style="padding: 3px 8px; border-radius: 999px; background: var(--amber); color: var(--amber-s); font-size: 11px; font-weight: 800; animation: pop 500ms ease-out 400ms both">¡Próximo!</span></div>
+<span style="font-size: 16px; font-weight: 800">Refuerzo de rabia</span>
+<span style="font-size: 13px; color: var(--muted)">12 oct, 09:00 · en 6 días</span>
+</div>
+<button type="button" aria-label="Eliminar Refuerzo de rabia" style="align-self: center; flex: none; height: 44px; padding: 0 10px; border: 0; border-radius: 14px; background: var(--rose); color: var(--danger); font: 800 13px Inter, system-ui, sans-serif">Eliminar</button>
+</article>
+<article style="border-radius: 22px; background: var(--surface); border: 1px solid var(--border); padding: 14px; display: flex; gap: 12px; animation: rise 400ms ease-out 70ms both">
+<span style="width: 46px; height: 46px; border-radius: 14px; background: var(--violet); color: var(--violet-s); display: flex; align-items: center; justify-content: center; flex: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-4 4-6 7-6 10a6 6 0 0 0 12 0c0-3-2-6-6-10z"></path></svg></span>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 3px"><span style="font-size: 12px; font-weight: 800; color: var(--violet-s)">Desparasitación</span><span style="font-size: 16px; font-weight: 800">Pastilla trimestral</span><span style="font-size: 13px; color: var(--muted)">10 oct, 20:00 · en 4 días</span></div>
+<button type="button" aria-label="Eliminar Pastilla trimestral" style="align-self: center; flex: none; height: 44px; padding: 0 10px; border: 0; border-radius: 14px; background: var(--rose); color: var(--danger); font: 800 13px Inter, system-ui, sans-serif">Eliminar</button>
+</article>
+<article style="border-radius: 22px; background: var(--surface); border: 1px solid var(--border); padding: 14px; display: flex; gap: 12px; animation: rise 400ms ease-out 140ms both">
+<span style="width: 46px; height: 46px; border-radius: 14px; background: var(--green); color: var(--green-s); display: flex; align-items: center; justify-content: center; flex: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2"></path><path d="M12 3v8M8 7h8"></path></svg></span>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 3px"><span style="font-size: 12px; font-weight: 800; color: var(--green-s)">Consulta</span><span style="font-size: 16px; font-weight: 800">Revisión anual</span><span style="font-size: 13px; color: var(--muted)">2 nov, 11:30 · en 27 días</span></div>
+<button type="button" aria-label="Eliminar Revisión anual" style="align-self: center; flex: none; height: 44px; padding: 0 10px; border: 0; border-radius: 14px; background: var(--rose); color: var(--danger); font: 800 13px Inter, system-ui, sans-serif">Eliminar</button>
+</article>
+<div class="ov {{sheetCls}}" style="position: absolute; inset: 0; background: rgba(13,17,23,0.4); display: flex; align-items: flex-end; animation: fade 300ms ease-out 500ms both"><style>@keyframes fade{from{opacity:0}to{opacity:1}}</style>
+<div role="dialog" aria-label="¿Eliminar recordatorio?" style="width: 100%; border-radius: 28px 28px 0 0; background: var(--surface); padding: 12px 20px 36px; display: flex; flex-direction: column; gap: 12px; animation: rise 350ms ease-out 600ms both">
+<span style="align-self: center; width: 40px; height: 5px; border-radius: 3px; background: var(--lip-gray)"></span>
+<span style="align-self: center; width: 56px; height: 56px; border-radius: 50%; background: var(--rose); color: var(--danger); display: flex; align-items: center; justify-content: center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></span>
+<h2 style="margin: 0; text-align: center; font-size: 20px; font-weight: 900">¿Eliminar recordatorio?</h2>
+<p style="margin: 0; text-align: center; font-size: 16px; font-weight: 600">Refuerzo de rabia</p>
+<p style="margin: 0; text-align: center; font-size: 14px; color: var(--muted)">Esta acción no se puede deshacer.</p>
+<button type="button" style="height: 54px; border: 0; border-radius: 16px; background: var(--danger); color: #FFFFFF; box-shadow: 0 4px 0 #9F1F15; font: 800 16px Inter, system-ui, sans-serif">Eliminar</button>
+<button type="button" style="height: 54px; border-radius: 16px; background: var(--surface); border: 2px solid var(--lip-gray); box-shadow: 0 4px 0 var(--lip-gray); color: var(--fg); font: 800 16px Inter, system-ui, sans-serif">Cancelar</button>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"sheet":{"editor":"boolean","default":true},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { theme: this.props.dark ? "dark" : "", sheetCls: this.props.sheet ? "" : "off" };
+}
+}
+</script>
+</body>
+</html>

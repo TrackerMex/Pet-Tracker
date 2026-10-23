@@ -28,7 +28,7 @@ beforeEach(() => {
 });
 
 describe('#152 R3: la receta de entrada de la Home', () => {
-  it('parte invisible y desplazada y llega opaca y en su sitio', () => {
+  it('parte invisible y desplazada y llega opaca y en su sitio (enmendado por #197 R12)', () => {
     expect(homeEntering(180, 12)({})).toEqual({
       initialValues: { opacity: 0, transform: [{ translateY: 12 }] },
       animations: {
@@ -37,84 +37,59 @@ describe('#152 R3: la receta de entrada de la Home', () => {
           animation: {
             toValue: 1,
             config: {
-              duration: 250,
-              easing: { bezier: [0.23, 1, 0.32, 1] },
-              reduceMotion: 'never',
+              duration: 400,
+              easing: { bezier: [0, 0, 0.58, 1] },
+              reduceMotion: 'system',
             },
           },
-          reduceMotion: 'never',
+          reduceMotion: 'system',
         },
         transform: [{
           translateY: {
             delayMs: 180,
             animation: {
               toValue: 0,
-              config: { duration: 250, dampingRatio: 1, reduceMotion: 'system' },
+              config: { duration: 400, easing: { bezier: [0, 0, 0.58, 1] }, reduceMotion: 'system' },
             },
-            reduceMotion: 'never',
+            reduceMotion: 'system',
           },
         }],
       },
     });
   });
 
-  it('no anima nada hasta que se invoca', () => {
+  it('no anima nada hasta que se invoca (enmendado por #197 R12)', () => {
     homeEntering(180, 12);
     expect(withDelay).not.toHaveBeenCalled();
     expect(withTiming).not.toHaveBeenCalled();
+    expect(withSpring).not.toHaveBeenCalled();
+    homeEntering(180, 12)({});
+    expect(withTiming).toHaveBeenCalledWith(1, { duration: 400, easing: { bezier: [0, 0, 0.58, 1] }, reduceMotion: 'system' });
     expect(withSpring).not.toHaveBeenCalled();
   });
 });
 
 
 describe('#152 R4: HomeEntrance escalona por índice y respeta reduce motion', () => {
-  it('el índice 0 entra sin espera y desplazado 12', async () => {
+  it('el índice 0 entra sin espera y desplazado 14 (enmendado por #197 R12)', async () => {
     await render(<HomeEntrance index={0} testID="entrance"><Text>Hijo</Text></HomeEntrance>);
     const recipe = screen.getByTestId('entrance').props.entering({});
-    expect(recipe.initialValues).toEqual({ opacity: 0, transform: [{ translateY: 12 }] });
+    expect(recipe.initialValues).toEqual({ opacity: 0, transform: [{ translateY: 14 }] });
     expect(jest.mocked(withDelay).mock.calls.map(([delay]) => delay)).toEqual([0, 0]);
   });
 
-  it('el índice 5 espera 300 ms', async () => {
+  it('el índice 5 espera 300 ms (enmendado por #197 R12)', async () => {
     await render(<HomeEntrance index={5} testID="entrance"><Text>Hijo</Text></HomeEntrance>);
     screen.getByTestId('entrance').props.entering({});
     expect(jest.mocked(withDelay).mock.calls.map(([delay]) => delay)).toEqual([300, 300]);
+    expect(withTiming).toHaveBeenCalledWith(0, { duration: 400, easing: { bezier: [0, 0, 0.58, 1] }, reduceMotion: 'system' });
   });
 
-  it('bajo reduce motion conserva el fundido y el escalonado y no desplaza', async () => {
+  it('bajo reduce motion no anima la entrada (enmendado por #197 R13)', async () => {
     mockUseReducedMotion.mockReturnValue(true);
-    try {
-      await render(<HomeEntrance index={5} testID="entrance"><Text>Hijo</Text></HomeEntrance>);
-      expect(screen.getByTestId('entrance').props.entering({})).toEqual({
-        initialValues: { opacity: 0, transform: [{ translateY: 0 }] },
-        animations: {
-          opacity: {
-            delayMs: 300,
-            animation: {
-              toValue: 1,
-              config: {
-                duration: 250,
-                easing: { bezier: [0.23, 1, 0.32, 1] },
-                reduceMotion: 'never',
-              },
-            },
-            reduceMotion: 'never',
-          },
-          transform: [{
-            translateY: {
-              delayMs: 300,
-              animation: {
-                toValue: 0,
-                config: { duration: 250, dampingRatio: 1, reduceMotion: 'system' },
-              },
-              reduceMotion: 'never',
-            },
-          }],
-        },
-      });
-    } finally {
-      mockUseReducedMotion.mockReturnValue(false);
-    }
+    await render(<HomeEntrance index={5} testID="entrance"><Text>Hijo</Text></HomeEntrance>);
+    expect(screen.getByTestId('entrance').props.entering).toBeUndefined();
+    expect(withDelay).not.toHaveBeenCalled();
   });
 
   it('no añade estilo propio', async () => {

@@ -144,7 +144,7 @@ export function Celebration({ testID, title, body, details, primary, secondary }
             </View>
           </Animated.View>
         </View>
-        <Animated.Text testID={`${testID}-title`} className="mt-2 text-center text-3xl font-black tracking-tight text-foreground" style={titleStyle}>{title}</Animated.Text>
+        <Animated.Text testID={`${testID}-title`} className="mt-2 text-center text-3xl font-black tracking-title text-foreground" style={titleStyle}>{title}</Animated.Text>
         <Animated.Text testID={`${testID}-body`} className="max-w-75 text-center text-15 leading-5.5 text-muted" style={bodyStyle} selectable>{body}</Animated.Text>
         {details?.length ? (
           <Animated.View testID={`${testID}-details`} className="flex-row flex-wrap justify-center gap-2" style={detailsStyle}>

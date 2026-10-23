@@ -190,10 +190,10 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     expect(filesMatching(/text-accent(?![-\w])/)).toEqual([]);
   });
 
-  it('reserva las peticiones de accent a las huellas de EmptyState (enmendado por #176 R5)', () => {
+  it('reserva las peticiones de accent a las huellas de EmptyState (enmendado por #176 R5) (enmendado por #197 R20)', () => {
     const requestsAccent = /useThemeColors\(\s*\[[^\]]*'accent'[^\]]*\]/;
 
-    expect(filesMatching(requestsAccent)).toEqual(['components/empty-state.tsx']); // (enmendado por #176 R5)
+    expect(filesMatching(requestsAccent)).toEqual(['components/empty-state.tsx', 'components/toggle-switch.tsx', 'theme/shadows.ts']); // (enmendado por #176 R5)
   });
 });
 
