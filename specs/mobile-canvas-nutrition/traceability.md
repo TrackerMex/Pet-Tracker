@@ -1,6 +1,6 @@
 ---
 feature: "mobile-canvas-nutrition"
-status: spec_ready
+status: approved
 tags: [harness, spec, mobile, canvas-parity]
 ---
 

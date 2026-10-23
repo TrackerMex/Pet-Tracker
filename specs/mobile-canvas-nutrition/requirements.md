@@ -1,6 +1,6 @@
 ---
 feature: "mobile-canvas-nutrition"
-status: spec_ready        # draft | spec_ready | approved
+status: approved
 tags: [harness, spec, mobile, canvas-parity]
 ---
 
@@ -766,6 +766,12 @@ la feature; no bloquea la implementación.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____)
-- [ ] Enmienda #200 de `docs/ui-guidelines.md` (R16: entrada con `RiseIn`, anillo con `MOTION_RING_*`, `rounded-24` y `rounded-16`, superficies de Nutrición sin `Card`, y «Generar plan» con `chunkyLip.violet` en el punto 13) aprobada por humano
+- [x] Aprobado por humano (fecha: 2026-10-23)
+  Firma delegada en el leader por mandato del humano del 2026-10-23
+  (`progress/plan_canvas-parity-2026-10-23.md` §4, checklist de firma pasada).
+  Medidas las anclas de §Base medida tras el merge de #197 en `dev` (81cb6d6b): las que mueve #197
+  están en su valor «después». El describe CF `#197 R20` se borra entero en el primer rojo que monta
+  un cimiento (regla uniforme de la ola 2).
+- [x] Enmienda #200 de `docs/ui-guidelines.md` (R16: entrada con `RiseIn`, anillo con `MOTION_RING_*`, `rounded-24` y `rounded-16`, superficies de Nutrición sin `Card`, y «Generar plan» con `chunkyLip.violet` en el punto 13) aprobada por humano
+  Firma delegada, mismo mandato.
 - [ ] Smoke de R2, R3, R4, R6, R7, R10, R12, R13, R14 y R15 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
