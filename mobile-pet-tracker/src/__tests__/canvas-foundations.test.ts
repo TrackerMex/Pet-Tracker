@@ -112,3 +112,20 @@ describe('#197 R2: contraste de los colores claros', () => {
     expect(contrast(light.danger, light.surface)).toBeGreaterThanOrEqual(4.5);
   });
 });
+
+describe('#197 R3: tipografía del canvas', () => {
+  it.each([
+    ['tracking-display', '-0.5px', 'Inicio', 'letter-spacing: -0.5px'],
+    ['tracking-section', '1.5px', 'Inicio', 'letter-spacing: 1.5px'],
+    ['tracking-mono', '0.04em', 'VincularVinculado', 'letter-spacing: .04em'],
+    ['tracking-dialog', '-0.01em', 'ZonasEliminar', 'letter-spacing: -0.01em'],
+    ['leading-body', '1.4', 'EditorZona', 'line-height: 1.4'],
+    ['leading-note', '1.45', 'Zonas', 'line-height: 1.45'],
+  ])('#197 R3: cada tracking e interlineado nuevo es el literal del canvas %s', (token, value, board, literal) => {
+    expect(artboard(board)).toContain(literal);
+    const theme = css.split('@theme {')[1].split('}')[0];
+    expect(variables(theme)[token]).toBe(value);
+    expect(theme.indexOf(`--${token}:`)).toBeGreaterThan(theme.indexOf('--tracking-code: 0.14em;'));
+    expect(css).not.toMatch(/--text-[\w-]+--line-height/);
+  });
+});

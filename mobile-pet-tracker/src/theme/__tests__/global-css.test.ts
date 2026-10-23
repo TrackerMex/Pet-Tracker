@@ -923,3 +923,11 @@ describe('#195 R4: scrim y oscurecimiento de foto', () => {
     },
   );
 });
+
+describe('#197 R3: tokens de tipografía', () => {
+  it('#197 R3: declara cada token de tipografía una sola vez', () => {
+    for (const token of ['tracking-display', 'tracking-section', 'tracking-mono', 'tracking-dialog', 'leading-body', 'leading-note']) {
+      expect(globalCss.match(new RegExp(`--${token}:`, 'g'))).toHaveLength(1);
+    }
+  });
+});
