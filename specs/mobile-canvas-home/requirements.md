@@ -1,6 +1,6 @@
 ---
 feature: "mobile-canvas-home"
-status: spec_ready     # draft | spec_ready | approved
+status: approved
 tags: [mobile, ui, spec]
 ---
 
@@ -403,7 +403,11 @@ Lo que jest no ve (design.md §Supuestos). Smoke en **dev build Android** (no Ex
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____)
+- [x] Aprobado por humano (fecha: 2026-10-23) ← gate obligatorio antes de implementar
+  Firma delegada en el leader por mandato del humano del 2026-10-23
+  (`progress/plan_canvas-parity-2026-10-23.md` §4, checklist de firma pasada). Aceptadas D1–D14,
+  V1–V11 y los «nacen verdes» declarados en tasks.md (R12, R15-default, R16, R17: commit `test`
+  sin `feat` y prueba de mutación del reviewer). El handoff espera a que #197 esté en `dev`.
 - [ ] Smoke de R1, R3, R4, R5, R6, R7, R10, R11, R13, R14, R15 y R16 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
 
 La spec no enmienda `docs/ui-guidelines.md`: no hay casilla de enmienda de la carta.

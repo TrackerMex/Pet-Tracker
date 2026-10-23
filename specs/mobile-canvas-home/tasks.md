@@ -1,6 +1,6 @@
 ---
 feature: "mobile-canvas-home"
-status: spec_ready     # draft | spec_ready | approved
+status: approved
 tags: [mobile, ui, spec]
 ---
 
