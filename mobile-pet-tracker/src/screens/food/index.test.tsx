@@ -1018,10 +1018,10 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
 
   it.each([
     ['food-meals-title', 'text-17 font-extrabold text-foreground'],
-    ['food-ai-title', 'text-base font-bold text-foreground'],
+    ['food-ai-title', 'text-sm font-extrabold text-category-violet-strong'],
     ['meal-schedule-link-title', 'text-base font-bold text-foreground'],
   ])(
-    'aplica la receta canónica al título %s (enmendado por #200 R5)',
+    'aplica la receta canónica al título %s (enmendado por #200 R5 y #200 R8)',
     async (testID, className) => {
       await renderFood();
 
@@ -1712,4 +1712,25 @@ describe('#200 R7: avisos del plan', () => {
     await screen.findByTestId('food-plan-card');
     expect(screen.queryByTestId('food-warnings')).toBeNull();
   });
+});
+
+
+it('#200 R8: la recomendación es la tarjeta violeta del canvas', async () => {
+  setupFood200Warnings();
+  await renderFood();
+  const card = await screen.findByTestId('food-ai-card');
+  expect(card.type).toBe('View');
+  expect(card.props.className).toBe('flex-row gap-3 rounded-card bg-category-violet p-3.5');
+  expect(card).toHaveStyle(CONTINUOUS_CORNER);
+  const icon = within(card).getByTestId('food-icon-sparkles', { includeHiddenElements: true });
+  expect(icon.props).toMatchObject({ size: 22, strokeWidth: 2.2, color: 'category-violet-strong' });
+  const title = within(card).getByTestId('food-ai-title');
+  expect(title.props.className).toBe('text-sm font-extrabold text-category-violet-strong');
+  expect(title).toHaveTextContent('Recomendación IA');
+  expect(title.parent?.props.className).toBe('flex-1 gap-0.5');
+  const body = within(card).getByTestId('food-ai-body');
+  expect(body.props.className).toBe('text-13 leading-body text-foreground');
+  expect(body).toHaveTextContent('Plan explicado.');
+  expect(within(card).getAllByTestId(/^(food-icon-sparkles|food-ai-title|food-ai-body)$/).map(n => n.props.testID))
+    .toEqual(['food-icon-sparkles', 'food-ai-title', 'food-ai-body']);
 });
