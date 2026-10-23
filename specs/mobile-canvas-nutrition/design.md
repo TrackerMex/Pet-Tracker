@@ -12,18 +12,18 @@ Todas cerradas con un valor por defecto; el humano puede cambiarlas en el gate.
 
 | # | Decisión | Valor por defecto | Riesgo de colisión |
 |---|---|---|---|
-| D1 | Entrada escalonada | `RiseIn` de #199 (no un componente propio). El leader no hace handoff hasta que #199 esté en `dev` | `rise-in.tsx` es de #199; #200 no lo modifica |
+| D1 | Entrada escalonada | `RiseIn` de #197 R24 (no un componente propio). El handoff solo espera a #197 en `dev`; #199 corre en paralelo y #200 no depende de nada suyo: el doble de `rise-in` y `riseDelayOf` son locales a FO, MS y MH | `rise-in.tsx` es de #197; #200 no lo modifica |
 | D2 | `HomeEntrance` en Horario e Historial | Se sustituye por `RiseIn` (R15) para que las tres pantallas usen la misma curva del canvas | `HomeEntrance` sigue en Inicio; no se toca |
 | D3 | Superficies de Nutrición | `View`/`Pressable` con clases propias en vez de `Card` (radios 28/24/20/16, sin borde ni sombra donde el canvas no los dibuja). Evita además que `twMerge` expulse `text-13/15/17` | `Card` no cambia |
-| D4 | Anillo | Siempre `withDelay(200, withTiming(…, MOTION_RING_TIMING))`, también al servir o deshacer (una sola ruta de animación); constantes nuevas en `motion.ts` (Enmienda #152) | `motion.ts` y MT los tocan también #197 y #199 (`MOTION_DRAW_*`) |
+| D4 | Anillo | Siempre `withDelay(200, withTiming(…, MOTION_RING_TIMING))`, también al servir o deshacer (una sola ruta de animación); constantes nuevas en `motion.ts` (Enmienda #152) | `motion.ts` y MT los toca #197 (base de 37 claves) y, en paralelo, #199 R27 (+7): la segunda en mergear conserva las claves de la primera |
 | D5 | Copy del botón pendiente | Clave nueva `food.markServedAction` (renombra `food.pending`, que solo usa Nutrición) | `catalog.ts` y la tabla de copy los tocan #196–#206 |
 | D6 | Píldora «Edad» | No se pinta (Desviación D1) | — |
 | D7 | Opacidades .85/.9 del héroe | Se descartan (carta #61 R3) | — |
-| D8 | Anillo de avatar | El de `PetSwitcher variant="avatars"` sin cambios | `PetSwitcher` lo tocan #196/#199; #200 solo lo consume |
+| D8 | Anillo de avatar | El de `PetSwitcher variant="avatars"` sin cambios | `PetSwitcher` lo tocan #196/#199 en paralelo; #200 solo lo consume. PC `#173 R4` (fila [44]) gana food; la segunda en mergear conserva los consumidores de la primera |
 | D9 | `backFallback` de Horario e Historial | `/food` | — |
 | D10 | Test de Nutrición | `git mv` a `src/screens/food/index.test.tsx` (convención Expo desde #39) | Las listas por ruta de § Candados R1 |
-| D11 | Cabeceras | `ScreenHeader` de #197 en contenido y `headerShown: false` en su `Stack.Screen` (regla «Cablear es de cada pantalla») | `_layout.tsx` lo tocan #199 y el resto de la ola 2 |
-| D12 | Carta | Enmienda #200 en `docs/ui-guidelines.md` con casilla propia de aprobación | `ui-guidelines.md` lo enmiendan #197 y #199 |
+| D11 | Cabeceras | `ScreenHeader` de #197 en contenido y `headerShown: false` en su `Stack.Screen` (regla «Cablear es de cada pantalla») | `_layout.tsx` y LY los tocan #199 y el resto de la ola 2 en paralelo: cada uno quita su fila de `#194 R4` y la segunda en mergear conserva las bajas de la primera |
+| D12 | Carta | Enmienda #200 en `docs/ui-guidelines.md` con casilla propia de aprobación; además R16 (e) reescribe la cola de la línea «Secundarios de Horario» del punto 13 (`«Generar plan» … sigue sin labio hasta #200.`) para que la carta no contradiga R14, y enmienda CC `preservedLines` y DD `actionRule`, que copian esa línea | `ui-guidelines.md` lo enmiendan #197 y, en paralelo, #199 |
 
 ## Ficheros afectados por capa
 
@@ -37,10 +37,14 @@ infraestructura.
   `src/screens/meals-history/index.tsx` (R13, R15).
 - Tema: `src/theme/motion.ts` (R4).
 - Copy: `src/i18n/catalog.ts` (R6), `src/__tests__/ui-copy-table.ts` (R1, R6).
-- Carta: `docs/ui-guidelines.md` (R16, ruta relativa a la raíz del repo).
+- Carta: `docs/ui-guidelines.md` (R16: sección Enmienda #200 y cola de la
+  línea «Secundarios de Horario» del punto 13; ruta relativa a la raíz del
+  repo).
 - Tests: FO (movido), MS, MH, LY, MT, DS, NC (nuevo) y los de § Candados
   (`ui-language`, `design-drift`, `tab-headers-canvas`, `empty-state`,
-  `consistency-classnames`, `legibility-classnames`).
+  `consistency-classnames`, `legibility-classnames`,
+  `chunky-cta-canvas-fidelity`, `alerts-canvas-fidelity`,
+  `profile-canvas-fidelity` y `canvas-foundations`, este último de #197).
 
 ## Guardas de la carta
 
@@ -61,8 +65,10 @@ Cada clase nueva cruzada contra las guardas:
 - **#64 R9**: verde y violeta solo vía `CATEGORY_SLOTS` en clases; los iconos
   toman `category-green-strong` / `category-violet-strong` de
   `useThemeColors` (precedente: Horario).
-- **Consistencia**: `text-accent-strong` sigue con una sola aparición en
-  Nutrición; `style={CONTINUOUS_CORNER}` pasa de 1 a 6 (B8).
+- **Consistencia**: `text-accent-strong` acaba con una sola aparición en
+  Nutrición (2 entre el verde de R5 y el de R6, que retira la insignia vieja:
+  § Candados [47]); `style={CONTINUOUS_CORNER}` pasa de 1 a 6 con la escalera
+  1, 2, 2, 3, 4, 6 (B8; R6 neto 0).
 - **`StyleSheet.create` cero** y **sin `StyleSheet` en los tests de
   `src/screens/`** (#68 R18): estilos con `toHaveStyle`.
 - **twMerge y HeroUI (Enmienda #187)**: ningún `text-<n>` va en un componente
@@ -76,7 +82,7 @@ humano:
 
 - `Button` de HeroUI reenvía `style` a su `Pressable`, de modo que el labio
   violeta se ve en Android (precedente: labios de #197 R9 en Horario).
-- `RiseIn` respeta «Eliminar animaciones» de Android (lo prueba #199) y
+- `RiseIn` respeta «Eliminar animaciones» de Android (lo prueba #197 R24) y
   `ReduceMotion.System` hace saltar el anillo al valor final.
 - `ScreenHeader` resuelve la vuelta con `backFallback="/food"` cuando no hay
   historial (deep link), según #197.
@@ -97,4 +103,9 @@ humano:
   matiz que el canvas no dibuja. Descartado por D4.
 - **Mantener `HomeEntrance` en Horario e Historial**: su curva no es la del
   canvas (`rise 400ms ease-out`). Descartado por D2.
-- **Crear un `RiseIn` propio**: duplicaría #199. Descartado por D1.
+- **Crear un `RiseIn` propio**: duplicaría `RiseIn` de #197 R24. Descartado
+  por D1.
+- **Retirar la insignia «servida» vieja ya en R5** (para que
+  `text-accent-strong` no pase por 2): mezclaría el trabajo de la fila (R6) en
+  el commit de R5. Se prefiere enmendar CN y LG en R5 y devolverlos en R6
+  (§ Candados [47]).

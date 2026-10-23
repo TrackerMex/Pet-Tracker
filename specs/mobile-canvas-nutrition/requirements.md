@@ -19,15 +19,27 @@ restos de Horario (Q09) e Historial (Q10) frente a sus artboards.
 **Depende de #197** (`mobile-canvas-foundations`), cuya spec firmada está
 congelada en el commit `046133e8`. Esta spec consume sus piezas por su nombre
 exacto y no las redefine: `useChunkyLip()` (claves `hero`, `primaryCompact`,
-`violet`), `useShadows()` (clave `ring`), `MOTION_RISE_OFFSET_Y` y
-`MOTION_RISE_TIMING` (`src/theme/motion.ts`), los tokens `--leading-body` y
-`--leading-note` (`leading-body`, `leading-note`), `tracking-title`, y
-`ScreenHeader` (`src/components/screen-header.tsx`, props
+`violet`), `MOTION_RISE_OFFSET_Y` y `MOTION_RISE_TIMING`
+(`src/theme/motion.ts`), los tokens `--leading-body` y `--leading-note`
+(`leading-body`, `leading-note`), `tracking-title`, `ScreenHeader`
+(`src/components/screen-header.tsx`, props
 `{ testID, backFallback, title?, eyebrow?, size?: 24 | 26, accessory? }`,
-testIDs `${testID}`, `${testID}-back`, `${testID}-title`). #197 aún no está en
-`dev` (base de este worktree `71ff81a1`): las anclas que #197 mueve llevan
+testIDs `${testID}`, `${testID}-back`, `${testID}-title`) y `RiseIn`
+(`src/components/rise-in.tsx`, #197 R24:
+`RiseIn({ delayMs, testID, className, children })`, `Animated.View` con
+`entering` de `withDelay(delayMs, withTiming(…, MOTION_RISE_TIMING))` y sin
+`entering` con «reducir movimiento»). #197 aún no está en `dev` (base de este
+worktree `71ff81a1`): las anclas que #197 mueve llevan
 `(#197: antes → después)` en § Base medida y el leader las re-mide tras su
 merge, antes del handoff.
+
+**Solo depende de #197.** #200 corre en paralelo con #199
+(`mobile-canvas-health-weight`) y no consume nada que #199 cree, ni de
+producción ni de tests: el doble de `rise-in` y el helper `riseDelayOf` son
+locales a los tests de #200. Donde las dos tocan el mismo fichero (`motion.ts`
+y MT, `_layout.tsx` y LY, listas de inventario), cada cifra se da como «base
+tras #197 + delta de #200» y, si #199 ya está en `dev`, se le suma su delta;
+la segunda feature en mergear conserva las entradas que añadió la primera.
 
 Canvas congelado en `specs/mobile-canvas-nutrition/canvas/` (copia byte a byte
 de la versión `1792777983-cd94`): `Nutricion.dc.html`,
@@ -51,9 +63,10 @@ sin AWS.
 Medida en `71ff81a1` (`origin/dev`) desde `mobile-pet-tracker/`. Cada fila es
 `comando` → valor hoy → valor tras #200. `F='src/app/(tabs)/food.tsx'`,
 `FS=src/screens/food/index.tsx`, `MS=src/screens/meal-schedule/index.tsx`,
-`MH=src/screens/meals-history/index.tsx`. Las marcas `(#197: …)` y
-`(#199: …)` son anclas que esas features mueven antes que #200; el leader las
-re-mide tras su merge y antes del handoff.
+`MH=src/screens/meals-history/index.tsx`. Las marcas `(#197: antes → después)`
+son anclas que #197 mueve antes que #200; el leader las re-mide tras su merge
+y antes del handoff. Cada «Tras #200» es «base tras #197 + delta de #200»; si
+#199 ya está en `dev`, súmale su delta donde la fila lo indique.
 
 | # | Comando | Hoy | Tras #200 |
 |---|---|---|---|
@@ -64,8 +77,8 @@ re-mide tras su merge y antes del handoff.
 | B5 | `grep -cF "src/screens/food/index.tsx'" src/__tests__/ui-copy-table.ts` | 0 | 25 (R1) |
 | B6 | `grep -cF '<Card' "$F"` | 6 | 0 en `$FS` (R3, R5, R7, R8, R9) |
 | B7 | `grep -cF "from '../../components/card'" "$F"` | 1 | 0 en `$FS` |
-| B8 | `grep -cF 'style={CONTINUOUS_CORNER}' "$F"` | 1 | 6 en `$FS` (R5 1, R6 1, R7 1, R8 1, R9 2) |
-| B9 | `grep -cF 'text-accent-strong' "$F"` | 1 | 1 en `$FS` |
+| B8 | `grep -cF 'style={CONTINUOUS_CORNER}' "$F"` | 1 (la fila de comida) | 6 en `$FS`; escalera por commit verde 1, 2, 2, 3, 4, 6 (R5 +1; R6 0 neto: la fila pierde el suyo y el tile lo gana; R7 +1; R8 +1; R9 +2) |
+| B9 | `grep -cF 'text-accent-strong' "$F"` | 1 (insignia «servida») | 1 en `$FS` (`food-meals-progress`); 2 entre el verde de R5 y el de R6, que retira la insignia (§ Candados [47]) |
 | B10 | `grep -cF 'padding: 24,' "$F"` | 1 | 0 en `$FS` (R2) |
 | B11 | `grep -cF 'variant="avatars"' "$F"` | 0 | 1 en `$FS` (R2) |
 | B12 | `grep -cF 'KCAL_BAR_TIMING' "$F"` | 2 | 0 en `$FS` (R4) |
@@ -76,7 +89,7 @@ re-mide tras su merge y antes del handoff.
 | B17 | `grep -cF '<Sparkles size={18}' "$F"` | 1 | 0; `<Sparkles size={22}` 1 en `$FS` (R8) |
 | B18 | `grep -cF '<ChevronRight size={20}' "$F"` | 2 | 0; `<ChevronRight size={18}` 2 en `$FS` (R9) |
 | B19 | `grep -cF 'tracking-tight' "$F"` | 1 (#197: 1 → 0) | 0 en `$FS` |
-| B20 | `grep -cF 'headerShown' src/app/_layout.tsx` | 2 (#199: 2 → 3) | 5 (R12, R13) |
+| B20 | `grep -cF 'headerShown' src/app/_layout.tsx` | 2 (#197: 2 → 2) | 4 (R12 +1, R13 +1); si #199 ya está en `dev`, 5 (#199 suma 1) |
 | B21 | `grep -cF "name=\"meal-schedule\" options={{ ...headerOptions, title: '' }}" src/app/_layout.tsx` | 1 | 0 (R12) |
 | B22 | `grep -cF "name=\"meals-history\" options={{ ...headerOptions, title: '' }}" src/app/_layout.tsx` | 1 | 0 (R13) |
 | B23 | `grep -cF 'HomeEntrance' $MS` / `$MH` | 5 / 5 | 0 / 0 (R15) |
@@ -84,15 +97,23 @@ re-mide tras su merge y antes del handoff.
 | B25 | `grep -cF 'paddingBottom: insets.bottom + 24' $MS` / `$MH` | 1 / 1 | 0 / 0; `insets.bottom + 32` 1 / 1 (R12, R13) |
 | B26 | `grep -cF '<ScreenHeader' $MS` / `$MH` | 0 / 0 | 1 / 1 (R12, R13) |
 | B27 | `grep -cF 'chunkyLip.violet' $MS` | 0 | 1 (R14) |
-| B28 | `test ! -e src/components/rise-in.tsx && echo ausente` | ausente (#199: ausente → presente) | presente; #200 no lo crea |
-| B29 | `test ! -e src/components/screen-header.tsx && echo ausente` | ausente (#197: ausente → presente) | presente; #200 no lo crea |
+| B28 | `ls src/components \| grep -cF 'rise-in.tsx'` | 0 (#197: 0 → 1, #197 R24) | 1; #200 no lo crea |
+| B29 | `ls src/components \| grep -cF 'screen-header.tsx'` | 0 (#197: 0 → 1) | 1; #200 no lo crea |
 | B30 | `grep -cF -- '--leading-note' src/theme/global.css` | 0 (#197: 0 → 1) | 1; #200 no lo crea |
 | B31 | `grep -cF 'Enmienda #200' ../docs/ui-guidelines.md` | 0 | ≥ 1 (R16) |
 | B32 | `test ! -e src/__tests__/nutrition-canvas-fidelity.test.ts && echo ausente` | ausente | presente (R16) |
+| B33 | `cat src/__tests__/canvas-foundations.test.ts 2>/dev/null \| grep -cF '#197 R20: cimientos sin cablear'` | 0 (#197: 0 → 1) | 0 (R10, § Candados [49]) |
+| B34 | `cat src/__tests__/canvas-foundations.test.ts 2>/dev/null \| grep -cF "'app/(tabs)/food.tsx'"` | 0 (#197: 0 → 1) | 0 (R1, [43]) |
+| B35 | `grep -cF "'app/(tabs)/food.tsx'," src/__tests__/alerts-canvas-fidelity.test.ts` | 0 (#197: 0 → 1) | 0 (R1, [42]) |
+| B36 | `grep -cF 'export const MOTION_' src/theme/motion.ts` | 35 (#197: 35 → 37) | 39 (R4 +2); si #199 ya está en `dev`, súmale su delta (+7) |
+| B37 | `grep -cF 'sigue sin labio hasta #200' ../docs/ui-guidelines.md` | 0 (#197: 0 → 1) | 0 (R16 (e)) |
+| B38 | `grep -cF 'sigue sin labio hasta #200' src/__tests__/chunky-cta-canvas-fidelity.test.ts` | 0 (#197: 0 → 1) | 0 (R16, [48]) |
+| B39 | `grep -cF 'sigue sin labio hasta #200' src/__tests__/design-drift.test.ts` | 0 (#197: 0 → 1) | 0 (R16, [48]) |
 
-Si tras el merge de #197 y #199 cualquier fila marcada no da su valor
-«después», el leader corrige la cifra aquí antes del handoff; las demás filas
-no dependen de ellas.
+Si tras el merge de #197 cualquier fila marcada no da su valor «después», el
+leader corrige la cifra aquí antes del handoff; las demás filas no dependen
+de ella. Si #199 ya está en `dev` cuando se mide, se le suma su delta en las
+filas que lo dicen (B20, B36); ninguna otra fila depende de #199.
 
 ## TestIDs
 
@@ -130,10 +151,16 @@ Alias de tests: **FO** `src/screens/food/index.test.tsx` (hoy
 `#200 R<n>`. Ningún test de FO, MS ni MH usa `StyleSheet` (guarda #68 R18):
 los estilos se asertan con `toHaveStyle`.
 
-**Dobles comunes.** FO, MS y MH sustituyen `components/rise-in` (de #199) por
-un `View` anfitrión que expone `testID`, `delayMs` y `children`, igual que los
-tests de #199; el helper local `riseDelayOf(node)` sube por `.parent` hasta el
-primer nodo con `props.delayMs !== undefined` y devuelve ese valor. FO añade
+**Dobles comunes.** FO, MS y MH sustituyen, cada uno con su propio
+`jest.mock` (`'../../components/rise-in'` desde `src/screens/<pantalla>/`),
+el `RiseIn` de #197 R24 por un `View` anfitrión que conserva `testID`,
+`className` y `children` y expone `delayMs` como prop del anfitrión (un solo
+nivel, como el `Animated.View` real). Cada uno de esos tres ficheros declara su
+helper local `riseDelayOf(node)`, que sube por `.parent` desde `node` (incluido)
+hasta el primer nodo con `props.delayMs !== undefined` y devuelve ese valor, o
+`undefined` si no hay ninguno. Nada de esto se importa de tests de otra
+feature (en particular, de #199): el `RiseIn` real lo prueba RI
+`src/components/__tests__/rise-in.test.tsx` de #197 R24. FO añade
 `Check` al doble de `reicon-react-native` con testID `food-icon-check`, y los
 dobles de `Check`, `Clock`, `Sparkles` y `ChevronRight` exponen `size`,
 `strokeWidth` y `color` como props del nodo anfitrión. FO espía `withDelay`
@@ -168,7 +195,11 @@ SYSTEM SHALL pintar `View` `food-title-row` con className exacta
 `flex-row items-center justify-between`, cuyo primer hijo es `food-title` y el
 segundo `<PetSwitcher variant="avatars" … />` (componente consumido sin
 cambios, mismas props de selección que hoy); WHEN no hay mascotas la fila
-contiene solo `food-title`.
+contiene solo `food-title`. WHEN hay mascota seleccionada THE SYSTEM SHALL dar
+al `View` que envuelve su contenido (hoy `className="gap-4"`, padre de
+`food-plan-card` o de `food-plan-empty` y de los enlaces) la className exacta
+`gap-3.5` (canvas `gap: 14px`), sin añadir ni quitar niveles; el `View` de los
+esqueletos conserva `gap-4`.
 
 - Test: FO `#200 R2: el marco es el del canvas` — con el doble de insets
   `{ top: 40, bottom: 24 }`, `contentContainerStyle` es `toEqual`
@@ -179,6 +210,9 @@ contiene solo `food-title`.
   `['pet-chip-pet-1', 'pet-chip-pet-2']`.
 - Test: FO `#200 R2: sin mascotas la fila solo lleva el título` — rama vacía:
   `within(food-title-row).queryAllByTestId(/^pet-chip-/)` vacío.
+- Test: FO `#200 R2: el contenido de la mascota se separa 14 como el canvas` —
+  con plan `{ kind: 'not-found' }`,
+  `getByTestId('food-plan-empty').parent?.props.className` es `'gap-3.5'`.
 
 ### R3 — Héroe de plan
 
@@ -321,7 +355,9 @@ THE SYSTEM SHALL pintar los enlaces existentes (`meal-schedule-link`,
 `food-links` (className exacta `gap-2`), cada uno como `Pressable` con
 className exacta `flex-row items-center gap-3 rounded-16 bg-default px-3.5 py-3`,
 `style={CONTINUOUS_CORNER}`, `accessibilityRole="button"` y el mismo `onPress`
-que hoy. Dentro: `View className="flex-1 gap-0.5"` con el título
+que hoy. Cada `Pressable` lleva su className y su `style` como literales
+propios en `$FS` (sin constante compartida): `rounded-16` aparece 2 veces y
+`style={CONTINUOUS_CORNER}` suma 2 (B8, § Candados [35]). Dentro: `View className="flex-1 gap-0.5"` con el título
 (`meal-schedule-link-title` / `meals-history-link-title`,
 `text-15 font-extrabold text-foreground`) y el subtítulo (`text-xs text-muted`,
 claves de hoy), y después `ChevronRight size={18} strokeWidth={2.4}` en
@@ -336,8 +372,10 @@ claves de hoy), y después `ChevronRight size={18} strokeWidth={2.4}` en
 ### R10 — Entrada escalonada de Nutrición
 
 WHEN se pinta el plan cargado THE SYSTEM SHALL envolver cada pieza en
-`RiseIn` (`src/components/rise-in.tsx`, creado por #199) con estos
-`delayMs` (canvas `animation: rise 400ms ease-out <n>ms both`):
+`RiseIn` (`src/components/rise-in.tsx`, de #197 R24; #200 no lo modifica) con
+estos `delayMs` (canvas `animation: rise 400ms ease-out <n>ms both`). WHEN no
+hay plan cargado THE SYSTEM SHALL pintar `food-links` sin envolver en
+`RiseIn` (los estados que el canvas no dibuja no cambian):
 
 | Pieza | `delayMs` |
 |---|---|
@@ -351,6 +389,9 @@ WHEN se pinta el plan cargado THE SYSTEM SHALL envolver cada pieza en
   con seis filas (plan 0, comidas 80, primer aviso 110, segundo aviso 140, IA
   140, enlaces 200) sobre el fixture de dos warnings, leyendo
   `riseDelayOf(getByTestId(id))`.
+- Test: FO `#200 R10: sin plan los enlaces no entran con RiseIn` — con plan
+  `{ kind: 'not-found' }`, `riseDelayOf(getByTestId('food-links'))` es
+  `undefined`.
 
 ### R11 — Orden de piezas
 
@@ -393,13 +434,17 @@ sin `meals-history-heading`, mismo `contentContainerStyle`, y
   ausencia de `meals-history-heading` y `contentContainerStyle` con
   `paddingTop` = `insets.top` del doble + 8 y `paddingBottom` =
   `insets.bottom` del doble + 32.
-- Test: LY `#200 R13: meals-history oculta la cabecera nativa`.
+- Test: LY `#200 R13: meals-history oculta la cabecera nativa` — mismo acceso
+  a `options` por `name` que LY `#200 R12`; las opciones son
+  `toEqual({ headerShown: false })`.
 
 ### R14 — «Generar plan» con labio violeta
 
 WHEN se pinta `generate-plan-button` THE SYSTEM SHALL añadir
-`style={chunkyLip.violet}` (`useChunkyLip()`) al `Button` existente, sin
-cambiar su className (canvas `box-shadow: 0 4px 0 rgba(91,63,163,0.35)`).
+`style={chunkyLip.violet}` al `Button` existente, sin cambiar su className ni
+su `variant` (canvas `box-shadow: 0 4px 0 rgba(91,63,163,0.35)`). `chunkyLip`
+es la constante `const chunkyLip = useChunkyLip();` que #197 R10 ya deja en
+`$MS`: no se declara otra (CC `#177 R7.4` exige exactamente una).
 
 - Test: MS `#200 R14: «Generar plan» lleva el labio violeta` —
   `toHaveStyle(renderHook(() => useChunkyLip()).result.current.violet)` (los
@@ -424,11 +469,18 @@ dos pantallas dejan de importar `../home/home-entrance`.
 
 THE SYSTEM SHALL añadir a `docs/ui-guidelines.md` la sección
 «Enmienda #200 (mobile-canvas-nutrition)» con: (a) Nutrición, Horario e
-Historial entran con `RiseIn` y los retardos de R10 y R15; (b) el anillo de
-Nutrición anima con `MOTION_RING_TIMING` y `MOTION_RING_DELAY_MS`; (c) frase
-por feature para `rounded-24` (tarjeta de comidas) y `rounded-16` (enlaces);
-(d) héroe, comidas, avisos, IA y enlaces de Nutrición son `View`/`Pressable`
-con clases propias, no `Card`. Y SHALL existir NC con una fila por literal:
+Historial entran con `RiseIn` y los retardos de R10 y R15 (es la enmienda que
+el punto 4 de la Enmienda #197 exige a todo otro uso del timing de `rise`);
+(b) el anillo de Nutrición anima con `MOTION_RING_TIMING` y
+`MOTION_RING_DELAY_MS`; (c) frase por feature para `rounded-24` (tarjeta de
+comidas) y `rounded-16` (enlaces); (d) héroe, comidas, avisos, IA y enlaces de
+Nutrición son `View`/`Pressable` con clases propias, no `Card`. Además, (e) en
+el punto 13 de la carta, la línea `- **Secundarios de Horario**` (la que hoy
+acaba en «… sigue sin labio hasta #200.») sustituye su cola
+``«Generar plan» es tonal de la categoría violeta y sigue sin labio hasta #200.``
+por, literal,
+``«Generar plan» es tonal de la categoría violeta con `style={chunkyLip.violet}` (#200 R14).``;
+el resto de la línea no cambia. Y SHALL existir NC con una fila por literal:
 
 | Artboard | Literal del canvas | Valor en producción |
 |---|---|---|
@@ -461,6 +513,9 @@ con clases propias, no `Card`. Y SHALL existir NC con una fila por literal:
 - Test: NC `#200 R16: la carta recoge la enmienda` —
   `../docs/ui-guidelines.md` contiene `Enmienda #200`, `rounded-24` y
   `rounded-16` dentro de esa sección.
+- Test: NC `#200 R16: la carta da a «Generar plan» su labio violeta` —
+  `../docs/ui-guidelines.md` contiene la cola nueva de (e) y no contiene
+  `sigue sin labio hasta #200`.
 
 ### R17 — Guardas de la carta en los ficheros tocados
 
@@ -478,7 +533,8 @@ no importa `components/card`.
 
 Inventario cerrado, hallado con `git grep -nF '<literal viejo>'` sobre
 `71ff81a1` y seguido por constantes, helpers y tablas `it.each` hasta cada
-`it`. Cada `it` tocado lleva el sufijo `(enmendado por #200 R<n>)` en su
+`it`; las filas 31–50 añaden los candados agregados de la auditoría y los que
+crea #197 (medidos en su rama, `f408dbf2`). Cada `it` tocado lleva el sufijo `(enmendado por #200 R<n>)` en su
 título (si ya tiene sufijo, se añade `y #200 R<n>`) y se enmienda en el commit
 rojo de su R. Las rutas de FO se citan por su sitio nuevo; antes de R1 viven
 en `src/app/(tabs)/__tests__/food.test.tsx`.
@@ -543,14 +599,19 @@ en `src/app/(tabs)/__tests__/food.test.tsx`.
     `bezier(0.77, 0, 0.175, 1)`) → aserta `MOTION_RING_TIMING` y el
     `withDelay(200, …)`; arrastra `#168 R10 › transiciona de 50 a 100 al servir
     y vuelve a 50 al deshacer`.
-14. FO `#168 R10 › la llamada de 50 respeta ReduceMotion.System` y
-    `#168 R10 › acota la llamada a 100 aunque el texto diga 150%`: el índice
-    de llamada de `mockWithTiming` y su segundo argumento, a la forma de R4.
+14. Retirado (auditoría S1). FO `#168 R10 › la llamada de 50 respeta
+    ReduceMotion.System` y `› acota la llamada a 100 aunque el texto diga
+    150%` buscan la llamada por valor, no por índice, y siguen en verde con
+    `withDelay(200, withTiming(…, MOTION_RING_TIMING))`: no se enmiendan.
 15. FO `#168 R8 › la pista tiene exactamente su receta de Circle`:
     `strokeOpacity: 0.2` → `0.22`.
-16. MT `no exporta nada más (enmendado por #195 R13)`: la lista gana
-    `MOTION_RING_DELAY_MS` y `MOTION_RING_TIMING` (#199 también la enmienda:
-    el leader re-mide la lista tras su merge).
+16. MT `no exporta nada más (enmendado por #195 R13) (enmendado por #197 R11)`
+    (título tras #197): la lista ordenada de #197 (37 claves) gana
+    `MOTION_RING_DELAY_MS` y `MOTION_RING_TIMING` en su posición de `.sort()`
+    (verificar con `node -e`), 39 claves. #199 R27 añade a la misma lista
+    siete claves en paralelo: si #199 ya está en `dev`, la base es la suya
+    (44) y el esperado 46; la segunda feature en mergear conserva las claves
+    de la primera.
 
 **R5–R9 (tarjetas de Nutrición)**
 
@@ -559,9 +620,12 @@ en `src/app/(tabs)/__tests__/food.test.tsx`.
     `meal-schedule-link-title` (R9).
 18. `consistency-classnames.test.ts` `#98 R10 › deja CONTINUOUS_CORNER…`
     (`food.match(/style=\{CONTINUOUS_CORNER\}/g)` y la cuenta global) y
-    `#62 R14` `directUses` de food: cada R suma lo suyo en su commit rojo —
-    R5 +1, R6 +1, R7 +1, R8 +1, R9 +2 — hasta 6 en food (B8). La cuenta de
-    `text-accent-strong` (1) no cambia.
+    `#62 R14` `directUses` de food: cada R enmienda lo suyo en su commit rojo
+    — R5 +1, R7 +1, R8 +1, R9 +2 — y la escalera de food por commit verde es
+    1, 2, 2, 3, 4, 6 (B8). R6 es neto 0 (el `style={CONTINUOUS_CORNER}` de la
+    fila de comida desaparece y el de `meal-tile-${index}` lo sustituye): R6
+    no enmienda esta fila. La cuenta global sube igual (+5 al final). La cuenta
+    de `text-accent-strong` del mismo `it` es la fila [47].
 19. FO `R5 › renders kcal, grams, ordered meals, portions, and local-time
     badges` (R6): `getByText('07:30')` y `getByText('94 g')` → hora y ración
     de R6; `meal-pending-1` con `Pendiente` → `Marcar servido`.
@@ -572,8 +636,8 @@ en `src/app/(tabs)/__tests__/food.test.tsx`.
 21. FO `#62 R3 › hereda radio, borde y sombra sin capturar el testID del
     texto` (R7): `rounded-card`, `border`, `shadow-sm`, `bg-default` → className
     exacta `rounded-card bg-default p-3.5`.
-22. FO `R6 › shows the AI recommendation only when the explanation is
-    present` (R8), solo si aserta tamaño o color de `food-icon-sparkles`.
+22. Retirado (auditoría S2). FO `R6 › shows the AI recommendation only when
+    the explanation is present` no aserta nada del icono: sigue en verde.
 23. FO `#105 R14 › shows the history card immediately after the schedule and
     pushes its route` (R9): className de `meals-history-link-title` →
     `text-15 font-extrabold text-foreground`; el hermano anterior sigue siendo
@@ -592,9 +656,16 @@ en `src/app/(tabs)/__tests__/food.test.tsx`.
     `meals-history-heading` → `meals-history-header-title`;
     `contentContainerStyle` → el de R13.
 27. LY `#95 R4 › #194 R4: %s usa exactamente las opciones de cabecera
-    acordadas`: sale la fila `['meal-schedule', '']` (R12); y el it de LY que
-    comprueba las opciones de `meals-history` → `{ headerShown: false }` (R13).
-    #199 R1 ya enmienda ese título: el leader re-mide tras su merge.
+    acordadas`: sale la fila `['meal-schedule', '']` (R12); la aserción nueva
+    de `meal-schedule` es LY `#200 R12`. Y LY `#105 R8 › declara meals-history
+    como decimotercer hijo con cabecera nativa` (R13) pasa a titularse
+    `declara meals-history como decimotercer hijo sin cabecera nativa
+    (enmendado por #200 R13)`: conserva la comprobación del índice 12
+    (`[Stack.Screen, 'meals-history']`) y su segunda aserción pasa de
+    `toMatchObject({ headerShown: true, title: '' })` a
+    `toEqual({ headerShown: false })`. #199 R1 enmienda en paralelo el mismo
+    `it.each` `#194 R4` (su propia fila y su sufijo): la segunda feature en
+    mergear conserva las filas que quitó la primera y los dos sufijos.
 
 **R15**
 
@@ -607,6 +678,41 @@ en `src/app/(tabs)/__tests__/food.test.tsx`.
     margen táctil compartidos`: las dos cadenas
     `"import { HomeEntrance } from '../home/home-entrance';"` (Horario e
     Historial) → `"import { RiseIn } from '../../components/rise-in';"`.
+
+**Filas 31–50 (auditoría `progress/inventory-audit_mobile-canvas-nutrition.md`
+F1–F13 y O2, y candados que crea #197).** «Hoy» es el estado tras el merge de
+#197 (las filas que #197 no toca dicen lo mismo en `71ff81a1`). Las listas
+ordenadas se reordenan con `.sort()` y la posición se verifica con `node -e`.
+Alias: **CC** `src/__tests__/chunky-cta-canvas-fidelity.test.ts`, **CN**
+`src/__tests__/consistency-classnames.test.ts`, **LG**
+`src/__tests__/legibility-classnames.test.ts`, **DD**
+`src/__tests__/design-drift.test.ts`, **AC**
+`src/__tests__/alerts-canvas-fidelity.test.ts`, **PC**
+`src/__tests__/profile-canvas-fidelity.test.ts`, **CF**
+`src/__tests__/canvas-foundations.test.ts` (llega con #197).
+
+| # | fichero › describe › it | hoy afirma | pasa a afirmar | R |
+|---|---|---|---|---|
+| 31 (F1) | FO › `#155 R4: Comida sin mascotas presenta a Pingo` › `queda en el sitio del vacío que sustituye` | hermanos de `food-empty`: `['food-title', 'food-empty']` | `['food-title-row', 'food-empty']` | R2 |
+| 32 (F2) | FO › `#155 R9: sin plan de comidas, Pingo enseña el cuenco` › `queda en el sitio del vacío que sustituye` | hermanos de `food-plan-empty`: `['food-plan-empty', 'meal-schedule-link', 'meals-history-link']`; `slot.parent?.parent?.parent` es `screen-food` | `['food-plan-empty', 'food-links']`; la cadena de tres padres hasta `screen-food` no cambia (R2 conserva el `View` envoltorio con `gap-3.5` y R10 no envuelve `food-links` sin plan) | R9 |
+| 33 (F3) | CC › `#177 R7.4: solo la definición y los diecisiete consumidores usan el hook (enmendado por #197 R10)` (y, por la misma constante, `#177 R12.1/R12.2` y `#177 R12.3`) | `consumers` = `ctaFiles` + reminders, alerts y meal-schedule | `consumers` gana `'screens/food/index.tsx'`; R7.4 exige en `$FS` exactamente un `const chunkyLip = useChunkyLip();` y R12.1/R12.2/R12.3 pasan a recorrer `$FS` (en verde si R17 se cumple: sin corchetes de clase, sin hex, sin `StyleSheet` ni sombras, sin `#177` suelto). Si #199 añade consumidores en paralelo, la segunda en mergear conserva los de la primera | R3 |
+| 34 (F4) | CC › `#177 R7.5: inventario de los tres estilos y el tile (…)` › tercera expectativa | `inventory(/style=\{chunkyLip\.primaryCompact\}/g)` `toEqual({ 'screens/reminders/index.tsx': 1 })` | `toEqual({ 'screens/food/index.tsx': 1, 'screens/reminders/index.tsx': 1 })`; `#177 R8.1`, `#177 R3.3` y la fila `primaryCompact` de ids no cambian (`meal-pending-${index}` es `View`, no `Button`) | R6 |
+| 35 (F5) | CC › `#177 R7.3: inventario de los veintisiete radios de dieciséis (…)` | `inventory(/\brounded-16\b/g)` `toEqual(radii)`; `count(…)` `toBe(26 + 1 + 1 + 1 + 2)` | `radii` gana `'screens/food/index.tsx': 2` y la cuenta `+ 2 // #200 R9` (dos literales, R9) | R9 |
+| 36 (F6) | CC › `#177 R6.2: recuentos de etiquetas (…)` | `count(/text-17/g)` `toBe(8 + 15 + 1 + 1 + 1 + 1)` y `count(/text-17 font-extrabold text-foreground/g)` `toBe(3 + 3)` | las dos ganan `+ 1 // #200 R5` (`food-meals-title`); las otras cuatro expectativas no cambian | R5 |
+| 37 (F7) | DD › `#179 R13: Horario e Historial fieles al canvas` › `sitúa el título antes del resumen y los errores antes de las acciones` | ancla `testID="meal-schedule-heading"` en la lista de anclas y en el `indexOf` frente a `meal-schedule-summary` | ancla `testID="meal-schedule-header"` en los dos sitios, mismo orden | R12 |
+| 38 (F8) | DD › `#179 R13: …` › `limita text-22 a Horario y text-17 al inventario de E1.2 (enmendado por #177 R10)` | lista de `text-17` sin food | gana `'screens/food/index.tsx'` entre `'screens/edit-profile/index.tsx'` y `'screens/forgot/index.tsx'`; MS sigue en la lista | R5 |
+| 39 (F9a) | AC › `#174 R12: inventarios` › `limita $token a su inventario de producción (…)`, fila `tracking-caps` | `['screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx']` | gana `'screens/food/index.tsx'` entre las dos | R3 |
+| 40 (F9b) | AC › mismo `it.each`, fila `text-15` | lista de 14 sin food | gana `'screens/food/index.tsx'` entre `'screens/docs/index.tsx'` y `'screens/forgot/index.tsx'` | R5 |
+| 41 (F9c) | AC › mismo `it.each`, fila `tracking-title` | incluye `'screens/meal-schedule/index.tsx'` y `'screens/meals-history/index.tsx'` (sus encabezados) | sin `meal-schedule` (R12) y sin `meals-history` (R13); `'components/screen-header.tsx'` sigue | R12, R13 |
+| 42 (#197 R4) | AC › mismo `it.each`, fila `tracking-title` | `'app/(tabs)/food.tsx'` en primera posición (B35) | `'screens/food/index.tsx'` entre `'screens/docs/index.tsx'` y `'screens/geofence-editor/index.tsx'` | R1 |
+| 43 (#197 R4) | CF › `#197 R4: ningún fichero de producción usa tracking-tight` › bucle de ficheros | lee `'app/(tabs)/food.tsx'` y exige `text-3xl font-black tracking-title text-foreground` (B34) | lee `'screens/food/index.tsx'`; misma aserción | R1 |
+| 44 (F10) | PC › `#173 R4: avatars solo en Perfil` › `limita la variante nueva al consumidor Perfil` | `filesMatching(/variant="avatars"/)` `toEqual(['screens/profile/index.tsx'])` | `toEqual(['screens/food/index.tsx', 'screens/profile/index.tsx'])`; si #199 añade otro consumidor en paralelo, la segunda en mergear lo conserva | R2 |
+| 45 (F11) | PC › `#173 R2: inventario de radios nuevos` › `reserva rounded-hero al Card compartido y el skeleton de Perfil` | `['components/card.tsx', 'screens/alert-detail/index.tsx', 'screens/profile/index.tsx']` | gana `'screens/food/index.tsx'` entre `alert-detail` y `profile` | R3 |
+| 46 (F12) | PC › `#173 R2.4: inventario de tamaños nuevos` › `limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8) (enmendado por #189 R6)` | lista sin food | gana `'screens/food/index.tsx'` entre `'screens/edit-profile/index.tsx'` y `'screens/forgot/index.tsx'` | R8 |
+| 47 (F13) | CN › `#98 R10 › deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban` › `food.match(/text-accent-strong\b/g)` ; LG › `#61 R4: el acento como tinta usa accent-strong` › fila de food de `inkSites` (`%s pinta con text-accent-strong (%i)`) y `suma las trece ocurrencias que enumera la spec` | food = 1 (la insignia «servida» vieja); suma sin término de #200 | **en el commit rojo de R5**: CN `toHaveLength(1 + 1) // #200 R5`, fila de food `1 + 1 // #200 R5` y la suma `+ 1 // #200 R5` (R5 añade `food-meals-progress` mientras la insignia vive hasta R6); **en el commit rojo de R6**: `1 + 1 - 1 // #200 R5; #200 R6` en las dos y la suma `- 1 // #200 R6` (R6 retira la insignia). Al final, food = 1 | R5, R6 |
+| 48 (O2) | CC › `#177 R11.1: la carta declara la receta global y conserva sus excepciones (enmendado por #197 R21)` (constante `preservedLines`) y DD › `sitúa la receta de secundarios de Horario antes de Sin labio (enmendado por #197 R21)` (constante `actionRule`) | la línea `- **Secundarios de Horario**` acaba en `«Generar plan» es tonal de la categoría violeta y sigue sin labio hasta #200.` (B38, B39) | la misma línea con la cola de R16 (e): ``«Generar plan» es tonal de la categoría violeta con `style={chunkyLip.violet}` (#200 R14).`` | R16 |
+| 49 | CF › `describe('#197 R20: cimientos sin cablear')` entero: `nadie monta todavía los cimientos %s` (4 casos: `toggle-switch`, `screen-header`, `shadows`, `rise-in`) y `el layout raíz no cambia` | cero importadores de producción de los 4 módulos; `headerShown` ×2 en `_layout.tsx` (B33) | el `describe` se **borra entero** en el commit rojo de R10 (el primero que monta `RiseIn`; R12 toca `_layout.tsx` después). Es un candado temporal de #197 que la ola 2 retira con el mismo borrado en todas sus features, para que git lo mezcle sin conflicto; no se sustituye por nada (regla del leader, 2026-10-23) | R10 |
+| 50 | LY › `#95 R4: cada pantalla de detalle declara su cabecera nativa` › `#194 R4: %s usa exactamente las opciones de cabecera acordadas` | incluye la fila `['meal-schedule', '']` | sin esa fila (item 27); #199 R1 quita en paralelo la suya y la segunda feature en mergear conserva las dos bajas y los dos sufijos | R12 |
 
 Regla de parada: un rojo fuera de este inventario detiene la implementación y
 se reporta al leader.
@@ -626,8 +732,12 @@ se reporta al leader.
 
 ## Fuera de alcance
 
-- Cambios en `ScreenHeader`, `RiseIn`, `PetSwitcher`, `EmptyState`, `Card` o
-  `useChunkyLip`: se consumen tal como los dejan #197, #199 y #198.
+- Cambios en `ScreenHeader`, `RiseIn` o `useChunkyLip`: se consumen tal como
+  los deja #197 (`RiseIn` es #197 R24). `PetSwitcher`, `EmptyState` y `Card`
+  se consumen sin cambios.
+- Cualquier pieza de producción o de test que cree #199: #200 no depende de
+  ella (corre en paralelo); solo comparte ficheros de inventario con la regla
+  de mezcla de § Contexto.
 - Estados no dibujados (carga, error, sin mascotas, sin plan, error al
   servir, «Deshacer»): conservan su aspecto actual, incluidos los esqueletos.
 - Pantallas de #198, #199 y #201, y la barra de pestañas (#206).
@@ -657,5 +767,5 @@ la feature; no bloquea la implementación.
 ## Aprobación
 
 - [ ] Aprobado por humano (fecha: ____)
-- [ ] Enmienda #200 de `docs/ui-guidelines.md` (R16: entrada con `RiseIn`, anillo con `MOTION_RING_*`, `rounded-24` y `rounded-16`, superficies de Nutrición sin `Card`) aprobada por humano
+- [ ] Enmienda #200 de `docs/ui-guidelines.md` (R16: entrada con `RiseIn`, anillo con `MOTION_RING_*`, `rounded-24` y `rounded-16`, superficies de Nutrición sin `Card`, y «Generar plan» con `chunkyLip.violet` en el punto 13) aprobada por humano
 - [ ] Smoke de R2, R3, R4, R6, R7, R10, R12, R13, R14 y R15 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
