@@ -16,7 +16,6 @@ import {
 } from '../../api/nutrition';
 import { listPets, type PetsState } from '../../api/pets';
 import { nutritionKeys, petKeys } from '../../api/query-keys';
-import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { usePetSelection } from '../../hooks/use-pet-selection';
@@ -424,42 +423,38 @@ export function FoodScreen() {
             </View>
           ) : null}
 
-          <Card
-            testID="meal-schedule-link"
-            className="flex-row items-center justify-between"
-            onPress={() => router.push('/meal-schedule' as Href)}
-          >
-            <View className="gap-1">
-              <Text
-                testID="meal-schedule-link-title"
-                className="text-base font-bold text-foreground"
-              >
-                {t('food.mealSchedule')}
-              </Text>
-              <Text className="text-xs font-normal text-muted">
-                {t('food.mealScheduleLinkSubtitle')}
-              </Text>
-            </View>
-            <ChevronRight size={20} color={foreground} />
-          </Card>
-          <Card
-            testID="meals-history-link"
-            className="flex-row items-center justify-between"
-            onPress={() => router.push('/meals-history' as Href)}
-          >
-            <View className="gap-1">
-              <Text
-                testID="meals-history-link-title"
-                className="text-base font-bold text-foreground"
-              >
-                {t('food.mealsHistory')}
-              </Text>
-              <Text className="text-xs font-normal text-muted">
-                {t('food.mealsHistoryLinkSubtitle')}
-              </Text>
-            </View>
-            <ChevronRight size={20} color={foreground} />
-          </Card>
+          <View testID="food-links" className="gap-2">
+            <Pressable
+              testID="meal-schedule-link"
+              className="flex-row items-center gap-3 rounded-16 bg-default px-3.5 py-3"
+              style={CONTINUOUS_CORNER}
+              accessibilityRole="button"
+              onPress={() => router.push('/meal-schedule' as Href)}
+            >
+              <View className="flex-1 gap-0.5">
+                <Text testID="meal-schedule-link-title" className="text-15 font-extrabold text-foreground">
+                  {t('food.mealSchedule')}
+                </Text>
+                <Text className="text-xs text-muted">{t('food.mealScheduleLinkSubtitle')}</Text>
+              </View>
+              <ChevronRight size={18} strokeWidth={2.4} color={foreground} />
+            </Pressable>
+            <Pressable
+              testID="meals-history-link"
+              className="flex-row items-center gap-3 rounded-16 bg-default px-3.5 py-3"
+              style={CONTINUOUS_CORNER}
+              accessibilityRole="button"
+              onPress={() => router.push('/meals-history' as Href)}
+            >
+              <View className="flex-1 gap-0.5">
+                <Text testID="meals-history-link-title" className="text-15 font-extrabold text-foreground">
+                  {t('food.mealsHistory')}
+                </Text>
+                <Text className="text-xs text-muted">{t('food.mealsHistoryLinkSubtitle')}</Text>
+              </View>
+              <ChevronRight size={18} strokeWidth={2.4} color={foreground} />
+            </Pressable>
+          </View>
         </View>
       ) : null}
     </ScrollView>
