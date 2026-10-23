@@ -1019,16 +1019,16 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
   });
 
   it.each([
-    'food-meals-title',
-    'food-ai-title',
-    'meal-schedule-link-title',
+    ['food-meals-title', 'text-17 font-extrabold text-foreground'],
+    ['food-ai-title', 'text-base font-bold text-foreground'],
+    ['meal-schedule-link-title', 'text-base font-bold text-foreground'],
   ])(
-    'aplica la receta canónica al título %s',
-    async (testID) => {
+    'aplica la receta canónica al título %s (enmendado por #200 R5)',
+    async (testID, className) => {
       await renderFood();
 
       expect((await screen.findByTestId(testID)).props.className).toBe(
-        'text-base font-bold text-foreground',
+        className,
       );
     },
   );
@@ -1606,5 +1606,25 @@ describe('#200 R4: pista y movimiento del anillo', () => {
     await renderFood();
     await screen.findByTestId('food-plan-card');
     expect(screen.getByTestId('food-plan-ring-track').props.strokeOpacity).toBe(0.22);
+  });
+});
+
+
+describe('#200 R5: tarjeta de comidas', () => {
+  beforeEach(setupFood168);
+  it('#200 R5: la tarjeta de comidas es la del canvas', async () => {
+    await renderFood();
+    const card = await screen.findByTestId('food-meals-section');
+    expect(card.type).toBe('View');
+    expect(card.props.className).toBe('gap-2 rounded-24 border border-border bg-surface p-3.5');
+    expect(card).toHaveStyle(CONTINUOUS_CORNER);
+    expect(screen.getByTestId('food-meals-progress')).toHaveStyle({ fontVariant: ['tabular-nums'] });
+  });
+  it.each([
+    ['food-meals-title', 'text-17 font-extrabold text-foreground'],
+    ['food-meals-progress', 'text-15 font-black text-accent-strong'],
+  ])('#200 R5: la tarjeta de comidas es la del canvas (%s)', async (id, className) => {
+    await renderFood();
+    expect((await screen.findByTestId(id)).props.className).toBe(className);
   });
 });
