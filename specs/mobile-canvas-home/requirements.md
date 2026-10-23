@@ -50,13 +50,16 @@ Ninguna queda abierta para Codex. Cada una tiene su defecto escrito; el leader l
 | D5 | Curva y retardo del llenado de barras | Se conserva `MOTION_FILL_TIMING` en `CollarBatteryBar` y en la barra de comidas. No se replica `fill 900ms cubic-bezier(.23,1,.32,1) 400ms` (desviación V4). | `MOTION_FILL_TIMING` lo comparte `components/weight-chart.tsx` (Salud, #199); cambiar su valor saldría del alcance. |
 | D6 | Retardos de entrada | Los índices de `HomeEntrance` pasan a resumen 2, collar 3, accesos 4, actividad 5, recordatorios 6, última posición 7 (× `MOTION_STAGGER_MS` 60 = 120, 180, 240, 300, 360, 420 ms, los del canvas). La frase de Pingo sigue en 0 (dueño #190/#195; el canvas pide 140, desviación V5). | Iguala los retardos del canvas sin tocar `MOTION_STAGGER_MS`. |
 | D7 | Estado de carga | `home-loading` pasa a ser un esqueleto con la forma de `InicioCarga` por debajo del hero: tarjeta resumen, bloque collar, accesos y bloque semanal, con `Skeleton` de `heroui-native`. Sin el bloque de cabecera degradado (desviación V6) y sin el título «Inicio» (el artboard no lo dibuja). | El degradado exigiría `expo-linear-gradient` (vetado). |
-| D8 | Estado de error | `EmptyState` gana la prop opcional `tone?: 'default' \| 'danger'` (defecto `'default'`, ninguna otra pantalla cambia). `tone="danger"`: disco `CATEGORY_SLOTS.rose.surface`, huellas en `danger`, título `text-22`, badge de 44 con borde de 3. Inicio lo usa con `pose="talk"`. | Reutiliza el escenario hero de `EmptyState` en vez de duplicarlo en `index.tsx`. |
+| D8 | Estado de error | `EmptyState` gana la prop opcional `tone?: 'default' \| 'danger'` (defecto `'default'`, ninguna otra pantalla cambia). `tone="danger"` solo cambia disco (`CATEGORY_SLOTS.rose.surface`), huellas (`danger`) y título (`text-22`). El badge de 44 con borde de 3 y el icono `Refresh` los pasa `src/screens/home/index.tsx` por las props `badge` y `actionIcon` de R18. Inicio lo usa con `pose="talk"`. | Reutiliza el escenario hero de `EmptyState` sin duplicarlo; el contenido propio de Inicio (badge, icono) vive en Inicio, con la API única de R18. |
 | D9 | Copy del error | Claves nuevas `home.loadPetsErrorTitle` («No pude cargar a tus mascotas» / «I couldn't load your pets») y `home.loadPetsErrorBody` («Revisa tu conexión y vuelve a intentarlo.» / «Check your connection and try again.»); el botón sigue en `common.retry` («Reintentar»). | Literal del canvas, ya en Voz B (primera persona serena de Pingo). |
 | D10 | Copy del vacío | Se conserva `common.noPetsBody` («Añade a tu mascota y te ayudo a saber dónde está y cómo está.»). El literal del canvas («Añade a tu compañero para ver…») no se adopta (desviación V7). | Precedencia: el copy sigue la Voz B; el del catálogo es Voz B y el del canvas no habla Pingo. |
 | D11 | `ScreenHeader` | Inicio **no** lo adopta (la cabecera es el hero de #195). `src/app/_layout.tsx` no cambia. | Ningún artboard de Inicio dibuja la cabecera de contenido. |
 | D12 | Opacidad de barras semanales | Con día seleccionado: la barra seleccionada `fillOpacity` 1 y las demás 0.35; sin selección, todas 1 (estado no dibujado, se conserva). Radio de barra `Math.min(6, height / 2)`. | Canvas: `border-radius: 6px; opacity: .35`. |
 | D13 | Deuda #144 y #154 | No se absorben; siguen `pending` (Fuera de alcance). | #144 son sondas de posición de la gráfica sin relación con el estilo; #154 exige medir la causa con corridas, que el spec_author no puede lanzar sin `init.sh`. |
 | D14 | Tinte de la tarjeta de última posición y de los círculos del collar | Iconos de última posición en `accent-strong` (hoy `accent`); fondo del círculo `bg-tab-pill` (hoy `bg-accent-soft`). | Canvas: `background: var(--pill); color: var(--accent-strong)`. |
+| D15 | API de `EmptyState` compartida con #201 | R18 de esta spec copia la semántica de `specs/mobile-canvas-map/requirements.md` §R14 (`badge`, `actionIcon`, `body` opcional). #198 la implementa primero; #201 se implementa después de #198, la consume tal cual y no vuelve a añadirla (su §R14 queda cumplido por #198). | Una sola API; dos specs que añaden las mismas props chocarían en `empty-state.tsx`. |
+| D16 | Cómo pinta `EmptyState` el `actionIcon` | Tal cual, sin `cloneElement` ni props añadidas: ocupa el sitio exacto del `<Plus …>` de hoy. Quien lo pasa le pone `testID="<testID>-action-icon"`, `size`, `color` y `style={{ marginRight: 8 }}`. | Sin magia en el componente; el «es él» de #201 §R14 se cumple porque el nodo con ese `testID` es el elemento pasado. |
+| D17 | `entering` del esqueleto | Los 17 `Skeleton` internos de R14 (título y celdas del resumen, rótulo y tiles de accesos) **no** llevan `testID`; solo los dos bloques que son `Skeleton` (`home-loading-collar`, `home-loading-weekly`) lo llevan. Así `enteringIds` da un literal fijo (K37). | Cada `Skeleton` de heroui-native trae `entering` en su raíz; quitárselo exigiría `animation="disabled"`, que mata el pulso (V10). |
 
 ## Base medida
 
@@ -87,6 +90,10 @@ grep -cF 'fillOpacity' src/screens/home/weekly-activity-chart.tsx               
 grep -cF 'bg-surface-secondary' src/screens/home/weekly-activity-chart.tsx             # 1
 grep -cF "'shrink text-xs font-semibold text-foreground'" src/screens/home/weekly-activity-chart.tsx  # 1
 grep -cF 'tone' src/components/empty-state.tsx                                         # 0
+grep -cF 'badge' src/components/empty-state.tsx                                        # 0
+grep -cF 'actionIcon' src/components/empty-state.tsx                                   # 0
+grep -cF 'home-error-action-icon' src/screens/home/index.tsx                           # 0
+grep -cF 'TABULAR_NUMS' src/screens/home/index.tsx                                     # 9 (R2 no lo mueve: K41)
 
 # Copy
 grep -cF 'home.loadPetsError' src/i18n/catalog.ts                                      # 0
@@ -97,6 +104,16 @@ grep -cF "{ file: 'src/screens/home/index.tsx', key: 'common.somethingWentWrong'
 grep -cF "[join('screens', 'home', 'index.tsx'), 2]" src/__tests__/legibility-classnames.test.ts      # 1
 grep -cF "it('suma las trece ocurrencias que enumera la spec'" src/__tests__/legibility-classnames.test.ts  # 1
 grep -cF '16 + 2 + 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 2)' src/__tests__/consistency-classnames.test.ts  # 2
+grep -cF "toBe('flex-row')" src/screens/home/index.test.tsx                              # 4 (K3, K6, K36 ×2)
+grep -cF "['home-loading']" src/screens/home/index.test.tsx                              # 1 (K37)
+grep -cF "['src/screens/home/index.tsx', 1]" src/components/__tests__/empty-state.test.tsx  # 1 (K39)
+grep -cF "'../utils/category-palette'" src/components/__tests__/empty-state.test.tsx     # 0 (K40)
+grep -cF "['src/screens/home/index.tsx', 'bg-accent-soft', 3]" src/__tests__/home-photo-hero-canvas.test.ts  # 1 (K41)
+grep -cF "['src/screens/home/index.tsx', 'text-accent-strong', 2]" src/__tests__/home-photo-hero-canvas.test.ts  # 1 (K41)
+grep -cF '26 + 1 + 1 + 1 + 2)' src/__tests__/chunky-cta-canvas-fidelity.test.ts          # 1 (K35)
+grep -cF "'screens/home/index.tsx'" src/__tests__/profile-canvas-fidelity.test.ts        # 1 (K44/K45: hoy en ninguna de las dos listas)
+grep -cF "'screens/home/weekly-activity-chart.tsx'" src/__tests__/alerts-canvas-fidelity.test.ts  # 0 (K46)
+grep -cF '21 + 15 + 1 + 4 + 7 + 2 + 1 + 2 + 2 + 4)' src/__tests__/ui-language.test.ts    # 1 (K47)
 
 # Tests nuevos aún ausentes
 grep -cF '#198 R' src/screens/home/index.test.tsx                                      # 0 (#197: 0 → 0)
@@ -120,7 +137,7 @@ Nuevos (cruzados con `grep -rnE "TestId\(/" mobile-pet-tracker/src` sobre la bas
 | `summary-tile-weight`, `summary-tile-activity`, `summary-tile-sleep`, `summary-tile-distance` | Mosaico de 36 de cada celda del resumen (R2) | HI `/^summary-(weight\|activity\|sleep\|distance)$/` | No casa: el patrón está anclado con `$` y exige `summary-<métrica>` |
 | `collar-icon` | Círculo del icono del collar, con y sin dispositivo (R3, R13) | ninguno empieza por `collar-` | Libre |
 | `home-loading-summary`, `home-loading-collar`, `home-loading-quick-actions`, `home-loading-weekly` | Bloques del esqueleto de carga (R14) | HI `/^home-entrance-/` | No casa (prefijo distinto) |
-| `home-error-stage`, `home-error-stage-disc`, `home-error-stage-paw`, `home-error-badge`, `home-error-title`, `home-error-body`, `home-error-action`, `home-error-action-icon` | `EmptyState testID="home-error" tone="danger"` (R15); los genera `EmptyState` con su patrón `${testID}-…` | HI `/-(?:error\|retry)$/` y `/(?:-error\|-retry)$/` | Solo se usan con `within(<reminders-section>)`; el error de Inicio vive fuera de la sección. Libre |
+| `home-error-stage`, `home-error-stage-disc`, `home-error-stage-paw`, `home-error-badge`, `home-error-title`, `home-error-body`, `home-error-action`, `home-error-action-icon` | `EmptyState testID="home-error" tone="danger"` (R15); los genera `EmptyState` con su patrón `${testID}-…`, salvo `home-error-badge` y `home-error-action-icon`, que los escribe literales `src/screens/home/index.tsx` en los elementos que pasa por `badge` y `actionIcon` (R18, D16) | HI `/-(?:error\|retry)$/` y `/(?:-error\|-retry)$/` | Solo se usan con `within(<reminders-section>)`; el error de Inicio vive fuera de la sección. Libre |
 
 Que cambian de nodo:
 
@@ -142,6 +159,17 @@ Abreviaturas de test: **HI** `src/screens/home/index.test.tsx` · **WC** `src/sc
 `{ boxShadow: [{ offsetX: 0, offsetY: 1, blurRadius: 2, spreadDistance: 0, color: '--color-shadow-near' }, { offsetX: 0, offsetY: 8, blurRadius: 24, spreadDistance: 0, color: '--color-shadow-far' }] }`
 (llamado **SOMBRA_CARD** abajo; el test lo escribe literal, nunca lo importa de producción).
 
+Restricciones de los tests (cruzadas con los guards; incumplirlas pone en rojo `it` ajenos):
+
+- HI y WC están en las `featureFiles` de las guardas de design-drift `#68 R18`, `#69 R13`, `#71 R13`, `#70 R17` y `#85 R12`, que
+  rechazan `StyleSheet`, hex y `text-[10px]` en esos ficheros. Ningún `it` de HI ni de WC escribe `StyleSheet` (ni
+  `StyleSheet.flatten`) ni un hex: el `style` se lee de `props.style`, que ya llega plano porque `Card` hace `StyleSheet.flatten`
+  y el `Pressable` del tile resuelve su función a un objeto (R5).
+- Los `className` que esta feature pone en `Card` y en `Skeleton` son literales estáticos (sin `${…}`): HT
+  `#187 R1: los className opacos son solo los medidos` no admite opacos nuevos. Los únicos con plantilla son los que ya la
+  llevan hoy fuera de `Card`/HeroUI (`Pressable` de los tiles, `View` de los mosaicos).
+- Ningún comentario de producción escribe `#<número>` sin ` R<n>` detrás (`no-pets-states` `#181 R8.3`, design-drift `HEX_LITERAL`).
+
 ### Inicio con collar en línea (`Inicio.dc.html`)
 
 - **R1** (contenedor y título del resumen): WHEN Inicio pinta `summary-card` THE SYSTEM SHALL renderizarla como
@@ -150,7 +178,7 @@ Abreviaturas de test: **HI** `src/screens/home/index.test.tsx` · **WC** `src/sc
   `t('home.summaryTitle')` («Resumen de hoy» / «Today's Summary»). Canvas: radio 20, `padding: 14px 8px`, `gap: 12px`,
   `box-shadow: var(--shadow)`; título 16/800 con `padding: 0 8px`.
   - Test: HI › `#198 R1 viste summary-card con padding 14/8, hueco 12 y la sombra card` (la `className` contiene `gap-3`, `px-2`,
-    `py-3.5` y `shadow-none`, no contiene `shadow-sm` ni `gap-4`; `StyleSheet.flatten(style).boxShadow` es igual a SOMBRA_CARD) y
+    `py-3.5` y `shadow-none`, no contiene `shadow-sm` ni `gap-4`; `props.style.boxShadow` es igual a SOMBRA_CARD) y
     `#198 R1 pinta el título con 16/800 y su sangría de 8`.
 - **R2** (celdas del resumen con actividad): WHEN el resumen tiene actividad (rama con collar) THE SYSTEM SHALL pintar dentro de
   `summary-reveal` una fila `flex-row gap-1` con cuatro celdas en el orden peso, actividad, descanso y distancia, cada una
@@ -161,7 +189,8 @@ Abreviaturas de test: **HI** `src/screens/home/index.test.tsx` · **WC** `src/sc
   `category-<slot>-strong` pedida con `useThemeColors(SUMMARY_TILES.map(({ slot }) => \`category-${slot}-strong\`))`; el valor
   `summary-<métrica>` SHALL llevar `text-base font-extrabold text-foreground` más `TABULAR_NUMS` y la etiqueta
   `text-11 font-semibold text-muted` con `t('home.weight')` «Peso», `t('home.activity')` «Actividad», `t('home.sleep')`
-  «Descanso», `t('home.distance')` «Distancia».
+  «Descanso», `t('home.distance')` «Distancia». `SUMMARY_TILES` solo da hueco e icono: las celdas no pasan a un `.map` y el número
+  de líneas de `index.tsx` que contienen `TABULAR_NUMS` sigue en 9 (HP lo cuenta por líneas, K41).
   - Test: HI › `#198 R2 pinta cuatro celdas sin divisores en el orden del canvas`, `#198 R2 da a cada mosaico su hueco y su tinta`
     (`it.each` de las cuatro filas `[métrica, 'bg-category-<slot>', '--color-category-<slot>-strong']`, con un candado por fila) y
     `#198 R2 viste valor y etiqueta con 16/800 y 11/600`.
@@ -189,20 +218,21 @@ Abreviaturas de test: **HI** `src/screens/home/index.test.tsx` · **WC** `src/sc
   con `className` exactamente `text-xs font-bold uppercase tracking-section text-muted` (`--tracking-section: 1.5px`, #197) y copy
   `t('home.quickActions')` («Accesos rápidos» / «Quick actions»), y `quick-actions-row` con `flex-row gap-2.5`; cada tile de
   `QUICK_ACTIONS` SHALL ser un `Pressable` con `className`
-  `` `h-23 flex-1 items-center justify-center gap-2 rounded-card ${CATEGORY_SLOTS[slot].surface}` ``, `style` que añade
-  `chunkyLip[lip]` a lo que lleva hoy (`CONTINUOUS_CORNER` y la opacidad al pulsar), con `lip` nuevo en cada entrada
+  `` `h-23 flex-1 items-center justify-center gap-2 rounded-card ${CATEGORY_SLOTS[slot].surface}` ``, `style` exactamente
+  `({ pressed }) => ({ ...CONTINUOUS_CORNER, ...chunkyLip[lip], opacity: pressed ? 0.8 : 1 })` (un objeto, no un array, para
+  que el host reciba un `style` plano), con `lip` nuevo en cada entrada
   (`weight → 'tileViolet'`, `reminder → 'tileAmber'`, `documents → 'tileBlue'`), icono `size={26}` en su tinta y etiqueta con
   `` `text-13 font-bold ${CATEGORY_SLOTS[slot].ink}` `` y copy `t('home.quickActionWeight')` «Peso»,
   `t('home.quickActionReminder')` «Recordatorio», `t('home.quickActionDocuments')` «Documentos». Orden y destinos sin cambios.
   - Test: HI › `#198 R5 pinta el rótulo con 12/700, tracking de sección y mayúsculas`,
     `#198 R5 viste cada tile con 92 de alto, radio 20 y su labio interior ($id)` (`it.each` de los tres tiles: `className`
-    exacta y `style` aplanado con `boxShadow` igual al literal `[{ offsetX: 0, offsetY: -4, blurRadius: 0, spreadDistance: 0, color: '--color-lip-tile-<slot>', inset: true }]`
+    exacta y `props.style.boxShadow` igual al literal `[{ offsetX: 0, offsetY: -4, blurRadius: 0, spreadDistance: 0, color: '--color-lip-tile-<slot>', inset: true }]`
     de la clave #197 correspondiente) y `#198 R5 pinta icono de 26 y etiqueta 13/700 en la tinta del hueco ($id)`.
 - **R6** (retardos de entrada): WHILE reduce motion está desactivado THE SYSTEM SHALL montar los envoltorios con
   `HomeEntrance index` resumen 2, collar 3, accesos 4, actividad 5, recordatorios 6, última posición 7 (la frase sigue en 0), de
   modo que `withDelay` recibe 120, 180, 240, 300, 360 y 420 ms (los `rise … 120ms…420ms` del canvas). WHILE reduce motion está
   activado THE SYSTEM SHALL no animar ninguno (comportamiento de #197 R12, sin cambio).
-  - Test: HI › `#198 R6 escalona los bloques con los retardos del canvas` (tabla literal `[['home-entrance-summary', 120], ['home-entrance-collar', 180], ['home-entrance-quick-actions', 240], ['home-entrance-weekly-activity', 300], ['home-entrance-reminders', 360], ['home-entrance-last-position', 420]]`;
+  - Test: HI › `#198 R6 escalona los bloques con los retardos del canvas` (tabla literal `[['home-entrance-summary', 120], ['home-entrance-collar', 180], ['home-entrance-quick-actions', 240], ['home-entrance-weekly', 300], ['home-entrance-reminders', 360], ['home-entrance-last-position', 420]]`;
     los testID exactos de los envoltorios se copian de `homeMotionNodeIds` del propio test) y
     `#198 R6 conserva el hueco de cada índice aunque falte un bloque`.
 - **R7** (tarjeta semanal: contenedor y cabecera): WHEN la gráfica semanal se pinta THE SYSTEM SHALL renderizar
@@ -256,7 +286,8 @@ Abreviaturas de test: **HI** `src/screens/home/index.test.tsx` · **WC** `src/sc
 ### Estados
 
 - **R13** (sin collar, `InicioSinCollar.dc.html`): WHILE la mascota no tiene dispositivo THE SYSTEM SHALL pintar en el resumen la
-  celda de peso con las clases de R2 más `border-r border-border`, seguida de `summary-note` con `className` exactamente
+  celda de peso con las clases de R2 más `border-r border-border`, en la misma fila `flex-row gap-1` de R2 (el artboard también
+  pone `gap: 4px`), seguida de `summary-note` con `className` exactamente
   `flex-3 self-center pl-3 text-sm leading-5 font-normal text-muted` y `t('home.activityNeedsCollar')` («La actividad necesita un
   collar con plan activo»); SHALL renderizar `collar-card` como
   `<Card className="gap-3 border-0 bg-default px-4 py-3.5 shadow-none">` en columna con: fila `flex-row items-center gap-3` con
@@ -273,7 +304,8 @@ Abreviaturas de test: **HI** `src/screens/home/index.test.tsx` · **WC** `src/sc
   y una fila `flex-row gap-2` de cuatro celdas `flex-1 items-center gap-2` con `Skeleton size-9 rounded-xl`,
   `Skeleton h-3.5 w-13 rounded-full` y `Skeleton h-2.5 w-9 rounded-full`); `home-loading-collar` (`Skeleton h-16 w-full rounded-card`);
   `home-loading-quick-actions` (`View gap-2.5` con `Skeleton h-3 w-27.5 rounded-full` y una fila `flex-row gap-2.5` de tres
-  `Skeleton h-23 flex-1 rounded-card`); y `home-loading-weekly` (`Skeleton h-102 w-full rounded-card`).
+  `Skeleton h-23 flex-1 rounded-card`); y `home-loading-weekly` (`Skeleton h-102 w-full rounded-card`). Los 17 `Skeleton`
+  internos (1 + 12 del resumen, 1 + 3 de accesos) no llevan `testID` (D17); los tests los alcanzan por `children` de su bloque.
   - Test: HI › `#198 R14 pinta el esqueleto con la forma del canvas y sin título`,
     `#198 R14 dibuja cuatro celdas y tres tiles en el esqueleto` y `#198 R14 usa el Skeleton de HeroUI en cada bloque`.
 - **R15** (error, `InicioError.dc.html`): WHEN la lista de mascotas falla THE SYSTEM SHALL pintar en `home-states` el título
@@ -286,19 +318,26 @@ Abreviaturas de test: **HI** `src/screens/home/index.test.tsx` · **WC** `src/sc
   `{ file: 'src/screens/home/index.tsx', key: 'common.somethingWentWrong' }` pasa a `key: 'home.loadPetsErrorTitle'` y se añade
   justo detrás `{ file: 'src/screens/home/index.tsx', key: 'home.loadPetsErrorBody' }` (la segunda fila se queda: `pet-hero-error`
   sigue usando la clave). `SCREEN_FILES` no cambia (`empty-state.tsx` no llama a `t`).
+  En esa misma llamada `index.tsx` SHALL pasar por las props de R18 (D8, D16)
+  `badge={<View testID="home-error-badge" className="absolute right-10.5 top-6.5 size-11 items-center justify-center rounded-full border-3 border-background bg-danger"><Alert size={24} color={dangerForeground} /></View>}`
+  y `actionIcon={<Refresh size={20} color={accentForeground} style={{ marginRight: 8 }} testID="home-error-action-icon" />}`;
+  `Alert` y `Refresh` se añaden al import de `reicon-react-native` de `index.tsx`, y `danger-foreground` y `accent-foreground`
+  se añaden al final del array de su `useThemeColors` (sin reordenar lo que ya pide).
   WHEN `EmptyState` recibe `tone="danger"` (prop nueva `tone?: 'default' | 'danger'`, defecto `'default'`) THE SYSTEM SHALL pintar
   `${testID}-stage-disc` con `` `absolute size-60 rounded-full ${CATEGORY_SLOTS.rose.surface}` ``, las huellas con `fill` del
-  color `danger` (pedido en el mismo `useThemeColors` que ya pide `accent`), un badge `${testID}-badge` con `className`
-  exactamente `absolute right-10.5 top-6.5 size-11 items-center justify-center rounded-full border-3 border-background bg-danger`
-  y el icono `Alert` de `reicon-react-native` `size={24}` en `danger-foreground`, el título con
-  `text-center text-22 font-black tracking-title text-foreground` y el icono del botón `Refresh` (en lugar de `Plus`) en
-  `${testID}-action-icon`. WHEN `tone` es `'default'` o falta THE SYSTEM SHALL pintar exactamente lo de hoy (disco
-  `bg-surface-secondary`, huellas `accent`, sin badge, título `text-26`, icono `Plus`).
-  - Test: HI › `#198 R15 pinta el título de Inicio y el escenario de error`, `#198 R15 reintenta desde home-error-action` y
-    `#198 R15 pinta el copy del error en los dos idiomas` (es y en, literales). ES ›
-    `#198 R15 tone danger pinta disco rosa, huellas danger, badge y título de 22`,
-    `#198 R15 tone danger cambia Plus por Refresh` y `#198 R15 sin tone conserva el escenario de hoy` (rama `default` explícita
-    y rama sin prop: un candado por rama).
+  color `danger` (pedido en el mismo `useThemeColors` que ya pide `accent`) y el título con
+  `text-center text-22 font-black tracking-title text-foreground`. El tono no cambia nada más: ni badge ni icono propios
+  (`EmptyState` no importa `Alert` ni `Refresh`). WHEN `tone` es `'default'` o falta THE SYSTEM SHALL pintar exactamente lo de
+  hoy (disco `bg-surface-secondary`, huellas `accent`, título `text-26`).
+  - Test: HI › `#198 R15 pinta el título de Inicio y el escenario de error`, `#198 R15 reintenta desde home-error-action`,
+    `#198 R15 pinta el copy del error en los dos idiomas` (es y en, literales) y
+    `#198 R15 pasa el badge de peligro y el icono de recarga` (con spy de `getCSSVariable`: `home-error-badge` es el último hijo
+    de `home-error-stage`, con la `className` exacta de arriba, y su único hijo es el `Alert` con `size` 24 y `color`
+    `'--color-danger-foreground'` (el test puede añadir `Alert: mockIcon('icon-alert')` al doble de `reicon-react-native` de HI);
+    `home-error-action-icon` está dentro de `home-error-action`; la fuente de `index.tsx` contiene una vez
+    `<Refresh size={20} color={accentForeground}` y ninguna `home-retry`). ES ›
+    `#198 R15 tone danger pinta disco rosa, huellas danger y título de 22` (y no monta `${testID}-badge`) y
+    `#198 R15 sin tone conserva el escenario de hoy` (rama `default` explícita y rama sin prop: un candado por rama).
 - **R16** (vacío, `InicioVacio.dc.html`): WHILE el usuario no tiene mascotas THE SYSTEM SHALL seguir pintando
   `EmptyState testID="home-empty" variant="hero" pose="talk"` sin `tone`, con `t('common.noPetsYet')` («Aún no tienes mascotas»),
   `t('common.noPetsBody')` (Voz B, D10) y la acción `t('profile.addPet')` («Añadir mascota»), sin `home-empty-badge`.
@@ -311,15 +350,39 @@ Abreviaturas de test: **HI** `src/screens/home/index.test.tsx` · **WC** `src/sc
   `InicioRecordatorios` comprueban además `margin-top: -751px` y `margin-top: -1064px` (son `Inicio` desplazado).
   - Test: HCF › `#198 R17 $artboard dibuja «$canvas» y $file lo aplica` (`it.each` de las filas de design.md §Contraste).
 
+### API de `EmptyState` (compartida con #201, D15)
+
+- **R18** (`badge`, `actionIcon` y `body` opcional): THE SYSTEM SHALL ampliar las props de `EmptyState`
+  (`src/components/empty-state.tsx`) con `badge?: ReactNode` y `actionIcon?: ReactElement`, y hacer `body?: string` opcional
+  (tipos importados en la línea de `react` de hoy: `import { useEffect, type ReactElement, type ReactNode } from 'react';`):
+  - WHERE `variant="hero"` y `badge` está definido, `badge` SHALL renderizarse como último hijo de `<testID>-stage` (detrás de
+    `<testID>-stage-shadow`);
+  - WHERE `variant="hero"`, `action` y `actionIcon` están definidos, el botón SHALL pintar `actionIcon` tal cual (D16) en el
+    sitio del `<Plus size={20} …>` de hoy; sin `actionIcon` pinta el `<Plus>` de hoy, con su `testID` `<testID>-action-icon`;
+  - IF `body` no está definido, THEN no SHALL montarse `<testID>-body` ni su envoltorio `<testID>-body-enter`, en ninguna
+    variante.
+  Las pantallas que no pasan las props nuevas no cambian.
+  - Test: ES › `#198 R18 el badge es el último hijo del escenario` (con `badge` el escenario tiene un hijo más que sin él y ese
+    hijo es el badge de prueba), `#198 R18 sin badge el escenario no cambia` (no hay nodo con el `testID` del badge de prueba),
+    `#198 R18 actionIcon sustituye al «+» del hero` (se pasa un elemento de prueba con `testID` `<id>-action-icon`: el nodo con
+    ese `testID` es el de prueba y no hay `Plus`), `#198 R18 sin actionIcon el hero conserva el «+»` (`<id>-action-icon` tiene
+    `size` 20 y `strokeWidth` `undefined`) y `#198 R18 sin body el hero no monta cuerpo` /
+    `#198 R18 sin body la variante por defecto no monta cuerpo` (una fila por variante: ni `<id>-body` ni `<id>-body-enter`).
+
 ## Candados que esta feature revierte
 
 Inventario cerrado, buscado con grep sobre los `*.test.ts(x)` de `src/screens/home/`, `src/components/__tests__/` y los
-candados agregados (`design-drift`, `consistency-classnames`, `legibility-classnames`, `canvas-foundations`, `ui-copy-table.ts`)
+candados agregados (`design-drift`, `consistency-classnames`, `legibility-classnames`, `canvas-foundations`, `ui-copy-table.ts`, ampliados con la auditoría `progress/inventory-audit_mobile-canvas-home.md`)
 en 71ff81a1. Cada `it` enmendado conserva su nombre y añade ` (enmendado por #198 R<n>)` al final; los `it` que solo cambian
 una tabla interna llevan además `// (enmendado por #198 R<n>)` en la línea tocada. **Si al implementar se pone rojo un `it`
 que no está en esta tabla, se para y se reporta en `progress/impl_mobile-canvas-home.md`; no se enmienda en silencio.**
+
+**Enmienda mecánica permitida**: si un `it` no inventariado se pone rojo solo porque compara contra el literal exacto que el R-id quita o sustituye (directo o vía constante/helper del test), el implementador lo enmienda en el commit rojo de ese R con el sufijo y lo apunta en la tabla «Enmiendas mecánicas» de su informe. Cualquier otro rojo no inventariado sigue siendo motivo de parada.
 Abreviaturas: HI, WC, ES y EI como en §Requisitos; **CN** `src/__tests__/consistency-classnames.test.ts`, **LG**
-`src/__tests__/legibility-classnames.test.ts`, **CF** `src/__tests__/canvas-foundations.test.ts` (llega con #197).
+`src/__tests__/legibility-classnames.test.ts`, **CF** `src/__tests__/canvas-foundations.test.ts` (llega con #197), **CK** `src/__tests__/chunky-cta-canvas-fidelity.test.ts`, **DD**
+`src/__tests__/design-drift.test.ts`, **HP** `src/__tests__/home-photo-hero-canvas.test.ts`, **PF**
+`src/__tests__/profile-canvas-fidelity.test.ts`, **AC** `src/__tests__/alerts-canvas-fidelity.test.ts`, **UL**
+`src/__tests__/ui-language.test.ts`.
 
 | # | Fichero › describe › it | Hoy afirma | Pasa a afirmar | R |
 |---|---|---|---|---|
@@ -328,29 +391,48 @@ Abreviaturas: HI, WC, ES y EI como en §Requisitos; **CN** `src/__tests__/consis
 | K3 | HI › mismo describe › `keeps the row flush without spacing utilities` | la fila no lleva `gap-*` | la fila es `flex-row gap-1` | R2 |
 | K4 | HI › mismo describe › `#69 R9: usa iconos de reicon y ningún emoji` | regex `<(?:Weight|Walk|Moon|Map) size=\{20\} color=\{muted\} \/>` | iconos de reicon con `size={18}` y tinta del hueco; sigue sin emoji | R2 |
 | K5 | HI › mismo describe › `#126 R1: cada celda de la tira pinta su propio icono en muted` › `con las métricas de hoy` y `sin métricas ni peso` | `color` `'--color-muted'` en los cuatro | `'--color-category-<slot>-strong'` de R2 en cada uno (sin collar queda solo la celda de peso: violet) | R2, R13 |
-| K6 | HI › `#77 R2: sin actividad, la fila es la celda de peso seguida de la nota` (cuerpo del describe) | celda con `border-r`, nota `flex-3 self-center pl-3 font-normal text-muted`, etiqueta `text-2xs font-normal`, valor `text-sm font-bold` | celda de R2 + `border-r border-border`, nota `flex-3 self-center pl-3 text-sm leading-5 font-normal text-muted`, etiqueta `text-11 font-semibold text-muted`, valor `text-base font-extrabold text-foreground` | R13 |
-| K7 | HI › `R8: collar card refleja el device` › `shows the health-only free state without a battery row`, `shows an online collar and its battery percentage`, `#73 R7: shows an offline collar as Sin conexión with its battery` | `text-success` / `text-warning-strong`, icono `Battery` presente, `collar-status` `text-base font-bold` | tinta de R4, sin `Battery`, `collar-status` `text-15 font-bold` (con collar) o `text-base font-extrabold` (sin collar) | R3, R4, R13 |
+| K6 | HI › `#77 R2: sin actividad, la fila es la celda de peso seguida de la nota` › `it.each` `%s: compone la celda y la nota en una sola fila` (4 filas) | fila `'flex-row'`; celda `'flex-1 items-center gap-1 border-r border-border'`; `cellChildren[0].props` `{ testID: 'icon-weight', size: 20, color: '--color-muted' }`; valor `'text-sm font-bold text-foreground'`; etiqueta `'text-2xs font-normal text-muted'`; nota `'flex-3 self-center pl-3 font-normal text-muted'` | fila `'flex-row gap-1'`; celda `'flex-1 items-center gap-1.5 border-r border-border'`; `cellChildren[0]` es el `View` `summary-tile-weight` con `'size-9 items-center justify-center rounded-xl bg-category-violet'` y su único hijo tiene props `{ testID: 'icon-weight', size: 18, color: '--color-category-violet-strong' }`; valor `'text-base font-extrabold text-foreground'`; etiqueta `'text-11 font-semibold text-muted'`; nota `'flex-3 self-center pl-3 text-sm leading-5 font-normal text-muted'` | R2, R13 |
+| K7 | — (retirada en la auditoría: los tres `it` de `R8: collar card refleja el device` solo afirman texto y siguen verdes) | — | — | — |
 | K8 | HI › `#62 R3: collar-card y last-position-card usan el Card compartido` › `it.each(['collar-card','last-position-card'])` | `className` contiene `border`, `shadow-sm` y `bg-default` | sigue siendo el `Card` compartido con `bg-default`; contiene `border-0` y `shadow-none`, no `shadow-sm` | R3, R11 |
-| K9 | HI › `#71 R1: la Home dibuja la rejilla de accesos rápidos` › `dibuja el rótulo y los tres tiles en orden` y `usa iconos de reicon y ningún emoji` | rótulo `text-xs font-semibold … tracking-widest`; tile `min-h-11 … rounded-xl py-3`; icono `size={24}` | receta de R5 (`tracking-section`, `h-23 … rounded-card`, `size={26}`) | R5 |
+| K9 | HI › `#71 R1: la Home dibuja la rejilla de accesos rápidos` › `dibuja el rótulo y los tres tiles en orden` | rótulo `toBe('text-xs font-semibold uppercase tracking-widest text-muted')` | `toBe('text-xs font-bold uppercase tracking-section text-muted')` (el icono va en K31, el alto en K30, el radio en K32) | R5 |
 | K10 | HI › `#81 R1-R6` › `#81 R1: cada etiqueta lleva la receta entera y ningún estilo en línea` | `text-2xs font-semibold text-foreground` | `` `text-13 font-bold ${CATEGORY_SLOTS[slot].ink}` `` (sigue sin estilo en línea en el `Text`) | R5 |
 | K11 | HI › `#152 R5: la Home envuelve cada bloque en su entrada escalonada` › `escalona las entradas cada 60 ms en el orden de los bloques (enmendado por #190 R6)` | índices 1..6 (60..360 ms) | índices 2..7 (120..420 ms) | R6 |
 | K12 | HI › `#190 R6: los índices son fijos aunque falte un bloque` › `conserva los huecos del collar sin última posición y de la actividad ausente` | retardos con índices de hoy | mismos huecos con índices +1 | R6 |
-| K13 | HI › `#85 R10: viste las filas con el Card compartido y los tokens` › `aplica la receta de cada nodo y ninguna otra` | `shadow-sm`, píldora `px-2.5 py-1 … text-xs font-bold`, nombre `text-sm font-semibold` | receta de R10 (`shadow-none` + `style` SOMBRA_CARD, píldora `font-extrabold`, nombre `text-sm font-bold`) | R10 |
-| K14 | HI › `#70 R1: la Home dibuja la sección de recordatorios` › `dibuja la cabecera y el cuerpo de la sección`, `liga nombre, fecha y contador a su nodo y a ninguno más`, `viste la sección con el Card compartido y los tokens` | sección `gap-3`, título `text-base font-bold`, «Ver todos» `text-xs font-semibold`, filas `shadow-sm`, nombre `text-sm font-semibold`, píldora `font-bold` | receta de R10 | R10 |
-| K15 | HI › `#98 R7: la barra de comidas y todas sus decisiones` › `pinta dato, icono, copy, nombre accesible, huecos, tintas y tipografía` | `Card` con `shadow-sm`, título `text-sm font-semibold` | `shadow-none` + SOMBRA_CARD, título `text-sm font-bold` (la barra de comidas no cambia) | R10 |
+| K13 | HI › `#85 R10: viste las filas con el Card compartido y los tokens` › `aplica la receta de cada nodo y ninguna otra` | `toContain('rounded-card border border-border bg-surface p-4 shadow-sm')`, píldora `px-2.5 py-1 … text-xs font-bold`, nombre `text-sm font-semibold` | `toContain('rounded-card border border-border bg-surface p-4')` + `toContain('shadow-none')` + `not.toContain('shadow-sm')` (el `className` fusionado es `rounded-card border border-border bg-surface p-4 flex-row items-center gap-3 px-3.5 py-3 shadow-none`; `toContain('flex-row items-center gap-3')` sigue verde) y `props.style.boxShadow` SOMBRA_CARD, píldora `font-extrabold`, nombre `text-sm font-bold` | R10 |
+| K14 | HI › `#70 R1: la Home dibuja la sección de recordatorios` › `dibuja la cabecera y el cuerpo de la sección`, `liga nombre, fecha y contador a su nodo y a ninguno más`, `viste la sección con el Card compartido y los tokens` | sección `gap-3`, título `text-base font-bold`, «Ver todos» `text-xs font-semibold`, filas `toContain('rounded-card border border-border bg-surface p-4 shadow-sm')`, nombre `text-sm font-semibold`, píldora `font-bold` | receta de R10; en las filas `toContain('rounded-card border border-border bg-surface p-4')` + `toContain('shadow-none')` + `not.toContain('shadow-sm')` (el `className` fusionado es `rounded-card border border-border bg-surface p-4 flex-row items-center gap-3 px-3.5 py-3 shadow-none`; `toContain('flex-row items-center gap-3')` sigue verde) y `props.style.boxShadow` SOMBRA_CARD | R10 |
+| K15 | HI › `#98 R7: la barra de comidas y todas sus decisiones` › `pinta dato, icono, copy, nombre accesible, huecos, tintas y tipografía` | `toContain('rounded-card border border-border bg-surface p-4 shadow-sm')`, título `text-sm font-semibold` | `toContain('rounded-card border border-border bg-surface p-4')` + `toContain('shadow-none')` + `not.toContain('shadow-sm')` (el `className` fusionado es `rounded-card border border-border bg-surface p-4 flex-row items-center gap-3 px-3.5 py-3 shadow-none`; `toContain('flex-row items-center gap-3')` sigue verde) y `props.style.boxShadow` SOMBRA_CARD, título `text-sm font-bold` (la barra de comidas no cambia) | R10 |
 | K16 | HI › `#152 R8: la batería del collar se dibuja como barra` › `it.each` `pinta %i% con %s` (el `it` de #154) | pista `h-1.5 flex-1 overflow-hidden rounded-full bg-surface`, relleno `bg-success` por encima de 60 | pista `h-2 w-full overflow-hidden rounded-full bg-background`, relleno `bg-accent` por encima de 60 | R4 |
-| K17 | HI › mismo describe › `pone la barra detrás del porcentaje en su fila` | barra hermana posterior del porcentaje en la fila de batería | la barra va en la columna de estado, bajo `collar-status`, y el porcentaje es el tercer hijo de la tarjeta | R3 |
+| K17 | HI › mismo describe › `pone la barra detrás del porcentaje en su fila` | barra hermana posterior del porcentaje en la fila de batería | `track.parent` es `getByTestId('collar-status').parent` y el índice de `track` es el de `collar-status` + 1; `battery.parent` es `getByTestId('collar-card')` y `battery` es el índice 2 de los hijos no-string de la tarjeta | R3 |
 | K18 | HI › `R6: home carga pets y selecciona` › `shows a loading state while pets are pending` | `home-loading` es un `Skeleton` | `home-loading` es el `View` de R14 y contiene `home-loading-summary` | R14 |
 | K19 | HI › `#62 R8: home carga con Skeleton dimensionado, no con Spinner suelto` › `reserva el espacio de carga con la forma de una Card` | `h-12 w-full rounded-card` | la forma de R14 (cuatro bloques); sigue sin `Spinner` | R14 |
 | K20 | HI › `R1 (mobile-reanimated-double-dead-weight)` › `conserva la clase base del Skeleton de HeroUI` | sobre `home-loading` | sobre `home-loading-collar` (un `Skeleton` real) | R14 |
 | K21 | HI › `#195 R15` › `aplica también el hueco de 14 a las ramas de estado sin hero` | la rama de carga lleva título y `Skeleton` | la rama de carga no lleva título; el hueco de 14 se mide en `home-loading` (`gap-3.5`) | R14 |
 | K22 | HI › `#195 R18: estados conservados de Inicio` › `conserva la carga de mascotas` y `conserva el error de mascotas y su reintento` | título + `Skeleton`; `home-error` `Text` `text-danger` «Algo salió mal» + `home-retry` | carga de R14; error de R15 (`home-error-title`, `home-error-action`) | R14, R15 |
 | K23 | HI › `R6: home carga pets y selecciona` › `shows an error and retries the pet list` | `home-error` con «Algo salió mal» y pulsa `home-retry` | `home-error-title` «No pude cargar a tus mascotas» y pulsa `home-error-action` | R15 |
-| K24 | HI › `#181 R1` › `S4: lista unreachable y selección nula ocultan la tarjeta`; `#190 R2` › `omite la frase con mascotas en %s…`; `#152 R5` › `no da entrada al hero con alertas abiertas (enmendado por #195 R11)` | `getByTestId('home-error')` / `home-loading` como `Text` / `Skeleton` | mismos testID; si el `it` lee texto o clase del nodo, pasa a `home-error-title` o a `home-loading-summary` | R14, R15 |
-| K25 | EI › `#155 R11: los vacíos no traen movimiento ni dependencias` › `EmptyState importa exactamente lo de la flotación (enmendado por #177 R10) (enmendado por #176 R5)` | `"import { Plus } from 'reicon-react-native';"` y sin `category-palette` | `"import { Alert, Plus, Refresh } from 'reicon-react-native';"` y `"import { CATEGORY_SLOTS } from '../utils/category-palette';"` como última importación de la fuente | R15 |
+| K24 | HI › `#181 R1` › `S4: lista unreachable y selección nula ocultan la tarjeta`; `#190 R2` › `omite la frase con mascotas en %s…` | `getByTestId('home-error')` / `home-loading` como `Text` / `Skeleton` | mismos testID; si el `it` lee texto o clase del nodo, pasa a `home-error-title` o a `home-loading-summary` | R14, R15 |
+| K25 | EI › `#155 R11: los vacíos no traen movimiento ni dependencias` › `EmptyState importa exactamente lo de la flotación (enmendado por #177 R10) (enmendado por #176 R5)` | `"import { useEffect } from 'react';"`, `"import { Plus } from 'reicon-react-native';"` y sin `category-palette` | `"import { useEffect, type ReactElement, type ReactNode } from 'react';"`, `"import { Plus } from 'reicon-react-native';"` sin cambios y `"import { CATEGORY_SLOTS } from '../utils/category-palette';"` como última importación de la fuente | R15, R18 |
 | K26 | LG › `#61 R4` › `it.each` `%s pinta con text-accent-strong (%i)` y `suma las trece ocurrencias que enumera la spec` | `[join('screens', 'home', 'index.tsx'), 2]`, total 13 | `[join('screens', 'home', 'index.tsx'), 3]`, total 14 (nombre del segundo `it` intacto + sufijo de enmienda) | R3, R12 |
 | K27 | CN › `#98 R10` › `deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban (enmendado por #177 R10) (enmendado por #190 R13)` y CN › `#64 R9` › `conserva los usos de bg-accent-soft que sí son acento` | expresión `16 + 2 + 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 2` (7) | la misma expresión con ` - 3` al final (4); si el `it` enumera ficheros, `index.tsx` sale de la lista | R12 |
 | K28 | CF › `#197 R20: nadie monta todavía los cimientos` (fila `shadows`) | importadores de producción `[]` | `['screens/home/index.tsx', 'screens/home/weekly-activity-chart.tsx']` (las filas `toggle-switch` y `screen-header` siguen en `[]`) | R12 |
+| K29 | HI › `#71 R1` › `liga icono, etiqueta, fondo, destino, tinta y color de etiqueta de cada tile y de ninguno más` | `labelColor` `'text-foreground'` en los tres | `'text-category-violet-strong'`, `'text-category-amber-strong'`, `'text-category-blue-strong'` (weight, reminder, documents) | R5 |
+| K30 | HI › `#71 R1` › `da a cada tile 44 pt de objetivo táctil` | `toContain('min-h-11')` | `toContain('h-23')` | R5 |
+| K31 | HI › `#71 R1` › `usa iconos de reicon y ningún emoji` | `/<Icon size=\{24\}/g` una vez y `props.size` 24 | `/<Icon size=\{26\}/g` una vez y `props.size` 26; sigue sin emoji | R5 |
+| K32 | HI › `#81 R1-R6` › `#81 R3: cada tile lleva rounded-xl como único radio y la esquina continua` | tokens de radio `['rounded-xl']`; `style` sin `boxShadow` | tokens `['rounded-card']`; con `jest.spyOn(Uniwind, 'getCSSVariable').mockImplementation((t) => t)`, `style` `{ borderCurve: 'continuous', opacity: 1, boxShadow: [{ offsetX: 0, offsetY: -4, blurRadius: 0, spreadDistance: 0, color: '--color-lip-tile-<slot>', inset: true }] }` (weight violet, reminder amber, documents blue) | R5 |
+| K33 | HI › `#81 R1-R6` › `#136 R1: cada tile baja a opacidad 0.8 mientras se pulsa y vuelve a 1 al soltarlo, con la esquina continua` | cuatro `toEqual` sin `boxShadow` | los cuatro ganan el `boxShadow` del tile de K32, con el mismo spy | R5 |
+| K34 | HI › `#81 R1-R6` › `#81 R4: la sección pone el rótulo encima de la fila, y la fila, los tres tiles sin envoltorio` | `'gap-3'` y `'flex-row gap-3'` | `'gap-2.5'` y `'flex-row gap-2.5'` | R5 |
+| K35 | CK › `#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por #191 R11) (enmendado por #189 R7) (enmendado por #189 R13)` | `radii` sin la gráfica; total `26 + 1 + 1 + 1 + 2` | `radii` + `'screens/home/weekly-activity-chart.tsx': 1`; total `26 + 1 + 1 + 1 + 2 + 1` con `// #198 R9` | R9 |
+| K36 | HI › `#152 R7: las cifras del resumen aparecen con un fundido` › `envuelve la fila del resumen sin tocarla` y el helper `expectRowUntouched` (lo usan `funde igual bajo reduce motion` y `funde igual la fila con la actividad en $kind`) | `toBe('flex-row')` en las dos líneas | `toBe('flex-row gap-1')` en las dos; sufijo de enmienda en cada `it` que las usa | R2, R13 |
+| K37 | HI › `#152 R5` › `no da entrada a home-states con %s`, fila `home-loading` | `['home-loading']` | `[...Array<string>(13).fill('undefined'), 'home-loading-collar', ...Array<string>(4).fill('undefined'), 'home-loading-weekly']` (D17) | R14 |
+| K38 | — (sin uso: el número quedó libre al numerar la auditoría) | — | — | — |
+| K39 | EI › `#155 R10` › `'%s pinta %i EmptyState'`, fila `['src/screens/home/index.tsx', 1]` | 1 | 2 (vacío de R16 y error de R15) | R15 |
+| K40 | EI › `#155 R11` › `EmptyState solo importa de react, react-native, expo-image, heroui-native, Reanimated y el tema de movimiento (enmendado por #177 R10) (enmendado por #176 R5)` | lista sin `'../utils/category-palette'` | la lista gana `'../utils/category-palette'` | R15 |
+| K41 | HP `src/__tests__/home-photo-hero-canvas.test.ts` › `'%s conserva %s en %s líneas'` | `bg-accent-soft` 3, `text-accent-strong` 2 | `bg-accent-soft` 0, `text-accent-strong` 3 (cada aparición en su propia línea); `TABULAR_NUMS` sigue en 9 | R3, R4, R10, R11, R13 |
+| K42 | DD › `reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10)` | inventario sin la gráfica | + `'screens/home/weekly-activity-chart.tsx': 1, // #198 R9` | R9 |
+| K43 | DD › `limita text-22 a Horario y text-17 al inventario de E1.2 (enmendado por #177 R10)` | lista de `text-22` sin `empty-state` | `['components/empty-state.tsx', join('screens', 'alert-detail', 'index.tsx'), join('screens', 'meal-schedule', 'index.tsx')]` | R15 |
+| K44 | PF `src/__tests__/profile-canvas-fidelity.test.ts` › `reserva text-26 al nombre de la mascota en Perfil (enmendado por #176 R8) (enmendado por #189 R1) (enmendado por #189 R8)` | lista sin Inicio | + `'screens/home/index.tsx', // #198 R15` entre geofences y profile | R15 |
+| K45 | PF › `limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8) (enmendado por #189 R6)` | lista sin Inicio | + `'screens/home/index.tsx', // #198 R5, R11` entre `screens/geofences/index.tsx` y `screens/login/index.tsx` | R5, R11 |
+| K46 | AC `src/__tests__/alerts-canvas-fidelity.test.ts` › `#174 R12: inventarios` › `limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12)` | filas `text-15` y `tracking-title` sin los ficheros de abajo | fila `text-15`: + `'screens/home/weekly-activity-chart.tsx', // #198 R9` tras `'screens/home/index.tsx'`; fila `tracking-title`: + `'screens/home/index.tsx', // #198 R15` tras `'screens/geofences/index.tsx'` | R9, R15 |
+| K47 | UL `src/__tests__/ui-language.test.ts` › `#71 R11: registra el copy de accesos rápidos sobre los deltas heredados` | `21 + 15 + 1 + 4 + 7 + 2 + 1 + 2 + 2 + 4` | `21 + 15 + 1 + 4 + 7 + 2 + 1 + 2 + 2 + 4 + 1` con `// +1 #198 R15` | R15 |
 
 Enmiendas de #197 que esta feature vuelve a tocar: **K11**/**K12** (#197 cambia ahí `translateY` a 14 en `#190 R1`, `#190 R7` y
 `#152 R7`; #198 no toca esas aserciones, solo los retardos) y **K28** (#197 crea el `it`). `#197 R20: el layout raíz no cambia`

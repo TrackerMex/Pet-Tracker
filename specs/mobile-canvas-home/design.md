@@ -80,7 +80,7 @@ están comprobados con `grep -cF` (≥ 1) sobre la copia congelada; los de produ
 | InicioCarga | `height: 408px` | `src/screens/home/index.tsx` | `h-102 w-full rounded-card` | R14 |
 | InicioError | `font-size: 26px; font-weight: 900; letter-spacing: -0.02em` | `src/screens/home/index.tsx` | `text-26 font-black tracking-title text-foreground` | R15 |
 | InicioError | `background: var(--rose)` | `src/components/empty-state.tsx` | `CATEGORY_SLOTS.rose.surface` | R15 |
-| InicioError | `top: 26px; right: 42px; width: 44px; height: 44px` | `src/components/empty-state.tsx` | `absolute right-10.5 top-6.5 size-11` | R15 |
+| InicioError | `top: 26px; right: 42px; width: 44px; height: 44px` | `src/screens/home/index.tsx` | `absolute right-10.5 top-6.5 size-11` | R15 |
 | InicioError | `font-size: 22px; font-weight: 900; letter-spacing: -0.02em` | `src/components/empty-state.tsx` | `text-center text-22 font-black tracking-title text-foreground` | R15 |
 | InicioError | `No pude cargar a tus mascotas` | `src/i18n/catalog.ts` | `No pude cargar a tus mascotas` | R15 |
 | InicioError | `Revisa tu conexión y vuelve a intentarlo.` | `src/i18n/catalog.ts` | `Revisa tu conexión y vuelve a intentarlo.` | R15 |
@@ -105,9 +105,14 @@ Las decisiones con defecto D1–D14 están en requirements §Decisiones; aquí, 
 - **Labios**: `const chunkyLip = useChunkyLip();` en `HomeScreen`; `QUICK_ACTIONS` gana `lip: 'tileViolet' | 'tileAmber' | 'tileBlue'`.
 - **Mosaicos del resumen**: constante `SUMMARY_TILES` (métrica → hueco) junto a `QUICK_ACTIONS`; tintas con un segundo
   `useThemeColors` como `quickActionInks`. Las clases de color salen solo de `CATEGORY_SLOTS` (#64 R9).
-- **Error**: `EmptyState` gana `tone?: 'default' | 'danger'`; la rama `danger` añade `danger` y `danger-foreground` al
-  `useThemeColors` que ya existe (orden: los nuevos al final), usa `CATEGORY_SLOTS.rose.surface` para el disco, `Alert` en el badge
-  y `Refresh` en `-action-icon`. La rama `default` no cambia ni un nodo.
+- **Error**: `EmptyState` gana `tone?: 'default' | 'danger'` y las props `badge`/`actionIcon` (y `body` opcional) de R18. La rama
+  `danger` añade `danger` al final del `useThemeColors` que ya existe, usa `CATEGORY_SLOTS.rose.surface` para el disco y `text-22`
+  en el título; nada más. El badge (`home-error-badge`, `Alert` 24 en `danger-foreground`) y el `Refresh`
+  (`home-error-action-icon`) los construye `src/screens/home/index.tsx` y los pasa por `badge`/`actionIcon` (D8, D16);
+  `danger-foreground` y `accent-foreground` van al final del `useThemeColors` de `index.tsx`. La rama `default` y las llamadas sin
+  props nuevas no cambian ni un nodo.
+- **API compartida con #201** (D15): `mobile-canvas-map` especifica la misma API en su §R14. #198 la implementa primero y #201 la
+  consume sin volver a añadirla. Si #201 llegase antes a la base, los `it` de R18 nacen verdes y se declaran así en el informe.
 - **Cruce con las guardas de la carta** (cada clase nueva):
   - `HEX_LITERAL` de design-drift: ninguna clase ni estilo nuevo lleva hex; los colores son tokens o `CATEGORY_SLOTS`.
   - Clases arbitrarias `[…]`: ninguna. `h-23`, `h-102`, `w-13`, `w-27.5`, `w-30`, `right-10.5`, `top-6.5`, `size-11`,
@@ -120,14 +125,17 @@ Las decisiones con defecto D1–D14 están en requirements §Decisiones; aquí, 
     K27). `design-drift` veta `uppercase|tracking-widest` en otras pantallas, no en la Home; `tracking-widest` desaparece de
     `index.tsx`.
   - Comentarios: ningún `#198` suelto en código de producción (`HEX_LITERAL` solo exime `#NNN R<n>`): si hace falta citar, `#198 R<n>`.
+  - Clases del badge en `index.tsx` (`absolute right-10.5 top-6.5 size-11 items-center justify-center rounded-full border-3
+    border-background bg-danger`): sin hex, sin corchetes y sin `text-<n>`, en un `View` de `react-native` (no en `Card` ni
+    HeroUI). Si un candado agregado no inventariado se pone rojo por ellas, rige la regla de parada de requirements §Candados.
 
 ## Archivos afectados
 
 Producción (`mobile-pet-tracker/`):
-- `src/screens/home/index.tsx` — R1–R6, R10, R11, R13–R16.
+- `src/screens/home/index.tsx` — R1–R6, R10, R11, R13–R16 (en R15, el badge y el `Refresh` que pasa a `EmptyState`).
 - `src/screens/home/collar-battery-bar.tsx` — R4.
 - `src/screens/home/weekly-activity-chart.tsx` — R7–R9.
-- `src/components/empty-state.tsx` — R15 (`tone`, badge, iconos).
+- `src/components/empty-state.tsx` — R15 (`tone`: disco, huellas, título) y R18 (`badge`, `actionIcon`, `body` opcional).
 - `src/i18n/catalog.ts` — R15 (dos claves, es y en).
 
 Tests:

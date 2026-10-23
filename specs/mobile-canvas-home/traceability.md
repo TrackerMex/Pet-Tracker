@@ -22,8 +22,9 @@ tags: [mobile, ui, spec]
 | R12 | `src/__tests__/home-canvas-fidelity.test.ts::#198 R12 solo Inicio y su gráfica importan las sombras en esta feature` | pendiente |
 | R13 | `src/screens/home/index.test.tsx::#198 R13 pinta el collar sin dispositivo en columna` | pendiente |
 | R14 | `src/screens/home/index.test.tsx::#198 R14 pinta el esqueleto con la forma del canvas y sin título` | pendiente |
-| R15 | `src/components/__tests__/empty-state-hero.test.tsx::#198 R15 tone danger pinta disco rosa, huellas danger, badge y título de 22` | pendiente |
+| R15 | `src/components/__tests__/empty-state-hero.test.tsx::#198 R15 tone danger pinta disco rosa, huellas danger y título de 22` | pendiente |
 | R16 | `src/screens/home/index.test.tsx::#198 R16 conserva el vacío hero sin badge ni tono de error` | pendiente |
 | R17 | `src/__tests__/home-canvas-fidelity.test.ts::#198 R17 $artboard dibuja «$canvas» y $file lo aplica` | pendiente |
+| R18 | `src/components/__tests__/empty-state-hero.test.tsx::#198 R18 el badge es el último hijo del escenario` | pendiente |
 
 Cada R tiene más `it` (requirements §Requisitos); la fila cita el principal. Los hashes se rellenan al cerrar; no rebasear después.
