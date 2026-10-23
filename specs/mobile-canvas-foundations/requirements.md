@@ -1,6 +1,6 @@
 ---
 feature: "mobile-canvas-foundations"
-status: spec_ready
+status: approved
 tags: [mobile, ui, spec]
 ---
 
@@ -75,7 +75,7 @@ grep -cF '#93370D' $G                        # 0
 git grep -c 'tracking-tight' -- src ':!**/__tests__/**' ':!*.test.ts' ':!*.test.tsx'
 #   src/app/(tabs)/food.tsx:1  src/components/celebration.tsx:1
 #   src/screens/health/index.tsx:1  src/screens/profile/index.tsx:1
-git grep -c 'tracking-tight' -- 'src/**/__tests__/**' 'src/**/*.test.tsx'
+git grep -c 'tracking-tight' -- ':(glob)src/**/__tests__/**' ':(glob)src/**/*.test.tsx'
 #   src/__tests__/tab-headers-canvas.test.ts:2  src/app/(tabs)/__tests__/food.test.tsx:1
 #   src/components/__tests__/celebration.test.tsx:1  src/screens/health/index.test.tsx:1
 #   src/screens/profile/index.test.tsx:1
@@ -691,6 +691,9 @@ la casilla en el leader citando el mensaje donde dio el visto bueno.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- [ ] Enmienda #197 aprobada por humano (carta `docs/ui-guidelines.md` § «Enmienda #197»)
+- [x] Aprobado por humano (fecha: 2026-10-23) ← gate obligatorio antes de implementar
+  Firma delegada en el leader por mandato del humano del 2026-10-23
+  (`progress/plan_canvas-parity-2026-10-23.md` §4, checklist de firma pasada).
+- [x] Enmienda #197 aprobada por humano (carta `docs/ui-guidelines.md` § «Enmienda #197»)
+  Firma delegada, mismo mandato.
 - [ ] Smoke de R23 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)

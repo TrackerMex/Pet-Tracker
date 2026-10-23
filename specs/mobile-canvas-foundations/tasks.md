@@ -1,6 +1,6 @@
 ---
 feature: "mobile-canvas-foundations"
-status: spec_ready
+status: approved
 tags: [mobile, ui, tasks]
 ---
 
