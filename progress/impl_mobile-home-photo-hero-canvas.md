@@ -870,7 +870,7 @@ expect(screen.getByTestId('visibility-probe')).toBeVisible();
 
 ## Reanudación con Enmienda A4 — 2026-10-22
 
-**Estado: PARADO tras el commit A por una cuenta A4 distinta de la exigida.** No se ha iniciado B, no hay producción A4 ni mutaciones ni cierre, y no se crea `.done`. No se modifica la spec para resolver la discrepancia.
+**Estado: parada resuelta por el leader mediante el adendo 7 (fila 7 = 4, 14a + 14h).** El rojo de A se midió después sobre el commit existente; evidencia y continuación debajo. A se conserva sin reescritura.
 
 Primer comando ejecutado, antes de cualquier otra acción:
 
@@ -917,7 +917,7 @@ Comandos literales de `tasks.md` §Cuentas a re-medir (alternancias con `|`, sin
 | 4: `35%` o `65%` en HERO | 2 | 0 | 0 |
 | 5: `24%` o `44%` en HERO | 0 | 2 | 2 |
 | 6: `height: 90` o `height: 100` en HERO | 0 | 2 | 2 |
-| 7: `toBe(430/100/90)` en HERO | 0 | **4** | **3** |
+| 7: `toBe(430/100/90)` en HERO | 0 | **4** | **4**, [adendo 7](handoff_mobile-home-photo-hero-canvas-reanudar-7.md) |
 | 8: ficheros de src con `330` | 2 (HERO 8, producción 1) | 1 (producción 1) | 1 hasta C |
 | 9: constantes antiguas de producción | 3 | 3 | 3 hasta C |
 | 10: constantes nuevas de producción | 0 | 0 | 0 hasta C |
@@ -1063,3 +1063,349 @@ Inventario de código/docs/specs contra `98c7a192` en esta parada: solo `mobile-
 Pendientes: medir el rojo de A después de resolver la cuenta; B–E con sus rojos/verdes exactos; m1–m7 (incluidas las dos pasadas de m2) y r1–r6; suite completa 134/4381/1, typecheck con precondición del router, lint sin caché y log vacío, graphify, trazabilidad y cierre final. Ninguna de las trece mutaciones está ejecutada en esta reanudación. No se ejecutaron typecheck, lint ni graphify, y no se creó `.done`.
 
 No se tocaron `progress/current.md`, `progress/history.md`, `STATUS.md`, `feature_list.json`, PR, canvas ni R21; tampoco `home/index.tsx` ni `pingo-phrase.ts`. No hubo denegaciones del sandbox. No se ejecutó prettier ni se añadieron dependencias. El commit de reporte de esta parada es parcial y no sustituye el `docs(home)` del cierre completo que sigue pendiente.
+
+
+### Continuación por adendo 7 — 2026-10-23
+
+Primer comando confirmado de nuevo: `cd /home/claude/sites/Pet-Tracker-wt-195 && pwd && git branch --show-current`; salida `/home/claude/sites/Pet-Tracker-wt-195` y `feature/195-mobile-home-photo-hero-canvas`. HEAD inicial `b264b482`, árbol limpio. Se conservan `21e404c3` y el reporte `0242a473`; esta continuación añade evidencia. El [adendo 7](handoff_mobile-home-photo-hero-canvas-reanudar-7.md) resuelve la discrepancia: fila 7 = **4** tras A, B, C, D y E; ni 14h ni la regex se cambian.
+
+Leídos adendos 7, 6 y todos los anteriores, D6, R1/R3/R17/R18/R20, fila 14, H4, cadena A–E, mutaciones y trazabilidad. Firma humana A4 presente. Skills recargadas: `building-native-ui` (plugin Expo local), `appllama-app-design-skill`, `animate-expo` y `ponytail`. Ninguna de las tres solicitadas falta; `expo-overview`, `expo-animation`, `expo-router` y `expo-design-system` no existen en Codex y no se buscaron. Sin delegación ni MCP de Appllama. No se ejecuta `./init.sh`.
+
+#### Rojo de A medido sobre el commit existente
+
+Sin tocar tests ni producción, tras `pgrep -f 'node_modules/(\.bin/jest|jest-worker)|[i]nit\.sh'` vacío en comando propio (bucle sleep 20, máximo 900 s):
+
+`bunx jest src/components/__tests__/pet-hero-header.test.tsx src/__tests__/home-photo-hero-canvas.test.ts --testTimeout=30000 > ../progress/a4-A-red-195.log 2>&1`, exit **1**, sin pipe.
+
+`Test Suites: 1 failed, 1 passed, 2 total`; **`Tests: 12 failed, 76 passed, 88 total`**. Exactamente los ocho `it` 14a–14h, doce casos; ningún otro. El rojo se registra aquí, sin commit de test nuevo para A.
+
+Nombre completo y Expected/Received (cada bloque reproduce la primera aserción que falla):
+
+- `R1: PetHeroHeader es el único hero compartido › exporta las constantes de dimensión del hero (enmendado por #195 R1)`
+
+```text
+expect(received).toBe(expected) // Object.is equality
+
+    Expected: 430
+    Received: 330
+```
+
+- `R3: el texto del hero va sobre fondo opaco › funde la imagen con scrim superior y degradado inferior (enmendado por #195 R3)`
+
+```text
+expect(received).toMatch(expected)
+
+    Expected pattern: /^linear-gradient\(to bottom, #[0-9A-Fa-f]{6}00 0%, #[0-9A-Fa-f]{6}59 24%, #[0-9A-Fa-f]{6}D9 44%, #[0-9A-Fa-f]{6} 100%\)$/
+    Received string:  "linear-gradient(to bottom, #0D111700 0%, #0D111759 35%, #0D1117D9 65%, #0D1117 100%)"
+```
+
+- `#127 R2: el skeleton del hero lleva su receta en el árbol › pinta pet-hero-skeleton con la clase w-full sin radio y el alto de 430 como único estilo (enmendado por #195 R1)`
+
+```text
+expect(received).toStrictEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+    -   "height": 430,
+    +   "height": 330,
+      }
+```
+
+- `#195 R1: frame de 430 y raíz estable › bleed con mascota false y slot false`
+
+```text
+expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+    -   "height": 430,
+    +   "height": 330,
+      }
+```
+
+- `#195 R1: frame de 430 y raíz estable › bleed con mascota true y slot true`
+
+```text
+expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+    -   "height": 430,
+    +   "height": 330,
+      }
+```
+
+- `#195 R1: frame de 430 y raíz estable › card con mascota false y slot true`
+
+```text
+expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+    -   "height": 430,
+    +   "height": 330,
+      }
+```
+
+- `#195 R1: frame de 430 y raíz estable › card con mascota true y slot false`
+
+```text
+expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+    -   "height": 430,
+    +   "height": 330,
+      }
+```
+
+- `#195 R2: foto alineada arriba y fundido por identidad › pinta la foto como primera capa absoluta con tamaño y caché estables`
+
+```text
+expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+    -   "height": 430,
+    +   "height": 330,
+        "width": "100%",
+      }
+```
+
+- `#195 R3: degradados exactos sobre la fotografía › resuelve ambos colores en una llamada y conserva alfa, geometría y toques`
+
+```text
+expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "experimental_backgroundImage": "linear-gradient(to bottom, #0D111780 0%, #0D111700 100%)",
+    -   "height": 90,
+    +   "height": 130,
+      }
+```
+
+- `#195 R18: estados conservados del hero › sin mascota conserva skeleton sin radio en bleed`
+
+```text
+expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+    -   "height": 430,
+    +   "height": 330,
+      }
+```
+
+- `#195 R18: estados conservados del hero › sin mascota conserva skeleton sin radio en card`
+
+```text
+expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+    -   "height": 430,
+    +   "height": 330,
+      }
+```
+
+- `#195 R18: estados conservados del hero › sin foto conserva el blobatar rectangular y los degradados`
+
+```text
+expect(received).toBe(expected) // Object.is equality
+
+    Expected: 430
+    Received: 330
+```
+
+14a aborta en 430/330; sus otras dos aserciones quedan para el verde. 14e aborta en el velo: height 90/130, cadena superior idéntica. 14f recibe las paradas 35%/65% frente a la regex 24%/44%. Las 18 cuentas se re-midieron tras A; coinciden con la columna A de la tabla que se completa a continuación.
+
+Incidencia de edición sin cambios: el primer script de continuación del reporte no encontró el prefijo de estado porque llevaba negrita; abortó antes de escribir. Se corrigió el ancla literal y se conservó el contenido previo.
+
+#### B — modelo y enlace con producción
+
+`1aa57420` — `test(mobile): fadeAlpha de 100 px, referencias del nombre y enlace con producción (R17)`, solo GUARD mediante `git commit --only`. Diff acotado al describe R17 y comprobado por `rg -n` antes del Jest. Rojo medido antes de C, log `progress/a4-B-red-195.log`, exit 1: **`Tests: 13 failed, 76 passed, 89 total`**, `Test Suites: 2 failed, 2 total`. Los doce de A permanecen; único rojo añadido: `#195 R17: contraste WCAG contra la peor foto › enlaza el modelo con las paradas y la altura del degradado de producción (Enmienda A4)`, primera aserción: Expected pattern `/PET_HERO_FADE_HEIGHT = 100\b/`, Received fuente con `PET_HERO_FADE_HEIGHT = 160` (también conserva `59 35%` / `D9 65%`). Los dos `mantiene referencias y suelos en light/dark` nacen verdes; referencias 7.75/6.74 escritas en el test, sin cambiar suelos ni tolerancia. Las 18 cuentas medidas tras el commit B coinciden (fila 7 = 4).
+
+#### C — producción mínima en verde
+
+`0a630d4b` — `feat(mobile): hero de 430 con degradado de 100 px y velo de 90 px (R1)`, solo `pet-hero-header.tsx` mediante `git commit --only`. Cambian exactamente tres constantes y dos paradas (cuatro líneas), sin clases, comentarios ni otro comportamiento. HERO + GUARD, log `progress/a4-C-green-195.log`, exit 0: **`Tests: 89 passed, 89 total`**, 2 suites verdes. Repetición tras el commit, `progress/a4-C-postcommit-195.log`, exit 0: **`Tests: 89 passed, 89 total`**, 2 suites verdes. Las 18 cuentas tras C coinciden, incluida salida vacía del `330` en src y fila 7 = 4.
+
+El `AGENTS.md` de móvil apunta a la documentación versionada [Expo SDK 57](https://docs.expo.dev/versions/v57.0.0/), consultada antes del cambio de producción C. La decisión visual y todas las cifras proceden de la spec aprobada.
+
+#### D — rojo exacto y nueva PARADA obligatoria de cuentas
+
+`288ad502` — `test(mobile): la carta lleva las medidas de la Enmienda A4 (R20)`, solo GUARD, creado con `git commit --only`, antes de editar la carta o design.md. Ancla verificada con `grep -n` antes de Jest: un solo `it`, seis `expect` separados, exactamente las seis cadenas literales de tasks R20 (1-A4).
+
+Después del commit: `bunx jest src/components/__tests__/pet-hero-header.test.tsx src/__tests__/home-photo-hero-canvas.test.ts --testTimeout=30000 > ../progress/a4-D-red-195.log 2>&1`, exit **1**, sin pipe y con `pgrep` vacío en comando propio. **`Tests: 1 failed, 89 passed, 90 total`**; `Test Suites: 1 failed, 1 passed, 2 total`. Único rojo: `#195 R20: enmienda canónica y continuación de A8 › la sección de la carta lleva las medidas de la Enmienda A4 y ninguna de las antiguas`. Primera aserción: Expected substring `alto 430`; Received sección de la carta con `alto 330`, `velo oscuro superior de 130 px` y `degradado inferior de 160 px`. Los tres `it` anteriores de R20 siguen verdes, igual que HERO y GUARD R17.
+
+**Estado vigente: PARADO tras D.** Las cuentas medidas tras el commit D contradicen dos esperados de tasks/adendo 6. No se cambia la spec, las regex, el alcance de las cuentas ni los literales del test para hacerlas coincidir. El adendo 7 solo corrigió la fila 7; no autoriza a corregir estas otras dos. E, m1–m7, r1–r6 y el cierre no se han iniciado.
+
+#### Las 18 cuentas A4, re-medidas tras A, B, C y D
+
+Mismos comandos literales de tasks.md (se sustituye el escape Markdown `\|` por `|`), mismo directorio y sin cambiar las regex. `grep -c` devuelve exit 1 con cuenta 0; eso es normal. Base: la medida original del reporte. La fila 7 queda en **4**, dictamen del [adendo 7](handoff_mobile-home-photo-hero-canvas-reanudar-7.md), no 3. En cada columna se ejecutaron las 18 cuentas de nuevo.
+
+| Fila y cuenta | Base | A | B | C | D |
+|---|---:|---:|---:|---:|---:|
+| 1: 330 en HERO | 8 | 0 | 0 | 0 | 0 |
+| 2: 430 en HERO | 0 | 8 | 8 | 8 | 8 |
+| 3: 160/130 en HERO | 4 | 0 | 0 | 0 | 0 |
+| 4: 35%/65% en HERO | 2 | 0 | 0 | 0 | 0 |
+| 5: 24%/44% en HERO | 0 | 2 | 2 | 2 | 2 |
+| 6: height: 90/100 en HERO | 0 | 2 | 2 | 2 | 2 |
+| 7: toBe(430/100/90) en HERO | 0 | 4 | 4 | 4 | 4 |
+| 8: 330 en src | 2 ficheros | producción:1 | producción:1 | vacía | **GUARD:1 (deriva)** |
+| 9: constantes antiguas producción | 3 | 3 | 3 | 0 | 0 |
+| 10: constantes nuevas producción | 0 | 0 | 0 | 3 | 3 |
+| 11: paradas antiguas producción | 1 | 1 | 1 | 0 | 0 |
+| 12: paradas nuevas producción | 0 | 0 | 0 | 1 | 1 |
+| 13: 104/160 en GUARD | 2 | 2 | 0 | 0 | **1 (deriva; esperado 0)** |
+| 14: 10.79/9.77 en GUARD | 2 | 2 | 0 | 0 | 0 |
+| 15: 7.75/6.74 en GUARD | 0 | 0 | 2 | 2 | 2 |
+| 16: medidas antiguas carta | 1 | 1 | 1 | 1 | 1 |
+| 17: frase nueva carta | 0 | 0 | 0 | 0 | 0 |
+| 18: ficheros de geometría | 4 ficheros | 4, mismos ficheros | 4, mismos ficheros | 4, mismos ficheros | 4, mismos ficheros |
+
+Fila 18: siempre `src/components/__tests__/pet-hero-header.test.tsx`, `src/components/pet-hero-header.tsx`, `src/__tests__/consistency-classnames.test.ts` y `src/screens/home/index.test.tsx`.
+
+**Derivas reproducibles introducidas por las aserciones obligatorias de D:**
+
+```bash
+# Desde mobile-pet-tracker/, tras 288ad502:
+grep -rcE "\b330\b" src --include=*.ts --include=*.tsx | grep -v ":0"
+# src/__tests__/home-photo-hero-canvas.test.ts:1
+# Esperado de la fila 8: salida vacía tras C y al cierre.
+
+grep -cE "\b(104|160)\b" src/__tests__/home-photo-hero-canvas.test.ts
+# 1
+# Esperado de la fila 13: 0 tras B y en la columna final.
+
+grep -nE "\b330\b|\b(104|160)\b" src/__tests__/home-photo-hero-canvas.test.ts
+# 159:    expect(section).not.toContain('alto 330');
+# 161:    expect(section).not.toContain('160 px');
+```
+
+Estas dos líneas son precisamente la cuarta y la sexta aserción que tasks R20 (1-A4) exige escribir como literales. En C las dos cuentas eran 0; en D pasan a 1 porque el barrido lee también el texto de GUARD. No son valores antiguos en producción: `pet-hero-header.tsx` ya conserva 430/100/90 y 24%/44%. E solo edita la carta y el primer bloque de design.md, así que por sí solo tampoco cambiaría esas dos coincidencias en src. Hace falta un dictamen del leader sobre los esperados o el alcance de esas ayudas de medición; no se adapta el test para ocultarlas.
+
+#### Diff medido de B, C y D (A ya se conserva arriba)
+
+```diff
+diff --git a/mobile-pet-tracker/src/__tests__/home-photo-hero-canvas.test.ts b/mobile-pet-tracker/src/__tests__/home-photo-hero-canvas.test.ts
+index 83d61c6a..6929c890 100644
+--- a/mobile-pet-tracker/src/__tests__/home-photo-hero-canvas.test.ts
++++ b/mobile-pet-tracker/src/__tests__/home-photo-hero-canvas.test.ts
+@@ -38,8 +38,8 @@ describe('#195 R17: contraste WCAG contra la peor foto', () => {
+   }
+   function fadeAlpha(d: number): number {
+     if (d <= 56) return 1 - (d / 56) * 0.15;
+-    if (d <= 104) return 0.85 - ((d - 56) / 48) * 0.5;
+-    return 0.35 * (160 - d) / 56;
++    if (d <= 76) return 0.85 - ((d - 56) / 20) * 0.5;
++    return 0.35 * (100 - d) / 24;
+   }
+
+   it.each(['light', 'dark'] as const)('mantiene referencias y suelos en %s', (theme) => {
+@@ -68,8 +68,8 @@ describe('#195 R17: contraste WCAG contra la peor foto', () => {
+       overGlass(foreground), overGlass(muted),
+     ];
+     const references = theme === 'light'
+-      ? [4.26, 10.79, 4.36, 13.55, 5.70, 4.82, 3.76, 13.71, 3.60]
+-      : [6.51, 9.77, 6.67, 12.79, 6.43, 3.93, 6.84, 11.46, 4.79];
++      ? [4.26, 7.75, 4.36, 13.55, 5.70, 4.82, 3.76, 13.71, 3.60]
++      : [6.51, 6.74, 6.67, 12.79, 6.43, 3.93, 6.84, 11.46, 4.79];
+     const textFloor = theme === 'dark' ? 4.5 : 4.2;
+     const floors = [textFloor, 4.5, textFloor, 4.5, 4.5, 3, 3, 4.5, 3];
+     values.forEach((value, i) => {
+@@ -77,6 +77,17 @@ describe('#195 R17: contraste WCAG contra la peor foto', () => {
+       expect(value).toBeGreaterThanOrEqual(floors[i]);
+     });
+   });
++
++  it('enlaza el modelo con las paradas y la altura del degradado de producción (Enmienda A4)', () => {
++    const source = read('src/components/pet-hero-header.tsx');
++    const code = source.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, '');
++    const FADE_HEIGHT = 100;
++    const KNEE_NEAR = 56;
++    const KNEE_FAR = 76;
++    expect(code).toMatch(new RegExp(`PET_HERO_FADE_HEIGHT = ${FADE_HEIGHT}\\b`));
++    expect(code).toContain(`59 ${Math.round(((FADE_HEIGHT - KNEE_FAR) / FADE_HEIGHT) * 100)}%`);
++    expect(code).toContain(`D9 ${Math.round(((FADE_HEIGHT - KNEE_NEAR) / FADE_HEIGHT) * 100)}%`);
++  });
+ });
+
+ describe('#195 R19: grep-clean y cuentas conservadas', () => {
+@@ -139,6 +150,17 @@ describe('#195 R20: enmienda canónica y continuación de A8', () => {
+     expect(normalize(charter.slice(charter.indexOf(heading)).trimEnd())).toBe(normalize(blocks[0]));
+   });
+
++  it('la sección de la carta lleva las medidas de la Enmienda A4 y ninguna de las antiguas', () => {
++    const heading = blocks[0].split('\n')[0];
++    const section = charter.slice(charter.indexOf(heading));
++    expect(section).toContain('alto 430');
++    expect(section).toContain('velo oscuro superior de 90 px');
++    expect(section).toContain('degradado inferior de 100 px');
++    expect(section).not.toContain('alto 330');
++    expect(section).not.toContain('130 px');
++    expect(section).not.toContain('160 px');
++  });
++
+   it('conserva A8 entero y añade la cita nueva como párrafo aparte inmediato', () => {
+     expect(charter.split(historicalA8)).toHaveLength(2);
+     expect(charter).toContain(historicalA8 + '\n\n' + blocks[1] + '\n\n');
+diff --git a/mobile-pet-tracker/src/components/pet-hero-header.tsx b/mobile-pet-tracker/src/components/pet-hero-header.tsx
+index c7d74c66..610d0085 100644
+--- a/mobile-pet-tracker/src/components/pet-hero-header.tsx
++++ b/mobile-pet-tracker/src/components/pet-hero-header.tsx
+@@ -23,12 +23,12 @@ import { PingRing } from './ping-ring';
+  * carta pide token a partir de la segunda repetición, y una clase arbitraria de
+  * altura está prohibida. Se exporta para los tests, no para otros componentes.
+  */
+-export const PET_HERO_MEDIA_HEIGHT = 330;
++export const PET_HERO_MEDIA_HEIGHT = 430;
+
+ /** Alto de cada franja de degradado entre la imagen y una banda opaca. */
+-export const PET_HERO_FADE_HEIGHT = 160
++export const PET_HERO_FADE_HEIGHT = 100
+
+-export const PET_HERO_SCRIM_HEIGHT = 130;
++export const PET_HERO_SCRIM_HEIGHT = 90;
+
+ const AnimatedView = Animated.createAnimatedComponent(View);
+
+@@ -200,7 +200,7 @@ export function PetHeroHeader({
+           className="absolute inset-x-0 bottom-0"
+           style={{
+             height: PET_HERO_FADE_HEIGHT,
+-            experimental_backgroundImage: `linear-gradient(to bottom, ${background}00 0%, ${background}59 35%, ${background}D9 65%, ${background} 100%)`,
++            experimental_backgroundImage: `linear-gradient(to bottom, ${background}00 0%, ${background}59 24%, ${background}D9 44%, ${background} 100%)`,
+           }}
+         />
+
+```
+
+#### Alcance de esta parada y trabajo pendiente
+
+Commits de la cadena existentes: A `21e404c3`, B `1aa57420`, C `0a630d4b`, D `288ad502`. Falta E; esta parada no es el cierre de A4. Pruebas por árbol de cada commit: A 12/76/88, B 13/76/89 (rojo medido antes del commit sobre el mismo contenido), C 89/89 (también repetido tras el commit), D 1/89/90. Todas las corridas usaron `--testTimeout=30000`, log completo y exit code sin pipe; antes de cada una, comando independiente de `pgrep` con patrón acotado, bucle sleep 20 y máximo 15 minutos. No hubo rojos inesperados ni reintentos por carga, por lo que no se borró perf-cache.
+
+Inventario de código/docs/specs desde `98c7a192`: solo `mobile-pet-tracker/src/components/__tests__/pet-hero-header.test.tsx` (A), `mobile-pet-tracker/src/__tests__/home-photo-hero-canvas.test.ts` (B y D) y `mobile-pet-tracker/src/components/pet-hero-header.tsx` (C). Todos autorizados. El reporte añade esta evidencia; la trazabilidad conserva pendientes A4 porque no se ha cerrado. Ni la carta ni design.md se han editado en esta continuación.
+
+Pendientes: resolver las cuentas 8 y 13, E con su verde exacto de 90/90 y hero-header-amendments, las trece mutaciones (m2 tiene dos pasadas), suite móvil completa 134/4381/1, typecheck con precondición del router, lint sin caché con log vacío, graphify y cierre de trazabilidad/reporte. No se han ejecutado mutaciones ni esos comandos de cierre en esta continuación. No se crea `progress/impl_mobile-home-photo-hero-canvas.done`.
+
+No se tocaron `progress/current.md`, `progress/history.md`, `STATUS.md`, `feature_list.json`, PR, canvas ni R21. Tampoco `home/index.tsx`, `pingo-phrase.ts`, el resto de componentes ni los candados ajenos. No se ejecutó init.sh, prettier ni se añadieron dependencias. No hubo denegaciones del sandbox, rebase, merge ni reescritura de commits. El commit de este reporte documenta una parada parcial y no sustituye al docs(home) de cierre pendiente.
