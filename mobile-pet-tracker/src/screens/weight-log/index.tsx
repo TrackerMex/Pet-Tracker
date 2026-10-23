@@ -25,6 +25,7 @@ import {
 import { healthKeys, userKeys } from '../../api/query-keys';
 import { getMe } from '../../api/users';
 import { Card } from '../../components/card';
+import { ScreenHeader } from '../../components/screen-header';
 import { WeightChart } from '../../components/weight-chart';
 import { FieldErrorMessage } from '../../components/field-error-message';
 import type { FieldIssues } from '../../utils/account-rules';
@@ -203,6 +204,7 @@ function WeightLogContent({ petId }: { petId: string }) {
           paddingBottom: insets.bottom + 24,
         }}
       >
+        <ScreenHeader testID="weight-log-header" size={24} backFallback="/health" title={t('weightLog.weightLog')} />
         {weights.data?.kind === 'ok' ? (
           <Card testID="weight-chart-card" className="gap-4">
             {entries.length > 0 ? (
