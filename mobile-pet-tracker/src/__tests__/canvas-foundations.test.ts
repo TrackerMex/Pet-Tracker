@@ -184,3 +184,18 @@ describe('#197 R10: labios fuera del cuerpo', () => {
     }
   });
 });
+
+describe('#197 R11: entrada rise', () => {
+  it('#197 R11: el rise es el del canvas', () => {
+    expect(artboard('Inicio')).toContain('@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}');
+    expect(artboard('Inicio')).toContain('animation: rise 400ms ease-out');
+    const motion = readSource('theme/motion.ts');
+    expect(motion).toContain('export const MOTION_RISE_OFFSET_Y = 14;');
+    expect(motion).toContain('export const MOTION_RISE_TIMING = {');
+    const timing = motion.split('export const MOTION_RISE_TIMING = {')[1]?.split('}')[0] ?? '';
+    expect(timing).toContain('duration: MOTION_SURFACE_MS');
+    expect(motion).toContain('export const MOTION_SURFACE_MS = 400;');
+    expect(timing).toContain('easing: Easing.bezier(0, 0, 0.58, 1)');
+    expect(timing).toContain('reduceMotion: ReduceMotion.System');
+  });
+});
