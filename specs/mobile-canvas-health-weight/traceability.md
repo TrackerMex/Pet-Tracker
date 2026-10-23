@@ -35,7 +35,7 @@ requisito.
 | R21 | HE::`#199 R21: …` | pendiente |
 | R22 | WL::`#199 R22: …` | pendiente |
 | R23 | WL::`#199 R23: …` | pendiente |
-| R24 | RI, WL, HE, CF::`#199 R24: …` | pendiente |
+| R24 | CF::`#199 R24: …` | pendiente |
 | R25 | UL::`#199 R25: …` | pendiente |
 | R26 | CF::`#199 R26: …` | pendiente |
 | R27 | CF, DD::`#199 R27: …` | pendiente |

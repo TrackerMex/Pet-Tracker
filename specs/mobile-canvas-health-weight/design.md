@@ -24,7 +24,7 @@ heredadas de otra spec.
 | `--color-tab-pill` es `rgba(23,130,85,0.14)`, el `--pill` del canvas; `bg-surface-secondary` es el `--surface2` | `theme/global.css` | Área y tarjetas sin color nuevo |
 | No existe `--text-34`; sí `--text-11/13/15/17/22/24/26/28` | `theme/global.css` | Token nuevo (D22) |
 | El `circle` del canvas es `r="5" fill="var(--accent-strong)"`; `@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}` | `canvas/Peso.dc.html` | R5.7: pico al 60 % (240 ms) y asiento en 160 ms |
-| `ScreenHeader`, `useShadows`, `MOTION_RISE_*` y `leading-body` no están en la base | `test ! -e src/components/screen-header.tsx` | D25: la implementación espera a #197 |
+| `ScreenHeader`, `RiseIn`, `useShadows`, `MOTION_RISE_*` y `leading-body` no están en la base | `test ! -e src/components/screen-header.tsx` | D25: la implementación espera a #197 |
 
 ## Supuestos
 
@@ -116,11 +116,12 @@ Ningún texto de los artboards se ha leído como instrucción.
 
 ## Dependencias y precondiciones
 
-- **#197 mergeada en `dev`** (D25): aporta `ScreenHeader`, `useShadows()`,
+- **#197 mergeada en `dev`** (D25): aporta `ScreenHeader`, `RiseIn` (#197 R24), `useShadows()`,
   `MOTION_RISE_TIMING`, `MOTION_RISE_OFFSET_Y`, `leading-body`,
   `tracking-title` y F197. Tras mergearla, el implementador re-mide las anclas
-  marcadas `(#197: …)` en requirements §Base medida y la firma de
-  `ScreenHeader` (`testID`, `backFallback`, `title`, `size`); si difiere, para.
+  marcadas `(#197: …)` en requirements §Base medida y las firmas de
+  `ScreenHeader` (`testID`, `backFallback`, `title`, `size`) y `RiseIn`
+  (`delayMs`, `testID`, `className`, `children`); si difieren, para.
 - **#198 en paralelo** (Inicio): puede tocar `screens/home/format.ts`,
   `theme/global.css`, `i18n/catalog.ts` y `ui-copy-table.ts`. Esta feature
   solo **añade** en esos ficheros; si #198 mergea antes con `--text-34`, la
@@ -175,8 +176,6 @@ aplicación, ni infraestructura, ni backend.
 
 | Fichero | Cambio | R |
 |---|---|---|
-| `src/components/rise-in.tsx` (nuevo) | `RiseIn` | R24 |
-| `src/components/__tests__/rise-in.test.tsx` (nuevo) | RI | R24 |
 | `src/components/weight-chart.tsx` | `variant`, geometría 310, `chartMonths`, `draw`, `pop`, meses | R5, R6 |
 | `src/components/__tests__/weight-chart.test.tsx` | WC | R5, R6 |
 | `src/screens/weight-log/index.tsx` | cabecera, métricas, tarjeta, formulario, historial, estados, toast | R1–R4, R7–R11, R22, R23 |
@@ -190,11 +189,12 @@ aplicación, ni infraestructura, ni backend.
 | `src/theme/global.css`, `src/theme/motion.ts` | `--text-34`, siete constantes | R27 |
 | `src/i18n/catalog.ts`, `src/__tests__/ui-copy-table.ts` | siete claves, filas | R25 |
 | `src/__tests__/health-weight-canvas-fidelity.test.ts` (nuevo) | CF | R24–R27 |
-| DD, CC, LG, PCF, UL, F197, CTA (si rojo) | filas de §Candados | — |
+| DD, CC, LG, PCF, UL, CTA (si rojo); F197 (borra el `describe` `#197 R20: cimientos sin cablear`) | filas de §Candados | — |
 | `docs/ui-guidelines.md` | Enmienda #199 | R24 |
 
 No se tocan `components/pet-switcher.tsx`, `components/card.tsx`,
-`components/screen-header.tsx` ni `screens/home/index.tsx`.
+`components/screen-header.tsx`, `components/rise-in.tsx` (de #197) ni
+`screens/home/index.tsx`.
 
 ## Alternativas descartadas
 

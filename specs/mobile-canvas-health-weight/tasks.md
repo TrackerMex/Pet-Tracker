@@ -9,21 +9,20 @@ tags: [mobile, ui, spec, canvas-parity]
 ## Orden recomendado
 
 0. **Precondición (D25):** #197 mergeada en `dev` y mergeada en la branch.
-   Re-medir las anclas `(#197: …)` de requirements §Base medida y la firma de
-   `ScreenHeader`; si algo difiere, parar y avisar al leader.
+   Re-medir las anclas `(#197: …)` de requirements §Base medida y las firmas de
+   `ScreenHeader` y `RiseIn`; si algo difiere, parar y avisar al leader.
 1. Cimientos: R27 (`--text-34`, siete constantes de movimiento) y los helpers
    de fecha de R11, R14 y R5 (`fmtDayMonth`, `fmtDayMonthLong`,
    `fmtMonthShort`) con DT.
-2. `RiseIn` (R24, parte de componente) con RI.
-3. `WeightChart`: R5 y después R6.
-4. Peso: R1, R2, R3, R4, R7, R8, R9, R10, R11, R22, R23.
-5. Salud: R12, R13, R14, R15, R16, R17, R18, R19, R20, R21.
-6. Copy: R25 (claves y filas de `ui-copy-table.ts`).
-7. Carta: Enmienda #199 en `docs/ui-guidelines.md` (R24, parte de carta),
+2. `WeightChart`: R5 y después R6.
+3. Peso: R1, R2, R3, R4, R7, R8, R9, R10, R11, R22, R23.
+4. Salud: R12, R13, R14, R15, R16, R17, R18, R19, R20, R21.
+5. Copy: R25 (claves y filas de `ui-copy-table.ts`).
+6. Carta: Enmienda #199 en `docs/ui-guidelines.md` (R24),
    **solo si** la casilla «Enmienda #199 aprobada por humano» de requirements
    §Aprobación está marcada.
-8. CF (R26) y las filas de requirements §Candados que esta feature revierte.
-9. Cuentas a re-medir (abajo) y suite completa.
+7. CF (R26) y las filas de requirements §Candados que esta feature revierte.
+8. Cuentas a re-medir (abajo) y suite completa.
 
 ## Notas para el handoff
 
@@ -37,10 +36,10 @@ tags: [mobile, ui, spec, canvas-parity]
   ni `npm`.
 - **Sin dependencias nuevas.** Nada de `expo-linear-gradient`.
 - **No tocar** `components/pet-switcher.tsx`, `components/card.tsx`,
-  `components/screen-header.tsx`, `screens/home/index.tsx` ni nada fuera de
+  `components/screen-header.tsx`, `components/rise-in.tsx` (de #197), `screens/home/index.tsx` ni nada fuera de
   design §Archivos afectados.
 - **Candados de la casa:** nada de clases `[…]`, nada de `StyleSheet.create`
-  (tampoco en los tests de HE, WL, WC, RI, DT y CF), ningún hex salvo en
+  (tampoco en los tests de HE, WL, WC, DT y CF), ningún hex salvo en
   comentarios `#199 R<n>`, colores de categoría solo vía
   `CATEGORY_SLOTS[slot].surface`/`.ink`, `CONTINUOUS_CORNER` en esquinas que
   no son cápsula, texto con `text-13/15/17` en `Text` de RN (no `cn()` de
@@ -51,8 +50,12 @@ tags: [mobile, ui, spec, canvas-parity]
 - **RNTL 14:** `await` en cada `fireEvent` y `act`; `await` del render de
   `renderRouter` antes de asertar.
 - **Timers:** asertar en el ms anterior al arranque y tras duración + retraso
-  completos (requirements R5, R6, R22, R23, R24); no a mitad de curva salvo el
+  completos (requirements R5, R6, R22, R23); no a mitad de curva salvo el
   pico del `pop` (1540 ms).
+- **Retraso de `RiseIn` en WL y HE:** doble `jest.mock` de `components/rise-in` y
+  helper `riseDelayOf(node)` de requirements §Requisitos funcionales, en el
+  primer test de cada fichero que lea el retraso (WL: R3; HE: R14). El
+  `RiseIn` real y su test son de #197 R24.
 - **Copy:** los literales salen de requirements R25; no inventar textos.
 - **Lint:** `cd mobile-pet-tracker && bunx expo lint --no-cache > /tmp/lint199.log 2>&1 && test ! -s /tmp/lint199.log`.
 - **Skills:** el leader nombra en el prompt las skills de Codex que
@@ -87,7 +90,8 @@ relativas a `mobile-pet-tracker/src/`; abreviaturas de test en requirements
 
 ### R1 — Cabecera propia de Peso
 1. WL `#199 R1` (`weight-log-header`, `-back`, `-title`) y LY: `weight-log`
-   con `headerShown: false` y sin título nativo.
+   con `headerShown: false` y sin título nativo. Borrar de F197 el `describe`
+   `#197 R20: cimientos sin cablear` entero (requirements §Candados).
 2. `ScreenHeader` en `screens/weight-log/index.tsx`; opción en `app/_layout.tsx`.
 3. Quitar el uso huérfano de `t('weightLog.weightLog')` en `_layout`.
 
@@ -219,13 +223,12 @@ relativas a `mobile-pet-tracker/src/`; abreviaturas de test en requirements
 2. Toast.
 3. Nada.
 
-### R24 — `RiseIn` y Enmienda #199
-1. RI `#199 R24` (entrada, retraso, reduce motion); WL y HE con el doble
-   `jest.mock` y `riseDelayOf(node)`; CF: encabezado de la carta una vez y
-   casilla con `/- \[[ xX]\] Enmienda #199 aprobada por humano/`.
-2. `components/rise-in.tsx`; envolver tarjetas y filas; copiar a la carta el
-   texto literal de design §Decisiones técnicas 5 (tras la firma).
-3. Sin `RiseIn` anidados.
+### R24 — Enmienda #199
+1. CF `#199 R24`: encabezado de la carta una vez y casilla con
+   `/- \[[ xX]\] Enmienda #199 aprobada por humano/`.
+2. Copiar a la carta el texto literal de design §Decisiones técnicas 5 (tras
+   la firma). `RiseIn` se consume sin modificarlo y sin anidarlo.
+3. Nada.
 
 ### R25 — Copy nuevo y su tabla
 1. UL con las filas nuevas en `ui-copy-table.ts`; fila de `_layout` movida a

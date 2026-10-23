@@ -19,14 +19,13 @@ Precedencia: el canvas manda en lo visual y el movimiento; el copy sigue la
 Voz B de Pingo (`docs/ui-guidelines.md`); lo que el canvas no dibuja se
 conserva (decisión del humano del 2026-10-21: X01-X17 y los estados se
 quedan). La feature **consume** los cimientos de #197
-(`ScreenHeader`, `useShadows().toast`, `MOTION_RISE_TIMING`,
+(`ScreenHeader`, `useShadows().toast`, `RiseIn`, `MOTION_RISE_TIMING`,
 `MOTION_RISE_OFFSET_Y`, `leading-body`) y no los redefine. Rutas de código
 relativas a `mobile-pet-tracker/src/` salvo que se diga otra cosa.
 
 Abreviaturas de test: **WL** `screens/weight-log/index.test.tsx`, **HE**
 `screens/health/index.test.tsx`, **WC** `components/__tests__/weight-chart.test.tsx`,
-**RI** `components/__tests__/rise-in.test.tsx` (nuevo), **DT**
-`screens/home/__tests__/format-dates.test.ts` (nuevo), **CF**
+**DT** `screens/home/__tests__/format-dates.test.ts` (nuevo), **CF**
 `__tests__/health-weight-canvas-fidelity.test.ts` (nuevo), **LY**
 `app/__tests__/layout.test.tsx`, **UL** `__tests__/ui-language.test.ts`,
 **DD** `__tests__/design-drift.test.ts`, **CC**
@@ -69,7 +68,7 @@ cambia» dice qué requisitos y candados se mueven.
 | D16 | Línea de la próxima dosis | `fmtDayMonthLong(fecha)` + ` · ` + `health.nextDoseToday` (0 días), `health.nextDoseTomorrow` (1) o `health.nextDoseInDays` (2 o más) | El canvas dice «12 de octubre · en 6 días»; «en 1 días» sería falta | — |
 | D17 | Tono del delta | Sube: rosa + `danger`; baja: verde + `accent-strong`; igual o nulo: `default` + `muted`; los fondos y tintas pastel salen de `CATEGORY_SLOTS` | El canvas dibuja «sube» (rosa) y «baja» (verde); CC `centraliza las diez clases completas` prohíbe escribir `bg-category-*` fuera de su módulo | — |
 | D18 | Retrasos de entrada | Salud: dosis 0, filas `80 + 60 · min(i, 2)`, peso 260. Peso: gráfica 0, formulario 80, filas `140 + 60 · min(i, 2)`, esqueletos `60 · i` | Literales del canvas; tope en el tercer hijo para listas largas | — |
-| D19 | Entrada `rise` | Componente nuevo `RiseIn` en `components/rise-in.tsx` sobre `MOTION_RISE_TIMING`/`MOTION_RISE_OFFSET_Y` de #197, y Enmienda #199 de la carta | Punto 4 de la Enmienda #197: otro elemento solo usa el timing de `rise` con enmienda | — |
+| D19 | Entrada `rise` | `RiseIn` de #197 R24 (`components/rise-in.tsx`) sobre `MOTION_RISE_TIMING`/`MOTION_RISE_OFFSET_Y` de #197, y Enmienda #199 de la carta | Punto 4 de la Enmienda #197: otro elemento solo usa el timing de `rise` con enmienda | — |
 | D20 | `draw`, `pop` y `fade` | Constantes nuevas en `theme/motion.ts` (R5, R23); el `pop` reutiliza `MOTION_POP_SCALE` (0.6) y `MOTION_CELEBRATION_POP_PEAK` (1.08) | Literales del canvas | — |
 | D21 | Posición del toast (canvas `top: 98px`) | `top: insets.top + 42` (98 − 56 del `padding-top` del artboard) | Queda bajo la fila de cabecera, como en el canvas | — |
 | D22 | Cifra de 34 px | Token nuevo `--text-34: 34px` en `theme/global.css` | Regla de nombres por valor (`--text-<px>`) | Si #198 lo añade antes, la línea es idéntica y se conserva una |
@@ -132,7 +131,7 @@ grep -cF "'src/screens/weight-log/index.tsx'" src/__tests__/ui-copy-table.ts   #
 grep -cF "'src/components/weight-chart.tsx'" src/__tests__/ui-copy-table.ts    # 1 (R25: 2)
 grep -cF 'HeaderHeightContext.Provider value={91}' src/screens/weight-log/index.test.tsx  # 1 (R2: 0)
 grep -cF 'export function fmtDay' src/screens/home/format.ts                   # 0 (R11, R14: 2)
-test ! -e src/components/rise-in.tsx                                           # ausente (R24 lo crea)
+test ! -e src/components/rise-in.tsx                                           # ausente (#197: ausente → presente, #197 R24)
 test ! -e src/components/screen-header.tsx                                     # ausente (#197 lo crea)
 test ! -e src/__tests__/canvas-foundations.test.ts                             # ausente (#197 lo crea)
 test ! -e src/__tests__/health-weight-canvas-fidelity.test.ts                  # ausente (R26 lo crea)
@@ -171,7 +170,7 @@ módulo `components/rise-in` (`jest.mock`) sustituye `RiseIn` por un `View`
 host que conserva `testID`, `className` y los hijos y expone `delayMs` como
 prop del host (un solo nivel, igual que el `Animated.View` real). El helper de
 test `riseDelayOf(node)` sube por `.parent` hasta el primer host con esa prop y
-la devuelve; `undefined` si no hay ninguno. RI prueba el `RiseIn` real.
+la devuelve; `undefined` si no hay ninguno. El `RiseIn` real lo prueba #197 R24 (`components/__tests__/rise-in.test.tsx`).
 
 ### Cableado de cimientos (#197)
 
@@ -611,21 +610,9 @@ la gráfica.» (`weightLog.weightLogged`, sin cambio de copy),
 
 ### Copy, guardas y fidelidad
 
-**R24 — `RiseIn` y Enmienda #199.** THE SYSTEM SHALL exportar de
-`components/rise-in.tsx` `RiseIn({ delayMs, testID, className, children })`
-(`delayMs: number`, el resto opcional salvo `children`), que pinta un
-`Animated.View` con `testID` y `className` y, WHILE `useReducedMotion()` es
-falso, un `entering` propio con `initialValues`
-`{ opacity: 0, transform: [{ translateY: MOTION_RISE_OFFSET_Y }] }` y
-animaciones `withDelay(delayMs, withTiming(1, MOTION_RISE_TIMING))` para la
-opacidad y `withDelay(delayMs, withTiming(0, MOTION_RISE_TIMING))` para
-`translateY`; WHILE `useReducedMotion()` es verdadero, `entering` SHALL ser
-`undefined`. `docs/ui-guidelines.md` SHALL llevar el texto de la Enmienda #199
-de design §Decisiones técnicas, literal, al final del documento.
-- RI `#199 R24: RiseIn` › `#199 R24 la entrada parte de opacidad 0 y MOTION_RISE_OFFSET_Y abajo`.
-- RI `#199 R24: RiseIn` › `#199 R24 anima opacidad y desplazamiento con MOTION_RISE_TIMING tras delayMs`.
-- RI `#199 R24: RiseIn` › `#199 R24 bajo reduce motion no declara entering`.
-- RI `#199 R24: RiseIn` › `#199 R24 pasa testID y className al Animated.View y pinta sus hijos`.
+**R24 — Enmienda #199.** #199 consume `RiseIn` de `components/rise-in.tsx`
+(#197 R24) sin modificarlo. `docs/ui-guidelines.md` SHALL llevar el texto de la
+Enmienda #199 de design §Decisiones técnicas, literal, al final del documento.
 - CF `#199 R24: Enmienda #199` › `#199 R24 la carta lleva la Enmienda #199 una sola vez con sus frases` (`split(heading)` de longitud 2 y cada frase con `toContain`).
 - CF `#199 R24: Enmienda #199` › `#199 R24 la spec lleva la casilla de la enmienda` (regex tolerante `/- \[[ xX]\] Enmienda #199 aprobada por humano/` sobre `specs/mobile-canvas-health-weight/requirements.md`).
 
@@ -690,10 +677,11 @@ uno calculado desde el otro):
    `MOTION_POINT_POP_MS` (400), `MOTION_POINT_POP_DELAY_MS` (1300),
    `MOTION_TOAST_FADE_MS` (300) y `MOTION_TOAST_DELAY_MS` (400), sin tocar las
    que existen;
-3. dejar en `screens/health/index.tsx`, `screens/weight-log/index.tsx`,
-   `components/weight-chart.tsx` y `components/rise-in.tsx` cero clases con
-   corchetes (`-[`), cero `StyleSheet.create` y cero `text-accent` suelto, y
-   en sus tests (HE, WL, WC, RI, DT, CF) cero `StyleSheet.create`;
+3. dejar en `screens/health/index.tsx`, `screens/weight-log/index.tsx` y
+   `components/weight-chart.tsx` cero clases con corchetes (`-[`), cero
+   `StyleSheet.create` y cero `text-accent` suelto (`components/rise-in.tsx` lo
+   vigila #197 R22), y en sus tests (HE, WL, WC, DT, CF) cero
+   `StyleSheet.create`;
 4. escribir `#` + número en comentarios solo como `#199 R<n>` (DD
    `HEX_LITERAL` exime solo esa forma);
 5. dar `CONTINUOUS_CORNER` a toda esquina no cápsula nueva que pinte un `View`
@@ -704,8 +692,8 @@ uno calculado desde el otro):
    (#187: `twMerge` las toma por color y las expulsa).
 - CF `#199 R27: guardas` › `#199 R27 global.css declara --text-34: 34px`.
 - CF `#199 R27: guardas` › `#199 R27 motion.ts exporta las siete constantes con sus valores` (importa de `theme/motion`; los valores se cruzan con el canvas en R26).
-- CF `#199 R27: guardas` › `#199 R27 %s no usa corchetes, StyleSheet.create ni text-accent suelto` — `it.each` con los cuatro ficheros de producción.
-- CF `#199 R27: guardas` › `#199 R27 %s no usa StyleSheet.create` — `it.each` con los seis ficheros de test.
+- CF `#199 R27: guardas` › `#199 R27 %s no usa corchetes, StyleSheet.create ni text-accent suelto` — `it.each` con los tres ficheros de producción.
+- CF `#199 R27: guardas` › `#199 R27 %s no usa StyleSheet.create` — `it.each` con los cinco ficheros de test.
 - CF `#199 R27: guardas` › `#199 R27 %s no pasa text-13, text-15 ni text-17 a Label` — `it.each` con health y weight-log (regex sobre `<Label[^>]*className="[^"]*text-1[357]`).
 
 ## Candados que esta feature revierte
@@ -766,8 +754,7 @@ conserva la clase de #197; el mock `HeartPulse` de HE queda sin uso y ningún
 | HE › `#168 R3: cada vacuna lleva su tile pastel` › `pinta el estado de $id con su icono y textos` (`it.each`, 4 filas) | columna con 3 o 2 `Text`: nombre `font-bold text-foreground`, fechas ISO crudas en `font-normal text-muted` o `dateClass` | columna con 2 hijos: nombre `text-15 font-extrabold text-foreground` y `vaccine-dates-${id}` (R17: fechas por `fmtDate`, vencida en `Text` anidado `text-danger`); tile, icono y `flex-1 gap-1` no cambian | R16, R17 |
 | LY › `#95 R4` › `#194 R4: %s usa exactamente las opciones de cabecera acordadas` | `['weight-log', 't:weightLog.weightLog']` | `headerShown: false` sin título | R1 |
 | `app/__tests__/detail-stack.test.tsx` › `it.each` con `['weight-log', 0]` (si rojo) | 0 | el valor que dé la ruta sin cabecera nativa | R1 |
-| F197 › `#197 R20: nadie monta todavía los cimientos` | nadie importa `ScreenHeader`, `useShadows` ni `MOTION_RISE_*` | weight-log monta `ScreenHeader` y `useShadows`; `rise-in.tsx` usa `MOTION_RISE_*` | R1, R23, R24 |
-| F197 › `#197 R20: el layout raíz no cambia` | `headerShown` 2 | 3 | R1 |
+| F197 › `describe('#197 R20: cimientos sin cablear')` › `nadie monta todavía los cimientos %s` (4 casos: `toggle-switch`, `screen-header`, `shadows`, `rise-in`) y `el layout raíz no cambia` | cero importadores de producción de los cuatro módulos y `headerShown` ×2 en `app/_layout.tsx` | el `describe` se borra entero, con sus dos `it`, sin sufijo y sin sustituto: es un candado temporal de #197 que la ola 2 retira, y el borrado es idéntico en todas las features de la ola 2 para que git lo mezcle sin conflicto. Va en el primer commit rojo de #199 que monte un cimiento (`ScreenHeader`, `useShadows` o `RiseIn`) o toque `_layout.tsx` (R1) | R1, R3, R14, R23 |
 | DD › `#179 R13` › `reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10)` | health fuera de las listas de `rounded-14` y `rounded-16` | health con 1 `rounded-14` y 1 `rounded-16` | R14, R18 |
 | CC › `#62 R2: cada skeleton tiene la forma del contenido que sustituye` | `vaccines-skeleton` `h-24 w-full rounded-card` (única fila del `it.each`) | receta de R19 en la etiqueta de apertura de `vaccines-skeleton` | R19 |
 | CC › `lleva los tres tiles restantes a rounded-xl (enmendado por #177 R10)` | `'size-8 shrink-0 items-center justify-center rounded-xl ${tileClassName}'` | `size-9` | R10 |
@@ -842,8 +829,7 @@ en el PC del humano, no en Expo Go ni en la VPS:
   Firma delegada en el leader por mandato del humano del 2026-10-23
   (`progress/plan_canvas-parity-2026-10-23.md` §4, checklist de firma pasada: 47 anclas de Base medida
   verdes, 27 R con test nombrado y fila de trazabilidad, inventario de candados auditado por literal en
-  2fc0f6dd). Aceptadas las decisiones con defecto D1–D25. `RiseIn` (R24) es la entrada `rise` compartida
-  de la ola 2: #200, #202 y #196 la consumen. El handoff espera a que #197 esté en `dev`.
+  2fc0f6dd). Aceptadas las decisiones con defecto D1–D25. `RiseIn` viene de #197 R24 (Reanudación 2 de #197, commit b2f73327). El handoff espera a que #197 esté en `dev`.
 - [x] Enmienda #199 aprobada por humano (fecha: 2026-10-23) — texto literal en design §Decisiones técnicas
   Firma delegada en el leader por el mismo mandato. Se copia a `docs/ui-guidelines.md` después de la
   enmienda de #197, que se mergea antes.
