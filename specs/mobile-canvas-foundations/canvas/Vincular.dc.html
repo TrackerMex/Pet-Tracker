@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Vincular collar</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+<style>
+body{margin:0}
+a{color:#107148;text-decoration:none}a:hover{color:#0B5C3A}
+.pt{--bg:#FFFFFF;--fg:#0D1117;--surface:#FFFFFF;--surface2:#F0FBF6;--default:#F5F6F8;--muted:#667085;--border:rgba(13,17,23,0.08);--lip-gray:#E4E7EC;--accent:#178255;--accent-strong:#107148;--lip:#0E5E3C;--blue:#EFF6FF;--blue-s:#0768E0;--amber:#FFF7ED;--amber-s:#A55E07;--green:#F0FBF6;--green-s:#107148;--violet:#F5F3FF;--violet-s:#7549F7;--rose:#FFF0F3;--rose-s:#D80B34;--danger:#D92D20;--warning:#B54708;--glass:rgba(255,255,255,0.86);--pill:rgba(23,130,85,0.14);--shadow:0 1px 2px rgba(13,17,23,0.04),0 8px 24px rgba(13,17,23,0.06)}
+.pt.dark{--bg:#0D1117;--fg:#F7F8FA;--surface:#161B22;--surface2:#12231B;--default:#1F242B;--muted:#9CA3AF;--border:rgba(255,255,255,0.08);--lip-gray:#0A0D12;--accent-strong:#2AB87C;--lip:#0B4D31;--blue:#0B203A;--blue-s:#4A8DDF;--amber:#271E14;--amber-s:#C17B22;--green:#12231B;--green-s:#2AB87C;--violet:#221C33;--violet-s:#9579E7;--rose:#39131A;--rose-s:#E35E78;--danger:#F87171;--warning:#FBBF24;--glass:rgba(22,27,34,0.86);--pill:rgba(23,130,85,0.22);--shadow:0 1px 2px rgba(0,0,0,0.4)}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes ping{0%{transform:scale(.55);opacity:.55}100%{transform:scale(1.5);opacity:0}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fill{from{width:0}}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+@keyframes fall{0%{transform:translateY(-40px) rotate(0);opacity:0}10%{opacity:1}100%{transform:translateY(760px) rotate(540deg);opacity:0}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
+</helmet>
+<div class="pt {{theme}}" style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: var(--bg); color: var(--fg); font-family: Inter, 'Helvetica Neue', system-ui, sans-serif; padding: 56px 20px 40px; display: flex; flex-direction: column; gap: 16px">
+<header style="display: flex; align-items: center; gap: 8px">
+<a href="Perfil.dc.html" aria-label="Volver" style="width: 44px; height: 44px; margin-left: -10px; display: flex; align-items: center; justify-content: center; color: var(--fg)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></a>
+<div style="flex: 1"></div>
+<a href="Vincular.dc.html" aria-current="true" style="width: 36px; height: 36px; border-radius: 50%; background: var(--amber); color: var(--amber-s); box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 800; text-decoration: none">R</a>
+</header>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 10px; animation: rise 400ms ease-out both">
+<div style="position: relative; width: 200px; height: 150px; display: flex; align-items: center; justify-content: center">
+<span style="position: absolute; width: 150px; height: 150px; border-radius: 50%; border: 3px solid var(--accent); opacity: .3; animation: ping 2.4s ease-out infinite"></span>
+<span style="position: absolute; width: 150px; height: 150px; border-radius: 50%; border: 3px solid var(--accent); opacity: .3; animation: ping 2.4s ease-out 1.2s infinite"></span>
+<img src="/_blob/f4ec4ed756bad6b3aa2ee809a534ea88" alt="Mascota" style="width: 120px; height: auto; animation: float 3s ease-in-out infinite">
+</div>
+<h1 style="margin: 0; font-size: 28px; font-weight: 900; letter-spacing: -0.02em">Vincular collar</h1>
+</div>
+<section style="border-radius: 18px; background: var(--default); padding: 12px 14px; display: flex; gap: 10px; align-items: flex-start; animation: rise 400ms ease-out 80ms both">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex: none; margin-top: 1px"><circle cx="12" cy="12" r="9"></circle><path d="M12 8h.01M12 11v5"></path></svg>
+<span style="font-size: 13px; line-height: 1.45; color: var(--muted)"><b style="color: var(--fg)">Plan gratuito — solo salud.</b> Vincula un collar con plan activo para ver el mapa.</span>
+</section>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 800; animation: rise 400ms ease-out 140ms both">Código de activación
+<input value="PT7K-29QX" style="height: 60px; border-radius: 14px; background: var(--default); border: 2px solid var(--accent); padding: 0 16px; font: 900 24px 'SFMono-Regular', ui-monospace, monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--fg); outline: none">
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--muted)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"></path><path d="M3 8l9 5 9-5M12 13v8"></path></svg>Impreso en la caja del collar</span>
+</label>
+<a href="Celebracion.dc.html" style="margin-top: auto; height: 56px; border-radius: 16px; background: var(--accent); color: #FFFFFF; box-shadow: 0 4px 0 var(--lip); display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 800; text-decoration: none">Vincular collar</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { theme: this.props.dark ? "dark" : "" };
+}
+}
+</script>
+</body>
+</html>
