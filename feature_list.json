@@ -3460,7 +3460,7 @@
   {
     "id": 197,
     "name": "mobile-canvas-foundations",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P1",
     "description": "Registrada el 2026-10-23 por el plan progress/plan_canvas-parity-2026-10-23.md (ola 1), sobre el canvas versión 1792777983-cd94. Bases visuales sin cablear pantallas. Candidatas de progress/explore_canvas-parity-2026-10-21.md §7: C01 tokens de color claros en theme/global.css (danger #D92D20, warning #B54708, border .08); C02 tokens de tracking e interlineado y barrido de tracking-tight; C03 variantes de theme/chunky-lip.ts y migración de los 5 border-b-N (add-reminder, alerts, meal-schedule); C04 componente Switch del canvas, de 48x28, sin cablear sus 3 usos; C05 rise común de 14 px y 400 ms ease-out en theme/motion.ts, con home-entrance.tsx; C06 componente de cabecera en contenido (BackButton, h1 y accesorio) sin cablear, más la enmienda de docs/ui-guidelines.md; C07 sombras del canvas. Cada pantalla cablea Switch y cabecera en su propia feature de la ola 2. Respeta la Enmienda #187 (text-<n> nunca sobre componentes de heroui). Firma delegada al leader (mandato del humano 2026-10-23). Registrada sin spec."
   },

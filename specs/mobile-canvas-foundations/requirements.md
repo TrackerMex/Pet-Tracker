@@ -734,3 +734,4 @@ la casilla en el leader citando el mensaje donde dio el visto bueno.
   `home-photo-hero-canvas.test.ts` en § «Candados» (bloqueo de la Verificación
   final) y R24 `RiseIn`, traído de #199 R24 sin cambiar su semántica.
 - [ ] Smoke de R23 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
+  Va en el lote `progress/smoke_canvas-parity.md` (plan §6); el `done` no espera al smoke.

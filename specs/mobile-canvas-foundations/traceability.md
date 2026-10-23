@@ -31,7 +31,7 @@ tags: [mobile, ui, traceability]
 | R21 | src/__tests__/canvas-foundations.test.ts::#197 R21; src/__tests__/design-drift.test.ts::#178 R2/#179 R2; src/__tests__/chunky-cta-canvas-fidelity.test.ts::#177 R11.1; src/__tests__/alerts-canvas-fidelity.test.ts::#174 R11 (enmendados por #197 R21); src/__tests__/home-photo-hero-canvas.test.ts::#195 R20 (dos it enmendados por #197 R21) | 9c2d837b test(#197): R21 require the canonical canvas charter amendment<br>66065bef feat(#197): R21 apply the canonical canvas foundations charter<br>7da0e950 test(#197): amend #195 contrast and charter-section locks (R1, R21) |
 | R22 | src/__tests__/canvas-foundations.test.ts::#197 R22 (12 casos) | e74076a9 test(#197): R22 guard clean sources and unchanged dependency counts<br>3b96b769 test(#197): R24 lock the shared rise entrance (R24), caso rise-in |
 | R24 | src/components/__tests__/rise-in.test.tsx::#197 R24; src/__tests__/canvas-foundations.test.ts::#197 R20 y #197 R22 (caso rise-in) | 3b96b769 test(#197): R24 lock the shared rise entrance (R24)<br>ece57bea feat(#197): R24 add the shared RiseIn entrance (R24) |
-| R23 | smoke humano (requirements.md § Cierre del humano) | pendiente |
+| R23 | smoke humano (requirements.md § Cierre del humano) | pendiente humano: va en el lote `progress/smoke_canvas-parity.md` (plan §6) |
 
 Regla: el reviewer no aprueba si alguna fila de R1 a R22 o R24 queda "pendiente";
 R23 la cierra el humano tras el veredicto.

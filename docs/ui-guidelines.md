@@ -895,4 +895,5 @@ Fecha: 2026-10-23. Feature #197 `mobile-canvas-foundations`. Fija los tokens y l
 
 Detalle y tests en `specs/mobile-canvas-foundations/requirements.md` (R1 a R23).
 
-- [ ] Enmienda #197 aprobada por humano
+- [X] Enmienda #197 aprobada por humano
+  Firma delegada en el leader por mandato del humano del 2026-10-23 (`progress/plan_canvas-parity-2026-10-23.md` §4), igual que la de `specs/mobile-canvas-foundations/requirements.md` § Aprobación.
