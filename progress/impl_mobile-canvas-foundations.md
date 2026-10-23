@@ -1,5 +1,7 @@
 # Implementación mobile-canvas-foundations (#197)
 
+Estado actual: **BLOQUEADO en Verificación final** por dos candados de #195 en un archivo fuera de la lista autorizada. R1–R22 implementados y verdes por requisito; suite global 4675 passed / 2 failed. Tipos, lint, nueve guardas y graphify verdes. El bloqueo inicial de R7 está resuelto por 1e0d70cf. No se declara done.
+
 ## Inicio
 
 Ruta confirmada: `/home/claude/sites/Pet-Tracker-wt-197`. Rama: `feature/197-mobile-canvas-foundations`. H0: `046133e8`. Sin init.sh, push, PR ni merges conforme al handoff.
@@ -128,7 +130,7 @@ Rojo por aserción: 7 failed, 86 passed, 93 total. Verde: `Tests: 93 passed, 93 
 
 Rojo: 17 failed, 26 passed, 43 total (CF+CL), todos por aserción. Verde: `Tests: 43 passed, 43 total`. 19 tests nuevos (CF 11, CL 8), total esperado 4608. Las tres filas CF existentes nacen verdes; las ocho nuevas nacen rojas. Once sondas alteran el offset de una variante cada vez, y otra altera el séptimo token pedido: todas rojas, revertidas. Se enmienda CL R2.1 a siete tokens y once claves. Un helper local construye la capa compartida (como pide tasks.md); no hay módulo nuevo.
 
-## BLOQUEADO en R7 — inventario de candados incompleto
+## Bloqueo histórico de R7 — resuelto por 1e0d70cf (primera sesión)
 
 No se declara terminada la feature. R1–R6 implementados y verificados por sus suites seleccionadas; R7 tiene únicamente el commit de test rojo. R8–R22 y la verificación final no se han ejecutado.
 
@@ -215,7 +217,7 @@ Las líneas son las mediciones de cada estado TDD (rojo antes del commit test; v
 | `7f242bc7` | feat(#197): R6 expand memoized canvas lip catalogue | 43 passed, 43 total |
 | `d8c65463` | test(#197): R7 require external lips on selected reminder chips | 3 failed, 62 skipped, 65 total |
 
-## Tabla R1–R22 → test → commit
+## Tabla R1–R22 → test → commit (primera sesión; sustituida por la tabla final)
 
 | R | Tests | Commits / estado |
 |---|---|---|
@@ -242,7 +244,7 @@ Las líneas son las mediciones de cada estado TDD (rojo antes del commit test; v
 | R21 | No ejecutado | No iniciado por parada obligatoria en R7 |
 | R22 | No ejecutado | No iniciado por parada obligatoria en R7 |
 
-## Verificación y límites del cierre bloqueado
+## Verificación y límites del cierre bloqueado (primera sesión)
 
 - Anclas T0: todas coinciden. `router.d.ts` ausente.
 - Typecheck temprano (tras escribir los tests R4): guard verde y `bun run typecheck` exit 0 (`progress/typecheck-197.log`). No se afirma typecheck final de R6/R7.
@@ -279,7 +281,7 @@ su smoke va con la ola 2. Si el humano lo prefiere, puede delegar la firma de
 la casilla en el leader citando el mensaje donde dio el visto bueno.
 
 
-## Archivos committeados desde H0 (móvil/docs)
+## Archivos committeados desde H0 al primer cierre (móvil/docs)
 
 ```text
 mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts
@@ -303,3 +305,263 @@ mobile-pet-tracker/src/theme/global.css
 Todos pertenecen a la lista cerrada. El código de NuevoRecordatorio no figura: su implementación tentativa se revirtió tras documentar el diff. El estado `git status --short -- mobile-pet-tracker/ specs/ docs/` quedó vacío. El reporte se entrega en commit docs, sin modificar la trazabilidad reservada al cierre final de R22.
 
 Nota de desarrollo: el primer borrador del extractor de CF R6 exigía cada declaración en una sola línea y daba falsos rojos para las tres variantes existentes. Antes del commit de test se corrigió para aislar la declaración hasta la siguiente clave; el rojo válido quedó en 17 fallos (ocho variantes ausentes en CF, ocho en CL y el inventario CL), con las tres filas existentes verdes.
+
+## Reanudación — 2026-10-23
+
+Autorizada por el humano y el commit 1e0d70cf del leader. Primer comando de esta reanudación confirmó `/home/claude/sites/Pet-Tracker-wt-197` y `feature/197-mobile-canvas-foundations`, árbol limpio. El bloqueo histórico de R7 queda resuelto por la fila CHIP_SELECTED y la Enmienda mecánica permitida. No se rehacen R1–R6 ni d8c65463. Se retira el marcador .done anterior hasta el cierre nuevo.
+
+## Enmiendas mecánicas
+
+La constante CHIP_SELECTED ya tiene autorización explícita y no es una enmienda adicional.
+
+| Fichero › describe › it | Literal viejo → nuevo | R |
+|---|---|---|
+| src/screens/meal-schedule/index.test.tsx › #179 R6 › el dueño ve las dos entradas planas con Editar al final de cada fila | vía expectRows: h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3.5 → h-9 rounded-10 border-2 border-lip-gray bg-surface px-3.5 | R9 |
+
+## R7 reanudado: verde
+
+Rojo ampliado: `Tests: 20 failed, 45 passed, 65 total`. Verde: `Tests: 65 passed, 65 total`. Tres sondas de producción (reintroducir el borde, retirar estilo solo de tipo, retirar estilo solo de antelación) rojas y revertidas. El rojo de clase cubre los 17 casos de CHIP_SELECTED; los tests autorizados también detectan la pérdida de estilo. Sin nuevos it. El bloqueo histórico queda cerrado.
+
+## R8
+
+Rojo: 5 failed (AL 4 casos + CN), por aserción. Verde seleccionado final: Tests:       145 skipped, 5 passed, 150 total . Sonda: retirar solo el estilo del ack, detectada por todos los candados enmendados y revertida. Se conserva variant, hitSlop y los handlers. Un reemplazo demasiado amplio añadió sufijos a dos nombres sin cambiar sus aserciones; se corrigió en commit de test separado antes del feat. No hay it nuevos.
+
+Enmienda mecánica R9: MS › #179 R6 › el dueño ve las dos entradas planas con Editar al final de cada fila. Helper expectRows cambia el literal exacto h-9.75 … border-b-5 por h-9 … sin borde; sufijo añadido. Autorizada por la Enmienda mecánica permitida.
+
+## R9
+
+Rojo: 7 failed, 19 passed, 123 skipped (149 total). Verde de pantalla completa: Tests: 74 passed, 74 total. Verde seleccionado MS+CN: Tests:       123 skipped, 26 passed, 149 total. Sondas resumen (estilo simple de esquina), Editar (sin labio), Añadir (sin labio): rojas y revertidas. La suma de CN cuenta usos reales en lugar de sumar el inventario esperado, para que la sonda detecte la regresión. El comprobador de logs de sondas se amplió para reconocer el formato expect(instance) de RNTL; la sonda Editar ya era roja por la aserción correcta. No hay it nuevos.
+
+## R10
+
+Nace verde tras R7–R9: Tests: 185 skipped, 24 passed, 209 total (CF+CC+CN+AC). Un it nuevo CF y reemplazo uno-a-uno de #177 R8.2 por #197 R10 (recuento conservado). Once sondas rojas y revertidas: border-b-3, border-b-5, border-b-6, border-black/25, llamada del consumidor, neutral, neutralCompact, summary, ancla Editar y guards legacy/comentarios sobre los nuevos consumidores. Las filas sin cambio semántico de los it.each conservan sus aserciones.
+
+## R11
+
+Rojo por aserción: Tests: 3 failed, 54 passed, 57 total. Verde: Tests: 57 passed, 57 total. Dos it nuevos. Sondas offset 15, duración 399 y exportación extra: todas rojas y revertidas; cubren CF, forma de MT y el inventario de 37 claves.
+
+## R12
+
+Rojo: Tests: 4 failed, 3 skipped, 7 total. Verde: Tests: 3 skipped, 4 passed, 7 total. Sondas opacidad final incorrecta, offset por defecto +1 y retardo +1: rojas y revertidas. El test de receta diferida también comprueba el timing al invocarla para detectar el cambio de producción. Sin it nuevos.
+
+## R13
+
+Rojo: Tests: 3 failed, 270 skipped, 4 passed, 277 total. Verde: Tests: 270 skipped, 7 passed, 277 total. Las cuatro filas #190 R1 nacen verdes por R12. Sondas: restaurar entrada bajo reduce motion y cambiar offset a 15; rojas y revertidas. HI #152 R7 verifica HomeEntrance del resumen sin entrada bajo reduce motion y, tras rerender sin reduce motion, el timing 400/System del reveal interior; este último sigue respetando el sistema mediante MOTION_RISE_TIMING. No se toca home/index.tsx de producción. Sin it nuevos. Lecturas de rutas de tipos RNTL inexistentes se corrigieron consultando rg --files; sin cambios de código por ese error de invocación.
+
+## R14
+
+Rojo por aserción: Tests: 8 failed, 106 passed, 114 total. Verde: Tests: 114 passed, 114 total. Ocho it nuevos. Seis sondas retiran individualmente el token oscuro dejando el claro correcto: rojas y revertidas, cubren todas las filas CF y GC.
+
+## R15
+
+Rojo: Tests: 23 failed, 36 passed, 59 total, por aserción (módulo ausente se trata expresamente como exportación ausente, sin import roto). Verde inicial: Tests: 59 passed, 59 total. 23 it nuevos: SW 13 y CF 10. Diez sondas alteran la primera capa de cada variante; tres adicionales alteran tokens pedidos, referencia memoizada y dependencia accent: todas rojas y revertidas. El test de re-resolución cambia cada color por separado para cubrir las ocho dependencias. Helper local de capas, sin promover el helper de chunky-lip porque su contrato es de labios sin blur.
+
+## R16
+
+Rojo: Tests: 3 failed, 46 passed, 49 total. Verde: Tests: 49 passed, 49 total. Tres it nuevos. Sondas pista, pulgar y distancia al borde: rojas y revertidas. Los tests espían los props recibidos por Switch y Thumb y delegan el render a los componentes reales: HeroUI consume animation antes de llegar al nodo host. Se consulta el pulgar con includeHiddenElements, conservando su accesibilidad decorativa.
+
+## R17
+
+Nace verde tras R16, sin cambio de producción: Tests: 5 passed, 5 total. Tres it nuevos, eventos await sobre Switch real y selección controlada comprobada. Sondas handler anulado e isDisabled ignorado: rojas y revertidas. Se reconoce también el formato expect(jest.fn()) en el comprobador de sondas; el rojo del handler ya era correcto (cero llamadas frente a una).
+
+## R18
+
+Rojo: Tests: 1 failed, 7 passed, 8 total (sin trazo nace verde). Verde: Tests: 8 passed, 8 total. Dos it nuevos. Sondas trazo fijo 2.3 y defecto 2: rojas y revertidas. Los seis #172 R2 permanecen verdes y sin editar.
+
+## R19
+
+Rojo por aserción: Tests: 9 failed, 94 skipped, 4 passed, 107 total. Verde: Tests: 94 skipped, 13 passed, 107 total. Siete it nuevos (HD 6 + CF 1). Ocho sondas: margen, eyebrow, título 24, título 26/inventario PC, accesorio, trazo, título opcional e inventario tracking AC; rojas y revertidas. PC y AC amplían solo los inventarios aprobados.
+
+## R20
+
+Nace verde: Tests: 74 skipped, 5 passed, 79 total. Cuatro it nuevos CF (tres módulos + layout). Sondas de import desde producción para los tres módulos y retirada de accent del hook de sombras: rojas y revertidas. **Sin sonda de mutación sobre app/_layout.tsx**, porque el handoff prohíbe tocar ese fichero; el candado se complementa con diff byte a byte vacío contra H0 y recuento headerShown ×2. No se afirma probada por mutación esa fila.
+
+## R21
+
+Rojo: Tests: 8 failed, 268 skipped, 1 passed, 277 total (D-H nace verde). Verde: Tests: 268 skipped, 9 passed, 277 total. Cinco it nuevos. Siete sondas sobre los cuatro bloques permitidos: tracking, leading, cada una de las tres recetas, texto de Enmienda y duplicación de D-H dentro de la Enmienda nueva: rojas y revertidas. La línea D-H original no se altera ni durante las sondas. Se agrupan las tres recetas del bloque Punto 13 antes de Sin labio para conservar el bloque canónico byte a byte. Ninguna otra enmienda cambia.
+
+## R22
+
+Nace verde: Tests: 68 passed, 68 total (CF completo). Once it nuevos: diez fuentes y dependencias. Diez sondas introducen una marca legacy de elevation en una fuente cada vez: todas rojas y revertidas. **Sin sonda sobre package.json/bun.lock**, porque el handoff prohíbe tocarlos; los recuentos 44/8 y el diff vacío contra H0 se verifican al cierre. No se afirma probada por mutación esa fila.
+
+## Historial TDD completo — commits y mediciones del paso
+
+Cada fila asocia el commit al log observado del paso (rojo por aserción o verde). Los logs de sonda de los tests reforzados son rojos con la mutación plantada y luego revertida. Las mediciones se realizan antes de commitear, siguiendo TDD; no se presentan como una suite global por commit.
+
+| Commit | Mensaje | Tests: (log asociado) |
+|---|---|---|
+| `03de724e` | test(#197): R1 lock light colors to frozen canvas | 5 failed, 70 skipped, 2 passed, 77 total (r1-red-197.log) |
+| `28fa2d22` | feat(#197): R1 align light semantic colors with canvas | 70 skipped, 7 passed, 77 total (r1-green-197.log) |
+| `f0aa3db8` | test(#197): R2 verify updated state color contrast | 78 passed, 78 total (r2-green-197.log) |
+| `4a792781` | test(#197): R3 lock canvas tracking and line heights | 7 failed, 78 passed, 85 total (r3-red-197.log) |
+| `3bfbbebf` | feat(#197): R3 add canvas typography tokens | 85 passed, 85 total (r3-green-197.log) |
+| `c702f6fd` | test(#197): R4 align title tracking guards with canvas | 23 failed, 401 skipped, 4 passed, 428 total (r4-red-197.log) |
+| `1fa7db78` | feat(#197): R4 use canvas tracking for large titles | 401 skipped, 27 passed, 428 total (r4-green-197.log) |
+| `f6fc598c` | test(#197): R5 lock new lip colors in both themes | 7 failed, 86 passed, 93 total (r5-red-197.log) |
+| `3a05751e` | feat(#197): R5 add canvas lip tokens in both themes | 93 passed, 93 total (r5-green-197.log) |
+| `76f76621` | test(#197): R6 cover all eleven canvas lip variants | 17 failed, 26 passed, 43 total (r6-red-197.log) |
+| `7f242bc7` | feat(#197): R6 expand memoized canvas lip catalogue | 43 passed, 43 total (r6-green-197.log) |
+| `d8c65463` | test(#197): R7 require external lips on selected reminder chips | 3 failed, 62 skipped, 65 total (r7-red-197.log) |
+| `d285ec01` | test(#197): R7 amend CHIP_SELECTED for the lip-less selected chip | 20 failed, 45 passed, 65 total (r7-resume-red-197.log) |
+| `885bca96` | feat(#197): R7 render reminder chip lips outside their bodies | 65 passed, 65 total (r7-green-197.log) |
+| `871ac40f` | test(#197): R8 require compact external lips on alert acknowledgements | 5 failed, 141 skipped, 4 passed, 150 total (r8-red-197.log) |
+| `58a976b0` | test(#197): R8 limit amended titles to acknowledgement assertions | 5 failed, 141 skipped, 4 passed, 150 total (r8-red-197.log) |
+| `14acfd53` | feat(#197): R8 apply compact neutral lips to alert rows | 145 skipped, 5 passed, 150 total (r8-green-197.log) |
+| `f2a479a8` | test(#197): R9 lock meal schedule body heights and external lips | 7 failed, 123 skipped, 19 passed, 149 total (r9-red-197.log) |
+| `af69e294` | test(#197): R9 count actual corner uses in the aggregate guard | 5 failed, 123 skipped, 21 passed, 149 total (r9-probe-summary-197.log) |
+| `3156ffa6` | feat(#197): R9 move meal schedule lips outside canvas body heights | 123 skipped, 26 passed, 149 total (r9-green-197.log) |
+| `584d92d3` | test(#197): R10 close external lip inventories and guards | 185 skipped, 24 passed, 209 total (r10-green-197.log) |
+| `26f7b406` | test(#197): R11 pin rise motion to frozen canvas values | 3 failed, 54 passed, 57 total (r11-red-197.log) |
+| `36cde247` | feat(#197): R11 export the canvas rise timing and offset | 57 passed, 57 total (r11-green-197.log) |
+| `1218c3d4` | test(#197): R12 require timing-based staggered home entrances | 4 failed, 3 skipped, 7 total (r12-red-197.log) |
+| `7f4c87ee` | feat(#197): R12 animate home entrances with the canvas rise timing | 3 skipped, 4 passed, 7 total (r12-green-197.log) |
+| `4957fab0` | test(#197): R13 require no home entrance under reduced motion | 3 failed, 270 skipped, 4 passed, 277 total (r13-red-197.log) |
+| `fea73469` | feat(#197): R13 omit home entrance animations under reduced motion | 270 skipped, 7 passed, 277 total (r13-green-197.log) |
+| `36ccb4e5` | test(#197): R14 bind shadow colors to both canvas themes | 8 failed, 106 passed, 114 total (r14-red-197.log) |
+| `4cdcb891` | feat(#197): R14 add semantic shadow tokens for both themes | 114 passed, 114 total (r14-green-197.log) |
+| `db896099` | test(#197): R15 cover the canvas shadow catalogue and memoization | 23 failed, 36 passed, 59 total (r15-red-197.log) |
+| `26273b33` | test(#197): R15 verify each shadow color dependency independently | 1 failed, 12 passed, 13 total (r15-probe-dependency-197.log) |
+| `a250f6da` | feat(#197): R15 add the memoized canvas shadow catalogue | 59 passed, 59 total (r15-green-197.log) |
+| `4576ab78` | test(#197): R16 pin switch geometry and forwarded props | 3 failed, 46 passed, 49 total (r16-red-197.log) |
+| `8eae2efb` | feat(#197): R16 add the canvas toggle switch wrapper | 49 passed, 49 total (r16-green-197.log) |
+| `c456bd7e` | test(#197): R17 verify controlled and disabled switch interactions | 5 passed, 5 total (r17-green-197.log) |
+| `f25046b2` | test(#197): R18 cover optional back chevron stroke width | 1 failed, 7 passed, 8 total (r18-red-197.log) |
+| `ec1f969c` | feat(#197): R18 forward optional chevron stroke width | 8 passed, 8 total (r18-green-197.log) |
+| `98cf944b` | test(#197): R19 lock the content header structure and typography | 9 failed, 94 skipped, 4 passed, 107 total (r19-red-197.log) |
+| `6cd3b1d8` | test(#197): R19 assert accessory presence before its row position | 1 failed, 94 skipped, 12 passed, 107 total (r19-probe-accessory-197.log) |
+| `67c55afb` | feat(#197): R19 add the canvas content header component | 94 skipped, 13 passed, 107 total (r19-green-197.log) |
+| `66f9d00f` | test(#197): R20 keep the new foundations unwired | 74 skipped, 5 passed, 79 total (r20-green-197.log) |
+| `9c2d837b` | test(#197): R21 require the canonical canvas charter amendment | 8 failed, 268 skipped, 1 passed, 277 total (r21-red-197.log) |
+| `66065bef` | feat(#197): R21 apply the canonical canvas foundations charter | 268 skipped, 9 passed, 277 total (r21-green-197.log) |
+| `e74076a9` | test(#197): R22 guard clean sources and unchanged dependency counts | 68 passed, 68 total (r22-green-197.log) |
+
+## Verificación final — avances
+
+- Typecheck: guard router.d.ts ausente y bun run typecheck, exit 0 (progress/typecheck-final-197.log).
+- Lint: bunx expo lint --no-cache con redirect, exit 0 y log de 0 bytes; test ! -s verde (progress/lint-197.log).
+- graphify update .: exit 0. AST sin LLM; 28095 nodos, 36247 aristas, 1847 comunidades. Aviso: 20 ficheros SQL omitidos porque tree_sitter_sql no está instalado; no se añaden dependencias. Artefactos en graphify-out (ignorados).
+- Guardas manuales: dark conserva todos los valores previos salvo nuevos tokens; success/lip/lip-gray intactos; las 35 exportaciones previas de motion mantienen sus valores; solo se añaden RISE_OFFSET_Y/RISE_TIMING. D-H idéntica y una sola vez. Horario/Historial sin shadow/elevation. Callers de BackButton sin strokeWidth. ui-copy-table, layout y dependencias idénticos a H0.
+- Lista cerrada: exactamente 40/40 rutas de móvil/docs, sin ninguna extra. Se adjunta la lista al cierre final.
+- Excepciones de sondas: no se mutaron app/_layout.tsx ni package.json/bun.lock, por prohibición explícita del handoff. Esas filas se comprueban con igualdad contra H0, recuentos y suite, sin atribuirles una sonda inexistente.
+
+## Cierre de Verificación final — BLOQUEADO
+
+Comando: bun run test --runInBand, con pgrep de Jest e init vacíos antes del arranque; exit 1. La corrida ya iniciada terminó sin nuevas ediciones de código tras detectar el bloqueo.
+
+Test Suites: 1 failed, 140 passed, 141 total
+
+Tests: 2 failed, 4675 passed, 4677 total
+
+Snapshots: 1 passed, 1 total
+
+Time: 383.514 s
+
+Respecto a T0: 4569 → 4677 (**108 tests nuevos, ninguno eliminado**); 137 → 141 suites. El reemplazo #177 R8.2 fue uno por uno. Los 108 nuevos pasan; fallan dos candados anteriores de #195. Snapshot conservado 1/1.
+
+### Bloqueo nuevo, fuera de la lista cerrada
+
+1. src/__tests__/home-photo-hero-canvas.test.ts › #195 R17 › mantiene referencias y suelos en light. La séptima medida (danger/background) usa referencia 3.76. R1 cambia EF4444 → D92D20; contraste calculado **4.831413489227404**, diferencia **1.071413489227404** frente a tolerancia 0.05. Se supera el suelo de contraste; queda obsoleta la referencia numérica.
+2. Mismo archivo › #195 R20 › añade una sola sección completa y es la última cabecera de nivel dos. Espera última cabecera «## Enmienda #195 — cabecera fotográfica de Inicio fiel al canvas»; recibe «## Enmienda #197 — cimientos del canvas». La aserción siguiente usa slice desde #195 hasta EOF; debe delimitarse hasta la siguiente cabecera para comparar solo #195, cuyo bloque se conserva intacto.
+
+El archivo no figura en la lista cerrada y permanece idéntico a H0. La excepción mecánica no autoriza ampliar archivos; el primer fallo tampoco compara con la cadena exacta que cambia la tabla, sino con una referencia calculada de contraste. Se cumple la parada: no se enmiendan esos it ni se cambia producción para hacerlos pasar. El leader debe autorizar el archivo e inventariar las dos enmiendas antes de continuar.
+
+Diff causante mínimo medido:
+
+~~~diff
+- --danger: #EF4444;
++ --danger: #D92D20;
+- --color-danger: #EF4444;
++ --color-danger: #D92D20;
+~~~
+
+La carta añade el texto canónico «## Enmienda #197 — cimientos del canvas» después de #195, sin modificar el bloque #195 (R21). No hay cambios no committeados de producción que revertir. Último commit TDD: e74076a9.
+
+### Guardas finales observadas en la suite completa
+
+- design-drift: PASS.
+- consistency-classnames: PASS.
+- legibility-classnames: PASS.
+- chunky-cta-canvas-fidelity: PASS.
+- alerts-canvas-fidelity: PASS.
+- tab-headers-canvas: PASS.
+- profile-canvas-fidelity: PASS.
+- ui-language: PASS.
+- canvas-foundations: PASS.
+
+Tipos: exit 0. Lint: exit 0 y log de 0 bytes. Graphify: exit 0; aviso de 20 SQL omitidos por falta de tree_sitter_sql, sin instalar dependencias. Igualdad de layout/package/bun.lock contra H0 y guardas manuales: verdes. No se corre init.sh (del leader), ni push ni PR.
+
+### Lista exacta de archivos móvil/docs desde H0
+
+~~~text
+docs/ui-guidelines.md
+mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/canvas-foundations.test.ts
+mobile-pet-tracker/src/__tests__/chunky-cta-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/__tests__/legibility-classnames.test.ts
+mobile-pet-tracker/src/__tests__/profile-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/tab-headers-canvas.test.ts
+mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx
+mobile-pet-tracker/src/app/(tabs)/food.tsx
+mobile-pet-tracker/src/components/__tests__/back-button.test.tsx
+mobile-pet-tracker/src/components/__tests__/celebration.test.tsx
+mobile-pet-tracker/src/components/__tests__/screen-header.test.tsx
+mobile-pet-tracker/src/components/__tests__/toggle-switch.test.tsx
+mobile-pet-tracker/src/components/back-button.tsx
+mobile-pet-tracker/src/components/celebration.tsx
+mobile-pet-tracker/src/components/screen-header.tsx
+mobile-pet-tracker/src/components/toggle-switch.tsx
+mobile-pet-tracker/src/screens/add-reminder/index.test.tsx
+mobile-pet-tracker/src/screens/add-reminder/index.tsx
+mobile-pet-tracker/src/screens/alerts/index.test.tsx
+mobile-pet-tracker/src/screens/alerts/index.tsx
+mobile-pet-tracker/src/screens/health/index.test.tsx
+mobile-pet-tracker/src/screens/health/index.tsx
+mobile-pet-tracker/src/screens/home/home-entrance.test.tsx
+mobile-pet-tracker/src/screens/home/home-entrance.tsx
+mobile-pet-tracker/src/screens/home/index.test.tsx
+mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx
+mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+mobile-pet-tracker/src/screens/profile/index.test.tsx
+mobile-pet-tracker/src/screens/profile/index.tsx
+mobile-pet-tracker/src/theme/__tests__/chunky-lip.test.tsx
+mobile-pet-tracker/src/theme/__tests__/global-css.test.ts
+mobile-pet-tracker/src/theme/__tests__/motion.test.ts
+mobile-pet-tracker/src/theme/__tests__/shadows.test.tsx
+mobile-pet-tracker/src/theme/chunky-lip.ts
+mobile-pet-tracker/src/theme/global.css
+mobile-pet-tracker/src/theme/motion.ts
+mobile-pet-tracker/src/theme/shadows.ts
+~~~
+
+40/40 coinciden con la lista cerrada, sin ninguno adicional. traceability.md recoge los hashes de R1–R22 y una nota visible de bloqueo global: esto no declara done. Errores de invocación del generador del reporte (regex de resumen y delimitación de strings) se corrigieron antes de cualquier escritura.
+
+## Tabla final R1–R22 → test → commit
+
+| R | Test | Commits |
+|---|---|---|
+| R1 | src/__tests__/canvas-foundations.test.ts::#197 R1; src/theme/__tests__/global-css.test.ts::paleta light/espejos (enmendado por #197 R1) | 03de724e test(#197): R1 lock light colors to frozen canvas<br>28fa2d22 feat(#197): R1 align light semantic colors with canvas |
+| R2 | src/__tests__/canvas-foundations.test.ts::#197 R2; src/theme/__tests__/global-css.test.ts::#61 R5 y #64 R4 (enmendado por #197 R2) | f0aa3db8 test(#197): R2 verify updated state color contrast |
+| R3 | src/__tests__/canvas-foundations.test.ts::#197 R3; src/theme/__tests__/global-css.test.ts::#197 R3 | 4a792781 test(#197): R3 lock canvas tracking and line heights<br>3bfbbebf feat(#197): R3 add canvas typography tokens |
+| R4 | src/__tests__/canvas-foundations.test.ts::#197 R4; src/__tests__/tab-headers-canvas.test.ts::#168 R1; src/__tests__/alerts-canvas-fidelity.test.ts::#174 R12; src/app/(tabs)/__tests__/food.test.tsx, src/screens/profile/index.test.tsx, src/screens/health/index.test.tsx::pinta el título grande; src/components/__tests__/celebration.test.tsx::R20.4 (enmendados por #197 R4) | c702f6fd test(#197): R4 align title tracking guards with canvas<br>1fa7db78 feat(#197): R4 use canvas tracking for large titles |
+| R5 | src/__tests__/canvas-foundations.test.ts::#197 R5; src/theme/__tests__/global-css.test.ts::#197 R5 | f6fc598c test(#197): R5 lock new lip colors in both themes<br>3a05751e feat(#197): R5 add canvas lip tokens in both themes |
+| R6 | src/__tests__/canvas-foundations.test.ts::#197 R6; src/theme/__tests__/chunky-lip.test.tsx::#197 R6 y #177 R2.1 (enmendado por #197 R6) | 76f76621 test(#197): R6 cover all eleven canvas lip variants<br>7f242bc7 feat(#197): R6 expand memoized canvas lip catalogue |
+| R7 | src/screens/add-reminder/index.test.tsx::#178 R10 y #123 R5 (enmendados por #197 R7); constante CHIP_SELECTED de expectAdvanceChips (#125 R3/R4/R6 y #178 R12, 17 casos) | d8c65463 test(#197): R7 require external lips on selected reminder chips<br>d285ec01 test(#197): R7 amend CHIP_SELECTED for the lip-less selected chip<br>885bca96 feat(#197): R7 render reminder chip lips outside their bodies |
+| R8 | src/screens/alerts/index.test.tsx::#78 R6 (enmendado por #197 R8); src/__tests__/consistency-classnames.test.ts::#174 R8 (enmendado por #197 R8) | 871ac40f test(#197): R8 require compact external lips on alert acknowledgements<br>58a976b0 test(#197): R8 limit amended titles to acknowledgement assertions<br>14acfd53 feat(#197): R8 apply compact neutral lips to alert rows |
+| R9 | src/screens/meal-schedule/index.test.tsx::#147 R4, #179 R5/R6/R7 (enmendados por #197 R9); src/__tests__/consistency-classnames.test.ts::esquinas directas, suma y guard global (enmendados por #197 R9) | f2a479a8 test(#197): R9 lock meal schedule body heights and external lips<br>af69e294 test(#197): R9 count actual corner uses in the aggregate guard<br>3156ffa6 feat(#197): R9 move meal schedule lips outside canvas body heights |
+| R10 | src/__tests__/canvas-foundations.test.ts::#197 R10; src/__tests__/chunky-cta-canvas-fidelity.test.ts::#197 R10 y #177 R7/R8/R12; src/__tests__/consistency-classnames.test.ts::#166 R2/R3; src/__tests__/alerts-canvas-fidelity.test.ts::#174 R12 (enmendados por #197 R10) | 584d92d3 test(#197): R10 close external lip inventories and guards |
+| R11 | src/theme/__tests__/motion.test.ts::#197 R11 y #152 R1 inventario (enmendado por #197 R11); src/__tests__/canvas-foundations.test.ts::#197 R11 | 26f7b406 test(#197): R11 pin rise motion to frozen canvas values<br>36cde247 feat(#197): R11 export the canvas rise timing and offset |
+| R12 | src/screens/home/home-entrance.test.tsx::#152 R3/R4 (cuatro it enmendados por #197 R12) | 1218c3d4 test(#197): R12 require timing-based staggered home entrances<br>7f4c87ee feat(#197): R12 animate home entrances with the canvas rise timing |
+| R13 | src/screens/home/home-entrance.test.tsx::#152 R4 reduce motion; src/screens/home/index.test.tsx::#190 R1/R7 y #152 R7 (enmendados por #197 R13) | 4957fab0 test(#197): R13 require no home entrance under reduced motion<br>fea73469 feat(#197): R13 omit home entrance animations under reduced motion |
+| R14 | src/theme/__tests__/global-css.test.ts::#197 R14; src/__tests__/canvas-foundations.test.ts::#197 R14 | 36ccb4e5 test(#197): R14 bind shadow colors to both canvas themes<br>4cdcb891 feat(#197): R14 add semantic shadow tokens for both themes |
+| R15 | src/theme/__tests__/shadows.test.tsx::#197 R15 (13 casos); src/__tests__/canvas-foundations.test.ts::#197 R15 (10 filas) | db896099 test(#197): R15 cover the canvas shadow catalogue and memoization<br>26273b33 test(#197): R15 verify each shadow color dependency independently<br>a250f6da feat(#197): R15 add the memoized canvas shadow catalogue |
+| R16 | src/components/__tests__/toggle-switch.test.tsx::#197 R16; src/__tests__/canvas-foundations.test.ts::#197 R16 | 4576ab78 test(#197): R16 pin switch geometry and forwarded props<br>8eae2efb feat(#197): R16 add the canvas toggle switch wrapper |
+| R17 | src/components/__tests__/toggle-switch.test.tsx::#197 R17 | c456bd7e test(#197): R17 verify controlled and disabled switch interactions |
+| R18 | src/components/__tests__/back-button.test.tsx::#197 R18 | f25046b2 test(#197): R18 cover optional back chevron stroke width<br>ec1f969c feat(#197): R18 forward optional chevron stroke width |
+| R19 | src/components/__tests__/screen-header.test.tsx::#197 R19; src/__tests__/canvas-foundations.test.ts::#197 R19; src/__tests__/profile-canvas-fidelity.test.ts::#173 R2.4 y src/__tests__/alerts-canvas-fidelity.test.ts::#174 R12 (enmendados por #197 R19) | 98cf944b test(#197): R19 lock the content header structure and typography<br>6cd3b1d8 test(#197): R19 assert accessory presence before its row position<br>67c55afb feat(#197): R19 add the canvas content header component |
+| R20 | src/__tests__/canvas-foundations.test.ts::#197 R20; src/__tests__/legibility-classnames.test.ts::accent (enmendado por #197 R20) | 66f9d00f test(#197): R20 keep the new foundations unwired |
+| R21 | src/__tests__/canvas-foundations.test.ts::#197 R21; src/__tests__/design-drift.test.ts::#178 R2/#179 R2; src/__tests__/chunky-cta-canvas-fidelity.test.ts::#177 R11.1; src/__tests__/alerts-canvas-fidelity.test.ts::#174 R11 (enmendados por #197 R21) | 9c2d837b test(#197): R21 require the canonical canvas charter amendment<br>66065bef feat(#197): R21 apply the canonical canvas foundations charter |
+| R22 | src/__tests__/canvas-foundations.test.ts::#197 R22 (11 casos) | e74076a9 test(#197): R22 guard clean sources and unchanged dependency counts |
+
+R23: la lista de cinco puntos del apartado R23 de este reporte queda **pendiente del humano**, tras resolver el bloqueo y obtener aprobación del reviewer. No se afirma smoke realizado. El marcador .done comunica que el reporte está listo para el leader, no que la feature haya quedado verde.
