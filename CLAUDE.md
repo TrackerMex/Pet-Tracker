@@ -107,7 +107,7 @@ handoff a Codex no se mueve a Notion. Detalle en `.claude/agents/leader.md`
 
 ## Mandato del 2026-10-23: firma delegada y Codex en herdr
 
-El humano delegó en el leader, para terminar la paridad con el canvas, dos
+El humano delegó en el leader, para terminar la paridad con el canvas, tres
 cosas que antes eran suyas:
 
 - **Firmar las specs.** El leader firma con su propio commit tras pasar la
@@ -117,10 +117,15 @@ cosas que antes eran suyas:
   handoff en disco y deja `scripts/harness/watch-impl.sh` vigilando el
   marcador.
 
+- **Mergear en `dev`.** Las PRs del plan van a la rama de integración `dev`
+  (`gh pr create --base dev`). El leader las mergea con CI verde y veredicto
+  «aprobado» del `reviewer`. `dev` → `main` lo mergea el humano cuando revise
+  que la app está lista.
+
 Lo demás no cambia:
 - el gate del `reviewer`;
 - una PR por feature;
-- el humano mergea, salvo que diga otra cosa;
+- nada llega a `main` sin el humano;
 - nada que cree recursos AWS reales.
 
 El plan vivo está en `progress/plan_canvas-parity-2026-10-23.md`.

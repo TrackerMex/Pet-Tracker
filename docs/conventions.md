@@ -388,6 +388,12 @@ Flujo por feature (arranca tras el gate humano de la spec, ver `AGENTS.md` §3):
 4. **PARA.** El humano revisa y mergea el PR en GitHub. Ningún agente mergea.
 5. Tras el merge: `git checkout main && git pull` antes de la siguiente feature.
 
+**Excepción del plan de paridad (2026-10-23)**: las features de
+`progress/plan_canvas-parity-2026-10-23.md` salen de `origin/dev`, abren la PR
+con `--base dev` y el `leader` la mergea con CI verde y reviewer aprobado.
+`dev` → `main` lo revisa y mergea el humano (`CLAUDE.md` §Mandato del
+2026-10-23).
+
 **Un solo escritor sobre el working tree.** La branch la crea el `leader` en el
 paso 1; a partir de ahí, mientras Codex implementa, nadie más commitea ni hace
 `checkout` en otra terminal. El tree es uno solo y ya costó un rescate: un

@@ -82,6 +82,8 @@ implementar. Ningún agente se auto-aprueba la spec.
 **Excepción desde 2026-10-23**: el humano delegó la firma en el `leader` para
 las features de `progress/plan_canvas-parity-2026-10-23.md` (ver `CLAUDE.md`
 §Mandato del 2026-10-23). El `spec_author` sigue sin aprobar su propia spec.
+Esas features integran en la rama `dev`, donde el leader mergea sus PRs; a
+`main` solo llega `dev` cuando el humano la mergea.
 
 ---
 
