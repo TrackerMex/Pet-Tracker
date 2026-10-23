@@ -42,7 +42,12 @@ function filesMatching(pattern: RegExp): string[] {
 }
 
 function readSource(relativePath: string): string {
-  return readFileSync(join(sourceRoot, relativePath), 'utf8');
+  try {
+    return readFileSync(join(sourceRoot, relativePath), 'utf8');
+  } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') return '';
+    throw error;
+  }
 }
 
 
@@ -213,5 +218,23 @@ describe('#197 R14: colores de sombra del canvas', () => {
     expect(artboard('Inicio')).toContain('--shadow:0 1px 2px rgba(0,0,0,0.4)}');
     expect(variables(variant('light'))[`color-${token}`]).toBe(light);
     expect(variables(variant('dark'))[`color-${token}`]).toBe(dark);
+  });
+});
+
+describe('#197 R15: catálogo de sombras', () => {
+  it.each([
+    ['card', 'Inicio', '--shadow:0 1px 2px rgba(13,17,23,0.04),0 8px 24px rgba(13,17,23,0.06)', 'card: { boxShadow: [layer(1, 2, 0, near), layer(8, 24, 0, far)] }'],
+    ['dialog', 'ZonasEliminar', '0 12px 40px rgba(13,17,23,0.25)', 'dialog: { boxShadow: [layer(12, 40, 0, twentyFive)] }'],
+    ['floating', 'Mapa', '0 12px 32px rgba(13,17,23,0.14)', 'floating: { boxShadow: [layer(12, 32, 0, fourteen)] }'],
+    ['label', 'Mapa', '0 2px 8px rgba(13,17,23,0.12)', 'label: { boxShadow: [layer(2, 8, 0, twelve)] }'],
+    ['marker', 'Mapa', '0 4px 12px rgba(13,17,23,0.25)', 'marker: { boxShadow: [layer(4, 12, 0, twentyFive)] }'],
+    ['ring', 'Nutricion', '0 0 0 3px var(--bg), 0 0 0 5px var(--accent)', 'ring: { boxShadow: [layer(0, 0, 3, background), layer(0, 0, 5, accent)] }'],
+    ['segment', 'NuevaMascota', '0 2px 6px rgba(13,17,23,0.10)', 'segment: { boxShadow: [layer(2, 6, 0, ten)] }'],
+    ['sheet', 'EditorZona', '0 -8px 24px rgba(13,17,23,0.10)', 'sheet: { boxShadow: [layer(-8, 24, 0, ten)] }'],
+    ['tabBar', 'Inicio', '0 10px 30px rgba(13,17,23,0.12)', 'tabBar: { boxShadow: [layer(10, 30, 0, twelve)] }'],
+    ['toast', 'PesoRegistrado', '0 2px 8px rgba(13,17,23,0.10)', 'toast: { boxShadow: [layer(2, 8, 0, ten)] }'],
+  ])('#197 R15: cada sombra sale de su artboard %s', (_key, board, literal, production) => {
+    expect(artboard(board)).toContain(literal);
+    expect(readSource('theme/shadows.ts')).toContain(production);
   });
 });
