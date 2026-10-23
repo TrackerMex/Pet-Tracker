@@ -489,3 +489,52 @@ describe('#199 R5: gráfica completa', () => {
 function svgProps() {
   return screen.container.queryAll(node => node.props.viewBox !== undefined)[0]?.props ?? {};
 }
+
+async function renderMini(entries = canvasEntries) {
+  await render(<WeightChart entries={entries} variant="mini" />, { wrapper: WeightChartWrapper });
+}
+
+describe('#199 R6: gráfica mini', () => {
+  it('#199 R6 pinta viewBox 0 0 310 56 a 56 de alto sin rejilla, área ni meses', async () => {
+    await renderMini();
+    const { viewBox, height, width, preserveAspectRatio } = svgProps();
+    expect({ viewBox, height, width, preserveAspectRatio }).toEqual({ viewBox: '0 0 310 56', height: 56, width: '100%', preserveAspectRatio: 'none' });
+    for (const id of ['weight-chart-grid', 'weight-chart-area', 'weight-chart-months']) {
+      expect(screen.queryByTestId(id, { includeHiddenElements: true })).toBeNull();
+    }
+  });
+  it('#199 R6 normaliza 10 y 12 kg a y 44 y 18, y pesos iguales a 31', async () => {
+    await renderMini([makeWeight({ id: 'b', weightKg: 12 }), makeWeight({ id: 'a', weightKg: 10 })]);
+    expect(screen.getByTestId('weight-chart-line', { includeHiddenElements: true }).props.d).toBe('M0 44 L310 18');
+    await screen.rerender(<WeightChart entries={[makeWeight({ id: 'b' }), makeWeight({ id: 'a' })]} variant="mini" />);
+    expect(screen.getByTestId('weight-chart-line', { includeHiddenElements: true }).props.d).toBe('M0 31 L310 31');
+  });
+  it('#199 R6 la línea sigue entera a los 299 ms y llega a 0 a los 1500 ms', async () => {
+    realAnimations();
+    await renderMini([makeWeight({ id: 'b', weightKg: 12 }), makeWeight({ id: 'a', weightKg: 10 })]);
+    await act(() => jest.advanceTimersByTime(299));
+    expect(screen.getByTestId('weight-chart-line', { includeHiddenElements: true }).props.jestAnimatedProps?.value).toEqual({ strokeDashoffset: Math.hypot(310, 26) });
+    await act(() => jest.advanceTimersByTime(1201));
+    expect(screen.getByTestId('weight-chart-line', { includeHiddenElements: true }).props.jestAnimatedProps?.value).toEqual({ strokeDashoffset: 0 });
+  });
+  it('#199 R6 el punto final sale con radio 5 y opacidad 1 en el primer frame', async () => {
+    realAnimations();
+    await renderMini();
+    const point = screen.getByTestId('weight-chart-point', { includeHiddenElements: true });
+    expect(point.props.r).toBe(5);
+    expect(point.props.jestAnimatedProps === undefined).toBe(true);
+    expect(screen.getByTestId('weight-chart-points', { includeHiddenElements: true }).props.opacity).toBe(1);
+    expect(mockWithTiming).toHaveBeenCalledTimes(1);
+  });
+  it('#199 R6 pinta registros de hace más de seis meses', async () => {
+    await renderMini([...canvasEntries, makeWeight({ id: 'old', measuredAt: '2025-09-30', weightKg: 100 })]);
+    const path = screen.getByTestId('weight-chart-line', { includeHiddenElements: true }).props.d ?? '';
+    expect(path.match(/ L/g)).toHaveLength(3);
+    expect(path).toMatch(/^M0 18 /);
+  });
+  it('#199 R6 queda oculta a la accesibilidad', async () => {
+    await renderMini();
+    const { accessibilityElementsHidden, importantForAccessibility } = screen.getByTestId('weight-chart', { includeHiddenElements: true }).props;
+    expect({ accessibilityElementsHidden, importantForAccessibility }).toEqual({ accessibilityElementsHidden: true, importantForAccessibility: 'no-hide-descendants' });
+  });
+});
