@@ -46,6 +46,7 @@ describe('#197 R19: cabecera en contenido', () => {
   });
   it('#197 R19: coloca el accesorio al final de la fila', async () => {
     await renderHeader({ accessory: <Text testID="accessory">Más</Text> });
+    expect(screen.queryByTestId('accessory')).not.toBeNull();
     expect(screen.getByTestId('header').children.at(-1)).toBe(screen.getByTestId('accessory'));
   });
   it('#197 R19: volver usa el fallback y el trazo 2.4', async () => {
