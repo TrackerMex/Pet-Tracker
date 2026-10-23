@@ -78,3 +78,37 @@ describe('#197 R1: colores del canvas', () => {
     });
   });
 });
+
+function channel(value: number): number {
+  const ratio = value / 255;
+
+  return ratio <= 0.04045 ? ratio / 12.92 : ((ratio + 0.055) / 1.055) ** 2.4;
+}
+
+function luminance(hex: string): number {
+  const value = Number.parseInt(hex.slice(1), 16);
+
+  return (
+    0.2126 * channel((value >> 16) & 255) +
+    0.7152 * channel((value >> 8) & 255) +
+    0.0722 * channel(value & 255)
+  );
+}
+
+function contrast(first: string, second: string): number {
+  const [lighter, darker] = [luminance(first), luminance(second)].sort(
+    (left, right) => right - left,
+  );
+
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+
+describe('#197 R2: contraste de los colores claros', () => {
+  it('#197 R2: el ámbar fuerte pasa AA sobre surface y sobre el warning-soft compuesto', () => {
+    const light = variables(variant('light'));
+    expect(contrast(light['warning-strong'], light.surface)).toBeGreaterThanOrEqual(7.5);
+    expect(contrast(light['warning-strong'], '#F4E3DA')).toBeGreaterThanOrEqual(6.0);
+    expect(contrast(light.danger, light.surface)).toBeGreaterThanOrEqual(4.5);
+  });
+});

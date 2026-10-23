@@ -425,7 +425,7 @@ describe('#61 R2: el relleno de acento pasa AA con etiqueta blanca', () => {
  * valores son los de specs/mobile-ui-legibility-polish/design.md §5.4.
  */
 const composedSurfaces = {
-  light: { accentSoft: '#DCECE6', tabPill: '#DFEEE7', warningSoft: '#FEF0DA' },
+  light: { accentSoft: '#DCECE6', tabPill: '#DFEEE7', warningSoft: '#F4E3DA' },
   dark: { accentSoft: '#0E2220', tabPill: '#0F2A25', warningSoft: '#383422' },
 } as const;
 
@@ -479,20 +479,21 @@ describe('#61 R5: token warning-strong con AA sobre surface y warning-soft', () 
   });
 
   it.each([
-    ['light', '#92610A'],
+    ['light', '#93370D'],
     ['dark', '#FBBF24'],
-  ] as const)('define la variante AA del ámbar en %s', (theme, strong) => {
+  ] as const)('define la variante AA del ámbar en %s (enmendado por #197 R2)', (theme, strong) => {
     expect(parseVariables(extractVariant(theme))).toMatchObject({
       'warning-strong': strong,
     });
   });
 
   it.each([
-    ['light', '#92610A', '#FFFFFF'],
+    ['light', '#93370D', '#FFFFFF'],
     ['dark', '#FBBF24', '#161B22'],
   ] as const)(
-    'pasa AA sobre bg-surface y bg-warning-soft en %s',
+    'pasa AA sobre bg-surface y bg-warning-soft en %s (enmendado por #197 R2)',
     (theme, strong, surface) => {
+      expect(parseVariables(extractVariant(theme))['warning-strong']).toBe(strong);
       expect(contrast(strong, surface)).toBeGreaterThanOrEqual(4.5);
       expect(
         contrast(strong, composedSurfaces[theme].warningSoft),
@@ -501,10 +502,10 @@ describe('#61 R5: token warning-strong con AA sobre surface y warning-soft', () 
   );
 
   it.each([
-    ['light', '#F59E0B'],
+    ['light', '#B54708'],
     ['dark', '#FBBF24'],
   ] as const)(
-    'conserva el ámbar puro de iconos y rellenos en %s',
+    'conserva el ámbar puro de iconos y rellenos en %s (enmendado por #197 R2)',
     (theme, warning) => {
       expect(parseVariables(extractVariant(theme))).toMatchObject({
         warning,
@@ -711,10 +712,10 @@ describe('#64 R4: ninguna categoría se confunde con otra ni con un token de est
   const expectedStateSurfaceMinima = {
     light: {
       blue: 9.4,
-      amber: 4.9,
+      amber: 5.7,
       green: 3.5,
-      violet: 10.2,
-      rose: 4.6,
+      violet: 10.5,
+      rose: 5.0,
       neutral: 8.5,
     },
     dark: {
@@ -767,7 +768,7 @@ describe('#64 R4: ninguna categoría se confunde con otra ni con un token de est
     expect(Math.min(...distances)).toBeCloseTo(expectedSurfaceMinima[theme], 1);
   });
 
-  it.each(themes)('separa superficies y tintas de los tokens de estado en %s', (theme) => {
+  it.each(themes)('separa superficies y tintas de los tokens de estado en %s (enmendado por #197 R2)', (theme) => {
     const variables = parseVariables(extractVariant(theme));
     const palette = categoryColors(theme);
     const stateSurfaces = [
