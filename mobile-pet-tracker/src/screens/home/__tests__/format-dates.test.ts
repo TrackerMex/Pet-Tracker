@@ -24,3 +24,15 @@ describe('#199 R14: fmtDayMonthLong', () => {
     expect((format as (date: string, locale: string) => string)(date, locale)).toBe(expected);
   });
 });
+
+describe('#199 R5: fmtMonthShort', () => {
+  it.each([
+    ['2025-12-01', 'es', 'dic'],
+    ['2026-01-01', 'es', 'ene'],
+    ['2026-05-01', 'en', 'May'],
+  ])('#199 R5 %s en %s se lee %s', (date, locale, expected) => {
+    const format = (formats as Record<string, unknown>).fmtMonthShort;
+    expect(format).toEqual(expect.any(Function));
+    expect((format as (date: string, locale: string) => string)(date, locale)).toBe(expected);
+  });
+});
