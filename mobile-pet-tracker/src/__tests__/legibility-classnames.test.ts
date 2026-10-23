@@ -115,11 +115,11 @@ describe('#61 R1: la etiqueta destructiva usa el token de danger', () => {
 
 describe('#61 R3: ningún texto sobre bg-accent se compone con opacidad', () => {
   const accentCards = [
-    join('app', '(tabs)', 'food.tsx'),
+    join('screens', 'food', 'index.tsx'),
     join('screens', 'meal-schedule', 'index.tsx'),
   ];
 
-  it.each(accentCards)('%s no compone su texto con opacidad', (path) => {
+  it.each(accentCards)('%s no compone su texto con opacidad (enmendado por #200 R1)', (path) => {
     const source = readSource(path);
 
     expect(source).not.toContain('opacity-70');
@@ -127,7 +127,7 @@ describe('#61 R3: ningún texto sobre bg-accent se compone con opacidad', () => 
   });
 
   it.each([accentCards[0]])(
-    '%s conserva las dos etiquetas de la card de acento a opacidad plena',
+    '%s conserva las dos etiquetas de la card de acento a opacidad plena (enmendado por #200 R1)',
     (path) => {
       const source = readSource(path);
 
@@ -159,7 +159,7 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     [join('screens', 'reset-password', 'index.tsx'), 4], // #172 R19: link-login del formulario
     [join('screens', 'home', 'index.tsx'), 2],
     [join('screens', 'health', 'index.tsx'), 1],
-    [join('app', '(tabs)', 'food.tsx'), 1],
+    [join('screens', 'food', 'index.tsx'), 1],
     [join('screens', 'map', 'index.tsx'), 2],
     [join('screens', 'profile', 'index.tsx'), 1 + 1 - 1 + 1 + 1], // #173 R5; #173 R6; #173 R8; #173 R11
     [join('screens', 'add-pet', 'index.tsx'), 1],
@@ -167,7 +167,7 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     [join('screens', 'welcome', 'index.tsx'), 2],
   ];
 
-  it.each(inkSites)('%s pinta con text-accent-strong (%i)', (path, sites) => {
+  it.each(inkSites)('%s pinta con text-accent-strong (%i) (enmendado por #200 R1)', (path, sites) => {
     expect(readSource(path).match(/text-accent-strong\b/g)).toHaveLength(sites);
   });
 

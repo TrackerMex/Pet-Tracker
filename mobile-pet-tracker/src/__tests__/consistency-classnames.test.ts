@@ -261,7 +261,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     [join('screens', 'home', 'index.tsx'), 1], // (enmendado por #190 R13)
     [join('screens', 'home', 'weekly-activity-chart.tsx'), 1],
     [join('screens', 'health', 'index.tsx'), 2 + 1], // #168 R3
-    [join('app', '(tabs)', 'food.tsx'), 2 - 1], // #168 R8
+    [join('screens', 'food', 'index.tsx'), 2 - 1], // #168 R8
     [join('screens', 'map', 'index.tsx'), 4],
     [join('screens', 'meal-schedule', 'index.tsx'), 1 + 1 - 1], // #179 R5
     [join('screens', 'meals-history', 'index.tsx'), 1 + 2], // #179 R10, R12
@@ -286,7 +286,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     );
   });
 
-  it.each(directUses)('%s importa y aplica sus %i esquinas (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9)', (path, count) => {
+  it.each(directUses)('%s importa y aplica sus %i esquinas (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9) (enmendado por #200 R1)', (path, count) => {
     const source = readSource(path);
     const uses = [...source.matchAll(/style=\{CONTINUOUS_CORNER\}/g)];
 
@@ -305,7 +305,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     }
   });
 
-  it('fusiona la esquina una vez y la entrega a las dos ramas de Card (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9)', () => {
+  it('fusiona la esquina una vez y la entrega a las dos ramas de Card (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9) (enmendado por #200 R1)', () => {
     const card = readSource(join('components', 'card.tsx'));
 
     expect(card).toContain(
@@ -389,9 +389,9 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
 });
 
 describe('#98 R10: los candados que esta feature no mueve', () => {
-  it('deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9)', () => {
+  it('deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9) (enmendado por #200 R1)', () => {
     const home = readSource(join('screens', 'home', 'index.tsx'));
-    const food = readSource(join('app', '(tabs)', 'food.tsx'));
+    const food = readSource(join('screens', 'food', 'index.tsx'));
     const count = (pattern: RegExp) =>
       sourceFiles().reduce(
         (total, path) =>

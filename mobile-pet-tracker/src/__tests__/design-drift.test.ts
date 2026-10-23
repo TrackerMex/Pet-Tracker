@@ -233,10 +233,10 @@ describe('R3: Card compartido elimina rounded arbitrario', () => {
     'weight-log',
     'profile',
     'map',
-  ])('%s importa el Card compartido', (screen) => {
+  ])('%s importa el Card compartido (enmendado por #200 R1)', (screen) => {
     const contents = readFileSync(
       screen === 'food'
-        ? join(sourceRoot, 'app', '(tabs)', `${screen}.tsx`)
+        ? join(sourceRoot, 'screens', screen, 'index.tsx')
         : join(sourceRoot, 'screens', screen, 'index.tsx'),
       'utf8',
     );
@@ -491,11 +491,11 @@ describe('#98 R10: la barra de comidas no mete drift de estilo', () => {
     'api/nutrition.ts',
     'api/types.ts',
     'i18n/catalog.ts',
-    'app/(tabs)/food.tsx',
+    'screens/food/index.tsx',
     'screens/home/index.tsx',
   ];
 
-  it('mantiene sus ficheros sin escapes de estilo literales', () => {
+  it('mantiene sus ficheros sin escapes de estilo literales (enmendado por #200 R1)', () => {
     const violations = featureFiles.flatMap((relativePath) => {
       const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
       return MEALS_BAR_STYLE_ESCAPES.test(contents)
@@ -585,7 +585,7 @@ describe('#87 R19: use-' + 'api no deja huella', () => {
   const legacyModule = ['use', 'api'].join('-');
   const legacyIdentifier = ['use', 'Api'].join('');
   const screenSignOutCalls: Record<string, number> = {
-    'app/(tabs)/food.tsx': 0,
+    'screens/food/index.tsx': 0,
     'screens/health/index.tsx': 0,
     'screens/map/index.tsx': 0,
     'screens/meal-schedule/index.tsx': 2, // #147 R8: el 401 de la edición de franjas
@@ -644,7 +644,7 @@ describe('#87 R19: use-' + 'api no deja huella', () => {
     ]);
   });
 
-  it('keeps literal query keys out of every migrated screen', () => {
+  it('keeps literal query keys out of every migrated screen (enmendado por #200 R1)', () => {
     const violations = Object.keys(screenSignOutCalls).filter((relativePath) =>
       /queryKey:\s*\[/.test(
         readFileSync(join(sourceRoot, relativePath), 'utf8'),
@@ -654,7 +654,7 @@ describe('#87 R19: use-' + 'api no deja huella', () => {
     expect(violations).toEqual([]);
   });
 
-  it('preserves every mutation sign-out with zero delta', () => {
+  it('preserves every mutation sign-out with zero delta (enmendado por #200 R1)', () => {
     const actual = Object.fromEntries(
       Object.keys(screenSignOutCalls).map((relativePath) => {
         const contents = readFileSync(

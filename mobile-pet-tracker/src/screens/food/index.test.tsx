@@ -19,27 +19,27 @@ import {
   serveMeal,
   type NutritionPlanState,
   unserveMeal,
-} from '../../../api/nutrition';
-import { listPets, type PetsState } from '../../../api/pets';
-import { nutritionKeys, petKeys } from '../../../api/query-keys';
-import type { NutritionPlan, PetProfile } from '../../../api/types';
-import { en, es } from '../../../i18n/catalog';
-import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
-import { LanguageProvider } from '../../../providers/language-provider';
-import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
-import * as selectedPetHooks from '../../../providers/selected-pet-provider';
-import FoodScreen from '../food';
-import { renderWithProviders } from '../../../../test/render-with-providers';
+} from '../../api/nutrition';
+import { listPets, type PetsState } from '../../api/pets';
+import { nutritionKeys, petKeys } from '../../api/query-keys';
+import type { NutritionPlan, PetProfile } from '../../api/types';
+import { en, es } from '../../i18n/catalog';
+import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
+import { LanguageProvider } from '../../providers/language-provider';
+import { SelectedPetProvider } from '../../providers/selected-pet-provider';
+import * as selectedPetHooks from '../../providers/selected-pet-provider';
+import { FoodScreen } from '.';
+import { renderWithProviders } from '../../../test/render-with-providers';
 
 const { existsSync, readFileSync } = jest.requireActual<typeof import('fs')>(
   'fs',
 );
 
-jest.mock('../../../api/pets', () => ({
+jest.mock('../../api/pets', () => ({
   listPets: jest.fn(),
 }));
 
-jest.mock('../../../api/nutrition', () => ({
+jest.mock('../../api/nutrition', () => ({
   getNutritionPlan: jest.fn(),
   serveMeal: jest.fn(),
   unserveMeal: jest.fn(),
@@ -53,7 +53,7 @@ jest.mock('expo-haptics', () => ({
   },
 }));
 
-jest.mock('../../../providers/auth-provider', () => ({
+jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
 }));
 
@@ -116,7 +116,7 @@ jest.mock('reicon-react-native', () => {
 });
 
 jest.mock(
-  '../../../theme/use-theme-colors',
+  '../../theme/use-theme-colors',
   () => ({
     useThemeColors: (tokens: string[]) => tokens,
   }),
@@ -543,8 +543,8 @@ describe('#98 R4: el estado servido sale de servedToday, no del reloj', () => {
     }
   });
 
-  it('no deja rastro del reloj en el fuente de Food', () => {
-    const source = readFileSync('src/app/(tabs)/food.tsx', 'utf8');
+  it('no deja rastro del reloj en el fuente de Food (enmendado por #200 R1)', () => {
+    const source = readFileSync('src/screens/food/index.tsx', 'utf8');
 
     expect(source).not.toContain('localTimeHhmm');
     expect(source).not.toContain('new Date(');
@@ -821,8 +821,8 @@ describe('#107 R5: el botón por franja conserva su feedback de pulsado', () => 
     expect(opacityOf(toggle.props.style)).toBe(1);
   });
 
-  it('#109 R1: acota el bloque de fuente al tag de apertura propio del meal-toggle, con ancla única (#122 R1)', () => {
-    const source = readFileSync('src/app/(tabs)/food.tsx', 'utf8');
+  it('#109 R1: acota el bloque de fuente al tag de apertura propio del meal-toggle, con ancla única (#122 R1) (enmendado por #200 R1)', () => {
+    const source = readFileSync('src/screens/food/index.tsx', 'utf8');
     const anchor = source.indexOf('testID={`meal-toggle-${index}`}');
     // This is the meal-toggle's own opening tag, from `<` to `<`: ending at
     // `</Pressable>` let a nested Pressable lend it a foreign style (B2, #106/#107).
