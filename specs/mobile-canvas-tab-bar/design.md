@@ -174,7 +174,7 @@ Texto literal que R9 añade al final de `docs/ui-guidelines.md` (tras la
 
 Fecha: 2026-10-23. Feature #206 `mobile-canvas-tab-bar`. Excepción nombrada a D-I.
 
-1. **Iconos de la barra.** Los cinco iconos de `FloatingTabBar` se dibujan con `react-native-svg` copiando los trazados del `<nav aria-label="Pestañas">` del canvas (24 x 24, `fill="none"`, trazo redondeado de 2,4 en la pestaña activa y de 2 en las demás) y se colorean con `accent-strong` o `muted` vía `useThemeColors`. Es la única excepción a D-I: cualquier otro icono de la interfaz sigue siendo de `reicon-react-native`.
+1. **Iconos de la barra.** Los cinco iconos de `FloatingTabBar` se dibujan con `react-native-svg` copiando los trazados del `<nav aria-label="Pestañas">` del canvas (24 x 24, `fill="none"`, trazo redondeado de 2,4 en la pestaña activa y de 2 en las demás) y se colorean con `accent-strong` o `muted` vía `useThemeColors`. Excepción a D-I limitada a los iconos de esta barra: ningún otro icono de navegación o de acción cambia, y siguen siendo de `reicon-react-native`.
 2. **Barra.** Cápsula de 64 con relleno de 6 y hueco de 4, celdas de 52, velo `bg-glass-surface-strong` y sombra `useShadows().tabBar`. Flota a 16 de cada lado y a 12 por encima del inset inferior.
 
 Detalle y tests en `specs/mobile-canvas-tab-bar/requirements.md` (R1 a R10).

@@ -239,7 +239,12 @@ es un caso: `Inicio` = `home`, `Mapa` = `map`, `Salud` = `health`,
   en el nav del artboard hay un solo `aria-current`, está en el `<a` de la
   etiqueta esperada (`Inicio`, `Mapa`, `Salud`, `Nutrición`, `Perfil`), hay
   exactamente un `stroke-width="2.4"` y cuatro `stroke-width="2"`; la fuente
-  contiene `strokeWidth={active ? 2.4 : 2}`.
+  contiene `strokeWidth={active ? 2.4 : 2}`. Las cuentas se hacen dentro del
+  `<nav aria-label="Pestañas"` … `</nav>` de cada artboard, no sobre el fichero
+  entero (los artboards traen más `aria-current` y `stroke-width="2.4"` fuera
+  del nav y `Perfil` trae un segundo `<nav`). Medido en los cinco: 1
+  `aria-current`, 1 `stroke-width="2.4"`, 4 `stroke-width="2"`, 5 `<svg` y 5
+  `<a`.
 - La rama «ruta fuera de `TABS`» (las cinco inactivas) la cubre la enmienda de
   `#91 R5` del inventario.
 
@@ -319,7 +324,7 @@ enmienda va en el commit rojo de su R y añade al título del `it` el sufijo
 | 7 | BAR › `#91 R5: con una ruta ajena las cinco celdas quedan inactivas y siguen navegando` › `conserva el estado inactivo, los dos hijos y la navegación de cada pestaña` | colores leídos de `getByTestId('icon-tab-health').props.color` y `getByTestId('icon-tab-map').props.color`; cada `elementChild(tab, 0)` con `toHaveProp('weight', 'Outline')` y `toHaveProp('color', mutedColor)` | los mismos nodos leídos por `.props.stroke`; cada `elementChild(tab, 0)` con `toHaveProp('strokeWidth', 2)` y `toHaveProp('stroke', mutedColor)`; los dos hijos y la clase `text-2xs font-semibold text-muted` no cambian | R6 (el doble de reicon sale en ese commit rojo; R6 verde pone `strokeWidth={2}` fijo y R7 introduce el 2.4) |
 | 8 | `src/__tests__/ui-language.test.ts` › `#65 R2: la barra de pestañas resuelve su copy por clave` › `resuelve las 5 ocurrencias normativas` | `expect(R2_TABS).toHaveLength(5)` | `expect(R2_TABS).toHaveLength(5 + 1)` (título: `resuelve las 5 ocurrencias normativas (enmendado por #206 R8)`) | R8 |
 | 9 | `src/providers/__tests__/language-provider.test.tsx` › `#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y parámetros` › `#194 R1: mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas (enmendado por #189 R15)` | la suma acaba en `+ 7, // #194 R1 (+2); #189 R15 (+5)` | `+ 7 // #194 R1 (+2); #189 R15 (+5)` seguido de `+ 1, // #206 R8`; el título gana ` (enmendado por #206 R8)` al final | R8 |
-| 10 | `src/__tests__/canvas-foundations.test.ts` › `#197 R20: cimientos sin cablear` | nadie importa `toggle-switch`, `screen-header`, `shadows` ni `rise-in`, y el layout raíz no cambia | **se borra el `describe` entero, sin sufijo**, en el primer commit rojo que monte un cimiento o toque `_layout.tsx`: aquí, el commit rojo de R3. Si otra feature ya lo borró al mergear `dev`, este paso no tiene efecto y se anota en el informe | R3 |
+| 10 | `src/__tests__/canvas-foundations.test.ts` › `#197 R20: cimientos sin cablear` | nadie importa `toggle-switch`, `screen-header`, `shadows` ni `rise-in`, y el layout raíz no cambia | **se borra el `describe` entero, sin sufijo**, en el primer commit rojo que monte un cimiento o toque `_layout.tsx`: aquí, el commit rojo de R3. Si otra feature ya lo borró al mergear `dev`, este paso no tiene efecto y se anota en el informe; si `dev` trae el `describe` enmendado por #201 (fila shadows con `['screens/map/index.tsx']`), se borra igualmente | R3 |
 
 No son rojos y no se enmiendan:
 
@@ -349,8 +354,9 @@ implementador para y avisa al leader.
 
 ## Candados agregados revisados
 
-Uno a uno, medidos en 81cb6d6b. Solo los dos primeros se mueven y ya están en
-el inventario.
+Uno a uno, medidos en 81cb6d6b. Solo los tres que dicen una enmienda o un
+borrado se mueven (catálogo `#194 R1`, `R2_TABS` `#65 R2` y `#197 R20`) y ya
+están en el inventario (filas 9, 8 y 10).
 
 | Candado | Fichero | Efecto de #206 |
 |---|---|---|
@@ -370,7 +376,7 @@ el inventario.
 | twMerge expulsa `text-13/15/17` en HeroUI | — | ninguna clase de texto nueva; las etiquetas siguen en `text-2xs` |
 | LY `#105 R8` / `#194 R4` (`headerShown`) | — | `_layout.tsx` no se toca; no mueve |
 | Inventario MT de `src/theme/motion.ts` | — | `motion.ts` no se toca (D5); no mueve. #199 (+7) y #200 (+2) suman ahí por su cuenta |
-| `describe('#197 R20: cimientos sin cablear')` | `src/__tests__/canvas-foundations.test.ts` | se borra entero, sin sufijo, en el commit rojo de R3 (primer commit que monta un cimiento: `useShadows`); si otra feature lo borró antes, el paso no tiene efecto y se anota |
+| `describe('#197 R20: cimientos sin cablear')` | `src/__tests__/canvas-foundations.test.ts` | se borra entero, sin sufijo, en el commit rojo de R3 (primer commit que monta un cimiento: `useShadows`); si otra feature lo borró antes, el paso no tiene efecto y se anota; si `dev` lo trae enmendado por #201, se borra igualmente |
 | `#180 R5.6` (importadores de `expo-blur`) | `src/__tests__/alert-detail-canvas-fidelity.test.ts` | la barra sigue importando `expo-blur`; no mueve |
 | `TABS` de cinco entradas | `src/app/(tabs)/__tests__/alerts.test.tsx` | forma conservada; no mueve |
 
@@ -396,7 +402,7 @@ fija 4 de la carta), que ninguna de #196, #198 a #205 declara tocar. No toca
 - Reservar o recalcular la banda inferior que las pantallas dejan a la barra.
 - Badges, puntos de aviso o contadores sobre las pestañas (el canvas no los
   dibuja).
-- Cualquier icono fuera de la barra: siguen siendo de `reicon-react-native`.
+- Ningún otro icono de navegación o de acción cambia: siguen siendo de `reicon-react-native`.
 - Dependencias nuevas (`expo-linear-gradient` sigue vetado), costes o AWS.
 - Deuda que roza: ninguna.
 

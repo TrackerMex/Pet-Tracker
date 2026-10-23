@@ -95,7 +95,8 @@ cada una y el esperado también.
 1. Rojo: BAR y CF `#206 R3`; en el mismo commit **borra entero**
    `describe('#197 R20: cimientos sin cablear')` de
    `src/__tests__/canvas-foundations.test.ts` (fila 10 del inventario; si ya no
-   existe, se anota que el paso no tuvo efecto).
+   existe, se anota que el paso no tuvo efecto; si `dev` lo trae enmendado por
+   #201, se borra igualmente).
 2. Verde: `import { useShadows } from '../theme/shadows'`,
    `const shadows = useShadows()`, sale `shadow-lg` de la clase y el `style` de
    la raíz pasa a `{ ...shadows.tabBar, bottom: insets.bottom + 12, left: 16, right: 16 }`.
@@ -130,7 +131,12 @@ cada una y el esperado también.
 
 ### R7 — Estado activo por artboard
 1. Rojo: BAR `#206 R7` (`it.each(ARTBOARD_TABS)`, cinco filas) y CF `#206 R7`
-   (`it.each` de los cinco artboards).
+   (`it.each` de los cinco artboards). El CF corta cada artboard con
+   `i = s.indexOf('<nav aria-label="Pestañas"')` y
+   `nav = s.slice(i, s.indexOf('</nav>', i))`, y cuenta dentro de `nav`. Los
+   cinco `nav` miden 1 `aria-current`, 1 `stroke-width="2.4"`, 4
+   `stroke-width="2"`, 5 `<svg` y 5 `<a`; sobre el fichero entero esas cifras
+   no se cumplen.
 2. Verde: `strokeWidth={active ? 2.4 : 2}` en `TabIcon`.
 3. Refactor: ninguno.
 
