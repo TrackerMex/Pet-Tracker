@@ -38,8 +38,8 @@ describe('#195 R17: contraste WCAG contra la peor foto', () => {
   }
   function fadeAlpha(d: number): number {
     if (d <= 56) return 1 - (d / 56) * 0.15;
-    if (d <= 104) return 0.85 - ((d - 56) / 48) * 0.5;
-    return 0.35 * (160 - d) / 56;
+    if (d <= 76) return 0.85 - ((d - 56) / 20) * 0.5;
+    return 0.35 * (100 - d) / 24;
   }
 
   it.each(['light', 'dark'] as const)('mantiene referencias y suelos en %s', (theme) => {
@@ -68,14 +68,25 @@ describe('#195 R17: contraste WCAG contra la peor foto', () => {
       overGlass(foreground), overGlass(muted),
     ];
     const references = theme === 'light'
-      ? [4.26, 10.79, 4.36, 13.55, 5.70, 4.82, 3.76, 13.71, 3.60]
-      : [6.51, 9.77, 6.67, 12.79, 6.43, 3.93, 6.84, 11.46, 4.79];
+      ? [4.26, 7.75, 4.36, 13.55, 5.70, 4.82, 3.76, 13.71, 3.60]
+      : [6.51, 6.74, 6.67, 12.79, 6.43, 3.93, 6.84, 11.46, 4.79];
     const textFloor = theme === 'dark' ? 4.5 : 4.2;
     const floors = [textFloor, 4.5, textFloor, 4.5, 4.5, 3, 3, 4.5, 3];
     values.forEach((value, i) => {
       expect(Math.abs(value - references[i])).toBeLessThanOrEqual(0.05);
       expect(value).toBeGreaterThanOrEqual(floors[i]);
     });
+  });
+
+  it('enlaza el modelo con las paradas y la altura del degradado de producción (Enmienda A4)', () => {
+    const source = read('src/components/pet-hero-header.tsx');
+    const code = source.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, '');
+    const FADE_HEIGHT = 100;
+    const KNEE_NEAR = 56;
+    const KNEE_FAR = 76;
+    expect(code).toMatch(new RegExp(`PET_HERO_FADE_HEIGHT = ${FADE_HEIGHT}\\b`));
+    expect(code).toContain(`59 ${Math.round(((FADE_HEIGHT - KNEE_FAR) / FADE_HEIGHT) * 100)}%`);
+    expect(code).toContain(`D9 ${Math.round(((FADE_HEIGHT - KNEE_NEAR) / FADE_HEIGHT) * 100)}%`);
   });
 });
 
