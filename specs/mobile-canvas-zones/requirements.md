@@ -1,6 +1,6 @@
 ---
 feature: "mobile-canvas-zones"
-status: spec_ready     # draft | spec_ready | approved
+status: approved
 tags: [mobile, ui, spec]
 ---
 
@@ -808,6 +808,13 @@ Smoke en dev build Android (R26), tras el veredicto del `reviewer`:
 
 Las casillas se comprueban con `[ xX]`.
 
-- [ ] Aprobado por humano (fecha: ____)
-- [ ] Enmienda de la carta (R20, `docs/ui-guidelines.md` y `docs/conventions.md`) aprobada por humano (fecha: ____)
+- [x] Aprobado por humano (fecha: 2026-10-23)
+  Firma delegada en el leader por mandato del humano del 2026-10-23
+  (`progress/plan_canvas-parity-2026-10-23.md` §4, checklist de firma pasada).
+  Decisiones del leader: se mantiene la constante local `SCRIM = 'rgba(13,17,23,0.4)'` en R7 (sin
+  `bg-scrim`) y se acepta el `shrink` del envoltorio `RiseIn` de R13. Anclas re-medidas tras el
+  merge de #197 en `dev` (81cb6d6b), 56/56; catálogo `+ 7` y `rounded-16` de chunky-cta sin mover.
+  Si otra feature de la ola 2 entra antes en `dev`, el handoff re-mide esas cifras.
+- [x] Enmienda de la carta (R20, `docs/ui-guidelines.md` y `docs/conventions.md`) aprobada por humano (fecha: 2026-10-23)
+  Firma delegada, mismo mandato.
 - [ ] Smoke de R26 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
