@@ -77,6 +77,7 @@ todo es presentación (tema, componentes, pantallas) más la carta.
 - `screen-header.tsx` — nuevo (R19)
 - `back-button.tsx` — modificado: prop `strokeWidth` (R18)
 - `celebration.tsx` — modificado: `tracking-title` (R4)
+- `rise-in.tsx` — nuevo: `RiseIn` (R24), sin consumidores en #197
 
 **Pantallas**
 - `src/app/(tabs)/food.tsx`, `src/screens/health/index.tsx`,
@@ -89,7 +90,8 @@ todo es presentación (tema, componentes, pantallas) más la carta.
 **Tests nuevos**: `src/__tests__/canvas-foundations.test.ts`,
 `src/theme/__tests__/shadows.test.tsx`,
 `src/components/__tests__/toggle-switch.test.tsx`,
-`src/components/__tests__/screen-header.test.tsx`.
+`src/components/__tests__/screen-header.test.tsx`,
+`src/components/__tests__/rise-in.test.tsx` (R24).
 
 **Tests enmendados**: los de requirements.md § «Candados que esta feature
 revierte» (inventario cerrado) más los `it` nuevos de GC, CL, MT y BB.

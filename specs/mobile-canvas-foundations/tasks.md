@@ -187,6 +187,19 @@ Reglas para todas las tareas:
 - [ ] (2) Implementación mínima: corregir lo que el test señale.
 - [ ] (3) Refactor: ninguno.
 
+### Reanudación 2 — candados de #195 (R1, R21)
+- [ ] (1) Un solo commit de test: las tres filas de `home-photo-hero-canvas.test.ts`
+  de § «Candados» (referencia `4.83`; sección de #195 cortada en la siguiente
+  `\n## `; cabeceras posteriores solo `## Enmienda #`). Sin cambios de
+  producción: con R1 y R21 ya hechos, el fichero pasa a verde en ese commit.
+
+### R24 — `RiseIn`
+- [ ] (1) Test rojo: RI `#197 R24` ×4; añadir `rise-in` al `it.each` de CF
+  `#197 R20` (nace verde) y `components/rise-in.tsx` al de CF `#197 R22`
+  (rojo: el fichero no existe).
+- [ ] (2) Implementación mínima: `src/components/rise-in.tsx`.
+- [ ] (3) Refactor: ninguno.
+
 ### R23 — Smoke humano
 - [ ] Tras el veredicto aprobado del reviewer, el humano corre la lista de
   requirements.md § «Cierre del humano» en dev build Android y marca la

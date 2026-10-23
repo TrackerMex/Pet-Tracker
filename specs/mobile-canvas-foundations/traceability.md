@@ -30,6 +30,7 @@ tags: [mobile, ui, traceability]
 | R20 | src/__tests__/canvas-foundations.test.ts::#197 R20; src/__tests__/legibility-classnames.test.ts::accent (enmendado por #197 R20) | 66f9d00f test(#197): R20 keep the new foundations unwired |
 | R21 | src/__tests__/canvas-foundations.test.ts::#197 R21; src/__tests__/design-drift.test.ts::#178 R2/#179 R2; src/__tests__/chunky-cta-canvas-fidelity.test.ts::#177 R11.1; src/__tests__/alerts-canvas-fidelity.test.ts::#174 R11 (enmendados por #197 R21) | 9c2d837b test(#197): R21 require the canonical canvas charter amendment<br>66065bef feat(#197): R21 apply the canonical canvas foundations charter |
 | R22 | src/__tests__/canvas-foundations.test.ts::#197 R22 (11 casos) | e74076a9 test(#197): R22 guard clean sources and unchanged dependency counts |
+| R24 | src/components/__tests__/rise-in.test.tsx::#197 R24; src/__tests__/canvas-foundations.test.ts::#197 R20 y #197 R22 (caso rise-in) | pendiente |
 | R23 | smoke humano (requirements.md § Cierre del humano) | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila de R1 a R22 queda "pendiente";

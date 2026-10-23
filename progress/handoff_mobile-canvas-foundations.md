@@ -26,6 +26,9 @@ Archivos (lista cerrada; si necesitas otro, PARA y pregunta al leader). Todos ba
   - src/screens/alerts/index.tsx (R8)
   - src/screens/meal-schedule/index.tsx (R9)
   - src/screens/home/home-entrance.tsx (R12, R13)
+  - src/components/rise-in.tsx (nuevo, R24; Reanudación 2)
+  - src/components/__tests__/rise-in.test.tsx (nuevo, RI, R24; Reanudación 2)
+  - src/__tests__/home-photo-hero-canvas.test.ts (solo las tres filas de § «Candados» marcadas «Reanudación 2»; Reanudación 2)
   - src/__tests__/canvas-foundations.test.ts (nuevo, CF)
   - src/theme/__tests__/shadows.test.tsx (nuevo, SW)
   - src/components/__tests__/toggle-switch.test.tsx (nuevo, TS)
@@ -117,3 +120,38 @@ Sigue así, sin rehacer R1–R6 ni el commit rojo `d8c65463`:
   2. Commit `feat(#197): R7 …` con el cambio mínimo de producción que ya mediste. Suite de NuevoRecordatorio entera en verde.
   3. Continúa por R8 hasta la Verificación final como dice el resto de este handoff. Añade al reporte la tabla «Enmiendas mecánicas» (vacía si no hubo más) y actualiza la tabla R1–R22.
   4. Última acción, igual que antes: crear `progress/impl_mobile-canvas-foundations.done`.
+
+## Reanudación 2 tras el bloqueo de la Verificación final (2026-10-23)
+
+El leader resolvió el bloqueo de tu reporte. Hay firma delegada en el commit de la spec que sigue a `febbb158`. Cambios en specs/mobile-canvas-foundations/requirements.md:
+  - § «Candados que esta feature revierte» gana tres filas de `src/__tests__/home-photo-hero-canvas.test.ts`, marcadas «Reanudación 2»:
+    - `#195 R17`, caso light: la referencia 3.76 pasa a 4.83.
+    - `#195 R20`, dos `it`: la sección de #195 se corta en la siguiente `\n## `; las cabeceras posteriores solo pueden ser `## Enmienda #`.
+  - R24 nuevo: `RiseIn` en `src/components/rise-in.tsx`, con su test RI. Viene de #199 R24 con la misma semántica.
+  - La lista cerrada de arriba gana esos tres ficheros. Nada más cambia: mismo H0 046133e8 para el diff final, sin merge ni rebase, sin `./init.sh`.
+
+No rehagas R1–R22 ni reescribas commits. Sigue así:
+  1. Commit `test(#197): amend #195 contrast and charter-section locks (R1, R21)`.
+     - Solo las tres filas, cada `it` con el sufijo que indica la tabla.
+     - El corte de la sección va en un helper local dentro del `describe` de `#195 R20`; los dos `it` lo usan.
+     - Corre `bunx jest src/__tests__/home-photo-hero-canvas.test.ts` y pega la línea `Tests:`: todo en verde, porque R1 y R21 ya están hechos.
+  2. Commit rojo `test(#197): R24 lock the shared rise entrance (R24)`.
+     - `src/components/__tests__/rise-in.test.tsx` con los cuatro `it` de R24.
+     - Añade `'rise-in'` al `it.each` de CF `#197 R20` y `'components/rise-in.tsx'` al de CF `#197 R22`.
+     - Pega la línea `Tests:` de `bunx jest src/components/__tests__/rise-in.test.tsx src/__tests__/canvas-foundations.test.ts`.
+     - Esperado: RI en rojo por import, el caso nuevo de R22 en rojo y el de R20 verde (anótalo como nacido verde).
+  3. Commit `feat(#197): R24 add the shared RiseIn entrance (R24)` con `src/components/rise-in.tsx`. Las dos suites del paso 2 deben quedar en verde.
+     - Patrón de `entering` propio: un worklet que devuelve `{ initialValues, animations }`, como `homeEntering` de `home-entrance.tsx`.
+     - Para los dobles de Reanimated en RI, sigue el patrón de `src/screens/home/home-entrance.test.tsx`.
+  4. Verificación final completa, igual que antes:
+     - suite entera, typecheck, lint, diff vacío de `package.json`/`bun.lock`/`_layout.tsx`, `graphify update .` y lista de ficheros desde H0 contra la lista cerrada ampliada;
+     - guarda el log entero en `progress/final-test-197.log`, sin pipe;
+     - si aparece cualquier rojo no inventariado que no cubra «Enmienda mecánica permitida», PARA y anótalo como la vez anterior.
+  5. Traceability, en el último commit:
+     - fila R24 con sus dos hashes;
+     - el hash del paso 1 en las filas R1 y R21;
+     - borra la sección «Verificación final del implementador — bloqueada» y deja la verificación nueva en el reporte.
+  6. Reporte:
+     - actualiza progress/impl_mobile-canvas-foundations.md con una sección «Reanudación 2»: los commits, las líneas `Tests:`, la tabla R1–R24 (R23 humano) y las «Enmiendas mecánicas» si hubo;
+     - sustituye la sección «Cierre de Verificación final — BLOQUEADO» por el resultado nuevo.
+  7. Última acción: crear `progress/impl_mobile-canvas-foundations.done`, igual que antes.

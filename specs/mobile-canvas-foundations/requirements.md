@@ -381,6 +381,26 @@ que solo mire producción no cumple su requisito.
     `no anima la entrada bajo reduce motion`; asierta
     `expect.objectContaining({ duration: 400, reduceMotion: ReduceMotion.System })`
     sin reduce motion), enmendados.
+- **R24** (añadido el 2026-10-23 en la Reanudación 2, firma delegada; viene de
+  #199 R24 para que #199, #200 y #202 no se serialicen detrás de #199): THE
+  SYSTEM SHALL exportar de `src/components/rise-in.tsx`
+  `RiseIn({ delayMs, testID, className, children })` (`delayMs: number`, el
+  resto opcional salvo `children`), que pinta un `Animated.View` de
+  `react-native-reanimated` con `testID` y `className` y, WHILE
+  `useReducedMotion()` es falso, un `entering` propio con `initialValues`
+  `{ opacity: 0, transform: [{ translateY: MOTION_RISE_OFFSET_Y }] }` y
+  animaciones `withDelay(delayMs, withTiming(1, MOTION_RISE_TIMING))` para la
+  opacidad y `withDelay(delayMs, withTiming(0, MOTION_RISE_TIMING))` para
+  `translateY`; WHILE `useReducedMotion()` es verdadero, `entering` SHALL ser
+  `undefined`. Nadie lo monta en #197 (R20). `HomeEntrance` no cambia por R24.
+  - Test: RI `src/components/__tests__/rise-in.test.tsx` (nuevo) ›
+    `#197 R24: RiseIn` › `#197 R24 la entrada parte de opacidad 0 y MOTION_RISE_OFFSET_Y abajo`,
+    `#197 R24 anima opacidad y desplazamiento con MOTION_RISE_TIMING tras delayMs`,
+    `#197 R24 bajo reduce motion no declara entering` y
+    `#197 R24 pasa testID y className al Animated.View y pinta sus hijos`.
+    CF › `#197 R20: nadie monta todavía los cimientos %s` gana el caso
+    `rise-in` y `#197 R22: %s es grep-limpio` gana `components/rise-in.tsx`
+    (12 casos).
 
 ### C07 — Sombras
 
@@ -545,8 +565,8 @@ que solo mire producción no cumple su requisito.
     y la constante `preservedLines` de CC, enmendados con las líneas nuevas.
 - **R22**: THE SYSTEM SHALL dejar grep-limpios los ficheros nuevos y tocados
   (`toggle-switch.tsx`, `screen-header.tsx`, `shadows.ts`, `chunky-lip.ts`,
-  `motion.ts`, `home-entrance.tsx`, `back-button.tsx` y las tres pantallas de
-  R7 a R9): sin hex fuera de `src/theme/` (los comentarios citan
+  `motion.ts`, `home-entrance.tsx`, `back-button.tsx`, `rise-in.tsx` (R24) y
+  las tres pantallas de R7 a R9): sin hex fuera de `src/theme/` (los comentarios citan
   `#197 R<n>`), sin `StyleSheet.create`, sin emoji, sin clases arbitrarias
   `[…]`, sin `shadow*`/`elevation` de React Native fuera de `boxShadow`, y sin
   cambiar `package.json` ni `bun.lock`.
@@ -617,6 +637,9 @@ siendo motivo de parada.
 | HI › `#190 R1` › `pinta la entrada y su único hijo con actividad $kind`; `#190 R7` › `parte de translateY cero, conserva el fundido y no añade escala a la burbuja (enmendado por #195 R16)`; `#152 R7` › `funde igual bajo reduce motion` | 12 px; fundido bajo reduce motion | 14 px; sin entrada bajo reduce motion | R13 |
 | `profile-canvas-fidelity.test.ts` › `#173 R2.4` › `reserva text-26 al nombre de la mascota en Perfil (…)` | solo Perfil | + `components/screen-header.tsx` | R19 |
 | `legibility-classnames.test.ts` › `reserva las peticiones de accent a las huellas de EmptyState (enmendado por #176 R5)` | `['components/empty-state.tsx']` | `['components/empty-state.tsx', 'components/toggle-switch.tsx', 'theme/shadows.ts']` | R20 |
+| `home-photo-hero-canvas.test.ts` › `#195 R17: contraste WCAG contra la peor foto` › `mantiene referencias y suelos en %s` (caso `light`; añadida en la Reanudación 2) | séptima referencia clara (danger sobre `background`) `3.76` | `4.83` (el `#D92D20` de R1 da 4.8314 sobre el fondo claro); el suelo `3` y las demás referencias no cambian; el título del `it.each` gana ` (enmendado por #197 R1)` | R1 |
+| `home-photo-hero-canvas.test.ts` › `#195 R20: enmienda canónica y continuación de A8` › `añade una sola sección completa y es la última cabecera de nivel dos` (añadida en la Reanudación 2) | `charter.match(/^## .+$/gm)?.at(-1)` es la cabecera de #195 y el slice desde ella hasta el final del fichero es igual al bloque | la sección de #195 se corta en la siguiente cabecera `\n## ` (o en el final del fichero si no hay otra) y es igual al bloque; todas las cabeceras `## ` que la siguen empiezan por `## Enmienda #` (así las enmiendas de #199, #200 y siguientes no la vuelven a romper); título + ` (enmendado por #197 R21)` | R21 |
+| `home-photo-hero-canvas.test.ts` › `#195 R20: …` › `la sección de la carta lleva las medidas de la Enmienda A4 y ninguna de las antiguas` (añadida en la Reanudación 2; hoy verde) | `section` va de la cabecera de #195 al final del fichero | `section` cortada igual que en la fila anterior (mismo helper local del `describe`); mismas aserciones; título + ` (enmendado por #197 R21)` | R21 |
 
 **Se conservan sin tocar** (y deben seguir verdes): GC `#173 R2.3`, `#174 R1`,
 `#177 R1`, `#166 R1`, `#195 R4`; AC `declara tracking-title y tracking-caps`;
@@ -707,4 +730,7 @@ la casilla en el leader citando el mensaje donde dio el visto bueno.
   (`progress/plan_canvas-parity-2026-10-23.md` §4, checklist de firma pasada).
 - [x] Enmienda #197 aprobada por humano (carta `docs/ui-guidelines.md` § «Enmienda #197»)
   Firma delegada, mismo mandato.
+  Reanudación 2 (2026-10-23), firma delegada, mismo mandato: tres filas de
+  `home-photo-hero-canvas.test.ts` en § «Candados» (bloqueo de la Verificación
+  final) y R24 `RiseIn`, traído de #199 R24 sin cambiar su semántica.
 - [ ] Smoke de R23 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
