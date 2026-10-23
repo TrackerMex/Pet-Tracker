@@ -60,16 +60,23 @@ describe('#197 R15: sombras del canvas', () => {
   it('#197 R15: re-resuelve las sombras cuando cambian los colores', async () => {
     const view = await renderProbe();
     const first = latest;
-    mockResolvedColors = ['near', 'far', '10', '12', '14', '25', 'background', 'accent'];
-    await view.rerender(<Probe />);
+    const tokens = ['shadow-near', 'shadow-far', 'shadow-10', 'shadow-12', 'shadow-14', 'shadow-25', 'background', 'accent'];
+    const colors = tokens.map(token => `--color-${token}`);
+    for (let index = 0; index < colors.length; index += 1) {
+      const before = latest;
+      colors[index] = `resolved-${index}`;
+      mockResolvedColors = [...colors];
+      await view.rerender(<Probe />);
+      expect(latest).not.toBe(before);
+    }
     expect(latest).not.toBe(first);
     expect(latest.card).toEqual({ boxShadow: [
-      { offsetX: 0, offsetY: 1, blurRadius: 2, spreadDistance: 0, color: 'near' },
-      { offsetX: 0, offsetY: 8, blurRadius: 24, spreadDistance: 0, color: 'far' },
+      { offsetX: 0, offsetY: 1, blurRadius: 2, spreadDistance: 0, color: 'resolved-0' },
+      { offsetX: 0, offsetY: 8, blurRadius: 24, spreadDistance: 0, color: 'resolved-1' },
     ] });
     expect(latest.ring).toEqual({ boxShadow: [
-      { offsetX: 0, offsetY: 0, blurRadius: 0, spreadDistance: 3, color: 'background' },
-      { offsetX: 0, offsetY: 0, blurRadius: 0, spreadDistance: 5, color: 'accent' },
+      { offsetX: 0, offsetY: 0, blurRadius: 0, spreadDistance: 3, color: 'resolved-6' },
+      { offsetX: 0, offsetY: 0, blurRadius: 0, spreadDistance: 5, color: 'resolved-7' },
     ] });
   });
 });
