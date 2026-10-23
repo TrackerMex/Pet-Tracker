@@ -318,7 +318,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     // #136 R3: minus one, the tiles' corner now travels in their pressed style.
     // #138 R3: minus one more, collar-pair-link's corner travels in its own.
     expect(
-      directUses.reduce((total, [, count]) => total + count, 2),
+      directUses.reduce((total, [path]) => total + (readSource(path).match(/style=\{CONTINUOUS_CORNER\}/g) ?? []).length, 2),
     ).toBe(33 + 1 + 1 - 1 - 1 + 1 + 1 - 1 + 4 + 1 - 1 - 7 + 1 + 1 + 2 + 2 - 1 + 1 + 3 + 2 + 1 - 1); // #189 R6; #189 R5 (enmendado por #190 R13) // #191 R11 // #177 R5 // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168 R3, R8, R6; #170 R16; #171 R3: ready-done; #173 R10: ProfileTile
   });
 });
