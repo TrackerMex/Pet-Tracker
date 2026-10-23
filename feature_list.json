@@ -3509,7 +3509,7 @@
   {
     "id": 204,
     "name": "mobile-canvas-routine",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P1",
     "description": "Registrada el 2026-10-23 por el plan progress/plan_canvas-parity-2026-10-23.md (ola 2). Recordatorios y documentos iguales al canvas versión 1792777983-cd94, artboards Recordatorios, NuevoRecordatorio y Documentos. Cubre la parte de Recordatorios de C18 de progress/explore_canvas-parity-2026-10-21.md. Ficheros probables: screens/reminders, screens/add-reminder, la pantalla de documentos y tests. Depende de #197. Congelar los artboards en specs/mobile-canvas-routine/canvas/. Firma delegada al leader. Registrada sin spec."
   },
