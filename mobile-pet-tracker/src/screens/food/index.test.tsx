@@ -252,7 +252,7 @@ describe('R4: food resuelve la mascota seleccionada', () => {
     mockGetNutritionPlan.mockReturnValue(pending<NutritionPlanState>());
   });
 
-  it('shows the hub and a loading state while pets are pending', async () => {
+  it('shows the hub and a loading state while pets are pending (enmendado por #200 R2)', async () => {
     mockListPets.mockReturnValue(pending<PetsState>());
 
     await renderFood();
@@ -274,9 +274,10 @@ describe('R4: food resuelve la mascota seleccionada', () => {
     );
     expect(screen.getByTestId('screen-food').props.contentContainerStyle).toEqual(
       expect.objectContaining({
-        padding: 24,
+        paddingHorizontal: 20,
         paddingTop: 52,
         paddingBottom: 120,
+        gap: 14,
       }),
     );
   });
@@ -1170,13 +1171,13 @@ describe('#155 R4: Comida sin mascotas presenta a Pingo', () => {
     expect(within(screen.getByTestId('food-empty-action')).getByText('Añadir mascota')).toBeVisible();
   });
 
-  it('queda en el sitio del vacío que sustituye', async () => {
+  it('queda en el sitio del vacío que sustituye (enmendado por #200 R2)', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
     await renderFood();
     await screen.findByTestId('food-empty-pose');
     const slot = screen.getByTestId('food-empty');
     expect(slot.parent?.parent?.props.testID).toBe('screen-food');
-    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['food-title', 'food-empty']);
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['food-title-row', 'food-empty']);
   });
 
   it('lleva a añadir mascota', async () => {
@@ -1506,5 +1507,45 @@ describe('#181 R6: food hereda la limpieza de selección', () => {
     await screen.findByTestId('food-empty');
     await waitFor(() => expect(queryClient.isFetching()).toBe(0));
     expect(screen.queryByTestId('food-plan-error')).toBeNull();
+  });
+});
+
+
+describe('#200 R2: marco y fila del canvas', () => {
+  beforeEach(setupFood168);
+
+  it('#200 R2: el marco es el del canvas', async () => {
+    await renderFood();
+    expect(screen.getByTestId('screen-food').props.contentContainerStyle).toEqual({
+      paddingHorizontal: 20, paddingTop: 52, paddingBottom: 120, gap: 14,
+    });
+  });
+
+  it('#200 R2: los avatares comparten fila con el título', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet(), makePet({ id: 'pet-2', name: 'Max' })] });
+    await renderFood();
+    await screen.findByTestId('pet-chip-pet-2');
+    const row = screen.getByTestId('food-title-row');
+    expect(row.props.className).toBe('flex-row items-center justify-between');
+    expect(foodChild(row, 0).props.testID).toBe('food-title');
+    expect(within(row).getAllByTestId(/^pet-chip-/).map((node) => node.props.testID))
+      .toEqual(['pet-chip-pet-1', 'pet-chip-pet-2']);
+  });
+
+  it('#200 R2: sin mascotas la fila solo lleva el título', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderFood();
+    await screen.findByTestId('food-empty');
+    const row = screen.getByTestId('food-title-row');
+    expect(row.children).toHaveLength(1);
+    expect(foodChild(row, 0).props.testID).toBe('food-title');
+    expect(within(row).queryAllByTestId(/^pet-chip-/)).toEqual([]);
+  });
+
+  it('#200 R2: el contenido de la mascota se separa 14 como el canvas', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+    await renderFood();
+    const empty = await screen.findByTestId('food-plan-empty');
+    expect(empty.parent?.props.className).toBe('gap-3.5');
   });
 });
