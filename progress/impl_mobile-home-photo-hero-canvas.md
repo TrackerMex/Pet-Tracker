@@ -1271,12 +1271,12 @@ Mismos comandos literales de tasks.md (se sustituye el escape Markdown `\|` por 
 | 5: 24%/44% en HERO | 0 | 2 | 2 | 2 | 2 |
 | 6: height: 90/100 en HERO | 0 | 2 | 2 | 2 | 2 |
 | 7: toBe(430/100/90) en HERO | 0 | 4 | 4 | 4 | 4 |
-| 8: 330 en src | 2 ficheros | producción:1 | producción:1 | vacía | **GUARD:1 (deriva)** |
+| 8: 330 en src | 2 ficheros | producción:1 | producción:1 | vacía | **1 línea (GUARD)**, [adendo 8](handoff_mobile-home-photo-hero-canvas-reanudar-8.md) |
 | 9: constantes antiguas producción | 3 | 3 | 3 | 0 | 0 |
 | 10: constantes nuevas producción | 0 | 0 | 0 | 3 | 3 |
 | 11: paradas antiguas producción | 1 | 1 | 1 | 0 | 0 |
 | 12: paradas nuevas producción | 0 | 0 | 0 | 1 | 1 |
-| 13: 104/160 en GUARD | 2 | 2 | 0 | 0 | **1 (deriva; esperado 0)** |
+| 13: 104/160 en GUARD | 2 | 2 | 0 | 0 | **1**, [adendo 8](handoff_mobile-home-photo-hero-canvas-reanudar-8.md) |
 | 14: 10.79/9.77 en GUARD | 2 | 2 | 0 | 0 | 0 |
 | 15: 7.75/6.74 en GUARD | 0 | 0 | 2 | 2 | 2 |
 | 16: medidas antiguas carta | 1 | 1 | 1 | 1 | 1 |
@@ -1409,3 +1409,250 @@ Inventario de código/docs/specs desde `98c7a192`: solo `mobile-pet-tracker/src/
 Pendientes: resolver las cuentas 8 y 13, E con su verde exacto de 90/90 y hero-header-amendments, las trece mutaciones (m2 tiene dos pasadas), suite móvil completa 134/4381/1, typecheck con precondición del router, lint sin caché con log vacío, graphify y cierre de trazabilidad/reporte. No se han ejecutado mutaciones ni esos comandos de cierre en esta continuación. No se crea `progress/impl_mobile-home-photo-hero-canvas.done`.
 
 No se tocaron `progress/current.md`, `progress/history.md`, `STATUS.md`, `feature_list.json`, PR, canvas ni R21. Tampoco `home/index.tsx`, `pingo-phrase.ts`, el resto de componentes ni los candados ajenos. No se ejecutó init.sh, prettier ni se añadieron dependencias. No hubo denegaciones del sandbox, rebase, merge ni reescritura de commits. El commit de este reporte documenta una parada parcial y no sustituye al docs(home) de cierre pendiente.
+
+
+### Continuación por adendo 8 — 2026-10-23
+
+Primer comando confirmado: `cd /home/claude/sites/Pet-Tracker-wt-195 && pwd && git branch --show-current`; salida `/home/claude/sites/Pet-Tracker-wt-195` y `feature/195-mobile-home-photo-hero-canvas`. HEAD inicial `59aebafc`, árbol limpio. Leídos adendos 8, 6 y 7; siguen vigentes los anteriores ya leídos. Skills aplicadas en esta conversación: `building-native-ui`, `appllama-app-design-skill`, `animate-expo` y `ponytail`; las tres requeridas se encontraron y cargaron. No se buscaron los cuatro nombres de Expo ausentes de Codex.
+
+El [adendo 8](handoff_mobile-home-photo-hero-canvas-reanudar-8.md) resuelve la parada tras D: filas 8 y 13 = **1 línea (GUARD)** y **1**, respectivamente, tras D y E, por las aserciones negativas literales de R20. La fila 7 sigue en **4** por el adendo 7. Se conserva todo el historial A–D y el reporte `a2130cf1`; solo se actualizan las dos celdas de la tabla solicitadas y se añade esta continuación. No se cambia ninguna regex ni aserción. La nota histórica «PARADO tras D» de arriba queda resuelta por este dictamen.
+
+Se retoma desde E: rojo de D ya medido (1/89/90) antes de cualquier edición de docs, aprobado por el leader. No se repite ni se reescribe B, C o D. Sin init.sh, PR, canvas, cambios de estado de feature ni archivos de seguimiento del leader.
+
+#### E — carta y bloque canónico atómicos
+
+`5bc90baa` — `docs(mobile): carta y bloque de design.md con las medidas de la Enmienda A4 (R20)`, `git commit --only docs/ui-guidelines.md specs/mobile-home-photo-hero-canvas/design.md`. Dos líneas sustituidas, una en cada fichero, idénticas: frase 1 y frase 2 literales de design §Texto de la Enmienda A4. Solo el primer bloque Markdown y la última sección de la carta. El segundo bloque, la excepción 4,26:1/4,36:1 (suelo 4,2:1), Detalle y tests y la casilla permanecen intactos.
+
+Medido **después** del commit, `progress/a4-E-green-195.log`, exit 0: **`Tests: 90 passed, 90 total`**, `Test Suites: 2 passed, 2 total`. El rojo de D precede a E; ya no hay rojos en HERO o GUARD (R17 y los cuatro it de R20 pasan).
+
+Las 18 cuentas re-medidas después de E coinciden con tasks y los dictámenes 7/8:
+
+| Fila A4 | Tras E medido y correcto |
+|---|---|
+| 1 | 0 |
+| 2 | 8 |
+| 3 | 0 |
+| 4 | 0 |
+| 5 | 2 |
+| 6 | 2 |
+| 7 | **4**, [adendo 7](handoff_mobile-home-photo-hero-canvas-reanudar-7.md) |
+| 8 | **1 línea**, `src/__tests__/home-photo-hero-canvas.test.ts:1`, [adendo 8](handoff_mobile-home-photo-hero-canvas-reanudar-8.md) |
+| 9 | 0 |
+| 10 | 3 |
+| 11 | 0 |
+| 12 | 1 |
+| 13 | **1**, [adendo 8](handoff_mobile-home-photo-hero-canvas-reanudar-8.md) |
+| 14 | 0 |
+| 15 | 2 |
+| 16 | 0 |
+| 17 | 1 |
+| 18 | 4 ficheros, los mismos de A–D |
+
+Carta: `grep -cE "alto 330|130 px|160 px" docs/ui-guidelines.md` = **0** y `grep -cE "alto 430.*velo oscuro superior de 90 px.*degradado inferior de 100 px" docs/ui-guidelines.md` = **1**. Las referencias históricas antiguas de design.md se conservan deliberadamente.
+
+#### Mutaciones de A4 — m1 a m7, r1 a r6
+
+Cada corrida usa HERO + GUARD completos, sin filtro de nombre (90 casos), `--testTimeout=30000`, log entero y exit code sin pipe; antes de cada Jest, `pgrep` en comando propio con el patrón acotado de los adendos, bucle sleep 20 y tope 900 s. No se espera a contadores de mocks. El script efímero de /tmp verifica tanto el número como los nombres de todos los rojos contra la tabla de tasks; no modifica ninguna guarda para acomodar resultados. Ninguna mutación se commitea. m2 se mide en dos pasadas como exige tasks.
+
+- **m1**, log `progress/a4-m1-195.log`, exit 1: `Tests:       10 failed, 80 passed, 90 total`. Rojos exactos (resto de HERO + GUARD en verde):
+
+  - `R1: PetHeroHeader es el único hero compartido › exporta las constantes de dimensión del hero (enmendado por #195 R1)`
+  - `#127 R2: el skeleton del hero lleva su receta en el árbol › pinta pet-hero-skeleton con la clase w-full sin radio y el alto de 430 como único estilo (enmendado por #195 R1)`
+  - `#195 R1: frame de 430 y raíz estable › bleed con mascota false y slot false`
+  - `#195 R1: frame de 430 y raíz estable › bleed con mascota true y slot true`
+  - `#195 R1: frame de 430 y raíz estable › card con mascota false y slot true`
+  - `#195 R1: frame de 430 y raíz estable › card con mascota true y slot false`
+  - `#195 R2: foto alineada arriba y fundido por identidad › pinta la foto como primera capa absoluta con tamaño y caché estables`
+  - `#195 R18: estados conservados del hero › sin mascota conserva skeleton sin radio en bleed`
+  - `#195 R18: estados conservados del hero › sin mascota conserva skeleton sin radio en card`
+  - `#195 R18: estados conservados del hero › sin foto conserva el blobatar rectangular y los degradados`
+
+  Revertida con `git checkout HEAD -- mobile-pet-tracker/src/components/pet-hero-header.tsx`; `git diff --cached` vacío y ficheros idénticos a HEAD.
+
+- **m2i**, log `progress/a4-m2i-195.log`, exit 1: `Tests:       3 failed, 87 passed, 90 total`. Rojos exactos (resto de HERO + GUARD en verde):
+
+  - `#195 R17: contraste WCAG contra la peor foto › enlaza el modelo con las paradas y la altura del degradado de producción (Enmienda A4)`
+  - `R1: PetHeroHeader es el único hero compartido › exporta las constantes de dimensión del hero (enmendado por #195 R1)`
+  - `#195 R3: degradados exactos sobre la fotografía › resuelve ambos colores en una llamada y conserva alfa, geometría y toques`
+
+  Revertida con `git checkout HEAD -- mobile-pet-tracker/src/components/pet-hero-header.tsx`; `git diff --cached` vacío y ficheros idénticos a HEAD.
+
+- **m2ii**, log `progress/a4-m2ii-195.log`, exit 1: `Tests:       1 failed, 89 passed, 90 total`. Rojos exactos (resto de HERO + GUARD en verde):
+
+  - `#195 R17: contraste WCAG contra la peor foto › enlaza el modelo con las paradas y la altura del degradado de producción (Enmienda A4)`
+
+  Revertida con `git checkout HEAD -- mobile-pet-tracker/src/components/pet-hero-header.tsx mobile-pet-tracker/src/components/__tests__/pet-hero-header.test.tsx`; `git diff --cached` vacío y ficheros idénticos a HEAD.
+
+- **m3**, log `progress/a4-m3-195.log`, exit 1: `Tests:       2 failed, 88 passed, 90 total`. Rojos exactos (resto de HERO + GUARD en verde):
+
+  - `R1: PetHeroHeader es el único hero compartido › exporta las constantes de dimensión del hero (enmendado por #195 R1)`
+  - `#195 R3: degradados exactos sobre la fotografía › resuelve ambos colores en una llamada y conserva alfa, geometría y toques`
+
+  Revertida con `git checkout HEAD -- mobile-pet-tracker/src/components/pet-hero-header.tsx`; `git diff --cached` vacío y ficheros idénticos a HEAD.
+
+- **m4**, log `progress/a4-m4-195.log`, exit 1: `Tests:       3 failed, 87 passed, 90 total`. Rojos exactos (resto de HERO + GUARD en verde):
+
+  - `#195 R17: contraste WCAG contra la peor foto › enlaza el modelo con las paradas y la altura del degradado de producción (Enmienda A4)`
+  - `R3: el texto del hero va sobre fondo opaco › funde la imagen con scrim superior y degradado inferior (enmendado por #195 R3)`
+  - `#195 R3: degradados exactos sobre la fotografía › resuelve ambos colores en una llamada y conserva alfa, geometría y toques`
+
+  Revertida con `git checkout HEAD -- mobile-pet-tracker/src/components/pet-hero-header.tsx`; `git diff --cached` vacío y ficheros idénticos a HEAD.
+
+- **m5**, log `progress/a4-m5-195.log`, exit 1: `Tests:       3 failed, 87 passed, 90 total`. Rojos exactos (resto de HERO + GUARD en verde):
+
+  - `#195 R17: contraste WCAG contra la peor foto › enlaza el modelo con las paradas y la altura del degradado de producción (Enmienda A4)`
+  - `R3: el texto del hero va sobre fondo opaco › funde la imagen con scrim superior y degradado inferior (enmendado por #195 R3)`
+  - `#195 R3: degradados exactos sobre la fotografía › resuelve ambos colores en una llamada y conserva alfa, geometría y toques`
+
+  Revertida con `git checkout HEAD -- mobile-pet-tracker/src/components/pet-hero-header.tsx`; `git diff --cached` vacío y ficheros idénticos a HEAD.
+
+- **m6**, log `progress/a4-m6-195.log`, exit 1: `Tests:       1 failed, 89 passed, 90 total`. Rojos exactos (resto de HERO + GUARD en verde):
+
+  - `#195 R17: contraste WCAG contra la peor foto › enlaza el modelo con las paradas y la altura del degradado de producción (Enmienda A4)`
+
+
+  m6, comprobación de ambas ramas: la corrida original aborta en Expected `59 24%` / fuente con `59 35%`. Para observar también la otra rama sin relajar ni quitar aserciones, se invirtió **solo el orden** de los dos expect de paradas en GUARD temporalmente, con el mismo defecto 35%/65% en producción y HERO. Log `progress/a4-m6-second-branch-195.log`, exit 1: `Tests: 1 failed, 89 passed, 90 total`, único rojo el mismo it de enlace R17, ahora en Expected `D9 44%` / fuente con `D9 65%`. Las dos corridas dejan HERO completo verde. m4 y m5 ya habían observado esas dos ramas por separado. Se revierte también el orden de GUARD, sin modificar B ni las aserciones finales.
+  Revertida con `git checkout HEAD -- mobile-pet-tracker/src/components/pet-hero-header.tsx mobile-pet-tracker/src/components/__tests__/pet-hero-header.test.tsx`; `git diff --cached` vacío y ficheros idénticos a HEAD.
+
+- **m7**, log `progress/a4-m7-195.log`, exit 1: `Tests:       2 failed, 88 passed, 90 total`. Rojos exactos (resto de HERO + GUARD en verde):
+
+  - `#195 R17: contraste WCAG contra la peor foto › mantiene referencias y suelos en light`
+  - `#195 R17: contraste WCAG contra la peor foto › mantiene referencias y suelos en dark`
+
+  Revertida con `git checkout HEAD -- mobile-pet-tracker/src/__tests__/home-photo-hero-canvas.test.ts`; `git diff --cached` vacío y ficheros idénticos a HEAD.
+
+- **r1**, log `progress/a4-r1-195.log`, exit 1: `Tests:       1 failed, 89 passed, 90 total`. Rojos exactos (resto de HERO + GUARD en verde):
+
+  - `#195 R20: enmienda canónica y continuación de A8 › la sección de la carta lleva las medidas de la Enmienda A4 y ninguna de las antiguas`
+
+  Revertida con `git checkout HEAD -- docs/ui-guidelines.md specs/mobile-home-photo-hero-canvas/design.md`; `git diff --cached` vacío y ficheros idénticos a HEAD.
+
+- **r2**, log `progress/a4-r2-195.log`, exit 1: `Tests:       1 failed, 89 passed, 90 total`. Rojos exactos (resto de HERO + GUARD en verde):
+
+  - `#195 R20: enmienda canónica y continuación de A8 › la sección de la carta lleva las medidas de la Enmienda A4 y ninguna de las antiguas`
+
+  Revertida con `git checkout HEAD -- docs/ui-guidelines.md specs/mobile-home-photo-hero-canvas/design.md`; `git diff --cached` vacío y ficheros idénticos a HEAD.
+
+- **r3**, log `progress/a4-r3-195.log`, exit 1: `Tests:       1 failed, 89 passed, 90 total`. Rojos exactos (resto de HERO + GUARD en verde):
+
+  - `#195 R20: enmienda canónica y continuación de A8 › la sección de la carta lleva las medidas de la Enmienda A4 y ninguna de las antiguas`
+
+  Revertida con `git checkout HEAD -- docs/ui-guidelines.md specs/mobile-home-photo-hero-canvas/design.md`; `git diff --cached` vacío y ficheros idénticos a HEAD.
+
+- **r4**, log `progress/a4-r4-195.log`, exit 1: `Tests:       1 failed, 89 passed, 90 total`. Rojos exactos (resto de HERO + GUARD en verde):
+
+  - `#195 R20: enmienda canónica y continuación de A8 › la sección de la carta lleva las medidas de la Enmienda A4 y ninguna de las antiguas`
+
+  Revertida con `git checkout HEAD -- docs/ui-guidelines.md specs/mobile-home-photo-hero-canvas/design.md`; `git diff --cached` vacío y ficheros idénticos a HEAD.
+
+- **r5**, log `progress/a4-r5-195.log`, exit 1: `Tests:       1 failed, 89 passed, 90 total`. Rojos exactos (resto de HERO + GUARD en verde):
+
+  - `#195 R20: enmienda canónica y continuación de A8 › la sección de la carta lleva las medidas de la Enmienda A4 y ninguna de las antiguas`
+
+  Revertida con `git checkout HEAD -- docs/ui-guidelines.md specs/mobile-home-photo-hero-canvas/design.md`; `git diff --cached` vacío y ficheros idénticos a HEAD.
+
+- **r6**, log `progress/a4-r6-195.log`, exit 1: `Tests:       1 failed, 89 passed, 90 total`. Rojos exactos (resto de HERO + GUARD en verde):
+
+  - `#195 R20: enmienda canónica y continuación de A8 › la sección de la carta lleva las medidas de la Enmienda A4 y ninguna de las antiguas`
+
+  Revertida con `git checkout HEAD -- docs/ui-guidelines.md specs/mobile-home-photo-hero-canvas/design.md`; `git diff --cached` vacío y ficheros idénticos a HEAD.
+
+#### Resumen de sensibilidad de las trece mutaciones
+
+`hero-header-amendments.test.ts` sin tocar, después de E: `progress/a4-E-amendments-195.log`, exit 0, `Test Suites: 1 passed, 1 total`, **`Tests: 6 passed, 6 total`**.
+
+| Mutación | Defecto plantado | Rojo observado / verde conservado |
+|---|---|---|
+| m1 | MEDIA_HEIGHT 431 | 10 rojos de 14a/b/c/d/g/h; R3, GUARD R17 y comparación simbólica de R2 verdes |
+| m2(i) | FADE_HEIGHT 101 solo en producción | 14a, 14e y enlace R17: 3 rojos; 14f simbólico verde |
+| m2(ii) | FADE_HEIGHT 101 en producción y las dos referencias de HERO | Solo enlace R17, rama de altura, 1 rojo; HERO completo verde |
+| m3 | SCRIM_HEIGHT 91 | 14a y 14e: 2 rojos; 14f y GUARD R17 verdes |
+| m4 | 59 25% en producción | 14e, 14f, enlace R17 primera parada: 3 rojos |
+| m5 | D9 45% en producción | 14e, 14f, enlace R17 segunda parada: 3 rojos |
+| m6 | 35%/65% en producción y ambas cadenas de HERO | Solo enlace R17: 1 rojo, HERO completo verde; ambas ramas observadas (detalle arriba) |
+| m7 | Modelo vuelve a tramos 104/160, conserva referencias 7.75/6.74 | Solo modelo light/dark: 2 rojos; HERO y enlace R17 verdes |
+| r1 | alto 431 en carta y bloque canónico | Solo ancla R20, aserción positiva alto 430: 1 rojo |
+| r2 | velo 91 px en ambas copias | Solo ancla R20, aserción positiva velo 90 px: 1 rojo |
+| r3 | degradado 101 px en ambas copias | Solo ancla R20, aserción positiva degradado 100 px: 1 rojo |
+| r4 | (antes alto 330) al final de frase 2 en ambas copias | Solo ancla R20, not alto 330: 1 rojo |
+| r5 | (antes 130 px) al final de frase 2 en ambas copias | Solo ancla R20, not 130 px: 1 rojo |
+| r6 | (antes 160 px) al final de frase 2 en ambas copias | Solo ancla R20, not 160 px: 1 rojo |
+
+Las seis r mantienen en verde la comparación byte a byte y los otros dos it anteriores de R20. Cada una falla precisamente en su propia aserción (no en otra anterior). Las catorce pasadas requeridas (m2 se desdobla) y la observación adicional de segunda rama de m6 están medidas, con nombres y Tests arriba. Todas revertidas; índice vacío. Re-medidas las 18 cuentas tras la última reversión: iguales a las de E.
+
+#### Cadena A–E preservada
+
+| Paso | Commit | Tests medidos sobre su árbol |
+|---|---|---|
+| A | `21e404c3` | `12 failed, 76 passed, 88 total`, ocho it 14a–14h |
+| B | `1aa57420` | `13 failed, 76 passed, 89 total`, añade solo enlace R17 |
+| C | `0a630d4b` | `89 passed, 89 total` |
+| D | `288ad502` | `1 failed, 89 passed, 90 total`, solo ancla R20, alto 430 |
+| E | `5bc90baa` | `90 passed, 90 total`; hero-header-amendments `6 passed, 6 total` |
+
+Los cinco commits usan `git commit --only` y cada commit de test precede a su verde; los rojos de A, B y D se midieron antes de la producción/carta que los ponen verdes. No se ha reescrito ningún commit. No se necesitó refactor ni cambios adicionales de código.
+
+#### Cuentas originales de cierre, además de las 18 de A4
+
+Se repitieron las 21 cuentas anteriores de tasks, mismos comandos y directorios, con estos resultados:
+
+| Fila original de tasks | Resultado |
+|---|---|
+| 1 | 1 |
+| 2 | 1 |
+| 3 | 2 |
+| 4 | 9 |
+| 5 | 1 |
+| 6 | 2 |
+| 7 | 3 |
+| 8 | 1 |
+| 9 | 1 |
+| 10 | 0 |
+| 11 | 4 |
+| 12 | 8 |
+| 13 | 3 |
+| 14 | existen |
+| 15 | existen |
+| 16 | 6 |
+| 17 | 6 |
+| 18 | 1 |
+| 19 | 2 |
+| 20 | 0 |
+| 21 | 0 |
+
+La fila 13 original cuenta tres **líneas** con `Enmienda #195`, como antes de A4; la frase nueva usa `Enmienda A4 de #195` y no cambia esa cuenta. Las cuentas de la carta, producción y HERO/GUARD de A4 son las 18 de la tabla de E, con las tres correcciones documentadas por adendos 7 y 8.
+
+#### R21 — añadido A4 al checklist del humano (sin ejecutar ni firmar)
+
+El checklist histórico anterior corresponde al hero original de 330. Para la prueba actual, la altura es **430**, el degradado inferior **100 px** con paradas **24%/44%** y el velo **90 px**. La ejecución y la firma siguen siendo exclusivamente del humano:
+
+- [ ] En claro, oscuro y reduce motion, repetir foto oscura, clara y sin foto, con las interacciones y supuestos 2–5 del checklist anterior.
+- [ ] Añadir la foto real de 960×1280 (3:4), recorte alineado arriba y hero de 430; comprobar nombre y raza sobre el degradado de 100 px y fila superior bajo velo de 90 px con el insets.top real.
+- [ ] Con nombre de 25 caracteres, anotar si ocupa dos líneas y cómo queda sobre la zona casi sin degradado. Es observación para el humano, no criterio de aceptación ni autorización para añadir numberOfLines.
+
+No se decide ni se modifica O1 (retorno de 160 ms de la burbuja) ni numberOfLines={1}. No se marca R21 ni la feature como done.
+
+#### Cierre automático completo de A4 — 2026-10-23
+
+- Suite móvil completa, una corrida: `bun run test --testTimeout=30000 > ../progress/a4-full-195.log 2>&1`, exit **0**, sin pipe. `Test Suites: 134 passed, 134 total`; **`Tests: 4381 passed, 4381 total`**; `Snapshots: 1 passed, 1 total`; 143.221 s. Frente a la base A4 134/4379/1: **+2 tests**, mismas suites y snapshot. No hubo rojos ni reintentos por carga. No se relajó ningún test de #190.
+- Guardas y mapa en verde dentro de esa corrida: `design-drift`, `consistency-classnames`, `legibility-classnames`, `hero-header-amendments`, `tab-headers-canvas`, `alerts-canvas-fidelity`, `ui-language`, `home-photo-hero-canvas`, `screens/map/index.test.tsx` y `components/__tests__/pet-map.test.tsx`. HERO + GUARD había dado 90/90 tras E y hero-header-amendments 6/6, sin tocar ese fichero.
+- Tipos: primero `test ! -e .expo/types/router.d.ts`, exit **0**; luego `bun run typecheck > ../progress/a4-typecheck-195.log 2>&1`, exit **0**, log solo `$ tsc --noEmit`. No se borró ni generó router.d.ts.
+- Lint: `bunx expo lint --no-cache > ../progress/a4-lint-195.log 2>&1 && test ! -s ../progress/a4-lint-195.log`, exit **0**, log **0 bytes**, sin pipe ni prettier.
+- `graphify update . > progress/a4-graphify-195.log 2>&1`, exit **0**. Extracción AST sin LLM: grafo actualizado en graphify-out (ignorado), 27515 nodos, 35560 aristas, 1827 comunidades. Veinte SQL omitidos por la dependencia tree_sitter_sql ausente (mismo límite del cierre anterior); no se instalaron dependencias ni se ejecutó etiquetado semántico. Los nombres de 122 comunidades se recalcularon por su nodo principal.
+- Re-medidas las cuentas al terminar: **21 originales y 18 A4 correctas**, con fila 7 = **4** (adendo 7) y filas 8/13 = **1/1** (adendo 8). No quedan mutaciones en código, tests o docs; todo salvo reporte y trazabilidad es idéntico a HEAD tras E. Índice vacío antes del commit final.
+
+Inventario completo de los siete ficheros de implementación/reporte contra `98c7a192` (incluye el cierre de trazabilidad que se commitea junto a este reporte), todos de la lista cerrada:
+
+- `docs/ui-guidelines.md`
+- `mobile-pet-tracker/src/__tests__/home-photo-hero-canvas.test.ts`
+- `mobile-pet-tracker/src/components/__tests__/pet-hero-header.test.tsx`
+- `mobile-pet-tracker/src/components/pet-hero-header.tsx`
+- `progress/impl_mobile-home-photo-hero-canvas.md`
+- `specs/mobile-home-photo-hero-canvas/design.md`
+- `specs/mobile-home-photo-hero-canvas/traceability.md`
+
+El diff global desde `98c7a192` también muestra `progress/current.md` y los handoffs 6, 7 y 8: son commits del leader anteriores al inicio de esta continuación (`59aebafc`), no cambios de implementación. El diff desde ese inicio sobre current/history/STATUS/feature_list es vacío. No se modificaron esos archivos, la PR, el canvas ni R21. La comparación del inventario se acota a los ficheros del implementer y deja explícita esa procedencia.
+
+Trazabilidad A4 completada en R1, R2, R3, R17, R18 y R20 con los hashes A–E; hashes viejos y filas ajenas conservados. R1–R20 quedan verificados automáticamente con A4; R21 permanece para el humano. El reporte mantiene la evidencia histórica de las dos paradas y añade sus resoluciones mediante los adendos 7 y 8. No se ha ejecutado init.sh, ni backend, push, merge, rebase, publicación ni cambios de dependencias.
+
+**Estado vigente: cierre automático de A4 completado.** E, las trece mutaciones (m2 en dos pasadas), suite completa, tipos, lint, graphify, cuentas e inventario están hechos. El commit final `docs(home)` contiene únicamente trazabilidad y este reporte, mediante `git commit --only`. Tras verificar ese commit y el árbol limpio, la última acción crea `progress/impl_mobile-home-photo-hero-canvas.done`, ignorado, con una única línea que apunta a este reporte. No se marca la feature done ni se sustituye la revisión/smoke del leader y del humano.
