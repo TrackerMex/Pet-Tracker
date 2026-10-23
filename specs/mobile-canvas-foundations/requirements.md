@@ -571,6 +571,16 @@ igual + ` (enmendado por #197 R<n>)`), nunca lo borra. Si al correr la suite
 aparece en rojo un `it` que no está aquí, se para y se anota en
 `progress/impl_mobile-canvas-foundations.md`: no se enmienda por cuenta propia.
 
+**Enmienda mecánica permitida** (añadida el 2026-10-23 tras el bloqueo de R7,
+firma delegada): si un `it` no inventariado se pone rojo **solo** porque
+compara contra el literal exacto que el R-id quita o sustituye (la misma
+cadena que una fila de esta tabla cambia, directa o a través de una constante
+o helper del propio test), el implementador lo enmienda en el commit rojo de
+ese R, con el sufijo, y lo apunta en la tabla «Enmiendas mecánicas» de su
+informe (fichero › describe › it, literal viejo → nuevo, R). Cualquier otro
+rojo no inventariado (otra aserción, excepción, timeout, import roto) sigue
+siendo motivo de parada.
+
 | Archivo › describe › it | Hoy afirma | Pasa a afirmar | R |
 |-------------------------|-----------|----------------|---|
 | GC › `R1: global.css define los tokens light exactos del diseño` › `mapea la paleta Figma Make a los tokens de heroui-native` | `border`/`separator` `rgba(13,17,23,0.07)`, `danger` `#EF4444`, `warning` `#F59E0B`, `warning-strong` `#92610A` | `rgba(13,17,23,0.08)`, `#D92D20`, `#B54708`, `#93370D` | R1 |
@@ -586,6 +596,7 @@ aparece en rojo un `it` que no está aquí, se para y se anota en
 | AC › `#174 R11` › `declara el secundario compacto y el reintento sin labio (enmendado por #180 R12)` | línea del ack con `border-b-5` | línea nueva de design.md bloque «Punto 13» | R21 |
 | CL › tipo `LipStyles`; `#177 R2.1: pide los dos tokens del labio` | `['lip', 'lip-gray']` y 3 claves | 7 tokens y 11 claves | R6 |
 | AR › `#178 R10` › `pinta Vacuna seleccionada con cápsula, labio y texto sin emoji`, `invierte las recetas al seleccionar Otro`; `#123 R5` › `abre en el 24, con el mínimo en el instante actual y la hora a las 09:00` | `className` del chip con `border-b-3 border-black/25` | `className` sin labio + `style` `primaryCompact` en el seleccionado | R7 |
+| AR › constante `CHIP_SELECTED` que comparte `expectAdvanceChips` (17 `it`: `#125 R3` ×9, `#125 R4` ×3, `#125 R6` ×2 y `#178 R12` ×3: `pinta el aviso por defecto y los demás chips con sus recetas y pesos`, `invierte la receta del seleccionado y su etiqueta al elegir un día antes`, `usa el aviso efectivo cuando los tres anticipados ya pasaron`) | `'h-9.5 items-center justify-center rounded-full px-3.5 bg-accent border-b-3 border-black/25'` | `'h-9.5 items-center justify-center rounded-full px-3.5 bg-accent'` con `// (enmendado por #197 R7)` en esa línea; los 17 `it` no cambian de nombre (la enmienda es de la constante) | R7 |
 | AL › `#78 R6` › `it.each` del ack y `alterna el tercer hijo entre ack y la píldora traducida (enmendado por #174 R7) (enmendado por #174 R8)` | `className` con `border-b-5` | sin `border-b-5` + `style` `neutralCompact` | R8 |
 | CN › `#174 R8: el ack de fila es el secundario compacto` | receta con `border-b-5` | receta sin labio + `chunkyLip.neutralCompact` | R8 |
 | MS › `#147 R4` › `el owner ve Editar en cada fila y Añadir comida bajo la lista`; `#179 R5` › `compone el resumen con eyebrow y tres columnas de valor y etiqueta`; `#179 R6` › `pinta los valores del segundo plan en sus propias columnas`; `#179 R7` › `el dueño ve Añadir y Generar en ese orden fuera de los horarios` | `h-9.75 … border-b-5`, `h-13.5 … border-b-6`, resumen `border-b-5 border-black/25` | `h-9`, `h-12.5`, resumen sin labio; `style` de R9 | R9 |
