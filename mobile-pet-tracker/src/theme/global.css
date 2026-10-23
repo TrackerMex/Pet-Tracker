@@ -26,6 +26,12 @@
   --tracking-caps: 0.06em;
   --tracking-eyebrow: 0.08em;
   --tracking-code: 0.14em;
+  --tracking-display: -0.5px;
+  --tracking-section: 1.5px;
+  --tracking-mono: 0.04em;
+  --tracking-dialog: -0.01em;
+  --leading-body: 1.4;
+  --leading-note: 1.45;
   --text-2xs: 10px;
   --text-13: 13px;
   --text-15: 15px;
