@@ -1,9 +1,10 @@
+import * as motion from '../theme/motion';
+
 declare function require(moduleName: 'fs'): { readFileSync: (path: string, encoding: 'utf8') => string };
 declare function require(moduleName: 'path'): { join: (...paths: string[]) => string };
 
 const { readFileSync } = require('fs');
 const { join } = require('path');
-import * as motion from '../theme/motion';
 
 jest.mock('react-native-reanimated', () => ({
   ...jest.requireActual('react-native-reanimated'),
