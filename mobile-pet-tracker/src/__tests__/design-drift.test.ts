@@ -50,9 +50,9 @@ describe('#178 R2: enmienda de fidelidad al canvas en Recordatorios', () => {
     expect(radios).toContain('`rounded-22` (22 px)');
   });
 
-  it('C: coloca la receta del chip seleccionado antes de Sin labio', () => {
+  it('C: coloca la receta del chip seleccionado antes de Sin labio (enmendado por #197 R21)', () => {
     const buttons = charter.slice(charter.indexOf('13. **Botón con cuerpo**'));
-    const chip = '    - **Chip seleccionado** (fidelidad al canvas, #178): cápsula `rounded-full bg-accent border-b-3 border-black/25`; el chip sin seleccionar no lleva labio.';
+    const chip = '    - **Chip seleccionado** (fidelidad al canvas, #178; labio por estilo, #197): cápsula `rounded-full bg-accent` con `style={chunkyLip.primaryCompact}`, un labio de 3 px que cuelga fuera del alto; el chip sin seleccionar no lleva labio.';
     expect(buttons.split(chip)).toHaveLength(2);
     expect(buttons.indexOf(chip)).toBeLessThan(buttons.indexOf('- **Sin labio**:'));
   });
@@ -62,7 +62,7 @@ describe('#179 R2: enmienda de fidelidad al canvas en Horario e Historial', () =
   const charter = readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
   const heading = '## Enmienda de fidelidad al canvas (2026-10-13)';
   const radiusRule = 'Fuera de la escala, por fidelidad al canvas (#179): `rounded-10` (10 px), «Editar» de la fila de Horario; `rounded-14` (14 px), mosaico de la fila y botones de acción de Horario y horas del panel del día de Historial; `rounded-24` (24 px), resumen de Horario y calendario y panel del día de Historial, que son `View` y no `Card` porque `twMerge` no sustituye `rounded-card` por un radio con nombre de valor.';
-  const actionRule = '    - **Secundarios de Horario** (fidelidad al canvas, #179): «Editar» `h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface` y «Añadir comida» `h-13.5 rounded-14 border-2 border-b-6 border-lip-gray bg-surface`, con el labio dentro del alto; «Generar plan» es tonal de la categoría violeta y sin labio, porque el labio del artboard (`rgba(91,63,163,0.35)`) no tiene token.';
+  const actionRule = '    - **Secundarios de Horario** (fidelidad al canvas, #179; labio por estilo, #197): «Editar» `h-9 rounded-10 border-2 border-lip-gray bg-surface` con `style={chunkyLip.neutralCompact}` y «Añadir comida» `h-12.5 rounded-14 border-2 border-lip-gray bg-surface` con `style={chunkyLip.neutral}`, con el labio colgando fuera del alto; el resumen verde lleva `chunkyLip.summary`; «Generar plan» es tonal de la categoría violeta y sigue sin labio hasta #200.';
 
   it('conserva las directivas, las frases y los tres tamaños de Horario', () => {
     expect(charter.split(heading)).toHaveLength(2);
@@ -91,7 +91,7 @@ describe('#179 R2: enmienda de fidelidad al canvas en Horario e Historial', () =
     expect(radios.split(radiusRule)).toHaveLength(2);
   });
 
-  it('sitúa la receta de secundarios de Horario antes de Sin labio', () => {
+  it('sitúa la receta de secundarios de Horario antes de Sin labio (enmendado por #197 R21)', () => {
     const actions = charter.slice(charter.indexOf('13. **Botón con cuerpo**'));
     expect(actions.split(actionRule)).toHaveLength(2);
     expect(actions.indexOf(actionRule)).toBeLessThan(actions.indexOf('- **Sin labio**:'));

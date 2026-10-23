@@ -78,7 +78,7 @@ const NEUTRAL_ROWS = [
 const primaryIds = CTA_ROWS.map(([, anchor]) => idOf(anchor)).sort();
 const neutralIds = NEUTRAL_ROWS.map(([, anchor]) => idOf(anchor)).sort();
 const ctaFiles = [...new Set(CTA_ROWS.map(([path]) => path))].sort(); // #191 R11
-const consumers = [...ctaFiles, 'screens/reminders/index.tsx'].sort();
+const consumers = [...ctaFiles, 'screens/reminders/index.tsx', 'screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx'].sort();
 const neutralInventory = ['${rowId}-ack', 'add-meal-time-button', 'alert-detail-view-map', 'docs-upload-cancel', 'forgot-resend', 'geofence-editor-delete', 'meal-time-edit-${index}', 'reminders-delete-cancel', 'secondary.testID', 'welcome-have-account'];
 const radii = {
   'screens/edit-profile/index.tsx': 1, // #194 R6
@@ -166,10 +166,10 @@ it('#177 R6.2: recuentos de etiquetas (enmendado por #189 R7) (enmendado por #18
   expect(count(/text-17 font-extrabold text-foreground/g)).toBe(3 + 3);
   expect(count(/<Text className="text-17 font-bold text-accent-strong">/g)).toBe(0 + 1);
 });
-it('#177 R7.1: inventarios de los labios de borde restantes (enmendado por #189 R13)', () => {
+it('#177 R7.1: inventarios de los labios de borde restantes (enmendado por #189 R13) (enmendado por #197 R10)', () => {
   expect(inventory(/border-b-4/g)).toEqual({});
-  expect(inventory(/border-black\/25/g)).toEqual({ 'screens/add-reminder/index.tsx': 1, 'screens/meal-schedule/index.tsx': 1 });
-  expect(inventory(/\bborder-b-6\b/g)).toEqual({ 'screens/meal-schedule/index.tsx': 1 });
+  expect(inventory(/border-black\/25/g)).toEqual({});
+  expect(inventory(/\bborder-b-6\b/g)).toEqual({});
   expect(count(/border-lip-gray/g)).toBe(10 + 1); // #189 R13
 });
 it('#177 R7.2: inventarios de las dos recetas de primario', () => {
@@ -180,32 +180,34 @@ it('#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por
   expect(inventory(/\brounded-16\b/g)).toEqual(radii);
   expect(count(/\brounded-16\b/g)).toBe(26 + 1 + 1 + 1 + 2); // #194 R6 // #191 R11 // #189 R7; #189 R13
 });
-it('#177 R7.4: solo la definición y los diecisiete consumidores usan el hook', () => {
+it('#177 R7.4: solo la definición y los diecisiete consumidores usan el hook (enmendado por #197 R10)', () => {
   expect(Object.keys(inventory(/useChunkyLip/g)).sort()).toEqual([...consumers, 'theme/chunky-lip.ts'].sort());
   for (const path of consumers) expect((readSource(path).match(/const chunkyLip = useChunkyLip\(\);/g) ?? []).length).toBe(1);
 });
-it('#177 R7.5: inventario de los tres estilos y el tile (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20)', () => {
+it('#177 R7.5: inventario de los tres estilos y el tile (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20) (enmendado por #197 R10)', () => {
   expect(inventory(/style=\{(?:chunkyLip\.primary|(?:atLimit|name\.trim\(\) === '') \? KEEP_OPACITY : \[chunkyLip\.primary, KEEP_OPACITY\])\}/g)).toEqual(Object.fromEntries(ctaFiles.map(path => [path, path === 'screens/add-pet/index.tsx' ? 2 : 1])));
-  expect(inventory(/style=\{(?:chunkyLip\.neutral|\[chunkyLip\.neutral, KEEP_OPACITY\])\}/g)).toEqual(Object.fromEntries(NEUTRAL_ROWS.map(([path]) => [path, 1]).sort()));
+  expect(inventory(/style=\{(?:chunkyLip\.neutral|\[chunkyLip\.neutral, KEEP_OPACITY\])\}/g)).toEqual(Object.fromEntries([...NEUTRAL_ROWS.map(([path]) => [path, 1]), ['screens/meal-schedule/index.tsx', 1]].sort()));
   expect(inventory(/style=\{chunkyLip\.primaryCompact\}/g)).toEqual({ 'screens/reminders/index.tsx': 1 });
   expect(inventory(/chunkyLip\.primary\b/g)).toEqual(Object.fromEntries(ctaFiles.map(path => [path, path === 'screens/forgot/index.tsx' || path === 'screens/add-pet/index.tsx' ? 2 : 1])));
+  expect(inventory(/style=\{chunkyLip\.neutralCompact\}/g)).toEqual({ 'screens/alerts/index.tsx': 1, 'screens/meal-schedule/index.tsx': 1 });
+  expect(inventory(/chunkyLip\.summary/g)).toEqual({ 'screens/meal-schedule/index.tsx': 1 });
 });
 it.each([
-  ['primary', primaryIds], ['neutral', neutralIds], ['primaryCompact', ['reminders-add-link']],
-] as const)('#177 R8.1: solo la tabla recibe chunkyLip.%s (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20)', (style, ids) => {
+  ['primary', primaryIds], ['neutral', [...neutralIds, 'add-meal-time-button'].sort()], ['primaryCompact', ['reminders-add-link']],
+] as const)('#177 R8.1: solo la tabla recibe chunkyLip.%s (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20) (enmendado por #197 R10)', (style, ids) => {
   expect(idsWhere(tag => tag.includes(`style={chunkyLip.${style}}`) || (style === 'primary' && /style=\{(?:atLimit|name\.trim\(\) === '') \? KEEP_OPACITY : \[chunkyLip\.primary, KEEP_OPACITY\]\}/.test(tag)) || (style === 'neutral' && tag.includes('style={[chunkyLip.neutral, KEEP_OPACITY]}')))).toEqual(ids);
 });
-it('#177 R8.2: Alertas y Horario quedan fuera de useChunkyLip', () => {
-  for (const path of ['screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx']) expect(readSource(path)).not.toMatch(/chunkyLip|useChunkyLip/);
+it('#197 R10: Alertas y Horario usan useChunkyLip', () => {
+  for (const path of ['screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx']) expect(readSource(path)).toContain('const chunkyLip = useChunkyLip();');
 });
 it.each([
-  ['screens/alerts/index.tsx', 'h-8.5 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3'],
-  ['screens/meal-schedule/index.tsx', 'h-13.5 flex-1 rounded-14 border-2 border-b-6 border-lip-gray bg-surface'],
-  ['screens/meal-schedule/index.tsx', 'h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3.5'],
-  ['screens/add-reminder/index.tsx', 'border-b-3 border-black/25'],
-  ['screens/meal-schedule/index.tsx', 'border-b-5 border-black/25'],
+  ['screens/alerts/index.tsx', 'h-8.5 rounded-10 border-2 border-lip-gray bg-surface px-3'],
+  ['screens/meal-schedule/index.tsx', 'h-12.5 flex-1 rounded-14 border-2 border-lip-gray bg-surface'],
+  ['screens/meal-schedule/index.tsx', 'h-9 rounded-10 border-2 border-lip-gray bg-surface px-3.5'],
+  ['screens/add-reminder/index.tsx', "const SELECTED_CHIP = 'h-9.5 items-center justify-center rounded-full px-3.5 bg-accent';"],
+  ['screens/meal-schedule/index.tsx', 'gap-2 rounded-24 bg-accent p-4'],
   ['screens/meal-schedule/index.tsx', 'variant="tertiary"'],
-])('#177 R8.3: %s conserva el ancla positiva %s', (path, anchor) => {
+])('#177 R8.3: %s conserva el ancla positiva %s (enmendado por #197 R10)', (path, anchor) => {
   expect(readSource(path).split(anchor).length - 1).toBe(1);
 });
 it('#177 R8.4: destructivos, tonales y reintentos no reciben labio (enmendado por #189 R13)', () => {
@@ -219,15 +221,15 @@ it('#177 R8.4: destructivos, tonales y reintentos no reciben labio (enmendado po
 });
 
 const preservedLines = [
-  "    - **Chip seleccionado** (fidelidad al canvas, #178): cápsula `rounded-full bg-accent border-b-3 border-black/25`; el chip sin seleccionar no lleva labio.",
-  "    - **Secundarios de Horario** (fidelidad al canvas, #179): «Editar» `h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface` y «Añadir comida» `h-13.5 rounded-14 border-2 border-b-6 border-lip-gray bg-surface`, con el labio dentro del alto; «Generar plan» es tonal de la categoría violeta y sin labio, porque el labio del artboard (`rgba(91,63,163,0.35)`) no tiene token.",
+  "    - **Chip seleccionado** (fidelidad al canvas, #178; labio por estilo, #197): cápsula `rounded-full bg-accent` con `style={chunkyLip.primaryCompact}`, un labio de 3 px que cuelga fuera del alto; el chip sin seleccionar no lleva labio.",
+  "    - **Secundarios de Horario** (fidelidad al canvas, #179; labio por estilo, #197): «Editar» `h-9 rounded-10 border-2 border-lip-gray bg-surface` con `style={chunkyLip.neutralCompact}` y «Añadir comida» `h-12.5 rounded-14 border-2 border-lip-gray bg-surface` con `style={chunkyLip.neutral}`, con el labio colgando fuera del alto; el resumen verde lleva `chunkyLip.summary`; «Generar plan» es tonal de la categoría violeta y sigue sin labio hasta #200.",
   "    - **Sin labio**: los tonales (`bg-accent-soft`, `bg-default`), los",
-  "    - **Secundario compacto de fila** (#174): el ack de cada fila abierta de Alertas lleva `h-8.5 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3`, etiqueta `text-xs font-extrabold text-foreground` y `hitSlop={TOUCH_SLOP}` (34 + 12 = 46 de diana). Es la única excepción a la receta del secundario neutro; el inventario de #166 R3 lo lista por su `testID`.",
+  "    - **Secundario compacto de fila** (#174; labio por estilo, #197): el ack de cada fila abierta de Alertas lleva `h-8.5 rounded-10 border-2 border-lip-gray bg-surface px-3` con `style={chunkyLip.neutralCompact}`, etiqueta `text-xs font-extrabold text-foreground` y `hitSlop={TOUCH_SLOP}` (34 + 12 = 46 de diana). Es la única excepción a la receta del secundario neutro; el inventario de #166 R3 lo lista por su `testID`.",
   "    - Primario del detalle de alerta (#180): ack con labio, h-14 rounded-16, etiqueta text-17 font-extrabold; el secundario «Ver en el mapa» es h-13 rounded-16 con el icono Map."
 ];
 const guidelines = readFileSync(join(process.cwd(), '..', 'docs/ui-guidelines.md'), 'utf8');
 const bodyRule = guidelines.split('13. **Botón con cuerpo**')[1].split('## Animación (decisiones por defecto)')[0];
-it('#177 R11.1: la carta declara la receta global y conserva sus excepciones', () => {
+it('#177 R11.1: la carta declara la receta global y conserva sus excepciones (enmendado por #197 R21)', () => {
   for (const literal of [
     'sombra sólida sin desenfoque', '`--lip`', '`--color-lip`', '`--color-lip-gray`', 'fuera del cuerpo',
     '`h-14 rounded-16 bg-accent`', '`style={chunkyLip.primary}`', '`text-17 font-extrabold text-accent-foreground`',
@@ -267,7 +269,7 @@ it('#177 R11.5: la spec de #166 añade el bloque de sustitución', () => {
   for (const literal of ['R2', 'R3', 'reemplaza', 'consistency-classnames.test.ts', 'en su sitio', 'mobile-chunky-cta-canvas-fidelity']) expect(section).toContain(literal);
   expect(section).toMatch(/^- \[[ xX]\] Enmienda #177 aprobada por humano/m);
 });
-it('#177 R12.1/R12.2: los dieciocho ficheros respetan los guards de la carta', () => {
+it('#177 R12.1/R12.2: los dieciocho ficheros respetan los guards de la carta (enmendado por #197 R10)', () => {
   for (const path of [...consumers, 'theme/chunky-lip.ts']) {
     const source = readSource(path);
     expect(source).not.toMatch(/(?:bg|text|border|rounded|h|w|size|p|m|gap)-\[[^\]]+\]/);
@@ -276,7 +278,7 @@ it('#177 R12.1/R12.2: los dieciocho ficheros respetan los guards de la carta', (
   }
   expect('chunky-lip.ts useChunkyLip').not.toContain('shadow');
 });
-it('#177 R12.3: cada comentario de la feature nombra su requisito', () => {
+it('#177 R12.3: cada comentario de la feature nombra su requisito (enmendado por #197 R10)', () => {
   for (const path of [...consumers, 'theme/chunky-lip.ts']) expect(readSource(path)).not.toMatch(/#177(?! R\d)/);
   expect((readSource('screens/welcome/index.tsx').match(/text-accent-strong/g) ?? []).length).toBe(2);
 });
