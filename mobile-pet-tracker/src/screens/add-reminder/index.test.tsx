@@ -43,6 +43,13 @@ jest.mock('reicon-react-native', () => {
   };
 });
 
+const mockChunkyLip = {
+  primary: { boxShadow: [{ offsetX: 0, offsetY: 4, color: 'mock-lip' }] },
+  primaryCompact: { boxShadow: [{ offsetX: 0, offsetY: 3, color: 'mock-lip' }] },
+};
+
+jest.mock('../../theme/chunky-lip', () => ({ useChunkyLip: () => mockChunkyLip }));
+
 jest.mock('../../api/reminders', () => ({
   createReminder: jest.fn(),
 }));
@@ -589,9 +596,11 @@ describe('#178 R10: marco, título y chips de tipo del canvas', () => {
     }
   });
 
-  it('pinta Vacuna seleccionada con cápsula, labio y texto sin emoji', () => {
+  it('pinta Vacuna seleccionada con cápsula, labio y texto sin emoji (enmendado por #197 R7)', () => {
     const chip = screen.getByTestId('type-chip-vaccine');
-    expect(chip.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-accent border-b-3 border-black/25');
+    expect(chip.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-accent');
+    expect(chip.props.style).toEqual(mockChunkyLip.primaryCompact);
+    expect(screen.getByTestId('type-chip-custom').props.style).toBeUndefined();
     expect(chip.props.hitSlop).toEqual(TOUCH_SLOP);
     expect(chip.props.accessibilityState).toEqual({ selected: true });
     expect(within(chip).getByText('Vacuna').props.className).toBe('text-sm font-extrabold text-accent-foreground');
@@ -610,11 +619,13 @@ describe('#178 R10: marco, título y chips de tipo del canvas', () => {
     }
   });
 
-  it('invierte las recetas al seleccionar Otro', async () => {
+  it('invierte las recetas al seleccionar Otro (enmendado por #197 R7)', async () => {
     await fireEvent.press(screen.getByTestId('type-chip-custom'));
     const selected = screen.getByTestId('type-chip-custom');
     const idle = screen.getByTestId('type-chip-vaccine');
-    expect(selected.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-accent border-b-3 border-black/25');
+    expect(selected.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-accent');
+    expect(selected.props.style).toEqual(mockChunkyLip.primaryCompact);
+    expect(idle.props.style).toBeUndefined();
     expect(selected.props.accessibilityState).toEqual({ selected: true });
     expect(within(selected).getByText('Otro').props.className).toBe('text-sm font-extrabold text-accent-foreground');
     expect(idle.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-category-blue');
@@ -695,7 +706,7 @@ describe('#123: pickers de fecha de Nuevo recordatorio en Android a las 20:00 de
   });
 
   describe('#123 R5: el calendario de Nuevo recordatorio abre en el día local; el mínimo y la hora no se convierten', () => {
-    it('abre en el 24, con el mínimo en el instante actual y la hora a las 09:00', async () => {
+    it('abre en el 24, con el mínimo en el instante actual y la hora a las 09:00 (enmendado por #197 R7)', async () => {
       await renderAddReminder();
       await waitFor(() => expect(screen.getByTestId('date-field')).toBeVisible());
       await fireEvent.press(screen.getByTestId('date-field'));
@@ -705,6 +716,11 @@ describe('#123: pickers de fecha de Nuevo recordatorio en Android a las 20:00 de
       await fireEvent(picker, 'onDismiss');
       await fireEvent.press(screen.getByTestId('time-field'));
       expect((within(screen.getByTestId('expo-ui-picker-host')).getByTestId('time-picker').props.value as Date).getTime()).toBe(new Date(2026, 8, 24, 9, 0).getTime());
+      for (const minutes of [0, 1440, 4320, 10080]) {
+        const chip = screen.getByTestId(`advance-chip-${minutes}`);
+        expect(chip.props.style).toEqual(minutes === 10080 ? mockChunkyLip.primaryCompact : undefined);
+        expect(chip.props.className).not.toMatch(/border-b-3|border-black\/25/);
+      }
     });
   });
 });
