@@ -166,6 +166,7 @@ jest.mock('reicon-react-native', () => {
     Syringe: mockIcon('icon-syringe'),
     Bacteria: mockIcon('icon-bacteria'),
     Pill: mockIcon('icon-pill'),
+    Plus: mockIcon('icon-plus'),
     Stethoscope: mockIcon('icon-stethoscope'),
     Bone: mockIcon('icon-bone'),
     Bell: mockIcon('icon-bell'),
@@ -188,7 +189,7 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
   });
 
-  it('compone el selector y la campana como dos hijos en ese orden', async () => {
+  it('compone el selector y la campana como dos hijos en ese orden (enmendado por #195 R14) (enmendado por #195 R12)', async () => {
     await renderHome();
 
     const actions = await screen.findByTestId('home-hero-actions');
@@ -199,16 +200,16 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
       throw new Error('Expected element children');
     }
     expect(switcherWrapper.props.className).toBe('flex-1');
-    expect(within(switcherWrapper).getByTestId('pet-chip-pet-1')).toBeVisible();
+    expect(within(switcherWrapper).getByTestId('pet-chip-pet-1')).toBeOnTheScreen();
     expect(bellChild.props.testID).toBe('home-alerts-bell');
 
     const bell = within(actions).getByTestId('home-alerts-bell');
     expect(bell.props.accessibilityRole).toBe('button');
     expect(bell.props.className).toBe(
-      'size-11 items-center justify-center rounded-full',
+      'size-11 items-center justify-center rounded-full bg-glass-surface-strong',
     );
     const icon = within(bell).getByTestId('icon-bell');
-    expect(icon.props.size).toBe(24);
+    expect(icon.props.size).toBe(22);
     expect(icon.props.color).toBeDefined();
   });
 
@@ -222,7 +223,7 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
     expect(mockRouter.push).toHaveBeenCalledWith('/alerts');
   });
 
-  it('#121 R1: usa la ruta real sin cast Href y conserva el feedback de pulsado, acotado a su tag de apertura, con ancla única (#122 R1)', () => {
+  it('#121 R1: usa la ruta real sin cast Href y conserva el feedback de pulsado, acotado a su tag de apertura, con ancla única (#122 R1) (enmendado por #195 R12)', () => {
     const source = readFileSync(
       join(process.cwd(), 'src/screens/home/index.tsx'),
       'utf8',
@@ -242,14 +243,12 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
     // #122 R1: the slice assumes one anchor. A second copy (a decoy, the other
     // branch of a ternary, a comment) would be the one sliced.
     expect(source.lastIndexOf('testID="home-alerts-bell"')).toBe(anchor);
-    expect(block).toMatch(
-      /style=\{\(\{ pressed \}\) => \(\{ opacity: pressed \? 0\.8 : 1 \}\)\}/,
-    );
+    expect(block).toMatch(/<GlassCircle\b/);
     // #124 R1: this matches the whole file, so any other copy of the icon lends
     // it the green. The colour itself is locked in the tree by the #124 R1
     // describe below. This line stays for what the tree cannot see: a platform
     // branch, or a CSS variable name written by hand.
-    expect(source).toContain('<Bell size={24} color={muted} />');
+    expect(source).toContain('<Bell size={22} strokeWidth={2} color={foreground} />');
   });
 
   it('#122 R2: la campana baja a opacidad 0.8 mientras se pulsa', async () => {
@@ -266,7 +265,7 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
     expect(bell).toHaveStyle({ opacity: 0.8 });
   });
 
-  describe('#124 R1: el icono de la campana se pinta con la tinta muted', () => {
+  describe('#124 R1: el icono de la campana se pinta con la tinta foreground', () => {
     beforeEach(() => {
       // #124 R1: each CSS variable resolves to its own name, so muted and
       // accent-strong stop being the same fallback colour in the tree.
@@ -279,16 +278,16 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
       jest.restoreAllMocks();
     });
 
-    it('sin alertas abiertas', async () => {
+    it('sin alertas abiertas (enmendado por #195 R12)', async () => {
       await renderHome();
       const bell = await screen.findByTestId('home-alerts-bell');
 
       expect(within(bell).getByTestId('icon-bell').props.color).toBe(
-        '--color-muted',
+        '--color-foreground',
       );
     });
 
-    it('con alertas abiertas', async () => {
+    it('con alertas abiertas (enmendado por #195 R12)', async () => {
       mockListAlerts.mockResolvedValue({
         kind: 'ok',
         items: [makeAlert()],
@@ -300,7 +299,7 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
       await within(bell).findByTestId('home-alerts-dot');
 
       expect(within(bell).getByTestId('icon-bell').props.color).toBe(
-        '--color-muted',
+        '--color-foreground',
       );
     });
   });
@@ -490,13 +489,13 @@ describe('R6: home carga pets y selecciona', () => {
     expect(screen.getByTestId('home-loading')).toBeVisible();
   });
 
-  it('pads the content below the status bar with the top safe-area inset', async () => {
+  it('pads the content below the status bar with the top safe-area inset (enmendado por #195 R15)', async () => {
     mockListPets.mockReturnValue(pending<PetsState>());
 
     await renderHome();
 
     expect(screen.getByTestId('screen-home').props.contentContainerStyle).toEqual({
-      gap: 16,
+      gap: 14,
       paddingBottom: 120,
     });
     expect(screen.getByTestId('home-states').props.style).toEqual({
@@ -555,14 +554,14 @@ describe('R6: home carga pets y selecciona', () => {
     expect(mockGetDailyActivity).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1');
   });
 
-  it('selects a pressed pet and reloads its detail and activity', async () => {
+  it('selects a pressed pet and reloads its detail and activity (enmendado por #195 R14)', async () => {
     mockListPets.mockResolvedValue({
       kind: 'ok',
       pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo' })],
     });
 
     await renderHome();
-    await waitFor(() => expect(screen.getByTestId('pet-chip-pet-1')).toBeVisible());
+    await waitFor(() => expect(screen.getByTestId('pet-chip-pet-1')).toBeOnTheScreen());
     await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
 
     await waitFor(() => {
@@ -833,7 +832,7 @@ describe('#73 R9: la pildora del hero y collar-status nacen del mismo estado', (
         esn: 'ACT-001',
       },
       'En línea',
-      'bg-success',
+      'bg-accent',
     ],
   ];
 
@@ -851,7 +850,7 @@ describe('#73 R9: la pildora del hero y collar-status nacen del mismo estado', (
     mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
   });
 
-  it.each(states)('%s -> pildora "%s" con punto %s', async (device, label, dotClass) => {
+  it.each(states)('%s -> pildora "%s" con punto %s (enmendado por #195 R7)', async (device, label, dotClass) => {
     mockGetPet.mockResolvedValue({
       kind: 'ok',
       pet: makePet({ device }),
@@ -1501,7 +1500,7 @@ describe('R10: preserva la mascota durante el refetch', () => {
     jest.restoreAllMocks();
   });
 
-  it('does not replace a new selection while the stale pet list refreshes', async () => {
+  it('does not replace a new selection while the stale pet list refreshes (enmendado por #195 R14)', async () => {
     const existingPet = makePet({ id: 'pet-old' });
     const createdPet = makePet({ id: 'pet-new', name: 'Nala' });
     const selectPet = jest.fn();
@@ -1542,7 +1541,7 @@ describe('R10: preserva la mascota durante el refetch', () => {
     );
 
     expect(selectPet).not.toHaveBeenCalled();
-    expect(screen.getByTestId(`pet-chip-${existingPet.id}`)).toBeVisible();
+    expect(screen.getByTestId(`pet-chip-${existingPet.id}`)).toBeOnTheScreen();
 
     await act(async () => {
       resolvePets({ kind: 'ok', pets: [existingPet, createdPet] });
@@ -1674,7 +1673,7 @@ describe('R5: Home usa el hero compartido', () => {
     mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
   });
 
-  it('monta el hero con el selector dentro y sin rastro de la pet card', async () => {
+  it('monta el hero con el selector dentro y sin rastro de la pet card (enmendado por #195 R14)', async () => {
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
 
     await renderHome();
@@ -1682,8 +1681,8 @@ describe('R5: Home usa el hero compartido', () => {
     await screen.findByTestId('pet-hero-media');
     const hero = screen.getByTestId('pet-hero');
     expect(within(hero).getByTestId('pet-hero-media')).toBeVisible();
-    expect(within(hero).getByTestId('pet-hero-slot')).toBeVisible();
-    expect(within(hero).getByTestId('pet-chip-pet-1')).toBeVisible();
+    expect(within(hero).getByTestId('pet-hero-slot')).toBeOnTheScreen();
+    expect(within(hero).getByTestId('pet-chip-pet-1')).toBeOnTheScreen();
     expect(screen.queryByTestId('pet-card')).toBeNull();
     expect(screen.queryByTestId('pet-card-photo')).toBeNull();
     expect(screen.queryByTestId('pet-card-name')).toBeNull();
@@ -1693,14 +1692,14 @@ describe('R5: Home usa el hero compartido', () => {
     expect(screen.queryByTestId('pet-card-retry')).toBeNull();
   });
 
-  it('conserva gap y paddingBottom y saca el padding horizontal a un envoltorio', async () => {
+  it('conserva gap y paddingBottom y saca el padding horizontal a un envoltorio (enmendado por #195 R15)', async () => {
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
 
     await renderHome();
 
     await screen.findByTestId('collar-card');
     expect(screen.getByTestId('screen-home').props.contentContainerStyle).toEqual({
-      gap: 16,
+      gap: 14,
       paddingBottom: 120,
     });
     expect(screen.getByTestId('home-content').props.style).toEqual({
@@ -1712,7 +1711,7 @@ describe('R5: Home usa el hero compartido', () => {
     ).toBeVisible();
   });
 
-  it('conserva intactos los testID que la spec no sustituye', async () => {
+  it('conserva intactos los testID que la spec no sustituye (enmendado por #195 R14)', async () => {
     mockGetPet.mockResolvedValue({
       kind: 'ok',
       pet: makePet({
@@ -1735,10 +1734,10 @@ describe('R5: Home usa el hero compartido', () => {
       'collar-battery',
       'summary-card',
       'last-position-card',
-      'pet-avatar-fallback-pet-1',
     ]) {
       expect(screen.getByTestId(testId)).toBeVisible();
     }
+    expect(screen.getByTestId('pet-avatar-fallback-pet-1')).toBeOnTheScreen();
   });
 });
 
@@ -1759,7 +1758,7 @@ describe('R8: el error del detalle deja el selector alcanzable', () => {
     mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
   });
 
-  it('mantiene el hero y los chips montados cuando el detalle falla', async () => {
+  it('mantiene el hero y los chips montados cuando el detalle falla (enmendado por #195 R14)', async () => {
     mockGetPet.mockResolvedValue({ kind: 'unreachable', message: 'down' });
 
     await renderHome();
@@ -1767,8 +1766,8 @@ describe('R8: el error del detalle deja el selector alcanzable', () => {
     await waitFor(() => expect(screen.getByTestId('pet-hero-error')).toBeVisible());
     expect(screen.getByTestId('pet-hero')).toBeVisible();
     expect(screen.getByTestId('pet-hero-retry')).toBeVisible();
-    expect(screen.getByTestId('pet-chip-pet-1')).toBeVisible();
-    expect(screen.getByTestId('pet-chip-pet-2')).toBeVisible();
+    expect(screen.getByTestId('pet-chip-pet-1')).toBeOnTheScreen();
+    expect(screen.getByTestId('pet-chip-pet-2')).toBeOnTheScreen();
     expect(screen.getByTestId('pet-hero-skeleton')).toBeVisible();
   });
 
@@ -4558,7 +4557,7 @@ describe('#78 R11: el punto rojo sigue a las alertas abiertas', () => {
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
   });
 
-  it('pinta el punto y anuncia alertas sin leer cuando hay abiertas', async () => {
+  it('pinta el punto y anuncia alertas sin leer cuando hay abiertas (enmendado por #195 R12)', async () => {
     mockListAlerts.mockResolvedValue({
       kind: 'ok',
       items: [makeAlert()],
@@ -4570,7 +4569,7 @@ describe('#78 R11: el punto rojo sigue a las alertas abiertas', () => {
     const bell = await screen.findByTestId('home-alerts-bell');
     const dot = await within(bell).findByTestId('home-alerts-dot');
     expect(dot.props.className).toBe(
-      'absolute right-1 top-1 size-2.5 rounded-full bg-danger',
+      'absolute right-2.5 top-2.25 size-2.25 rounded-full border-2 border-background bg-danger',
     );
     expect(dot.children).toHaveLength(0);
     expect(bell.props.accessibilityLabel).toBe(es['home.alertsBellUnread']);
@@ -4850,7 +4849,6 @@ describe('#152 R5: la Home envuelve cada bloque en su entrada escalonada', () =>
   ];
 
   const homeEnteringIds = [
-    'pet-avatar-fallback-pet-1',
     'home-entrance-pingo', // (enmendado por #190 R1)
     'home-entrance-summary',
     'summary-reveal',
@@ -4895,12 +4893,12 @@ describe('#152 R5: la Home envuelve cada bloque en su entrada escalonada', () =>
     expect(screen.queryByTestId('home-entrance-last-position')).toBeNull();
   });
 
-  it('solo da entrada a los envoltorios, al fundido y al avatar del selector', async () => {
+  it('solo da entrada a los envoltorios y al fundido (enmendado por #195 R11)', async () => {
     await renderMotionHome();
     expect(enteringIds(screen.container)).toEqual(homeEnteringIds);
   });
 
-  it('no da entrada al hero con alertas abiertas', async () => {
+  it('no da entrada al hero con alertas abiertas (enmendado por #195 R11)', async () => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
     await renderMotionHome();
     await screen.findByTestId('home-alerts-dot');
@@ -5519,11 +5517,11 @@ describe('#181 R7: Inicio converge al crear la primera mascota', () => {
 describe('#190 R11: la burbuja sigue la receta del canvas', () => {
   beforeEach(setupHomeMotion);
 
-  it('usa View y Text de RN con las clases exactas y un único hijo', async () => {
+  it('usa View y Text de RN con las clases exactas y un único hijo (enmendado por #195 R16)', async () => {
     await renderHome();
     const text = await screen.findByTestId('home-pingo-text');
     const bubble = screen.getByTestId('home-pingo-bubble');
-    expect(bubble.props.className).toBe('flex-1 rounded-tile rounded-br-4 bg-surface px-3.5 py-3 shadow-sm');
+    expect(bubble.props.className).toBe('flex-1 rounded-tile rounded-br-4 border border-border bg-surface-secondary px-3.5 py-3');
     expect(bubble.children).toEqual([text]);
     expect(text.type).toBe('Text');
     expect(text.props.className).toBe('text-15 font-semibold leading-5.25 text-foreground');
@@ -5649,10 +5647,10 @@ describe('#190 R3: la fila alinea burbuja y pose al borde inferior', () => {
   });
 });
 
-describe('#190 R4: Pingo usa su pose decorativa de 64 px', () => {
+describe('#190 R4: Pingo usa su pose decorativa de 56 px', () => {
   beforeEach(setupHomeMotion);
 
-  it('pinta pingo-talk como único hijo directo del envoltorio y sin etiqueta', async () => {
+  it('pinta pingo-talk como único hijo directo del envoltorio y sin etiqueta (enmendado por #195 R16)', async () => {
     await renderHome();
     await screen.findByTestId('home-pingo-text');
     const pose = screen.getByTestId('home-pingo');
@@ -5660,7 +5658,7 @@ describe('#190 R4: Pingo usa su pose decorativa de 64 px', () => {
     expect(pose.props.source).toEqual([
       expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
     ]);
-    expect(pose.props.style).toEqual({ width: 64, height: 64 });
+    expect(pose.props.style).toEqual({ width: 56, height: 56 });
     expect(pose.props.accessibilityLabel).toBeUndefined();
   });
 });
@@ -5740,7 +5738,7 @@ describe('#190 R10: la frase usa los datos de Inicio y reacciona al idioma', () 
 describe('#190 R7: reduce motion conserva solo la entrada sin desplazamiento', () => {
   beforeEach(setupHomeMotion);
 
-  it('parte de translateY cero, conserva el fundido y no añade escala a la burbuja', async () => {
+  it('parte de translateY cero, conserva el fundido y no añade escala a la burbuja (enmendado por #195 R16)', async () => {
     mockUseReducedMotion.mockReturnValue(true);
     await renderHome();
     await screen.findByTestId('home-pingo-text');
@@ -5755,7 +5753,9 @@ describe('#190 R7: reduce motion conserva solo la entrada sin desplazamiento', (
     expect(jest.mocked(withSpring).mock.calls.map(([value]) => value)).toEqual([0]);
     const bubble = screen.getByTestId('home-pingo-bubble');
     expect(bubble.props.entering).toBeUndefined();
-    expect(bubble.props.style).toEqual({ borderCurve: 'continuous' });
+    const styles = [bubble.props.style].flat(Infinity);
+    expect(styles).toContainEqual({ borderCurve: 'continuous' });
+    expect(styles).toContainEqual({ opacity: 1, transform: [{ scale: 1 }] });
   });
 });
 
@@ -5786,5 +5786,136 @@ describe('#190 R5: la pose reutiliza PingoFloat', () => {
     expect(screen.getByTestId('home-pingo-float')).toHaveAnimatedStyle({ transform: [{ translateY: 0 }] }, { shouldMatchAllProps: true });
     expect(jest.mocked(withRepeat)).not.toHaveBeenCalledWith(-10, -1, true);
     expect(mockWithTiming.mock.calls.filter(([value]) => value === -10)).toEqual([]);
+  });
+});
+
+
+describe('#195 R11: selector de vidrio y botón de añadir mascota', () => {
+  beforeEach(setupHomeMotion);
+  afterEach(() => jest.restoreAllMocks());
+
+  it.each(['online', 'offline', null])('pinta el selector glass y el punto solo con conexión %s', async (connectivity) => {
+    const base = makeMotionPet();
+    const pet = makeMotionPet(82, { device: connectivity === null ? null : { ...base.device!, connectivity } });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    jest.spyOn(Uniwind, 'getCSSVariable').mockImplementation((token) => token);
+    await renderHome();
+    await screen.findByTestId('pet-hero-name');
+    const selected = screen.getByTestId('pet-chip-pet-1');
+    expect(selected.props.className).toBe('size-11 rounded-full border-2 border-accent bg-background p-0.5');
+    expect(selected).toBeOnTheScreen();
+    if (connectivity === 'online') expect(within(selected).getByTestId('pet-chip-online-pet-1')).toBeOnTheScreen();
+    else expect(within(selected).queryByTestId('pet-chip-online-pet-1')).toBeNull();
+    const add = screen.getByTestId('home-add-pet');
+    const row = selected.parent!;
+    expect(row.children).toEqual([selected, add]);
+    expect(add.props.accessibilityLabel).toBe(es['profile.addPet']);
+    expect(add.props.className).toBe('size-11 items-center justify-center rounded-full bg-glass-surface-strong');
+    const icon = within(add).getByTestId('icon-plus');
+    expect(add.children).toEqual([icon]);
+    expect(icon.props.size).toBe(20);
+    expect(icon.props.strokeWidth).toBe(2.4);
+    expect(icon.props.color).toBe('--color-muted');
+    await fireEvent.press(add);
+    expect(mockRouter.push.mock.calls).toEqual([['/pets/add']]);
+  });
+
+  it('el estado sin mascotas conserva su acción de alta', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderHome();
+    await screen.findByTestId('home-no-pets-screen');
+    await fireEvent.press(screen.getByText(es['profile.addPet']));
+    expect(mockRouter.push.mock.calls).toEqual([['/pets/add']]);
+    expect(screen.queryByTestId('home-add-pet')).toBeNull();
+  });
+});
+
+
+describe('#195 R12: campana de vidrio e indicador de alertas', () => {
+  beforeEach(() => {
+    setupHomeMotion();
+    jest.spyOn(Uniwind, 'getCSSVariable').mockImplementation((token) => token);
+  });
+  afterEach(() => jest.restoreAllMocks());
+  it.each([false, true])('con alertas abiertas %s mantiene icono, orden y navegación', async (unread) => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: unread ? [makeAlert()] : [], nextCursor: null });
+    await renderHome();
+    await screen.findByTestId('pet-hero-name');
+    const actions = screen.getByTestId('home-hero-actions');
+    const bell = within(actions).getByTestId('home-alerts-bell');
+    expect(actions.props.className).toBe('flex-row items-center gap-3');
+    expect(actions.children).toHaveLength(2);
+    expect(actions.children[1]).toBe(bell);
+    expect(actions.children[0]).toHaveProperty('props.className', 'flex-1');
+    expect(bell.props.className).toBe('size-11 items-center justify-center rounded-full bg-glass-surface-strong');
+    expect(bell.props.accessibilityLabel).toBe(es[unread ? 'home.alertsBellUnread' : 'home.alertsBell']);
+    const icon = within(bell).getByTestId('icon-bell');
+    expect(icon.props.size).toBe(22);
+    expect(icon.props.strokeWidth).toBe(2);
+    expect(icon.props.color).toBe('--color-foreground');
+    if (unread) {
+      const dot = await within(bell).findByTestId('home-alerts-dot');
+      expect(dot.props.className).toBe('absolute right-2.5 top-2.25 size-2.25 rounded-full border-2 border-background bg-danger');
+      expect(bell.children).toEqual([icon, dot]);
+    } else expect(bell.children).toEqual([icon]);
+    await fireEvent.press(bell);
+    expect(mockRouter.push.mock.calls).toEqual([['/alerts']]);
+  });
+});
+
+describe('#195 R15: hueco del hero y contenido que se desplaza', () => {
+  beforeEach(setupHomeMotion);
+  it('deja el hero primero y conserva el relleno interior y la holgura de la barra', async () => {
+    await renderMotionHome();
+    const hero = screen.getByTestId('pet-hero');
+    const content = screen.getByTestId('home-content');
+    expect(content.props.style).toEqual({ paddingHorizontal: 24, gap: 16 });
+    expect(content.parent).toBe(hero.parent);
+    expect(hero.parent!.children[0]).toBe(hero);
+    expect(screen.getByTestId('screen-home').props.contentContainerStyle).toEqual({ gap: 14, paddingBottom: 120 });
+  });
+  it('aplica también el hueco de 14 a las ramas de estado sin hero', async () => {
+    mockListPets.mockReturnValue(pending<PetsState>());
+    await renderHome();
+    await screen.findByTestId('home-loading');
+    expect(screen.getByTestId('screen-home').props.contentContainerStyle).toEqual({ gap: 14, paddingBottom: 120 });
+    expect(screen.getByTestId('home-states').props.style).toEqual({ paddingHorizontal: 24, paddingTop: 52, gap: 16 });
+    expect(screen.queryByTestId('pet-hero')).toBeNull();
+  });
+});
+
+describe('#195 R18: estados conservados de Inicio', () => {
+  beforeEach(setupHomeMotion);
+
+  it('conserva la carga de mascotas', async () => {
+    mockListPets.mockReturnValue(pending<PetsState>());
+    await renderHome();
+    expect(await screen.findByTestId('home-loading')).toBeVisible();
+    expect(screen.queryByTestId('pet-hero')).toBeNull();
+  });
+
+  it('conserva el error de mascotas y su reintento', async () => {
+    mockListPets.mockResolvedValue({ kind: 'unreachable', message: 'down' });
+    await renderHome();
+    expect(await screen.findByTestId('home-error')).toBeVisible();
+    expect(screen.getByTestId('home-retry')).toBeVisible();
+    expect(screen.queryByTestId('pet-hero')).toBeNull();
+  });
+
+  it('conserva el estado sin mascotas', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderHome();
+    expect(await screen.findByTestId('home-no-pets-screen')).toBeVisible();
+    expect(screen.getByTestId('home-empty')).toBeVisible();
+    expect(screen.queryByTestId('pet-hero')).toBeNull();
+  });
+
+  it('conserva el error de detalle con selector y skeleton alcanzables', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'unreachable', message: 'down' });
+    await renderHome();
+    expect(await screen.findByTestId('pet-hero-error')).toBeVisible();
+    expect(screen.getByTestId('pet-hero-retry')).toBeVisible();
+    expect(screen.getByTestId('pet-hero-skeleton')).toBeVisible();
+    expect(screen.getByTestId('pet-chip-pet-1')).toBeOnTheScreen();
   });
 });

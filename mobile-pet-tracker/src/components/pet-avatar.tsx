@@ -1,5 +1,5 @@
 import { blobatar } from 'blobatar';
-import { Image } from 'expo-image';
+import { Image, type ImageContentPosition } from 'expo-image';
 import { useState } from 'react';
 import { SvgXml } from 'react-native-svg';
 
@@ -16,6 +16,7 @@ export interface PetAvatarProps {
    * prefirmada cambia en cada firma: la caché de disco no acertaría nunca.
    */
   cacheKey?: string;
+  contentPosition?: ImageContentPosition;
   testID?: string;
 }
 
@@ -24,6 +25,7 @@ export function PetAvatar({
   photoUrl,
   size,
   cacheKey,
+  contentPosition,
   testID = 'pet-avatar',
 }: PetAvatarProps) {
   // Se guarda la URL que falló, no un booleano: así una URL recién firmada
@@ -35,6 +37,7 @@ export function PetAvatar({
       <Image
         testID={testID}
         contentFit="cover"
+        {...(contentPosition === undefined ? {} : { contentPosition })}
         source={cacheKey ? { uri: photoUrl, cacheKey } : { uri: photoUrl }}
         style={
           typeof size === 'number'

@@ -906,3 +906,19 @@ describe('#177 R1: global.css declara el labio del primario en los dos temas', (
     expect(variables).not.toHaveProperty('lip');
   });
 });
+
+
+describe('#195 R4: scrim y oscurecimiento de foto', () => {
+  it.each([['light', 'rgba(0,0,0,0)'], ['dark', 'rgba(0,0,0,0.14)']] as const)(
+    'declara ambas formas exactamente una vez en %s', (theme, dim) => {
+      const variant = extractVariant(theme);
+      expect(parseVariables(variant)).toMatchObject({
+        scrim: '#0D1117', 'color-scrim': '#0D1117',
+        'photo-dim': dim, 'color-photo-dim': dim,
+      });
+      for (const key of ['scrim', 'color-scrim', 'photo-dim', 'color-photo-dim']) {
+        expect(variant.split(`--${key}:`)).toHaveLength(2);
+      }
+    },
+  );
+});

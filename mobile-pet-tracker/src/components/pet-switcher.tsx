@@ -1,15 +1,19 @@
 import { Avatar } from 'heroui-native';
+import type { ReactNode } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
 import type { PetProfile } from '../api/types';
 import { CATEGORY_SLOTS } from '../utils/category-palette';
 import { PetAvatar } from './pet-avatar';
+import { GlassCircle } from './glass-circle';
 
 interface PetSwitcherProps {
   pets: PetProfile[];
   selectedPetId: string | null;
   onSelect: (petId: string) => void;
-  variant?: 'default' | 'avatars';
+  variant?: 'default' | 'avatars' | 'glass';
+  selectedOnline?: boolean;
+  trailing?: ReactNode;
 }
 
 export function PetSwitcher({
@@ -17,6 +21,8 @@ export function PetSwitcher({
   selectedPetId,
   onSelect,
   variant = 'default',
+  selectedOnline,
+  trailing,
 }: PetSwitcherProps) {
   if (variant === 'avatars') {
     return (
@@ -59,10 +65,56 @@ export function PetSwitcher({
   }
 
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-      <View className="flex-row gap-2">
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} className={variant === 'glass' ? '-m-1' : undefined}>
+      <View className={variant === 'glass' ? 'flex-row items-center gap-2 p-1' : 'flex-row gap-2'}>
         {pets.map((pet) => {
           const selected = pet.id === selectedPetId;
+
+          if (variant === 'glass' && !selected) {
+            return (
+              <GlassCircle
+                key={pet.id}
+                testID={`pet-chip-${pet.id}`}
+                accessibilityLabel={pet.name}
+                accessibilityState={{ selected: false }}
+                onPress={() => onSelect(pet.id)}
+              >
+                <Text testID={`pet-avatar-fallback-${pet.id}`} className="text-base font-extrabold text-foreground">
+                  {pet.name.charAt(0).toUpperCase()}
+                </Text>
+              </GlassCircle>
+            );
+          }
+
+          if (variant === 'glass' && selected) {
+            return (
+              <Pressable
+                key={pet.id}
+                testID={`pet-chip-${pet.id}`}
+                accessibilityLabel={pet.name}
+                accessibilityRole="button"
+                accessibilityState={{ selected: true }}
+                className="size-11 rounded-full border-2 border-accent bg-background p-0.5"
+                onPress={() => onSelect(pet.id)}
+              >
+                <View className="size-9 overflow-hidden rounded-full">
+                  <PetAvatar
+                    name={pet.name}
+                    photoUrl={pet.photoUrl}
+                    cacheKey={pet.id}
+                    size={36}
+                    testID={`pet-avatar-${pet.photoUrl ? 'image' : 'fallback'}-${pet.id}`}
+                  />
+                </View>
+                {selectedOnline ? (
+                  <View
+                    testID={`pet-chip-online-${pet.id}`}
+                    className="absolute -bottom-0.75 -right-0.75 size-3.5 rounded-full border-2 border-background bg-accent"
+                  />
+                ) : null}
+              </Pressable>
+            );
+          }
 
           return (
             <Pressable
@@ -92,6 +144,7 @@ export function PetSwitcher({
             </Pressable>
           );
         })}
+        {variant === 'glass' ? trailing : null}
       </View>
     </ScrollView>
   );

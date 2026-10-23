@@ -1,4 +1,5 @@
 import { useChunkyLip } from '../../theme/chunky-lip';
+import { BubblePop } from './bubble-pop';
 import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
@@ -26,6 +27,7 @@ import {
   Map,
   Moon,
   Pill,
+  Plus,
   Stethoscope,
   Syringe,
   Walk,
@@ -53,6 +55,7 @@ import {
   type PetHeroStatusTone,
 } from '../../components/pet-hero-header';
 import { PetSwitcher } from '../../components/pet-switcher';
+import { GlassCircle } from '../../components/glass-circle';
 import { PingoFloat } from '../../components/pingo-float';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import type { TranslationKey } from '../../i18n/catalog';
@@ -191,7 +194,7 @@ export function HomeScreen() {
     petId: string;
   } | null>(null);
   const insets = useSafeAreaInsets();
-  const [accent, success, warning, muted, vaccineInk, mealsInk] =
+  const [accent, success, warning, muted, vaccineInk, mealsInk, foreground] =
     useThemeColors([
       'accent-strong',
       'success',
@@ -199,6 +202,7 @@ export function HomeScreen() {
       'muted',
       'category-blue-strong',
       'category-rose-strong',
+      'foreground',
     ]);
   const quickActionInks = useThemeColors(
     QUICK_ACTIONS.map(({ slot }) => `category-${slot}-strong`),
@@ -312,6 +316,8 @@ export function HomeScreen() {
     }, [refetchDetail, refetchOpenAlerts, refetchPets]),
   );
 
+  const addPetLabel = t('profile.addPet');
+
   if (pets.data?.kind === 'ok' && pets.data.pets.length === 0) {
     return (
       <View testID="home-no-pets-screen" className="flex-1 items-center justify-center px-5 py-6 bg-background">
@@ -322,7 +328,7 @@ export function HomeScreen() {
           title={t('common.noPetsYet')}
           body={t('common.noPetsBody')}
           action={{
-            label: t('profile.addPet'),
+            label: addPetLabel,
             onPress: () => router.push('/pets/add'),
           }}
         />
@@ -336,7 +342,7 @@ export function HomeScreen() {
       className="flex-1 bg-background"
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{
-        gap: 16,
+        gap: 14,
         paddingBottom: insets.bottom + 96,
       }}
     >
@@ -369,28 +375,32 @@ export function HomeScreen() {
                 pets={petList}
                 selectedPetId={selectedPetId}
                 onSelect={selectPet}
+                variant="glass"
+                selectedOnline={connection === 'online'}
+                trailing={
+                  <GlassCircle testID="home-add-pet" accessibilityLabel={addPetLabel} onPress={() => router.push('/pets/add')}>
+                    <Plus size={20} strokeWidth={2.4} color={muted} />
+                  </GlassCircle>
+                }
               />
             </View>
-            <Pressable
+            <GlassCircle
               testID="home-alerts-bell"
-              accessibilityRole="button"
               accessibilityLabel={
                 hasOpenAlerts
                   ? t('home.alertsBellUnread')
                   : t('home.alertsBell')
               }
-              className="size-11 items-center justify-center rounded-full"
-              style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
               onPress={() => router.push('/alerts')}
             >
-              <Bell size={24} color={muted} />
+              <Bell size={22} strokeWidth={2} color={foreground} />
               {hasOpenAlerts ? (
                 <View
                   testID="home-alerts-dot"
-                  className="absolute right-1 top-1 size-2.5 rounded-full bg-danger"
+                  className="absolute right-2.5 top-2.25 size-2.25 rounded-full border-2 border-background bg-danger"
                 />
               ) : null}
-            </Pressable>
+            </GlassCircle>
           </View>
         </PetHeroHeader>
       ) : null}
@@ -435,20 +445,20 @@ export function HomeScreen() {
         {pingoPhrase !== null ? (
           <HomeEntrance index={0} testID="home-entrance-pingo">
             <View testID="home-pingo-phrase" className="flex-row items-end gap-2.5">
-              <View
+              <BubblePop
                 testID="home-pingo-bubble"
-                className="flex-1 rounded-tile rounded-br-4 bg-surface px-3.5 py-3 shadow-sm"
+                className="flex-1 rounded-tile rounded-br-4 border border-border bg-surface-secondary px-3.5 py-3"
                 style={CONTINUOUS_CORNER}
               >
                 <Text testID="home-pingo-text" className="text-15 font-semibold leading-5.25 text-foreground" selectable>
                   {t(pingoPhrase.labelKey, pingoPhrase.params)}
                 </Text>
-              </View>
+              </BubblePop>
               <PingoFloat testID="home-pingo-float">
                 <Image
                   testID="home-pingo"
                   source={require('../../../assets/images/pingo-talk.webp')}
-                  style={{ width: 64, height: 64 }}
+                  style={{ width: 56, height: 56 }}
                 />
               </PingoFloat>
             </View>

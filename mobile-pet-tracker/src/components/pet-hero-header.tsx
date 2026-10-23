@@ -3,42 +3,32 @@ import { useEffect, type ReactNode } from 'react';
 import { Text, View } from 'react-native';
 import Animated, {
   cancelAnimation,
-  Easing,
-  ReduceMotion,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
-  withRepeat,
-  withSequence,
   withTiming,
+  withDelay,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { PetProfile } from '../api/types';
+import { MOTION_CELEBRATION_EASE_OUT, MOTION_CELEBRATION_RISE_OFFSET_Y, MOTION_HERO_CAPTION_DELAY_MS, MOTION_HERO_FADE_MS, MOTION_HERO_PING_MS, MOTION_SURFACE_MS } from '../theme/motion';
 import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../theme/native-styles';
 import { useThemeColors } from '../theme/use-theme-colors';
 import { PetAvatar } from './pet-avatar';
+import { PingRing } from './ping-ring';
 
 /**
  * Alto visible de la fotografía. Valor de un solo uso y de un solo fichero: la
  * carta pide token a partir de la segunda repetición, y una clase arbitraria de
  * altura está prohibida. Se exporta para los tests, no para otros componentes.
  */
-export const PET_HERO_MEDIA_HEIGHT = 260;
+export const PET_HERO_MEDIA_HEIGHT = 430;
 
 /** Alto de cada franja de degradado entre la imagen y una banda opaca. */
-export const PET_HERO_FADE_HEIGHT = 64;
+export const PET_HERO_FADE_HEIGHT = 100
 
-/**
- * Pulso del punto 'en línea' (#73 E2): animate-pulse de Tailwind traducido a
- * Reanimated; misma cadencia que el pulse del Skeleton de heroui que ya vive
- * en este hero.
- */
-export const STATUS_DOT_PULSE = {
-  duration: 1000,
-  easing: Easing.bezier(0.4, 0, 0.6, 1),
-  reduceMotion: ReduceMotion.System,
-} as const;
+export const PET_HERO_SCRIM_HEIGHT = 90;
 
 const AnimatedView = Animated.createAnimatedComponent(View);
 
@@ -75,6 +65,11 @@ export const STATUS_TONE_CLASSES: Record<
   },
 };
 
+const HERO_TONE_CLASSES = {
+  ...STATUS_TONE_CLASSES,
+  success: { ...STATUS_TONE_CLASSES.success, surface: 'bg-surface-secondary', dot: 'bg-accent' },
+};
+
 export interface PetHeroHeaderProps {
   /** null mientras el detalle de la mascota no ha resuelto (R8). */
   pet: PetProfile | null;
@@ -99,32 +94,50 @@ export function PetHeroHeader({
   children,
 }: PetHeroHeaderProps) {
   const insets = useSafeAreaInsets();
-  const [background] = useThemeColors(['background']);
+  const [background, scrim] = useThemeColors(['background', 'scrim']);
   const reduceMotion = useReducedMotion();
-  const dotOpacity = useSharedValue(1);
-  const dotStyle = useAnimatedStyle(() => ({ opacity: dotOpacity.get() }));
-  const pulses = !reduceMotion && pet !== null && status?.tone === 'success';
-  const tone = STATUS_TONE_CLASSES[status?.tone ?? 'muted'];
+  const petId = pet?.id;
+  const photoOpacity = useSharedValue(reduceMotion || !pet ? 1 : 0);
+  const photoStyle = useAnimatedStyle(() => ({ opacity: photoOpacity.get() }));
+  const slotProgress = useSharedValue(reduceMotion ? 1 : 0);
+  const captionProgress = useSharedValue(reduceMotion ? 1 : 0);
+  const slotStyle = useAnimatedStyle(() => ({
+    opacity: slotProgress.get(),
+    transform: [{ translateY: MOTION_CELEBRATION_RISE_OFFSET_Y * (1 - slotProgress.get()) }],
+  }));
+  const captionStyle = useAnimatedStyle(() => ({
+    opacity: captionProgress.get(),
+    transform: [{ translateY: MOTION_CELEBRATION_RISE_OFFSET_Y * (1 - captionProgress.get()) }],
+  }));
 
   useEffect(() => {
-    if (!pulses) return;
-
-    dotOpacity.set(
-      withRepeat(
-        withSequence(
-          withTiming(0.5, STATUS_DOT_PULSE),
-          withTiming(1, STATUS_DOT_PULSE),
-        ),
-        -1,
-        false,
-      ),
-    );
-
+    if (reduceMotion) {
+      slotProgress.set(1);
+      captionProgress.set(1);
+      return;
+    }
+    const timing = { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_SURFACE_MS };
+    slotProgress.set(withTiming(1, timing));
+    captionProgress.set(withDelay(MOTION_HERO_CAPTION_DELAY_MS, withTiming(1, timing)));
     return () => {
-      cancelAnimation(dotOpacity);
-      dotOpacity.set(1);
+      cancelAnimation(slotProgress);
+      cancelAnimation(captionProgress);
     };
-  }, [pulses, dotOpacity]);
+  }, [captionProgress, reduceMotion, slotProgress]);
+
+
+
+  const pulses = !reduceMotion && pet !== null && status?.tone === 'success';
+  const tone = HERO_TONE_CLASSES[status?.tone ?? 'muted'];
+
+  useEffect(() => {
+    if (reduceMotion || !petId) {
+      photoOpacity.set(1);
+      return;
+    }
+    photoOpacity.set(0);
+    photoOpacity.set(withTiming(1, { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_HERO_FADE_MS }));
+  }, [petId, photoOpacity, reduceMotion]);
 
   return (
     <View
@@ -136,22 +149,16 @@ export function PetHeroHeader({
       }
       style={CONTINUOUS_CORNER}
     >
-      {children ? (
-        <View
-          testID="pet-hero-slot"
-          className="bg-background px-6 pb-3"
-          style={{ paddingTop: insets.top + 12 }}
-        >
-          {children}
-        </View>
-      ) : null}
+      <View testID="pet-hero-frame" style={{ height: PET_HERO_MEDIA_HEIGHT }}>
 
-      <View style={{ height: PET_HERO_MEDIA_HEIGHT }}>
+
+        <AnimatedView testID="pet-hero-photo" className="absolute inset-0" style={photoStyle}>
         {pet ? (
           <PetAvatar
             name={pet.name}
             photoUrl={pet.photoUrl}
             cacheKey={pet.id}
+            contentPosition="top"
             size={{ width: '100%', height: PET_HERO_MEDIA_HEIGHT }}
             testID="pet-hero-media"
           />
@@ -163,6 +170,13 @@ export function PetHeroHeader({
           />
         )}
 
+        </AnimatedView>
+        <View
+          testID="pet-hero-dim"
+          className="absolute inset-0 bg-photo-dim"
+          pointerEvents="none"
+        />
+
         {/*
           La parada transparente se escribe con el propio color de fondo y alfa
           0, nunca con `transparent`: `transparent` es negro con alfa cero y
@@ -171,29 +185,41 @@ export function PetHeroHeader({
         */}
         {children ? (
           <View
-            testID="pet-hero-fade-top"
+            testID="pet-hero-scrim-top"
+            pointerEvents="none"
             className="absolute inset-x-0 top-0"
             style={{
-              height: PET_HERO_FADE_HEIGHT,
-              experimental_backgroundImage: `linear-gradient(to bottom, ${background} 0%, ${background}00 100%)`,
+              height: PET_HERO_SCRIM_HEIGHT,
+              experimental_backgroundImage: `linear-gradient(to bottom, ${scrim}80 0%, ${scrim}00 100%)`,
             }}
           />
         ) : null}
         <View
           testID="pet-hero-fade-bottom"
+          pointerEvents="none"
           className="absolute inset-x-0 bottom-0"
           style={{
             height: PET_HERO_FADE_HEIGHT,
-            experimental_backgroundImage: `linear-gradient(to bottom, ${background}00 0%, ${background} 100%)`,
+            experimental_backgroundImage: `linear-gradient(to bottom, ${background}00 0%, ${background}59 24%, ${background}D9 44%, ${background} 100%)`,
           }}
         />
-      </View>
 
-      <View
+      {children ? (
+        <AnimatedView
+          testID="pet-hero-slot"
+          className="absolute inset-x-4"
+          style={[{ top: insets.top + 12 }, slotStyle]}
+        >
+          {children}
+        </AnimatedView>
+      ) : null}
+
+      <AnimatedView
         testID="pet-hero-caption"
-        className="flex-row items-end justify-between gap-4 bg-background px-6 pb-4 pt-1"
+        className="absolute inset-x-4 bottom-1.5 flex-row items-end justify-between gap-3"
+        style={captionStyle}
       >
-        <View className="flex-1 gap-1">
+        <View className="min-w-0 flex-1 gap-1">
           {pet ? (
             <>
               {status ? (
@@ -201,23 +227,24 @@ export function PetHeroHeader({
                   testID="pet-hero-status"
                   accessible
                   accessibilityLabel={status.label}
-                  className={`flex-row items-center gap-1 self-start rounded-full px-2.5 py-0.5 ${tone.surface}`}
+                  className={`flex-row items-center gap-1.5 self-start rounded-full px-2.5 py-0.75 ${tone.surface}`}
                 >
-                  {pulses ? (
-                    <AnimatedView
-                      testID="pet-hero-status-dot"
-                      className={`size-1.5 rounded-full ${tone.dot}`}
-                      style={dotStyle}
-                    />
-                  ) : (
-                    <View
-                      testID="pet-hero-status-dot"
-                      className={`size-1.5 rounded-full ${tone.dot}`}
-                    />
-                  )}
+                  <View
+                    testID="pet-hero-status-dot"
+                    className={`relative size-2 rounded-full ${tone.dot}`}
+                  >
+                    {pulses ? (
+                      <PingRing
+                        testID="pet-hero-status-ping"
+                        className="inset-0 rounded-full bg-accent"
+                        delay={0}
+                        timing={{ ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_HERO_PING_MS }}
+                      />
+                    ) : null}
+                  </View>
                   <Text
                     testID="pet-hero-status-text"
-                    className={`text-2xs font-semibold ${tone.text}`}
+                    className={`text-xs font-bold ${tone.text}`}
                   >
                     {status.label}
                   </Text>
@@ -225,11 +252,11 @@ export function PetHeroHeader({
               ) : null}
               <Text
                 testID="pet-hero-name"
-                className="text-3xl font-black text-foreground"
+                className="text-3xl font-black leading-8.5 tracking-title text-foreground"
               >
                 {pet.name}
               </Text>
-              <Text testID="pet-hero-breed" className="font-normal text-muted">
+              <Text testID="pet-hero-breed" className="text-sm font-normal text-muted">
                 {pet.breed ?? '—'}
               </Text>
             </>
@@ -242,22 +269,23 @@ export function PetHeroHeader({
         </View>
 
         {highlight ? (
-          <View className="items-end gap-1">
+          <View className="items-end">
             <Text
               testID="pet-hero-highlight-value"
-              className="text-3xl font-black text-foreground"
+              className="text-28 font-black leading-8 text-foreground"
               style={TABULAR_NUMS}
             >
               {highlight.value}
             </Text>
             <Text
               testID="pet-hero-highlight-label"
-              className="text-xs font-medium text-muted"
+              className="text-xs font-semibold text-muted"
             >
               {highlight.label}
             </Text>
           </View>
         ) : null}
+      </AnimatedView>
       </View>
     </View>
   );
