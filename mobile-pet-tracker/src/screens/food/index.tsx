@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { useAnimatedProps, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
-import { ChevronRight, Clock, Sparkles } from 'reicon-react-native';
+import { Check, ChevronRight, Clock, Sparkles } from 'reicon-react-native';
 import Svg, { Circle } from 'react-native-svg';
 
 import {
@@ -27,6 +27,7 @@ import { useChunkyLip } from '../../theme/chunky-lip';
 import { MOTION_RING_DELAY_MS, MOTION_RING_TIMING } from '../../theme/motion';
 import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
+import { CATEGORY_SLOTS } from '../../utils/category-palette';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const KCAL_RING_CIRCUMFERENCE = 2 * Math.PI * 44;
@@ -37,11 +38,12 @@ function isPetsError(state: PetsState): boolean {
 
 export function FoodScreen() {
   const chunkyLip = useChunkyLip();
-  const [muted, accent, foreground, accentForeground] = useThemeColors([
+  const [muted, accent, foreground, accentForeground, greenStrong] = useThemeColors([
     'muted',
     'accent-strong',
     'foreground',
     'accent-foreground',
+    'category-green-strong',
   ]);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
@@ -297,22 +299,24 @@ export function FoodScreen() {
                     <View
                       key={`${mealTime}-${index}`}
                       testID={`meal-row-${index}`}
-                      style={CONTINUOUS_CORNER}
-                      className={
-                        served
-                          ? 'flex-row items-center gap-3 rounded-xl bg-surface-secondary p-3'
-                          : 'flex-row items-center gap-3 rounded-xl bg-default p-3'
-                      }
+                      className={index === 0
+                        ? 'flex-row items-center gap-3 py-2'
+                        : 'flex-row items-center gap-3 border-t border-border py-2'}
                     >
-                      <View className="size-9 items-center justify-center rounded-full bg-surface">
-                        <Clock size={17} color={served ? accent : muted} />
+                      <View
+                        testID={`meal-tile-${index}`}
+                        style={CONTINUOUS_CORNER}
+                        className={served
+                          ? `size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS.green.surface}`
+                          : 'size-9 items-center justify-center rounded-xl bg-default'}
+                      >
+                        {served
+                          ? <Check size={18} strokeWidth={2.6} color={greenStrong} />
+                          : <Clock size={18} strokeWidth={2.4} color={muted} />}
                       </View>
-                      <View className="flex-1 gap-0.5">
-                        <Text className="font-bold text-foreground">
-                          {mealTime}
-                        </Text>
-                        <Text className="text-xs font-normal text-muted">
-                          {portionGrams} g
+                      <View className="flex-1">
+                        <Text className="text-15 font-extrabold text-foreground" style={TABULAR_NUMS}>
+                          {mealTime} <Text testID={`meal-portion-${index}`} className="font-semibold text-muted">· {portionGrams} g</Text>
                         </Text>
                       </View>
                       <Pressable
@@ -330,20 +334,15 @@ export function FoodScreen() {
                         })}
                         onPress={() => void toggleMeal(mealTime, served)}
                       >
-                        <Text
-                          testID={
-                            served
-                              ? `meal-served-${index}`
-                              : `meal-pending-${index}`
-                          }
-                          className={
-                            served
-                              ? 'rounded-full bg-surface px-2 py-1 text-2xs font-bold text-accent-strong'
-                              : 'rounded-full bg-surface px-2 py-1 text-2xs font-bold text-muted'
-                          }
-                        >
-                          {served ? t('food.served') : t('food.pending')}
-                        </Text>
+                        {served ? (
+                          <View testID={`meal-served-${index}`} className={`rounded-full px-2.5 py-1 ${CATEGORY_SLOTS.green.surface}`}>
+                            <Text className={`text-xs font-extrabold ${CATEGORY_SLOTS.green.ink}`}>{t('food.served')}</Text>
+                          </View>
+                        ) : (
+                          <View testID={`meal-pending-${index}`} className="h-8 justify-center rounded-full bg-accent px-3" style={chunkyLip.primaryCompact}>
+                            <Text className="text-xs font-extrabold text-accent-foreground">{t('food.markServedAction')}</Text>
+                          </View>
+                        )}
                       </Pressable>
                     </View>
                   );
