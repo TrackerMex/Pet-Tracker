@@ -249,3 +249,13 @@ describe('#197 R16: geometría del interruptor', () => {
     for (const literal of ['h-7 w-12', 'h-5.5 w-5.5', 'left: { value: 3 }']) expect(source).toContain(literal);
   });
 });
+
+describe('#197 R19: cabecera del canvas', () => {
+  it('#197 R19: la cabecera es la del canvas', () => {
+    const canvas = artboard('Documentos');
+    for (const literal of ['margin-left: -10px', 'stroke-width="2.4"', 'font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--muted)', 'font-size: 26px; font-weight: 900; letter-spacing: -0.02em']) expect(canvas).toContain(literal);
+    const source = readSource('components/screen-header.tsx');
+    expect(source).toContain('-ml-2.5');
+    expect(source).toContain('strokeWidth={2.4}');
+  });
+});
