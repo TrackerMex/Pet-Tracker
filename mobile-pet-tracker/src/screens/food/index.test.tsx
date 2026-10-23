@@ -111,12 +111,13 @@ jest.mock('react-native-svg', () => {
 jest.mock('reicon-react-native', () => {
   const { View } = jest.requireActual('react-native');
   const icon = (testID: string) =>
-    function MockIcon({ color }: { color?: string }) {
-      return <View testID={testID} style={{ color }} />;
+    function MockIcon({ color, size, strokeWidth }: { color?: string; size?: number; strokeWidth?: number }) {
+      return <View testID={testID} style={{ color }} {...{ color, size, strokeWidth }} />;
     };
 
   return {
     ChevronRight: icon('food-icon-chevron-right'),
+    Check: icon('food-icon-check'),
     Clock: icon('food-icon-clock'),
     ForkKnife: icon('food-icon-fork-knife'),
     Sparkles: icon('food-icon-sparkles'),
@@ -389,7 +390,7 @@ describe('R5: plan del día con horarios y warnings', () => {
     });
   });
 
-  it('renders kcal, grams, ordered meals, portions, and local-time badges', async () => {
+  it('renders kcal, grams, ordered meals, portions, and local-time badges (enmendado por #200 R6)', async () => {
     mockGetNutritionPlan.mockResolvedValue({
       kind: 'ok',
       plan: makePlan({ servedToday: ['07:30'] }),
@@ -412,14 +413,14 @@ describe('R5: plan del día con horarios y warnings', () => {
     ]);
 
     const breakfast = within(screen.getByTestId('meal-row-0'));
-    expect(breakfast.getByText('07:30')).toBeVisible();
-    expect(breakfast.getByText('94 g')).toBeVisible();
+    expect(breakfast.getByText('07:30 · 94 g')).toBeVisible();
+    expect(breakfast.getByText('· 94 g')).toBeVisible();
     expect(screen.getByTestId('meal-served-0')).toHaveTextContent('Servido');
 
     const dinner = within(screen.getByTestId('meal-row-1'));
-    expect(dinner.getByText('19:30')).toBeVisible();
-    expect(dinner.getByText('94 g')).toBeVisible();
-    expect(screen.getByTestId('meal-pending-1')).toHaveTextContent('Pendiente');
+    expect(dinner.getByText('19:30 · 94 g')).toBeVisible();
+    expect(dinner.getByText('· 94 g')).toBeVisible();
+    expect(screen.getByTestId('meal-pending-1')).toHaveTextContent('Marcar servido');
 
     await fireEvent.press(screen.getByTestId('meal-schedule-link'));
     expect(mockRouter.push).toHaveBeenCalledWith('/meal-schedule');
@@ -513,7 +514,7 @@ describe('#98 R4: el estado servido sale de servedToday, no del reloj', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('pinta badges y contador desde servedToday con el reloj del dispositivo en cualquier hora', async () => {
+  it('pinta badges y contador desde servedToday con el reloj del dispositivo en cualquier hora (enmendado por #200 R6)', async () => {
     mockGetNutritionPlan.mockResolvedValue({
       kind: 'ok',
       plan: makePlan({ servedToday: [] }),
@@ -525,8 +526,8 @@ describe('#98 R4: el estado servido sale de servedToday, no del reloj', () => {
     );
     expect(screen.getAllByTestId(/^meal-pending-/)).toHaveLength(2);
     expect(screen.queryAllByTestId(/^meal-served-/)).toHaveLength(0);
-    for (const row of screen.getAllByTestId(/^meal-row-/)) {
-      expect(row.props.className).toContain('bg-default');
+    for (const [index, row] of screen.getAllByTestId(/^meal-row-/).entries()) {
+      expect(row.props.className).toBe(index === 0 ? 'flex-row items-center gap-3 py-2' : 'flex-row items-center gap-3 border-t border-border py-2');
       expect(within(row).getByTestId('food-icon-clock').props.style).toEqual({
         color: 'muted',
       });
@@ -544,10 +545,10 @@ describe('#98 R4: el estado servido sale de servedToday, no del reloj', () => {
     );
     expect(screen.getAllByTestId(/^meal-served-/)).toHaveLength(2);
     expect(screen.queryAllByTestId(/^meal-pending-/)).toHaveLength(0);
-    for (const row of screen.getAllByTestId(/^meal-row-/)) {
-      expect(row.props.className).toContain('bg-surface-secondary');
-      expect(within(row).getByTestId('food-icon-clock').props.style).toEqual({
-        color: 'accent-strong',
+    for (const [index, row] of screen.getAllByTestId(/^meal-row-/).entries()) {
+      expect(row.props.className).toBe(index === 0 ? 'flex-row items-center gap-3 py-2' : 'flex-row items-center gap-3 border-t border-border py-2');
+      expect(within(row).getByTestId('food-icon-check').props.style).toEqual({
+        color: 'category-green-strong',
       });
     }
   });
@@ -1626,5 +1627,58 @@ describe('#200 R5: tarjeta de comidas', () => {
   ])('#200 R5: la tarjeta de comidas es la del canvas (%s)', async (id, className) => {
     await renderFood();
     expect((await screen.findByTestId(id)).props.className).toBe(className);
+  });
+});
+
+
+describe('#200 R6: filas del canvas', () => {
+  beforeEach(() => {
+    setupFood168();
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan({ servedToday: ['07:30'] }) });
+  });
+  it.each([
+    [0, 'flex-row items-center gap-3 py-2'],
+    [1, 'flex-row items-center gap-3 border-t border-border py-2'],
+  ])('#200 R6: la primera fila no lleva borde y las siguientes sí (%s)', async (index, className) => {
+    await renderFood();
+    expect((await screen.findByTestId(`meal-row-${index}`)).props.className).toBe(className);
+  });
+  it.each([
+    [0, 'size-9 items-center justify-center rounded-xl bg-category-green', 'food-icon-check', 2.6, 'category-green-strong'],
+    [1, 'size-9 items-center justify-center rounded-xl bg-default', 'food-icon-clock', 2.4, 'muted'],
+  ] as const)('#200 R6: el tile dice servido o pendiente (%s)', async (index, className, iconID, strokeWidth, color) => {
+    await renderFood();
+    await screen.findByTestId(`meal-row-${index}`);
+    const tile = screen.getByTestId(`meal-tile-${index}`, { includeHiddenElements: true });
+    expect(tile.props.className).toBe(className);
+    expect(tile).toHaveStyle(CONTINUOUS_CORNER);
+    expect(foodChild(screen.getByTestId(`meal-row-${index}`), 0).props.testID).toBe(`meal-tile-${index}`);
+    const icon = within(tile).getByTestId(iconID, { includeHiddenElements: true });
+    expect(icon.props).toMatchObject({ size: 18, strokeWidth, color });
+  });
+  it('#200 R6: la hora anida la ración', async () => {
+    await renderFood();
+    const hour = await screen.findByText('07:30 · 94 g');
+    expect(hour.props.className).toBe('text-15 font-extrabold text-foreground');
+    expect(hour).toHaveStyle({ fontVariant: ['tabular-nums'] });
+    const portion = within(hour).getByTestId('meal-portion-0');
+    expect(portion.props.className).toBe('font-semibold text-muted');
+    expect(portion).toHaveTextContent('· 94 g');
+  });
+  it.each([
+    ['meal-served-0', 'rounded-full px-2.5 py-1 bg-category-green', 'text-xs font-extrabold text-category-green-strong', 'Servido'],
+    ['meal-pending-1', 'h-8 justify-center rounded-full bg-accent px-3', 'text-xs font-extrabold text-accent-foreground', 'Marcar servido'],
+  ])('#200 R6: servida es píldora verde y pendiente es botón con labio (%s)', async (id, className, textClass, label) => {
+    await renderFood();
+    const pill = await screen.findByTestId(id);
+    expect(pill.type).toBe('View');
+    expect(pill.props.className).toBe(className);
+    expect(within(pill).getByText(label).props.className).toBe(textClass);
+    if (id === 'meal-pending-1') {
+      const { result } = await renderHook(() => useChunkyLip());
+      expect(pill).toHaveStyle(result.current.primaryCompact);
+      expect(es['food.markServedAction']).toBe('Marcar servido');
+      expect(en['food.markServedAction']).toBe('Mark served');
+    }
   });
 });

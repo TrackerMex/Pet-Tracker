@@ -213,7 +213,7 @@ export const R6_FOOD: UseRow[] = [
   { file: 'src/screens/food/index.tsx', key: 'food.markServed' },
   { file: 'src/screens/food/index.tsx', key: 'food.undoServed' },
   { file: 'src/screens/food/index.tsx', key: 'food.couldNotUpdateMeal' },
-  { file: 'src/screens/food/index.tsx', key: 'food.pending' },
+  { file: 'src/screens/food/index.tsx', key: 'food.markServedAction' },
   { file: 'src/screens/food/index.tsx', key: 'food.served' },
   { file: 'src/screens/food/index.tsx', key: 'food.aiRecommendation' },
   { file: 'src/screens/food/index.tsx', key: 'food.noMealPlanYet' },
