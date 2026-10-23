@@ -78,3 +78,11 @@ export function fmtDayMonthLong(date: string, locale: string): string {
     month: 'long',
   });
 }
+
+export function fmtMonthShort(date: string, locale: string): string {
+  const [year, month, day] = date.split('-').map(Number);
+
+  return new Date(year, month - 1, day).toLocaleDateString(locale, {
+    month: 'short',
+  });
+}
