@@ -85,40 +85,11 @@ describe('#152 R4: HomeEntrance escalona por índice y respeta reduce motion', (
     expect(withTiming).toHaveBeenCalledWith(0, { duration: 400, easing: { bezier: [0, 0, 0.58, 1] }, reduceMotion: 'system' });
   });
 
-  it('bajo reduce motion conserva el fundido y el escalonado y no desplaza', async () => {
+  it('bajo reduce motion no anima la entrada (enmendado por #197 R13)', async () => {
     mockUseReducedMotion.mockReturnValue(true);
-    try {
-      await render(<HomeEntrance index={5} testID="entrance"><Text>Hijo</Text></HomeEntrance>);
-      expect(screen.getByTestId('entrance').props.entering({})).toEqual({
-        initialValues: { opacity: 0, transform: [{ translateY: 0 }] },
-        animations: {
-          opacity: {
-            delayMs: 300,
-            animation: {
-              toValue: 1,
-              config: {
-                duration: 250,
-                easing: { bezier: [0.23, 1, 0.32, 1] },
-                reduceMotion: 'never',
-              },
-            },
-            reduceMotion: 'never',
-          },
-          transform: [{
-            translateY: {
-              delayMs: 300,
-              animation: {
-                toValue: 0,
-                config: { duration: 250, dampingRatio: 1, reduceMotion: 'system' },
-              },
-              reduceMotion: 'never',
-            },
-          }],
-        },
-      });
-    } finally {
-      mockUseReducedMotion.mockReturnValue(false);
-    }
+    await render(<HomeEntrance index={5} testID="entrance"><Text>Hijo</Text></HomeEntrance>);
+    expect(screen.getByTestId('entrance').props.entering).toBeUndefined();
+    expect(withDelay).not.toHaveBeenCalled();
   });
 
   it('no añade estilo propio', async () => {
