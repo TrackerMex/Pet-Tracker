@@ -38,12 +38,12 @@ function isPetsError(state: PetsState): boolean {
 
 export function FoodScreen() {
   const chunkyLip = useChunkyLip();
-  const [muted, accent, foreground, accentForeground, greenStrong] = useThemeColors([
+  const [muted, foreground, accentForeground, greenStrong, violetStrong] = useThemeColors([
     'muted',
-    'accent-strong',
     'foreground',
     'accent-foreground',
     'category-green-strong',
+    'category-violet-strong',
   ]);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
@@ -380,24 +380,21 @@ export function FoodScreen() {
               ) : null}
 
               {loadedPlan.aiExplanation !== null ? (
-                <Card
+                <View
                   testID="food-ai-card"
-                  variant="secondary"
-                  className="gap-3"
+                  className={`flex-row gap-3 rounded-card ${CATEGORY_SLOTS.violet.surface} p-3.5`}
+                  style={CONTINUOUS_CORNER}
                 >
-                  <View className="flex-row items-center gap-2">
-                    <Sparkles size={18} color={accent} />
-                    <Text
-                      testID="food-ai-title"
-                      className="text-base font-bold text-foreground"
-                    >
+                  <Sparkles size={22} strokeWidth={2.2} color={violetStrong} />
+                  <View className="flex-1 gap-0.5">
+                    <Text testID="food-ai-title" className={`text-sm font-extrabold ${CATEGORY_SLOTS.violet.ink}`}>
                       {t('food.aiRecommendation')}
                     </Text>
+                    <Text testID="food-ai-body" className="text-13 leading-body text-foreground">
+                      {loadedPlan.aiExplanation}
+                    </Text>
                   </View>
-                  <Text className="text-sm font-normal leading-5 text-muted">
-                    {loadedPlan.aiExplanation}
-                  </Text>
-                </Card>
+                </View>
               ) : null}
             </>
           ) : null}
