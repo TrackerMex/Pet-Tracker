@@ -154,7 +154,7 @@ describe('R1: global.css define los tokens light exactos del diseño', () => {
     expect(globalCss).toMatch(/@source\s+['"]\.\.\/['"];?/);
   });
 
-  it('mapea la paleta Figma Make a los tokens de heroui-native', () => {
+  it('mapea la paleta Figma Make a los tokens de heroui-native (enmendado por #197 R1)', () => {
     expect(parseVariables(extractVariant('light'))).toMatchObject({
       background: '#FFFFFF',
       foreground: '#0D1117',
@@ -163,12 +163,12 @@ describe('R1: global.css define los tokens light exactos del diseño', () => {
       'surface-secondary': '#F0FBF6',
       default: '#F5F6F8',
       muted: '#667085',
-      border: 'rgba(13,17,23,0.07)',
-      separator: 'rgba(13,17,23,0.07)',
+      border: 'rgba(13,17,23,0.08)',
+      separator: 'rgba(13,17,23,0.08)',
       accent: '#178255',
       'accent-foreground': '#FFFFFF',
-      danger: '#EF4444',
-      warning: '#F59E0B',
+      danger: '#D92D20',
+      warning: '#B54708',
       success: '#0F9B5A',
       focus: '#178255',
       'field-radius': '0.75rem',
@@ -182,10 +182,10 @@ describe('R1: global.css define los tokens light exactos del diseño', () => {
 
 describe('R2: global.css define la paleta dark derivada del diseño', () => {
   it.each([
-    ['light', '#178255', '#FFFFFF', '#667085', '#0F9B5A', '#F59E0B', '#EF4444'],
+    ['light', '#178255', '#FFFFFF', '#667085', '#0F9B5A', '#B54708', '#D92D20'],
     ['dark', '#178255', '#FFFFFF', '#9CA3AF', '#34D399', '#FBBF24', '#F87171'],
   ] as const)(
-    'materializa los colores semánticos para el resolver JS en %s',
+    'materializa los colores semánticos para el resolver JS en %s (enmendado por #197 R1)',
     (theme, accent, accentForeground, muted, success, warning, danger) => {
       expect(parseVariables(extractVariant(theme))).toMatchObject({
         'color-accent': accent,
