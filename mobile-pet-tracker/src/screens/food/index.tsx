@@ -23,6 +23,7 @@ import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { useChunkyLip } from '../../theme/chunky-lip';
 import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
@@ -39,6 +40,7 @@ function isPetsError(state: PetsState): boolean {
 }
 
 export function FoodScreen() {
+  const chunkyLip = useChunkyLip();
   const [muted, accent, foreground, accentForeground] = useThemeColors([
     'muted',
     'accent-strong',
@@ -200,10 +202,10 @@ export function FoodScreen() {
         <View className="gap-3.5">
           {loadedPlan !== null ? (
             <>
-              <Card
+              <View
                 testID="food-plan-card"
-                variant="accent"
-                className="gap-4"
+                className="rounded-hero bg-accent p-4.5"
+                style={[CONTINUOUS_CORNER, chunkyLip.hero]}
               >
                 <View testID="food-plan-summary" className="flex-row items-center gap-4">
                   <View
@@ -235,38 +237,38 @@ export function FoodScreen() {
                     </View>
                     <Text
                       testID="food-plan-percent"
-                      className="text-lg font-black text-accent-foreground"
+                      className="text-24 font-black text-accent-foreground"
                       style={TABULAR_NUMS}
                     >
                       {kcalPct}%
                     </Text>
                     <Text
                       testID="food-plan-consumed"
-                      className="text-xs font-normal text-accent-foreground"
+                      className="text-11 font-bold text-accent-foreground"
                       style={TABULAR_NUMS}
                     >
                       {loadedPlan.kcalConsumedToday} kcal
                     </Text>
                   </View>
                   <View className="flex-1 gap-1">
-                    <Text className="text-xs font-semibold uppercase tracking-widest text-accent-foreground">
+                    <Text className="text-xs font-extrabold uppercase tracking-caps text-accent-foreground">
                       {t('food.dailyTarget')}
                     </Text>
                     <Text
                       testID="food-plan-kcal"
-                      className="text-3xl font-black text-accent-foreground"
+                      className="text-24 font-black text-accent-foreground"
                     >
                       {t('food.dailyKcal', { kcal: loadedPlan.merKcal })}
                     </Text>
                     <Text
                       testID="food-plan-grams"
-                      className="font-semibold text-accent-foreground"
+                      className="text-sm font-semibold text-accent-foreground"
                     >
                       {t('food.dailyGrams', { grams: loadedPlan.dailyGrams })}
                     </Text>
                   </View>
                 </View>
-              </Card>
+              </View>
 
               <Card
                 testID="food-meals-section"
