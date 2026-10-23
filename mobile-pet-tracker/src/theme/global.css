@@ -95,6 +95,12 @@
       --color-lip-tile-violet: rgba(117,73,247,0.18);
       --color-lip-tile-amber: rgba(165,94,7,0.16);
       --color-lip-tile-blue: rgba(7,104,224,0.16);
+      --color-shadow-near: rgba(13,17,23,0.04);
+      --color-shadow-far: rgba(13,17,23,0.06);
+      --color-shadow-10: rgba(13,17,23,0.10);
+      --color-shadow-12: rgba(13,17,23,0.12);
+      --color-shadow-14: rgba(13,17,23,0.14);
+      --color-shadow-25: rgba(13,17,23,0.25);
       --color-danger: #D92D20;
       --color-warning: #B54708;
       --color-success: #0F9B5A;
@@ -156,6 +162,12 @@
       --color-lip-tile-violet: rgba(117,73,247,0.18);
       --color-lip-tile-amber: rgba(165,94,7,0.16);
       --color-lip-tile-blue: rgba(7,104,224,0.16);
+      --color-shadow-near: rgba(0,0,0,0.4);
+      --color-shadow-far: rgba(0,0,0,0);
+      --color-shadow-10: rgba(13,17,23,0.10);
+      --color-shadow-12: rgba(13,17,23,0.12);
+      --color-shadow-14: rgba(13,17,23,0.14);
+      --color-shadow-25: rgba(13,17,23,0.25);
       --color-danger: #F87171;
       --color-warning: #FBBF24;
       --color-success: #34D399;
