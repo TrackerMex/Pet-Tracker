@@ -5040,19 +5040,17 @@ describe('#152 R7: las cifras del resumen aparecen con un fundido', () => {
     expect(reveal.props.className).toBeUndefined();
   };
 
-  it('funde igual bajo reduce motion', async () => {
+  it('no anima la entrada bajo reduce motion (enmendado por #197 R13)', async () => {
     mockUseReducedMotion.mockReturnValue(true);
     await renderMotionHome();
-    jest.mocked(withDelay).mockClear();
     const reveal = screen.getByTestId('summary-reveal');
-    const { entering } = reveal.props;
-    expect(entering).toEqual(expect.any(Function));
-    expect(entering({})).toEqual({
-      initialValues: { opacity: 0, transform: [{ translateY: 0 }] },
-      animations: { opacity: 1, transform: [{ translateY: 0 }] },
-    });
-    expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([0, 0]);
+    expect(screen.getByTestId('home-entrance-summary').props.entering).toBeUndefined();
     expectRowUntouched(reveal);
+    mockUseReducedMotion.mockReturnValue(false);
+    await screen.rerender(<HomeScreen />);
+    mockWithTiming.mockClear();
+    screen.getByTestId('summary-reveal').props.entering({});
+    expect(mockWithTiming).toHaveBeenCalledWith(1, expect.objectContaining({ duration: 400, reduceMotion: ReduceMotion.System }));
   });
 
   it.each<DailyActivityState>([
@@ -5536,7 +5534,7 @@ describe('#190 R1: la frase es el primer bloque con datos completos', () => {
     { kind: 'unauthorized' },
     { kind: 'no-tracking' },
     { kind: 'error' },
-  ])('pinta la entrada y su único hijo con actividad $kind', async (activity) => {
+  ])('pinta la entrada y su único hijo con actividad $kind (enmendado por #197 R13)', async (activity) => {
     mockGetDailyActivity.mockResolvedValue(activity);
     await renderHome();
     await screen.findByTestId('home-pingo-text');
@@ -5545,7 +5543,7 @@ describe('#190 R1: la frase es el primer bloque con datos completos', () => {
     expect(content.children.slice(0, 2)).toEqual([entrance, screen.getByTestId('home-entrance-summary')]);
     expect(entrance.children).toEqual([screen.getByTestId('home-pingo-phrase')]);
     jest.mocked(withDelay).mockClear();
-    expect(entrance.props.entering({}).initialValues).toEqual({ opacity: 0, transform: [{ translateY: 12 }] });
+    expect(entrance.props.entering({}).initialValues).toEqual({ opacity: 0, transform: [{ translateY: 14 }] });
     expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([0, 0]);
   });
 });
@@ -5738,19 +5736,17 @@ describe('#190 R10: la frase usa los datos de Inicio y reacciona al idioma', () 
 describe('#190 R7: reduce motion conserva solo la entrada sin desplazamiento', () => {
   beforeEach(setupHomeMotion);
 
-  it('parte de translateY cero, conserva el fundido y no añade escala a la burbuja (enmendado por #195 R16)', async () => {
+  it('parte de translateY cero, conserva el fundido y no añade escala a la burbuja (enmendado por #195 R16) (enmendado por #197 R13)', async () => {
     mockUseReducedMotion.mockReturnValue(true);
     await renderHome();
     await screen.findByTestId('home-pingo-text');
     mockWithTiming.mockClear();
     jest.mocked(withSpring).mockClear();
     jest.mocked(withDelay).mockClear();
-    const recipe = screen.getByTestId('home-entrance-pingo').props.entering({});
-    expect(recipe.initialValues).toEqual({ opacity: 0, transform: [{ translateY: 0 }] });
-    expect(recipe.animations).toEqual({ opacity: 1, transform: [{ translateY: 0 }] });
-    expect(mockWithTiming).toHaveBeenCalledWith(1, expect.objectContaining({ duration: 250, reduceMotion: ReduceMotion.Never }));
-    expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([0, 0]);
-    expect(jest.mocked(withSpring).mock.calls.map(([value]) => value)).toEqual([0]);
+    expect(screen.getByTestId('home-entrance-pingo').props.entering).toBeUndefined();
+    expect(mockWithTiming).not.toHaveBeenCalled();
+    expect(withSpring).not.toHaveBeenCalled();
+    expect(withDelay).not.toHaveBeenCalled();
     const bubble = screen.getByTestId('home-pingo-bubble');
     expect(bubble.props.entering).toBeUndefined();
     const styles = [bubble.props.style].flat(Infinity);

@@ -93,7 +93,7 @@ export function HealthScreen() {
         paddingBottom: insets.bottom + 96,
       }}
     >
-      <Text testID="health-title" className="text-3xl font-black tracking-tight text-foreground">
+      <Text testID="health-title" className="text-3xl font-black tracking-title text-foreground">
         {t('health.health')}
       </Text>
       {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (

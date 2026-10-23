@@ -1239,13 +1239,13 @@ const FOOD_BRANCHES_168 = [
 describe('#168 R1: Nutrición pinta el título grande en todas sus ramas', () => {
   beforeEach(setupFood168);
 
-  it.each(FOOD_BRANCHES_168)('pinta el título grande ($name)', async ({ pets, plan, branch }) => {
+  it.each(FOOD_BRANCHES_168)('pinta el título grande ($name) (enmendado por #197 R4)', async ({ pets, plan, branch }) => {
     mockListPets.mockImplementation(async () => pets);
     mockGetNutritionPlan.mockImplementation(async () => plan);
     await renderFood();
     await screen.findByTestId(branch);
     const title = screen.getByTestId('food-title');
-    expect(title.props.className).toBe('text-3xl font-black tracking-tight text-foreground');
+    expect(title.props.className).toBe('text-3xl font-black tracking-title text-foreground');
     expect(title).toHaveTextContent('Nutrición');
     expect(title.parent!.children[0]).toBe(title);
   });
