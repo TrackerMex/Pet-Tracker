@@ -1254,7 +1254,7 @@ describe('#100 R6: la columna de texto de cada fila abre su detalle', () => {
     });
   });
 
-  it('da rol, altura y opacidad de pulsado solo al enlace (enmendado por #174 R7) (enmendado por #174 R8) (enmendado por #197 R8)', async () => {
+  it('da rol, altura y opacidad de pulsado solo al enlace (enmendado por #174 R7) (enmendado por #174 R8)', async () => {
     await renderAlerts();
     const link = await screen.findByTestId('alert-row-alert-1-link');
     expect(link.props.accessibilityRole).toBe('button');
@@ -1508,7 +1508,7 @@ describe('#170 R5: la fila abierta lleva el borde de su tipo', () => {
     { type: 'geofence_exit', border: 'border-danger', iconName: 'LocationSlash', labelKey: 'alerts.typeGeofenceExit', disc: 'bg-category-rose', ink: '--color-danger', label: 'Salió de la zona' },
     { type: 'battery_low', border: 'border-warning-strong', iconName: 'BatteryLow', labelKey: 'alerts.typeBatteryLow', disc: 'bg-category-amber', ink: '--color-warning-strong', label: 'Batería baja' },
     { type: 'mystery_type', border: 'border-muted', iconName: 'Bell', labelKey: 'alerts.typeUnknown', disc: 'bg-default', ink: '--color-muted', label: 'Aviso' },
-  ])('abierta $type: border-2 y $border, con $iconName y $labelKey (enmendado por #174 R7) (enmendado por #174 R8) (enmendado por #197 R8)', async ({ type, border, iconName, disc, ink, label }) => {
+  ])('abierta $type: border-2 y $border, con $iconName y $labelKey (enmendado por #174 R7) (enmendado por #174 R8)', async ({ type, border, iconName, disc, ink, label }) => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ type })], nextCursor: null });
     await renderAlerts();
     const row = await screen.findByTestId('alert-row-alert-1');
