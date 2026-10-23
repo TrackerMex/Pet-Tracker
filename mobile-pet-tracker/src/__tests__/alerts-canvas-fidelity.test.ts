@@ -190,7 +190,7 @@ describe('#174 R12: inventarios', () => {
     {
       token: 'border-b-5',
       pattern: /(?<![\w-])border-b-5\b/,
-      files: ['screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx'], // #179 R5; #174 R12
+      files: [], // #179 R5; #174 R12
     },
     {
       token: 'tracking-caps',
@@ -240,15 +240,15 @@ describe('#174 R12: inventarios', () => {
         'screens/reminders/index.tsx', // #178 R4
       ],
     },
-  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12) (enmendado por #197 R4)', ({ pattern, files }) => {
+  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12) (enmendado por #197 R4) (enmendado por #197 R10)', ({ pattern, files }) => {
     expect(filesMatching(pattern)).toEqual(files);
   });
 
-  it('declara border-b-5 una sola vez', () => {
+  it('declara border-b-5 una sola vez (enmendado por #197 R10)', () => {
     const count = sourceFiles().reduce((total, path) => (
       total + (readFileSync(path, 'utf8').match(/(?<![\w-])border-b-5\b/g)?.length ?? 0)
     ), 0);
-    expect(count).toBe(1 + 1 + 1); // #179 R5, R6
+    expect(count).toBe(0); // #179 R5, R6
   });
 });
 

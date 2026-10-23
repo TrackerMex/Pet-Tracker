@@ -173,3 +173,14 @@ describe('#197 R6: variantes del canvas', () => {
     expect(declaration).toMatch(new RegExp(`offsetY: ${offset}\\b`));
   });
 });
+
+describe('#197 R10: labios fuera del cuerpo', () => {
+  it('#197 R10: ningún labio vive dentro del alto', () => {
+    for (const token of ['border-b-3', 'border-b-5', 'border-b-6', 'border-black/25']) {
+      expect(filesMatching(new RegExp(`(?<![\\w-])${token}\\b`))).toEqual([]);
+    }
+    for (const file of ['screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx']) {
+      expect(readSource(file)).toContain('const chunkyLip = useChunkyLip();');
+    }
+  });
+});

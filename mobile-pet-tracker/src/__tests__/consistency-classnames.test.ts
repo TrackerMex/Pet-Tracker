@@ -576,14 +576,14 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
     expect(inventory(/rounded-xl bg-accent(?=[\s'"`])/g)).toEqual({ 'screens/reminders/index.tsx': 1 });
   });
 
-  it('no deja la receta del labio fuera de un primario salvo el candado de Recuperar (enmendado por #177 R10)', () => {
+  it('no deja la receta del labio fuera de un primario salvo el candado de Recuperar (enmendado por #177 R10) (enmendado por #197 R10)', () => {
     const count = (pattern: RegExp) => sourceFiles().reduce(
       (total, path) => total + (readFileSync(path, 'utf8').match(pattern) ?? []).length,
       0,
     );
 
     expect(count(/\bborder-b-4\b/g)).toBe(0); // #177 R10
-    expect(count(/border-black\/25/g)).toBe(2); // #177 R10
+    expect(count(/border-black\/25/g)).toBe(0); // #177 R10
   });
 });
 
@@ -610,7 +610,7 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
     }
   });
 
-  it('inventaría los cinco secundarios neutros de toda la app (enmendado por #177 R10) (enmendado por #189 R13)', () => {
+  it('inventaría los cinco secundarios neutros de toda la app (enmendado por #177 R10) (enmendado por #189 R13) (enmendado por #197 R10)', () => {
     const testIds = sourceFiles().filter((path) => path.endsWith('.tsx')).flatMap((path) =>
       readFileSync(path, 'utf8').split(/<Button(?=[\s>])/).slice(1).flatMap((part) => {
         const tag = part.split('<')[0];
@@ -640,7 +640,7 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
       0,
     );
     expect(count(/border-lip-gray/g)).toBe(4 + 1 + 1 + 1 + 1 + 1 + 1 + 1); // #189 R13; #179 R6, R7; #170 R16; #171 R14; #174 R8; #175 R7: borde de la zona de subida
-    expect(count(/\bborder-b-6\b/g)).toBe(1); // #177 R10
+    expect(count(/\bborder-b-6\b/g)).toBe(0); // #177 R10
   });
 
   it('#174 R8: el ack de fila es el secundario compacto (enmendado por #197 R8)', () => {
