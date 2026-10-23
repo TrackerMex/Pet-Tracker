@@ -1,4 +1,5 @@
 import { useChunkyLip } from '../../theme/chunky-lip';
+import { useShadows } from '../../theme/shadows';
 import { BubblePop } from './bubble-pop';
 import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
@@ -182,6 +183,7 @@ function dueCountdown(
 
 export function HomeScreen() {
   const chunkyLip = useChunkyLip();
+  const shadows = useShadows();
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
   const locale = useLocale();
@@ -481,10 +483,10 @@ export function HomeScreen() {
 
         {selectedPetId ? (
           <HomeEntrance index={1} testID="home-entrance-summary">
-            <Card testID="summary-card" className="gap-4">
+            <Card testID="summary-card" className="gap-3 px-2 py-3.5 shadow-none" style={shadows.card}>
               <Text
                 testID="summary-card-title"
-                className="text-base font-bold text-foreground"
+                className="px-2 text-base font-extrabold text-foreground"
               >
                 {t('home.summaryTitle')}
               </Text>
