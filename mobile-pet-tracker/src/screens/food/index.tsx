@@ -360,20 +360,21 @@ export function FoodScreen() {
               </View>
 
               {loadedPlan.warnings.length > 0 ? (
-                <View className="gap-2">
+                <View testID="food-warnings" className="gap-2">
                   {loadedPlan.warnings.map((warning) => (
-                    <Card
+                    <View
                       key={warning.code}
                       testID={`warning-card-${warning.code}`}
-                      className="bg-default"
+                      className="rounded-card bg-default p-3.5"
+                      style={CONTINUOUS_CORNER}
                     >
                       <Text
                         testID={`plan-warning-${warning.code}`}
-                        className="text-sm font-medium text-foreground"
+                        className="text-sm font-medium leading-note text-foreground"
                       >
                         {warning.message}
                       </Text>
-                    </Card>
+                    </View>
                   ))}
                 </View>
               ) : null}
