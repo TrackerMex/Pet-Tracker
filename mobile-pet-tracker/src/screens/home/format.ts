@@ -60,3 +60,12 @@ export function fmtCount(count: number | null): string {
 export function fmtKg(kg: number | null): string {
   return kg === null ? '—' : `${kg} kg`;
 }
+
+export function fmtDayMonth(date: string, locale: string): string {
+  const [year, month, day] = date.split('-').map(Number);
+
+  return new Date(year, month - 1, day).toLocaleDateString(locale, {
+    day: 'numeric',
+    month: 'short',
+  });
+}
