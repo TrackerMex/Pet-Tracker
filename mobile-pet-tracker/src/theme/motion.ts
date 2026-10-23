@@ -90,3 +90,11 @@ export const MOTION_RISE_TIMING = {
   easing: Easing.bezier(0, 0, 0.58, 1),
   reduceMotion: ReduceMotion.System,
 };
+
+// #200 R4: ring literal del canvas.
+export const MOTION_RING_TIMING = {
+  duration: 1100,
+  easing: Easing.bezier(0, 0, 0.58, 1),
+  reduceMotion: ReduceMotion.System,
+};
+export const MOTION_RING_DELAY_MS = 200;

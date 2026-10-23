@@ -5,7 +5,7 @@ import { Button, Skeleton, Spinner } from 'heroui-native';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { Easing, ReduceMotion, useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { useAnimatedProps, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { ChevronRight, Clock, Sparkles } from 'reicon-react-native';
 import Svg, { Circle } from 'react-native-svg';
 
@@ -24,16 +24,12 @@ import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { useChunkyLip } from '../../theme/chunky-lip';
+import { MOTION_RING_DELAY_MS, MOTION_RING_TIMING } from '../../theme/motion';
 import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const KCAL_RING_CIRCUMFERENCE = 2 * Math.PI * 44;
-const KCAL_BAR_TIMING = {
-  duration: 250,
-  easing: Easing.bezier(0.77, 0, 0.175, 1),
-  reduceMotion: ReduceMotion.System,
-};
 
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -83,7 +79,7 @@ export function FoodScreen() {
     strokeDashoffset: KCAL_RING_CIRCUMFERENCE * (1 - kcalRingPct.get() / 100),
   }));
   useEffect(() => {
-    kcalRingPct.set(withTiming(Math.min(kcalPct, 100), KCAL_BAR_TIMING));
+    kcalRingPct.set(withDelay(MOTION_RING_DELAY_MS, withTiming(Math.min(kcalPct, 100), MOTION_RING_TIMING)));
   }, [kcalPct, kcalRingPct]);
 
   async function toggleMeal(mealTime: string, served: boolean) {
@@ -224,7 +220,7 @@ export function FoodScreen() {
                         <Circle
                           testID="food-plan-ring-track"
                           cx={52} cy={52} r={44} fill="none"
-                          stroke={accentForeground} strokeOpacity={0.2} strokeWidth={12}
+                          stroke={accentForeground} strokeOpacity={0.22} strokeWidth={12}
                         />
                         <AnimatedCircle
                           testID="food-plan-ring-fill"
