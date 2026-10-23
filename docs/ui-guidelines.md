@@ -839,4 +839,4 @@ Detalle y tests en `specs/mobile-pairing-pingo-canvas-fidelity/requirements.md` 
 
 Detalle y tests en `specs/mobile-home-photo-hero-canvas/requirements.md` (R1 a R20).
 
-- [ ] Enmienda #195 aprobada por humano
+- [X] Enmienda #195 aprobada por humano
