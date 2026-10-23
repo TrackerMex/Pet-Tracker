@@ -99,7 +99,7 @@ los retardos. (3) —.
 resto) y [48]. (2) Enmienda #200 en `docs/ui-guidelines.md` y cola nueva de
 la línea «Secundarios de Horario» del punto 13. (3) —.
 
-**R17** — (1) NC `#200 R17` ×2 con mutación plantada. (2) Ninguna si ya
+**R17** — (1) NC `#200 R17` ×3 (errata: hex solo en producción) con mutación plantada. (2) Ninguna si ya
 cumplen. (3) —.
 
 ## Cuentas a re-medir

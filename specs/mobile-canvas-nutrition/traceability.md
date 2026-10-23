@@ -24,4 +24,4 @@ tags: [harness, spec, mobile, canvas-parity]
 | R14 | MS `#200 R14` | — | — | pendiente |
 | R15 | MS `#200 R15`, MH `#200 R15` | — | — | pendiente |
 | R16 | NC `#200 R16` ×4 | — | — | pendiente |
-| R17 | NC `#200 R17` ×2 | — | — | pendiente |
+| R17 | NC `#200 R17` ×3 | — | — | pendiente |

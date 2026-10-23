@@ -520,12 +520,19 @@ el resto de la línea no cambia. Y SHALL existir NC con una fila por literal:
 ### R17 — Guardas de la carta en los ficheros tocados
 
 THE SYSTEM SHALL mantener en `$FS`, `$MS`, `$MH` y sus tres tests: cero
-`StyleSheet`, cero clases con valor arbitrario (`/\b[\w-]+-\[/`) y cero
-literales hex salvo `#NNN R<n>` (`/#[0-9a-fA-F]{3,8}\b(?!\s+R\d)/`); y `$FS`
-no importa `components/card`.
+`StyleSheet` y cero clases con valor arbitrario (`/\b[\w-]+-\[/`); en `$FS`,
+`$MS` y `$MH` (producción), además, cero literales hex salvo `#NNN R<n>`
+(`/#[0-9a-fA-F]{3,8}\b(?!\s+R\d)/`); y `$FS` no importa `components/card`.
 
-- Test: NC `#200 R17: %s no usa StyleSheet, corchetes ni hex` — `it.each` con
-  una fila por fichero (seis filas).
+Errata del leader (2026-10-23, P2 del handoff): la guarda hex no recorre los
+tres tests. En H0 ya citan `#106`, `#106/#107`, `#113` y `#147 E…` en títulos y
+comentarios, y `meal-schedule/index.test.tsx` tiene un `'#000000'` de doble;
+nada de eso es color de producción. Esas líneas no se tocan.
+
+- Test: NC `#200 R17: %s no usa StyleSheet ni corchetes` — `it.each` con una
+  fila por fichero (seis filas).
+- Test: NC `#200 R17: %s no usa hex salvo #NNN R<n>` — `it.each` con las tres
+  fuentes de producción (tres filas).
 - Test: NC `#200 R17: Nutrición no importa Card` — `$FS` sin
   `components/card`.
 
@@ -713,6 +720,7 @@ Alias: **CC** `src/__tests__/chunky-cta-canvas-fidelity.test.ts`, **CN**
 | 48 (O2) | CC › `#177 R11.1: la carta declara la receta global y conserva sus excepciones (enmendado por #197 R21)` (constante `preservedLines`) y DD › `sitúa la receta de secundarios de Horario antes de Sin labio (enmendado por #197 R21)` (constante `actionRule`) | la línea `- **Secundarios de Horario**` acaba en `«Generar plan» es tonal de la categoría violeta y sigue sin labio hasta #200.` (B38, B39) | la misma línea con la cola de R16 (e): ``«Generar plan» es tonal de la categoría violeta con `style={chunkyLip.violet}` (#200 R14).`` | R16 |
 | 49 | CF › `describe('#197 R20: cimientos sin cablear')` entero: `nadie monta todavía los cimientos %s` (4 casos: `toggle-switch`, `screen-header`, `shadows`, `rise-in`) y `el layout raíz no cambia` | cero importadores de producción de los 4 módulos; `headerShown` ×2 en `_layout.tsx` (B33) | el `describe` se **borra entero** en el commit rojo de R10 (el primero que monta `RiseIn`; R12 toca `_layout.tsx` después). Es un candado temporal de #197 que la ola 2 retira con el mismo borrado en todas sus features, para que git lo mezcle sin conflicto; no se sustituye por nada (regla del leader, 2026-10-23) | R10 |
 | 50 | LY › `#95 R4: cada pantalla de detalle declara su cabecera nativa` › `#194 R4: %s usa exactamente las opciones de cabecera acordadas` | incluye la fila `['meal-schedule', '']` | sin esa fila (item 27); #199 R1 quita en paralelo la suya y la segunda feature en mergear conserva las dos bajas y los dos sufijos | R12 |
+| 51 (P1 del handoff; errata del leader 2026-10-23) | CN › `#62 R14` › `fusiona la esquina una vez y la entrega a las dos ramas de Card (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9)`: suma `style={CONTINUOUS_CORNER}` sobre la misma constante `directUses` que [18] | `.toBe(…)` = 42 | en el commit rojo de cada R, el `.toBe(…)` gana un término: R5 `+ 1 // #200 R5` (43), R7 `+ 1 // #200 R7` (44), R8 `+ 1 // #200 R8` (45), R9 `+ 2 // #200 R9` (47); R6 no lo toca. Sufijo como el resto del inventario | R5, R7, R8, R9 |
 
 Regla de parada: un rojo fuera de este inventario detiene la implementación y
 se reporta al leader.
