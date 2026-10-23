@@ -27,6 +27,7 @@ import type { NutritionPlan, PetProfile } from '../../api/types';
 import { en, es } from '../../i18n/catalog';
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import { MOTION_RING_TIMING } from '../../theme/motion';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { SelectedPetProvider } from '../../providers/selected-pet-provider';
@@ -70,15 +71,18 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
 
+const mockWithDelay = jest.fn((delay: number, animation: unknown) => animation);
 const mockWithTiming = jest.fn((value: number, _config?: unknown) => value);
 
 function expectKcalBarTiming(target: number): void {
   const config = mockWithTiming.mock.calls.find(([value]) => value === target)?.[1];
   expect(config).toEqual(
-    expect.objectContaining({ duration: 250, reduceMotion: ReduceMotion.System }),
+    expect.objectContaining({ duration: 1100, reduceMotion: ReduceMotion.System }),
   );
+  expect(config).toEqual(MOTION_RING_TIMING);
+  expect(mockWithDelay).toHaveBeenCalledWith(200, target);
   const actual = (config as { easing: ReturnType<typeof Easing.bezier> }).easing.factory();
-  const expected = Easing.bezier(0.77, 0, 0.175, 1).factory();
+  const expected = Easing.bezier(0, 0, 0.58, 1).factory();
   for (const point of [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]) {
     expect(actual(point)).toBeCloseTo(expected(point), 6);
   }
@@ -87,6 +91,7 @@ function expectKcalBarTiming(target: number): void {
 jest.mock('react-native-reanimated', () => ({
   ...jest.requireActual('react-native-reanimated'),
   __esModule: true,
+  withDelay: (delay: number, animation: unknown) => mockWithDelay(delay, animation),
   withTiming: (value: number, config?: unknown) => mockWithTiming(value, config),
   withRepeat: jest.fn((animation: unknown) => animation),
   withSequence: jest.fn((...steps: unknown[]) => steps.at(-1)),
@@ -1304,13 +1309,13 @@ describe('#168 R8: food-plan-card pinta el anillo', () => {
     expect(progress.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['food-plan-ring', 'food-plan-percent', 'food-plan-consumed']);
   });
 
-  it('la pista tiene exactamente su receta de Circle', async () => {
+  it('la pista tiene exactamente su receta de Circle (enmendado por #200 R4)', async () => {
     await renderFood();
     await screen.findByTestId('food-plan-card');
     const track = screen.getByTestId('food-plan-ring-track');
     const props = { ...track.props };
     delete props.children;
-    expect(props).toEqual({ testID: 'food-plan-ring-track', cx: 52, cy: 52, r: 44, fill: 'none', stroke: 'accent-foreground', strokeOpacity: 0.2, strokeWidth: 12 });
+    expect(props).toEqual({ testID: 'food-plan-ring-track', cx: 52, cy: 52, r: 44, fill: 'none', stroke: 'accent-foreground', strokeOpacity: 0.22, strokeWidth: 12 });
   });
 
   it('el relleno tiene exactamente su receta y solo anima strokeDashoffset', async () => {
@@ -1405,7 +1410,7 @@ describe('#168 R9: el anillo dice el porcentaje acotado', () => {
 describe('#168 R10: el anillo transiciona con reduce motion', () => {
   beforeEach(setupFood168);
 
-  it('transiciona de 50 a 100 al servir y vuelve a 50 al deshacer', async () => {
+  it('transiciona de 50 a 100 al servir y vuelve a 50 al deshacer (enmendado por #200 R4)', async () => {
     mockGetNutritionPlan.mockResolvedValue({
       kind: 'ok',
       plan: makePlan({ merKcal: 1420, kcalConsumedToday: 710, servedToday: ['07:30'] }),
@@ -1578,5 +1583,28 @@ describe('#200 R3: héroe del canvas', () => {
     await screen.findByTestId('food-plan-card');
     const node = id === 'Objetivo diario' ? screen.getByText(id) : screen.getByTestId(id);
     expect(node.props.className).toBe(className);
+  });
+});
+
+
+describe('#200 R4: pista y movimiento del anillo', () => {
+  beforeEach(setupFood168);
+  it('#200 R4: el relleno espera 200 ms y usa la curva del anillo', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan({ kcalConsumedToday: 328 }) });
+    mockServeMeal.mockResolvedValue({ kind: 'ok' });
+    await renderFood();
+    await waitFor(() => expect(screen.getByTestId('food-plan-percent')).toHaveTextContent('50%'));
+    expectKcalBarTiming(50);
+    mockWithDelay.mockClear();
+    mockWithTiming.mockClear();
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan({ kcalConsumedToday: 656, servedToday: ['07:30'] }) });
+    await fireEvent.press(screen.getByTestId('meal-toggle-0'));
+    await waitFor(() => expect(screen.getByTestId('food-plan-percent')).toHaveTextContent('100%'));
+    expectKcalBarTiming(100);
+  });
+  it('#200 R4: la pista lleva la opacidad del canvas', async () => {
+    await renderFood();
+    await screen.findByTestId('food-plan-card');
+    expect(screen.getByTestId('food-plan-ring-track').props.strokeOpacity).toBe(0.22);
   });
 });
