@@ -726,7 +726,7 @@ describe('#123: pickers de fecha de Nuevo recordatorio en Android a las 20:00 de
 });
 
 const ADVANCES = [0, 1440, 4320, 10080] as const;
-const CHIP_SELECTED = 'h-9.5 items-center justify-center rounded-full px-3.5 bg-accent border-b-3 border-black/25';
+const CHIP_SELECTED = 'h-9.5 items-center justify-center rounded-full px-3.5 bg-accent'; // (enmendado por #197 R7)
 const CHIP_IDLE = 'h-9.5 items-center justify-center rounded-full px-3.5 bg-default';
 
 function expectAdvanceChips(disabled: boolean[], selected: number) {
