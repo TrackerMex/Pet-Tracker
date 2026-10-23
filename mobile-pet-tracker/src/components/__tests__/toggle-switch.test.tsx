@@ -46,3 +46,28 @@ describe('#197 R16: interruptor del canvas', () => {
     });
   });
 });
+
+describe('#197 R17: comportamiento controlado', () => {
+  it('#197 R17: al pulsar apagado llama con true', async () => {
+    const onSelectedChange = jest.fn();
+    await renderToggle({ isSelected: false, onSelectedChange });
+    await fireEvent.press(screen.getByTestId('toggle'));
+    expect(onSelectedChange).toHaveBeenCalledTimes(1);
+    expect(onSelectedChange).toHaveBeenCalledWith(true);
+    expect(screen.getByTestId('toggle').props.accessibilityState.checked).toBe(false);
+  });
+  it('#197 R17: al pulsar encendido llama con false', async () => {
+    const onSelectedChange = jest.fn();
+    await renderToggle({ isSelected: true, onSelectedChange });
+    await fireEvent.press(screen.getByTestId('toggle'));
+    expect(onSelectedChange).toHaveBeenCalledTimes(1);
+    expect(onSelectedChange).toHaveBeenCalledWith(false);
+    expect(screen.getByTestId('toggle').props.accessibilityState.checked).toBe(true);
+  });
+  it('#197 R17: deshabilitado no llama', async () => {
+    const onSelectedChange = jest.fn();
+    await renderToggle({ isDisabled: true, onSelectedChange });
+    await fireEvent.press(screen.getByTestId('toggle'));
+    expect(onSelectedChange).not.toHaveBeenCalled();
+  });
+});
