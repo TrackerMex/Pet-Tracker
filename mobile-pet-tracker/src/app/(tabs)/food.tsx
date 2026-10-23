@@ -130,7 +130,7 @@ export default function FoodScreen() {
         paddingBottom: insets.bottom + 96,
       }}
     >
-      <Text testID="food-title" className="text-3xl font-black tracking-tight text-foreground">
+      <Text testID="food-title" className="text-3xl font-black tracking-title text-foreground">
         {t('food.food')}
       </Text>
 

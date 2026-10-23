@@ -154,7 +154,7 @@ describe('R1: global.css define los tokens light exactos del diseño', () => {
     expect(globalCss).toMatch(/@source\s+['"]\.\.\/['"];?/);
   });
 
-  it('mapea la paleta Figma Make a los tokens de heroui-native', () => {
+  it('mapea la paleta Figma Make a los tokens de heroui-native (enmendado por #197 R1)', () => {
     expect(parseVariables(extractVariant('light'))).toMatchObject({
       background: '#FFFFFF',
       foreground: '#0D1117',
@@ -163,12 +163,12 @@ describe('R1: global.css define los tokens light exactos del diseño', () => {
       'surface-secondary': '#F0FBF6',
       default: '#F5F6F8',
       muted: '#667085',
-      border: 'rgba(13,17,23,0.07)',
-      separator: 'rgba(13,17,23,0.07)',
+      border: 'rgba(13,17,23,0.08)',
+      separator: 'rgba(13,17,23,0.08)',
       accent: '#178255',
       'accent-foreground': '#FFFFFF',
-      danger: '#EF4444',
-      warning: '#F59E0B',
+      danger: '#D92D20',
+      warning: '#B54708',
       success: '#0F9B5A',
       focus: '#178255',
       'field-radius': '0.75rem',
@@ -182,10 +182,10 @@ describe('R1: global.css define los tokens light exactos del diseño', () => {
 
 describe('R2: global.css define la paleta dark derivada del diseño', () => {
   it.each([
-    ['light', '#178255', '#FFFFFF', '#667085', '#0F9B5A', '#F59E0B', '#EF4444'],
+    ['light', '#178255', '#FFFFFF', '#667085', '#0F9B5A', '#B54708', '#D92D20'],
     ['dark', '#178255', '#FFFFFF', '#9CA3AF', '#34D399', '#FBBF24', '#F87171'],
   ] as const)(
-    'materializa los colores semánticos para el resolver JS en %s',
+    'materializa los colores semánticos para el resolver JS en %s (enmendado por #197 R1)',
     (theme, accent, accentForeground, muted, success, warning, danger) => {
       expect(parseVariables(extractVariant(theme))).toMatchObject({
         'color-accent': accent,
@@ -425,7 +425,7 @@ describe('#61 R2: el relleno de acento pasa AA con etiqueta blanca', () => {
  * valores son los de specs/mobile-ui-legibility-polish/design.md §5.4.
  */
 const composedSurfaces = {
-  light: { accentSoft: '#DCECE6', tabPill: '#DFEEE7', warningSoft: '#FEF0DA' },
+  light: { accentSoft: '#DCECE6', tabPill: '#DFEEE7', warningSoft: '#F4E3DA' },
   dark: { accentSoft: '#0E2220', tabPill: '#0F2A25', warningSoft: '#383422' },
 } as const;
 
@@ -479,20 +479,21 @@ describe('#61 R5: token warning-strong con AA sobre surface y warning-soft', () 
   });
 
   it.each([
-    ['light', '#92610A'],
+    ['light', '#93370D'],
     ['dark', '#FBBF24'],
-  ] as const)('define la variante AA del ámbar en %s', (theme, strong) => {
+  ] as const)('define la variante AA del ámbar en %s (enmendado por #197 R2)', (theme, strong) => {
     expect(parseVariables(extractVariant(theme))).toMatchObject({
       'warning-strong': strong,
     });
   });
 
   it.each([
-    ['light', '#92610A', '#FFFFFF'],
+    ['light', '#93370D', '#FFFFFF'],
     ['dark', '#FBBF24', '#161B22'],
   ] as const)(
-    'pasa AA sobre bg-surface y bg-warning-soft en %s',
+    'pasa AA sobre bg-surface y bg-warning-soft en %s (enmendado por #197 R2)',
     (theme, strong, surface) => {
+      expect(parseVariables(extractVariant(theme))['warning-strong']).toBe(strong);
       expect(contrast(strong, surface)).toBeGreaterThanOrEqual(4.5);
       expect(
         contrast(strong, composedSurfaces[theme].warningSoft),
@@ -501,10 +502,10 @@ describe('#61 R5: token warning-strong con AA sobre surface y warning-soft', () 
   );
 
   it.each([
-    ['light', '#F59E0B'],
+    ['light', '#B54708'],
     ['dark', '#FBBF24'],
   ] as const)(
-    'conserva el ámbar puro de iconos y rellenos en %s',
+    'conserva el ámbar puro de iconos y rellenos en %s (enmendado por #197 R2)',
     (theme, warning) => {
       expect(parseVariables(extractVariant(theme))).toMatchObject({
         warning,
@@ -711,10 +712,10 @@ describe('#64 R4: ninguna categoría se confunde con otra ni con un token de est
   const expectedStateSurfaceMinima = {
     light: {
       blue: 9.4,
-      amber: 4.9,
+      amber: 5.7,
       green: 3.5,
-      violet: 10.2,
-      rose: 4.6,
+      violet: 10.5,
+      rose: 5.0,
       neutral: 8.5,
     },
     dark: {
@@ -767,7 +768,7 @@ describe('#64 R4: ninguna categoría se confunde con otra ni con un token de est
     expect(Math.min(...distances)).toBeCloseTo(expectedSurfaceMinima[theme], 1);
   });
 
-  it.each(themes)('separa superficies y tintas de los tokens de estado en %s', (theme) => {
+  it.each(themes)('separa superficies y tintas de los tokens de estado en %s (enmendado por #197 R2)', (theme) => {
     const variables = parseVariables(extractVariant(theme));
     const palette = categoryColors(theme);
     const stateSurfaces = [
@@ -921,4 +922,38 @@ describe('#195 R4: scrim y oscurecimiento de foto', () => {
       }
     },
   );
+});
+
+describe('#197 R3: tokens de tipografía', () => {
+  it('#197 R3: declara cada token de tipografía una sola vez', () => {
+    for (const token of ['tracking-display', 'tracking-section', 'tracking-mono', 'tracking-dialog', 'leading-body', 'leading-note']) {
+      expect(globalCss.match(new RegExp(`--${token}:`, 'g'))).toHaveLength(1);
+    }
+  });
+});
+
+describe('#197 R5: tokens de labio', () => {
+  it.each(['light', 'dark'] as const)('#197 R5: declara los labios nuevos en los dos temas %s', theme => {
+    const tokens = {'lip-danger': '#9F1F15', 'lip-violet': 'rgba(91,63,163,0.35)', 'lip-tile-violet': 'rgba(117,73,247,0.18)', 'lip-tile-amber': 'rgba(165,94,7,0.16)', 'lip-tile-blue': 'rgba(7,104,224,0.16)'};
+    const block = parseVariables(extractVariant(theme));
+    for (const [token, value] of Object.entries(tokens)) {
+      expect(block).toMatchObject({ [`color-${token}`]: value });
+      expect(globalCss.split(`--color-${token}:`)).toHaveLength(3);
+      expect(block).not.toHaveProperty(token);
+    }
+  });
+});
+
+describe('#197 R14: tokens de sombra', () => {
+  it.each(['light', 'dark'] as const)('#197 R14: declara las sombras en los dos temas %s', theme => {
+    const tokens = {'shadow-near': ['rgba(13,17,23,0.04)', 'rgba(0,0,0,0.4)'], 'shadow-far': ['rgba(13,17,23,0.06)', 'rgba(0,0,0,0)'], 'shadow-10': ['rgba(13,17,23,0.10)', 'rgba(13,17,23,0.10)'], 'shadow-12': ['rgba(13,17,23,0.12)', 'rgba(13,17,23,0.12)'], 'shadow-14': ['rgba(13,17,23,0.14)', 'rgba(13,17,23,0.14)'], 'shadow-25': ['rgba(13,17,23,0.25)', 'rgba(13,17,23,0.25)']};
+    const block = extractVariant(theme);
+    for (const [token, values] of Object.entries(tokens)) {
+      expect(parseVariables(block)[`color-${token}`]).toBe(values[theme === 'light' ? 0 : 1]);
+      expect(block.match(new RegExp(`--color-${token}:`, 'g'))).toHaveLength(1);
+      expect(globalCss.split(`--color-${token}:`)).toHaveLength(3);
+      expect(parseVariables(block)).not.toHaveProperty(token);
+      expect(block.indexOf(`--color-${token}:`)).toBeGreaterThan(block.indexOf('--color-lip-tile-blue:'));
+    }
+  });
 });
