@@ -1,6 +1,6 @@
 ---
 feature: "mobile-profile-photo-hero-canvas"
-status: spec_ready     # draft | spec_ready | approved
+status: approved
 tags: [mobile, ui, spec]
 ---
 
@@ -636,6 +636,12 @@ tests no ven (design.md §Supuestos):
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____)
-- [ ] Enmienda #196 aprobada por humano (regla N1 de `docs/ui-guidelines.md`, texto en `design.md` §Texto de la Enmienda #196)
+- [x] Aprobado por humano (fecha: 2026-10-23)
+  Firma delegada en el leader por mandato del humano del 2026-10-23
+  (`progress/plan_canvas-parity-2026-10-23.md` §4, checklist de firma pasada).
+  Aceptados los bloques R1+R4 y R2+R5 (D14), R3.2 movido a R1.4 y K9 en dos pasos. El doble de
+  reanimated de K38/K39 no se ha corrido en jest: si un `it` previo se pone rojo con él, es parada.
+  Anclas re-medidas tras el merge de #197 en `dev` (81cb6d6b).
+- [x] Enmienda #196 aprobada por humano (regla N1 de `docs/ui-guidelines.md`, texto en `design.md` §Texto de la Enmienda #196)
+  Firma delegada, mismo mandato.
 - [ ] Smoke de R1, R2, R3, R4, R5, R6, R7 y R9 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
