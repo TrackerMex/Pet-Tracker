@@ -1,6 +1,6 @@
 ---
 feature: "mobile-canvas-health-weight"
-status: spec_ready     # draft | spec_ready | approved
+status: approved       # draft | spec_ready | approved
 tags: [mobile, ui, spec, canvas-parity]
 ---
 
@@ -838,8 +838,15 @@ en el PC del humano, no en Expo Go ni en la VPS:
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____)
-- [ ] Enmienda #199 aprobada por humano (fecha: ____) — texto literal en design §Decisiones técnicas
+- [x] Aprobado por humano (fecha: 2026-10-23)
+  Firma delegada en el leader por mandato del humano del 2026-10-23
+  (`progress/plan_canvas-parity-2026-10-23.md` §4, checklist de firma pasada: 47 anclas de Base medida
+  verdes, 27 R con test nombrado y fila de trazabilidad, inventario de candados auditado por literal en
+  2fc0f6dd). Aceptadas las decisiones con defecto D1–D25. `RiseIn` (R24) es la entrada `rise` compartida
+  de la ola 2: #200, #202 y #196 la consumen. El handoff espera a que #197 esté en `dev`.
+- [x] Enmienda #199 aprobada por humano (fecha: 2026-10-23) — texto literal en design §Decisiones técnicas
+  Firma delegada en el leader por el mismo mandato. Se copia a `docs/ui-guidelines.md` después de la
+  enmienda de #197, que se mergea antes.
 - [ ] Smoke de R1 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
 - [ ] Smoke de R2 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
 - [ ] Smoke de R5 y R6 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)

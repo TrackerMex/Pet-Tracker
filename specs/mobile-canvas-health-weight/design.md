@@ -1,6 +1,6 @@
 ---
 feature: "mobile-canvas-health-weight"
-status: spec_ready
+status: approved
 tags: [mobile, ui, spec, canvas-parity]
 ---
 
