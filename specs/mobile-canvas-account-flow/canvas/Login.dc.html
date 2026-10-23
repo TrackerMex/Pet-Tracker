@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Iniciar sesión</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#107148;text-decoration:none}a:hover{color:#0B5C3A}
+.pt{--bg:#FFFFFF;--fg:#0D1117;--surface:#FFFFFF;--surface2:#F0FBF6;--default:#F5F6F8;--muted:#667085;--border:rgba(13,17,23,0.08);--lip-gray:#E4E7EC;--accent:#178255;--accent-strong:#107148;--lip:#0E5E3C;--blue:#EFF6FF;--blue-s:#0768E0;--amber:#FFF7ED;--amber-s:#A55E07;--green:#F0FBF6;--green-s:#107148;--violet:#F5F3FF;--violet-s:#7549F7;--rose:#FFF0F3;--rose-s:#D80B34;--danger:#D92D20;--warning:#B54708;--glass:rgba(255,255,255,0.86);--pill:rgba(23,130,85,0.14);--shadow:0 1px 2px rgba(13,17,23,0.04),0 8px 24px rgba(13,17,23,0.06)}
+.pt.dark{--bg:#0D1117;--fg:#F7F8FA;--surface:#161B22;--surface2:#12231B;--default:#1F242B;--muted:#9CA3AF;--border:rgba(255,255,255,0.08);--lip-gray:#0A0D12;--accent-strong:#2AB87C;--lip:#0B4D31;--blue:#0B203A;--blue-s:#4A8DDF;--amber:#271E14;--amber-s:#C17B22;--green:#12231B;--green-s:#2AB87C;--violet:#221C33;--violet-s:#9579E7;--rose:#39131A;--rose-s:#E35E78;--danger:#F87171;--warning:#FBBF24;--glass:rgba(22,27,34,0.86);--pill:rgba(23,130,85,0.22);--shadow:0 1px 2px rgba(0,0,0,0.4)}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes ping{0%{transform:scale(.55);opacity:.55}100%{transform:scale(1.5);opacity:0}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fill{from{width:0}}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+@keyframes fall{0%{transform:translateY(-40px) rotate(0);opacity:0}10%{opacity:1}100%{transform:translateY(760px) rotate(540deg);opacity:0}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
+</helmet>
+<div class="pt {{theme}}" style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: var(--bg); color: var(--fg); font-family: Inter, 'Helvetica Neue', system-ui, sans-serif; display: flex; flex-direction: column; padding: 56px 20px 34px">
+<a href="Main.dc.html" aria-label="Volver" style="width: 44px; height: 44px; margin-left: -10px; display: flex; align-items: center; justify-content: center; color: var(--fg)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></a>
+<div style="display: flex; align-items: flex-end; gap: 12px; margin-top: 8px; animation: rise 400ms ease-out both">
+<img src="/_blob/f4ec4ed756bad6b3aa2ee809a534ea88" alt="Mascota" style="width: 88px; height: auto; transform: rotate(-8deg)">
+<div style="background: var(--surface2); color: var(--fg); font-size: 15px; font-weight: 600; line-height: 20px; padding: 10px 14px; border-radius: 16px 16px 16px 4px; margin-bottom: 18px">¡Qué bueno verte de nuevo!</div>
+</div>
+<h1 style="margin: 20px 0 0; font-size: 30px; line-height: 36px; font-weight: 900; letter-spacing: -0.5px">Iniciar sesión</h1>
+<form style="display: flex; flex-direction: column; gap: 16px; margin-top: 24px; animation: rise 400ms ease-out 100ms both">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="login-email" style="font-size: 13px; font-weight: 600; color: var(--muted)">Correo electrónico</label>
+<input id="login-email" type="email" value="ana@correo.com" style="height: 52px; box-sizing: border-box; border-radius: 12px; border: 2px solid var(--accent); background: var(--default); color: var(--fg); padding: 0 14px; font: 500 16px Inter, system-ui, sans-serif; outline: none">
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="login-password" style="font-size: 13px; font-weight: 600; color: var(--muted)">Contraseña</label>
+<div style="position: relative; display: flex">
+<input id="login-password" type="password" value="contrasena" style="flex: 1; height: 52px; box-sizing: border-box; border-radius: 12px; border: 2px solid transparent; background: var(--default); color: var(--fg); padding: 0 48px 0 14px; font: 500 16px Inter, system-ui, sans-serif; outline: none">
+<button type="button" aria-label="Mostrar contraseña" style="position: absolute; right: 4px; top: 4px; width: 44px; height: 44px; border: 0; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
+</div>
+</div>
+<a href="Recuperar.dc.html" style="align-self: flex-end; font-size: 14px; font-weight: 600; color: var(--accent-strong); padding: 4px 0">¿Olvidaste tu contraseña?</a>
+</form>
+<div style="flex: 1"></div>
+<div style="display: flex; flex-direction: column; gap: 14px; animation: rise 400ms ease-out 200ms both">
+<a href="Inicio.dc.html" style="height: 56px; border-radius: 16px; background: var(--accent); color: #FFFFFF; box-shadow: 0 4px 0 var(--lip); display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 800">Iniciar sesión</a>
+<a href="Registro.dc.html" style="height: 52px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: var(--accent-strong)">Crear cuenta</a>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;dark&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true},&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844}}">
+class Component extends DCLogic {
+renderVals() {
+return { theme: this.props.dark ? "dark" : "" };
+}
+}
+</script>
+</body>
+</html>
