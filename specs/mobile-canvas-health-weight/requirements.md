@@ -769,6 +769,21 @@ conserva la clase de #197; el mock `HeartPulse` de HE queda sin uso y ningún
 | CTA › `#177 R6.2: recuentos de etiquetas (enmendado por #189 R7) (enmendado por #189 R13)` | `count(/text-17/g)` `8 + 15 + 1 + 1 + 1 + 1`; `count(/text-17 font-extrabold text-foreground/g)` `3 + 3` | las dos `+ 1` (`// #199 R9`) por `weight-history-title` | R9 |
 | UL › `#194 R5` (longitud de `SCREEN_FILES`) | base | base − 1 | R25 |
 
+### Enmienda E1 del leader (2026-10-23)
+
+Candados que los R-ids ponen en rojo y que el inventario de arriba omitía. Los
+detectó el escritor del handoff y el leader los verificó contra el árbol en H0.
+Forman parte del inventario cerrado con la misma regla de parada. Si #200 ya
+añadió `'screens/food/index.tsx'` a la lista de PCF `#173 R4`, la segunda
+feature en mergear conserva las dos entradas.
+
+- PCF `#173 R4: avatars solo en Perfil` › `limita la variante nueva al consumidor Perfil`: `toEqual(['screens/profile/index.tsx'])` pasa a `toEqual(['screens/health/index.tsx', 'screens/profile/index.tsx'])`, sufijo ` (enmendado por #199 R13)`, en `test(#199): R13`.
+- AC `#174 R12: inventarios` › el `it.each` `limita $token a su inventario de producción …`: en la fila `tracking-caps` entra `'screens/health/index.tsx'` (R14); en la fila `text-15` entran `'screens/weight-log/index.tsx'` (R10) y `'screens/health/index.tsx'` (R16), en su posición alfabética. Cada entrada en el commit rojo de su R, con el sufijo ` (enmendado por #199 R<n>)` encadenado tras los de #197.
+- UL `#65 R5: Health resuelve su copy por clave` › `#186 R7: resuelve las 43 ocurrencias normativas`: `+ 7 // #199 R25` en la suma de `R5_HEALTH`, sufijo ` (enmendado por #199 R25)`. La fila movida de `_layout` no cambia la longitud.
+- UL `#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas`: `- 1 // #199 R1: sale src/app/_layout.tsx`, en `test(#199): R1` (adelantada desde R25), sufijo ` (enmendado por #199 R1)`.
+- src/providers/__tests__/language-provider.test.tsx › `#194 R1: mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas (enmendado por #189 R15)`: la suma de `englishKeys` crece `+ 1 // #199 R5`, `+ 1 // #199 R9`, `+ 3 // #199 R14`, `+ 2 // #199 R17`, cada línea en el commit rojo de su R (rojo por la cifra, verde al añadir la clave), con los sufijos encadenados. Total +7.
+- Además, la baja de `src/app/_layout.tsx` en `SCREEN_FILES` (UL `#194 R5`) se adelanta de R25 a R1, porque R1 mueve la fila de `_layout`; y cada clave nueva del catálogo entra en el `feat` de su primer uso (R5, R9, R14, R17), no en R25: `TranslationKey = keyof typeof en` no admite una clave antes de que exista.
+
 ## Desviaciones conscientes del canvas
 
 | Canvas | App | Por qué | Decisión |
