@@ -6,7 +6,7 @@ tags: [mobile, ui, spec]
 
 # Diseño — [[mobile-canvas-zones]]
 
-Cierra los huecos de Zonas seguras y del Editor de zona frente a la copia congelada del canvas (A-189), sobre los cimientos de #197 (`ScreenHeader`, `ToggleSwitch`, `useShadows`, tokens `leading-*`/`tracking-dialog`) y el `RiseIn` de #199. Solo capa de presentación de `mobile-pet-tracker/`: dominio, aplicación, API y backend no cambian. Requisitos en [[requirements]].
+Cierra los huecos de Zonas seguras y del Editor de zona frente a la copia congelada del canvas (A-189), sobre los cimientos de #197 (`ScreenHeader`, `ToggleSwitch`, `useShadows`, tokens `leading-*`/`tracking-dialog`, y `RiseIn`, su R24). Solo capa de presentación de `mobile-pet-tracker/`: dominio, aplicación, API y backend no cambian. Requisitos en [[requirements]].
 
 ## Premisas contrastadas
 
@@ -21,7 +21,7 @@ Verificadas contra el árbol en 71ff81a1 (no contra explores):
 
 ## Supuestos
 
-- #197 y #199 están mergeadas en `dev` antes de implementar; si no, la implementación para (Base medida).
+- #197 (con su R24, `RiseIn`) está mergeada en `dev` antes de implementar; si no, la implementación para (Base medida). #202 no depende de #199.
 - El dev build Android usa `blurMethod="dimezisBlurViewSdk31Plus"` como hoy; las sombras de `useShadows()` se ven en Android (#197 R15).
 - `Modal` `transparent` con `statusBarTranslucent` cubre la barra de estado en Android edge-to-edge (SDK 57); el smoke lo confirma.
 - El botón atrás de Android dispara `onRequestClose` del `Modal`.
@@ -84,13 +84,12 @@ al guardar un cambio») y su `gap: 22px` son anotación del lienzo, no UI.
 
 ## Dependencias y precondiciones
 
-- #197 (`mobile-canvas-foundations`) en `dev`: `ScreenHeader`, `BackButton strokeWidth`, `ToggleSwitch`, `useShadows`, `leading-body`, `leading-note`, `tracking-dialog`, `rise` 14/400.
-- #199 (`mobile-canvas-health-weight`) en `dev`: `src/components/rise-in.tsx` (`RiseIn({ delayMs, testID, className, children })`, su R24).
+- #197 (`mobile-canvas-foundations`) en `dev`: `ScreenHeader`, `BackButton strokeWidth`, `ToggleSwitch`, `useShadows`, `leading-body`, `leading-note`, `tracking-dialog`, `rise` 14/400 y `src/components/rise-in.tsx` (#197 R24, commit ece57bea de `feature/197-mobile-canvas-foundations`: `export function RiseIn({ delayMs, testID, className, children }: { delayMs: number; testID?: string; className?: string; children: ReactNode })`, con `MOTION_RISE_TIMING` y `MOTION_RISE_OFFSET_Y` de `theme/motion` y sin `entering` con reduce motion).
 - Rama `feature/202-mobile-canvas-zones` re-basada sobre `dev` tras esos merges; la Base medida se re-mide entonces.
 
 ## Decisiones técnicas
 
-- D1-D12 de [[requirements]] § Decisiones con defecto, más D8 enmendada: la entrada es `RiseIn` de #199.
+- D1-D12 de [[requirements]] § Decisiones con defecto, más D8 enmendada: la entrada es `RiseIn` de #197 R24.
 - `ConfirmDialog` sobre `Modal` de React Native (no portal de heroui): sin dependencia nueva y con atrás de Android gratis vía `onRequestClose`.
 - El velo usa una constante `rgba` en TS (como `shadows.ts` de #197), no una clase arbitraria ni un hex.
 - Las clases nuevas del nombre van delante del sufijo de hoy para no reabrir `#189 R10`.
@@ -117,7 +116,7 @@ Todos en la capa de presentación (`mobile-pet-tracker/src/`):
 
 - Mantener la cabecera nativa transparente y solo cambiar offsets: el canvas dibuja la cabecera en contenido y #197 ya da `ScreenHeader`.
 - `Dialog` de heroui-native: su animación y radio no son los del canvas y meterían `twMerge` en los textos 15.
-- Entrada `rise` propia del diálogo: el coordinador fija `RiseIn` de #199 como única entrada compartida.
+- Entrada `rise` propia del diálogo: el coordinador fija `RiseIn` de #197 R24 como única entrada compartida.
 - `Map` de reicon con otro trazo: no dibuja el círculo discontinuo del canvas.
 - Extender `EmptyState` para las tarjetas de estado del Editor: lo veta el encargo (#198).
 
@@ -126,4 +125,5 @@ Todos en la capa de presentación (`mobile-pet-tracker/src/`):
 - Choque con #201 en `_layout.tsx`: son dos líneas de `options`; se resuelve en el rebase.
 - iOS puede recortar las sombras de los `BlurView` con `overflow-hidden`; fuera del smoke Android.
 - Los `it.each` de GZ/GE que confirman vía espía de `Alert` son muchos: el inventario los nombra y la enmienda mecánica cubre los que falten por literal.
-- `#62 R14` de consistency cuenta `CONTINUOUS_CORNER`: las `Card` del esqueleto pueden moverla; se re-mide.
+- `CONTINUOUS_CORNER` en `consistency-classnames`: `#62 R14` y `#98 R10` no se mueven mientras Zonas conserve sus 3 `style={CONTINUOUS_CORNER}` (R6 lo exige en la papelera; las `Card` del esqueleto ponen la esquina dentro de `components/card.tsx`). Sí se mueve `#189 R9`, que afirma literal el `style` de la hoja del Editor: R13 lo enmienda.
+- `RiseIn` envuelve la hoja del Editor: sin `shrink` en el envoltorio la hoja deja de encoger bajo el teclado (`flexShrink` vale 0 por defecto en React Native). R13 pone `className="-mt-6.5 shrink"`; el punto 7 del smoke lo confirma.
