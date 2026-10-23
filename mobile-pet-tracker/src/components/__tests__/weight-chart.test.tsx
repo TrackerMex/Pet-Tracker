@@ -25,7 +25,7 @@ jest.mock('react-native-svg', () => {
   const Circle = (props: Record<string, unknown>) =>
     React.createElement(View, { ...props, testID: 'weight-chart-point' });
 
-  const Path = (props: Record<string, unknown>) => React.createElement(View, { ...props, testID: props.testID ?? (props.strokeDasharray ? 'weight-chart-line' : 'weight-chart-area') });
+  const Path = (props: Record<string, unknown>) => React.createElement(View, { ...props, testID: typeof props.testID === 'string' ? props.testID : (props.strokeDasharray ? 'weight-chart-line' : 'weight-chart-area') });
   return { ...actual, __esModule: true, default: Svg, Svg, Polyline, Polygon, Path, G, Circle };
 });
 
