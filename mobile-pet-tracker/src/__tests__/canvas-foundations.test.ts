@@ -153,3 +153,23 @@ describe('#197 R5: labios del canvas', () => {
     }
   });
 });
+
+describe('#197 R6: variantes del canvas', () => {
+  it.each([
+    ['danger', 4, 'Recordatorios', '0 4px 0 #9F1F15'],
+    ['hero', 6, 'Nutricion', '0 6px 0 var(--lip)'],
+    ['neutral', 4, 'HorarioComidas', '0 4px 0 var(--lip-gray)'],
+    ['neutralCompact', 3, 'Alertas', '0 3px 0 var(--lip-gray)'],
+    ['primary', 4, 'Inicio', '0 4px 0 var(--lip)'],
+    ['primaryCompact', 3, 'NuevoRecordatorio', '0 3px 0 var(--lip)'],
+    ['summary', 5, 'HorarioComidas', '0 5px 0 var(--lip)'],
+    ['tileAmber', -4, 'Inicio', 'inset 0 -4px 0 rgba(165,94,7,0.16)'],
+    ['tileBlue', -4, 'Inicio', 'inset 0 -4px 0 rgba(7,104,224,0.16)'],
+    ['tileViolet', -4, 'Inicio', 'inset 0 -4px 0 rgba(117,73,247,0.18)'],
+    ['violet', 4, 'HorarioComidas', '0 4px 0 rgba(91,63,163,0.35)'],
+  ] as const)('#197 R6: cada variante de labio sale de su artboard %s', (key, offset, board, literal) => {
+    expect(artboard(board)).toContain(literal);
+    const declaration = readSource('theme/chunky-lip.ts').split(new RegExp(`\\b${key}: `))[1]?.split(/\n    \w+:/)[0] ?? '';
+    expect(declaration).toMatch(new RegExp(`offsetY: ${offset}\\b`));
+  });
+});
