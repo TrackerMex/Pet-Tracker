@@ -3455,6 +3455,76 @@
     "name": "mobile-profile-photo-hero-canvas",
     "status": "pending",
     "priority": "P2",
-    "description": "Registrada el 2026-10-21 junto con #195, lado Perfil. Cabecera fotográfica a sangre en Perfil según el artboard Perfil.dc.html (alto 330; título «Perfil» en blanco y píldora «Añadir mascota» de vidrio sobre la foto; botón «Cambiar foto» circular de 44 con acento en la esquina inferior derecha; nombre 30/34/900 y chips Macho/Esterilizado/edad/peso sobre el degradado). REQUIERE ENMENDAR #168: la regla N1 de docs/ui-guidelines.md («Salud, Nutrición y Perfil abren con el título grande; hero solo en Inicio») pasa a «hero en Inicio y Perfil; título grande en Salud y Nutrición», y la enmienda debe nombrar el candado revertido y reabrir el gate solo para ella (tab-headers-canvas.test.ts «conserva PetHeroHeader solo en Inicio»). DEPENDE de #194 (mobile-edit-profile, in_progress en wt-194, toca screens/profile/index.tsx): no se especifica ni arranca hasta que #194 esté mergeada, para no escribir sobre el mismo fichero ni caducar la spec al mergear. Reutiliza el componente de #195 (pet-hero-header). Referencia en specs/mobile-home-photo-hero-canvas/canvas-ref/Perfil.dc.html. Registrada sin spec; no se arranca."
+    "description": "Registrada el 2026-10-21 junto con #195, lado Perfil. Cabecera fotográfica a sangre en Perfil según el artboard Perfil.dc.html (alto 330; título «Perfil» en blanco y píldora «Añadir mascota» de vidrio sobre la foto; botón «Cambiar foto» circular de 44 con acento en la esquina inferior derecha; nombre 30/34/900 y chips Macho/Esterilizado/edad/peso sobre el degradado). REQUIERE ENMENDAR #168: la regla N1 de docs/ui-guidelines.md («Salud, Nutrición y Perfil abren con el título grande; hero solo en Inicio») pasa a «hero en Inicio y Perfil; título grande en Salud y Nutrición», y la enmienda debe nombrar el candado revertido y reabrir el gate solo para ella (tab-headers-canvas.test.ts «conserva PetHeroHeader solo en Inicio»). DEPENDE de #194 (mobile-edit-profile, in_progress en wt-194, toca screens/profile/index.tsx): no se especifica ni arranca hasta que #194 esté mergeada, para no escribir sobre el mismo fichero ni caducar la spec al mergear. Reutiliza el componente de #195 (pet-hero-header). Referencia en specs/mobile-home-photo-hero-canvas/canvas-ref/Perfil.dc.html. Registrada sin spec; no se arranca. AMPLIADA el 2026-10-23 por el plan progress/plan_canvas-parity-2026-10-23.md: #194 ya está done, así que la dependencia está cumplida. Ahora cubre Perfil entero: además del hero, los artboards Perfil, PerfilCuenta y PerfilNotificaciones del canvas versión 1792777983-cd94; la parte de Perfil de C18 de progress/explore_canvas-parity-2026-10-21.md; y el cableado en Perfil del Switch y de la cabecera de #197. Depende de #197. Congelar los artboards en specs/mobile-profile-photo-hero-canvas/canvas/. Firma delegada al leader (mandato del humano 2026-10-23)."
+  },
+  {
+    "id": 197,
+    "name": "mobile-canvas-foundations",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Registrada el 2026-10-23 por el plan progress/plan_canvas-parity-2026-10-23.md (ola 1), sobre el canvas versión 1792777983-cd94. Bases visuales sin cablear pantallas. Candidatas de progress/explore_canvas-parity-2026-10-21.md §7: C01 tokens de color claros en theme/global.css (danger #D92D20, warning #B54708, border .08); C02 tokens de tracking e interlineado y barrido de tracking-tight; C03 variantes de theme/chunky-lip.ts y migración de los 5 border-b-N (add-reminder, alerts, meal-schedule); C04 componente Switch del canvas, de 48x28, sin cablear sus 3 usos; C05 rise común de 14 px y 400 ms ease-out en theme/motion.ts, con home-entrance.tsx; C06 componente de cabecera en contenido (BackButton, h1 y accesorio) sin cablear, más la enmienda de docs/ui-guidelines.md; C07 sombras del canvas. Cada pantalla cablea Switch y cabecera en su propia feature de la ola 2. Respeta la Enmienda #187 (text-<n> nunca sobre componentes de heroui). Firma delegada al leader (mandato del humano 2026-10-23). Registrada sin spec."
+  },
+  {
+    "id": 198,
+    "name": "mobile-canvas-home",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Registrada el 2026-10-23 por el plan progress/plan_canvas-parity-2026-10-23.md (ola 2). Inicio igual al canvas versión 1792777983-cd94, artboards Inicio, InicioCarga, InicioError, InicioSinCollar, InicioActividad, InicioRecordatorios e InicioVacio. Cubre C13 (resumen, collar y accesos) y C14 (actividad semanal) de progress/explore_canvas-parity-2026-10-21.md, más los estados. El hero ya lo cerró #195. Ficheros probables: screens/home/index.tsx, screens/home/collar-battery-bar.tsx, screens/home/weekly-activity-chart.tsx y sus tests. Roza #144 y #154: el spec_author decide si las absorbe. Depende de #197. Congelar los artboards en specs/mobile-canvas-home/canvas/. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 199,
+    "name": "mobile-canvas-health-weight",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Registrada el 2026-10-23 por el plan progress/plan_canvas-parity-2026-10-23.md (ola 2). Salud y Peso iguales al canvas versión 1792777983-cd94, artboards Salud, SaludEstados, SaludSinMascota, Peso, PesoEstados y PesoRegistrado. Cubre C08 (Peso, con WeightChart en variante completa y mini) y C09 (Salud, que usa el mini) de progress/explore_canvas-parity-2026-10-21.md. Ficheros probables: screens/weight-log/index.tsx, components/weight-chart.tsx, screens/health/index.tsx, components/pet-switcher.tsx (variante), i18n/catalog.ts y tests. Cablea en sus rutas la cabecera y el rise de #197. Depende de #197. Congelar los artboards en specs/mobile-canvas-health-weight/canvas/. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 200,
+    "name": "mobile-canvas-nutrition",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Registrada el 2026-10-23 por el plan progress/plan_canvas-parity-2026-10-23.md (ola 2). Nutrición igual al canvas versión 1792777983-cd94, artboards Nutricion, NutricionAvisos, HorarioComidas e HistorialComidas. Cubre C10 (mover app/(tabs)/food.tsx a src/screens/food/ con ruta delgada, sin cambio visual, primero) y C11 (visual) de progress/explore_canvas-parity-2026-10-21.md, más el horario y el historial de comidas. Ficheros probables: app/(tabs)/food.tsx, screens/food/ (nuevo), screens/meal-schedule, la pantalla de historial y tests. Depende de #197. Congelar los artboards en specs/mobile-canvas-nutrition/canvas/. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 201,
+    "name": "mobile-canvas-map",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Registrada el 2026-10-23 por el plan progress/plan_canvas-parity-2026-10-23.md (ola 2). Mapa igual al canvas versión 1792777983-cd94, artboards Mapa, MapaCarga, MapaError, MapaSinMascotas, MapaSinRastreo, MapaSinUbicacion y MapaModoPerdidoError. Cubre C15 de progress/explore_canvas-parity-2026-10-21.md, con props por pantalla en PetMap. NO cubre el ping ni el marcador personalizado, que siguen en #192 (spike en dispositivo). Ficheros probables: screens/map/index.tsx, components/pet-map.tsx y tests. Roza #151: el spec_author decide si la absorbe. Depende de #197. Congelar los artboards en specs/mobile-canvas-map/canvas/. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 202,
+    "name": "mobile-canvas-zones",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Registrada el 2026-10-23 por el plan progress/plan_canvas-parity-2026-10-23.md (ola 2). Zonas seguras y Editor de zona iguales al canvas versión 1792777983-cd94, artboards Zonas, ZonasEliminar, ZonasVacio, ZonasSinCollar, ZonasSoloLectura, ZonasEstados, EditorZona, EditorZonaEstados, EditorZonaSoloLectura, EditorZonaNueva y EditorZonaError. Es la enmienda A-189 de progress/explore_canvas-parity-2026-10-21.md §7 convertida en feature, porque #189 ya está done. Incluye cablear el Switch y la cabecera de #197 en screens/geofences y screens/geofence-editor. El centro, el asa y el breathe del Editor quedan en #192. Depende de #197. Congelar los artboards en specs/mobile-canvas-zones/canvas/. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 203,
+    "name": "mobile-canvas-collar-alerts",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Registrada el 2026-10-23 por el plan progress/plan_canvas-parity-2026-10-23.md (ola 2). Collar y alertas iguales al canvas versión 1792777983-cd94, artboards Vincular, VincularVinculado, VincularDesvincular, Celebracion, Alertas y DetalleAlerta. Cubre la parte de Celebración de C18 de progress/explore_canvas-parity-2026-10-21.md. Ficheros probables: la pantalla de vincular collar, components/celebration.tsx, screens/alerts, el detalle de alerta y tests. Roza #165: el spec_author decide si la absorbe. Depende de #197. Congelar los artboards en specs/mobile-canvas-collar-alerts/canvas/. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 204,
+    "name": "mobile-canvas-routine",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Registrada el 2026-10-23 por el plan progress/plan_canvas-parity-2026-10-23.md (ola 2). Recordatorios y documentos iguales al canvas versión 1792777983-cd94, artboards Recordatorios, NuevoRecordatorio y Documentos. Cubre la parte de Recordatorios de C18 de progress/explore_canvas-parity-2026-10-21.md. Ficheros probables: screens/reminders, screens/add-reminder, la pantalla de documentos y tests. Depende de #197. Congelar los artboards en specs/mobile-canvas-routine/canvas/. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 205,
+    "name": "mobile-canvas-account-flow",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Registrada el 2026-10-23 por el plan progress/plan_canvas-parity-2026-10-23.md (ola 2). Bienvenida, cuenta y alta de mascota iguales al canvas versión 1792777983-cd94, artboards Main, Login, Registro, Recuperar, RecuperarEnviado, NuevaContrasena, NuevaMascota y NuevaMascota2. Cubre C17 de progress/explore_canvas-parity-2026-10-21.md. Ficheros probables: screens/welcome, login, register, forgot, reset-password, add-pet y tests. Depende de #197. Congelar los artboards en specs/mobile-canvas-account-flow/canvas/. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 206,
+    "name": "mobile-canvas-tab-bar",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Registrada el 2026-10-23 por el plan progress/plan_canvas-parity-2026-10-23.md (ola 2). Barra de pestañas flotante igual al canvas versión 1792777983-cd94: la píldora activa se desliza con spring, más el velo de vidrio, la geometría y el trazo del icono activo. Cubre C16 de progress/explore_canvas-parity-2026-10-21.md. Ficheros probables: components/floating-tab-bar.tsx y tests. Gran parte solo se ve en dispositivo: va al lote de smoke. Depende de #197. Congelar como referencia los artboards de pestaña en specs/mobile-canvas-tab-bar/canvas/. Firma delegada al leader. Registrada sin spec."
   }
 ]

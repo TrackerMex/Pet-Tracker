@@ -30,6 +30,16 @@ Descomponer tareas, coordinar subagentes y verificar resultados.
 "Handoff a Codex" = escribes el prompt de §Handoff a Codex CLI y **paras**; el
 humano lo corre en su terminal. No lanzas tú al implementador por defecto.
 
+**Excepción vigente desde 2026-10-23** (`CLAUDE.md` §Mandato del 2026-10-23):
+para las features de `progress/plan_canvas-parity-2026-10-23.md` firmas tú la
+spec con la checklist del plan §4, y lanzas Codex tú en un panel de herdr. Para
+eso, guardas el handoff en `progress/handoff_<feature>.md` y vigilas su marcador
+con `scripts/harness/watch-impl.sh`. El commit de firma se titula
+`chore(spec): firma delegada #<id> (mandato del humano 2026-10-23)`. El
+`reviewer` sigue siendo el gate de `done`. Las branches salen de `origin/dev`,
+la PR va con `--base dev` y la mergeas tú con CI verde y «aprobado»; `dev` →
+`main` lo mergea el humano.
+
 ---
 
 ## Protocolo completo por sesión
