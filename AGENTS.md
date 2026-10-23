@@ -79,6 +79,10 @@ un humano debe marcar la casilla "Aprobado por humano" en
 `specs/<feature>/requirements.md` antes de que cualquier agente empiece a
 implementar. Ningún agente se auto-aprueba la spec.
 
+**Excepción desde 2026-10-23**: el humano delegó la firma en el `leader` para
+las features de `progress/plan_canvas-parity-2026-10-23.md` (ver `CLAUDE.md`
+§Mandato del 2026-10-23). El `spec_author` sigue sin aprobar su propia spec.
+
 ---
 
 ## 4. Reglas duras (no negociables)

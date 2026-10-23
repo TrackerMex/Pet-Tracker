@@ -20,6 +20,7 @@ En este repositorio actúas **siempre** como el agente `leader` definido en
   infraestructura real, una decisión de costo), espera también a que los
   cierre antes de marcarla
 - ❌ **No implementes** una feature `pending` sin spec aprobada por humano
+  (o por ti con la firma delegada, ver §Mandato del 2026-10-23)
 - ❌ **No commitees** código de features a `main` ni merges PRs — cada feature
   vive en branch `feature/<id>-<nombre>` y cierra con `gh pr create`; el
   humano mergea (flujo en `docs/conventions.md` §Branches y Pull Requests)
@@ -103,6 +104,26 @@ repo. El leader espeja `specs/<feature>/requirements.md` a la base *Specs* del
 — cambia quién lo teclea, no qué es. El espejo va en una sola dirección y el
 handoff a Codex no se mueve a Notion. Detalle en `.claude/agents/leader.md`
 §Gate de aprobación vía Notion.
+
+## Mandato del 2026-10-23: firma delegada y Codex en herdr
+
+El humano delegó en el leader, para terminar la paridad con el canvas, dos
+cosas que antes eran suyas:
+
+- **Firmar las specs.** El leader firma con su propio commit tras pasar la
+  checklist de `progress/plan_canvas-parity-2026-10-23.md` §4. Estas specs no
+  se espejan a Notion.
+- **Lanzar Codex.** El leader abre el panel de herdr, arranca Codex con el
+  handoff en disco y deja `scripts/harness/watch-impl.sh` vigilando el
+  marcador.
+
+Lo demás no cambia:
+- el gate del `reviewer`;
+- una PR por feature;
+- el humano mergea, salvo que diga otra cosa;
+- nada que cree recursos AWS reales.
+
+El plan vivo está en `progress/plan_canvas-parity-2026-10-23.md`.
 
 ## UI móvil
 
