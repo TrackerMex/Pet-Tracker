@@ -120,10 +120,10 @@ describe('#187 R1: ningún componente que fusiona className lleva text-NN', () =
     expect(findings).toEqual([]);
   });
 
-  it('#187 R1: el escáner cubre al menos el universo medido (enmendado por #177 R9) (enmendado por #189 R5, R10, R13)', () => {
+  it('#187 R1: el escáner cubre al menos el universo medido (enmendado por #177 R9) (enmendado por #189 R5, R10, R13) (enmendado por #200 R3)', () => {
     expect(tree.filter((file) => file.heroElements > 0).length).toBeGreaterThanOrEqual(28);
     expect(tree.reduce((sum, file) => sum + file.heroElements, 0)).toBeGreaterThanOrEqual(197); // #186 R8: 211 - 12 + 1; #191 R11: controles nativos, -1; #189 R5, R10, R13: -2, +1, -1
-    expect(tree.reduce((sum, file) => sum + file.cardElements, 0)).toBeGreaterThanOrEqual(41); // #188 R18: 42 - 1 (el banner de vinculación deja de ser Card)
+    expect(tree.reduce((sum, file) => sum + file.cardElements, 0)).toBeGreaterThanOrEqual(40); // #188 R18: 42 - 1 (el banner de vinculación deja de ser Card); #200 R3: -1
     expect(tree.reduce((sum, file) => sum + file.classNameElements, 0)).toBeGreaterThanOrEqual(163); // #191 R11: controles nativos, -1; #189 R5, R10, R13: -2, 0, -1
   });
 
