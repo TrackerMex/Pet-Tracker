@@ -974,17 +974,14 @@ describe('#62 R3: los avisos de plan usan el Card compartido', () => {
     });
   });
 
-  it('hereda radio, borde y sombra sin capturar el testID del texto', async () => {
+  it('hereda radio, borde y sombra sin capturar el testID del texto (enmendado por #200 R7)', async () => {
     await renderFood();
 
     const card = await screen.findByTestId(
       'warning-card-chronic_disease_vet',
     );
 
-    expect(card.props.className).toContain('rounded-card');
-    expect(card.props.className).toContain('border');
-    expect(card.props.className).toContain('shadow-sm');
-    expect(card.props.className).toContain('bg-default');
+    expect(card.props.className).toBe('rounded-card bg-default p-3.5');
     expect(screen.queryAllByTestId(/^plan-warning-/)).toHaveLength(1);
   });
 });
@@ -1680,5 +1677,39 @@ describe('#200 R6: filas del canvas', () => {
       expect(es['food.markServedAction']).toBe('Marcar servido');
       expect(en['food.markServedAction']).toBe('Mark served');
     }
+  });
+});
+
+
+const FOOD_WARNINGS_200 = [
+  { code: 'weight_loss_plan', message: 'Aviso de peso.' },
+  { code: 'check_food_allergens', message: 'Aviso de alergias.' },
+];
+function setupFood200Warnings() {
+  setupFood168();
+  mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan({ warnings: FOOD_WARNINGS_200, aiExplanation: 'Plan explicado.' }) });
+}
+
+describe('#200 R7: avisos del plan', () => {
+  beforeEach(setupFood200Warnings);
+  it('#200 R7: cada aviso es una tarjeta neutra con interlineado de nota', async () => {
+    await renderFood();
+    const warnings = await screen.findByTestId('food-warnings');
+    expect(warnings.props.className).toBe('gap-2');
+    for (const { code, message } of FOOD_WARNINGS_200) {
+      const card = within(warnings).getByTestId(`warning-card-${code}`);
+      expect(card.type).toBe('View');
+      expect(card.props.className).toBe('rounded-card bg-default p-3.5');
+      expect(card).toHaveStyle(CONTINUOUS_CORNER);
+      const text = within(card).getByTestId(`plan-warning-${code}`);
+      expect(text.props.className).toBe('text-sm font-medium leading-note text-foreground');
+      expect(text).toHaveTextContent(message);
+    }
+  });
+  it('#200 R7: sin avisos no hay contenedor', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+    await renderFood();
+    await screen.findByTestId('food-plan-card');
+    expect(screen.queryByTestId('food-warnings')).toBeNull();
   });
 });
