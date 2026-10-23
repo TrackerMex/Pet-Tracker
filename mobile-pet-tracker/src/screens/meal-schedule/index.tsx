@@ -24,6 +24,7 @@ import { Card } from '../../components/card';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { useChunkyLip } from '../../theme/chunky-lip';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -50,6 +51,7 @@ function toMealTime(date: Date): string {
 }
 
 function MealScheduleContent({ petId }: { petId: string }) {
+  const chunkyLip = useChunkyLip();
   const [amberStrong, violetStrong] = useThemeColors(['category-amber-strong', 'category-violet-strong']);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
@@ -235,8 +237,8 @@ function MealScheduleContent({ petId }: { petId: string }) {
           <HomeEntrance testID="meal-schedule-summary-entry" index={0}>
             <View
               testID="meal-schedule-summary"
-              className="gap-2 rounded-24 bg-accent border-b-5 border-black/25 p-4"
-              style={CONTINUOUS_CORNER}
+              className="gap-2 rounded-24 bg-accent p-4"
+              style={[CONTINUOUS_CORNER, chunkyLip.summary]}
             >
               <Text className="text-xs font-extrabold uppercase tracking-caps text-accent-foreground">
                 {t('mealSchedule.dailyTarget')}
@@ -308,7 +310,8 @@ function MealScheduleContent({ petId }: { petId: string }) {
                         size="sm"
                         isDisabled={editing}
                         hitSlop={TOUCH_SLOP}
-                        className="h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3.5"
+                        className="h-9 rounded-10 border-2 border-lip-gray bg-surface px-3.5"
+                        style={chunkyLip.neutralCompact}
                         onPress={() => setPicker({ from: mealTime })}
                       >
                         <Text className="text-13 font-extrabold text-foreground">
@@ -369,7 +372,8 @@ function MealScheduleContent({ petId }: { petId: string }) {
                 testID="add-meal-time-button"
                 isDisabled={editing}
                 variant="secondary"
-                className="h-13.5 flex-1 rounded-14 border-2 border-b-6 border-lip-gray bg-surface"
+                className="h-12.5 flex-1 rounded-14 border-2 border-lip-gray bg-surface"
+                style={chunkyLip.neutral}
                 onPress={() => setPicker({ from: null })}
               >
                 <Text className="text-15 font-extrabold text-foreground">

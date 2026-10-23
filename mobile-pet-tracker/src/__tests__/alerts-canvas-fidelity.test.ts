@@ -144,8 +144,8 @@ describe('#174 R11: la carta declara los cambios', () => {
     expect(collapse(guidelines.slice(start, end))).toContain('Fuera de la escala, por fidelidad al canvas (#174): `rounded-10` (10 px), ack compacto de fila de Alertas.');
   });
 
-  it('declara el secundario compacto y el reintento sin labio (enmendado por #180 R12)', () => {
-    expect(flat).toContain('- **Secundario compacto de fila** (#174): el ack de cada fila abierta de Alertas lleva `h-8.5 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3`, etiqueta `text-xs font-extrabold text-foreground` y `hitSlop={TOUCH_SLOP}` (34 + 12 = 46 de diana). Es la única excepción a la receta del secundario neutro; el inventario de #166 R3 lo lista por su `testID`.');
+  it('declara el secundario compacto y el reintento sin labio (enmendado por #180 R12) (enmendado por #197 R21)', () => {
+    expect(flat).toContain('- **Secundario compacto de fila** (#174; labio por estilo, #197): el ack de cada fila abierta de Alertas lleva `h-8.5 rounded-10 border-2 border-lip-gray bg-surface px-3` con `style={chunkyLip.neutralCompact}`, etiqueta `text-xs font-extrabold text-foreground` y `hitSlop={TOUCH_SLOP}` (34 + 12 = 46 de diana). Es la única excepción a la receta del secundario neutro; el inventario de #166 R3 lo lista por su `testID`.');
     expect(flat).toContain('(reintentos).');
     expect(flat).not.toContain('confirmar alerta en el detalle');
   });
@@ -190,7 +190,7 @@ describe('#174 R12: inventarios', () => {
     {
       token: 'border-b-5',
       pattern: /(?<![\w-])border-b-5\b/,
-      files: ['screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx'], // #179 R5; #174 R12
+      files: [], // #179 R5; #174 R12
     },
     {
       token: 'tracking-caps',
@@ -221,8 +221,11 @@ describe('#174 R12: inventarios', () => {
       token: 'tracking-title',
       pattern: /(?<![\w-])tracking-title\b/,
       files: [
+        'app/(tabs)/food.tsx',
+        'components/celebration.tsx',
         'components/empty-state.tsx', // (enmendado por #176 R8)
         'components/pet-hero-header.tsx', // #195 R6
+        'components/screen-header.tsx',
         'screens/add-pet/index.tsx', // #191 R11
         'screens/add-reminder/index.tsx', // #178 R10
         'screens/alert-detail/index.tsx', // #180 R1
@@ -230,21 +233,23 @@ describe('#174 R12: inventarios', () => {
         'screens/docs/index.tsx', // #175 R5
         'screens/geofence-editor/index.tsx', // #189 R8
       'screens/geofences/index.tsx', // #189 R1
+        'screens/health/index.tsx',
         'screens/meal-schedule/index.tsx', // #179 R4
         'screens/meals-history/index.tsx', // #179 R9
         'screens/pairing/index.tsx', // #188 R16
+        'screens/profile/index.tsx',
         'screens/reminders/index.tsx', // #178 R4
       ],
     },
-  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12)', ({ pattern, files }) => {
+  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12) (enmendado por #197 R4) (enmendado por #197 R10) (enmendado por #197 R19)', ({ pattern, files }) => {
     expect(filesMatching(pattern)).toEqual(files);
   });
 
-  it('declara border-b-5 una sola vez', () => {
+  it('declara border-b-5 una sola vez (enmendado por #197 R10)', () => {
     const count = sourceFiles().reduce((total, path) => (
       total + (readFileSync(path, 'utf8').match(/(?<![\w-])border-b-5\b/g)?.length ?? 0)
     ), 0);
-    expect(count).toBe(1 + 1 + 1); // #179 R5, R6
+    expect(count).toBe(0); // #179 R5, R6
   });
 });
 

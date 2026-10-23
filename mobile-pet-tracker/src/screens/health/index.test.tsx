@@ -986,12 +986,12 @@ function setupHealth168() {
 describe('#168 R1: Salud pinta el título grande en todas sus ramas', () => {
   beforeEach(setupHealth168);
 
-  it.each(HEALTH_BRANCHES_168)('pinta el título grande ($name)', async ({ state, branch }) => {
+  it.each(HEALTH_BRANCHES_168)('pinta el título grande ($name) (enmendado por #197 R4)', async ({ state, branch }) => {
     mockListPets.mockImplementation(async () => state);
     await renderHealth();
     await screen.findByTestId(branch);
     const title = screen.getByTestId('health-title');
-    expect(title.props.className).toBe('text-3xl font-black tracking-tight text-foreground');
+    expect(title.props.className).toBe('text-3xl font-black tracking-title text-foreground');
     expect(title).toHaveTextContent('Salud');
     expect(elementChild(title.parent!, 0)).toBe(title);
   });
