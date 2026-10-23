@@ -1311,13 +1311,13 @@ const PROFILE_BRANCHES_168 = [
 describe('#168 R1: Perfil pinta el título grande en todas sus ramas', () => {
   beforeEach(setupProfile168);
 
-  it.each(PROFILE_BRANCHES_168)('pinta el título grande ($name)', async ({ pets, detail, branch }) => {
+  it.each(PROFILE_BRANCHES_168)('pinta el título grande ($name) (enmendado por #197 R4)', async ({ pets, detail, branch }) => {
     mockListPets.mockImplementation(async () => pets);
     mockGetPet.mockImplementation(async () => detail);
     await renderProfile();
     await screen.findByTestId(branch);
     const title = screen.getByTestId('profile-title');
-    expect(title.props.className).toBe('text-3xl font-black tracking-tight text-foreground');
+    expect(title.props.className).toBe('text-3xl font-black tracking-title text-foreground');
     expect(title).toHaveTextContent('Perfil');
     expect(profileChild(title.parent!, 0)).toBe(title);
     expect(profileChild(title.parent!.parent!, 0)).toBe(title.parent);

@@ -129,3 +129,12 @@ describe('#197 R3: tipografía del canvas', () => {
     expect(css).not.toMatch(/--text-[\w-]+--line-height/);
   });
 });
+
+describe('#197 R4: tracking de títulos', () => {
+  it('#197 R4: ningún fichero de producción usa tracking-tight', () => {
+    expect(filesMatching(/(?<![\w-])tracking-tight\b/)).toEqual([]);
+    for (const file of ['app/(tabs)/food.tsx', 'components/celebration.tsx', 'screens/health/index.tsx', 'screens/profile/index.tsx']) {
+      expect(readSource(file)).toContain('text-3xl font-black tracking-title text-foreground');
+    }
+  });
+});

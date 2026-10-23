@@ -57,18 +57,18 @@ const SCREEN_AND_TEST_FILES_168 = [
   'screens/profile/index.test.tsx',
   'app/(tabs)/__tests__/food.test.tsx',
 ];
-const TAB_TITLE_168 = 'text-3xl font-black tracking-tight text-foreground';
+const TAB_TITLE_168 = 'text-3xl font-black tracking-title text-foreground';
 
 describe('#168 R1: el título grande vive en las tres pestañas', () => {
-  it('pinta una ocurrencia del literal en cada fichero de pestaña', () => {
+  it('pinta una ocurrencia del literal en cada fichero de pestaña (enmendado por #197 R4)', () => {
     for (const file of TAB_SCREENS_168) {
       expect({ file, occurrences: readSource(file).split(TAB_TITLE_168).length - 1 })
         .toEqual({ file, occurrences: 1 });
     }
   });
 
-  it('limita el literal a las tres pestañas y a la celebración', () => {
-    expect(filesMatching(/text-3xl font-black tracking-tight text-foreground/).sort()).toEqual([
+  it('limita el literal a las tres pestañas y a la celebración (enmendado por #197 R4)', () => {
+    expect(filesMatching(/text-3xl font-black tracking-title text-foreground/).sort()).toEqual([
       'app/(tabs)/food.tsx',
       'components/celebration.tsx',
       'screens/health/index.tsx',
