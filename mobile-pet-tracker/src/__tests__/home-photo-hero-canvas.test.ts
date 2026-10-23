@@ -150,6 +150,17 @@ describe('#195 R20: enmienda canónica y continuación de A8', () => {
     expect(normalize(charter.slice(charter.indexOf(heading)).trimEnd())).toBe(normalize(blocks[0]));
   });
 
+  it('la sección de la carta lleva las medidas de la Enmienda A4 y ninguna de las antiguas', () => {
+    const heading = blocks[0].split('\n')[0];
+    const section = charter.slice(charter.indexOf(heading));
+    expect(section).toContain('alto 430');
+    expect(section).toContain('velo oscuro superior de 90 px');
+    expect(section).toContain('degradado inferior de 100 px');
+    expect(section).not.toContain('alto 330');
+    expect(section).not.toContain('130 px');
+    expect(section).not.toContain('160 px');
+  });
+
   it('conserva A8 entero y añade la cita nueva como párrafo aparte inmediato', () => {
     expect(charter.split(historicalA8)).toHaveLength(2);
     expect(charter).toContain(historicalA8 + '\n\n' + blocks[1] + '\n\n');
