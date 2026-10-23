@@ -299,3 +299,25 @@ describe('#197 R21: carta canónica', () => {
     expect(charter.split('\n').filter(line => line.includes('Título en contenido (D-H)'))).toEqual([expected]);
   });
 });
+
+describe('#197 R22: fuentes limpias', () => {
+  it.each([
+    'components/toggle-switch.tsx', 'components/screen-header.tsx', 'theme/shadows.ts',
+    'theme/chunky-lip.ts', 'theme/motion.ts', 'screens/home/home-entrance.tsx',
+    'components/back-button.tsx', 'screens/add-reminder/index.tsx',
+    'screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx',
+  ])('#197 R22: %s es grep-limpio', file => {
+    const source = readSource(file);
+    expect(source.length).toBeGreaterThan(0);
+    if (!file.startsWith('theme/')) expect(source).not.toMatch(/#(?!\d{2,3} R\d)[\da-f]{3,8}\b/i);
+    expect(source).not.toMatch(/StyleSheet\.create/);
+    expect(source).not.toMatch(/[A-Za-z0-9_-]+-\[[^\]]+\]/);
+    expect(source).not.toMatch(/\p{Extended_Pictographic}/u);
+    expect(source).not.toMatch(/\b(?:shadowColor|shadowOffset|shadowOpacity|shadowRadius|elevation)\s*:/);
+  });
+  it('#197 R22: no añade dependencias', () => {
+    const manifest = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8'));
+    expect(Object.keys(manifest.dependencies)).toHaveLength(44);
+    expect(Object.keys(manifest.devDependencies)).toHaveLength(8);
+  });
+});
