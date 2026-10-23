@@ -34,7 +34,8 @@ Abreviaturas de test: **WL** `screens/weight-log/index.test.tsx`, **HE**
 `__tests__/chunky-cta-canvas-fidelity.test.ts`, **PCF**
 `__tests__/profile-canvas-fidelity.test.ts`, **TH**
 `__tests__/tab-headers-canvas.test.ts`, **F197**
-`__tests__/canvas-foundations.test.ts` (llega con #197).
+`__tests__/canvas-foundations.test.ts` (llega con #197), **MT**
+`theme/__tests__/motion.test.ts`.
 
 Convenciones (las de #197): cada `describe` nuevo se titula
 `#199 R<n>: …` y cada `it` nuevo empieza por `#199 R<n>`; un `it` existente que
@@ -755,6 +756,7 @@ conserva la clase de #197; el mock `HeartPulse` de HE queda sin uso y ningún
 | LY › `#95 R4` › `#194 R4: %s usa exactamente las opciones de cabecera acordadas` | `['weight-log', 't:weightLog.weightLog']` | `headerShown: false` sin título | R1 |
 | `app/__tests__/detail-stack.test.tsx` › `it.each` con `['weight-log', 0]` (si rojo) | 0 | el valor que dé la ruta sin cabecera nativa | R1 |
 | F197 › `describe('#197 R20: cimientos sin cablear')` › `nadie monta todavía los cimientos %s` (4 casos: `toggle-switch`, `screen-header`, `shadows`, `rise-in`) y `el layout raíz no cambia` | cero importadores de producción de los cuatro módulos y `headerShown` ×2 en `app/_layout.tsx` | el `describe` se borra entero, con sus dos `it`, sin sufijo y sin sustituto: es un candado temporal de #197 que la ola 2 retira, y el borrado es idéntico en todas las features de la ola 2 para que git lo mezcle sin conflicto. Va en el primer commit rojo de #199 que monte un cimiento (`ScreenHeader`, `useShadows` o `RiseIn`) o toque `_layout.tsx` (R1) | R1, R3, R14, R23 |
+| MT › `#152 R1: las duraciones y el preset de movimiento viven en un solo sitio` › `no exporta nada más (enmendado por #195 R13) (enmendado por #197 R11)` | la lista ordenada de exportaciones de `motion.ts` tras #197 | la misma lista más las siete constantes de R27.2, en el orden de `.sort()` (verificarlo con node, no a mano); sufijo `(enmendado por #199 R27)`. Si otra feature de la ola 2 ya mergeada añadió constantes, se conservan | R27 |
 | DD › `#179 R13` › `reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10)` | health fuera de las listas de `rounded-14` y `rounded-16` | health con 1 `rounded-14` y 1 `rounded-16` | R14, R18 |
 | CC › `#62 R2: cada skeleton tiene la forma del contenido que sustituye` | `vaccines-skeleton` `h-24 w-full rounded-card` (única fila del `it.each`) | receta de R19 en la etiqueta de apertura de `vaccines-skeleton` | R19 |
 | CC › `lleva los tres tiles restantes a rounded-xl (enmendado por #177 R10)` | `'size-8 shrink-0 items-center justify-center rounded-xl ${tileClassName}'` | `size-9` | R10 |
@@ -830,6 +832,8 @@ en el PC del humano, no en Expo Go ni en la VPS:
   (`progress/plan_canvas-parity-2026-10-23.md` §4, checklist de firma pasada: 47 anclas de Base medida
   verdes, 27 R con test nombrado y fila de trazabilidad, inventario de candados auditado por literal en
   2fc0f6dd). Aceptadas las decisiones con defecto D1–D25. `RiseIn` viene de #197 R24 (Reanudación 2 de #197, commit b2f73327). El handoff espera a que #197 esté en `dev`.
+  Re-firma delegada (2026-10-23) sobre 072de135: regla uniforme de la ola 2 para el `describe` F197 `#197 R20`
+  y fila MT `no exporta nada más` añadida por el leader (R27.2 suma siete exportaciones a `motion.ts`).
 - [x] Enmienda #199 aprobada por humano (fecha: 2026-10-23) — texto literal en design §Decisiones técnicas
   Firma delegada en el leader por el mismo mandato. Se copia a `docs/ui-guidelines.md` después de la
   enmienda de #197, que se mergea antes.

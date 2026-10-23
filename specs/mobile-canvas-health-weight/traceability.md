@@ -38,4 +38,4 @@ requisito.
 | R24 | CF::`#199 R24: …` | pendiente |
 | R25 | UL::`#199 R25: …` | pendiente |
 | R26 | CF::`#199 R26: …` | pendiente |
-| R27 | CF, DD::`#199 R27: …` | pendiente |
+| R27 | CF, DD::`#199 R27: …`; MT::`no exporta nada más (enmendado por #199 R27)` | pendiente |

@@ -77,6 +77,7 @@ La base es la medida tras mergear #197 (paso 0), no la de esta spec. Desde
 | Claves nuevas por idioma | `grep -cF "'weightLog.history'" src/i18n/catalog.ts` (y las otras seis de R25) | +1 por idioma cada una |
 | `--text-34` | `grep -cF -- '--text-34' src/theme/global.css` | +1 (si #198 ya lo trajo, 0) |
 | Constantes de dibujo | `grep -cF 'MOTION_DRAW' src/theme/motion.ts` | +3 |
+| Exportaciones de `motion.ts` (MT `no exporta nada más`) | `node -e` sobre `Object.keys(require(...))` o longitud del array del `it` | +7 sobre la base medida (#200 suma 2 más si mergea antes) |
 | `inkSites` y `warningSites` (LG `#61 R4`, `#61 R5`) | cifras por fichero que asierta LG | las de requirements §Candados |
 | Agregados CC `#62 R14`, `#62 R15` y PCF `text-13` | cifras que asiertan | re-medir; no copiar de la spec |
 
@@ -242,6 +243,6 @@ relativas a `mobile-pet-tracker/src/`; abreviaturas de test en requirements
 3. Nada.
 
 ### R27 — Tokens, constantes y guardas
-1. CF `#199 R27` (`--text-34`, siete constantes) y DD.
+1. CF `#199 R27` (`--text-34`, siete constantes), DD y la enmienda MT `no exporta nada más` (§Candados).
 2. Token y constantes.
 3. Nada.
