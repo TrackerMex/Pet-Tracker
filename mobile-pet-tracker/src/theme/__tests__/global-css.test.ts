@@ -931,3 +931,15 @@ describe('#197 R3: tokens de tipografía', () => {
     }
   });
 });
+
+describe('#197 R5: tokens de labio', () => {
+  it.each(['light', 'dark'] as const)('#197 R5: declara los labios nuevos en los dos temas %s', theme => {
+    const tokens = {'lip-danger': '#9F1F15', 'lip-violet': 'rgba(91,63,163,0.35)', 'lip-tile-violet': 'rgba(117,73,247,0.18)', 'lip-tile-amber': 'rgba(165,94,7,0.16)', 'lip-tile-blue': 'rgba(7,104,224,0.16)'};
+    const block = parseVariables(extractVariant(theme));
+    for (const [token, value] of Object.entries(tokens)) {
+      expect(block).toMatchObject({ [`color-${token}`]: value });
+      expect(globalCss.split(`--color-${token}:`)).toHaveLength(3);
+      expect(block).not.toHaveProperty(token);
+    }
+  });
+});

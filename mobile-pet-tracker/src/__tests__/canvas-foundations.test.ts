@@ -138,3 +138,18 @@ describe('#197 R4: tracking de títulos', () => {
     }
   });
 });
+
+describe('#197 R5: labios del canvas', () => {
+  it.each([
+    ['lip-danger', '#9F1F15', 'Recordatorios', '0 4px 0 #9F1F15'],
+    ['lip-violet', 'rgba(91,63,163,0.35)', 'HorarioComidas', '0 4px 0 rgba(91,63,163,0.35)'],
+    ['lip-tile-violet', 'rgba(117,73,247,0.18)', 'Inicio', 'inset 0 -4px 0 rgba(117,73,247,0.18)'],
+    ['lip-tile-amber', 'rgba(165,94,7,0.16)', 'Inicio', 'inset 0 -4px 0 rgba(165,94,7,0.16)'],
+    ['lip-tile-blue', 'rgba(7,104,224,0.16)', 'Inicio', 'inset 0 -4px 0 rgba(7,104,224,0.16)'],
+  ])('#197 R5: cada labio nuevo es el literal del canvas %s', (token, value, board, literal) => {
+    expect(artboard(board)).toContain(literal);
+    for (const theme of ['light', 'dark'] as const) {
+      expect(variables(variant(theme))[`color-${token}`]).toBe(value);
+    }
+  });
+});
