@@ -16,12 +16,14 @@ eligiendo modelos caros o baratos, y abrir paneles de herdr para Codex.
 | El leader lanza Codex él mismo en un panel de herdr | Una feature = un branch = un worktree = una PR |
 | Las specs firmadas por el leader no se espejan a Notion | Nada que cree recursos AWS reales; eso lo corre el humano |
 | El smoke en dispositivo va por lotes (§6) | Copy en Voz B; los extras X01-X17 y los estados no dibujados se quedan |
-| | Codex carga las skills por **sus** nombres (`leader.md` §Catálogo) |
+| Las PRs del plan van a `dev` y el leader las mergea (ver abajo) | Codex carga las skills por **sus** nombres (`leader.md` §Catálogo) |
+| | `dev` → `main` lo mergea el humano |
 
-**Decisión que sigue siendo del humano: el merge.** `AGENTS.md` §4 dice que un
-humano mergea. Mientras no diga otra cosa, el leader abre la PR y espera. Si
-quiere que el leader mergee cada PR con CI verde y veredicto aprobado, basta con
-decirlo, por ejemplo en el texto de `/goal` de §8.
+**Rama de integración `dev`** (decisión del humano, 2026-10-23): todo el plan
+aterriza en `dev`, creada desde `origin/main` = `922a4036`. Cada feature abre su
+PR con `--base dev` y el leader la mergea con `gh pr merge --merge` cuando CI
+está verde y el `reviewer` dio «aprobado». Cuando el humano revise que la app
+está lista, él abre y mergea `dev` → `main`.
 
 ## 1. Fuente de verdad
 
@@ -84,12 +86,12 @@ demás pendientes (#60, #129, #150, #160, #163, #164) van a un carril de deuda
 **Choques previstos entre features paralelas**: solo en ficheros compartidos
 por diseño: `i18n/catalog.ts`, la tabla de copy, `SCREEN_FILES` y las líneas de
 `app/_layout.tsx`.
-- La segunda PR en llegar mergea `origin/main` en su branch. **Nunca rebase**
+- La segunda PR en llegar mergea `origin/dev` en su branch. **Nunca rebase**
   después de la trazabilidad (memoria `rebase-invalida-hashes-traceability`).
 - El conflicto lo resuelve el mismo Codex de la feature, con un prompt corto
   del leader.
 
-**Spec escrita antes de que su dependencia esté en `main`**: al mergear #197,
+**Spec escrita antes de que su dependencia esté en `dev`**: al mergear #197,
 el leader re-mide las anclas de cada spec de la ola 2 antes del handoff
 (memoria `spec-aprobada-caduca-al-mergear-su-dependencia`). Si alguna caducó,
 se enmienda y se vuelve a firmar.
@@ -97,7 +99,7 @@ se enmienda y se vuelve a firmar.
 ## 4. Ciclo por feature
 
 1. **Worktree**:
-   - `git worktree add /home/claude/sites/Pet-Tracker-wt-<id> -b feature/<id>-<name> origin/main`
+   - `git worktree add /home/claude/sites/Pet-Tracker-wt-<id> -b feature/<id>-<name> origin/dev`
    - Copiar `.env`.
    - `bun install --frozen-lockfile` en `mobile-pet-tracker/`.
 2. **Spec**: `spec_author` en ese worktree. Escribe la spec EARS, congela los
@@ -117,9 +119,12 @@ se enmienda y se vuelve a firmar.
    El leader corre `./init.sh` (al reviewer se lo deniega el clasificador),
    uno a la vez y guardando el log entero.
 7. **Cierre**:
-   - Con «aprobado»: `done`, `STATUS.md`, `history.md`, push y `gh pr create`.
+   - Con «aprobado»: `done`, `STATUS.md`, `history.md`, push y
+     `gh pr create --base dev`. Con CI verde, el leader la mergea:
+     `gh pr merge <n> --merge`.
    - Con «rechazado»: handoff de corrección al mismo agente de Codex.
-8. **Tras el merge**: `git worktree remove` sin `--force` y `git branch -d`.
+8. **Tras el merge en `dev`**: `git worktree remove` sin `--force` y
+   `git branch -d`.
 
 ### Checklist de firma delegada
 
@@ -179,16 +184,11 @@ El prompt original, reescrito para que se pueda verificar:
 > `progress/plan_canvas-parity-2026-10-23.md`. Puedes firmar tú las specs con la
 > checklist de firma delegada. Implementa con Codex en paneles de herdr, como
 > mucho 3 a la vez. Cada feature cierra con veredicto aprobado del `reviewer`,
-> `./init.sh` verde y su PR. No crees recursos AWS reales. El copy sigue la
-> Voz B.
+> `./init.sh` verde y su PR mergeada en `dev`. No crees recursos AWS reales. El
+> copy sigue la Voz B. El merge de `dev` a `main` lo hago yo.
 
-`/goal` para pegar. El humano elige una variante.
+`/goal` para pegar:
 
-- **El humano mergea**:
-  ```
-  /goal Las features #196 a #206 de feature_list.json están en done, cada una con veredicto aprobado del reviewer y su PR abierta, siguiendo progress/plan_canvas-parity-2026-10-23.md. Firma tú las specs. Yo mergeo.
-  ```
-- **El leader mergea**:
-  ```
-  /goal Las features #196 a #206 de feature_list.json están en done y sus PRs mergeadas en main, siguiendo progress/plan_canvas-parity-2026-10-23.md. Firma tú las specs. Puedes mergear cada PR cuando CI esté verde y el reviewer la haya aprobado.
-  ```
+```
+/goal Las features #196 a #206 de feature_list.json están en done y sus PRs mergeadas en dev, cada una con veredicto aprobado del reviewer y CI verde, siguiendo progress/plan_canvas-parity-2026-10-23.md. Firma tú las specs y mergea tú cada PR a dev. El merge de dev a main lo hago yo.
+```
