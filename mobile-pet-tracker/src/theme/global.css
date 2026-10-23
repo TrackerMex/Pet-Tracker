@@ -90,6 +90,11 @@
       --color-tab-pill: rgba(23,130,85,0.14);
       --color-lip: #0E5E3C;
       --color-lip-gray: #E4E7EC;
+      --color-lip-danger: #9F1F15;
+      --color-lip-violet: rgba(91,63,163,0.35);
+      --color-lip-tile-violet: rgba(117,73,247,0.18);
+      --color-lip-tile-amber: rgba(165,94,7,0.16);
+      --color-lip-tile-blue: rgba(7,104,224,0.16);
       --color-danger: #D92D20;
       --color-warning: #B54708;
       --color-success: #0F9B5A;
@@ -146,6 +151,11 @@
       --color-tab-pill: rgba(23,130,85,0.22);
       --color-lip: #0B4D31;
       --color-lip-gray: #0A0D12;
+      --color-lip-danger: #9F1F15;
+      --color-lip-violet: rgba(91,63,163,0.35);
+      --color-lip-tile-violet: rgba(117,73,247,0.18);
+      --color-lip-tile-amber: rgba(165,94,7,0.16);
+      --color-lip-tile-blue: rgba(7,104,224,0.16);
       --color-danger: #F87171;
       --color-warning: #FBBF24;
       --color-success: #34D399;
