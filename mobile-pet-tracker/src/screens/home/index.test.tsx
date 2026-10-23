@@ -1626,11 +1626,11 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
     });
   });
 
-  it('aplica la receta canónica a Today\'s Summary', async () => {
+  it('aplica la receta canónica a Today\'s Summary (enmendado por #198 R1)', async () => {
     await renderHome();
 
     expect((await screen.findByTestId('summary-card-title')).props.className).toBe(
-      'text-base font-bold text-foreground',
+      'px-2 text-base font-extrabold text-foreground',
     );
   });
 });
@@ -5913,5 +5913,48 @@ describe('#195 R18: estados conservados de Inicio', () => {
     expect(screen.getByTestId('pet-hero-retry')).toBeVisible();
     expect(screen.getByTestId('pet-hero-skeleton')).toBeVisible();
     expect(screen.getByTestId('pet-chip-pet-1')).toBeOnTheScreen();
+  });
+});
+
+const CANVAS_CARD_SHADOW = [
+  { offsetX: 0, offsetY: 1, blurRadius: 2, spreadDistance: 0, color: '--color-shadow-near' },
+  { offsetX: 0, offsetY: 8, blurRadius: 24, spreadDistance: 0, color: '--color-shadow-far' },
+];
+
+function setupCanvasHome() {
+  jest.clearAllMocks();
+  process.env.EXPO_PUBLIC_API_URL = apiUrl;
+  mockUseAuth.mockReturnValue({
+    status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+  } satisfies AuthContextValue);
+  mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+  mockGetDailyActivity.mockResolvedValue({
+    kind: 'ok', days: [makeDay()],
+    weekComparison: { distanceM: 5, activeMinutes: 10, walkCount: 20 },
+  });
+  jest.spyOn(Uniwind, 'getCSSVariable').mockImplementation(token => token);
+}
+
+describe('#198 R1: resumen del canvas', () => {
+  beforeEach(setupCanvasHome);
+
+  it('#198 R1 viste summary-card con padding 14/8, hueco 12 y la sombra card', async () => {
+    await renderHome();
+    const card = await screen.findByTestId('summary-card');
+    for (const token of ['gap-3', 'px-2', 'py-3.5', 'shadow-none']) {
+      expect(card.props.className.split(' ')).toContain(token);
+    }
+    for (const token of ['shadow-sm', 'gap-4']) {
+      expect(card.props.className.split(' ')).not.toContain(token);
+    }
+    expect(card.props.style.boxShadow).toEqual(CANVAS_CARD_SHADOW);
+  });
+
+  it('#198 R1 pinta el título con 16/800 y su sangría de 8', async () => {
+    await renderHome();
+    const title = await screen.findByTestId('summary-card-title');
+    expect(title.props.className).toBe('px-2 text-base font-extrabold text-foreground');
+    expect(title).toHaveTextContent('Resumen de hoy');
   });
 });
