@@ -9989,3 +9989,44 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   con razón y la parada solo se resuelve con un dictamen.
 - **Estado final:** done. Notion: Implementado / Completado. PR #241. La PR la mergea el humano y después se
   borra el worktree `Pet-Tracker-wt-195`.
+
+## Sesión 2026-10-23 — mobile-canvas-foundations (id: 197)
+
+- **Feature:** bases visuales de la ola 1 del plan de paridad con el canvas (versión
+  `1792777983-cd94`), sin cablear pantallas. Tokens claros nuevos y de tracking e interlineado con
+  el barrido de `tracking-tight` a `tracking-title` (R1–R4); `useChunkyLip` con 11 variantes que
+  sustituyen los `border-b-N` de NuevoRecordatorio, Alertas y Horario (R5–R10); rise común de 14 px
+  y 400 ms en `motion.ts` y `HomeEntrance` (R11–R13); `useShadows` (R14–R15); `ToggleSwitch`
+  (R16–R17); `BackButton` con `strokeWidth` y `ScreenHeader` (R18–R19); enmienda #197 de
+  `docs/ui-guidelines.md` y guardas de la carta (R20–R22); `RiseIn` (R24). R23 es el smoke humano.
+- **Spec:** [[specs/mobile-canvas-foundations/requirements|spec]] (`ba2d0a51`), con firma delegada
+  en el leader por mandato del humano del 2026-10-23 (`046133e8`, plan §4). Dos reanudaciones, las
+  dos con firma delegada: la enmienda mecánica del inventario de R7 (`1e0d70cf`, fila
+  `CHIP_SELECTED`) y la Reanudación 2 (`b2f73327`, tres filas de `home-photo-hero-canvas.test.ts` y
+  R24 `RiseIn`, traído de #199 sin cambiar su semántica).
+- **Acciones:** Codex implementó test-primero (rojo `test(#197)` y verde `feat(#197)` por
+  requisito) y paró dos veces: en R7, porque 17 `it` fuera del inventario comparaban contra la
+  constante `CHIP_SELECTED` de NuevoRecordatorio, y en la Verificación final, porque dos candados de
+  #195 (contraste y sección última de la carta) contradecían R1 y R21. Las dos se resolvieron con
+  adendo y reanudación, sin rehacer lo anterior. Reviewer APROBADO sobre `f408dbf2` (0 bloqueantes;
+  `progress/review_mobile-canvas-foundations.md`). `origin/dev` se mergeó en la rama, sin rebase,
+  para conservar los hashes de `traceability.md`.
+- **Resultado:** `./init.sh` del leader exit 0: backend 187 suites / 1474 tests; infra 2 suites / 14
+  tests; móvil 142 suites / 4683 tests / 1 snapshot (de 137 / 4569 en T0, 114 tests nuevos y ninguno
+  eliminado); e2e 30 de 33 suites (3 omitidas) y 468 tests (8 omitidos); typecheck y lint sin
+  errores. La casilla de la enmienda #197 de la carta queda marcada con firma delegada.
+- **Notas no bloqueantes:** (1) las filas `_layout.tsx` de R20 y `package.json`/`bun.lock` de R22 no
+  tienen sonda de mutación y se sostienen por diff vacío contra `origin/dev`; las sondas de las
+  verificaciones que nacen verdes viven en logs ignorados, no versionadas. (2) El rojo de R24
+  (`3b96b769`) es en parte por import ausente de `rise-in.tsx`, autorizado por la Reanudación 2.
+  (3) La casilla de la carta estaba sin marcar al revisar; se marca en este cierre. (4) El log de
+  `init.sh` es unos 2 minutos anterior al HEAD revisado; el merge `f408dbf2` solo toca el plan.
+  (5) R23 sigue pendiente del humano y va al lote de smoke. (6) Aviso de jest «worker force-exit»,
+  que viene de main.
+- **Lección:** un inventario de candados «cerrado» debe cruzarse contra las constantes y helpers
+  compartidos que la feature cambia (aquí `CHIP_SELECTED`) y contra los candados de las features
+  vecinas que ya afirman lo contrario (#195), antes de firmar; si no, Codex para con razón y la
+  parada solo se resuelve con una enmienda.
+- **Estado final:** done. Notion: no aplica (las specs firmadas por el leader no se espejan, plan
+  §1). El smoke de R23 queda en `progress/smoke_canvas-parity.md`. La PR a `dev` la mergea el leader
+  y después se borra el worktree `Pet-Tracker-wt-197`.
