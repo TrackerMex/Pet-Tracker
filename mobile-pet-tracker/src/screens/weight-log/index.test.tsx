@@ -1,4 +1,5 @@
 import { HeaderHeightContext } from 'expo-router/react-navigation';
+import { router } from 'expo-router';
 import { DeviceEventEmitter, Platform } from 'react-native';
 import {
   act,
@@ -59,7 +60,7 @@ jest.mock('expo-router', () => {
   );
 
   return {
-    router: { push: jest.fn(), back: jest.fn() },
+    router: { push: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false), replace: jest.fn() },
       Redirect: ({ href }: { href: string }) => {
       const props = { testID: 'weight-log-redirect', href };
 
@@ -801,14 +802,14 @@ describe('#87 R10: WeightLogContent lee por TanStack Query', () => {
 });
 
 describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
-  it('retira el botón y el título del cuerpo', async () => {
+  it('retira el botón y el título del cuerpo (enmendado por #199 R1)', async () => {
     mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
     mockListWeights.mockResolvedValue({ kind: 'ok', weights: [makeWeight()] });
     await renderWeightLog();
     await waitFor(() => expect(screen.getByTestId('screen-weight-log')).toBeVisible());
     await screen.findByTestId('weight-chart-card');
     expect(screen.queryByTestId('weight-log-back')).toBeNull();
-    expect(screen.queryByText(es['weightLog.weightLog'])).toBeNull();
+    expect(screen.getByTestId('weight-log-header-title')).toHaveTextContent(es['weightLog.weightLog']);
   });
 });
 
@@ -1185,5 +1186,26 @@ describe('#169 R13: movimiento del toast', () => {
     const toast = screen.getByTestId('weight-toast');
     expect(toast.props.entering).toBeInstanceOf(FadeIn);
     expect(toast.props.exiting).toBeInstanceOf(FadeOut);
+  });
+});
+
+describe('#199 R1: Peso dibuja su propia cabecera', () => {
+  beforeEach(() => { prepareWeightLogTests(); });
+  it('#199 R1 pinta weight-log-header como primer hijo del scroll con el título de weightLog.weightLog', async () => {
+    await renderWeightLog();
+    await screen.findByTestId('weight-log-empty');
+    expect(screen.queryByTestId('weight-log-header')).not.toBeNull();
+    const header = screen.getByTestId('weight-log-header');
+    expect(header.parent?.children[0] === header).toBe(true);
+    expect(screen.getByTestId('weight-log-header-title')).toHaveTextContent(es['weightLog.weightLog']);
+    expect(screen.getByTestId('weight-log-header-title').props.className).toBe('text-24 font-black tracking-title text-foreground');
+    expect(screen.getByTestId('weight-log-header-back')).toBeOnTheScreen();
+  });
+  it('#199 R1 sin historial la vuelta lleva a /health', async () => {
+    await renderWeightLog();
+    await screen.findByTestId('weight-log-empty');
+    expect(screen.queryByTestId('weight-log-header-back')).not.toBeNull();
+    await fireEvent.press(screen.getByTestId('weight-log-header-back'));
+    expect(router.replace).toHaveBeenCalledWith('/health');
   });
 });

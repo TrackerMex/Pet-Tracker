@@ -494,7 +494,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
     checkUses(ALL_USES);
   });
 
-  it('#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas', () => {
+  it('#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas (enmendado por #199 R1)', () => {
     expect(SCREEN_FILES).toHaveLength(
       19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1 // #100 R10, #41 R10, #146 R10, #105 R5
         + 1 - 1 // #117 R10: sale app/(auth)/forgot.tsx, entra screens/forgot/index.tsx
@@ -507,6 +507,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
         + 1 // #186 R2: utils/form-rules.ts
         + 1 // #190 R13: screens/home/pingo-phrase.ts (enmendado por #190 R13)
         + 1 // #194 R5: screens/edit-profile/index.tsx
+        - 1 // #199 R1: sale src/app/_layout.tsx
     );
 
     for (const file of SCREEN_FILES) {

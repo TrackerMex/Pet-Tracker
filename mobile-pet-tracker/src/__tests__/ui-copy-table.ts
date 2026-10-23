@@ -156,7 +156,7 @@ export const R5_HEALTH: UseRow[] = [
   { file: 'src/utils/form-rules.ts', key: 'validation.weightRange' }, // #186 R2
   { file: 'src/utils/form-rules.ts', key: 'validation.bodyConditionRange' }, // #186 R2
   { file: 'src/utils/form-rules.ts', key: 'validation.invalidDate' }, // #186 R2
-  { file: 'src/app/_layout.tsx', key: 'weightLog.weightLog' }, // #95 R4
+  { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.weightLog' }, // #199 R1
   { file: 'src/screens/health/index.tsx', key: 'health.health' },
   { file: 'src/screens/health/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/health/index.tsx', key: 'common.retry' },
