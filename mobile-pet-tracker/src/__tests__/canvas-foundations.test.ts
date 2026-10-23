@@ -238,3 +238,14 @@ describe('#197 R15: catálogo de sombras', () => {
     expect(readSource('theme/shadows.ts')).toContain(production);
   });
 });
+
+describe('#197 R16: geometría del interruptor', () => {
+  it('#197 R16: el interruptor es el del canvas', () => {
+    const canvas = artboard('Zonas');
+    expect(canvas).toContain('width: 48px; height: 28px; border-radius: 999px; background: var(--lip-gray)');
+    expect(canvas).toContain('left: 3px; top: 3px; width: 22px; height: 22px; border-radius: 50%; background: #FFFFFF');
+    expect(canvas).toContain('background: var(--accent)');
+    const source = readSource('components/toggle-switch.tsx');
+    for (const literal of ['h-7 w-12', 'h-5.5 w-5.5', 'left: { value: 3 }']) expect(source).toContain(literal);
+  });
+});
