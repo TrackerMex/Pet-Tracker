@@ -199,3 +199,19 @@ describe('#197 R11: entrada rise', () => {
     expect(timing).toContain('reduceMotion: ReduceMotion.System');
   });
 });
+
+describe('#197 R14: colores de sombra del canvas', () => {
+  it.each([
+    ['shadow-near', 'rgba(13,17,23,0.04)', 'rgba(0,0,0,0.4)', 'Inicio', '--shadow:0 1px 2px rgba(13,17,23,0.04),0 8px 24px rgba(13,17,23,0.06)'],
+    ['shadow-far', 'rgba(13,17,23,0.06)', 'rgba(0,0,0,0)', 'Inicio', '--shadow:0 1px 2px rgba(13,17,23,0.04),0 8px 24px rgba(13,17,23,0.06)'],
+    ['shadow-10', 'rgba(13,17,23,0.10)', 'rgba(13,17,23,0.10)', 'EditorZona', '0 -8px 24px rgba(13,17,23,0.10)'],
+    ['shadow-12', 'rgba(13,17,23,0.12)', 'rgba(13,17,23,0.12)', 'Inicio', '0 10px 30px rgba(13,17,23,0.12)'],
+    ['shadow-14', 'rgba(13,17,23,0.14)', 'rgba(13,17,23,0.14)', 'Mapa', '0 12px 32px rgba(13,17,23,0.14)'],
+    ['shadow-25', 'rgba(13,17,23,0.25)', 'rgba(13,17,23,0.25)', 'ZonasEliminar', '0 12px 40px rgba(13,17,23,0.25)'],
+  ])('#197 R14: cada color de sombra es el del canvas %s', (token, light, dark, board, literal) => {
+    expect(artboard(board)).toContain(literal);
+    expect(artboard('Inicio')).toContain('--shadow:0 1px 2px rgba(0,0,0,0.4)}');
+    expect(variables(variant('light'))[`color-${token}`]).toBe(light);
+    expect(variables(variant('dark'))[`color-${token}`]).toBe(dark);
+  });
+});

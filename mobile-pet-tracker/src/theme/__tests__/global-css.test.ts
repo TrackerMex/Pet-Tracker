@@ -943,3 +943,17 @@ describe('#197 R5: tokens de labio', () => {
     }
   });
 });
+
+describe('#197 R14: tokens de sombra', () => {
+  it.each(['light', 'dark'] as const)('#197 R14: declara las sombras en los dos temas %s', theme => {
+    const tokens = {'shadow-near': ['rgba(13,17,23,0.04)', 'rgba(0,0,0,0.4)'], 'shadow-far': ['rgba(13,17,23,0.06)', 'rgba(0,0,0,0)'], 'shadow-10': ['rgba(13,17,23,0.10)', 'rgba(13,17,23,0.10)'], 'shadow-12': ['rgba(13,17,23,0.12)', 'rgba(13,17,23,0.12)'], 'shadow-14': ['rgba(13,17,23,0.14)', 'rgba(13,17,23,0.14)'], 'shadow-25': ['rgba(13,17,23,0.25)', 'rgba(13,17,23,0.25)']};
+    const block = extractVariant(theme);
+    for (const [token, values] of Object.entries(tokens)) {
+      expect(parseVariables(block)[`color-${token}`]).toBe(values[theme === 'light' ? 0 : 1]);
+      expect(block.match(new RegExp(`--color-${token}:`, 'g'))).toHaveLength(1);
+      expect(globalCss.split(`--color-${token}:`)).toHaveLength(3);
+      expect(parseVariables(block)).not.toHaveProperty(token);
+      expect(block.indexOf(`--color-${token}:`)).toBeGreaterThan(block.indexOf('--color-lip-tile-blue:'));
+    }
+  });
+});
