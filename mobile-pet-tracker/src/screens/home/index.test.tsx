@@ -1270,7 +1270,7 @@ describe('#77 R2: sin actividad, la fila es la celda de peso seguida de la nota'
       'No se pudo cargar la actividad',
     ],
     ['sin configuración', { kind: 'missing-config' }, 'No se pudo cargar la actividad'],
-  ])('%s: compone la celda y la nota en una sola fila', async (_state, activityState, noteCopy) => {
+  ])('%s: compone la celda y la nota en una sola fila (enmendado por #198 R2)', async (_state, activityState, noteCopy) => {
     mockGetDailyActivity.mockResolvedValue(activityState);
 
     await renderHome();
@@ -1284,7 +1284,7 @@ describe('#77 R2: sin actividad, la fila es la celda de peso seguida de la nota'
     const rowChildren = row.children.filter((child) => typeof child !== 'string');
     const cellChildren = cell.children.filter((child) => typeof child !== 'string');
 
-    expect(row.props.className).toBe('flex-row');
+    expect(row.props.className).toBe('flex-row gap-1');
     expect(row.props.accessible).toBeUndefined();
     expect(row.props.accessibilityLabel).toBeUndefined();
     expect(rowChildren).toHaveLength(2);
@@ -1292,16 +1292,15 @@ describe('#77 R2: sin actividad, la fila es la celda de peso seguida de la nota'
     expect(rowChildren[1].props.testID).toBe('summary-note');
 
     expect(cell.props.className).toBe(
-      'flex-1 items-center gap-1 border-r border-border',
+      'flex-1 items-center gap-1.5 border-r border-border',
     );
     expect(cell.props.accessible).toBeUndefined();
     expect(cell.props.accessibilityLabel).toBeUndefined();
     expect(cell.props.onPress).toBeUndefined();
     expect(cellChildren).toHaveLength(3);
-    expect(cellChildren[0].props).toEqual({
-      testID: 'icon-weight',
-      size: 20,
-      color: '--color-muted',
+    expect(cellChildren[0].props.className).toBe('size-9 items-center justify-center rounded-xl bg-category-violet');
+    expect(within(cellChildren[0]).getByTestId('icon-weight').props).toEqual({
+      testID: 'icon-weight', size: 18, color: '--color-category-violet-strong',
     });
     expect(cellChildren[1]).toBe(value);
     expect(value.props.className).toBe('text-sm font-bold text-foreground');
@@ -2090,7 +2089,7 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
     ]);
   });
 
-  it('renders exactly three dividers between the four cells', async () => {
+  it('renders exactly three dividers between the four cells (enmendado por #198 R2)', async () => {
     await renderHome();
 
     await screen.findByTestId('summary-weight');
@@ -2105,16 +2104,16 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
         .parent?.props.className?.includes('border-r border-border'),
     );
 
-    expect(dividedCells).toHaveLength(3);
+    expect(dividedCells).toHaveLength(0);
   });
 
-  it('keeps the row flush without spacing utilities', async () => {
+  it('keeps the row flush without spacing utilities (enmendado por #198 R2)', async () => {
     await renderHome();
 
     const activityValue = await screen.findByTestId('summary-activity');
     const rowClassName = activityValue.parent?.parent?.props.className;
 
-    expect(rowClassName).toBe('flex-row');
+    expect(rowClassName).toBe('flex-row gap-1');
     expect(rowClassName).not.toContain('gap-3');
     expect(rowClassName).not.toContain('justify-between');
   });
@@ -2200,7 +2199,7 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
     ]);
   });
 
-  it('#69 R9: usa iconos de reicon y ningún emoji', () => {
+  it('#69 R9: usa iconos de reicon y ningún emoji (enmendado por #198 R2)', () => {
     const source = readFileSync(
       join(process.cwd(), 'src/screens/home/index.tsx'),
       'utf8',
@@ -2217,7 +2216,7 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
     // cannot see: a platform branch, or a CSS variable name written by hand.
     expect(
       source.match(
-        /<(?:Weight|Walk|Moon|Map) size=\{20\} color=\{muted\} \/>/g,
+        /<(?:Weight|Walk|Moon|Map) size=\{18\} color=\{summaryInks\[\d\]\} \/>/g,
       ) ?? [],
     ).toHaveLength(4);
     for (const emoji of ['⚖️', '⚡', '🦮', '📍']) {
@@ -2239,13 +2238,13 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
     });
 
     const cells = [
-      ['summary-weight', 'icon-weight'],
-      ['summary-activity', 'icon-walk'],
-      ['summary-sleep', 'icon-moon'],
-      ['summary-distance', 'icon-map'],
+      ['summary-weight', 'icon-weight', '--color-category-violet-strong'],
+      ['summary-activity', 'icon-walk', '--color-category-green-strong'],
+      ['summary-sleep', 'icon-moon', '--color-category-blue-strong'],
+      ['summary-distance', 'icon-map', '--color-category-amber-strong'],
     ] as const;
 
-    it('con las métricas de hoy', async () => {
+    it('con las métricas de hoy (enmendado por #198 R2)', async () => {
       await renderHome();
       await waitFor(() =>
         expect(screen.getByTestId('summary-weight')).toHaveTextContent(
@@ -2253,7 +2252,7 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
         ),
       );
 
-      for (const [valueTestID, iconTestID] of cells) {
+      for (const [valueTestID, iconTestID, ink] of cells) {
         // #126 R1: counted by the cell's children, not by testID: the icon,
         // the value and the label, with the icon first.
         const children = screen
@@ -2261,15 +2260,13 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
           .parent!.children.filter((child) => typeof child !== 'string');
 
         expect(children).toHaveLength(3);
-        expect(children[0].props).toEqual({
-          testID: iconTestID,
-          size: 20,
-          color: '--color-muted',
+        expect(within(children[0]).getByTestId(iconTestID).props).toEqual({
+          testID: iconTestID, size: 18, color: ink,
         });
       }
     });
 
-    it('sin métricas ni peso', async () => {
+    it('sin métricas ni peso (enmendado por #198 R2)', async () => {
       const pet = makePet({ currentWeightKg: null });
       mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
       mockGetPet.mockResolvedValue({ kind: 'ok', pet });
@@ -2297,16 +2294,14 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
       expect(screen.getByTestId('summary-weight')).toHaveTextContent('—');
       expect(screen.getByTestId('summary-activity')).toHaveTextContent('—');
 
-      for (const [valueTestID, iconTestID] of cells) {
+      for (const [valueTestID, iconTestID, ink] of cells) {
         const children = screen
           .getByTestId(valueTestID)
           .parent!.children.filter((child) => typeof child !== 'string');
 
         expect(children).toHaveLength(3);
-        expect(children[0].props).toEqual({
-          testID: iconTestID,
-          size: 20,
-          color: '--color-muted',
+        expect(within(children[0]).getByTestId(iconTestID).props).toEqual({
+          testID: iconTestID, size: 18, color: ink,
         });
       }
     });
@@ -5003,11 +4998,11 @@ describe('#152 R6: la entrada se reproduce una vez por montaje', () => {
 describe('#152 R7: las cifras del resumen aparecen con un fundido', () => {
   beforeEach(setupHomeMotion);
 
-  it('envuelve la fila del resumen sin tocarla', async () => {
+  it('envuelve la fila del resumen sin tocarla (enmendado por #198 R2)', async () => {
     await renderMotionHome();
     const reveal = screen.getByTestId('summary-reveal');
     const row = screen.getByTestId('summary-weight').parent?.parent;
-    expect(row?.props.className).toBe('flex-row');
+    expect(row?.props.className).toBe('flex-row gap-1');
     expect(row?.parent).toBe(reveal);
     expect(reveal.children.filter((child) => typeof child !== 'string')).toEqual([row]);
     expect(reveal.props.style).toBeUndefined();
@@ -5033,14 +5028,14 @@ describe('#152 R7: las cifras del resumen aparecen con un fundido', () => {
 
   const expectRowUntouched = (reveal: typeof screen.container) => {
     const row = screen.getByTestId('summary-weight').parent?.parent;
-    expect(row?.props.className).toBe('flex-row');
+    expect(row?.props.className).toBe('flex-row gap-1');
     expect(row?.parent).toBe(reveal);
     expect(reveal.children.filter((child) => typeof child !== 'string')).toEqual([row]);
     expect(reveal.props.style).toBeUndefined();
     expect(reveal.props.className).toBeUndefined();
   };
 
-  it('no anima la entrada bajo reduce motion (enmendado por #197 R13)', async () => {
+  it('no anima la entrada bajo reduce motion (enmendado por #197 R13) (enmendado por #198 R2)', async () => {
     mockUseReducedMotion.mockReturnValue(true);
     await renderMotionHome();
     const reveal = screen.getByTestId('summary-reveal');
@@ -5058,7 +5053,7 @@ describe('#152 R7: las cifras del resumen aparecen con un fundido', () => {
     { kind: 'error' },
     { kind: 'unreachable', message: 'network down' },
     { kind: 'missing-config' },
-  ])('funde igual la fila con la actividad en $kind', async (state) => {
+  ])('funde igual la fila con la actividad en $kind (enmendado por #198 R2)', async (state) => {
     mockGetDailyActivity.mockResolvedValue(state);
     await renderHome();
     const reveal = await screen.findByTestId('summary-reveal');
@@ -5956,5 +5951,49 @@ describe('#198 R1: resumen del canvas', () => {
     const title = await screen.findByTestId('summary-card-title');
     expect(title.props.className).toBe('px-2 text-base font-extrabold text-foreground');
     expect(title).toHaveTextContent('Resumen de hoy');
+  });
+});
+
+describe('#198 R2: celdas del resumen', () => {
+  beforeEach(setupCanvasHome);
+  afterEach(() => jest.restoreAllMocks());
+
+  it('#198 R2 pinta cuatro celdas sin divisores en el orden del canvas', async () => {
+    await renderHome();
+    await screen.findByTestId('summary-distance');
+    const row = screen.getByTestId('summary-weight').parent!.parent!;
+    expect(row.props.className).toBe('flex-row gap-1');
+    const cells = row.children.filter(child => typeof child !== 'string');
+    expect(cells).toEqual(['weight', 'activity', 'sleep', 'distance'].map(id => screen.getByTestId(`summary-${id}`).parent));
+    for (const cell of cells) {
+      expect(cell.props.className).toBe('flex-1 items-center gap-1.5');
+      expect(cell.props.className).not.toContain('border-r');
+    }
+  });
+
+  it.each([
+    ['weight', 'bg-category-violet', '--color-category-violet-strong', 'icon-weight'],
+    ['activity', 'bg-category-green', '--color-category-green-strong', 'icon-walk'],
+    ['sleep', 'bg-category-blue', '--color-category-blue-strong', 'icon-moon'],
+    ['distance', 'bg-category-amber', '--color-category-amber-strong', 'icon-map'],
+  ])('#198 R2 da a cada mosaico su hueco y su tinta', async (metric, surface, ink, iconID) => {
+    await renderHome();
+    await screen.findByTestId(`summary-${metric}`);
+    const tile = screen.getByTestId(`summary-tile-${metric}`);
+    expect(tile.props.className).toBe(`size-9 items-center justify-center rounded-xl ${surface}`);
+    expect(tile.parent!.children[0]).toBe(tile);
+    expect(tile.children).toHaveLength(1);
+    expect(within(tile).getByTestId(iconID).props).toEqual({ testID: iconID, size: 18, color: ink });
+  });
+
+  it('#198 R2 viste valor y etiqueta con 16/800 y 11/600', async () => {
+    await renderHome();
+    await screen.findByTestId('summary-distance');
+    for (const [metric, label] of [['weight', 'Peso'], ['activity', 'Actividad'], ['sleep', 'Descanso'], ['distance', 'Distancia']]) {
+      const value = screen.getByTestId(`summary-${metric}`);
+      expect(value.props.className).toBe('text-base font-extrabold text-foreground');
+      expect(value.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+      expect(within(value.parent!).getByText(label).props.className).toBe('text-11 font-semibold text-muted');
+    }
   });
 });
