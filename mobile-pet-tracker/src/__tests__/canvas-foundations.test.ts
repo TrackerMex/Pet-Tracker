@@ -261,7 +261,7 @@ describe('#197 R19: cabecera del canvas', () => {
 });
 
 describe('#197 R20: cimientos sin cablear', () => {
-  it.each(['toggle-switch', 'screen-header', 'shadows'])('#197 R20: nadie monta todavía los cimientos %s', module => {
+  it.each(['toggle-switch', 'screen-header', 'shadows', 'rise-in'])('#197 R20: nadie monta todavía los cimientos %s', module => {
     expect(filesMatching(new RegExp(`from ['"][^'"]*/${module}['"]`))).toEqual([]);
   });
   it('#197 R20: el layout raíz no cambia', () => {
@@ -302,6 +302,7 @@ describe('#197 R21: carta canónica', () => {
 
 describe('#197 R22: fuentes limpias', () => {
   it.each([
+    'components/rise-in.tsx',
     'components/toggle-switch.tsx', 'components/screen-header.tsx', 'theme/shadows.ts',
     'theme/chunky-lip.ts', 'theme/motion.ts', 'screens/home/home-entrance.tsx',
     'components/back-button.tsx', 'screens/add-reminder/index.tsx',
