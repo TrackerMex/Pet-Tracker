@@ -22,7 +22,15 @@ Además alinea con el canvas el aviso de notificaciones bloqueadas, el botón
   (`useChunkyLip().primary`, `ToggleSwitch`, `HomeEntrance`, tokens
   `tracking-display`, `tracking-title`, `leading-note`). **No se implementa
   hasta que #197 esté mergeada en `dev`**; el leader re-mide las anclas marcadas
-  `(#197: antes → después)` tras ese merge.
+  `(#197: antes → después)` tras ese merge. El «después» de esas anclas se
+  midió el 2026-10-23 sobre `feature/197-mobile-canvas-foundations` @ `fb6ef4b6`
+  con `git show feature/197-mobile-canvas-foundations:mobile-pet-tracker/<ruta>`.
+- **Enmiendas del 2026-10-23** (sin firma todavía): la auditoría del inventario
+  (`progress/inventory-audit_mobile-profile-photo-hero-canvas.md`, F1–F6 y
+  S1–S4), la regla uniforme de `#197 R20` para toda la ola 2 (K35) y el orden
+  de bloques de tasks.md: R3.2 pasa a R1.4 (el pie solo existe cuando R1 monta
+  el hero), R1+R4 y R2+R5 se implementan cada uno en un par rojo/verde, y los
+  `it` de R9 nacen verdes (D14).
 - **Artboards congelados** (copia sin editar del canvas 1792777983-cd94):
   `specs/mobile-profile-photo-hero-canvas/canvas/Perfil.dc.html` (estado
   cargado), `PerfilCuenta.dc.html` (desplazado hasta «Cerrar sesión») y
@@ -57,7 +65,9 @@ Todas cerradas. Codex no decide ninguna; el leader las mira al firmar.
 | D10 | Labio de los CTA nuevos | `style={chunkyLip.primary}` de `useChunkyLip()` (#197) en la cámara y en «Abrir configuración». Perfil entra como **consumidor de `useChunkyLip`** en los candados de `chunky-cta-canvas-fidelity`. | Ninguno fuera de Perfil; la lista de consumidores de CC crece en uno. |
 | D11 | Enmienda de la carta | Regla N1 de `docs/ui-guidelines.md`: «Inicio es la única pestaña con PetHeroHeader» pasa a «Inicio y Perfil abren con PetHeroHeader». Texto exacto en `design.md` §Texto de la Enmienda #196. | Gate humano propio: casilla `Enmienda #196 aprobada por humano` en §Aprobación. Sin ella no se implementa R1. |
 | D12 | `ScreenHeader` de #197 | **No se adopta** en Perfil: el título vive en el slot del hero. `src/app/_layout.tsx` no se toca. | Ninguno. |
-| D13 | `RiseIn` de #199 (`src/components/rise-in.tsx`, §R24 de su spec) | **No se consume**: Perfil no crea ninguna entrada `rise` propia y sigue con `HomeEntrance` (ya montado hoy, candado por `#173 R12`). Por eso no hay ancla `(#199: ausente → presente)`. | Adoptarlo daría los retrasos exactos del canvas (40/80/140/200/260) pero reescribiría los candados de `#173 R12` y pediría otra enmienda de la carta como la de #199; se descarta por alcance (Desviación V4). |
+| D13 | `RiseIn` de #197 R24 (`src/components/rise-in.tsx`, firma `RiseIn({ delayMs, testID, className, children })`) | **No se consume**: Perfil no crea ninguna entrada `rise` propia y sigue con `HomeEntrance` (ya montado hoy, candado por `#173 R12`). Por eso no hay ancla de `rise-in` en §Base medida ni fila `motion.ts`: #196 no añade exports a `src/theme/motion.ts`. | Adoptarlo daría los retrasos exactos del canvas (40/80/140/200/260) pero reescribiría los candados de `#173 R12`; se descarta por alcance (Desviación V4). |
+| D14 | Orden de commits cuando un verde rompe candados de otro R | **Bloques**: R1+R4 comparten un commit rojo y uno verde (quitar la `Card` hero se lleva la foto, el nombre, los chips y la cámara a la vez), y R2+R5 otro par (la fila de título sale de `profile-content` y el aviso pasa a ser su primer hijo a la vez). Los `it` de R9 se escriben al final y **nacen verdes** (R1, R5 y R6 ya fijan sus índices); se anotan así en el informe. Orden exacto en tasks.md. | Un par rojo/verde por R-id rompería en cada verde candados de otro R (`#99 R3`, `#173 R12`, `#168 R4`). La trazabilidad de R1 y R4 (y de R2 y R5) apunta al mismo par de hashes. |
+| D15 | Animaciones del hero en los tests de Perfil | Doble de `react-native-reanimated` en la cabecera de `T` y de `src/app/(tabs)/__tests__/screens.test.tsx` (K38, K39) con las funciones del de `pet-hero-header.test.tsx` y la forma de módulo del de `src/screens/home/index.test.tsx`. | Sin doble, `pet-hero-photo`, `pet-hero-slot`, `pet-hero-caption` y `BubblePop` arrancan en opacidad 0 y los `toBeVisible` caen por opacidad, no por la aserción. El doble literal de `pet-hero-header.test.tsx` (sin `__esModule`, con `default` sobrescrito) no vale aquí: `BubblePop` usa `Animated.View` del import por defecto. |
 
 ## Base medida
 
@@ -91,6 +101,10 @@ grep -cF 'useChunkyLip' P                                    # 0
 grep -cF 'BubblePop' P                                       # 0
 grep -cF 'tracking-tight' P                                  # 1 (#197: 1 → 0)
 grep -cF 'tracking-title' P                                  # 0 (#197: 0 → 1)
+grep -cF 'text-accent-strong' P                              # 3
+grep -cF '<Card' P                                           # 5
+grep -cE '#[0-9a-fA-F]{3,8}\b' P                             # 0
+grep -cE '#[0-9a-fA-F]{3,8}\b' H                             # 0
 
 # -- Hero compartido (H)
 grep -cF 'caption?: ReactNode' H                             # 0
@@ -104,6 +118,17 @@ grep -cF -- '--tracking-title: -0.02em' src/theme/global.css # 1
 grep -cF -- '--radius-14: 14px' src/theme/global.css         # 1
 grep -cF -- '--text-15: 15px' src/theme/global.css           # 1
 grep -cF 'MOTION_HERO_BUBBLE_POP_DELAY_MS = 450' src/theme/motion.ts   # 1
+grep -cF "describe('#197 R20: cimientos sin cablear'" src/__tests__/canvas-foundations.test.ts   # fichero ausente (#197: ausente → 1)
+grep -cF 'export function ToggleSwitch({ testID, isSelected, onSelectedChange' src/components/toggle-switch.tsx   # fichero ausente (#197: ausente → 1)
+
+# -- Candados fuera de T que esta feature enmienda (K38–K41)
+grep -cF 'toBeGreaterThanOrEqual(41)' src/__tests__/heroui-text-size-merge.test.ts   # 1 (#197: 1 → 1)
+grep -cF 'toBeGreaterThanOrEqual(39)' src/__tests__/heroui-text-size-merge.test.ts   # 0
+grep -cF "jest.mock('react-native-reanimated'" 'src/app/(tabs)/__tests__/screens.test.tsx'   # 0
+grep -cF '**Regla N1 (enmienda B4 de #168)**' src/__tests__/hero-header-amendments.test.ts  # 1
+grep -cF '**Regla N1 (enmienda #196)**' src/__tests__/hero-header-amendments.test.ts        # 0
+grep -cF 'withSequence: jest.fn((...steps: unknown[]) => steps.at(-1))' src/components/__tests__/pet-hero-header.test.tsx   # 1
+grep -cF '__esModule: true,' src/screens/home/index.test.tsx # 1
 
 # -- Test nuevo
 test ! -e src/__tests__/profile-photo-hero-canvas.test.ts    # verdadero
@@ -116,9 +141,15 @@ grep -cF 'profile-entrance-hero' T                           # 4
 grep -cF 'rounded-xl bg-danger-soft' T                       # 1
 grep -cF 'justify-center gap-1.5' T                          # 1
 grep -cF 'border-surface-secondary' T                        # 1
+grep -cF "jest.mock('react-native-reanimated'" T             # 0
+grep -cF 'trailing?: ReactNode' T                            # 0
+grep -cF "variant?: 'default' | 'avatars'" T                 # 2
+grep -cF 'function MockIcon({ color, size }: { color?: string; size?: number })' T   # 1
+grep -cF 'expect(avatar.props.style).toEqual({ width: 96, height: 96, borderRadius: 48 });' T   # 1
 
 # -- Carta (desde la raíz)
 grep -cF 'Inicio es la única pestaña con PetHeroHeader' docs/ui-guidelines.md   # 1
+grep -cF '**Regla N1 (enmienda B4 de #168)**' docs/ui-guidelines.md             # 1
 ```
 
 **Literales del canvas** (desde la raíz, sobre la copia congelada). Columnas:
@@ -199,7 +230,8 @@ selector existente cambia de recuento.
 Convenciones: `P` = `src/screens/profile/index.tsx`; los tests de pantalla van
 en `src/screens/profile/index.test.tsx` dentro de `describe('#196 …')` y usan
 los dobles que ese fichero ya tiene (insets `top: 40`, `bottom: 24`;
-`mockPetSwitcher`; `switchTheme`; `Linking.openSettings`). Las seis ramas de
+`mockPetSwitcher`; `switchTheme`; `Linking.openSettings`) más los cambios de
+cabecera K36, K37 y K38 (`trailing`, `strokeWidth` y el doble de reanimated). Las seis ramas de
 carga son las de la tabla `PROFILE_BRANCHES_168` del mismo fichero. RNTL 14:
 `await` en todo `fireEvent` y `act`.
 
@@ -229,6 +261,22 @@ carga son las de la tabla `PROFILE_BRANCHES_168` del mismo fichero. RNTL 14:
   `profile-hero`, el `contentContainerStyle` exacto, el `style` de
   `profile-content` y, con hero, `pet-hero-media` (cargado) o
   `pet-hero-skeleton` (resto). La columna `hero` se añade a la tabla.
+- **R1.4** (antes R3.2) WHEN el detalle está cargado, Perfil SHALL pasar como
+  `caption` de `PetHeroHeader`
+  `<View testID="profile-pet-card" className="min-w-0 flex-1 gap-2.5 px-1">`
+  cuyos hijos son, en orden, `profile-pet-name` (className
+  `text-3xl font-black leading-8.5 tracking-display text-foreground`, texto
+  `pet.name`) y `profile-pet-chips` (className `flex-row flex-wrap gap-1.5`;
+  los chips, sus clases y su orden no cambian).
+- **R1.5** THE SYSTEM SHALL NOT llevar en `P` ningún texto que case con
+  `#[0-9a-fA-F]{3,8}\b`, comentarios incluidos: `#173 R15` lo prueba sobre el
+  fuente entero sin la exención `#NNN R<n>`. Los comentarios de trazabilidad
+  `#196 R<n>` van solo en `H` y en los tests, nunca en `P`.
+- **Test** de R1.4: `#196 R1: pinta nombre y chips dentro del pie del hero`
+  (`profile-pet-card` es hijo de `pet-hero-caption`; hijos y clases exactos).
+  **Test** de R1.5: el `it` existente `#173 R15` ›
+  `screens/profile/index.tsx no tiene escapes de estilo` sigue verde (sin `it`
+  nuevo) y `grep -cE '#[0-9a-fA-F]{3,8}\b' src/screens/profile/index.tsx` da 0.
 
 ### R2 — Fila de título y selector sobre la foto
 
@@ -269,19 +317,14 @@ carga son las de la tabla `PROFILE_BRANCHES_168` del mismo fichero. RNTL 14:
   `pet-hero-name`, `pet-hero-breed` ni el highlight). WHEN no llega `caption`,
   `pet-hero-caption` pinta exactamente lo de hoy. WHEN `pet` es `null`,
   `pet-hero-caption` pinta los dos `Skeleton` de hoy aunque llegue `caption`.
-- **R3.2** WHEN el detalle está cargado, Perfil SHALL pasar como `caption`
-  `<View testID="profile-pet-card" className="min-w-0 flex-1 gap-2.5 px-1">`
-  cuyos hijos son, en orden, `profile-pet-name` (className
-  `text-3xl font-black leading-8.5 tracking-display text-foreground`, texto
-  `pet.name`) y `profile-pet-chips` (className `flex-row flex-wrap gap-1.5`;
-  los chips, sus clases y su orden no cambian).
+- **R3.2** pasa a R1.4 (enmienda del 2026-10-23): Perfil solo puede pasar el
+  `caption` cuando R1 monta el hero, y R3 va antes que R1.
 - **Test**: en `src/components/__tests__/pet-hero-header.test.tsx`, un candado
   por rama: `#196 R3: con caption y mascota el pie solo pinta el caption`,
   `#196 R3: sin caption el pie no cambia`,
-  `#196 R3: con caption y sin mascota el pie sigue en skeleton`. En
-  `src/screens/profile/index.test.tsx`:
-  `#196 R3: pinta nombre y chips dentro del pie del hero` (`profile-pet-card`
-  es hijo de `pet-hero-caption`; hijos y clases exactos).
+  `#196 R3: con caption y sin mascota el pie sigue en skeleton`. `H` puede
+  llevar un comentario `// #196 R3` (`design-drift` exime `#NNN R<n>` y
+  `home-photo-hero-canvas` › `#195 R19` quita comentarios antes de medir).
 
 ### R4 — Cámara flotante con labio
 
@@ -387,7 +430,10 @@ carga son las de la tabla `PROFILE_BRANCHES_168` del mismo fichero. RNTL 14:
   `#196 R9: en la rama $name los índices de entrada son fijos` (lee `index` de
   cada `HomeEntrance` como hacen los `it` de `#173 R12`, y comprueba
   `queryByTestId('profile-entrance-hero')` nulo);
-  `#196 R9: con el permiso bloqueado el aviso entra con índice 0`.
+  `#196 R9: con el permiso bloqueado el aviso entra con índice 0`. Estos `it`
+  **nacen verdes** (D14): R1 quita `profile-entrance-hero`, R5 monta el aviso
+  con índice 0 y R6 «Cerrar sesión» con 4. R9 es el candado de consolidación;
+  no tiene commit verde propio.
 
 ### R10 — Fidelidad a los artboards congelados
 
@@ -456,56 +502,82 @@ carga son las de la tabla `PROFILE_BRANCHES_168` del mismo fichero. RNTL 14:
 Inventario cerrado, buscado por literal (`git grep -nF '<literal viejo>'` sobre
 `src/**/__tests__` y `src/screens/profile/index.test.tsx`), siguiendo
 constantes, helpers y tablas `it.each`. Cada `it` enmendado lleva el sufijo
-` (enmendado por #196 R<n>)` en su título y se toca en el commit rojo de ese R.
-`T` = `src/screens/profile/index.test.tsx`.
+` (enmendado por #196 R<n>)` en su título y se toca en el commit rojo del
+bloque de tasks.md que lo necesita: una fila con R1 o R4 va en el rojo del
+bloque R1+R4; con R2 o R5, en el del bloque R2+R5; el resto, en el rojo de su
+R. Las filas sin `it` (cabeceras de `T` y de otros tests, constantes) no
+llevan sufijo. Excepciones nombradas: K9, K20 y K31 se tocan en dos pasos (cada
+paso en el rojo de su bloque) y K41 va en el commit verde de R11, el mismo que
+edita `docs/ui-guidelines.md`. `T` = `src/screens/profile/index.test.tsx`.
 
 | # | Fichero › describe › it | Hoy afirma | Pasa a afirmar | R |
 |---|---|---|---|---|
 | K1 | `T` › tipos de `mockPetSwitcher` y del doble de `PetSwitcher` (dos declaraciones `variant?: 'default' \| 'avatars'`) | unión sin `'glass'` | `variant?: 'default' \| 'avatars' \| 'glass'` (no es un `it`; va en el commit rojo de R2) | R2 |
 | K2 | `T` › `#173 R5: cápsula de añadir mascota` › `pinta la cápsula tras el título con icono oculto y texto en español` | `h-9 flex-row items-center gap-1.5 rounded-full bg-tab-pill px-3.5` (rama cargado) | `h-11 flex-row items-center gap-1.5 rounded-full bg-glass-surface-strong px-4`; el icono además lleva `strokeWidth` 2.6 | R2 |
-| K3 | `T` › `#173 R5` › `pinta Add pet en inglés con la misma receta` | la receta clara | la receta de vidrio de K2 | R2 |
+| K3 | retirada (auditoría S1, 2026-10-23) | — | `#173 R5` › `pinta Add pet en inglés con la misma receta` solo asierta la etiqueta (`text-sm font-extrabold text-accent-strong`), que R2.3 no cambia: pasa a «Deben seguir verdes» | — |
 | K4 | `T` › `#173 R4: Perfil pide la variante avatars` › `pasa avatars al selector compartido cuando carga la mascota` | `variant` `'avatars'` | `variant` `'glass'` y `trailing` `undefined` | R2 |
 | K5 | `T` › `R2: estructura Figma` › `uses the canvas artboard metrics (#173 R17) and content-sized skeletons while loading` | `contentContainerStyle` `{ padding: 20, gap: 14, paddingTop: 52, paddingBottom: 120 }` y `profile-hero-skeleton` visible | `{ gap: 14, paddingBottom: 120 }` y `pet-hero-skeleton` visible | R1 |
 | K6 | `T` › `R2: estructura Figma` › `renders the active pet hero, switcher, pills and information rows` | `profile-pet-avatar` visible | `pet-hero-media` visible | R1 |
 | K7 | `T` › `R7: cambiar foto` › `keeps the old photo and shows an error when upload fails` | `profile-pet-avatar` `.props.source` | `pet-hero-media` `.props.source` (mismo valor) | R1 |
 | K8 | `T` › `#184 R2: handleChangePhoto ignora toques…` › el `it.each` que espera la foto nueva | `profile-pet-avatar` `.props.source` | `pet-hero-media` `.props.source` | R1 |
-| K9 | `T` › `#99 R3: Perfil avisa…` › `con el permiso bloqueado pinta el aviso justo debajo de la cabecera, con su copy y su acción` | padre = padre de la fila de título; fila en 0 y aviso en 1; className `rounded-card border border-border bg-surface p-4 shadow-sm items-start gap-3`; texto `font-normal text-foreground` | `profile-entrance-notice` es el hijo 0 de `profile-content` y su único hijo es el aviso; className `items-start gap-3 rounded-card p-3.5 bg-category-amber`; texto `text-sm leading-note font-normal text-foreground` | R5 |
+| K9 | `T` › `#99 R3: Perfil avisa…` › `con el permiso bloqueado pinta el aviso justo debajo de la cabecera, con su copy y su acción` | `header = getByTestId('profile-add-pet').parent`, `content = header.parent` y `content.parent?.props.testID` = `'screen-profile'`; fila en 0 y aviso en 1; className `rounded-card border border-border bg-surface p-4 shadow-sm items-start gap-3`; texto `font-normal text-foreground` | **paso 1** (rojo de R1+R4): solo cambia la paternidad, `content.props.testID` = `'profile-content'` (R1.3 mete la fila de título en `profile-content`, que es hijo del `ScrollView`); fila en 0, aviso en 1 y clases sin cambios. **Paso 2** (rojo de R2+R5): `profile-entrance-notice` es el hijo 0 de `profile-content` y su único hijo es el aviso; className `items-start gap-3 rounded-card p-3.5 bg-category-amber`; texto `text-sm leading-note font-normal text-foreground` | R1, R5 |
 | K10 | `T` › `const PROFILE_BRANCHES_168` (tabla compartida) | `branch: 'profile-hero-skeleton'` en dos filas | `branch: 'pet-hero-skeleton'`, más la columna `hero` de R1 | R1 |
 | K11 | `T` › `#168 R1: Perfil pinta el título grande…` › `pinta el título grande ($name)` (6 filas) | className `text-3xl font-black tracking-tight text-foreground` (#197: → `tracking-title`) | por fila: con hero `text-3xl font-black tracking-title text-accent-foreground`, sin hero `text-3xl font-black tracking-title text-foreground`; las aserciones de paternidad no cambian | R2 |
-| K12 | `T` › `#168 R4 (enmendado por #173 R6): profile-pet-card es la Card hero…` › `ordena la tarjeta en avatar, nombre y chips` | hijos `['profile-pet-avatar-ring', 'profile-pet-name', 'profile-pet-chips']`; nombre `text-26 font-black text-foreground` | hijos `['profile-pet-name', 'profile-pet-chips']`; nombre `text-3xl font-black leading-8.5 tracking-display text-foreground`; `profile-pet-card` con `min-w-0 flex-1 gap-2.5 px-1` | R3 |
-| K13 | `T` › `#168 R4` › `con foto pinta el avatar circular de 96 con su cacheKey` | `profile-pet-avatar` de 96 | `pet-hero-media` con su `cacheKey` (sin tamaño 96) | R1 |
-| K14 | `T` › `#168 R4` › `sin foto pinta el blobatar de 96 sin source` | `profile-pet-avatar` de 96 sin `source` | `pet-hero-media` sin `source` | R1 |
+| K12 | `T` › `#168 R4 (enmendado por #173 R6): profile-pet-card es la Card hero…` › `ordena la tarjeta en avatar, nombre y chips` | hijos `['profile-pet-avatar-ring', 'profile-pet-name', 'profile-pet-chips']`; nombre `text-26 font-black text-foreground` | hijos `['profile-pet-name', 'profile-pet-chips']`; nombre `text-3xl font-black leading-8.5 tracking-display text-foreground`; `profile-pet-card` con `min-w-0 flex-1 gap-2.5 px-1` | R1 |
+| K13 | `T` › `#168 R4` › `con foto pinta el avatar circular de 96 con su cacheKey` | `profile-pet-avatar`: `.props.source` `[{ uri: 'http://example.test/luna.jpg', cacheKey: 'pet-1' }]` y `.props.style` `{ width: 96, height: 96, borderRadius: 48 }` | `pet-hero-media`: `.props.source` `[{ uri: 'http://example.test/luna.jpg', cacheKey: 'pet-1' }]` (mismo valor) y `.props.style` `{ width: '100%', height: 430 }` (`PetAvatar` con `size` objeto pinta `{ width: size.width, height: size.height }`) | R1 |
+| K14 | `T` › `#168 R4` › `sin foto pinta el blobatar de 96 sin source` | `profile-pet-avatar`: `source` `undefined`, `.props.width` 96 y `.props.height` 96 | `pet-hero-media`: `source` `undefined`, `.props.width` `'100%'` y `.props.height` 430 (el `SvgXml` recibe `size.width` y `size.height`) | R1 |
 | K15 | `T` › `#168 R4` › `superpone la cámara en el anillo con su tamaño, tinta y objetivo táctil` | dentro de `profile-pet-avatar-ring`; className `absolute -bottom-0.5 -right-0.5 size-8.5 … border-surface-secondary bg-accent`; icono 16 | dentro de `profile-change-photo-pop` (hijo de `profile-hero`); className de R4.1; `style` = `useChunkyLip().primary`; icono 18 con `strokeWidth` 2.4 | R4 |
 | K16 | `T` › `#168 R4` › `con la subida fallida deja photo-upload-error inmediatamente tras la entrada del hero` | hermano siguiente de `profile-entrance-hero` | hermano inmediatamente anterior de `profile-entrance-info` en `profile-content` | R4 |
 | K17 | `T` › `#168 R4` › `no monta el hero compartido` | `queryByTestId('pet-hero')` nulo | `getByTestId('pet-hero')` dentro de `profile-hero` (el título del `it` pasa a `monta el hero compartido a sangre`) | R1 |
 | K18 | `T` › `#168 R4` › `reserva h-52 mientras carga el detalle` | `profile-hero-skeleton` con `h-52 w-full rounded-hero` | `pet-hero-skeleton` dentro de `profile-hero` | R1 |
-| K19 | `T` › `#168 R5 (enmendado por #173 R7)` › `centra y agrupa los chips con gap-1.5` | `flex-row flex-wrap justify-center gap-1.5` | `flex-row flex-wrap gap-1.5` | R3 |
-| K20 | `T` › `#173 R12: entrada escalonada` › `con mascota envuelve cuatro bloques con índices fijos` | `{hero: 0, info: 1, links: 2, account: 3}` y el par `profile-entrance-hero` → `profile-pet-card` | `{info: 1, links: 2, account: 3, sign-out: 4}` y el par `profile-entrance-sign-out` → `profile-sign-out` | R9 |
-| K21 | `T` › `#173 R12` › `sin mascota conserva los índices 2 y 3 para links y cuenta` | `{links: 2, account: 3}` | `{links: 2, account: 3, sign-out: 4}` | R9 |
+| K19 | `T` › `#168 R5 (enmendado por #173 R7)` › `centra y agrupa los chips con gap-1.5` | `flex-row flex-wrap justify-center gap-1.5` | `flex-row flex-wrap gap-1.5` | R1 |
+| K20 | `T` › `#173 R12: entrada escalonada` › `con mascota envuelve cuatro bloques con índices fijos` | `{'profile-entrance-hero': 0, 'profile-entrance-info': 1, 'profile-entrance-links': 2, 'profile-entrance-account': 3}` y los pares `hero` → `profile-pet-card`, `info` → `pet-info-card`, `links` → `profile-links`, `account` → `me-card` | **paso 1** (rojo de R1+R4): fuera `'profile-entrance-hero': 0` y su par; quedan `{info: 1, links: 2, account: 3}` con sus tres pares. **Paso 2** (rojo de R6): se añaden `'profile-entrance-sign-out': 4` y el par `profile-entrance-sign-out` → `profile-sign-out` | R1, R6 |
+| K21 | `T` › `#173 R12` › `sin mascota conserva los índices 2 y 3 para links y cuenta` | `{'profile-entrance-links': 2, 'profile-entrance-account': 3}`, `profile-entrance-hero` y `profile-entrance-info` nulos, y los dos pares | se añaden `'profile-entrance-sign-out': 4` y el par `profile-entrance-sign-out` → `profile-sign-out`; los nulos no cambian | R6 |
 | K22 | `T` › `#181 R1: profile sin mascotas…` › `%s: conserva el vacío sin tarjeta ni reintento` (S1–S3) y `S5: lista vacía revalidando y detalle pendiente no muestran esqueletos` | `queryByTestId('profile-hero-skeleton')` nulo (se volvería tautológico: el testID desaparece) | `queryByTestId('profile-hero')` y `queryByTestId('pet-hero-skeleton')` nulos | R1 |
 | K23 | `T` › `#181 R5` › `R5.2 R5.3: centra en horizontal dentro del scroll y mantiene las acciones de cuenta` | lista de ausentes con `profile-hero-skeleton` | la misma lista con `pet-hero-skeleton` y `profile-hero` | R1 |
 | K24 | `T` › `#184 R4: cerrar sesión conserva su botón danger-soft` › `#184 R4: conserva la variante y las clases` | `… button__root--size-md rounded-xl bg-danger-soft` | `pressable-feedback__root button__root button__root--variant-danger-soft button__root--size-md h-13 rounded-14 bg-category-rose` | R6 |
 | K25 | `src/__tests__/tab-headers-canvas.test.ts` › `#168 R12: alcance cerrado` › `conserva PetHeroHeader solo en Inicio` | `['screens/home/index.tsx']` | se sustituye por `#196 R11: PetHeroHeader solo en Inicio y Perfil` con `['screens/home/index.tsx', 'screens/profile/index.tsx']` | R11 |
 | K26 | `src/__tests__/profile-canvas-fidelity.test.ts` › `limita la variante nueva al consumidor Perfil` | `filesMatching(/variant="avatars"/)` = `['screens/profile/index.tsx']` | `[]` | R2 |
 | K27 | `profile-canvas-fidelity` › `reserva rounded-hero al Card compartido y el skeleton de Perfil` | `['components/card.tsx', 'screens/alert-detail/index.tsx', 'screens/profile/index.tsx']` | `['components/card.tsx', 'screens/alert-detail/index.tsx']` | R1 |
-| K28 | `profile-canvas-fidelity` › `reserva text-26 al nombre de la mascota en Perfil (…)` | lista con `'screens/profile/index.tsx'` (#197: + `components/screen-header.tsx`) | la misma lista sin `'screens/profile/index.tsx'` | R3 |
+| K28 | `profile-canvas-fidelity` › `reserva text-26 al nombre de la mascota en Perfil (…)` | lista con `'screens/profile/index.tsx'` (#197: + `components/screen-header.tsx`) | la misma lista sin `'screens/profile/index.tsx'` | R1 |
 | K29 | `profile-canvas-fidelity` › `Perfil y el detalle de alerta son los consumidores de Card hero (…)` | `['screens/alert-detail/index.tsx', 'screens/profile/index.tsx']` y `profile.match(/variant="hero"/g)` de longitud 1 | `['screens/alert-detail/index.tsx']` y `profile.match(/variant="hero"/g)` nulo | R1 |
 | K30 | `src/__tests__/chunky-cta-canvas-fidelity.test.ts` › `const consumers` (usada por `#177 R7.4: solo la definición y los diecisiete consumidores usan el hook`, y por los `it` de `R12.1`/`R12.2`/`R12.3` que la recorren) | `[...ctaFiles, 'screens/reminders/index.tsx']` (#197 R10: + alerts y meal-schedule) | añade `'screens/profile/index.tsx'`; Perfil declara una vez `const chunkyLip = useChunkyLip();` | R4 |
-| K31 | `chunky-cta-canvas-fidelity` › `#177 R7.5: inventario de los tres estilos y el tile (…)` | primera y cuarta aserción sin Perfil | las dos añaden `'screens/profile/index.tsx': 2` (cámara y «Abrir configuración») | R4, R5 |
+| K31 | `chunky-cta-canvas-fidelity` › `#177 R7.5: inventario de los tres estilos y el tile (…)` | primera y cuarta aserción sin Perfil | **paso 1** (rojo de R1+R4): las dos añaden `'screens/profile/index.tsx': 1` (cámara). **Paso 2** (rojo de R2+R5): pasa a `'screens/profile/index.tsx': 2` (más «Abrir configuración») | R4, R5 |
 | K32 | `chunky-cta-canvas-fidelity` › `#177 R8.1: solo la tabla recibe chunkyLip.%s (…)`, fila `primary` | `primaryIds` | `[...primaryIds, 'notifications-open-settings'].sort()` (la cámara es `Pressable`, no `Button`, y no entra en `buttons`) | R5 |
 | K33 | `chunky-cta-canvas-fidelity` › `#177 R6.2: recuentos de etiquetas (…)` | recuentos de hoy | `<Button\.Label` baja 1 y `Button\.Label` baja 2 (se va la etiqueta de «Cerrar sesión», apertura y cierre) | R6 |
 | K34 | `src/__tests__/alerts-canvas-fidelity.test.ts` › `#174 R12: inventarios`, fila `token: 'text-15'` | `files` sin Perfil | añade `'screens/profile/index.tsx'` en su sitio ordenado | R6 |
-| K35 | `src/components/__tests__/toggle-switch.test.tsx` o el fichero que #197 elija › `#197 R20: nadie monta todavía los cimientos`, fila `toggle-switch` | `[]` | `['screens/profile/index.tsx']` (más lo que otra feature de la ola 2 haya añadido al mergear) | R7 |
+| K35 | `src/__tests__/canvas-foundations.test.ts` (#197: ausente → presente) › `describe('#197 R20: cimientos sin cablear')`, con sus dos `it`: `#197 R20: nadie monta todavía los cimientos %s` (`it.each` de `toggle-switch`, `screen-header`, `shadows`, `rise-in`) y `#197 R20: el layout raíz no cambia` | ningún fichero importa los cuatro cimientos y `src/app/_layout.tsx` sigue igual | **regla uniforme de la ola 2**: el `describe` entero se borra, con los dos `it`, sin sufijo y sin sustituto. Va en el rojo del primer R de #196 que monta un cimiento o toca `src/app/_layout.tsx`: R7 (`ToggleSwitch`; `useChunkyLip` vive en `src/theme/chunky-lip.ts`, que no es cimiento de R20, y #196 no monta `ScreenHeader`, `useShadows` ni `RiseIn` ni toca el layout). Si otra feature de la ola 2 ya lo borró al mergear, K35 queda sin efecto y se anota en el informe | R7 |
+| K36 | `T` › tipos de `mockPetSwitcher` y del doble de `PetSwitcher` (las dos declaraciones de K1) | sin `trailing` | las dos añaden `trailing?: ReactNode` (`ReactNode` ya se importa de `react` en `T`); `grep -cF 'trailing?: ReactNode' T` 0 → 2. No es un `it` | R2 |
+| K37 | `T` › cabecera `jest.mock('reicon-react-native')`, función `MockIcon` | `MockIcon({ color, size })` descarta `strokeWidth`; el `View` del doble solo recibe `size` | `MockIcon` acepta además `strokeWidth?: number` y lo reenvía al `View` como prop, igual que `size`, para que R4.1, R2.3 y R8 lean `props.strokeWidth` del glifo. `grep -cF 'function MockIcon({ color, size }: { color?: string; size?: number })' T` 1 → 0. Va en el rojo de R1+R4 (la cámara es la primera lectura). No es un `it` | R4 |
+| K38 | `T` › cabecera: doble de `react-native-reanimated` (hoy no hay: `grep -cF "jest.mock('react-native-reanimated'" T` = 0) | `pet-hero-photo` (opacidad 0 con mascota), `pet-hero-slot`, `pet-hero-caption` y `BubblePop` arrancan en opacidad 0 | doble con las funciones del de `src/components/__tests__/pet-hero-header.test.tsx` (el bloque que contiene `withSequence: jest.fn((...steps: unknown[]) => steps.at(-1))`): `useReducedMotion` vía `mockUseReducedMotion = jest.fn<boolean, []>(() => false)`, `withTiming` identidad sobre el valor, `withDelay` que devuelve la animación, `withSequence` que devuelve el último paso, `withRepeat` que devuelve la animación y `cancelAnimation: jest.fn()`; **con la forma de módulo** del de `src/screens/home/index.test.tsx` (`...actual` y `__esModule: true,`, sin sobrescribir `default`): `BubblePop` usa `Animated.View` del import por defecto (D15). `grep -cF "jest.mock('react-native-reanimated'" T` 0 → 1. Va en el rojo de R1+R4. No es un `it` | R1 |
+| K39 | `src/app/(tabs)/__tests__/screens.test.tsx` › cabecera (sin doble de reanimated hoy) | `R5: placeholders de tabs` › `renders the $title placeholder`, fila Perfil: `getByText('Perfil')` visible con `listPets` pendiente, fuera de cualquier animación | el mismo doble que K38, en la cabecera de ese fichero: con la lista pendiente `showHero` es verdadero y el título vive en `pet-hero-slot`, que arranca en opacidad 0. El `it` no cambia ni lleva sufijo. `grep -cF "jest.mock('react-native-reanimated'" 'src/app/(tabs)/__tests__/screens.test.tsx'` 0 → 1. Va en el rojo de R2+R5 | R2 |
+| K40 | `src/__tests__/heroui-text-size-merge.test.ts` › `#187 R1: el escáner cubre al menos el universo medido (enmendado por #177 R9) (enmendado por #189 R5, R10, R13)` | `cardElements` total `toBeGreaterThanOrEqual(41)` con el comentario `// #188 R18: 42 - 1 (el banner de vinculación deja de ser Card)` (medido: 41, sin margen) | `toBeGreaterThanOrEqual(39)` con el comentario `// #196 R1, R5: 41 - 2 (la tarjeta hero y el aviso de Perfil dejan de ser Card)`; el título del `it` añade ` (enmendado por #196 R1, R5)`. Los otros pisos aguantan: `heroElements` 211 → 208 (piso 197) y `classNameElements` 169 → 167 (piso 163). `grep -cF 'toBeGreaterThanOrEqual(41)'` 1 → 0 y `grep -cF 'toBeGreaterThanOrEqual(39)'` 0 → 1. Va en el rojo de R1+R4 (`<Card` en `P`: 5 → 4 tras R1+R4, → 3 tras R2+R5) | R1, R5 |
+| K41 | `src/__tests__/hero-header-amendments.test.ts` › `#168 R11: las specs enmendadas por #168 llevan su bloque` › `aplica además el marcador en prosa que la tabla R11.2 prescribe`, fila 4 de `AMENDED_DOCS_168` (`file: 'docs/ui-guidelines.md'`) | `marker` = la prosa `**Regla N1 (enmienda B4 de #168)**: Salud, Nutrición y Perfil abren con el título grande; Inicio es la única pestaña con PetHeroHeader. Devolver el hero a una de las tres es una enmienda a #168.` | `marker` = el texto exacto de design.md §Texto de la Enmienda #196, de `**Regla N1 (enmienda #196)**:` a `es una enmienda a #196.`; `file`, `feature` y `change` no cambian, y el título del `it` añade ` (enmendado por #196 R11)`. Opción elegida de la auditoría F5: reescribir la fila con el texto de #196 (la prosa B4 desaparece de la carta, así que no se conserva). `grep -cF '**Regla N1 (enmienda B4 de #168)**'` 1 → 0 y `grep -cF '**Regla N1 (enmienda #196)**'` 0 → 1 en ese fichero. Va en el **verde** de R11, junto con la edición de la carta y solo con la casilla de la Enmienda #196 marcada | R11 |
 
 **Deben seguir verdes sin tocarlos** (si alguno se pone rojo, es parada):
 `#173 R11` › `expone el Switch…` y `usa las recetas y el orden de las dos filas de ajustes`
 (`ToggleSwitch` pone `theme-toggle` en la raíz `Switch`, con las mismas props);
 `R4: toggle persiste` (los tres `it`); `#99 R3` › los otros cuatro `it`;
 `#168 R6` › el `it.each` de tiles (no mira `strokeWidth`); `#173 R15` ›
-`screens/profile/index.tsx no tiene escapes de estilo`; `tab-headers-canvas` ›
-`#168 R1` (el literal del título claro sigue apareciendo una vez en Perfil);
-`legibility-classnames` › `#61 R4` (Perfil conserva sus dos `text-accent-strong`);
-`R3: reminders-link y sign out` › `keeps sign out…`.
+`screens/profile/index.tsx no tiene escapes de estilo` (lee el fuente entero
+de `P`, comentarios incluidos, y veta `/#[0-9a-fA-F]{3,8}\b/` sin la exención
+`#NNN R<n>`: ningún comentario `#196 R<n>` ni otro `#NNN` en `P`, R1.5);
+`#173 R5` › `pinta Add pet en inglés con la misma receta` (antes K3);
+`tab-headers-canvas` › `#168 R1` (el literal del título claro sigue
+apareciendo una vez en Perfil) y `veta hex solo en las tres pantallas de
+producción`; `legibility-classnames` › `#61 R4` (Perfil conserva sus **tres**
+`text-accent-strong`: `1 + 1 - 1 + 1 + 1`); `R3: reminders-link y sign out` ›
+`keeps sign out…`; `hero-header-amendments` › `#168 R11` › los otros dos `it`
+del `describe` (el bloque `## Enmienda #168` y su firma no se tocan);
+`src/components/__tests__/pet-hero-header.test.tsx`,
+`pet-hero-header-motion.test.tsx` y `home-photo-hero-canvas.test.ts` › todos
+los `it` previos (ninguno pasa `caption`); `src/app/(tabs)/__tests__/profile.test.tsx`
+› `R2: route Profile delgada` › `only delegates rendering to the screen body`;
+`src/app/(tabs)/__tests__/screens.test.tsx` › `R5: placeholders de tabs`
+(con K39) y `R6: profile permite cerrar sesión`;
+`src/components/__tests__/pet-switcher.test.tsx` › `#173 R4: variante avatars`
+(D6: la variante se conserva); `src/screens/health/index.test.tsx` entero (no
+se toca Salud).
 
 **Regla de parada**: cualquier rojo fuera de esta tabla, o un `it` de la tabla
 que se ponga rojo por otra aserción distinta de la descrita, para la
@@ -534,7 +606,7 @@ implementación y se reporta.
 - Borrar la variante `avatars` de `PetSwitcher` (D6) y cualquier otro cambio en
   `components/pet-switcher.tsx`, `components/card.tsx`, `components/empty-state.tsx`
   (lo amplía #198), `components/button`, `ScreenHeader` y `global.css`.
-- `RiseIn` de #199 (D13) y la entrada `pop` con 300 ms exactos (V3).
+- `RiseIn` de #197 R24 (D13) y la entrada `pop` con 300 ms exactos (V3).
 - Desenfoque real del vidrio (V1): pediría `expo-blur`.
 - Claves i18n nuevas o cambios de copy: no hay ninguno.
 - **Deuda que roza**: ninguna. La entrada de #196 en `feature_list.json` no

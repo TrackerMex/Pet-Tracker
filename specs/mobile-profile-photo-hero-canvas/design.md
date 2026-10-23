@@ -33,7 +33,20 @@ Medidas contra el árbol en `71ff81a1`, no tomadas del explore:
   `--amber` y `--rose` del artboard).
 - Ausentes hoy y traídos por #197: `--tracking-display`, `--leading-note`,
   `ToggleSwitch`, `useChunkyLip().primary` con `0 4px 0 var(--lip)` y
-  `--color-danger: #D92D20` en claro (hoy `#EF4444`).
+  `--color-danger: #D92D20` en claro (hoy `#EF4444`). Firma de `ToggleSwitch`
+  en `feature/197-mobile-canvas-foundations` (`src/components/toggle-switch.tsx`):
+  `ToggleSwitch({ testID, isSelected, onSelectedChange, isDisabled, accessibilityLabel, hitSlop, style })`,
+  con `testID: string`, `isSelected: boolean`,
+  `onSelectedChange: (isSelected: boolean) => void` y el resto tomado con
+  `Pick<ComponentProps<typeof Switch>, …>` del `Switch` de HeroUI; envuelve
+  ese `Switch` con `testID` en la raíz y pinta el pulgar con testID
+  `${testID}-thumb`.
+- `useChunkyLip` vive en `src/theme/chunky-lip.ts`, que no es uno de los
+  cuatro cimientos que `#197 R20` vigila (`toggle-switch`, `screen-header`,
+  `shadows`, `rise-in`). El único cimiento que #196 monta es `ToggleSwitch` (R7).
+- `src/screens/home/bubble-pop.tsx` importa `Animated` por defecto de
+  `react-native-reanimated` y pinta `<Animated.View>`; `PetHeroHeader` usa
+  `Animated.createAnimatedComponent(View)`. `T` no dobla reanimated hoy.
 - Los cinco literales de copy del artboard coinciden con `src/i18n/catalog.ts`.
 - `PetSwitcher` está doblado en `src/screens/profile/index.test.tsx`
   (`mockPetSwitcher`), así que la variante `glass` no se renderiza en esos tests.
@@ -80,14 +93,25 @@ Lo que los tests no ven; se cierra en el smoke de requirements.md §Cierre del h
   `useChunkyLip().primary`, `--color-danger` claro). El leader re-mide las
   anclas `(#197: …)` de requirements.md §Base medida tras ese merge.
 - **Enmienda #196 aprobada** (casilla de §Aprobación) antes de R11 y de
-  montar `PetHeroHeader` en Perfil (R1).
+  montar `PetHeroHeader` en Perfil (bloque R1+R4).
 - #198 se mergea antes: si toca `pet-hero-header.tsx`, el prop `caption` se
-  añade sobre su versión (D1). #199 crea `RiseIn`, que Perfil no consume (D13).
+  añade sobre su versión (D1). `RiseIn` lo crea #197 R24 y Perfil no lo
+  consume (D13); #196 no añade exports a `src/theme/motion.ts`.
+- **Regla uniforme de `#197 R20`** (toda la ola 2): la primera feature que
+  monta un cimiento o toca `src/app/_layout.tsx` borra entero
+  `describe('#197 R20: cimientos sin cablear')` de
+  `src/__tests__/canvas-foundations.test.ts`, con sus dos `it`, sin sufijo y
+  sin sustituto. En #196 eso pasa en el rojo de R7 (K35).
 - Ninguna dependencia npm nueva, ningún coste, nada de AWS.
 
 ## Decisiones técnicas
 
-Las decisiones con defecto D1–D13 están en requirements.md. Detalle técnico:
+Las decisiones con defecto D1–D15 están en requirements.md. Detalle técnico:
+
+- **Bloques de commits** (D14): R1+R4 y R2+R5. Entre el verde de R1+R4 y el
+  de R2+R5 la fila de título sigue como primer hijo de `profile-content` en
+  las dos ramas (el slot del hero aún no tiene `children`), así que `#99 R3`
+  (K9 paso 1) y `#168 R1` siguen verdes.
 
 - **Una sola fila de título**: se define una vez como elemento JSX y se pinta
   en `profile-hero-top` (con hero) o al principio de `profile-content` (sin
@@ -108,27 +132,60 @@ Las decisiones con defecto D1–D13 están en requirements.md. Detalle técnico:
   `CATEGORY_SLOTS.*.surface` (guarda de `category-palette`); `text-15` va en un
   `Text` de RN y nunca en `Button.Label` (enmienda #187: `twMerge` expulsa
   `text-13/15/17` en HeroUI); `Button.Label` lleva `text-sm`, que `twMerge`
-  no confunde con color; `text-accent-strong` sigue con dos usos en Perfil
-  (`legibility` › `#61 R4`). Tokens usados: todos existen hoy o los trae #197
+  no confunde con color; `text-accent-strong` sigue con tres usos en Perfil
+  (`legibility` › `#61 R4` espera `1 + 1 - 1 + 1 + 1` = 3; la fila de título
+  única los mantiene). Tokens usados: todos existen hoy o los trae #197
   (`tracking-display`, `leading-note`).
 - `style` nuevo en `P`: `chunkyLip.primary` (dos veces) y
-  `{ paddingTop: insets.top + 12 }` en `profile-content` sin hero. `#173 R15`
-  solo mira `className`, así que no le afecta.
+  `{ paddingTop: insets.top + 12 }` en `profile-content` sin hero; ninguno es
+  `StyleSheet.create` ni valor arbitrario.
+- **`#173 R15` lee el fuente entero de `P`**, comentarios incluidos, y veta
+  `/#[0-9a-fA-F]{3,8}\b/` sin la exención `#NNN R<n>` que sí tienen
+  `design-drift`, `tab-headers-canvas` › `veta hex` y `alerts-canvas-fidelity`.
+  Por eso `P` no lleva comentarios `#196 R<n>` ni ningún otro `#NNN` (R1.5).
+  `H` sí puede llevar `// #196 R3`: `home-photo-hero-canvas` › `#195 R19` quita
+  los comentarios antes de medir y `design-drift` exime `#NNN R<n>`.
+- **Doble de reanimated en los tests de Perfil** (D15, K38, K39): las
+  funciones del doble de `pet-hero-header.test.tsx` (`useReducedMotion`,
+  `withTiming` identidad, `withDelay`, `withSequence` con el último paso,
+  `withRepeat`, `cancelAnimation`) con la forma de módulo del de
+  `src/screens/home/index.test.tsx` (`...actual` y `__esModule: true`, sin
+  sobrescribir `default`). El doble de `pet-hero-header.test.tsx` no lleva
+  `__esModule` y sobrescribe `default`: vale para `H` (usa
+  `createAnimatedComponent`) pero no para `BubblePop`, cuyo `Animated.View`
+  sale del import por defecto; el de Inicio ya monta `PetHeroHeader` y
+  `BubblePop` juntos con esa forma.
+- **Marcador de la carta en `hero-header-amendments`** (K41, auditoría F5):
+  de las dos opciones (reescribir la fila 4 de `AMENDED_DOCS_168` o conservar
+  la prosa B4 y añadir la N1 detrás) se elige **reescribir**: R11.2 sustituye
+  entera la línea B4, así que conservarla contradiría la carta. El `marker`
+  pasa a ser el texto exacto de §Texto de la Enmienda #196; `file`, `feature`
+  y `change` no cambian. Va en el verde de R11, el mismo commit que edita la
+  carta.
+- **Piso de `Card` en `heroui-text-size-merge`** (K40, auditoría F4): hoy 41
+  medido y piso 41. Perfil pierde dos `<Card>` (la tarjeta hero en R1+R4 y el
+  aviso en R2+R5): el piso baja a 39 en el rojo de R1+R4, con el comentario
+  `// #196 R1, R5: 41 - 2 (la tarjeta hero y el aviso de Perfil dejan de ser Card)`.
 
 ## Archivos afectados
 
 - **Presentación** (`mobile-pet-tracker/src/`):
-  - `screens/profile/index.tsx`: R1–R9.
+  - `screens/profile/index.tsx`: R1, R2 y R4–R9 (sin comentarios `#NNN`, R1.5).
   - `components/pet-hero-header.tsx`: prop `caption` (R3).
 - **Tests**:
-  - `screens/profile/index.test.tsx`: `it` nuevos de R1–R9 y K1–K24.
+  - `screens/profile/index.test.tsx`: `it` nuevos de R1, R2 y R4–R9, K1,
+    K2, K4–K24 y las cabeceras K36–K38.
   - `components/__tests__/pet-hero-header.test.tsx`: R3.
   - `__tests__/profile-photo-hero-canvas.test.ts` (nuevo): R10.
   - `__tests__/tab-headers-canvas.test.ts`: R11 y K25.
   - `__tests__/profile-canvas-fidelity.test.ts`: K26–K29.
   - `__tests__/chunky-cta-canvas-fidelity.test.ts`: K30–K33.
   - `__tests__/alerts-canvas-fidelity.test.ts`: K34.
-  - el fichero de #197 con `#197 R20: nadie monta todavía los cimientos`: K35.
+  - `__tests__/canvas-foundations.test.ts` (#197): K35, se borra el
+    `describe('#197 R20: cimientos sin cablear')` entero.
+  - `app/(tabs)/__tests__/screens.test.tsx`: cabecera K39.
+  - `__tests__/heroui-text-size-merge.test.ts`: K40.
+  - `__tests__/hero-header-amendments.test.ts`: K41.
 - **Docs**: `docs/ui-guidelines.md`, regla N1 (R11), solo con la casilla de la
   enmienda marcada.
 - No se tocan dominio, aplicación, infraestructura, `src/app/_layout.tsx`,
@@ -141,7 +198,12 @@ Las decisiones con defecto D1–D13 están en requirements.md. Detalle técnico:
 - **Pasar nombre y chips como `children`**: el slot está arriba; el pie del
   artboard pide el hueco de `pet-hero-caption`.
 - **Ampliar `BubblePop` con un `delayMs`**: tocaría un fichero de Inicio (#198).
-- **`RiseIn` de #199**: D13.
+- **`RiseIn` de #197 R24**: D13.
+- **Doblar `PetHeroHeader` o `BubblePop` en `T`**: los `it` de R1, R4 y K13,
+  K14 leen el componente real (`pet-hero-media`, `pet-hero-caption`); se
+  dobla solo reanimated (D15).
+- **Conservar la prosa B4 en la carta y añadir la N1 de #196 detrás** (F5):
+  dos reglas N1 contradictorias en el mismo documento.
 - **`ScreenHeader` de #197**: el título va sobre la foto, no en una cabecera.
 - **Mantener `Card` en el aviso**: el artboard no tiene borde ni sombra, y la
   receta de `Card` los trae.
@@ -152,8 +214,13 @@ Las decisiones con defecto D1–D13 están en requirements.md. Detalle técnico:
   cambio aditivo y candado propio en `pet-hero-header.test.tsx`.
 - **Dependencia de #197**: R5, R6, R7, R10 (filas 3, 11, 14, 19, 21) y K28,
   K30–K35 dan rojo sin #197. No se hace handoff antes de su merge.
-- **K35** depende de cómo nombre #197 el fichero de su candado; si otra
-  feature de la ola 2 ya montó `ToggleSwitch`, la lista se suma.
+- **K35 ya aplicado por otra feature**: si al llegar al rojo de R7 el
+  `describe('#197 R20: cimientos sin cablear')` no existe (otra feature de la
+  ola 2 lo borró al montar su cimiento), K35 queda sin efecto y se anota en
+  el informe; no es parada.
+- **Doble de reanimated en `T`** (K38): pasa a identidad todas las
+  animaciones de `T`. Si un `it` previo de `T` se pone rojo por eso, es
+  parada (no está inventariado).
 - **Rendimiento**: una foto de 430 más en Perfil. `PetAvatar` ya cachea por
   `cacheKey`; se ve en el smoke.
 
