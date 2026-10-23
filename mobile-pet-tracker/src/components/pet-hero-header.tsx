@@ -23,12 +23,12 @@ import { PingRing } from './ping-ring';
  * carta pide token a partir de la segunda repetición, y una clase arbitraria de
  * altura está prohibida. Se exporta para los tests, no para otros componentes.
  */
-export const PET_HERO_MEDIA_HEIGHT = 330;
+export const PET_HERO_MEDIA_HEIGHT = 430;
 
 /** Alto de cada franja de degradado entre la imagen y una banda opaca. */
-export const PET_HERO_FADE_HEIGHT = 160
+export const PET_HERO_FADE_HEIGHT = 100
 
-export const PET_HERO_SCRIM_HEIGHT = 130;
+export const PET_HERO_SCRIM_HEIGHT = 90;
 
 const AnimatedView = Animated.createAnimatedComponent(View);
 
@@ -200,7 +200,7 @@ export function PetHeroHeader({
           className="absolute inset-x-0 bottom-0"
           style={{
             height: PET_HERO_FADE_HEIGHT,
-            experimental_backgroundImage: `linear-gradient(to bottom, ${background}00 0%, ${background}59 35%, ${background}D9 65%, ${background} 100%)`,
+            experimental_backgroundImage: `linear-gradient(to bottom, ${background}00 0%, ${background}59 24%, ${background}D9 44%, ${background} 100%)`,
           }}
         />
 
