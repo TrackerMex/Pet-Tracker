@@ -225,7 +225,8 @@ pintar `weight-summary` con `className="flex-row items-baseline gap-2"`,
 `weight-current` (`Text` de `react-native`) con
 `className="text-34 font-black text-foreground"` y `TABULAR_NUMS`, y
 `weight-month-delta-text` (`Text` de `react-native`, sin icono ni envoltorio
-`weight-month-delta`) con `className` `text-sm font-extrabold ${tono}`, donde
+`weight-month-delta`) con `className` `text-sm font-extrabold ${tono}` y
+`TABULAR_NUMS` (como hoy), donde
 el tono es `text-danger` si el delta es > 0, `text-accent-strong` si es < 0 y
 `text-muted` si es 0 (D17). La rama sin delta del mes conserva lo que fija
 hoy `#169 R7`.
@@ -280,7 +281,9 @@ registro anterior, con `TrendUp`/`TrendDown`/`Minus` a 18 px en
 `danger`/`accent-strong`/`muted` (D14, D17); a su derecha una columna con un
 `Text` de `react-native` `className="text-15 font-extrabold text-foreground"`
 que dice «{kg} kg » y anida `weight-row-${id}-delta` con `text-13 ${tono}`
-(`text-danger`, `text-accent-strong`, `text-muted`), y debajo «CC n/9»
+(`text-danger`, `text-accent-strong`, `text-muted`) tomado de la misma
+constante `DELTA_TONE` que R4 (design §Decisiones técnicas 3), de modo que
+`text-accent-strong` sale una sola vez en el fichero, y debajo «CC n/9»
 (`weightLog.bodyConditionValue`) en `text-xs text-muted` cuando hay condición
 corporal.
 - WL `#169 R8` › `fila %s con su tono, icono y texto` pasa a las clases nuevas
@@ -408,7 +411,8 @@ SHALL pintar `PetSwitcher` con `variant="avatars"` como segundo hijo de
 - HE `#199 R13: avatares de Salud` › `#199 R13 el selector va en health-header tras health-title en su variante avatars`
   (afirma `pet-avatar-fallback-${id}` con `text-sm font-extrabold` y que
   `health-content` no contiene `pet-chip-*`).
-- HE `#168 R2` › `cambia vacunas y peso al pulsar otra mascota` sigue verde sin cambios.
+- HE `#168 R2` › `cambia vacunas y peso al pulsar otra mascota` toma el selector
+  de `health-header` en vez de `health-content`, con sufijo `(enmendado por #199 R13)`.
 
 **R14 — Panel de la próxima dosis.** WHEN hay una próxima dosis, THE SYSTEM
 SHALL pintar `next-vaccine-card` como `View` de `react-native` con
@@ -461,10 +465,14 @@ llevar `gap-2.5`.
 `className="flex-row items-center gap-3 py-3.5"` dentro de un `RiseIn` con
 `delayMs={80 + 60 * Math.min(index, 2)}`, con el tile de hoy (`size-10
 rounded-xl` + `CATEGORY_SLOTS`, `Check`/`Clock` a 20) y el nombre en un `Text`
-de `react-native` `className="text-15 font-extrabold text-foreground"`.
+de `react-native` `className="text-15 font-extrabold text-foreground"`; la
+columna `vaccine-text-${id}` conserva `flex-1 gap-1` y tiene dos hijos, el
+nombre y `vaccine-dates-${id}` (R17).
 - HE `#199 R16: filas de vacunas` › `#199 R16 cada vacuna es un Card flat con py-3.5 y nombre text-15 font-extrabold`.
 - HE `#199 R16: filas de vacunas` › `#199 R16 la fila %i entra a los %i ms` — `it.each`: 0 → 80, 1 → 140, 2 → 200, 3 → 200.
-- HE `#168 R3` › tiles pastel: sigue verde sin cambios.
+- HE `#168 R3` › `pinta el estado de $id con su icono y textos`: el tile no
+  cambia; la columna pasa a nombre y `vaccine-dates-${id}`, con sufijo
+  `(enmendado por #199 R16)` (§Candados).
 
 **R17 — Subtítulo de una línea.** WHEN se pinta una vacuna, THE SYSTEM SHALL
 pintar `vaccine-dates-${id}` como un único `Text` de `react-native`
@@ -504,6 +512,8 @@ THE SYSTEM SHALL pintar `weight-card` como `View` de `react-native` con
 - HE `#199 R18: tarjeta de peso` › `#199 R18 pasa variant mini y el historial entero a WeightChart`.
 - HE `#199 R18: tarjeta de peso` › `#199 R18 el enlace es rounded-14 bg-surface px-3.5 py-3 con texto text-15 font-bold`.
 - HE `#199 R18: tarjeta de peso` › `#199 R18 entra a los 260 ms`.
+- HE `#115 R5` › `con un registro, muestra el aviso de datos insuficientes de WeightChart`:
+  3 hijos y el aviso en el índice 1, con sufijo `(enmendado por #199 R18)`.
 
 ### Estados
 
@@ -593,8 +603,11 @@ la gráfica.» (`weightLog.weightLogged`, sin cambio de copy),
 - WL `#199 R23: toast de registro` › `#199 R23 el toast es una píldora con borde, sombra toast y top inset + 42`.
 - WL `#199 R23: toast de registro` › `#199 R23 el check es de 16 en accent-strong y el texto es el de weightLog.weightLogged`.
 - WL `#199 R23: toast de registro` › `#199 R23 el fuente declara FadeIn.duration(MOTION_TOAST_FADE_MS).delay(MOTION_TOAST_DELAY_MS)`.
-- WL `#169 R13` › sus dos `it` siguen verdes; si el segundo lee el `FadeIn` sin
-  argumentos, sufijo `(enmendado por #199 R23)`.
+- WL `#169 R13` › `el fuente declara el fundido sin ReduceMotion.Never` pasa a
+  afirmar el `entering` nuevo, con sufijo `(enmendado por #199 R23)`;
+  `el toast lleva FadeIn y FadeOut` sigue verde.
+- WL `#169 R10` › `muestra el toast y el háptico solo tras resolver el alta`:
+  `className` de R23 y check en `accent-strong`, con sufijo `(enmendado por #199 R23)`.
 
 ### Copy, guardas y fidelidad
 
@@ -720,48 +733,51 @@ conserva la clase de #197; el mock `HeartPulse` de HE queda sin uso y ningún
 | WL › `R7: weight log lista el historial` › `shows loading and the metrics under the native header (#95 R6)` | `{ padding: 24, gap: 16, paddingBottom: 48 }` y carga `h-40` | métricas de R2 y carga de R22 | R2, R22 |
 | WL › `R7…` › `R5 (mobile-design-drift, enmendado por #95 R6): el inset superior lo consume la cabecera nativa` | sin `paddingTop` | `paddingTop: insets.top + 8` | R2 |
 | WL › `R7…` › `R8 (mobile-design-drift): reserva la altura del loading con Skeleton` | `h-40` | tres filas esqueleto | R22 |
-| WL › `R7…` › `keeps API order and renders each weight detail` (si rojo) | fecha ISO o fila `HeroUICard` | fecha corta, fila `View` | R9, R11 |
+| WL › `R7…` › `keeps API order and renders each weight detail` | `newest.getByText('2026-08-21')` (fecha ISO) | fecha corta de R11 (`fmtDayMonth`) | R9, R11 |
 | WL › `#62 R9: la gráfica de peso vive dentro de una card` › `envuelve weight-chart con la superficie compartida` | `rounded-card` | `rounded-24 bg-surface-secondary` | R3 |
 | WL › `#95 R5: la pantalla no dibuja cabecera propia` › `retira el botón y el título del cuerpo` | sin vuelta ni título en el cuerpo | `weight-log-back` sigue ausente; vuelta y título en `weight-log-header` | R1 |
 | WL › `#148 R7` › `el host screen-weight-log añade paddingBottom 291 al abrir el teclado` | 291 con `HeaderHeightContext.Provider value={91}` | 200 sin el `Provider` | R2 |
 | WL › `#169 R8: chip de delta por entrada` › `fila %s con su tono, icono y texto` | `size-8`, `bg-*-soft`, icono 15, `text-xs font-semibold` | clases de R10 | R10 |
-| WL › `#169 R6: resumen del peso en la card de la gráfica` › el `it.each` que lee `getByTestId('weight-month-delta').props.className` (rojo seguro); los demás `it` del describe, si rojo | icono o `weight-month-delta` | `weight-month-delta-text` con la clase de R4; `weight-month-delta` ausente | R4 |
+| WL › `#169 R6: resumen del peso en la card de la gráfica` › `en %s pinta el peso actual y el delta del día civil` (`it.each`) | `weight-current` `text-3xl font-black text-foreground`; `weight-month-delta` `flex-row items-center gap-1.5` | `weight-current` `text-34 font-black text-foreground`; `weight-month-delta` ausente en las dos ramas; los dos `TABULAR_NUMS` no cambian (R4) | R4 |
+| WL › `#169 R6…` › `no pinta el resumen sin entradas` | con 0 registros espera `weight-chart-empty` («Aún no hay datos suficientes») | con 0 registros no hay tarjeta (D23): espera `weight-log-empty` (R22); `weight-chart-empty` y `weight-summary` ausentes | R3, R22 |
 | WL › `#169 R7: tono del delta del mes` › `it.each` | tono con icono | tres tonos sin icono | R4 |
-| WL › `#169 R13` › `el toast lleva FadeIn y FadeOut` (si rojo) | `FadeIn` sin timing | `FadeIn.duration(…).delay(…)` | R23 |
-| WL › `#169 R10: toast y háptico tras un alta correcta` › `muestra el toast y el háptico solo tras resolver el alta` | `className` `absolute top-4 flex-row …` | `className` exacto de R23 (sin `top-4`) | R23 |
+| WL › `#169 R13: movimiento del toast` › `el fuente declara el fundido sin ReduceMotion.Never` | `toContain('entering={FadeIn.duration(MOTION_TRANSITION_MS)}')` | `toContain('entering={FadeIn.duration(MOTION_TOAST_FADE_MS).delay(MOTION_TOAST_DELAY_MS)}')`; el `exiting` y el 0 de `ReduceMotion.Never` no cambian. El otro `it` del describe (`el toast lleva FadeIn y FadeOut`, `toBeInstanceOf`) sigue verde | R23 |
+| WL › `#169 R10: toast y háptico tras un alta correcta` › `muestra el toast y el háptico solo tras resolver el alta` | `className` `absolute top-4 … shadow-sm`; `icon-check` con `style.color` `'green'` (`success` en el mock de WL) | `className` exacto de R23 (sin `top-4` ni `shadow-sm`); `style.color` `'blue'` (`accent-strong` en el mock de WL); el resto del `it` no cambia | R23 |
 | WL › helper `renderWeightLog` (lo usan todos los `it` de WL) | envuelve en `HeaderHeightContext.Provider value={91}` | sin el `Provider` ni su import; ningún otro `it` cambia por ello | R2 |
 | WC › `R8: la gráfica degrada con <2 puntos` › `reverses descending API entries and normalizes each point` | coordenadas en 100 x 40 | 310 x 110 | R5 |
 | WC › `R8…` › `centers equal weights without dividing by zero` | centro de 40 | y 60 | R5 |
 | WC › `#169 R1: la línea se dibuja al montarse` › los `it` que leen `MOTION_FILL_TIMING` o la longitud, `con dos pesos iguales la longitud es 100` incluido | `MOTION_FILL_TIMING` sin retraso, longitud 100 | `MOTION_DRAW_TIMING` tras 200 ms, longitud 310 | R5 |
+| WC › `#169 R4: cuándo se vuelve a dibujar` › `R4a`, `R4b` y `R4c` | `strokeDasharray` 104.9952 y `[100, 100]`; `mockWithTiming` 1, 1 y 2 veces | longitudes en 310 x 110; recuentos 1, 1 y 2 contando solo las llamadas con `MOTION_DRAW_TIMING` (el `pop` añade las suyas). Si el `Path` real no expone `testID` ni `strokeDasharray` en el host, el mock de `react-native-svg` de WC suma un `Path` como el `Polyline` de hoy | R5 |
 | WC › `#169 R2: los puntos aparecen con el mismo progreso` › sus cuatro `it` | un `Circle` por entrada al ritmo de la línea | un solo `Circle` con `pop` (R5.7) | R5 |
 | WC › `#169 R3: bajo reduce motion la gráfica sale completa` › sus dos `it` (si rojo) | línea completa | línea y punto completos | R5 |
 | HE › `R4` › `R8 (mobile-design-drift): reserva la altura del loading con Skeleton` | `h-12 w-full rounded-card` | dos círculos `size-10 rounded-full` | R21 |
-| HE › `R5` › `highlights the nearest future dose and keeps row order` (si rojo) | subtítulo de dos líneas o clases de la card | R14, R17 | R14, R17 |
+| HE › `R5` › `highlights the nearest future dose and keeps row order` | `nextCard.getByText('1 may 2099')` | la fecha de R14 (`fmtDayMonthLong` + relativo); si lee subtítulos de fila, los de R17 | R14, R17 |
 | HE › `R5` › `marks an overdue next-dose date with the danger token` | fecha vencida en su propia línea | `Text` anidado en `text-danger` | R17 |
-| HE › `R6` › `shows the current weight and opens the weight log` (si rojo) | cifra en `text-accent-strong` | `text-foreground` | R18 |
-| HE › `#61 R10` › `la fila de enlace al weight log llega a 44 pt sin crecer a la vista` | `py-2` + `hitSlop` | `py-3` + `hitSlop` | R18 |
 | HE › `#62 R5` › `aplica la receta canónica a Peso` | `text-base font-bold` | `text-13 font-bold text-muted` | R18 |
 | HE › `#127 R2` › `pinta vaccines-skeleton con la clase exacta, rounded-card incluido, …` | `h-24 w-full rounded-card` | fila `Card` flat | R19 |
 | HE › `#115 R5` › `con dos o más registros, pasa el historial entero y en orden entre la variación y el enlace` | `WeightChart` sin `variant` | `variant="mini"`, orden fila, gráfica, enlace | R18 |
+| HE › `#115 R5` › `con un registro, muestra el aviso de datos insuficientes de WeightChart` | `card.children` 4; `weight-chart-empty` en el índice 2 | 3 hijos (fila, gráfica, enlace); `weight-chart-empty` en el índice 1 | R18 |
 | HE › `#115 R6` › `ordena la card en icono, columna y días, con la fecha en la columna ($branch)` | tile 44, `fmtDate` | tile 52, `fmtDayMonthLong` + relativo | R14 |
 | HE › `#115 R6` › `pinta los días con la receta exacta ($branch)` | `text-lg font-black text-warning-strong` | `text-28 font-black` + `CATEGORY_SLOTS.amber.ink` | R14 |
 | HE › `#168 R2` › `con mascotas, health-title y health-content son los únicos hijos del scroll, en ese orden` | `health-title`, `health-content` | `health-header`, `health-content` | R12 |
 | HE › `#168 R2` › `pone el PetSwitcher como primer hijo de health-content` | selector en `health-content` | selector en `health-header` | R12, R13 |
 | HE › `#168 R2` › `sin contenido ($name), health-title precede a health-states` | `health-title` antes | `health-header` antes | R12 |
+| HE › `#168 R2` › `cambia vacunas y peso al pulsar otra mascota` | selector = primer hijo de `health-content` | selector = segundo hijo de `health-header` (R13); el resto del `it` no cambia | R13 |
+| HE › `#168 R3: cada vacuna lleva su tile pastel` › `pinta el estado de $id con su icono y textos` (`it.each`, 4 filas) | columna con 3 o 2 `Text`: nombre `font-bold text-foreground`, fechas ISO crudas en `font-normal text-muted` o `dateClass` | columna con 2 hijos: nombre `text-15 font-extrabold text-foreground` y `vaccine-dates-${id}` (R17: fechas por `fmtDate`, vencida en `Text` anidado `text-danger`); tile, icono y `flex-1 gap-1` no cambian | R16, R17 |
 | LY › `#95 R4` › `#194 R4: %s usa exactamente las opciones de cabecera acordadas` | `['weight-log', 't:weightLog.weightLog']` | `headerShown: false` sin título | R1 |
 | `app/__tests__/detail-stack.test.tsx` › `it.each` con `['weight-log', 0]` (si rojo) | 0 | el valor que dé la ruta sin cabecera nativa | R1 |
 | F197 › `#197 R20: nadie monta todavía los cimientos` | nadie importa `ScreenHeader`, `useShadows` ni `MOTION_RISE_*` | weight-log monta `ScreenHeader` y `useShadows`; `rise-in.tsx` usa `MOTION_RISE_*` | R1, R23, R24 |
 | F197 › `#197 R20: el layout raíz no cambia` | `headerShown` 2 | 3 | R1 |
 | DD › `#179 R13` › `reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10)` | health fuera de las listas de `rounded-14` y `rounded-16` | health con 1 `rounded-14` y 1 `rounded-16` | R14, R18 |
-| DD › `limita text-22 a Horario y text-17 al inventario de E1.2 (enmendado por #177 R10)` | weight-log `text-17` 1 | 2 | R9 |
-| CC › `#62 R2: cada skeleton tiene la forma del contenido que sustituye` | `vaccines-skeleton` `h-24 w-full rounded-card`, carga de Peso `h-40`, carga de mascotas `h-12` | recetas de R19, R21, R22 | R19, R21, R22 |
+| CC › `#62 R2: cada skeleton tiene la forma del contenido que sustituye` | `vaccines-skeleton` `h-24 w-full rounded-card` (única fila del `it.each`) | receta de R19 en la etiqueta de apertura de `vaccines-skeleton` | R19 |
 | CC › `lleva los tres tiles restantes a rounded-xl (enmendado por #177 R10)` | `'size-8 shrink-0 items-center justify-center rounded-xl ${tileClassName}'` | `size-9` | R10 |
 | CC › `#62 R14: toda esquina no-cápsula que dibuja el repo es continua` | health `2 + 1`, weight-log su base | recuento re-medido con R27.5 | R3, R14, R18, R27 |
 | CC › `#62 R15: todo contador usa cifras tabulares` | health `2 + 1`, weight-log `2 + 2` | recuento re-medido | R4, R10, R14, R18 |
-| LG › `#61 R4` › `%s pinta con text-accent-strong (%i)` y `suma las trece ocurrencias que enumera la spec` | health 1, weight-log sin fila | health 0 (`// #199 R18`), fila weight-log 1 (`// #199 R4`); suma `+ 1 - 1` | R4, R18 |
+| LG › `#61 R4` › `%s pinta con text-accent-strong (%i)` y `suma las trece ocurrencias que enumera la spec` | health 1, weight-log sin fila | health 0 (`// #199 R18`), fila weight-log 1 (`// #199 R4`): R4 y R10 leen el tono de la misma `DELTA_TONE` (R10), así que el literal sale una vez; suma `+ 1 - 1` | R4, R10, R18 |
 | LG › `#61 R5` › `%s pinta su texto con text-warning-strong` | fila health | la fila health sale (`// #199 R14`) | R14 |
 | PCF › `limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8) (enmendado por #189 R6)` | inventario sin health ni weight-log | + health y weight-log con sus recuentos | R7, R10, R11, R14, R18 |
-| CTA › `#177 R6.2: recuentos de etiquetas` (si rojo) | weight-log 1 | + el h2 de Historial si su patrón lo cuenta | R9 |
+| PCF › `Perfil es el único consumidor de Card flat y lo usa dos veces` | `filesMatching(/variant="flat"/)` = `['screens/meal-schedule/index.tsx', 'screens/profile/index.tsx']` | `['screens/health/index.tsx', 'screens/meal-schedule/index.tsx', 'screens/profile/index.tsx', 'screens/weight-log/index.tsx']`; el recuento de Perfil no cambia | R7, R16, R19 |
+| CTA › `#177 R6.2: recuentos de etiquetas (enmendado por #189 R7) (enmendado por #189 R13)` | `count(/text-17/g)` `8 + 15 + 1 + 1 + 1 + 1`; `count(/text-17 font-extrabold text-foreground/g)` `3 + 3` | las dos `+ 1` (`// #199 R9`) por `weight-history-title` | R9 |
 | UL › `#194 R5` (longitud de `SCREEN_FILES`) | base | base − 1 | R25 |
 
 ## Desviaciones conscientes del canvas

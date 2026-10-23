@@ -18,19 +18,19 @@ requisito.
 | R4 | WL::`#199 R4: …` | pendiente |
 | R5 | WC, DT::`#199 R5: …` | pendiente |
 | R6 | WC::`#199 R6: …` | pendiente |
-| R7 | WL::`#199 R7: …` | pendiente |
+| R7 | WL, PCF::`#199 R7: …` | pendiente |
 | R8 | WL::`#199 R8: …` | pendiente |
-| R9 | WL::`#199 R9: …` | pendiente |
+| R9 | WL, CTA::`#199 R9: …` | pendiente |
 | R10 | WL, CC::`#199 R10: …` | pendiente |
 | R11 | DT, WL::`#199 R11: …` | pendiente |
 | R12 | HE::`#199 R12: …` | pendiente |
 | R13 | HE::`#199 R13: …` | pendiente |
 | R14 | HE, DT::`#199 R14: …` | pendiente |
 | R15 | HE::`#199 R15: …` | pendiente |
-| R16 | HE::`#199 R16: …` | pendiente |
+| R16 | HE, PCF::`#199 R16: …` | pendiente |
 | R17 | HE::`#199 R17: …` | pendiente |
 | R18 | HE::`#199 R18: …` | pendiente |
-| R19 | HE::`#199 R19: …` | pendiente |
+| R19 | HE, CC, PCF::`#199 R19: …` | pendiente |
 | R20 | HE::`#199 R20: …` | pendiente |
 | R21 | HE::`#199 R21: …` | pendiente |
 | R22 | WL::`#199 R22: …` | pendiente |

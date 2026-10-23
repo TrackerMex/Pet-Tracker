@@ -103,14 +103,19 @@ relativas a `mobile-pet-tracker/src/`; abreviaturas de test en requirements
 3. Nada.
 
 ### R4 — Cifra y delta del mes
-1. WL `#199 R4` (`text-34`, tonos up/down/flat).
+1. WL `#199 R4` (`text-34`, tonos up/down/flat, `TABULAR_NUMS` en el texto
+   del delta); enmendar WL `#169 R6` (`weight-current`, `weight-month-delta`
+   ausente, y `no pinta el resumen sin entradas` espera `weight-log-empty`).
 2. `DELTA_TONE` (design §Decisiones 3).
 3. Compartir `DELTA_TONE` con R10.
 
 ### R5 — Gráfica completa
 1. WC `#199 R5` (ventana `chartMonths`, `viewBox` 310x110, rejilla, área
    `tab-pill`, `draw`, `pop`, meses, etiqueta accesible, reduce motion); DT
-   para `fmtMonthShort`.
+   para `fmtMonthShort`. Enmendar WC `#169 R4` (`R4a`–`R4c`: longitudes
+   nuevas y recuento solo de las llamadas con `MOTION_DRAW_TIMING`); si el
+   `Path` real no expone `testID` ni `strokeDasharray`, el mock de
+   `react-native-svg` de WC suma un `Path`.
 2. Geometría parametrizada, `useAnimatedProps` del trazo y del `r`.
 3. Quitar `LinearGradient` y el código del `viewBox` 100x40.
 
@@ -121,7 +126,8 @@ relativas a `mobile-pet-tracker/src/`; abreviaturas de test en requirements
 3. Una sola función de puntos para ambas variantes.
 
 ### R7 — Formulario en dos columnas
-1. WL `#199 R7` (`Card` flat, `weight-form`, dos columnas).
+1. WL `#199 R7` (`Card` flat, `weight-form`, dos columnas); enmendar PCF
+   `#173 R3` (lista de `filesMatching`, junto con R16 y R19).
 2. Recolocar los campos.
 3. Nada.
 
@@ -131,7 +137,8 @@ relativas a `mobile-pet-tracker/src/`; abreviaturas de test en requirements
 3. Nada.
 
 ### R9 — Historial
-1. WL `#199 R9` (`weight-history-title`, filas sin `HeroUICard`).
+1. WL `#199 R9` (`weight-history-title`, filas sin `HeroUICard`); enmendar
+   CTA `#177 R6.2` (dos `+ 1`) y WL `R7…` (fecha corta).
 2. Título y filas.
 3. Nada.
 
@@ -152,7 +159,8 @@ relativas a `mobile-pet-tracker/src/`; abreviaturas de test en requirements
 3. Nada.
 
 ### R13 — Avatares
-1. HE `#199 R13` (`variant="avatars"`).
+1. HE `#199 R13` (`variant="avatars"`); enmendar HE `#168 R2` (selector desde
+   `health-header`).
 2. Elegir la variante.
 3. Nada.
 
@@ -168,7 +176,8 @@ relativas a `mobile-pet-tracker/src/`; abreviaturas de test en requirements
 3. Nada.
 
 ### R16 — Filas de vacunas
-1. HE `#199 R16` (`Card` flat).
+1. HE `#199 R16` (`Card` flat); enmendar HE `#168 R3` (`pinta el estado de
+   $id…`: columna de dos hijos, con R17).
 2. Filas.
 3. Nada.
 
@@ -178,7 +187,8 @@ relativas a `mobile-pet-tracker/src/`; abreviaturas de test en requirements
 3. Nada.
 
 ### R18 — Tarjeta de peso de Salud
-1. HE `#199 R18` (píldora, `WeightChart variant="mini"`, enlace `rounded-14`).
+1. HE `#199 R18` (píldora, `WeightChart variant="mini"`, enlace `rounded-14`);
+   enmendar HE `#115 R5` (3 hijos, aviso en el índice 1).
 2. Tarjeta y `VARIATION_TONE`.
 3. Nada.
 
@@ -204,7 +214,8 @@ relativas a `mobile-pet-tracker/src/`; abreviaturas de test en requirements
 
 ### R23 — Toast
 1. WL `#199 R23` (`FadeIn` con retraso, `useShadows().toast`, sin
-   `absolute top-4`).
+   `absolute top-4`); enmendar WL `#169 R13` (`el fuente declara el fundido…`)
+   y `#169 R10` (`className` y check en `accent-strong`).
 2. Toast.
 3. Nada.
 
