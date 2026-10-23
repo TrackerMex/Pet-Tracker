@@ -266,20 +266,22 @@ export function FoodScreen() {
                 </View>
               </View>
 
-              <Card
+              <View
                 testID="food-meals-section"
-                className="gap-3"
+                className="gap-2 rounded-24 border border-border bg-surface p-3.5"
+                style={CONTINUOUS_CORNER}
               >
                 <View className="flex-row items-center justify-between gap-3">
                   <Text
                     testID="food-meals-title"
-                    className="text-base font-bold text-foreground"
+                    className="text-17 font-extrabold text-foreground"
                   >
                     {t('food.mealsToday')}
                   </Text>
                   <Text
                     testID="food-meals-progress"
-                    className="text-xs font-semibold text-muted"
+                    className="text-15 font-black text-accent-strong"
+                    style={TABULAR_NUMS}
                   >
                     {servedMeals}/{loadedPlan.mealsPerDay}
                   </Text>
@@ -356,7 +358,7 @@ export function FoodScreen() {
                     {mealError}
                   </Text>
                 ) : null}
-              </Card>
+              </View>
 
               {loadedPlan.warnings.length > 0 ? (
                 <View className="gap-2">
