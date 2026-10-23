@@ -3488,7 +3488,7 @@
   {
     "id": 201,
     "name": "mobile-canvas-map",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P1",
     "description": "Registrada el 2026-10-23 por el plan progress/plan_canvas-parity-2026-10-23.md (ola 2). Mapa igual al canvas versión 1792777983-cd94, artboards Mapa, MapaCarga, MapaError, MapaSinMascotas, MapaSinRastreo, MapaSinUbicacion y MapaModoPerdidoError. Cubre C15 de progress/explore_canvas-parity-2026-10-21.md, con props por pantalla en PetMap. NO cubre el ping ni el marcador personalizado, que siguen en #192 (spike en dispositivo). Ficheros probables: screens/map/index.tsx, components/pet-map.tsx y tests. Roza #151: el spec_author decide si la absorbe. Depende de #197. Congelar los artboards en specs/mobile-canvas-map/canvas/. Firma delegada al leader. Registrada sin spec."
   },
