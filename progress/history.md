@@ -9987,5 +9987,5 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
 - **Lección:** una cuenta de medición escrita antes del test debe contar también los literales que
   el propio test añade (aserciones negativas y filas vecinas de la misma tabla); si no, Codex para
   con razón y la parada solo se resuelve con un dictamen.
-- **Estado final:** done. Notion: Implementado / Completado. La PR la mergea el humano y después se
+- **Estado final:** done. Notion: Implementado / Completado. PR #241. La PR la mergea el humano y después se
   borra el worktree `Pet-Tracker-wt-195`.
