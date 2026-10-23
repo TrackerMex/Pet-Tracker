@@ -157,8 +157,9 @@ No se tocan: `components/card.tsx`, `utils/category-palette.ts`, `theme/*`, `src
 
 ## Riesgos
 
-- **Ficheros compartidos con #199 y #201** (misma ola): `ui-copy-table.ts`, `src/i18n/catalog.ts` y el `it` CF `#197 R20`. Quien
-  mergee segundo resuelve el conflicto conservando las dos filas; la cifra de importadores de `shadows` es la unión.
+- **Ficheros compartidos con #199 y #201** (misma ola): `ui-copy-table.ts`, `src/i18n/catalog.ts`. Quien
+  mergee segundo resuelve el conflicto conservando las dos filas. El `describe` CF `#197 R20` lo borran entero e igual todas las
+  features de la ola 2 (K28), así que su borrado no choca.
 - **Rebase tras la trazabilidad** invalida los hashes de traceability.md: no rebasear; mergear `dev`.
 - **#154** re-ancla sus filas por contenido tras K16.
 - **Retardos**: si #197 cambia `MOTION_STAGGER_MS`, los ms de R6 cambian; el test de R6 escribe los ms literales y se pondría rojo

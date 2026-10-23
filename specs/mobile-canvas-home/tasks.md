@@ -19,7 +19,7 @@ Precondición: #197 mergeada y `dev` mergeado en la branch (design.md §Dependen
   nombran `#198 R<n>`), después `feat(#198 R<n>): …` con el verde. Nunca implementación y test en el mismo commit.
 - Cada enmienda de §Candados (K1–K47; K7 y K38 sin uso) va en el commit **rojo** del requisito que la causa, con su sufijo ` (enmendado por #198 R<n>)`.
 - Candados agregados por pasos, para que cada verde sea verde entero:
-  - CF `#197 R20` fila `shadows` (K28): en R1 pasa a `['screens/home/index.tsx']`; en R7, a la lista final de dos ficheros.
+  - CF `describe('#197 R20: cimientos sin cablear')` (K28): se borra entero en el commit rojo de R1.
   - CN `bg-accent-soft` (K27): R3 añade ` - 1` (círculo del collar), R11 otro ` - 1` (círculo de última posición), R13 otro
     ` - 1` (enlace de vincular). Total final 4.
   - LG `#61 R4` (K26): en R4 (la cifra del collar gana `text-accent-strong`): `index.tsx` 2 → 3, suma 13 → 14.
@@ -79,7 +79,7 @@ Desde `mobile-pet-tracker/`. Base medida en 71ff81a1 (requirements §Base medida
 
 Formato de cada bloque: (1) test rojo, (2) implementación mínima, (3) refactor. Tests y títulos exactos en requirements §Requisitos.
 
-- **R1** (1) HI `#198 R1 …` + K1 + CF K28 a `['screens/home/index.tsx']`. (2) `useShadows` en `HomeScreen`; clases de `summary-card` y
+- **R1** (1) HI `#198 R1 …` + K1 + borrar el `describe` CF `#197 R20` (K28). (2) `useShadows` en `HomeScreen`; clases de `summary-card` y
   su título. (3) Ninguno.
 - **R2** (1) HI `#198 R2 …` + K2–K5. (2) `SUMMARY_TILES`, mosaicos, tintas, valor y etiqueta. (3) Reutilizar el `map` de las celdas.
 - **R3** (1) HI `#198 R3 …` + K8 (collar), K17 + CN ` - 1` + HP K41. (2) Fila del collar, `collar-icon`, columna,
@@ -87,7 +87,7 @@ Formato de cada bloque: (1) test rojo, (2) implementación mínima, (3) refactor
 - **R4** (1) HI `#198 R4 …` + K16 + LG K26 + HP K41. (2) Clases de `collar-battery-bar.tsx` y tinta de `collar-battery`. (3) Ninguno.
 - **R5** (1) HI `#198 R5 …` + K9, K10. (2) `lip` en `QUICK_ACTIONS`, `useChunkyLip`, clases de tile, icono y etiqueta. (3) Ninguno.
 - **R6** (1) HI `#198 R6 …` + K11, K12. (2) Índices 2..7. (3) Ninguno.
-- **R7** (1) WC `#198 R7 …` + CF K28 a la lista final. (2) `useShadows` en la gráfica; clases de tarjeta, título y subtítulo. (3) Ninguno.
+- **R7** (1) WC `#198 R7 …`. (2) `useShadows` en la gráfica; clases de tarjeta, título y subtítulo. (3) Ninguno.
 - **R8** (1) WC `#198 R8 …`. (2) Clases de etiqueta de métrica, check 13, tooltip 800. (3) Ninguno.
 - **R9** (1) WC `#198 R9 …`. (2) `rx`, `fillOpacity`, clases del detalle. (3) Ninguno.
 - **R10** (1) HI `#198 R10 …` + K13, K14, K15. (2) Sección, cabecera, filas con sombra, títulos y píldoras. (3) Una constante local

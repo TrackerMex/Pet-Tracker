@@ -413,7 +413,7 @@ Abreviaturas: HI, WC, ES y EI como en §Requisitos; **CN** `src/__tests__/consis
 | K25 | EI › `#155 R11: los vacíos no traen movimiento ni dependencias` › `EmptyState importa exactamente lo de la flotación (enmendado por #177 R10) (enmendado por #176 R5)` | `"import { useEffect } from 'react';"`, `"import { Plus } from 'reicon-react-native';"` y sin `category-palette` | `"import { useEffect, type ReactElement, type ReactNode } from 'react';"`, `"import { Plus } from 'reicon-react-native';"` sin cambios y `"import { CATEGORY_SLOTS } from '../utils/category-palette';"` como última importación de la fuente | R15, R18 |
 | K26 | LG › `#61 R4` › `it.each` `%s pinta con text-accent-strong (%i)` y `suma las trece ocurrencias que enumera la spec` | `[join('screens', 'home', 'index.tsx'), 2]`, total 13 | `[join('screens', 'home', 'index.tsx'), 3]`, total 14 (nombre del segundo `it` intacto + sufijo de enmienda) | R3, R12 |
 | K27 | CN › `#98 R10` › `deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban (enmendado por #177 R10) (enmendado por #190 R13)` y CN › `#64 R9` › `conserva los usos de bg-accent-soft que sí son acento` | expresión `16 + 2 + 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 2` (7) | la misma expresión con ` - 3` al final (4); si el `it` enumera ficheros, `index.tsx` sale de la lista | R12 |
-| K28 | CF › `#197 R20: nadie monta todavía los cimientos` (fila `shadows`) | importadores de producción `[]` | `['screens/home/index.tsx', 'screens/home/weekly-activity-chart.tsx']` (las filas `toggle-switch` y `screen-header` siguen en `[]`) | R12 |
+| K28 | CF › `describe('#197 R20: cimientos sin cablear')` entero: `nadie monta todavía los cimientos %s` (4 casos: `toggle-switch`, `screen-header`, `shadows`, `rise-in`) y `el layout raíz no cambia` | cero importadores de producción de los 4 módulos; `headerShown` ×2 en `_layout.tsx` | el `describe` se **borra entero** en el commit rojo de R1 (el primero que monta `useShadows`). Es un candado temporal de #197 que la ola 2 retira con el mismo borrado en todas sus features, para que git lo mezcle sin conflicto; no se sustituye por nada (regla del leader, 2026-10-23) | R1 |
 | K29 | HI › `#71 R1` › `liga icono, etiqueta, fondo, destino, tinta y color de etiqueta de cada tile y de ninguno más` | `labelColor` `'text-foreground'` en los tres | `'text-category-violet-strong'`, `'text-category-amber-strong'`, `'text-category-blue-strong'` (weight, reminder, documents) | R5 |
 | K30 | HI › `#71 R1` › `da a cada tile 44 pt de objetivo táctil` | `toContain('min-h-11')` | `toContain('h-23')` | R5 |
 | K31 | HI › `#71 R1` › `usa iconos de reicon y ningún emoji` | `/<Icon size=\{24\}/g` una vez y `props.size` 24 | `/<Icon size=\{26\}/g` una vez y `props.size` 26; sigue sin emoji | R5 |
@@ -435,8 +435,7 @@ Abreviaturas: HI, WC, ES y EI como en §Requisitos; **CN** `src/__tests__/consis
 | K47 | UL `src/__tests__/ui-language.test.ts` › `#71 R11: registra el copy de accesos rápidos sobre los deltas heredados` | `21 + 15 + 1 + 4 + 7 + 2 + 1 + 2 + 2 + 4` | `21 + 15 + 1 + 4 + 7 + 2 + 1 + 2 + 2 + 4 + 1` con `// +1 #198 R15` | R15 |
 
 Enmiendas de #197 que esta feature vuelve a tocar: **K11**/**K12** (#197 cambia ahí `translateY` a 14 en `#190 R1`, `#190 R7` y
-`#152 R7`; #198 no toca esas aserciones, solo los retardos) y **K28** (#197 crea el `it`). `#197 R20: el layout raíz no cambia`
-**no** se toca (D11). Ningún `it` de WC cambia de aserción: `#140 R2` y `#143 R3` fijan las clases de las columnas del día, que
+`#152 R7`; #198 no toca esas aserciones, solo los retardos) y **K28** (#197 crea el `describe`; #198 lo borra entero, igual que el resto de la ola 2, aunque `_layout.tsx` no cambie por D11). Ningún `it` de WC cambia de aserción: `#140 R2` y `#143 R3` fijan las clases de las columnas del día, que
 esta feature no toca; si al aplicar R8 alguno se pone rojo por compartir `font-semibold text-foreground`, se para (regla de arriba).
 
 ## Desviaciones conscientes del canvas
@@ -490,6 +489,9 @@ Lo que jest no ve (design.md §Supuestos). Smoke en **dev build Android** (no Ex
   (`progress/plan_canvas-parity-2026-10-23.md` §4, checklist de firma pasada). Aceptadas D1–D14,
   V1–V11 y los «nacen verdes» declarados en tasks.md (R12, R15-default, R16, R17: commit `test`
   sin `feat` y prueba de mutación del reviewer). El handoff espera a que #197 esté en `dev`.
+  Re-firma delegada (2026-10-23) sobre c0a96174 + regla uniforme de la ola 2: el `describe` CF
+  `#197 R20` se borra entero en el commit rojo de R1 (K28). Auditoría de inventario aplicada
+  (`progress/inventory-audit_mobile-canvas-home.md`), 47/47 anclas medidas y R1–R18 trazados.
 - [ ] Smoke de R1, R3, R4, R5, R6, R7, R10, R11, R13, R14, R15 y R16 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
 
 La spec no enmienda `docs/ui-guidelines.md`: no hay casilla de enmienda de la carta.
