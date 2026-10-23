@@ -9946,3 +9946,46 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   antes de firmar; y un candado de inventario («delta 0») se cruza contra el `it` real que lo cuenta.
 - **Estado final:** done. Notion: Implementado / Completado. PR #240; la mergea el
   humano y después se borra el worktree `Pet-Tracker-wt-189`.
+
+## Sesión 2026-10-21/23 — mobile-home-photo-hero-canvas (id: 195)
+
+- **Feature:** cabecera fotográfica de Inicio como el artboard `Inicio.dc.html` del canvas aprobado
+  (versión 85). `PetHeroHeader` con foto alineada arriba, velo superior y degradado inferior hacia
+  el fondo, sin banda opaca (se revierte la de #67 R3/R3b de forma nombrada); `PetSwitcher` con
+  variante `glass`; `GlassCircle`; `BubblePop`; tokens `scrim` y `photo-dim`; cuatro constantes
+  `MOTION_HERO_*`; enmienda #195 de `docs/ui-guidelines.md` como última sección (R20).
+- **Spec:** [[specs/mobile-home-photo-hero-canvas/requirements|spec]], firmada por el humano
+  (2026-10-21, `ab33dfd1`). Cuatro enmiendas: A1 (`058c465a`, el supuesto 1 del fundido de R14 no se
+  cumplía con aserción síncrona), A2 (`ebc372d0`, la entrada de R14 arranca dos `withTiming` también
+  con `pet=null`: filtro por duración 500), A3 (`0db0ec01`, un `it` de HOME que afirmaba
+  `{ gap: 16, paddingBottom: 120 }`) y A4 (`98c7a192`, D6: alto 430, degradado inferior de 100 px,
+  velo de 90 px).
+- **Acciones:** Codex implementó R1–R20 test-primero hasta el cierre `d5597e96` y paró cuatro veces
+  (R14 dos, R15 dos), cada una con evidencia en `progress/impl_mobile-home-photo-hero-canvas.md` y
+  adendos 2 a 5 del leader. Reviewer APROBADO sobre `d5597e96` (unas 50 mutaciones propias). Con su
+  foto real de 960×1280 el humano pidió reducir el degradado y alargar el hero y eligió la variante
+  D. Con proporciones iguales (35 %/65 %) el nombre caía a 2,90:1 en claro; con 24 %/44 % cumple sin
+  relajar suelos. Cadena A4 test-primero (`21e404c3`, `1aa57420`, `0a630d4b`, `288ad502`,
+  `5bc90baa`, cierre `67fdaa2a`), 13 mutaciones de Codex en rojo; reviewer APROBADO (11 mutaciones
+  propias, 8 en rojo, tres variantes a ciegas en verde: O6 a O8).
+- **Dos paradas de A4 por errores de recuento de la spec:** la cuenta `toBe(430|100|90)` valía 4 y
+  no 3 (la fila 14h también cambia a 430; adendo 7), y los literales `'alto 330'` y `'160 px'` del
+  `it` de R20 dejan una línea en las cuentas de `330` y `104|160` (adendo 8). Las dos eran ayudas de
+  medición que ninguna R-id afirma; el texto de la spec dice que manda el árbol y no se enmendó.
+- **Resultado:** el humano firmó el smoke de R21 (dev build Android) y la casilla de la carta en
+  `359285d8`. Merge de `origin/main` (`ae1fcc2a`, no rebase, para conservar los hashes de
+  `traceability.md`) con dos conflictos: `docs/ui-guidelines.md` (la sección de #195 sigue siendo la
+  última `## `) y `feature_list.json`. `./init.sh` exit 0 sobre `ae1fcc2a`: backend 187 suites / 1474
+  tests; móvil 137 suites / 4569 tests / 1 snapshot; e2e 468 passed (8 omitidos); typecheck y lint
+  sin errores. El merge no tocó los tres ficheros de A4 (`pet-hero-header.tsx` y sus dos tests), así
+  que los dos veredictos siguen vigentes.
+- **Notas no bloqueantes:** O1 (el retorno de 160 ms de la burbuja de Pingo no está candado, la spec
+  prescribe ese muestreo); O6 (el `it` de enlace de R17 busca las paradas en todo el texto de
+  producción); O7 (`fadeAlpha` sin muestreo en el tramo lejano); O8 (el ancla negativa de la carta es
+  literal); O9 (tasks.md conserva los esperados 3, vacío y 0 de las filas 7, 8 y 13). Nombre largo a
+  dos líneas sobre la zona casi sin degradado: `numberOfLines={1}` fuera de alcance.
+- **Lección:** una cuenta de medición escrita antes del test debe contar también los literales que
+  el propio test añade (aserciones negativas y filas vecinas de la misma tabla); si no, Codex para
+  con razón y la parada solo se resuelve con un dictamen.
+- **Estado final:** done. Notion: Implementado / Completado. La PR la mergea el humano y después se
+  borra el worktree `Pet-Tracker-wt-195`.
