@@ -127,15 +127,15 @@ describe('#61 R3: ningún texto sobre bg-accent se compone con opacidad', () => 
   });
 
   it.each([accentCards[0]])(
-    '%s conserva las dos etiquetas de la card de acento a opacidad plena (enmendado por #200 R1)',
+    '%s conserva las dos etiquetas de la card de acento a opacidad plena (enmendado por #200 R1 y #200 R3)',
     (path) => {
       const source = readSource(path);
 
       expect(source).toContain(
-        'className="text-xs font-semibold uppercase tracking-widest text-accent-foreground"',
+        'className="text-xs font-extrabold uppercase tracking-caps text-accent-foreground"',
       );
       expect(source).toContain(
-        'className="font-semibold text-accent-foreground"',
+        'className="text-sm font-semibold text-accent-foreground"',
       );
     },
   );

@@ -1,6 +1,7 @@
 import {
   act,
   fireEvent,
+  renderHook,
   screen,
   waitFor,
   within,
@@ -24,6 +25,8 @@ import { listPets, type PetsState } from '../../api/pets';
 import { nutritionKeys, petKeys } from '../../api/query-keys';
 import type { NutritionPlan, PetProfile } from '../../api/types';
 import { en, es } from '../../i18n/catalog';
+import { useChunkyLip } from '../../theme/chunky-lip';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { SelectedPetProvider } from '../../providers/selected-pet-provider';
@@ -1261,7 +1264,7 @@ function foodChild(node: TestInstance, index: number): TestInstance {
 describe('#168 R8: food-plan-card pinta el anillo', () => {
   beforeEach(setupFood168);
 
-  it('agrupa progreso y columna como únicos hijos del resumen', async () => {
+  it('agrupa progreso y columna como únicos hijos del resumen (enmendado por #200 R3)', async () => {
     await renderFood();
     const card = await screen.findByTestId('food-plan-card');
     expect(card.children).toHaveLength(1);
@@ -1273,14 +1276,14 @@ describe('#168 R8: food-plan-card pinta el anillo', () => {
     const column = foodChild(summary, 1);
     expect(column.props.className).toBe('flex-1 gap-1');
     expect(column.children).toHaveLength(3);
-    expect(foodChild(column, 0).props.className).toBe('text-xs font-semibold uppercase tracking-widest text-accent-foreground');
+    expect(foodChild(column, 0).props.className).toBe('text-xs font-extrabold uppercase tracking-caps text-accent-foreground');
     expect(foodChild(column, 0)).toHaveTextContent('Objetivo diario');
     const kcal = within(column).getByTestId('food-plan-kcal');
     const grams = within(column).getByTestId('food-plan-grams');
     expect(foodChild(column, 1)).toBe(kcal);
     expect(foodChild(column, 2)).toBe(grams);
-    expect(kcal.props.className).toBe('text-3xl font-black text-accent-foreground');
-    expect(grams.props.className).toBe('font-semibold text-accent-foreground');
+    expect(kcal.props.className).toBe('text-24 font-black text-accent-foreground');
+    expect(grams.props.className).toBe('text-sm font-semibold text-accent-foreground');
     expect(kcal).toHaveTextContent('656 kcal / día');
     expect(grams).toHaveTextContent('187 g / día');
   });
@@ -1346,12 +1349,12 @@ describe('#168 R8: food-plan-card pinta el anillo', () => {
     expect(foodChild(svg, 1)).toBe(within(svg).getByTestId('food-plan-ring-fill'));
   });
 
-  it('porcentaje y kcal llevan sus clases y cifras tabulares', async () => {
+  it('porcentaje y kcal llevan sus clases y cifras tabulares (enmendado por #200 R3)', async () => {
     await renderFood();
     const percent = await screen.findByTestId('food-plan-percent');
     const consumed = screen.getByTestId('food-plan-consumed');
-    expect(percent.props.className).toBe('text-lg font-black text-accent-foreground');
-    expect(consumed.props.className).toBe('text-xs font-normal text-accent-foreground');
+    expect(percent.props.className).toBe('text-24 font-black text-accent-foreground');
+    expect(consumed.props.className).toBe('text-11 font-bold text-accent-foreground');
     expect(percent.props.style).toEqual({ fontVariant: ['tabular-nums'] });
     expect(consumed.props.style).toEqual({ fontVariant: ['tabular-nums'] });
     expect(percent).toHaveTextContent('0%');
@@ -1547,5 +1550,33 @@ describe('#200 R2: marco y fila del canvas', () => {
     await renderFood();
     const empty = await screen.findByTestId('food-plan-empty');
     expect(empty.parent?.props.className).toBe('gap-3.5');
+  });
+});
+
+
+describe('#200 R3: héroe del canvas', () => {
+  beforeEach(setupFood168);
+
+  it('#200 R3: el héroe es un View de acento con labio hero', async () => {
+    await renderFood();
+    const card = await screen.findByTestId('food-plan-card');
+    expect(card.type).toBe('View');
+    expect(card.props.className).toBe('rounded-hero bg-accent p-4.5');
+    expect(card).toHaveStyle(CONTINUOUS_CORNER);
+    const { result } = await renderHook(() => useChunkyLip());
+    expect(card).toHaveStyle(result.current.hero);
+  });
+
+  it.each([
+    ['Objetivo diario', 'text-xs font-extrabold uppercase tracking-caps text-accent-foreground'],
+    ['food-plan-kcal', 'text-24 font-black text-accent-foreground'],
+    ['food-plan-grams', 'text-sm font-semibold text-accent-foreground'],
+    ['food-plan-percent', 'text-24 font-black text-accent-foreground'],
+    ['food-plan-consumed', 'text-11 font-bold text-accent-foreground'],
+  ])('#200 R3: textos del héroe con la escala del canvas (%s)', async (id, className) => {
+    await renderFood();
+    await screen.findByTestId('food-plan-card');
+    const node = id === 'Objetivo diario' ? screen.getByText(id) : screen.getByTestId(id);
+    expect(node.props.className).toBe(className);
   });
 });

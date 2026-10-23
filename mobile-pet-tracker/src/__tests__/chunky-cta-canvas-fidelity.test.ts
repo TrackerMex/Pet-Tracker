@@ -78,7 +78,7 @@ const NEUTRAL_ROWS = [
 const primaryIds = CTA_ROWS.map(([, anchor]) => idOf(anchor)).sort();
 const neutralIds = NEUTRAL_ROWS.map(([, anchor]) => idOf(anchor)).sort();
 const ctaFiles = [...new Set(CTA_ROWS.map(([path]) => path))].sort(); // #191 R11
-const consumers = [...ctaFiles, 'screens/reminders/index.tsx', 'screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx'].sort();
+const consumers = [...ctaFiles, 'screens/reminders/index.tsx', 'screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx', 'screens/food/index.tsx'].sort();
 const neutralInventory = ['${rowId}-ack', 'add-meal-time-button', 'alert-detail-view-map', 'docs-upload-cancel', 'forgot-resend', 'geofence-editor-delete', 'meal-time-edit-${index}', 'reminders-delete-cancel', 'secondary.testID', 'welcome-have-account'];
 const radii = {
   'screens/edit-profile/index.tsx': 1, // #194 R6
@@ -180,7 +180,7 @@ it('#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por
   expect(inventory(/\brounded-16\b/g)).toEqual(radii);
   expect(count(/\brounded-16\b/g)).toBe(26 + 1 + 1 + 1 + 2); // #194 R6 // #191 R11 // #189 R7; #189 R13
 });
-it('#177 R7.4: solo la definición y los diecisiete consumidores usan el hook (enmendado por #197 R10)', () => {
+it('#177 R7.4: solo la definición y los diecisiete consumidores usan el hook (enmendado por #197 R10) (enmendado por #200 R3)', () => {
   expect(Object.keys(inventory(/useChunkyLip/g)).sort()).toEqual([...consumers, 'theme/chunky-lip.ts'].sort());
   for (const path of consumers) expect((readSource(path).match(/const chunkyLip = useChunkyLip\(\);/g) ?? []).length).toBe(1);
 });
@@ -269,7 +269,7 @@ it('#177 R11.5: la spec de #166 añade el bloque de sustitución', () => {
   for (const literal of ['R2', 'R3', 'reemplaza', 'consistency-classnames.test.ts', 'en su sitio', 'mobile-chunky-cta-canvas-fidelity']) expect(section).toContain(literal);
   expect(section).toMatch(/^- \[[ xX]\] Enmienda #177 aprobada por humano/m);
 });
-it('#177 R12.1/R12.2: los dieciocho ficheros respetan los guards de la carta (enmendado por #197 R10)', () => {
+it('#177 R12.1/R12.2: los dieciocho ficheros respetan los guards de la carta (enmendado por #197 R10) (enmendado por #200 R3)', () => {
   for (const path of [...consumers, 'theme/chunky-lip.ts']) {
     const source = readSource(path);
     expect(source).not.toMatch(/(?:bg|text|border|rounded|h|w|size|p|m|gap)-\[[^\]]+\]/);
@@ -278,7 +278,7 @@ it('#177 R12.1/R12.2: los dieciocho ficheros respetan los guards de la carta (en
   }
   expect('chunky-lip.ts useChunkyLip').not.toContain('shadow');
 });
-it('#177 R12.3: cada comentario de la feature nombra su requisito (enmendado por #197 R10)', () => {
+it('#177 R12.3: cada comentario de la feature nombra su requisito (enmendado por #197 R10) (enmendado por #200 R3)', () => {
   for (const path of [...consumers, 'theme/chunky-lip.ts']) expect(readSource(path)).not.toMatch(/#177(?! R\d)/);
   expect((readSource('screens/welcome/index.tsx').match(/text-accent-strong/g) ?? []).length).toBe(2);
 });
