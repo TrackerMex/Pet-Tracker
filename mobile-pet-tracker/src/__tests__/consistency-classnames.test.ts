@@ -643,7 +643,7 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
     expect(count(/\bborder-b-6\b/g)).toBe(1); // #177 R10
   });
 
-  it('#174 R8: el ack de fila es el secundario compacto', () => {
+  it('#174 R8: el ack de fila es el secundario compacto (enmendado por #197 R8)', () => {
     const source = readSource(join('screens', 'alerts', 'index.tsx'));
     const marker = 'onPress={() => void handleAck(item)}';
     const anchor = source.indexOf(marker);
@@ -652,7 +652,8 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
     const tag = source.slice(source.lastIndexOf('<', anchor), source.indexOf('<', anchor + marker.length));
     expect(tag).toContain('variant="secondary"');
     expect(tag).toContain('hitSlop={TOUCH_SLOP}');
-    expect(tag).toContain('className="h-8.5 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3"');
+    expect(tag).toContain('className="h-8.5 rounded-10 border-2 border-lip-gray bg-surface px-3"');
+    expect(tag).toContain('style={chunkyLip.neutralCompact}');
   });
 });
 
