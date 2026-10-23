@@ -144,8 +144,8 @@ describe('#174 R11: la carta declara los cambios', () => {
     expect(collapse(guidelines.slice(start, end))).toContain('Fuera de la escala, por fidelidad al canvas (#174): `rounded-10` (10 px), ack compacto de fila de Alertas.');
   });
 
-  it('declara el secundario compacto y el reintento sin labio (enmendado por #180 R12)', () => {
-    expect(flat).toContain('- **Secundario compacto de fila** (#174): el ack de cada fila abierta de Alertas lleva `h-8.5 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3`, etiqueta `text-xs font-extrabold text-foreground` y `hitSlop={TOUCH_SLOP}` (34 + 12 = 46 de diana). Es la única excepción a la receta del secundario neutro; el inventario de #166 R3 lo lista por su `testID`.');
+  it('declara el secundario compacto y el reintento sin labio (enmendado por #180 R12) (enmendado por #197 R21)', () => {
+    expect(flat).toContain('- **Secundario compacto de fila** (#174; labio por estilo, #197): el ack de cada fila abierta de Alertas lleva `h-8.5 rounded-10 border-2 border-lip-gray bg-surface px-3` con `style={chunkyLip.neutralCompact}`, etiqueta `text-xs font-extrabold text-foreground` y `hitSlop={TOUCH_SLOP}` (34 + 12 = 46 de diana). Es la única excepción a la receta del secundario neutro; el inventario de #166 R3 lo lista por su `testID`.');
     expect(flat).toContain('(reintentos).');
     expect(flat).not.toContain('confirmar alerta en el detalle');
   });

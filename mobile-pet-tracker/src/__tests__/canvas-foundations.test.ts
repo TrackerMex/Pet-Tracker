@@ -270,3 +270,32 @@ describe('#197 R20: cimientos sin cablear', () => {
     expect(layout).not.toContain('ScreenHeader');
   });
 });
+
+const charter = readFileSync(join(process.cwd(), '..', 'docs/ui-guidelines.md'), 'utf8');
+const design = readFileSync(join(process.cwd(), '..', 'specs/mobile-canvas-foundations/design.md'), 'utf8');
+function canonicalBlock(label: string): string {
+  const block = design.split(`### Bloque «${label}»`)[1]?.split('```markdown\n')[1]?.split('```')[0] ?? '';
+  expect(block.length).toBeGreaterThan(0);
+  return block;
+}
+describe('#197 R21: carta canónica', () => {
+  it('#197 R21: la carta declara los tokens de tipografía', () => {
+    expect(charter.split(canonicalBlock('Línea de tracking'))).toHaveLength(2);
+  });
+  it('#197 R21: la carta declara el interlineado', () => {
+    expect(charter.split(canonicalBlock('Línea de interlineado'))).toHaveLength(2);
+  });
+  it('#197 R21: el punto 13 describe los labios por estilo', () => {
+    expect(charter.split(canonicalBlock('Punto 13'))).toHaveLength(2);
+  });
+  it('#197 R21: la enmienda está una sola vez y con su casilla', () => {
+    const normalized = charter.replace(/- \[[ xX]\] Enmienda #197 aprobada por humano/g, '- [ ] Enmienda #197 aprobada por humano');
+    expect(normalized.split(canonicalBlock('Enmienda'))).toHaveLength(2);
+    expect(charter.match(/## Enmienda #197/g)).toHaveLength(1);
+    expect(charter).toMatch(/- \[[ xX]\] Enmienda #197 aprobada por humano/);
+  });
+  it('#197 R21: D-H sigue intacta', () => {
+    const expected = "- **Título en contenido (D-H).** El título de pantalla va dentro del contenido (eyebrow opcional y título); la cabecera nativa del stack queda con `title: ''` y solo aporta el botón de volver.";
+    expect(charter.split('\n').filter(line => line.includes('Título en contenido (D-H)'))).toEqual([expected]);
+  });
+});
