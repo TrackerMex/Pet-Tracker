@@ -437,7 +437,7 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
       - 1 // #205 R17
     ); // #189 R6; #189 R5 (enmendado por #190 R13) // #191 R11 // #177 R5 // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168; #170 R8: alert-detail-map; #171 R3: ready-done; #173 R10: ProfileTile
     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(1); // #177 R10
-    expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 2 - 1 - 1 - 1); // #191 R11 // #179 R6, R7, R11; #178 R5, R10, R12; #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6 // #198 R3 // #198 R11 // #198 R13
+    expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 2 - 1 - 1 - 1 - 2); // #191 R11 // #179 R6, R7, R11; #178 R5, R10, R12; #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6 // #198 R3 // #198 R11 // #198 R13 // #205 R18
     expect(home.match(/text-accent-strong\b/g)).toHaveLength(3); // #198 R4
     expect(food.match(/text-accent-strong\b/g)).toHaveLength(1 + 1 - 1); // #200 R5; #200 R6
     expect(filesMatching(/\brounded-(?:2xl|lg|md|sm)\b/)).toEqual([]);
@@ -494,7 +494,7 @@ describe('#64 R9: el color categórico solo se nombra en el módulo de paleta', 
 
   // 17 en `303fc19` − 1 el que vivía en el `PetHero` local de Profile (#67 R6).
   // + 2 de #147 R4: meal-time-edit y add-meal-time-button.
-  it('conserva los usos de bg-accent-soft que sí son acento (enmendado por #198 R3, R11, R13)', () => {
+  it('conserva los usos de bg-accent-soft que sí son acento (enmendado por #198 R3, R11, R13) (enmendado por #205 R18)', () => {
     const accentSoftCount = sourceFiles().reduce(
       (total, path) =>
         total + (readFileSync(path, 'utf8').match(/bg-accent-soft/g) ?? []).length,
@@ -503,7 +503,7 @@ describe('#64 R9: el color categórico solo se nombra en el módulo de paleta', 
     const reminders = readSource(join('screens', 'reminders', 'index.tsx'));
     const docs = readSource(join('screens', 'docs', 'index.tsx'));
 
-    expect(accentSoftCount).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 2 - 1 - 1 - 1); // #191 R11 // #179 R6, R7, R11; #178 R5, R10, R12; #147 R4, #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6 // #198 R3 // #198 R11 // #198 R13
+    expect(accentSoftCount).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 2 - 1 - 1 - 1 - 2); // #191 R11 // #179 R6, R7, R11; #178 R5, R10, R12; #147 R4, #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6 // #198 R3 // #198 R11 // #198 R13 // #205 R18
     expect(reminders.match(/bg-accent-soft/g)).toBeNull(); // #178 R5, R10
     expect(docs.match(/bg-accent-soft/g)).toBeNull();
   });

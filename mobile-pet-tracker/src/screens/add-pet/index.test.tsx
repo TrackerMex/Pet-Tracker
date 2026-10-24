@@ -915,13 +915,100 @@ describe('#205 R16: NuevaMascota con ScreenHeader', () => {
   });
 });
 
+describe('#205 R18: NuevaMascota2', () => {
+  beforeEach(() => {
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet, clearPet: jest.fn() });
+  });
+
+  const selectedChip = 'h-11 justify-center rounded-full border border-accent bg-tab-pill px-4';
+  const idleChip = 'h-11 justify-center rounded-full border border-border bg-default px-4';
+  const selectedText = 'text-sm font-bold text-foreground';
+  const idleText = 'text-sm font-semibold text-foreground';
+
+  it('#205 R18: Datos médicos, Edad, Esterilizado y Microchip suben en ese orden', async () => {
+    await renderAddPet();
+    await goToStep2();
+    const blocks = screen.getAllByTestId(/^add-pet-rise-/);
+    expect(blocks.map(node => node.props.testID)).toEqual([
+      'add-pet-rise-medical',
+      'add-pet-rise-age',
+      'add-pet-rise-sterilized',
+      'add-pet-rise-microchip',
+    ]);
+    for (const block of blocks) expect(typeof block.props.entering).toBe('function');
+    expect(blocks[0].parent!.children.slice(0, 4).map(node => node.props.testID)).toEqual(blocks.map(node => node.props.testID));
+    expect(blocks[0].props.className).toBe('mt-3');
+    const title = within(blocks[0]).getByText(es['addPet.medicalDetails']);
+    expect(title.props.className).toBe('text-lg font-black text-foreground');
+    for (const id of ['age-mode-date', 'age-mode-months', 'birth-date-field']) expect(within(blocks[1]).getByTestId(id)).toBeOnTheScreen();
+    expect(within(blocks[1]).getByText(es['addPet.age'])).toBeOnTheScreen();
+    for (const id of ['sterilized-true', 'sterilized-false']) expect(within(blocks[2]).getByTestId(id)).toBeOnTheScreen();
+    expect(within(blocks[3]).getByTestId('microchip-input')).toBeOnTheScreen();
+    expect(within(screen.getByTestId('add-pet-form')).getByTestId('add-pet-submit')).toBeOnTheScreen();
+    expect(within(blocks[3]).queryByTestId('add-pet-submit')).toBeNull();
+    await fireEvent.press(screen.getByTestId('add-pet-submit'));
+    await waitFor(() => expect(within(screen.getByTestId('add-pet-rise-age')).getByTestId('birth-date-field-message')).toBeVisible());
+    await fireEvent.press(screen.getByTestId('age-mode-months'));
+    await fireEvent.changeText(screen.getByTestId('approx-age-input'), '500');
+    expect(within(screen.getByTestId('add-pet-rise-age')).getByTestId('approx-age-input')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId('add-pet-submit'));
+    await waitFor(() => expect(within(screen.getByTestId('add-pet-rise-age')).getByTestId('approx-age-input-message')).toBeVisible());
+    expect(screen.getAllByTestId(/^add-pet-rise-/)).toHaveLength(4);
+  });
+
+  it('#205 R18: el chip elegido lleva borde acento y pastilla', async () => {
+    await renderAddPet();
+    await goToStep2();
+    const date = screen.getByTestId('age-mode-date');
+    expect(date.props.accessibilityState).toEqual({ selected: true });
+    expect(date.props.className).toBe(selectedChip);
+    expect(within(date).getByText(es['addPet.birthDate']).props.className).toBe(selectedText);
+    await fireEvent.press(screen.getByTestId('age-mode-months'));
+    const months = screen.getByTestId('age-mode-months');
+    expect(months.props.className).toBe(selectedChip);
+    expect(within(months).getByText(es['addPet.approxMonths']).props.className).toBe(selectedText);
+    await fireEvent.press(screen.getByTestId('sterilized-true'));
+    const yes = screen.getByTestId('sterilized-true');
+    expect(yes.props.accessibilityState).toEqual({ selected: true });
+    expect(yes.props.className).toBe(selectedChip);
+    expect(within(yes).getByText(es['addPet.yes']).props.className).toBe(selectedText);
+    await fireEvent.press(screen.getByTestId('sterilized-false'));
+    const no = screen.getByTestId('sterilized-false');
+    expect(no.props.className).toBe(selectedChip);
+    expect(within(no).getByText(es['addPet.no']).props.className).toBe(selectedText);
+  });
+
+  it('#205 R18: el chip sin elegir lleva borde y fondo neutros', async () => {
+    await renderAddPet();
+    await goToStep2();
+    const months = screen.getByTestId('age-mode-months');
+    expect(months.props.accessibilityState).toEqual({ selected: false });
+    expect(months.props.className).toBe(idleChip);
+    expect(within(months).getByText(es['addPet.approxMonths']).props.className).toBe(idleText);
+    for (const [id, label] of [['sterilized-true', es['addPet.yes']], ['sterilized-false', es['addPet.no']]]) {
+      const chip = screen.getByTestId(id);
+      expect(chip.props.accessibilityState).toEqual({ selected: false });
+      expect(chip.props.className).toBe(idleChip);
+      expect(within(chip).getByText(label).props.className).toBe(idleText);
+    }
+    await fireEvent.press(screen.getByTestId('age-mode-months'));
+    const date = screen.getByTestId('age-mode-date');
+    expect(date.props.className).toBe(idleChip);
+    expect(within(date).getByText(es['addPet.birthDate']).props.className).toBe(idleText);
+    await fireEvent.press(screen.getByTestId('sterilized-true'));
+    expect(screen.getByTestId('sterilized-false').props.className).toBe(idleChip);
+  });
+});
+
 describe('#191 R6: métricas y receta de campos', () => {
-  it('aplica las métricas, etiquetas y controles exactos en ambos pasos', async () => {
+  it('aplica las métricas, etiquetas y controles exactos en ambos pasos (enmendado por #205 R18)', async () => {
     process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
     mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
     mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet, clearPet: jest.fn() });
     await renderAddPet();
-    const metrics = () => expect(screen.getByTestId('add-pet-form').props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 12, gap: 12, paddingBottom: 48 });
+    const metrics = (gap = 12) => expect(screen.getByTestId('add-pet-form').props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 12, gap, paddingBottom: 48 }); // #205 R18
     const inputClasses = 'h-12 rounded-xl border-2 border-transparent bg-default px-3.5 text-15 font-semibold text-foreground';
     const checkInput = (id: string, label: string, maxLength: number) => {
       const input = screen.getByTestId(id);
@@ -940,7 +1027,7 @@ describe('#191 R6: métricas y receta de campos', () => {
       expect(within(wrapper).getByText(label).props.className).toBe('text-13 font-extrabold text-foreground');
     }
     await goToStep2();
-    metrics();
+    metrics(16); // #205 R18
     const date = screen.getByTestId('birth-date-field');
     expect(date.props.className).toBe('h-12 flex-row items-center gap-2 rounded-xl border-2 border-transparent bg-default px-3.5');
     expect(date).toHaveStyle({ borderCurve: 'continuous' });

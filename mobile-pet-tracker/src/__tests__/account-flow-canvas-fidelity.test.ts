@@ -251,3 +251,29 @@ describe('#205 R17: selector segmentado', () => {
     expect(selector).not.toContain('shadow-sm');
   });
 });
+
+describe('#205 R18: NuevaMascota2', () => {
+  it('#205 R18: el paso 2 sube a 0, 60, 120 y 180 ms con chips de 44', () => {
+    const paso2 = canvas('NuevaMascota2');
+    expect(paso2).toContain('animation: rise 400ms ease-out both');
+    expect(paso2).toContain('animation: rise 400ms ease-out 60ms both');
+    expect(paso2).toContain('animation: rise 400ms ease-out 120ms both');
+    expect(paso2).toContain('animation: rise 400ms ease-out 180ms both');
+    expect(paso2).toContain('font-size: 18px; font-weight: 900');
+    expect(paso2).toContain('height: 44px; box-sizing: border-box; padding: 0 16px; border-radius: 999px; border: 1px solid var(--accent); background: var(--pill); font-weight: 700');
+    expect(paso2).toContain('height: 44px; box-sizing: border-box; padding: 0 16px; border-radius: 999px; border: 1px solid var(--border); background: var(--default); font-weight: 600');
+
+    const screen = source('screens/add-pet/index.tsx');
+    expect(screen).toContain('<RiseIn testID="add-pet-rise-medical" delayMs={0} className="mt-3">');
+    expect(screen).toContain('<RiseIn testID="add-pet-rise-age" delayMs={60}>');
+    expect(screen).toContain('<RiseIn testID="add-pet-rise-sterilized" delayMs={120}>');
+    expect(screen).toContain('<RiseIn testID="add-pet-rise-microchip" delayMs={180}>');
+    expect(screen).toContain('text-lg font-black text-foreground');
+    expect(screen).toContain('gap: step === 2 ? 16 : 12');
+    expect(screen.split("'h-11 justify-center rounded-full border border-accent bg-tab-pill px-4'")).toHaveLength(3);
+    expect(screen.split("'h-11 justify-center rounded-full border border-border bg-default px-4'")).toHaveLength(3);
+    expect(screen.split("'text-sm font-bold text-foreground'")).toHaveLength(3);
+    expect(screen.split("'text-sm font-semibold text-foreground'")).toHaveLength(3);
+    expect(screen).not.toContain('bg-accent-soft');
+  });
+});
