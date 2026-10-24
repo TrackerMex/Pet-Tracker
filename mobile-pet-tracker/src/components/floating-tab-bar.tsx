@@ -24,6 +24,7 @@ import {
 import { useUniwind } from 'uniwind';
 
 import { useTranslate } from '../providers/language-provider';
+import { useShadows } from '../theme/shadows';
 import { useThemeColors } from '../theme/use-theme-colors';
 
 interface TabRoute {
@@ -67,6 +68,7 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
     'muted',
     'tab-pill',
   ]);
+  const shadows = useShadows();
   const insets = useSafeAreaInsets();
   const { theme } = useUniwind();
   const [containerWidth, setContainerWidth] = useState(0);
@@ -119,8 +121,8 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
   return (
     <View
       testID="floating-tab-bar"
-      className="absolute h-16 overflow-hidden rounded-full border border-border shadow-lg"
-      style={{ bottom: insets.bottom + 12, left: 16, right: 16 }}
+      className="absolute h-16 overflow-hidden rounded-full border border-border"
+      style={{ ...shadows.tabBar, bottom: insets.bottom + 12, left: 16, right: 16 }}
       onLayout={handleLayout}
     >
       {hasLiquidGlass ? (
