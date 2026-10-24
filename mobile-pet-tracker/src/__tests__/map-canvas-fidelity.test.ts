@@ -149,3 +149,34 @@ describe('#201 R2: la píldora es de cristal', () => {
     },
   ])('#201 R2: $artboard › $canvas › $production', checkRow);
 });
+
+describe('#201 R4: la tarjeta de stats flota sin borde', () => {
+  it.each<Row>([
+    {
+      artboard: 'Mapa',
+      canvas:
+        'border-radius: 24px; background: var(--surface); box-shadow: 0 12px 32px rgba(13,17,23,0.14); padding: 12px',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'gap-2.5 rounded-24 bg-surface p-3',
+      productionCount: 1,
+    },
+    {
+      artboard: 'Mapa',
+      canvas:
+        'border-radius: 24px; background: var(--surface); box-shadow: 0 12px 32px rgba(13,17,23,0.14); padding: 12px',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'shadows.floating',
+      productionCount: 1,
+    },
+    {
+      artboard: 'Mapa',
+      canvas: 'grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'className="gap-2"',
+      productionCount: 1,
+    },
+  ])('#201 R4: $artboard › $canvas › $production', checkRow);
+});

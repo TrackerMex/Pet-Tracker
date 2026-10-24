@@ -2280,6 +2280,35 @@ describe('#201 R3 (#151): la píldora nombra y pinta la mascota de la lista', ()
   });
 });
 
+describe('#201 R4: la tarjeta de stats flota sin borde', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+  });
+
+  it('#201 R4: la tarjeta de stats es un View sin borde con sombra flotante', async () => {
+    await renderMap();
+
+    const card = await screen.findByTestId('map-stats-card');
+    expect(card.props.className).toBe('gap-2.5 rounded-24 bg-surface p-3');
+    expect(card.props.className).not.toContain('border');
+    expect(card.props.style?.boxShadow).toHaveLength(1);
+    expect(card.props.style?.boxShadow).toMatchObject([{ offsetY: 12, blurRadius: 32 }]);
+  });
+
+  it('#201 R4: map-stats tiene dos hijos y la tarjeta agrupa rejilla y botón', async () => {
+    await renderMap();
+
+    const stats = await screen.findByTestId('map-stats');
+    expect(stats.children).toHaveLength(2);
+    const card = elementChild(stats, 1);
+    expect(card.props.testID).toBe('map-stats-card');
+    expect(card.children).toHaveLength(2);
+    expect(elementChild(card, 0).props.className).toBe('gap-2');
+    expect(elementChild(card, 1).props.testID).toBe('lost-mode-button');
+  });
+});
+
 describe('#201 R15: la ruta del día se dibuja con trazo 5', () => {
   it('#201 R15: Mapa pide la ruta de 5', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
