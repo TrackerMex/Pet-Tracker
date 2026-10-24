@@ -18,11 +18,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ForkKnife, Map, Stethoscope } from 'reicon-react-native';
 
 import { Card } from '../../components/card';
+import { PingoFloat } from '@/components/pingo-float';
 import { PingRing } from '@/components/ping-ring';
 import { RiseIn } from '@/components/rise-in';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
-import { MOTION_FADE_TIMING, MOTION_SETTLE_SPRING, MOTION_ENTRANCE_OFFSET_Y, MOTION_ENTRANCE_SCALE, MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING, MOTION_BLINK_INTERVAL_MS, MOTION_BLINK_TIMING, MOTION_FEEDBACK_MS, MOTION_PING_TIMING } from '../../theme/motion';
+import { MOTION_FADE_TIMING, MOTION_SETTLE_SPRING, MOTION_ENTRANCE_OFFSET_Y, MOTION_ENTRANCE_SCALE, MOTION_BLINK_INTERVAL_MS, MOTION_BLINK_TIMING, MOTION_FEEDBACK_MS, MOTION_PING_TIMING } from '../../theme/motion';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
 const WELCOME_CHIPS = [
@@ -39,9 +41,8 @@ export function WelcomeScreen() {
   const [chipInk] = useThemeColors(['accent-strong']);
   const reduceMotion = useReducedMotion();
   const pingoScale = useSharedValue(reduceMotion ? 1 : MOTION_ENTRANCE_SCALE);
-  const pingoFloatY = useSharedValue(0);
   const pingoStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: pingoFloatY.get() }, { scale: pingoScale.get() }],
+    transform: [{ scale: pingoScale.get() }],
   }));
   const pingoBlink = useSharedValue(0);
   const blinkStyle = useAnimatedStyle(() => ({ opacity: pingoBlink.get() }));
@@ -57,7 +58,6 @@ export function WelcomeScreen() {
     if (!reduceMotion) {
       translateY.set(withSpring(0, MOTION_SETTLE_SPRING));
       pingoScale.set(withSpring(1, MOTION_SETTLE_SPRING));
-      pingoFloatY.set(withRepeat(withTiming(-MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING), -1, true));
       pingoBlink.set(
         withRepeat(
           withSequence(
@@ -68,7 +68,7 @@ export function WelcomeScreen() {
         ),
       );
     }
-  }, [opacity, translateY, reduceMotion, pingoScale, pingoFloatY, pingoBlink]);
+  }, [opacity, translateY, reduceMotion, pingoScale, pingoBlink]);
 
   if (status === 'authenticated') return <Redirect href="/home" />;
 
@@ -84,20 +84,23 @@ export function WelcomeScreen() {
     >
       <View testID="welcome-content" className="flex-1">
         <RiseIn testID="welcome-rise-scene" delayMs={0}>
-          <Card testID="welcome-scene" variant="secondary" className="w-full items-center gap-3 py-6">
+          <View testID="welcome-scene" className="h-95 w-full items-center justify-center overflow-hidden rounded-32 bg-surface-secondary" style={CONTINUOUS_CORNER}>
             <Card testID="welcome-bubble" variant="surface" className="px-4 py-3">
               <Text testID="welcome-bubble-text" className="text-center text-sm font-semibold text-foreground">{t('welcome.pingoGreeting')}</Text>
             </Card>
+            <View testID="welcome-ground" className="absolute bottom-7.5 h-3.5 w-30 rounded-full bg-border" />
             <View testID="welcome-stage" className="items-center justify-center">
               {reduceMotion ? null : [0, 1, 2].map((index) => <PingRing key={index} testID={`welcome-ring-${index}`} delay={index * (MOTION_PING_TIMING.duration / 3)} className="size-65 rounded-full border-2 border-accent" />)}
-              <Animated.View testID="welcome-pingo" style={[pingoStyle, { width: 200, height: 200 }]}>
-                <Image testID="welcome-pingo-wave" source={require('../../../assets/images/pingo-wave.webp')} style={{ width: 200, height: 200 }} contentFit="contain" />
-                <Animated.View testID="welcome-pingo-blink" style={[blinkStyle, { position: 'absolute', top: 0, left: 0 }]}>
-                  <Image testID="welcome-pingo-blink-image" source={require('../../../assets/images/pingo-wave-blink.webp')} style={{ width: 200, height: 200 }} contentFit="contain" />
+              <PingoFloat testID="welcome-pingo-float">
+                <Animated.View testID="welcome-pingo" style={[pingoStyle, { width: 220, height: 220 }]}>
+                  <Image testID="welcome-pingo-wave" source={require('../../../assets/images/pingo-wave.webp')} style={{ width: 220, height: 220 }} contentFit="contain" />
+                  <Animated.View testID="welcome-pingo-blink" style={[blinkStyle, { position: 'absolute', top: 0, left: 0 }]}>
+                    <Image testID="welcome-pingo-blink-image" source={require('../../../assets/images/pingo-wave-blink.webp')} style={{ width: 220, height: 220 }} contentFit="contain" />
+                  </Animated.View>
                 </Animated.View>
-              </Animated.View>
+              </PingoFloat>
             </View>
-          </Card>
+          </View>
         </RiseIn>
         <RiseIn testID="welcome-rise-chips" delayMs={120} className="mt-6">
           <View testID="welcome-chips" className="flex-row justify-center gap-2">
