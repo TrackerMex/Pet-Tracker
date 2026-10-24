@@ -277,3 +277,17 @@ describe('#205 R18: NuevaMascota2', () => {
     expect(screen).not.toContain('bg-accent-soft');
   });
 });
+
+describe('#205 R19: pie fijo', () => {
+  it('#205 R19: los dos pasos fijan la CTA abajo como el artboard', () => {
+    expect(canvas('NuevaMascota')).toContain('padding: 16px 20px 34px');
+    expect(canvas('NuevaMascota2')).toContain('padding: 16px 20px 34px');
+
+    const screen = source('screens/add-pet/index.tsx');
+    expect(screen).toContain('testID="add-pet-footer" className="bg-background px-5 pt-4"');
+    expect(screen).toContain('style={{ paddingBottom: Math.max(insets.bottom, 16) }}');
+    expect(screen).toContain('keyboardVerticalOffset={0}');
+    expect(screen).not.toContain('headerHeight');
+    expect(screen).not.toContain('HeaderHeightContext');
+  });
+});

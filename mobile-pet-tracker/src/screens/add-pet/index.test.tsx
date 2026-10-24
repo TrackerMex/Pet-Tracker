@@ -150,8 +150,9 @@ describe('R6: alta de mascota', () => {
     expect(screen.getByTestId('add-pet-bubble-text')).toHaveTextContent('¡Hola! Cuéntame de tu nuevo compañero.');
     expect(screen.getByTestId('add-pet-bubble-text').props.className).toBe('text-13 font-semibold text-foreground');
     expect(screen.getByText('Datos básicos')).toBeVisible();
-    const ids = ['add-pet-photo', 'add-pet-bubble', 'species-dog', 'species-cat', 'name-input', 'breed-input', 'sex-female', 'sex-male', 'size-small', 'size-medium', 'size-large', 'add-pet-continue'];
+    const ids = ['add-pet-photo', 'add-pet-bubble', 'species-dog', 'species-cat', 'name-input', 'breed-input', 'sex-female', 'sex-male', 'size-small', 'size-medium', 'size-large']; // #205 R19
     expect(within(screen.getByTestId('add-pet-form')).getAllByTestId(new RegExp('^(' + ids.join('|') + ')$')).map(node => node.props.testID)).toEqual(ids);
+    expect(within(screen.getByTestId('add-pet-footer')).getByTestId('add-pet-continue')).toBeOnTheScreen(); // #205 R19
     for (const id of ['age-mode-date', 'age-mode-months', 'birth-date-field', 'sterilized-true', 'microchip-input', 'add-pet-submit']) {
       expect(screen.queryByTestId(id)).toBeNull();
     }
@@ -888,7 +889,7 @@ describe('#205 R16: NuevaMascota con ScreenHeader', () => {
     expect(block.props.className).toBe('gap-3 bg-background px-5');
     expect(block).toHaveStyle({ paddingTop: 52 });
     expect(block.parent!.props.testID).toBe('screen-add-pet');
-    expect(block.parent!.children.map(node => node.props.testID)).toEqual([undefined, 'add-pet-form']);
+    expect(block.parent!.children.map(node => node.props.testID)).toEqual([undefined, 'add-pet-form', 'add-pet-footer']); // #205 R19
   });
 
   it('#205 R16: la barra de paso queda fuera del scroll', async () => {
@@ -946,7 +947,7 @@ describe('#205 R18: NuevaMascota2', () => {
     expect(within(blocks[1]).getByText(es['addPet.age'])).toBeOnTheScreen();
     for (const id of ['sterilized-true', 'sterilized-false']) expect(within(blocks[2]).getByTestId(id)).toBeOnTheScreen();
     expect(within(blocks[3]).getByTestId('microchip-input')).toBeOnTheScreen();
-    expect(within(screen.getByTestId('add-pet-form')).getByTestId('add-pet-submit')).toBeOnTheScreen();
+    expect(within(screen.getByTestId('add-pet-footer')).getByTestId('add-pet-submit')).toBeOnTheScreen(); // #205 R19
     expect(within(blocks[3]).queryByTestId('add-pet-submit')).toBeNull();
     await fireEvent.press(screen.getByTestId('add-pet-submit'));
     await waitFor(() => expect(within(screen.getByTestId('add-pet-rise-age')).getByTestId('birth-date-field-message')).toBeVisible());
@@ -999,6 +1000,48 @@ describe('#205 R18: NuevaMascota2', () => {
     expect(within(date).getByText(es['addPet.birthDate']).props.className).toBe(idleText);
     await fireEvent.press(screen.getByTestId('sterilized-true'));
     expect(screen.getByTestId('sterilized-false').props.className).toBe(idleChip);
+  });
+});
+
+describe('#205 R19: pie fijo de NuevaMascota', () => {
+  beforeEach(() => {
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet, clearPet: jest.fn() });
+  });
+
+  function expectFooterWith(cta: 'add-pet-continue' | 'add-pet-submit', absent: 'add-pet-continue' | 'add-pet-submit') {
+    const footer = screen.getByTestId('add-pet-footer');
+    expect(footer.props.className).toBe('bg-background px-5 pt-4');
+    expect(footer).toHaveStyle({ paddingBottom: 24 });
+    expect(within(footer).getByTestId(cta)).toBeOnTheScreen();
+    expect(within(screen.getByTestId('add-pet-form')).queryByTestId(cta)).toBeNull();
+    expect(within(screen.getByTestId('add-pet-form')).queryByTestId('add-pet-footer')).toBeNull();
+    expect(screen.queryByTestId(absent)).toBeNull();
+    expect(footer.parent!.props.testID).toBe('screen-add-pet');
+    expect(footer.parent!.children.map(node => node.props.testID)).toEqual([undefined, 'add-pet-form', 'add-pet-footer']);
+  }
+
+  it('#205 R19: el paso 1 lleva Continuar en el pie, fuera del scroll', async () => {
+    await renderAddPet();
+    expectFooterWith('add-pet-continue', 'add-pet-submit');
+  });
+
+  it('#205 R19: el paso 2 lleva Guardar en el pie, fuera del scroll', async () => {
+    await renderAddPet();
+    await goToStep2();
+    expectFooterWith('add-pet-submit', 'add-pet-continue');
+  });
+
+  it('#205 R19: la celebración no pinta el pie', async () => {
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: null, selectPet, clearPet: jest.fn() });
+    mockCreatePet.mockResolvedValue({ kind: 'ok', pet: { id: 'pet-new', name: 'Nala' } as never });
+    await renderWithPetList({ kind: 'ok', pets: [] });
+    expect(screen.getByTestId('add-pet-footer')).toBeOnTheScreen();
+    await saveNala();
+    await screen.findByTestId('add-pet-celebration-modal');
+    expect(screen.queryByTestId('add-pet-footer')).toBeNull();
+    expect(screen.queryByTestId('add-pet-submit')).toBeNull();
   });
 });
 
@@ -1117,7 +1160,7 @@ describe('#148 R4: add-pet se aparta del teclado en Android', () => {
     setPlatform(originalPlatform);
   });
 
-  it('el host screen-add-pet añade paddingBottom 291 al abrir el teclado', async () => {
+  it('el host screen-add-pet añade paddingBottom 200 al abrir el teclado (enmendado por #205 R19)', async () => {
     setPlatform('android');
     process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
     mockUseAuth.mockReturnValue({
@@ -1142,7 +1185,7 @@ describe('#148 R4: add-pet se aparta del teclado en Android', () => {
         duration: 0, easing: 'keyboard', isEventFromThisApp: true,
       });
     });
-    await waitFor(() => expect(screen.getByTestId('screen-add-pet')).toHaveStyle({ paddingBottom: 291 }));
+    await waitFor(() => expect(screen.getByTestId('screen-add-pet')).toHaveStyle({ paddingBottom: 200 })); // #205 R19: el offset del KAV pasa de 91 a 0
   });
 });
 
