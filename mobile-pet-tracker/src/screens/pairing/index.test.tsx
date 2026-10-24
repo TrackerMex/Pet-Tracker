@@ -1,6 +1,7 @@
 import {
   act,
   fireEvent,
+  renderHook,
   screen,
   waitFor,
   within,
@@ -29,6 +30,7 @@ import PairingRoute from '../../app/pairing';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { SelectedPetProvider, useSelectedPet } from '../../providers/selected-pet-provider';
+import { useShadows } from '../../theme/shadows';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
 jest.mock('../../api/devices', () => ({
@@ -1640,5 +1642,80 @@ describe('#203 R3: entrada de la vista de vincular', () => {
     expect(rise.children).toHaveLength(1);
     const wrapped = rise.children[0];
     expect(typeof wrapped === 'string' ? wrapped : wrapped.props.className).toBe(wrappedClassName);
+  });
+});
+
+describe('#203 R4: título y tarjeta de la vista con collar', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseReducedMotion.mockReturnValue(false);
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ device: makeDevice() })] });
+    mockGetPetTracking.mockResolvedValue({ kind: 'ok', tracked: true });
+  });
+
+  it('#203 R4.1: el título de la vista con collar es 28/900 y entra en 0', async () => {
+    await renderPairing();
+    const title = await screen.findByTestId('device-title');
+    expect(title.props.className).toBe('mt-2 text-28 font-black tracking-title text-foreground');
+    expect(title).toHaveTextContent('Dispositivo GPS');
+    expect(screen.getAllByTestId('device-title-rise')).toHaveLength(1);
+    const rise = screen.getByTestId('device-title-rise');
+    expect(rise.props.delayMs).toBe(0);
+    expect(within(rise).getByTestId('device-title')).toBeOnTheScreen();
+    expect(rise.children).toHaveLength(1);
+  });
+
+  it('#203 R4.2: la tarjeta de estado lleva radio 22, sombra card y entra en 80', async () => {
+    const { result } = await renderHook(() => useShadows());
+    await renderPairing();
+    const card = await screen.findByTestId('device-status-card');
+    const classes = (card.props.className as string).split(' ');
+    expect(classes).toEqual(expect.arrayContaining(['rounded-22', 'px-4', 'py-4.5', 'shadow-none']));
+    expect(classes).not.toContain('shadow-sm');
+    expect(card.props.style).toMatchObject(result.current.card);
+    expect(screen.getAllByTestId('device-status-rise')).toHaveLength(1);
+    const rise = screen.getByTestId('device-status-rise');
+    expect(rise.props.delayMs).toBe(80);
+    expect(within(rise).getByTestId('device-status-card')).toBeOnTheScreen();
+    expect(rise.children).toHaveLength(1);
+  });
+
+  it.each([
+    ['device-model', 'device-model'],
+    ['device-battery', 'device-battery'],
+    ['device-connectivity', 'device-connectivity'],
+    ['device-last-message', 'device-last-message'],
+    ['device-esn', 'device-esn'],
+  ] as const)('#203 R4.3: %s pinta raíz y etiqueta del canvas', async (_name, testID) => {
+    await renderPairing();
+    const value = await screen.findByTestId(testID);
+    const row = value.parent;
+    expect(row?.props.className).toBe('flex-row items-baseline justify-between gap-3');
+    expect(row?.children).toHaveLength(2);
+    const label = row?.children[0];
+    expect(typeof label === 'string' ? label : label?.props.className).toBe('text-sm text-muted');
+  });
+
+  it.each([
+    ['device-battery con número', 'text-accent-strong', 'device-battery', { batteryPct: 82 }],
+    ['device-battery nula', 'text-foreground', 'device-battery', { batteryPct: null }],
+    ['device-connectivity online', 'text-accent-strong', 'device-connectivity', { connectivity: 'online' }],
+    ['device-connectivity offline', 'text-foreground', 'device-connectivity', { connectivity: 'offline' }],
+    ['device-connectivity desconocida', 'text-foreground', 'device-connectivity', { connectivity: 'LTE' }],
+    ['device-model', 'text-foreground', 'device-model', {}],
+    ['device-last-message', 'text-foreground', 'device-last-message', {}],
+    ['device-esn', 'font-mono tracking-mono text-foreground', 'device-esn', {}],
+  ] as const)('#203 R4.3: %s pinta su valor en %s', async (_name, tone, testID, override) => {
+    mockListPets.mockResolvedValue({
+      kind: 'ok',
+      pets: [makePet({ device: makeDevice({ ...override }) })],
+    });
+    await renderPairing();
+    const value = await screen.findByTestId(testID);
+    expect(value.props.className).toBe(`shrink text-right text-15 font-extrabold ${tone}`);
   });
 });

@@ -1115,7 +1115,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     expect(addReminder).not.toMatch(/uppercase|tracking-widest/);
   });
 
-  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9)', () => {
+  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #203 R4)', () => {
     for (const [pattern, count] of [
       [/\brounded-14\b/g, 1], [/\brounded-16\b/g, 4], [/\brounded-22\b/g, 1],
     ] as const) {
@@ -1126,7 +1126,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       && !/\.test\.tsx?$/.test(file)
       && pattern.test(readFileSync(file, 'utf8')),
     ).map((file) => file.slice(sourceRoot.length + 1));
-    expect(outsideReminders(/\brounded-22\b/)).toEqual([]);
+    expect(outsideReminders(/\brounded-22\b/)).toEqual(['screens/pairing/index.tsx']); // #203 R4
     const rounded16 = Object.fromEntries(sourceFiles(sourceRoot).filter(file => file !== join(sourceRoot, featureFiles[0]) && !/\.test\.tsx?$/.test(file)).flatMap(file => {
       const count = (readFileSync(file, 'utf8').match(/\brounded-16\b/g) ?? []).length;
       return count ? [[file.slice(sourceRoot.length + 1), count]] : [];
