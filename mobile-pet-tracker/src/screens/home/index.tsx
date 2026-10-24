@@ -113,6 +113,13 @@ const REMINDER_ROW_ICONS: Record<ReminderType, IconComponent> = {
   custom: Bell,
 };
 
+const SUMMARY_TILES = [
+  { slot: 'violet', Icon: Weight },
+  { slot: 'green', Icon: Walk },
+  { slot: 'blue', Icon: Moon },
+  { slot: 'amber', Icon: Map },
+] as const;
+
 const QUICK_ACTIONS = [
   {
     testID: 'quick-action-weight',
@@ -206,6 +213,9 @@ export function HomeScreen() {
       'category-rose-strong',
       'foreground',
     ]);
+  const summaryInks = useThemeColors(
+    SUMMARY_TILES.map(({ slot }) => `category-${slot}-strong`),
+  );
   const quickActionInks = useThemeColors(
     QUICK_ACTIONS.map(({ slot }) => `category-${slot}-strong`),
   );
@@ -498,12 +508,18 @@ export function HomeScreen() {
               {activity.data !== undefined &&
               activity.data.kind !== 'unauthorized' ? (
                 <Animated.View testID="summary-reveal" entering={homeEntering(0, 0)}>
-                  <View className="flex-row">
-                    <View className="flex-1 items-center gap-1 border-r border-border">
-                      <Weight size={20} color={muted} />
+                  <View className="flex-row gap-1">
+                    <View className={activity.data.kind === 'ok'
+                      ? 'flex-1 items-center gap-1.5'
+                      : 'flex-1 items-center gap-1.5 border-r border-border'}>
+                      <View testID="summary-tile-weight" className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS[SUMMARY_TILES[0].slot].surface}`} style={CONTINUOUS_CORNER}>
+                        <Weight size={18} color={summaryInks[0]} />
+                      </View>
                       <Text
                         testID="summary-weight"
-                        className="text-sm font-bold text-foreground"
+                        className={activity.data.kind === 'ok'
+                          ? 'text-base font-extrabold text-foreground'
+                          : 'text-sm font-bold text-foreground'}
                         style={TABULAR_NUMS}
                       >
                         {fmtKg(
@@ -512,48 +528,56 @@ export function HomeScreen() {
                             : null,
                         )}
                       </Text>
-                      <Text className="text-2xs font-normal text-muted">
+                      <Text className={activity.data.kind === 'ok'
+                        ? 'text-11 font-semibold text-muted'
+                        : 'text-2xs font-normal text-muted'}>
                         {t('home.weight')}
                       </Text>
                     </View>
                     {activity.data.kind === 'ok' ? (
                       <>
-                        <View className="flex-1 items-center gap-1 border-r border-border">
-                          <Walk size={20} color={muted} />
+                        <View className="flex-1 items-center gap-1.5">
+                          <View testID="summary-tile-activity" className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS[SUMMARY_TILES[1].slot].surface}`} style={CONTINUOUS_CORNER}>
+                            <Walk size={18} color={summaryInks[1]} />
+                          </View>
                           <Text
                             testID="summary-activity"
-                            className="text-sm font-bold text-foreground"
+                            className="text-base font-extrabold text-foreground"
                             style={TABULAR_NUMS}
                           >
                             {fmtMinutes(today?.activeMinutes ?? null)}
                           </Text>
-                          <Text className="text-2xs font-normal text-muted">
+                          <Text className="text-11 font-semibold text-muted">
                             {t('home.activity')}
                           </Text>
                         </View>
-                        <View className="flex-1 items-center gap-1 border-r border-border">
-                          <Moon size={20} color={muted} />
+                        <View className="flex-1 items-center gap-1.5">
+                          <View testID="summary-tile-sleep" className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS[SUMMARY_TILES[2].slot].surface}`} style={CONTINUOUS_CORNER}>
+                            <Moon size={18} color={summaryInks[2]} />
+                          </View>
                           <Text
                             testID="summary-sleep"
-                            className="text-sm font-bold text-foreground"
+                            className="text-base font-extrabold text-foreground"
                             style={TABULAR_NUMS}
                           >
                             {fmtMinutes(today?.restMinutes ?? null)}
                           </Text>
-                          <Text className="text-2xs font-normal text-muted">
+                          <Text className="text-11 font-semibold text-muted">
                             {t('home.sleep')}
                           </Text>
                         </View>
-                        <View className="flex-1 items-center gap-1">
-                          <Map size={20} color={muted} />
+                        <View className="flex-1 items-center gap-1.5">
+                          <View testID="summary-tile-distance" className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS[SUMMARY_TILES[3].slot].surface}`} style={CONTINUOUS_CORNER}>
+                            <Map size={18} color={summaryInks[3]} />
+                          </View>
                           <Text
                             testID="summary-distance"
-                            className="text-sm font-bold text-foreground"
+                            className="text-base font-extrabold text-foreground"
                             style={TABULAR_NUMS}
                           >
                             {fmtKm(today?.distanceM ?? null)}
                           </Text>
-                          <Text className="text-2xs font-normal text-muted">
+                          <Text className="text-11 font-semibold text-muted">
                             {t('home.distance')}
                           </Text>
                         </View>
