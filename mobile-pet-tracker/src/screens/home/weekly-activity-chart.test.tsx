@@ -138,7 +138,8 @@ jest.mock('react-native-chart-kit/v2', () => {
 jest.mock('../../theme/use-theme-colors', () => ({
   useThemeColors: (mockTokens: readonly string[]) =>
     mockTokens.map((token) =>
-      token === 'accent-foreground' || token === 'accent-strong'
+      token.startsWith('shadow-') ? `--color-${token}`
+        : token === 'accent-foreground' || token === 'accent-strong'
         ? `${mockTheme}-${token}`
         : `resolved-${token}`,
     ),
@@ -2337,5 +2338,24 @@ describe('#143 R3: con la primera métrica y un día seleccionado, cada columna 
       [selected, [label, ['weekly-activity-missing-2026-09-07', dash]]],
       [resting, [label, ['weekly-activity-value-2026-09-08', value]]],
     ]);
+  });
+});
+
+describe('#198 R7: tarjeta semanal del canvas', () => {
+  it('#198 R7 viste la tarjeta con padding 14/16 y la sombra card', async () => {
+    const result = await renderChart([makeDay()]);
+    const card = result.getByTestId('weekly-activity-card');
+    for (const token of ['gap-2', 'px-4', 'py-3.5', 'shadow-none']) expect(card.props.className.split(' ')).toContain(token);
+    expect(card.props.className.split(' ')).not.toContain('shadow-sm');
+    expect(card.props.style.boxShadow).toEqual([
+      { offsetX: 0, offsetY: 1, blurRadius: 2, spreadDistance: 0, color: '--color-shadow-near' },
+      { offsetX: 0, offsetY: 8, blurRadius: 24, spreadDistance: 0, color: '--color-shadow-far' },
+    ]);
+  });
+
+  it('#198 R7 pinta título 16/800 y subtítulo de 11', async () => {
+    const result = await renderChart([makeDay()]);
+    expect(result.getByText('Actividad semanal').props.className).toBe('text-base font-extrabold text-foreground');
+    expect(result.getByText('últimos 7 días').props.className).toBe('text-11 text-muted');
   });
 });
