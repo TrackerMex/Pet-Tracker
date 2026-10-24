@@ -217,3 +217,16 @@ describe('#201 R5: los tiles llevan el rótulo arriba y la tinta del canvas', ()
     },
   ])('#201 R5: $artboard › $canvas › $production', checkRow);
 });
+
+describe('#201 R6: el guion se lee apagado', () => {
+  it.each<Row>([
+    {
+      artboard: 'MapaSinUbicacion',
+      canvas: 'font-size: 20px; font-weight: 900; color: var(--muted)',
+      canvasCount: 4,
+      file: 'screens/map/index.tsx',
+      production: "'text-xl font-black text-muted'",
+      productionCount: 1,
+    },
+  ])('#201 R6: $artboard › $canvas › $production', checkRow);
+});

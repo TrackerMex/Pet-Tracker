@@ -1840,7 +1840,7 @@ describe('#116 R7: la batería cae al guion y solo la lee el detalle', () => {
     mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
   });
 
-  it('muestra el guion mientras el detalle está pendiente', async () => {
+  it('muestra el guion mientras el detalle está pendiente (enmendado por #201 R6)', async () => {
     mockGetPet.mockReturnValue(pending<PetState>());
 
     await renderMap();
@@ -1848,20 +1848,20 @@ describe('#116 R7: la batería cae al guion y solo la lee el detalle', () => {
 
     const battery = screen.getByTestId('stat-battery');
     expect(battery).toHaveTextContent('—');
-    expect(battery.props.className).toBe('text-base font-black text-muted');
+    expect(battery.props.className).toBe('text-xl font-black text-muted');
   });
 
-  it('muestra el guion cuando el detalle falla', async () => {
+  it('muestra el guion cuando el detalle falla (enmendado por #201 R6)', async () => {
     mockGetPet.mockResolvedValue({ kind: 'error' });
 
     await renderMap();
     await waitFor(() => expect(screen.getByTestId('stat-speed')).toBeVisible());
     await waitFor(() => expect(screen.getByTestId('stat-battery')).toHaveTextContent('—'));
 
-    expect(screen.getByTestId('stat-battery').props.className).toBe('text-base font-black text-muted');
+    expect(screen.getByTestId('stat-battery').props.className).toBe('text-xl font-black text-muted');
   });
 
-  it('muestra el guion sin collar', async () => {
+  it('muestra el guion sin collar (enmendado por #201 R6)', async () => {
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ device: null }) });
 
     await renderMap();
@@ -1869,10 +1869,10 @@ describe('#116 R7: la batería cae al guion y solo la lee el detalle', () => {
 
     const battery = screen.getByTestId('stat-battery');
     expect(battery).toHaveTextContent('—');
-    expect(battery.props.className).toBe('text-base font-black text-muted');
+    expect(battery.props.className).toBe('text-xl font-black text-muted');
   });
 
-  it('ignora la batería de la última posición cuando el collar no la trae', async () => {
+  it('ignora la batería de la última posición cuando el collar no la trae (enmendado por #201 R6)', async () => {
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ device: makeDevice('online') }) });
     mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition({ battery: 82 }) });
 
@@ -1881,7 +1881,7 @@ describe('#116 R7: la batería cae al guion y solo la lee el detalle', () => {
 
     const battery = screen.getByTestId('stat-battery');
     expect(battery).toHaveTextContent('—');
-    expect(battery.props.className).toBe('text-base font-black text-muted');
+    expect(battery.props.className).toBe('text-xl font-black text-muted');
   });
 
   it('lee la batería del detalle y no de la lista (enmendado por #201 R5)', async () => {
@@ -2347,6 +2347,67 @@ describe('#201 R5: los tiles llevan el rótulo arriba y la tinta del canvas', ()
     expect(elementChild(tile, 0).props.className).toBe('text-11 font-semibold text-muted');
     expect(elementChild(tile, 1).props.testID).toBe(testID);
     expect(elementChild(tile, 1).props.numberOfLines).toBe(1);
+  });
+});
+
+describe('#201 R6: el guion se lee apagado', () => {
+  const DASH_INK = 'text-xl font-black text-muted';
+
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+    mockListPositions.mockResolvedValue({
+      kind: 'ok',
+      items: [makeStoredPosition({ speedKmh: 12.34 })],
+      nextCursor: null,
+    });
+    mockGetDayRoute.mockResolvedValue({
+      kind: 'ok',
+      date: '2026-08-21',
+      trips: [makeTrip({ distanceM: 2000 })],
+    });
+  });
+
+  it('#201 R6: velocidad sin posición se apaga', async () => {
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: null });
+    mockListPositions.mockResolvedValue({ kind: 'ok', items: [], nextCursor: null });
+
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByTestId('stat-speed')).toHaveTextContent('—'));
+    expect(screen.getByTestId('stat-speed').props.className).toBe(DASH_INK);
+  });
+
+  it('#201 R6: velocidad sin dato se apaga', async () => {
+    mockListPositions.mockResolvedValue({
+      kind: 'ok',
+      items: [makeStoredPosition({ speedKmh: 8 }), makeStoredPosition({ speedKmh: null })],
+      nextCursor: null,
+    });
+
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByTestId('stat-updated')).toHaveTextContent('Justo ahora'));
+    expect(screen.getByTestId('stat-speed')).toHaveTextContent('—');
+    expect(screen.getByTestId('stat-speed').props.className).toBe(DASH_INK);
+  });
+
+  it('#201 R6: distancia sin ruta se apaga', async () => {
+    mockGetDayRoute.mockResolvedValue({ kind: 'error' });
+
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByTestId('stat-distance')).toHaveTextContent('—'));
+    expect(screen.getByTestId('stat-distance').props.className).toBe(DASH_INK);
+  });
+
+  it('#201 R6: actualizado sin posición se apaga', async () => {
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: null });
+
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByTestId('stat-updated')).toHaveTextContent('—'));
+    expect(screen.getByTestId('stat-updated').props.className).toBe(DASH_INK);
   });
 });
 
