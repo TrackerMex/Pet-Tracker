@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Editor de zona</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+<style>
+body{margin:0}
+a{color:#107148;text-decoration:none}a:hover{color:#0B5C3A}
+.pt{--bg:#FFFFFF;--fg:#0D1117;--surface:#FFFFFF;--surface2:#F0FBF6;--default:#F5F6F8;--muted:#667085;--border:rgba(13,17,23,0.08);--lip-gray:#E4E7EC;--accent:#178255;--accent-strong:#107148;--lip:#0E5E3C;--blue:#EFF6FF;--blue-s:#0768E0;--amber:#FFF7ED;--amber-s:#A55E07;--green:#F0FBF6;--green-s:#107148;--violet:#F5F3FF;--violet-s:#7549F7;--rose:#FFF0F3;--rose-s:#D80B34;--danger:#D92D20;--warning:#B54708;--glass:rgba(255,255,255,0.86);--pill:rgba(23,130,85,0.14);--shadow:0 1px 2px rgba(13,17,23,0.04),0 8px 24px rgba(13,17,23,0.06)}
+.pt.dark{--bg:#0D1117;--fg:#F7F8FA;--surface:#161B22;--surface2:#12231B;--default:#1F242B;--muted:#9CA3AF;--border:rgba(255,255,255,0.08);--lip-gray:#0A0D12;--accent-strong:#2AB87C;--lip:#0B4D31;--blue:#0B203A;--blue-s:#4A8DDF;--amber:#271E14;--amber-s:#C17B22;--green:#12231B;--green-s:#2AB87C;--violet:#221C33;--violet-s:#9579E7;--rose:#39131A;--rose-s:#E35E78;--danger:#F87171;--warning:#FBBF24;--glass:rgba(22,27,34,0.86);--pill:rgba(23,130,85,0.22);--shadow:0 1px 2px rgba(0,0,0,0.4)}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes ping{0%{transform:scale(.55);opacity:.55}100%{transform:scale(1.5);opacity:0}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fill{from{width:0}}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+@keyframes fall{0%{transform:translateY(-40px) rotate(0);opacity:0}10%{opacity:1}100%{transform:translateY(760px) rotate(540deg);opacity:0}}
+.pt{--map-ground:#EEF2EC;--map-park:#D6EAD3;--map-road:#FFFFFF}.pt.dark{--map-ground:#161D1A;--map-park:#1B2B20;--map-road:#262E33}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
+</helmet>
+<div class="pt {{theme}}" style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: var(--bg); color: var(--fg); font-family: Inter, 'Helvetica Neue', system-ui, sans-serif">
+<svg role="img" aria-label="Mapa con la zona Casa de 150 m" width="390" height="430" viewBox="0 0 390 430" style="position: absolute; top: 0; left: 0; display: block">
+<rect width="390" height="430" fill="var(--map-ground)"></rect>
+<rect x="250" y="60" width="130" height="100" rx="14" fill="var(--map-park)"></rect>
+<g stroke="var(--map-road)" stroke-width="14" stroke-linecap="round"><path d="M-20 170 L410 130"></path><path d="M110 -20 L140 450"></path><path d="M-20 330 L410 300"></path><path d="M290 -20 L310 450"></path></g>
+<g stroke="var(--map-road)" stroke-width="6" stroke-linecap="round" opacity=".9"><path d="M40 -20 L55 450"></path><path d="M210 -20 L230 450"></path><path d="M-20 250 L410 215"></path></g>
+<circle cx="195" cy="240" r="105" fill="var(--pill)" stroke="var(--accent-strong)" stroke-width="3" style="transform-origin: 195px 240px; animation: breathe 2.4s ease-in-out infinite"></circle>
+<circle cx="195" cy="240" r="9" fill="var(--accent-strong)" stroke="var(--surface)" stroke-width="3"></circle>
+<circle cx="300" cy="240" r="10" fill="var(--surface)" stroke="var(--accent-strong)" stroke-width="3"></circle>
+</svg>
+<header style="position: absolute; top: 52px; left: 16px; right: 16px; display: flex; align-items: center; gap: 10px">
+<a href="Zonas.dc.html" aria-label="Volver" style="width: 44px; height: 44px; border-radius: 50%; background: var(--glass); backdrop-filter: blur(16px); box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; color: var(--fg)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></a>
+<span style="padding: 10px 16px; border-radius: 999px; background: var(--glass); backdrop-filter: blur(16px); box-shadow: var(--shadow); font-size: 16px; font-weight: 800">Zona segura</span>
+</header>
+<span style="position: absolute; top: 368px; left: 50%; transform: translateX(-50%); padding: 6px 12px; border-radius: 999px; background: var(--glass); backdrop-filter: blur(12px); font-size: 12px; font-weight: 700; white-space: nowrap">Toca el mapa para mover el centro de la zona.</span>
+<section style="position: absolute; left: 0; right: 0; bottom: 0; top: 404px; border-radius: 28px 28px 0 0; background: var(--surface); box-shadow: 0 -8px 24px rgba(13,17,23,0.10); padding: 12px 20px 36px; display: flex; flex-direction: column; gap: 14px; animation: rise 400ms ease-out both">
+<span style="align-self: center; width: 40px; height: 5px; border-radius: 3px; background: var(--lip-gray)"></span>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 800">Nombre<input value="Casa" style="height: 50px; border-radius: 12px; background: var(--default); border: 2px solid transparent; padding: 0 14px; font: 600 16px Inter, system-ui, sans-serif; color: var(--fg)"></label>
+<label style="display: flex; flex-direction: column; gap: 8px; font-size: 14px; font-weight: 800"><span style="display: flex; justify-content: space-between">Radio<span style="color: var(--accent-strong)">Radio de 150 m</span></span><input type="range" min="20" max="2000" value="150" style="width: 100%; accent-color: var(--accent)"><span style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--muted)"><span>20 m</span><span>2000 m</span></span></label>
+<label style="display: flex; align-items: center; justify-content: space-between; font-size: 15px; font-weight: 700">Activa<span role="switch" aria-checked="true" style="width: 48px; height: 28px; border-radius: 999px; background: var(--accent); position: relative"><span style="position: absolute; right: 3px; top: 3px; width: 22px; height: 22px; border-radius: 50%; background: #FFFFFF"></span></span></label>
+<p style="margin: 0; font-size: 14px; line-height: 1.4; color: var(--muted)">Al guardar un centro o radio nuevos, la zona se vuelve a evaluar y se cierran sus alertas abiertas.</p>
+<div style="margin-top: auto; display: grid; grid-template-columns: 1fr 2fr; gap: 10px">
+<a href="ZonasEliminar.dc.html" role="button" style="height: 54px; border-radius: 16px; background: var(--surface); border: 2px solid var(--lip-gray); box-shadow: 0 4px 0 var(--lip-gray); color: var(--danger); display: flex; align-items: center; justify-content: center; font: 800 16px Inter, system-ui, sans-serif; text-decoration: none; box-sizing: border-box">Eliminar</a>
+<a href="Zonas.dc.html" style="height: 54px; border-radius: 16px; background: var(--accent); color: #FFFFFF; box-shadow: 0 4px 0 var(--lip); display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 800; text-decoration: none">Guardar</a>
+</div>
+</section>
+<style>@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}</style>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { theme: this.props.dark ? "dark" : "" };
+}
+}
+</script>
+</body>
+</html>

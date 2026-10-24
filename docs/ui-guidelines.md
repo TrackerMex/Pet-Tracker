@@ -72,7 +72,8 @@ Tres límites, no negociables:
    fuentes Inter, `--radius-card: 20px`, `--text-2xs: 10px`. Si un valor
    nuevo se repite 2+, se añade token — no clase arbitraria.
    Tamaños de letra fuera de la escala de Tailwind (fidelidad al canvas, #173): `--text-13: 13px`, `--text-26: 26px`, `--text-11: 11px`, `--text-15: 15px`, `--text-17: 17px`, `--text-22: 22px`; cada uno es token aunque se use una vez, porque la clase arbitraria está prohibida.
-   Tracking fuera de la escala de Tailwind (fidelidad al canvas, #174): `--tracking-title: -0.02em`, `--tracking-caps: 0.06em`, `--tracking-eyebrow: 0.08em`; la clase `tracking-*` va con una clase `text-*` en el mismo elemento, porque uniwind multiplica el `em` por su tamaño.
+   Tracking fuera de la escala de Tailwind (fidelidad al canvas, #174): `--tracking-title: -0.02em`, `--tracking-caps: 0.06em`, `--tracking-eyebrow: 0.08em`, `--tracking-code: 0.14em`, `--tracking-display: -0.5px`, `--tracking-section: 1.5px`, `--tracking-mono: 0.04em`, `--tracking-dialog: -0.01em` (#197); la clase `tracking-*` va con una clase `text-*` en el mismo elemento, porque uniwind multiplica el `em` por su tamaño.
+   Interlineado fuera de la escala de Tailwind (fidelidad al canvas, #197): `--leading-body: 1.4`, `--leading-note: 1.45`; la clase `leading-*` va con una clase `text-*` en el mismo elemento, porque uniwind multiplica el interlineado sin unidad por su tamaño. Los interlineados en píxeles del canvas usan la escala de Tailwind (`leading-3.5`, `leading-5.25`, `leading-8`, `leading-8.5`) y 1.5 es `leading-normal`.
 3. **Grep-clean permanente** (criterio de aceptación de toda feature móvil):
    - cero hex fuera de `src/theme/`
    - cero clases arbitrarias `[...]` (`rounded-[20px]`, `text-[10px]`,
@@ -228,12 +229,12 @@ Tres límites, no negociables:
     El tamaño 17 se pinta con `Text` plano de React Native por la regla de la
     Enmienda #187; no se pasa `text-17` a `Button.Label`.
     El bloqueo (`isDisabled`) no atenúa: en #189 los `Switch` y `Button` de heroui cancelan el 50 % de `disabled:element-disabled` con `KEEP_OPACITY`, y la receta gris del límite no lleva opacidad.
-    - **Chip seleccionado** (fidelidad al canvas, #178): cápsula `rounded-full bg-accent border-b-3 border-black/25`; el chip sin seleccionar no lleva labio.
-    - **Secundarios de Horario** (fidelidad al canvas, #179): «Editar» `h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface` y «Añadir comida» `h-13.5 rounded-14 border-2 border-b-6 border-lip-gray bg-surface`, con el labio dentro del alto; «Generar plan» es tonal de la categoría violeta y sin labio, porque el labio del artboard (`rgba(91,63,163,0.35)`) no tiene token.
+    - **Chip seleccionado** (fidelidad al canvas, #178; labio por estilo, #197): cápsula `rounded-full bg-accent` con `style={chunkyLip.primaryCompact}`, un labio de 3 px que cuelga fuera del alto; el chip sin seleccionar no lleva labio.
+    - **Secundarios de Horario** (fidelidad al canvas, #179; labio por estilo, #197): «Editar» `h-9 rounded-10 border-2 border-lip-gray bg-surface` con `style={chunkyLip.neutralCompact}` y «Añadir comida» `h-12.5 rounded-14 border-2 border-lip-gray bg-surface` con `style={chunkyLip.neutral}`, con el labio colgando fuera del alto; el resumen verde lleva `chunkyLip.summary`; «Generar plan» es tonal de la categoría violeta con `style={chunkyLip.violet}` (#200 R14).
+    - **Secundario compacto de fila** (#174; labio por estilo, #197): el ack de cada fila abierta de Alertas lleva `h-8.5 rounded-10 border-2 border-lip-gray bg-surface px-3` con `style={chunkyLip.neutralCompact}`, etiqueta `text-xs font-extrabold text-foreground` y `hitSlop={TOUCH_SLOP}` (34 + 12 = 46 de diana). Es la única excepción a la receta del secundario neutro; el inventario de #166 R3 lo lista por su `testID`.
     - **Sin labio**: los tonales (`bg-accent-soft`, `bg-default`), los
       destructivos (`bg-danger`, `variant="danger-soft"`) y las primarias
       de heroui sin color en `className` (reintentos).
-    - **Secundario compacto de fila** (#174): el ack de cada fila abierta de Alertas lleva `h-8.5 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3`, etiqueta `text-xs font-extrabold text-foreground` y `hitSlop={TOUCH_SLOP}` (34 + 12 = 46 de diana). Es la única excepción a la receta del secundario neutro; el inventario de #166 R3 lo lista por su `testID`.
     - Primario del detalle de alerta (#180): ack con labio, h-14 rounded-16, etiqueta text-17 font-extrabold; el secundario «Ver en el mapa» es h-13 rounded-16 con el icono Map.
     La cápsula «Añadir mascota» con `bg-tab-pill` es tonal y no lleva labio (#173).
     Los inventarios que lo verifican viven en
@@ -879,3 +880,35 @@ nunca texto crudo del servidor.
 Detalle y tests en `specs/mobile-home-photo-hero-canvas/requirements.md` (R1 a R20).
 
 - [X] Enmienda #195 aprobada por humano
+
+## Enmienda #197 — cimientos del canvas
+
+Fecha: 2026-10-23. Feature #197 `mobile-canvas-foundations`. Fija los tokens y las piezas que consumen las pantallas de la ola 2 del canvas; no cambia el layout de ninguna pantalla.
+
+1. **Colores claros.** `--border` y `--separator` `rgba(13,17,23,0.08)`, `--danger` `#D92D20`, `--warning` `#B54708` y `--warning-strong` `#93370D` (AA sobre `bg-surface` y sobre `bg-warning-soft`). El tema oscuro no cambia.
+2. **Tipografía.** Los tokens de la línea de tracking y de la de interlineado son los únicos fuera de la escala de Tailwind. `tracking-tight` no se usa en la app: el título grande lleva `tracking-title`.
+3. **Labios por estilo.** Todo labio es `style={chunkyLip.<variante>}` de `useChunkyLip()` (`src/theme/chunky-lip.ts`) y cuelga por debajo del alto del elemento; ningún `className` lleva `border-b-N` ni `border-black/25` como labio. Variantes: `primary`, `primaryCompact`, `hero`, `summary`, `neutral`, `neutralCompact`, `danger`, `violet`, `tileViolet`, `tileAmber` y `tileBlue`. Una variante nueva se añade al hook con el literal de su artboard; no se compone a mano en la pantalla.
+4. **Entrada `rise`.** Excepción a «springs sobre timings»: la entrada escalonada de Inicio usa `MOTION_RISE_TIMING` (400 ms, `ease-out`) y sube `MOTION_RISE_OFFSET_Y` (14). Bajo reduce motion no hay entrada. Otro elemento solo usa este timing con una enmienda.
+5. **Sombras.** Toda sombra nueva sale de `useShadows()` (`src/theme/shadows.ts`): `card`, `dialog`, `floating`, `label`, `marker`, `ring`, `segment`, `sheet`, `tabBar` y `toast`; no se añaden `shadowColor` ni `elevation` de React Native. Horario e Historial de comidas siguen sin sombra (#179).
+6. **Interruptor.** Todo interruptor binario será `ToggleSwitch` (`src/components/toggle-switch.tsx`): pista de 48 x 28 en `lip-gray` apagada y `accent` encendida, pulgar blanco de 22 a 3 del borde y sin sombra. Cada pantalla lo adopta en su feature de la ola 2.
+7. **Cabecera en contenido.** `ScreenHeader` (`src/components/screen-header.tsx`) es la forma del canvas para D-H: volver de 44 con trazo 2.4 y `-ml-2.5`, eyebrow opcional, título de 26 (o 24) `font-black tracking-title` y un accesorio opcional a la derecha. La pantalla que lo adopta pone `headerShown: false` en su ruta dentro de su propia feature; mientras no lo adopte, D-H rige tal como está escrita.
+
+Detalle y tests en `specs/mobile-canvas-foundations/requirements.md` (R1 a R23).
+
+- [X] Enmienda #197 aprobada por humano
+  Firma delegada en el leader por mandato del humano del 2026-10-23 (`progress/plan_canvas-parity-2026-10-23.md` §4), igual que la de `specs/mobile-canvas-foundations/requirements.md` § Aprobación.
+
+
+## Enmienda #200 (mobile-canvas-nutrition)
+
+Fecha: 2026-10-24. Las tres pantallas de comidas consumen los cimientos del canvas de #197.
+
+1. **Entrada con RiseIn.** Nutrición, Horario e Historial usan `RiseIn` y el timing compartido de 400 ms ease-out de #197, sin entrada bajo reducir movimiento. Nutrición con plan cargado: héroe 0 ms, comidas 80 ms, aviso en posición index `110 + 30 * index` ms, IA 140 ms y enlaces 200 ms; sin plan los enlaces conservan su aparición sin RiseIn. Horario: resumen 0 ms y filas `80 + 60 * index` ms. Historial: calendario 0 ms y panel del día 100 ms.
+2. **Anillo de Nutrición.** El relleno usa `MOTION_RING_TIMING` (1100 ms ease-out, ReduceMotion.System) y `MOTION_RING_DELAY_MS` (200 ms), también al servir o deshacer. La pista conserva opacidad 0.22.
+3. **Radios de Nutrición.** Fuera de la escala por fidelidad a su canvas: `rounded-24` (24 px) en la tarjeta de comidas y `rounded-16` (16 px) en los enlaces a Horario e Historial. Cada esquina no cápsula usa `CONTINUOUS_CORNER`.
+4. **Superficies propias.** El héroe, las comidas, los avisos y la recomendación IA de Nutrición son `View`; sus enlaces son `Pressable`. Usan clases propias en lugar de `Card`, con los radios, colores e interlineados del artboard y las variantes de labio del hook compartido.
+
+Detalle y tests en `specs/mobile-canvas-nutrition/requirements.md` (R1 a R17).
+
+- [X] Enmienda #200 aprobada por humano
+  Firma delegada en el leader por mandato del humano del 2026-10-23 (`progress/plan_canvas-parity-2026-10-23.md` §4), reflejada desde `specs/mobile-canvas-nutrition/requirements.md` § Aprobación, ya firmada el 2026-10-23.

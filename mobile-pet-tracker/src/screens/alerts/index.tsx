@@ -14,6 +14,7 @@ import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { TABULAR_NUMS } from '../../theme/native-styles';
 import { TOUCH_SLOP } from '../../theme/touch-target';
+import { useChunkyLip } from '../../theme/chunky-lip';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { settleAlertAck } from '../../utils/alert-ack-outcome';
 import { alertTypeMeta } from '../../utils/alert-meta';
@@ -40,6 +41,7 @@ function fmtOpenedAt(
 }
 
 export function AlertsScreen() {
+  const chunkyLip = useChunkyLip();
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const t = useTranslate();
@@ -237,7 +239,8 @@ export function AlertsScreen() {
                   testID={`${rowId}-ack`}
                   accessibilityRole="button"
                   variant="secondary"
-                  className="h-8.5 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3"
+                  className="h-8.5 rounded-10 border-2 border-lip-gray bg-surface px-3"
+                  style={chunkyLip.neutralCompact}
                   hitSlop={TOUCH_SLOP}
                   isDisabled={ackingId !== null}
                   onPress={() => void handleAck(item)}

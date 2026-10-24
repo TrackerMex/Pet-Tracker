@@ -77,15 +77,28 @@ demás pendientes (#60, #129, #150, #160, #163, #164) van a un carril de deuda
   las specs de las tres primeras de la ola 2 contra la spec firmada de #197.
 - **Ola 2**: como mucho **3 Codex a la vez**. Con más, jest da timeouts falsos
   (memoria `jest-timeout-por-carga-entre-codex`). Orden:
-  1. #198, #199, #201
-  2. #200, #202, #196
+  1. #198, #199, #200 (las tres dependen solo de #197)
+  2. #201 (tras #198: consume su API de ranuras de `EmptyState`), #202, #196
   3. #203, #204, #205, #206
+
+  Ajuste del 2026-10-23: `RiseIn` pasó de #199 a #197 R24, así que #199, #200 y
+  #202 ya no se esperan entre sí. #201 va detrás de #198 porque comparte
+  `EmptyState`.
+
+**Candado temporal `#197 R20`** (`describe('#197 R20: cimientos sin cablear')`
+en `canvas-foundations.test.ts`): toda feature de la ola 2 lo **borra entero**
+en su primer commit rojo que monte un cimiento o toque `_layout.tsx`. El
+borrado es idéntico en todas, así que git lo mezcla sin conflicto; nadie lo
+enmienda a su manera.
+
+**Inventario de `motion.ts`** (MT `no exporta nada más`): #199 suma 7
+exportaciones y #200 suma 2. La segunda en mergear conserva las de la primera.
 - **Ola 3**: el spike de #192, en el dev build del humano, y el lote final de
   smoke.
 
 **Choques previstos entre features paralelas**: solo en ficheros compartidos
-por diseño: `i18n/catalog.ts`, la tabla de copy, `SCREEN_FILES` y las líneas de
-`app/_layout.tsx`.
+por diseño: `i18n/catalog.ts`, la tabla de copy, `SCREEN_FILES`, las líneas de
+`app/_layout.tsx` y la lista de exportaciones de `motion.ts`.
 - La segunda PR en llegar mergea `origin/dev` en su branch. **Nunca rebase**
   después de la trazabilidad (memoria `rebase-invalida-hashes-traceability`).
 - El conflicto lo resuelve el mismo Codex de la feature, con un prompt corto

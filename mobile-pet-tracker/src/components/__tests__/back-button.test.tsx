@@ -82,3 +82,14 @@ describe('#172 R2: BackButton', () => {
     expect(back.props.style).toEqual({ opacity: 0.8 });
   });
 });
+
+describe('#197 R18: trazo opcional del botón de volver', () => {
+  it('#197 R18: pasa el trazo al chevron', async () => {
+    await render(<LanguageProvider initial="es"><BackButton testID="back" fallback="/welcome" strokeWidth={2.4} /></LanguageProvider>);
+    expect(screen.getByTestId('icon-chevron-left').props.strokeWidth).toBe(2.4);
+  });
+  it('#197 R18: sin trazo no lo fija', async () => {
+    await renderBack();
+    expect(screen.getByTestId('icon-chevron-left').props.strokeWidth).toBeUndefined();
+  });
+});

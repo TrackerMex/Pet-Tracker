@@ -115,11 +115,11 @@ describe('#61 R1: la etiqueta destructiva usa el token de danger', () => {
 
 describe('#61 R3: ningún texto sobre bg-accent se compone con opacidad', () => {
   const accentCards = [
-    join('app', '(tabs)', 'food.tsx'),
+    join('screens', 'food', 'index.tsx'),
     join('screens', 'meal-schedule', 'index.tsx'),
   ];
 
-  it.each(accentCards)('%s no compone su texto con opacidad', (path) => {
+  it.each(accentCards)('%s no compone su texto con opacidad (enmendado por #200 R1)', (path) => {
     const source = readSource(path);
 
     expect(source).not.toContain('opacity-70');
@@ -127,15 +127,15 @@ describe('#61 R3: ningún texto sobre bg-accent se compone con opacidad', () => 
   });
 
   it.each([accentCards[0]])(
-    '%s conserva las dos etiquetas de la card de acento a opacidad plena',
+    '%s conserva las dos etiquetas de la card de acento a opacidad plena (enmendado por #200 R1 y #200 R3)',
     (path) => {
       const source = readSource(path);
 
       expect(source).toContain(
-        'className="text-xs font-semibold uppercase tracking-widest text-accent-foreground"',
+        'className="text-xs font-extrabold uppercase tracking-caps text-accent-foreground"',
       );
       expect(source).toContain(
-        'className="font-semibold text-accent-foreground"',
+        'className="text-sm font-semibold text-accent-foreground"',
       );
     },
   );
@@ -157,9 +157,9 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     [join('screens', 'login', 'index.tsx'), 2],
     [join('screens', 'forgot', 'index.tsx'), 1], // #117 R10
     [join('screens', 'reset-password', 'index.tsx'), 4], // #172 R19: link-login del formulario
-    [join('screens', 'home', 'index.tsx'), 2],
+    [join('screens', 'home', 'index.tsx'), 3], // #198 R4
     [join('screens', 'health', 'index.tsx'), 1],
-    [join('app', '(tabs)', 'food.tsx'), 1],
+    [join('screens', 'food', 'index.tsx'), 1 + 1 - 1], // #200 R5; #200 R6
     [join('screens', 'map', 'index.tsx'), 2],
     [join('screens', 'profile', 'index.tsx'), 1 + 1 - 1 + 1 + 1], // #173 R5; #173 R6; #173 R8; #173 R11
     [join('screens', 'add-pet', 'index.tsx'), 1],
@@ -167,11 +167,14 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     [join('screens', 'welcome', 'index.tsx'), 2],
   ];
 
-  it.each(inkSites)('%s pinta con text-accent-strong (%i)', (path, sites) => {
+  it.each(inkSites)('%s pinta con text-accent-strong (%i) (enmendado por #200 R1 y #200 R5 y #200 R6) (enmendado por #198 R4)', (path, sites) => {
     expect(readSource(path).match(/text-accent-strong\b/g)).toHaveLength(sites);
   });
 
-  it('suma las trece ocurrencias que enumera la spec', () => {
+  it('suma las trece ocurrencias que enumera la spec (enmendado por #200 R5 y #200 R6) (enmendado por #198 R4)', () => {
+    expect(inkSites.reduce((total, [path]) => total + (readSource(path).match(/text-accent-strong\b/g) ?? []).length, 0)).toBe(
+      inkSites.reduce((total, [, sites]) => total + sites, 0),
+    );
     expect(
       inkSites.reduce((total, [, sites]) => total + sites, 0),
     ).toBe(
@@ -182,7 +185,10 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
         + 1 // #173 R5
         - 1 // #173 R6
         + 1 // #173 R8
-        + 1, // #173 R11
+        + 1 // #173 R11
+        + 1 // #200 R5
+        - 1 // #200 R6
+        + 1, // #198 R4: +1 Inicio
     );
   });
 
@@ -190,10 +196,10 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     expect(filesMatching(/text-accent(?![-\w])/)).toEqual([]);
   });
 
-  it('reserva las peticiones de accent a las huellas de EmptyState (enmendado por #176 R5)', () => {
+  it('reserva las peticiones de accent a las huellas de EmptyState (enmendado por #176 R5) (enmendado por #197 R20)', () => {
     const requestsAccent = /useThemeColors\(\s*\[[^\]]*'accent'[^\]]*\]/;
 
-    expect(filesMatching(requestsAccent)).toEqual(['components/empty-state.tsx']); // (enmendado por #176 R5)
+    expect(filesMatching(requestsAccent)).toEqual(['components/empty-state.tsx', 'components/toggle-switch.tsx', 'theme/shadows.ts']); // (enmendado por #176 R5)
   });
 });
 

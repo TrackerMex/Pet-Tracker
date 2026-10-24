@@ -42,7 +42,7 @@ describe('#195 R17: contraste WCAG contra la peor foto', () => {
     return 0.35 * (100 - d) / 24;
   }
 
-  it.each(['light', 'dark'] as const)('mantiene referencias y suelos en %s', (theme) => {
+  it.each(['light', 'dark'] as const)('mantiene referencias y suelos en %s (enmendado por #197 R1)', (theme) => {
     const css = read('src/theme/global.css');
     const block = css.split(`@variant ${theme} {`)[1].split('}')[0];
     const token = (name: string) => {
@@ -68,7 +68,7 @@ describe('#195 R17: contraste WCAG contra la peor foto', () => {
       overGlass(foreground), overGlass(muted),
     ];
     const references = theme === 'light'
-      ? [4.26, 7.75, 4.36, 13.55, 5.70, 4.82, 3.76, 13.71, 3.60]
+      ? [4.26, 7.75, 4.36, 13.55, 5.70, 4.82, 4.83, 13.71, 3.60]
       : [6.51, 6.74, 6.67, 12.79, 6.43, 3.93, 6.84, 11.46, 4.79];
     const textFloor = theme === 'dark' ? 4.5 : 4.2;
     const floors = [textFloor, 4.5, textFloor, 4.5, 4.5, 3, 3, 4.5, 3];
@@ -115,17 +115,17 @@ describe('#195 R19: grep-clean y cuentas conservadas', () => {
 
   it.each([
     ['src/components/pet-hero-header.tsx', 'style={CONTINUOUS_CORNER}', 1],
-    ['src/screens/home/index.tsx', 'style={CONTINUOUS_CORNER}', 1],
+    ['src/screens/home/index.tsx', 'style={CONTINUOUS_CORNER}', 5], // #198 R2
     ['src/components/pet-hero-header.tsx', 'TABULAR_NUMS', 2],
     ['src/screens/home/index.tsx', 'TABULAR_NUMS', 9],
     ['src/components/pet-hero-header.tsx', 'text-accent-strong', 1],
-    ['src/screens/home/index.tsx', 'text-accent-strong', 2],
-    ['src/screens/home/index.tsx', 'bg-accent-soft', 3],
+    ['src/screens/home/index.tsx', 'text-accent-strong', 3], // #198 R4
+    ['src/screens/home/index.tsx', 'bg-accent-soft', 0], // #198 R3; #198 R11; #198 R13
     ['src/components/pet-switcher.tsx', 'bg-accent-soft', 1],
     ['src/components/pet-switcher.tsx', 'shadow-', 0],
     ['src/screens/home/index.tsx', "t('profile.addPet'", 1],
     ['src/screens/home/index.tsx', 'testID="home-alerts-bell"', 1],
-  ] as const)('%s conserva %s en %s líneas', (file, literal, count) => {
+  ] as const)('%s conserva %s en %s líneas (enmendado por #198 R2, R3, R4, R11, R13)', (file, literal, count) => {
     expect(read(file).split('\n').filter((line) => line.includes(literal))).toHaveLength(count);
   });
 
@@ -140,19 +140,25 @@ describe('#195 R20: enmienda canónica y continuación de A8', () => {
   const blocks = Array.from(design.matchAll(/```markdown\n([\s\S]*?)\n```/g), (match) => match[1]);
   const charter = read('../docs/ui-guidelines.md');
   const normalize = (text: string) => text.replace(/^- \[[ xX]\] Enmienda #195 aprobada por humano$/gm, '- [ ] Enmienda #195 aprobada por humano');
+  const charterSection = (heading: string) => {
+    const section = charter.slice(charter.indexOf(heading));
+    const nextHeading = section.indexOf('\n## ');
+    return nextHeading === -1 ? section : section.slice(0, nextHeading);
+  };
   const historicalA8 = "> **Enmendado por #67 (A8) — corrección de un hecho falso.** Hasta el\n> 2026-09-06 este punto decía *\"el respaldo es degradado con la inicial —el\n> patrón que ya usa `pet-avatar`—, decidido por el humano el 2026-09-04\"*.\n> Era falso de origen: `src/components/pet-avatar.tsx` pinta `blobatar(name)`\n> con `SvgXml` y nunca una inicial, y la R5 aprobada de #40 (2026-08-21)\n> sustituyó explícitamente el fallback de inicial por el blobatar. El error\n> venía de `progress/explore_design-gap-vs-make.md` y se propagó también al\n> enunciado de #67 en `feature_list.json`. Y la garantía de AA no la da el\n> degradado: la da la **banda opaca** bajo el texto (#67 R3), porque ningún\n> velo sobre una foto arbitraria llega a 4,5:1.";
 
-  it('añade una sola sección completa y es la última cabecera de nivel dos', () => {
+  it('añade una sola sección completa y es la última cabecera de nivel dos (enmendado por #197 R21)', () => {
     expect(blocks).toHaveLength(2);
     const heading = blocks[0].split('\n')[0];
     expect(charter.split(heading)).toHaveLength(2);
-    expect(charter.match(/^## .+$/gm)?.at(-1)).toBe(heading);
-    expect(normalize(charter.slice(charter.indexOf(heading)).trimEnd())).toBe(normalize(blocks[0]));
+    const followingHeadings = charter.slice(charter.indexOf(heading) + heading.length).match(/^## .+$/gm) ?? [];
+    followingHeadings.forEach((followingHeading) => expect(followingHeading).toMatch(/^## Enmienda #/));
+    expect(normalize(charterSection(heading).trimEnd())).toBe(normalize(blocks[0]));
   });
 
-  it('la sección de la carta lleva las medidas de la Enmienda A4 y ninguna de las antiguas', () => {
+  it('la sección de la carta lleva las medidas de la Enmienda A4 y ninguna de las antiguas (enmendado por #197 R21)', () => {
     const heading = blocks[0].split('\n')[0];
-    const section = charter.slice(charter.indexOf(heading));
+    const section = charterSection(heading);
     expect(section).toContain('alto 430');
     expect(section).toContain('velo oscuro superior de 90 px');
     expect(section).toContain('degradado inferior de 100 px');

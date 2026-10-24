@@ -49,28 +49,28 @@ function readSource(relativePath: string): string {
 const TAB_SCREENS_168 = [
   'screens/health/index.tsx',
   'screens/profile/index.tsx',
-  'app/(tabs)/food.tsx',
+  'screens/food/index.tsx',
 ];
 const SCREEN_AND_TEST_FILES_168 = [
   ...TAB_SCREENS_168,
   'screens/health/index.test.tsx',
   'screens/profile/index.test.tsx',
-  'app/(tabs)/__tests__/food.test.tsx',
+  'screens/food/index.test.tsx',
 ];
-const TAB_TITLE_168 = 'text-3xl font-black tracking-tight text-foreground';
+const TAB_TITLE_168 = 'text-3xl font-black tracking-title text-foreground';
 
 describe('#168 R1: el título grande vive en las tres pestañas', () => {
-  it('pinta una ocurrencia del literal en cada fichero de pestaña', () => {
+  it('pinta una ocurrencia del literal en cada fichero de pestaña (enmendado por #197 R4) (enmendado por #200 R1)', () => {
     for (const file of TAB_SCREENS_168) {
       expect({ file, occurrences: readSource(file).split(TAB_TITLE_168).length - 1 })
         .toEqual({ file, occurrences: 1 });
     }
   });
 
-  it('limita el literal a las tres pestañas y a la celebración', () => {
-    expect(filesMatching(/text-3xl font-black tracking-tight text-foreground/).sort()).toEqual([
-      'app/(tabs)/food.tsx',
+  it('limita el literal a las tres pestañas y a la celebración (enmendado por #197 R4) (enmendado por #200 R1)', () => {
+    expect(filesMatching(/text-3xl font-black tracking-title text-foreground/).sort()).toEqual([
       'components/celebration.tsx',
+      'screens/food/index.tsx',
       'screens/health/index.tsx',
       'screens/profile/index.tsx',
     ]);
@@ -82,25 +82,25 @@ describe('#168 R12: alcance cerrado', () => {
     expect(filesMatching(/<PetHeroHeader/).sort()).toEqual(['screens/home/index.tsx']);
   });
 
-  it('veta clases con corchetes en las pantallas y sus tests', () => {
+  it('veta clases con corchetes en las pantallas y sus tests (enmendado por #200 R1)', () => {
     for (const file of SCREEN_AND_TEST_FILES_168) {
       expect(readSource(file)).not.toMatch(/[A-Za-z0-9_-]+-\[[^\]]+\]/);
     }
   });
 
-  it('veta StyleSheet en las pantallas y sus tests', () => {
+  it('veta StyleSheet en las pantallas y sus tests (enmendado por #200 R1)', () => {
     for (const file of SCREEN_AND_TEST_FILES_168) {
       expect(readSource(file)).not.toContain('StyleSheet');
     }
   });
 
-  it('veta text-accent suelto en las pantallas y sus tests', () => {
+  it('veta text-accent suelto en las pantallas y sus tests (enmendado por #200 R1)', () => {
     for (const file of SCREEN_AND_TEST_FILES_168) {
       expect(readSource(file)).not.toMatch(/\btext-accent(?![-\w])/);
     }
   });
 
-  it('veta hex solo en las tres pantallas de producción', () => {
+  it('veta hex solo en las tres pantallas de producción (enmendado por #200 R1)', () => {
     for (const file of TAB_SCREENS_168) {
       expect(readSource(file)).not.toMatch(new RegExp(String.raw`#(?!\d{2,3} R\d)[\da-f]{3,8}\b`, 'i'));
     }

@@ -82,3 +82,19 @@ export const MOTION_HERO_FADE_MS = 500;
 export const MOTION_HERO_CAPTION_DELAY_MS = 80;
 export const MOTION_HERO_PING_MS = 1600;
 export const MOTION_HERO_BUBBLE_POP_DELAY_MS = 450;
+
+// #197 R11: entrada rise literal del canvas.
+export const MOTION_RISE_OFFSET_Y = 14;
+export const MOTION_RISE_TIMING = {
+  duration: MOTION_SURFACE_MS,
+  easing: Easing.bezier(0, 0, 0.58, 1),
+  reduceMotion: ReduceMotion.System,
+};
+
+// #200 R4: ring literal del canvas.
+export const MOTION_RING_TIMING = {
+  duration: 1100,
+  easing: Easing.bezier(0, 0, 0.58, 1),
+  reduceMotion: ReduceMotion.System,
+};
+export const MOTION_RING_DELAY_MS = 200;
