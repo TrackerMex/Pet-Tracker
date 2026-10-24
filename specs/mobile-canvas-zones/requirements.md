@@ -783,6 +783,8 @@ Firmadas por delegación (mandato del humano del 2026-10-23, `progress/plan_canv
 
 Como los commits de R7 ya existen, van en dos commits propios antes del siguiente R pendiente: `test(#202): R7 align the dialog inset with the frozen canvas` (rojo: CD falla porque recibe `px-6`) y `feat(#202): R7 inset the dialog 28 px like the canvas` (solo cambia `px-6` por `px-7` en `src/components/confirm-dialog.tsx`). No se reescriben los commits anteriores.
 
+**Errata R7.4 (rol del título, a posteriori del reviewer, N3).** R7.4 prescribe `role="header"` en el título del diálogo. En RN 0.86 esa prop da TS2769 en `Text`, así que la implementación usa `accessibilityRole="header"` (par rojo/verde `1842bba0` → `1ca6234f`), y CD lo bloquea con `getByRole('header')`. La receta de R7.4 queda `Text testID={`${testID}-title`} accessibilityRole="header"`. El comportamiento accesible es el mismo y no hay cambio de código.
+
 **Regla de recuentos agregados.** Si al llegar a verde una R se pone rojo un `it` que no está en el inventario y ese `it` solo cuenta usos o ficheros de un literal o token, Codex lo enmienda sin parar. Son de este tipo los inventarios cerrados de radios, de `style={CONTINUOUS_CORNER}`, de `text-NN` o de `<Card`, las sumas de copy y los suelos del escáner HeroUI. La condición es que el delta medido sea exactamente el número de usos que el diff de esa R, tal como esta spec la prescribe, añade o retira. La enmienda:
 
 - da a la cifra o a la entrada su término (`// #202 Rn`, o `; #202 Rn: ±k` dentro de un comentario que ya exista);
