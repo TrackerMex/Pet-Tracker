@@ -70,6 +70,20 @@ jest.mock('reicon-react-native', () => {
     ...actual,
     InfoCircle: (props: Record<string, unknown>) => React.createElement(View, { testID: 'icon-info-circle', ...props }),
     Package: (props: Record<string, unknown>) => React.createElement(View, { testID: 'icon-package', ...props }),
+    LinkBroken: (props: Record<string, unknown>) => React.createElement(View, { testID: 'icon-link-broken', ...props }),
+  };
+});
+
+jest.mock('@expo/ui/community/bottom-sheet', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    BottomSheet: ({ children, index, ...props }: Record<string, unknown>) =>
+      typeof index === 'number' && index >= 0
+        ? React.createElement(View as unknown as React.ComponentType<Record<string, unknown>>, { ...props, index, testID: 'community-bottom-sheet' }, children as never)
+        : null,
+    BottomSheetView: ({ children, ...props }: Record<string, unknown>) =>
+      React.createElement(View, props, children as never),
   };
 });
 
@@ -841,156 +855,6 @@ describe('R8: con collar muestra el estado del dispositivo y el plan tracked/fre
 
     expect(await screen.findByTestId('pairing-ready')).toBeVisible();
     expect(mockGetPetTracking).not.toHaveBeenCalled();
-  });
-});
-
-describe('R9: desvincular pide confirmación nativa, libera el collar y vuelve al formulario', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    process.env.EXPO_PUBLIC_API_URL = apiUrl;
-    mockUseAuth.mockReturnValue({
-      status: 'authenticated',
-      token: 'jwt-token',
-      signIn: jest.fn(),
-      signOut: jest.fn(),
-    } satisfies AuthContextValue);
-    mockListPets.mockResolvedValue({
-      kind: 'ok',
-      pets: [makePet({ device: makeDevice() })],
-    });
-    mockGetPetTracking.mockResolvedValue({ kind: 'ok', tracked: true });
-    mockReleaseDevice.mockResolvedValue({ kind: 'error' });
-    jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
-  });
-
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
-
-  function getAlertButton(label: string) {
-    return jest
-      .mocked(Alert.alert)
-      .mock.calls[0]?.[2]?.find(({ text }) => text === label);
-  }
-
-  async function openUnpairAlert() {
-    await renderPairing();
-    await screen.findByTestId('device-status-card');
-    await fireEvent.press(screen.getByTestId('device-unpair'));
-  }
-
-  it('opens the exact native confirmation and Cancel does not release', async () => {
-    await openUnpairAlert();
-
-    expect(Alert.alert).toHaveBeenCalledWith(
-      '¿Desvincular collar?',
-      'El historial de ubicaciones se conserva, pero el rastreo en vivo se detiene hasta que vincules otro collar.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Desvincular',
-          style: 'destructive',
-          onPress: expect.any(Function),
-        },
-      ],
-    );
-    getAlertButton('Cancelar')?.onPress?.();
-    expect(mockReleaseDevice).not.toHaveBeenCalled();
-  });
-
-  it.each<ReleaseDeviceState>([{ kind: 'ok' }, { kind: 'not-assigned' }])(
-    'refreshes pets and returns to the form after $kind',
-    async (state) => {
-      mockReleaseDevice.mockResolvedValue(state);
-      mockListPets
-        .mockResolvedValueOnce({
-          kind: 'ok',
-          pets: [makePet({ device: makeDevice() })],
-        })
-        .mockResolvedValueOnce({ kind: 'ok', pets: [makePet()] });
-      await openUnpairAlert();
-
-      await act(async () => {
-        getAlertButton('Desvincular')?.onPress?.();
-        await Promise.resolve();
-      });
-
-      expect(mockReleaseDevice).toHaveBeenCalledTimes(1);
-      expect(mockReleaseDevice).toHaveBeenCalledWith(
-        apiUrl,
-        'jwt-token',
-        'pet-1',
-      );
-      expect(await screen.findByTestId('activation-code-input')).toBeVisible();
-      expect(mockListPets).toHaveBeenCalledTimes(2);
-    },
-  );
-
-  it.each<[ReleaseDeviceState, string]>([
-    [{ kind: 'forbidden' }, 'Solo el dueño puede desvincular el collar.'],
-    [{ kind: 'unreachable', message: 'offline' }, 'No se pudo conectar con el servidor'],
-    [{ kind: 'error' }, 'Algo salió mal'],
-    [{ kind: 'missing-config' }, 'Algo salió mal'],
-  ])('shows the exact error for $kind', async (state, message) => {
-    mockReleaseDevice.mockResolvedValue(state);
-    await openUnpairAlert();
-
-    await act(async () => {
-      getAlertButton('Desvincular')?.onPress?.();
-      await Promise.resolve();
-    });
-
-    const error = await screen.findByTestId('pairing-error');
-    expect(error).toHaveTextContent(message);
-    expect(error.props.selectable).toBe(true);
-  });
-
-  it('signs out for unauthorized without showing a local error (#72 R2)', async () => {
-    const signOut = jest.fn().mockResolvedValue(undefined);
-    mockUseAuth.mockReturnValue({
-      status: 'authenticated',
-      token: 'jwt-token',
-      signIn: jest.fn(),
-      signOut,
-    } satisfies AuthContextValue);
-    mockReleaseDevice.mockResolvedValue({ kind: 'unauthorized' });
-    await openUnpairAlert();
-
-    await act(async () => {
-      getAlertButton('Desvincular')?.onPress?.();
-      await Promise.resolve();
-    });
-
-    await waitFor(() =>
-      expect(screen.getByTestId('device-unpair')).not.toBeDisabled(),
-    );
-    expect(signOut).toHaveBeenCalledTimes(1);
-    expect(screen.queryByTestId('pairing-error')).toBeNull();
-  });
-
-  it('disables unpair while the release request is in flight', async () => {
-    let resolveRelease!: (state: ReleaseDeviceState) => void;
-    mockReleaseDevice.mockReturnValue(
-      new Promise((resolve) => {
-        resolveRelease = resolve;
-      }),
-    );
-    await openUnpairAlert();
-
-    await act(async () => {
-      getAlertButton('Desvincular')?.onPress?.();
-      await Promise.resolve();
-    });
-
-    await waitFor(() =>
-      expect(screen.getByTestId('device-unpair')).toBeDisabled(),
-    );
-    await act(async () => {
-      resolveRelease({ kind: 'error' });
-    });
-    await waitFor(() =>
-      expect(screen.getByTestId('device-unpair')).not.toBeDisabled(),
-    );
   });
 });
 
@@ -1794,5 +1658,218 @@ describe('#203 R6: botón de desvincular', () => {
     expect(siblings[siblings.indexOf(button) - 1] === spacer).toBe(true);
     expect(container.props.className).toBe('gap-4');
     expect(container).toHaveStyle({ flexGrow: 1 });
+  });
+});
+
+describe('#203 R7: hoja de desvincular', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockListPets.mockReset();
+    mockUseReducedMotion.mockReturnValue(false);
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ device: makeDevice() })] });
+    mockGetPetTracking.mockResolvedValue({ kind: 'ok', tracked: true });
+    mockReleaseDevice.mockResolvedValue({ kind: 'error' });
+    jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  async function openUnpairSheet() {
+    await renderPairing();
+    await screen.findByTestId('device-status-card');
+    await fireEvent.press(screen.getByTestId('device-unpair'));
+    return screen.findByTestId('pairing-unpair-sheet');
+  }
+
+  async function pressConfirm() {
+    await fireEvent.press(screen.getByTestId('pairing-unpair-confirm'));
+  }
+
+  function testIdOf(node: string | { props: { testID?: string } }) {
+    return typeof node === 'string' ? node : node.props.testID;
+  }
+
+  it('#203 R7.1: la hoja de desvincular está cerrada por defecto', async () => {
+    await renderPairing();
+    await screen.findByTestId('device-status-card');
+    const host = screen.getByTestId('pairing-unpair-host');
+    const root = screen.getByTestId('screen-pairing');
+    expect(root.children[root.children.length - 1] === host).toBe(true);
+    expect(screen.queryByTestId('community-bottom-sheet')).toBeNull();
+    expect(screen.queryByTestId('pairing-unpair-sheet')).toBeNull();
+    expect(Alert.alert).not.toHaveBeenCalled();
+  });
+
+  it('#203 R7.2: desvincular abre la hoja con su anatomía y sin diálogo nativo', async () => {
+    const { result } = await renderHook(() => useChunkyLip());
+    const sheet = await openUnpairSheet();
+
+    expect(Alert.alert).not.toHaveBeenCalled();
+    const host = screen.getByTestId('pairing-unpair-host');
+    const community = within(host).getByTestId('community-bottom-sheet');
+    expect(community.props.index).toBe(0);
+    expect(community.props.enablePanDownToClose).toBe(true);
+    expect(community.props.snapPoints).toEqual(['50%', '100%']);
+    expect(typeof community.props.onClose).toBe('function');
+    expect(within(community).getByTestId('pairing-unpair-sheet') === sheet).toBe(true);
+    expect(sheet.props.className).toBe('items-center gap-3 bg-surface px-5 pb-9 pt-3');
+    expect(sheet.children.map(testIdOf)).toEqual([
+      'pairing-unpair-icon',
+      'pairing-unpair-title',
+      'pairing-unpair-body',
+      'pairing-unpair-confirm',
+      'pairing-unpair-cancel',
+    ]);
+
+    const icon = screen.getByTestId('pairing-unpair-icon');
+    expect(icon.props.className).toBe('size-14 items-center justify-center rounded-full bg-category-rose');
+    const glyph = within(icon).getByTestId('icon-link-broken');
+    expect(glyph.props.size).toBe(26);
+    expect(glyph.props.strokeWidth).toBe(2.2);
+    expect(glyph.props.color).toBe('color:danger');
+
+    const title = screen.getByTestId('pairing-unpair-title');
+    expect(title.props.className).toBe('text-center text-xl font-black text-foreground');
+    expect(title).toHaveTextContent('¿Desvincular collar?', { exact: true });
+    const body = screen.getByTestId('pairing-unpair-body');
+    expect(body.props.className).toBe('max-w-80 text-center text-sm leading-note text-muted');
+    expect(body).toHaveTextContent(
+      'El historial de ubicaciones se conserva, pero el rastreo en vivo se detiene hasta que vincules otro collar.',
+      { exact: true },
+    );
+
+    const confirm = screen.getByTestId('pairing-unpair-confirm');
+    expect((confirm.props.className as string).split(' ').slice(-4)).toEqual(['w-full', 'h-13.5', 'rounded-16', 'bg-danger']);
+    expect(confirm).toHaveStyle(result.current.danger);
+    const confirmLabel = within(confirm).getByText('Desvincular');
+    expect(confirmLabel.props.className).toBe('text-base font-extrabold text-danger-foreground');
+
+    const cancel = screen.getByTestId('pairing-unpair-cancel');
+    expect((cancel.props.className as string).split(' ').slice(-6)).toEqual([
+      'w-full', 'h-13.5', 'rounded-16', 'border-2', 'border-lip-gray', 'bg-surface',
+    ]);
+    expect(cancel).toHaveStyle(result.current.neutral);
+    const cancelLabel = within(cancel).getByText('Cancelar');
+    expect(cancelLabel.props.className).toBe('text-base font-extrabold text-foreground');
+  });
+
+  it('#203 R7.3: Cancelar cierra sin liberar', async () => {
+    await openUnpairSheet();
+
+    await fireEvent.press(screen.getByTestId('pairing-unpair-cancel'));
+
+    await waitFor(() => expect(screen.queryByTestId('pairing-unpair-sheet')).toBeNull());
+    expect(mockReleaseDevice).not.toHaveBeenCalled();
+    expect(screen.getByTestId('device-unpair')).toBeOnTheScreen();
+  });
+
+  it('#203 R7.3: cerrar con el gesto no libera', async () => {
+    await openUnpairSheet();
+
+    await act(async () => {
+      (screen.getByTestId('community-bottom-sheet').props.onClose as () => void)();
+    });
+
+    await waitFor(() => expect(screen.queryByTestId('pairing-unpair-sheet')).toBeNull());
+    expect(mockReleaseDevice).not.toHaveBeenCalled();
+    expect(screen.getByTestId('device-unpair')).toBeOnTheScreen();
+  });
+
+  it.each<ReleaseDeviceState>([{ kind: 'ok' }, { kind: 'not-assigned' }])(
+    '#203 R7.4: confirma, refresca y vuelve al formulario tras $kind',
+    async (state) => {
+      mockReleaseDevice.mockResolvedValue(state);
+      mockListPets
+        .mockResolvedValueOnce({ kind: 'ok', pets: [makePet({ device: makeDevice() })] })
+        .mockResolvedValueOnce({ kind: 'ok', pets: [makePet()] });
+      await openUnpairSheet();
+
+      await pressConfirm();
+
+      expect(await screen.findByTestId('activation-code-input')).toBeVisible();
+      await waitFor(() => expect(screen.queryByTestId('pairing-unpair-sheet')).toBeNull());
+      expect(mockReleaseDevice).toHaveBeenCalledTimes(1);
+      expect(mockReleaseDevice).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1');
+      expect(mockListPets).toHaveBeenCalledTimes(2);
+    },
+  );
+
+  it.each<{ kind: string; state: ReleaseDeviceState; message: string }>([
+    { kind: 'forbidden', state: { kind: 'forbidden' }, message: 'Solo el dueño puede desvincular el collar.' },
+    { kind: 'unreachable', state: { kind: 'unreachable', message: 'offline' }, message: 'No se pudo conectar con el servidor' },
+    { kind: 'error', state: { kind: 'error' }, message: 'Algo salió mal' },
+    { kind: 'missing-config', state: { kind: 'missing-config' }, message: 'Algo salió mal' },
+  ])('#203 R7.5: muestra el error exacto para $kind', async ({ state, message }) => {
+    mockReleaseDevice.mockResolvedValue(state);
+    await openUnpairSheet();
+
+    await pressConfirm();
+
+    const error = await screen.findByTestId('pairing-error');
+    expect(error).toHaveTextContent(message, { exact: true });
+    expect(error.props.selectable).toBe(true);
+    await waitFor(() => expect(screen.queryByTestId('pairing-unpair-sheet')).toBeNull());
+  });
+
+  it('#203 R7.6: unauthorized cierra sesión sin error local', async () => {
+    const signOut = jest.fn().mockResolvedValue(undefined);
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut,
+    } satisfies AuthContextValue);
+    mockReleaseDevice.mockResolvedValue({ kind: 'unauthorized' });
+    await openUnpairSheet();
+
+    await pressConfirm();
+
+    await waitFor(() => expect(screen.queryByTestId('pairing-unpair-sheet')).toBeNull());
+    expect(signOut).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('pairing-error')).toBeNull();
+    expect(screen.getByTestId('device-unpair')).not.toBeDisabled();
+  });
+
+  it('#203 R7.7: desvincular y confirmar quedan deshabilitados en vuelo', async () => {
+    let resolveRelease!: (state: ReleaseDeviceState) => void;
+    mockReleaseDevice.mockReturnValue(
+      new Promise((resolve) => {
+        resolveRelease = resolve;
+      }),
+    );
+    await openUnpairSheet();
+    expect(screen.getByTestId('pairing-unpair-confirm')).not.toBeDisabled();
+
+    await pressConfirm();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('device-unpair')).toBeDisabled();
+      expect(screen.getByTestId('pairing-unpair-confirm')).toBeDisabled();
+    });
+    await act(async () => {
+      resolveRelease({ kind: 'error' });
+    });
+    await waitFor(() => expect(screen.getByTestId('device-unpair')).not.toBeDisabled());
+  });
+
+  it('#203 R7.8: la hoja en inglés', async () => {
+    await renderWithProviders(
+      <LanguageProvider initial="en"><PairingRoute /></LanguageProvider>,
+      { wrapper: PairingWrapper },
+    );
+    await screen.findByTestId('device-status-card');
+    await fireEvent.press(screen.getByTestId('device-unpair'));
+
+    await screen.findByTestId('pairing-unpair-sheet');
+    expect(screen.getByTestId('pairing-unpair-title')).toHaveTextContent('Unpair collar?', { exact: true });
+    expect(screen.getByTestId('pairing-unpair-body')).toHaveTextContent(
+      'Location history stays, but live tracking stops until you pair a collar again.',
+      { exact: true },
+    );
+    expect(within(screen.getByTestId('pairing-unpair-confirm')).getByText('Unpair')).toBeOnTheScreen();
+    expect(within(screen.getByTestId('pairing-unpair-cancel')).getByText('Cancel')).toBeOnTheScreen();
   });
 });

@@ -74,12 +74,13 @@ const NEUTRAL_ROWS = [
   ['screens/docs-upload-form/index.tsx', literalId('docs-upload-cancel'), 'h-14 rounded-16 border-2 border-lip-gray bg-surface', 'outline', 'Text', 'text-17 font-extrabold text-foreground', ['isDisabled={uploading}', 'onPress={() => router.back()}']],
   ['screens/reminders/index.tsx', literalId('reminders-delete-cancel'), 'w-full h-14 rounded-16 border-2 border-lip-gray bg-surface', 'outline', 'Text', 'text-17 font-extrabold text-foreground', ['onPress={dismissDeleteSheet}']],
   ['screens/alert-detail/index.tsx', literalId('alert-detail-view-map'), 'h-13 rounded-16 border-2 border-lip-gray bg-surface', 'secondary', 'Button.Label', 'text-base font-extrabold text-foreground', ['accessibilityRole="button"']],
+  ['screens/pairing/index.tsx', literalId('pairing-unpair-cancel'), 'w-full h-13.5 rounded-16 border-2 border-lip-gray bg-surface', 'outline', 'Text', 'text-base font-extrabold text-foreground', ['onPress={closeUnpair}']], // #203 R7
 ] as const;
 const primaryIds = CTA_ROWS.map(([, anchor]) => idOf(anchor)).sort();
 const neutralIds = NEUTRAL_ROWS.map(([, anchor]) => idOf(anchor)).sort();
 const ctaFiles = [...new Set(CTA_ROWS.map(([path]) => path))].sort(); // #191 R11
 const consumers = [...ctaFiles, 'screens/reminders/index.tsx', 'screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx', 'screens/food/index.tsx'].sort();
-const neutralInventory = ['${rowId}-ack', 'add-meal-time-button', 'alert-detail-view-map', 'docs-upload-cancel', 'forgot-resend', 'geofence-editor-delete', 'meal-time-edit-${index}', 'reminders-delete-cancel', 'secondary.testID', 'welcome-have-account'];
+const neutralInventory = ['${rowId}-ack', 'add-meal-time-button', 'alert-detail-view-map', 'docs-upload-cancel', 'forgot-resend', 'geofence-editor-delete', 'meal-time-edit-${index}', 'pairing-unpair-cancel', 'reminders-delete-cancel', 'secondary.testID', 'welcome-have-account'];
 const radii = {
   'screens/edit-profile/index.tsx': 1, // #194 R6
   'components/celebration.tsx': 2,
@@ -96,7 +97,7 @@ const radii = {
   'screens/home/index.tsx': 1,
   'screens/home/weekly-activity-chart.tsx': 1, // #198 R9
   'screens/login/index.tsx': 1,
-  'screens/pairing/index.tsx': 2, // #203 R6
+  'screens/pairing/index.tsx': 4, // #203 R6; #203 R7
   'screens/register/index.tsx': 1,
   'screens/reminders/index.tsx': 4,
   'screens/reset-password/index.tsx': 1,
@@ -141,7 +142,7 @@ it.each(NEUTRAL_ROWS)('#177 R4.2: %s pinta la etiqueta de %s', (path, anchor, _c
     expect(readSource(path)).toMatch(/import \{[^}]*\bText\b[^}]*\} from 'react-native';/);
   } else expect(element).toContain('<Map size={18} color={foreground} />');
 });
-it('#177 R4.3: conserva los nueve secundarios neutros (enmendado por #189 R13)', () => {
+it('#177 R4.3: conserva los nueve secundarios neutros (enmendado por #189 R13) (enmendado por #203 R7)', () => {
   expect(idsWhere(tag => ((tag.includes('variant="outline"') || tag.includes('variant="secondary"')) && !tag.includes('bg-accent-soft') && !tag.includes('bg-default')) || tag.includes('border-lip-gray'))).toEqual(neutralInventory);
 });
 it('#177 R5.1: el compacto conserva talla, etiqueta e icono con labio de tres', () => {
@@ -169,19 +170,19 @@ it('#177 R6.2: recuentos de etiquetas (enmendado por #189 R7) (enmendado por #18
   expect(count(/text-17 font-extrabold text-foreground/g)).toBe(3 + 3 + 1 + 1); // #200 R5; #199 R9
   expect(count(/<Text className="text-17 font-bold text-accent-strong">/g)).toBe(0 + 1);
 });
-it('#177 R7.1: inventarios de los labios de borde restantes (enmendado por #189 R13) (enmendado por #197 R10)', () => {
+it('#177 R7.1: inventarios de los labios de borde restantes (enmendado por #189 R13) (enmendado por #197 R10) (enmendado por #203 R7)', () => {
   expect(inventory(/border-b-4/g)).toEqual({});
   expect(inventory(/border-black\/25/g)).toEqual({});
   expect(inventory(/\bborder-b-6\b/g)).toEqual({});
-  expect(count(/border-lip-gray/g)).toBe(10 + 1); // #189 R13
+  expect(count(/border-lip-gray/g)).toBe(10 + 1 + 1); // #189 R13; #203 R7: +1
 });
 it('#177 R7.2: inventarios de las dos recetas de primario', () => {
   expect(inventory(/rounded-16 bg-accent(?=[\s'"`])/g)).toEqual(Object.fromEntries(ctaFiles.map(path => [path, path === 'screens/add-pet/index.tsx' ? 2 : 1])));
   expect(inventory(/rounded-xl bg-accent(?=[\s'"`])/g)).toEqual({ 'screens/reminders/index.tsx': 1 });
 });
-it('#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por #191 R11) (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #198 R9) (enmendado por #203 R6)', () => {
+it('#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por #191 R11) (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #198 R9) (enmendado por #203 R6) (enmendado por #203 R7)', () => {
   expect(inventory(/\brounded-16\b/g)).toEqual(radii);
-  expect(count(/\brounded-16\b/g)).toBe(26 + 1 + 1 + 1 + 2 + 2 + 1 + 1 + 1); // #200 R9 (+2); #198 R9 (+1); #199 R14 (+1); #203 R6 (+1) // #194 R6 // #191 R11 // #189 R7; #189 R13
+  expect(count(/\brounded-16\b/g)).toBe(26 + 1 + 1 + 1 + 2 + 2 + 1 + 1 + 1 + 2); // #200 R9 (+2); #198 R9 (+1); #199 R14 (+1); #203 R6 (+1); #203 R7 (+2) // #194 R6 // #191 R11 // #189 R7; #189 R13
 });
 it('#177 R7.4: solo la definición y los diecisiete consumidores usan el hook (enmendado por #197 R10) (enmendado por #200 R3)', () => {
   expect(Object.keys(inventory(/useChunkyLip/g)).sort()).toEqual([...consumers, 'theme/chunky-lip.ts'].sort());
