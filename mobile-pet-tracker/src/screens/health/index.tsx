@@ -146,14 +146,17 @@ export function HealthScreen() {
                 </Text>
 
                 {vaccines.data === undefined || vaccines.isRefetching ? (
-                  <Skeleton
-                    testID="vaccines-skeleton"
-                    className="h-24 w-full rounded-card"
-                  />
+                  <Card testID="vaccines-skeleton" variant="flat" className="flex-row items-center gap-3 py-3.5">
+                    <Skeleton testID="vaccines-skeleton-tile" className="size-10 rounded-xl" />
+                    <View className="flex-1 gap-1.5">
+                      <Skeleton className="h-3.5 w-1/3 rounded-full" />
+                      <Skeleton className="h-2.5 w-2/3 rounded-full" />
+                    </View>
+                  </Card>
                 ) : null}
 
                 {vaccines.data?.kind === 'ok' && vaccines.data.vaccines.length === 0 ? (
-                  <Text testID="vaccines-empty" className="font-normal text-muted">
+                  <Text testID="vaccines-empty" className="text-15 leading-body text-muted">
                     {t('health.noVaccinesYet')}
                   </Text>
                 ) : null}
@@ -161,7 +164,7 @@ export function HealthScreen() {
                 {vaccines.data?.kind === 'error' ||
                 vaccines.data?.kind === 'unreachable' ? (
                   <View className="items-start gap-3">
-                    <Text testID="vaccines-error" className="text-danger">
+                    <Text testID="vaccines-error" className="text-15 leading-body text-danger" accessibilityRole="alert">
                       {t('health.couldNotLoadVaccines')}
                     </Text>
                     <Button
