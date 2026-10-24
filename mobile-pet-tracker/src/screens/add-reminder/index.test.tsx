@@ -1198,3 +1198,20 @@ describe('#204 R10: cabecera en contenido', () => {
     }
   });
 });
+
+describe('#204 R11: Guardar al pie', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockCreateReminder.mockReturnValue(pending());
+  });
+
+  it('#204 R11: Guardar se apoya al pie del formulario', async () => {
+    await renderAddReminder();
+    await screen.findByTestId('title-input');
+    expect(screen.getByTestId('add-reminder-submit').props.className).toContain('mt-auto h-14 rounded-16 bg-accent');
+  });
+});

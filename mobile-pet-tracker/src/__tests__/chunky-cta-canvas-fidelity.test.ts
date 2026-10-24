@@ -60,7 +60,7 @@ const CTA_ROWS = [
   ['components/empty-state.tsx', 'testID={`${testID}-action`}', 'h-14 rounded-16 bg-accent', ['onPress={action.onPress}']],
   ['screens/add-pet/index.tsx', literalId('add-pet-continue'), 'h-14 rounded-16 bg-accent', ['onPress={() => handleContinue()}']], // #191 R11
   ['screens/add-pet/index.tsx', literalId('add-pet-submit'), 'h-14 rounded-16 bg-accent', ['isDisabled={submitting}', 'onPress={() => void handleSubmit()}']],
-  ['screens/add-reminder/index.tsx', literalId('add-reminder-submit'), 'h-14 rounded-16 bg-accent', ['isDisabled={submitting}', 'onPress={() => void handleSubmit()}']],
+  ['screens/add-reminder/index.tsx', literalId('add-reminder-submit'), 'mt-auto h-14 rounded-16 bg-accent', ['isDisabled={submitting}', 'onPress={() => void handleSubmit()}']],
   ['screens/docs-upload-form/index.tsx', literalId('docs-upload-submit'), 'h-14 rounded-16 bg-accent', ['isDisabled={uploading}', 'onPress={() => void submitDocument()}']],
   ['screens/geofence-editor/index.tsx', literalId('geofence-editor-save'), 'flex-2 h-14 rounded-16 bg-accent', ["isDisabled={busy || name.trim() === ''}", 'onPress={() => void save()}']],
   ['screens/geofences/index.tsx', literalId('geofences-add'), 'mt-auto h-14 rounded-16 bg-accent', ['isDisabled={busy || atLimit}']],
@@ -106,7 +106,7 @@ const radii = {
 
 const disabledCtas: Record<string, string> = { 'screens/geofences/index.tsx': 'atLimit', 'screens/geofence-editor/index.tsx': "name.trim() === ''" }; // #189 R7; #189 R13
 
-it.each(CTA_ROWS)('#177 R3.1: %s pinta la receta cta de %s (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20)', (path, anchor, classes, keeps) => {
+it.each(CTA_ROWS)('#177 R3.1: %s pinta la receta cta de %s (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20) (enmendado por #204 R11)', (path, anchor, classes, keeps) => {
   const tag = openingTagWithTestId(readSource(path), anchor);
   const condition = disabledCtas[path];
   expect(tag).toContain(condition ? `className={${condition} ? '${classes.replace('bg-accent', 'bg-default')}' : '${classes}'}` : `className="${classes}"`);
