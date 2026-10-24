@@ -1772,3 +1772,40 @@ it('#200 R11: las piezas siguen el orden del canvas', async () => {
   expect(screen.getAllByTestId(/^(food-plan-card|food-meals-section|food-warnings|food-ai-card|food-links)$/).map(n => n.props.testID))
     .toEqual(['food-plan-card', 'food-meals-section', 'food-warnings', 'food-ai-card', 'food-links']);
 });
+
+
+jest.mock('../../components/rise-in', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    RiseIn(props: import('react-native').ViewProps & { delayMs: number; className?: string }) {
+      return React.createElement(View, props);
+    },
+  };
+});
+
+function riseDelayOf(node: TestInstance | null): number | undefined {
+  for (let current = node; current; current = current.parent) {
+    if (current.props.delayMs !== undefined) return current.props.delayMs;
+  }
+  return undefined;
+}
+
+describe('#200 R10: entrada escalonada de Nutrición', () => {
+  beforeEach(setupFood200Warnings);
+  it.each([
+    ['food-plan-card', 0], ['food-meals-section', 80],
+    ['warning-card-weight_loss_plan', 110], ['warning-card-check_food_allergens', 140],
+    ['food-ai-card', 140], ['food-links', 200],
+  ] as const)('#200 R10: cada pieza entra con el retardo del canvas (%s)', async (id, delay) => {
+    await renderFood();
+    const piece = await screen.findByTestId(id);
+    expect(riseDelayOf(piece)).toBe(delay);
+  });
+  it('#200 R10: sin plan los enlaces no entran con RiseIn', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+    await renderFood();
+    await screen.findByTestId('food-plan-empty');
+    expect(riseDelayOf(screen.getByTestId('food-links'))).toBeUndefined();
+  });
+});

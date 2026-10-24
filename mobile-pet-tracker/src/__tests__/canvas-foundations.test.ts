@@ -260,17 +260,6 @@ describe('#197 R19: cabecera del canvas', () => {
   });
 });
 
-describe('#197 R20: cimientos sin cablear', () => {
-  it.each(['toggle-switch', 'screen-header', 'shadows', 'rise-in'])('#197 R20: nadie monta todavía los cimientos %s', module => {
-    expect(filesMatching(new RegExp(`from ['"][^'"]*/${module}['"]`))).toEqual([]);
-  });
-  it('#197 R20: el layout raíz no cambia', () => {
-    const layout = readSource('app/_layout.tsx');
-    expect(layout.match(/headerShown/g)).toHaveLength(2);
-    expect(layout).not.toContain('ScreenHeader');
-  });
-});
-
 const charter = readFileSync(join(process.cwd(), '..', 'docs/ui-guidelines.md'), 'utf8');
 const design = readFileSync(join(process.cwd(), '..', 'specs/mobile-canvas-foundations/design.md'), 'utf8');
 function canonicalBlock(label: string): string {
