@@ -5,6 +5,7 @@ import { useCallback, useState } from 'react';
 import { Text, View } from 'react-native';
 import Animated, { useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AlertTriangle } from 'reicon-react-native';
 import { useUniwind } from 'uniwind';
 
 import { listGeofences } from '../../api/geofences';
@@ -39,6 +40,8 @@ import {
   TABULAR_NUMS,
 } from '../../theme/native-styles';
 import { useShadows } from '../../theme/shadows';
+import { useThemeColors } from '../../theme/use-theme-colors';
+import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import {
   deviceConnectionState,
   MAP_CONNECTION_LABEL_KEY,
@@ -110,6 +113,8 @@ export function MapScreen() {
   const insets = useSafeAreaInsets();
   const reducedMotion = useReducedMotion();
   const shadows = useShadows();
+  // #201 R7
+  const [categoryRoseStrong] = useThemeColors(['category-rose-strong']);
   const { theme } = useUniwind();
   const pets = useQuery({
     queryKey: petKeys.list(),
@@ -488,9 +493,17 @@ export function MapScreen() {
                 accessibilityState={{
                   disabled: !canSetLostMode || lostModeBusy,
                 }}
-                className="rounded-xl border border-danger/20 bg-danger-soft"
+                className={`h-12.5 gap-2 rounded-14 ${CATEGORY_SLOTS.rose.surface}`}
               >
-                <Button.Label className="font-bold text-danger">
+                <AlertTriangle
+                  testID="lost-mode-icon"
+                  size={18}
+                  strokeWidth={2.2}
+                  color={categoryRoseStrong}
+                />
+                <Button.Label
+                  className={`text-base font-extrabold ${CATEGORY_SLOTS.rose.ink}`}
+                >
                   {selectedPet?.lostMode
                     ? t('map.deactivateLostMode')
                     : t('map.activateLostMode')}
