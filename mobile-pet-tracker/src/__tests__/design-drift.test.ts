@@ -1115,7 +1115,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     expect(addReminder).not.toMatch(/uppercase|tracking-widest/);
   });
 
-  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10)', () => {
+  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9)', () => {
     for (const [pattern, count] of [
       [/\brounded-14\b/g, 1], [/\brounded-16\b/g, 4], [/\brounded-22\b/g, 1],
     ] as const) {
@@ -1139,6 +1139,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       'screens/alert-detail/index.tsx': 2,
       'screens/docs-upload-form/index.tsx': 2,
       'screens/edit-profile/index.tsx': 1, // #194 R6
+      'screens/food/index.tsx': 2, // #200 R9
       'screens/forgot/index.tsx': 3,
       'screens/geofence-editor/index.tsx': 3, // #189 R13
       'screens/geofences/index.tsx': 2, // #189 R7
