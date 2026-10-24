@@ -4774,16 +4774,16 @@ describe('#152 R5: la Home envuelve cada bloque en su entrada escalonada', () =>
     }
   });
 
-  it('escalona las entradas cada 60 ms en el orden de los bloques (enmendado por #190 R6)', async () => {
+  it('escalona las entradas cada 60 ms en el orden de los bloques (enmendado por #190 R6) (enmendado por #198 R6)', async () => {
     await renderMotionHome();
     for (const [id, delay] of [
       ['home-entrance-pingo', 0], // (enmendado por #190 R6)
-      ['home-entrance-summary', 60],
-      ['home-entrance-collar', 120],
-      ['home-entrance-quick-actions', 180],
-      ['home-entrance-weekly', 240],
-      ['home-entrance-reminders', 300],
-      ['home-entrance-last-position', 360],
+      ['home-entrance-summary', 120],
+      ['home-entrance-collar', 180],
+      ['home-entrance-quick-actions', 240],
+      ['home-entrance-weekly', 300],
+      ['home-entrance-reminders', 360],
+      ['home-entrance-last-position', 420],
     ] as const) {
       jest.mocked(withDelay).mockClear();
       screen.getByTestId(id).props.entering({});
@@ -5681,7 +5681,7 @@ describe('#190 R4: Pingo usa su pose decorativa de 56 px', () => {
 describe('#190 R6: los índices son fijos aunque falte un bloque', () => {
   beforeEach(setupHomeMotion);
 
-  it('conserva los huecos del collar sin última posición y de la actividad ausente', async () => {
+  it('conserva los huecos del collar sin última posición y de la actividad ausente (enmendado por #198 R6)', async () => {
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
     mockGetDailyActivity.mockResolvedValue({ kind: 'error' });
     await renderHome();
@@ -5689,9 +5689,9 @@ describe('#190 R6: los índices son fijos aunque falte un bloque', () => {
     expect(screen.queryByTestId('home-entrance-weekly')).toBeNull();
     expect(screen.queryByTestId('home-entrance-last-position')).toBeNull();
     for (const [id, delay] of [
-      ['home-entrance-pingo', 0], ['home-entrance-summary', 60],
-      ['home-entrance-collar', 120], ['home-entrance-quick-actions', 180],
-      ['home-entrance-reminders', 300],
+      ['home-entrance-pingo', 0], ['home-entrance-summary', 120],
+      ['home-entrance-collar', 180], ['home-entrance-quick-actions', 240],
+      ['home-entrance-reminders', 360],
     ] as const) {
       jest.mocked(withDelay).mockClear();
       screen.getByTestId(id).props.entering({});
@@ -6150,5 +6150,50 @@ describe('#198 R5: accesos rápidos del canvas', () => {
     expect(icon.props.size).toBe(26);
     expect(icon.props.color).toBe(iconInk);
     expect(within(tile).getByText(label).props.className).toBe(`text-13 font-bold ${ink}`);
+  });
+});
+
+describe('#198 R6: retardos de entrada del canvas', () => {
+  beforeEach(setupHomeMotion);
+
+  it('#198 R6 escalona los bloques con los retardos del canvas', async () => {
+    await renderMotionHome();
+    const delays = [
+      ['home-entrance-summary', 120], ['home-entrance-collar', 180],
+      ['home-entrance-quick-actions', 240], ['home-entrance-weekly', 300],
+      ['home-entrance-reminders', 360], ['home-entrance-last-position', 420],
+    ] as const;
+    for (const [id, delay] of delays) {
+      jest.mocked(withDelay).mockClear();
+      screen.getByTestId(id).props.entering({});
+      expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([delay, delay]);
+    }
+    mockUseReducedMotion.mockReturnValue(true);
+    await screen.rerender(<HomeScreen />);
+    for (const [id] of delays) expect(screen.getByTestId(id).props.entering).toBeUndefined();
+  });
+
+  it('#198 R6 conserva el hueco de cada índice aunque falte un bloque', async () => {
+    for (const withoutDevice of [true, false]) {
+      mockGetPet.mockResolvedValue(withoutDevice ? { kind: 'ok', pet: makePet() } : { kind: 'error' });
+      mockGetDailyActivity.mockResolvedValue(withoutDevice ? { kind: 'error' } : {
+        kind: 'ok', days: [makeDay()], weekComparison: { distanceM: null, activeMinutes: null, walkCount: null },
+      });
+      const view = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
+      await screen.findByTestId(withoutDevice ? 'summary-note' : 'pet-hero-error');
+      await screen.findByTestId(withoutDevice ? 'collar-status' : 'weekly-activity-card');
+      expect(screen.queryByTestId('home-entrance-last-position') === null).toBe(true);
+      const delays: [string, number][] = [
+        ['home-entrance-summary', 120], ['home-entrance-quick-actions', 240], ['home-entrance-reminders', 360],
+        withoutDevice ? ['home-entrance-collar', 180] : ['home-entrance-weekly', 300],
+      ];
+      expect(screen.queryByTestId(withoutDevice ? 'home-entrance-weekly' : 'home-entrance-collar') === null).toBe(true);
+      for (const [id, delay] of delays) {
+        jest.mocked(withDelay).mockClear();
+        screen.getByTestId(id).props.entering({});
+        expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([delay, delay]);
+      }
+      await view.unmount();
+    }
   });
 });
