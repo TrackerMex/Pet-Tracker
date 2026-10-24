@@ -37,7 +37,8 @@ import {
   TABULAR_NUMS,
 } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
-import { MOTION_FEEDBACK_MS, MOTION_TRANSITION_MS } from '../../theme/motion';
+import { MOTION_FEEDBACK_MS, MOTION_TOAST_FADE_MS, MOTION_TOAST_DELAY_MS } from '../../theme/motion';
+import { useShadows } from '../../theme/shadows';
 import { civilTodayIso } from '../../utils/civil-today-iso';
 import { monthlyWeightDelta } from '../../utils/monthly-weight-delta';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
@@ -71,8 +72,8 @@ function isWeightsError(state: WeightsState): boolean {
 
 function WeightLogContent({ petId }: { petId: string }) {
   const chunkyLip = useChunkyLip();
-  const [success, danger, muted, accentStrong] = useThemeColors([
-    'success',
+  const shadows = useShadows();
+  const [danger, muted, accentStrong] = useThemeColors([
     'danger',
     'muted',
     'accent-strong',
@@ -370,13 +371,14 @@ function WeightLogContent({ petId }: { petId: string }) {
       {toastVisible ? (
         <Animated.View
           testID="weight-toast"
-          entering={FadeIn.duration(MOTION_TRANSITION_MS)}
+          entering={FadeIn.duration(MOTION_TOAST_FADE_MS).delay(MOTION_TOAST_DELAY_MS)}
           exiting={FadeOut.duration(MOTION_FEEDBACK_MS)}
-          className="absolute top-4 flex-row items-center gap-2 self-center rounded-full border border-border bg-surface px-4 py-2.5 shadow-sm"
+          className="absolute flex-row items-center gap-2 self-center rounded-full border border-border bg-surface px-4 py-2.5"
+          style={[{ top: insets.top + 42 }, shadows.toast]}
           pointerEvents="none"
           accessibilityLiveRegion="polite"
         >
-          <Check size={16} color={success} />
+          <Check size={16} strokeWidth={2.6} color={accentStrong} />
           <Text className="text-sm font-semibold text-foreground">
             {t('weightLog.weightLogged')}
           </Text>
