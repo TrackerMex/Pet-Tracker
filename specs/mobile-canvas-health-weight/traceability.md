@@ -12,30 +12,32 @@ requisito.
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | WL, LY::`#199 R1: …` | pendiente |
-| R2 | WL::`#199 R2: …` | pendiente |
-| R3 | WL::`#199 R3: …` | pendiente |
-| R4 | WL::`#199 R4: …` | pendiente |
-| R5 | WC, DT::`#199 R5: …` | pendiente |
-| R6 | WC::`#199 R6: …` | pendiente |
-| R7 | WL, PCF::`#199 R7: …` | pendiente |
-| R8 | WL::`#199 R8: …` | pendiente |
-| R9 | WL, CTA::`#199 R9: …` | pendiente |
-| R10 | WL, CC::`#199 R10: …` | pendiente |
-| R11 | DT, WL::`#199 R11: …` | pendiente |
-| R12 | HE::`#199 R12: …` | pendiente |
-| R13 | HE::`#199 R13: …` | pendiente |
-| R14 | HE, DT::`#199 R14: …` | pendiente |
-| R15 | HE::`#199 R15: …` | pendiente |
-| R16 | HE, PCF::`#199 R16: …` | pendiente |
-| R17 | HE::`#199 R17: …` | pendiente |
-| R18 | HE::`#199 R18: …` | pendiente |
-| R19 | HE, CC, PCF::`#199 R19: …` | pendiente |
-| R20 | HE::`#199 R20: …` | pendiente |
-| R21 | HE::`#199 R21: …` | pendiente |
-| R22 | WL::`#199 R22: …` | pendiente |
-| R23 | WL::`#199 R23: …` | pendiente |
-| R24 | CF::`#199 R24: …` | pendiente |
-| R25 | UL::`#199 R25: …` | pendiente |
-| R26 | CF::`#199 R26: …` | pendiente |
-| R27 | CF, DD::`#199 R27: …`; MT::`no exporta nada más (enmendado por #199 R27)` | pendiente |
+| R1 | WL::`#199 R1 pinta weight-log-header como primer hijo del scroll con el título de weightLog.weightLog`; WL::`#199 R1 sin historial la vuelta lleva a /health`; LY::`#199 R1 weight-log declara solo headerShown false` | `6b1d1578 feat(#199): R1 render the weight log header inside its scroll`; `e79ece38 refactor(#199): R1 drop the unused translator from the root stack` |
+| R2 | WL::`#199 R2 el scroll usa margen 24, inset superior + 8, inferior + 32 y gap 14` | `e79352ef feat(#199): R2 align weight scroll and keyboard metrics` |
+| R3 | WL::`#199 R3 weight-chart-card es un View rounded-24 bg-surface-secondary p-4 gap-2 con esquina continua`; WL::`#199 R3 con registros el scroll ordena cabecera, gráfica, formulario e historial`; WL::`#199 R3 la tarjeta entra con RiseIn sin retraso` | `12549c86 feat(#199): R3 use the canvas chart surface and entrance` |
+| R4 | WL::`#199 R4 la cifra usa text-34 font-black text-foreground`; WL::`#199 R4 delta %s pinta %s sin icono` | `dcccf32e feat(#199): R4 match the current weight and monthly delta` |
+| R5 | WC::`#199 R5 pinta viewBox 0 0 310 110 a 110 de alto sin degradado`; WC::`#199 R5 pinta la rejilla de tres líneas en border`; WC::`#199 R5 normaliza 10, 12 y 11 kg a (0,80), (155,40) y (310,60)`; WC::`#199 R5 con pesos iguales la línea va a y 60`; WC::`#199 R5 strokeDasharray mide la polilínea real`; WC::`#199 R5 la línea sigue entera a los 199 ms y llega a 0 a los 1400 ms`; WC::`#199 R5 un solo Circle en el último punto con radio 5`; WC::`#199 R5 el punto sigue oculto a los 1299 ms, llega a radio 5.4 a los 1540 y a 5 a los 1700`; WC::`#199 R5 rotula los seis meses de la ventana`; WC::`#199 R5 deja fuera el registro del 2025-09-30 y conserva el del 2025-10-01`; WC::`#199 R5 se anuncia como Peso de los últimos 6 meses`; WC::`#199 R5 chartMonths de %s es %j`; WC::`#199 R5 bajo reduce motion la línea y el punto salen completos`; DT::`#199 R5 %s en %s se lee %s` | `cfa97a6d feat(#199): R5 format chart months using local calendar dates`; `8a1fe2c9 feat(#199): R5 render the six-month weight chart from canvas`; `52d11253 test(#199): R5 install chart theme tokens on the rendered module` |
+| R6 | WC::`#199 R6 pinta viewBox 0 0 310 56 a 56 de alto sin rejilla, área ni meses`; WC::`#199 R6 normaliza 10 y 12 kg a y 44 y 18, y pesos iguales a 31`; WC::`#199 R6 la línea sigue entera a los 299 ms y llega a 0 a los 1500 ms`; WC::`#199 R6 el punto final sale con radio 5 y opacidad 1 en el primer frame`; WC::`#199 R6 pinta registros de hace más de seis meses`; WC::`#199 R6 queda oculta a la accesibilidad` | `0c84df13 feat(#199): R6 add the compact weight chart variant` |
+| R7 | WL::`#199 R7 weight-form es un Card flat con gap-2.5 py-3.5 y entra a los 80 ms`; WL::`#199 R7 peso y fecha comparten la primera fila y la condición va debajo`; WL::`#199 R7 las tres etiquetas pintan text-13 font-extrabold con su literal`; WL::`#199 R7 los tres inputs llevan h-12 rounded-xl bg-default` | `f4094949 feat(#199): R7 arrange the weight form in two columns` |
+| R8 | WL::`#199 R8 el envío es el último hijo de weight-form y conserva h-14 rounded-16 bg-accent` | `9083ca41 test(#199): R8 preserve the final weight submit action` |
+| R9 | WL::`#199 R9 pinta Historial con text-17 font-extrabold antes de las filas`; WL::`#199 R9 cada fila es un View con borde superior y py-2.5`; WL::`#199 R9 la fila %i entra a los %i ms`; WL::`#199 R9 sin registros no pinta Historial` | `9d4742d4 feat(#199): R9 render the weight history as staggered rows` |
+| R10 | WL::`#199 R10 la cifra pinta text-15 font-extrabold y anida el delta en text-13`; WL::`#199 R10 sin condición corporal no pinta la línea CC` | `15406f7a feat(#199): R10 render inline history deltas with shared tones` |
+| R11 | WL::`#199 R11 la fecha %s se lee %s en text-13 font-semibold`; DT::`#199 R11 %s en %s se lee %s` | `2936b2b7 feat(#199): R11 format local day and short month`; `4a4b19a8 feat(#199): R11 format short civil dates in weight history` |
+| R12 | HE::`#199 R12 con mascotas, health-header y health-content son los únicos hijos del scroll`; HE::`#199 R12 health-header es una fila justify-between que empieza por health-title` | `97bd45ca feat(#199): R12 group the health title in its header row` |
+| R13 | HE::`#199 R13 el selector va en health-header tras health-title en su variante avatars` | `18f4c4e4 feat(#199): R13 move the pet avatars into the health header` |
+| R14 | HE::`#199 R14 next-vaccine-card es un View rounded-24 sobre el pastel ámbar con esquina continua`; HE::`#199 R14 el tile es size-13 rounded-16 bg-surface con la jeringa a 26 en warning`; HE::`#199 R14 caps, nombre y fecha llevan sus clases exactas`; HE::`#199 R14 la fecha dice %s`; HE::`#199 R14 entra con RiseIn sin retraso`; DT::`#199 R14 %s en %s se lee %s` | `89cf8a54 feat(#199): R14 format local day and long month`; `79817129 feat(#199): R14 render the amber next dose panel with relative dates` |
+| R15 | HE::`#199 R15 Vacunas es un h2 de text-lg font-extrabold sin icono`; HE::`#199 R15 vaccines-section separa sus hijos con gap-2.5` | `0a2afe7c feat(#199): R15 render the vaccines section heading` |
+| R16 | HE::`#199 R16 cada vacuna es un Card flat con py-3.5 y nombre text-15 font-extrabold`; HE::`#199 R16 la fila %i entra a los %i ms` | `2ba498c2 feat(#199): R16 apply flat vaccine rows with capped entrance delays` |
+| R17 | HE::`#199 R17 dice Aplicada y Próxima en una línea`; HE::`#199 R17 una dosis vencida pinta Próxima en text-danger`; HE::`#199 R17 una dosis vigente no pinta text-danger`; HE::`#199 R17 sin próxima dosis solo dice Aplicada` | `1f1997f5 feat(#199): R17 format vaccine dates in one inline subtitle` |
+| R18 | HE::`#199 R18 weight-card es un View rounded-24 bg-surface-secondary sin borde con esquina continua`; HE::`#199 R18 la cabecera pone Peso y la cifra a la izquierda y la píldora a la derecha`; HE::`#199 R18 variación %s usa %s y %s`; HE::`#199 R18 pasa variant mini y el historial entero a WeightChart`; HE::`#199 R18 el enlace es rounded-14 bg-surface con etiqueta text-15 y chevron de 18`; HE::`#199 R18 entra con RiseIn a los 260 ms` | `e9fde020 feat(#199): R18 render the compact health weight summary` |
+| R19 | HE::`#199 R19 la carga pinta una fila flat con tile y dos barras`; HE::`#199 R19 sin vacunas pinta el aviso en text-15 leading-body text-muted`; HE::`#199 R19 con error pinta el aviso en text-danger con role alert y conserva Reintentar` | `8e0122df feat(#199): R19 render the vaccine skeleton row and state messages` |
+| R20 | HE::`#199 R20 sin registros conserva envoltorio, Peso, aviso y enlace`; HE::`#199 R20 con error pinta el aviso en text-danger con role alert dentro de la tarjeta` | `0f337099 feat(#199): R20 style the empty and failed health weight messages` |
+| R21 | HE::`#199 R21 la carga pinta dos círculos de 40 en fila`; HE::`#199 R21 el error pinta el aviso en text-15 leading-body text-danger con role alert` | `22aef6ba feat(#199): R21 render pet loading circles and accessible errors` |
+| R22 | WL::`#199 R22 en carga pinta cabecera, formulario y tres filas esqueleto`; WL::`#199 R22 cada fila esqueleto lleva tile y tres barras con sus clases`; WL::`#199 R22 la fila esqueleto %i entra a los %i ms`; WL::`#199 R22 sin registros pinta el aviso bajo el formulario sin tarjeta ni Historial`; WL::`#199 R22 con error pinta el aviso con role alert y Reintentar bajo el formulario` | `c2ed2597 feat(#199): R22 render shaped weight loading rows and state messages` |
+| R23 | WL::`#199 R23 el toast es una píldora con borde, sombra toast y top inset + 42`; WL::`#199 R23 el check es de 16 en accent-strong y el texto es el de weightLog.weightLogged`; WL::`#199 R23 el fuente declara FadeIn.duration(MOTION_TOAST_FADE_MS).delay(MOTION_TOAST_DELAY_MS)` | `dcb2ac5e feat(#199): R23 apply the inset toast shadow and delayed fade` |
+| R24 | CF::`#199 R24 la carta lleva la Enmienda #199 una sola vez con sus frases`; CF::`#199 R24 la spec lleva la casilla de la enmienda` | `5d5f2368 feat(#199): R24 document the health and weight canvas amendment` |
+| R25 | CF::`#199 R25 %s dice %s en es y %s en en` | `b1f972d8 feat(#199): R25 add the health and weight copy to the usage table` |
+| R26 | CF::`#199 R26 %s` | `27ea4073 test(#199): R26 lock the seventeen frozen canvas anchors` |
+| R27 | CF::`#199 R27 global.css declara --text-34: 34px`; CF::`#199 R27 motion.ts exporta las siete constantes con sus valores`; CF::`#199 R27 %s no usa corchetes, StyleSheet.create ni text-accent suelto`; CF::`#199 R27 %s no usa StyleSheet.create`; CF::`#199 R27 %s no pasa text-13, text-15 ni text-17 a Label`; MT::`no exporta nada más` (inventario dev39+7=46) | `f814227d feat(#199): R27 add canvas weight typography and motion timings`; `bc16a538 test(#199): R27 guard health and weight sources and text labels` |
+
+Las filas R8 y R26 no añaden producción: comprueban comportamiento existente y quedan demostradas por sus sondas. Los tokens de R27 preceden a las pantallas; bc16a538 añade las guardas finales. Las enmiendas mecánicas y sus sondas se detallan en progress/impl_mobile-canvas-health-weight.md.
