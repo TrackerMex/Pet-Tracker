@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react';
 import { Text, View } from 'react-native';
 import Animated, { useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AlertCircle, AlertTriangle, Location, Refresh } from 'reicon-react-native';
+import { AlertCircle, AlertTriangle, Location, Plus, Refresh } from 'reicon-react-native';
 import { useUniwind } from 'uniwind';
 
 import { listGeofences } from '../../api/geofences';
@@ -337,8 +337,9 @@ export function MapScreen() {
       ) : null}
 
       {pets.data?.kind === 'ok' && pets.data.pets.length === 0 ? (
-        <View className="flex-1 items-center justify-center p-6 bg-background">
+        <View className="flex-1 items-center justify-center bg-background px-6 pt-15 pb-30">
           <EmptyState
+            variant="hero"
             testID="map-no-pets"
             pose="talk"
             title={t('common.noPetsYet')}
@@ -347,6 +348,7 @@ export function MapScreen() {
               label: t('profile.addPet'),
               onPress: () => router.push('/pets/add'),
             }}
+            actionIcon={<Plus size={20} strokeWidth={2.8} color={accentForeground} style={{ marginRight: 8 }} testID="map-no-pets-action-icon" />}
           />
         </View>
       ) : null}
