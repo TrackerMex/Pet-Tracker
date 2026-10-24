@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Check, ChevronRight, Clock, HeartPulse, Syringe } from 'reicon-react-native';
+import { Check, ChevronRight, Clock, Syringe } from 'reicon-react-native';
 
 import { listVaccines, listWeights } from '../../api/health-records';
 import { listPets, type PetsState } from '../../api/pets';
@@ -132,13 +132,10 @@ export function HealthScreen() {
             ) : null}
 
             {selectedPetId ? (
-              <View testID="vaccines-section" className="gap-3">
-                <View className="flex-row items-center gap-2">
-                  <HeartPulse size={20} color={muted} />
-                  <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-                    {t('health.vaccines')}
-                  </Text>
-                </View>
+              <View testID="vaccines-section" className="gap-2.5">
+                <Text testID="vaccines-title" accessibilityRole="header" className="mt-1 text-lg font-extrabold text-foreground">
+                  {t('health.vaccines')}
+                </Text>
 
                 {vaccines.data === undefined || vaccines.isRefetching ? (
                   <Skeleton
