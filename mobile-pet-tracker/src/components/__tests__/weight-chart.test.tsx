@@ -35,10 +35,6 @@ const mockUseSharedValue = jest.fn();
 const mockWithDelay = jest.fn((_delay: number, animation: unknown) => animation);
 const mockWithSequence = jest.fn((...animations: unknown[]) => animations[animations.length - 1]);
 
-jest.mock('../../theme/use-theme-colors', () => ({
-  useThemeColors: (tokens: readonly string[]) => tokens,
-}));
-
 jest.mock('react-native-reanimated', () => {
   const actual = jest.requireActual<typeof import('react-native-reanimated')>(
     'react-native-reanimated',
@@ -59,11 +55,16 @@ jest.mock('react-native-reanimated', () => {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  // #199 R5: apply tokens to the module the chart actually renders with.
+  const colors = jest.requireActual<typeof import('../../theme/use-theme-colors')>('../../theme/use-theme-colors');
+  jest.spyOn(colors, 'useThemeColors').mockImplementation((tokens) => tokens.map(token => token));
   mockUseReducedMotion.mockReturnValue(false);
   mockWithTiming.mockImplementation((value) => value);
   mockWithDelay.mockImplementation((_delay, animation) => animation);
   mockWithSequence.mockImplementation((...animations) => animations[animations.length - 1]);
 });
+
+afterEach(() => jest.restoreAllMocks());
 
 function makeWeight(overrides: Partial<WeightEntry> = {}): WeightEntry {
   return {
