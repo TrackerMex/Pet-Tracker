@@ -1667,18 +1667,20 @@ describe('#168 R6 (enmendado por #173 R10): los accesos son tiles pastel en reji
 describe('#173 R12: entrada escalonada', () => {
   beforeEach(setupProfile168);
 
-  it('con mascota envuelve cuatro bloques con índices fijos (enmendado por #196 R1)', async () => {
+  it('con mascota envuelve cuatro bloques con índices fijos (enmendado por #196 R1, R6)', async () => {
     await renderProfile();
     await screen.findByTestId('pet-info-card');
     expect(Object.fromEntries(mockHomeEntrance.mock.calls.map(([props]) => [props.testID, props.index]))).toEqual({
       'profile-entrance-info': 1,
       'profile-entrance-links': 2,
       'profile-entrance-account': 3,
+      'profile-entrance-sign-out': 4,
     });
     for (const [id, child] of [
       ['profile-entrance-info', 'pet-info-card'],
       ['profile-entrance-links', 'profile-links'],
       ['profile-entrance-account', 'me-card'],
+      ['profile-entrance-sign-out', 'profile-sign-out'],
     ]) {
       const entrance = screen.getByTestId(id);
       expect(entrance.children).toHaveLength(1);
@@ -1686,7 +1688,7 @@ describe('#173 R12: entrada escalonada', () => {
     }
   });
 
-  it('sin mascota conserva los índices 2 y 3 para links y cuenta', async () => {
+  it('sin mascota conserva los índices 2 y 3 para links y cuenta (enmendado por #196 R6)', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
     mockGetPet.mockReturnValue(pending<PetState>());
     await renderProfile();
@@ -1694,12 +1696,14 @@ describe('#173 R12: entrada escalonada', () => {
     expect(Object.fromEntries(mockHomeEntrance.mock.calls.map(([props]) => [props.testID, props.index]))).toEqual({
       'profile-entrance-links': 2,
       'profile-entrance-account': 3,
+      'profile-entrance-sign-out': 4,
     });
     expect(screen.queryByTestId('profile-entrance-hero')).toBeNull();
     expect(screen.queryByTestId('profile-entrance-info')).toBeNull();
     for (const [id, child] of [
       ['profile-entrance-links', 'profile-links'],
       ['profile-entrance-account', 'me-card'],
+      ['profile-entrance-sign-out', 'profile-sign-out'],
     ]) {
       const entrance = screen.getByTestId(id);
       expect(entrance.children).toHaveLength(1);
@@ -2030,11 +2034,11 @@ describe('#184 R4: cerrar sesión conserva su botón danger-soft', () => {
     mockGetPet.mockResolvedValue({ kind: 'ok', pet });
   });
 
-  it('#184 R4: conserva la variante y las clases', async () => {
+  it('#184 R4: conserva la variante y las clases (enmendado por #196 R6)', async () => {
     await renderProfile();
     await screen.findByTestId('profile-sign-out');
 
-    expect(screen.getByTestId('profile-sign-out').props.className).toBe('pressable-feedback__root button__root button__root--variant-danger-soft button__root--size-md rounded-xl bg-danger-soft');
+    expect(screen.getByTestId('profile-sign-out').props.className).toBe('pressable-feedback__root button__root button__root--variant-danger-soft button__root--size-md h-13 rounded-14 bg-category-rose');
   });
 });
 
@@ -2429,5 +2433,39 @@ describe('#196 R5: aviso ámbar de notificaciones bloqueadas', () => {
     await screen.findByTestId('profile-pet-card');
     expect(screen.queryByTestId('profile-entrance-notice')).toBeNull();
     expect(screen.queryByTestId('notifications-blocked-notice')).toBeNull();
+  });
+});
+
+
+describe('#196 R6: cerrar sesión como el artboard de cuenta', () => {
+  beforeEach(() => {
+    setupProfile168();
+    mockSignOut.mockResolvedValue();
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: mockSignOut } satisfies AuthContextValue);
+  });
+
+  it('#196 R6: Cerrar sesión pinta la píldora rosa de 52 con texto de 15', async () => {
+    await renderProfile();
+    const button = await screen.findByTestId('profile-sign-out');
+    const content = screen.getByTestId('profile-content');
+    const entrance = screen.getByTestId('profile-entrance-sign-out');
+    expect(profileChild(content, content.children.length - 1)).toBe(entrance);
+    expect(entrance.props.index).toBe(4);
+    expect(entrance.children).toHaveLength(1);
+    expect(profileChild(entrance, 0)).toBe(button);
+    expect(button.props.className).toBe('pressable-feedback__root button__root button__root--variant-danger-soft button__root--size-md h-13 rounded-14 bg-category-rose');
+    expect(button.children).toHaveLength(1);
+    const label = within(button).getByText('Cerrar sesión');
+    expect(profileChild(button, 0)).toBe(label);
+    expect(label.props.className).toBe('text-15 font-extrabold text-danger');
+    expect(label.props.className).not.toContain('button__label');
+    expect(JSON.stringify(button.props.style ?? [])).not.toContain('boxShadow');
+  });
+
+  it('#196 R6: Cerrar sesión llama a signOut una vez', async () => {
+    await renderProfile();
+    const button = await screen.findByTestId('profile-sign-out');
+    await fireEvent.press(button);
+    expect(mockSignOut).toHaveBeenCalledTimes(1);
   });
 });
