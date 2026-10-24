@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { AlertTriangle, Trash } from 'reicon-react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,6 +12,7 @@ import { GEOFENCE_MAX_PER_PET, deleteGeofence, listGeofences, setGeofenceActive,
 import { getPet } from '../../api/pets';
 import { geofenceKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
+import { ConfirmDialog } from '../../components/confirm-dialog';
 import { ToggleSwitch } from '../../components/toggle-switch';
 import { EmptyState } from '../../components/empty-state';
 import { ScreenHeader } from '../../components/screen-header';
@@ -32,6 +33,7 @@ export function GeofencesScreen({ petId }: { petId: string }) {
   const t = useTranslate();
   const insets = useSafeAreaInsets();
   const [busy, setBusy] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Geofence | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const pet = useQuery({
     queryKey: petKeys.detail(petId),
@@ -74,18 +76,11 @@ export function GeofencesScreen({ petId }: { petId: string }) {
     }
   }
 
-  function confirmDelete(geofence: Geofence) {
-    Alert.alert(
-      t('geofences.deleteTitle', { name: geofence.name }),
-      t('geofences.deleteBody'),
-      [
-        { text: t('geofences.cancel'), style: 'cancel' },
-        {
-          text: t('geofences.delete'), style: 'destructive',
-          onPress: () => void write(() => deleteGeofence(baseUrl, token ?? '', petId, geofence.id)),
-        },
-      ],
-    );
+  function deleteConfirmed() {
+    if (!deleteTarget) return;
+    const id = deleteTarget.id;
+    setDeleteTarget(null);
+    void write(() => deleteGeofence(baseUrl, token ?? '', petId, id));
   }
 
   return (
@@ -150,7 +145,7 @@ export function GeofencesScreen({ petId }: { petId: string }) {
                 accessibilityLabel={t('geofences.deleteLabel', { name: geofence.name })}
                 className={`size-11 items-center justify-center rounded-xl ${CATEGORY_SLOTS.rose.surface}`}
                 style={CONTINUOUS_CORNER} disabled={busy}
-                onPress={() => confirmDelete(geofence)}
+                onPress={() => setDeleteTarget(geofence)}
               >
                 <Trash size={20} color={danger} />
               </Pressable>
@@ -194,6 +189,10 @@ export function GeofencesScreen({ petId }: { petId: string }) {
       {actionError ? (
         <Text testID="geofences-action-error" selectable className="text-danger">{actionError}</Text>
       ) : null}
+      <ConfirmDialog testID="geofences-delete-dialog" visible={deleteTarget !== null}
+        title={t('geofences.deleteTitle', { name: deleteTarget?.name ?? '' })} body={t('geofences.deleteBody')}
+        cancelLabel={t('geofences.cancel')} confirmLabel={t('geofences.delete')}
+        onCancel={() => setDeleteTarget(null)} onConfirm={deleteConfirmed} />
     </ScrollView>
   );
 }
