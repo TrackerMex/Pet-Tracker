@@ -921,3 +921,18 @@ Detalle y tests en `specs/mobile-canvas-nutrition/requirements.md` (R1 a R17).
 - **`rise` en Salud y Peso (#199).** `RiseIn` (`components/rise-in.tsx`) aplica `MOTION_RISE_TIMING` y `MOTION_RISE_OFFSET_Y` a tarjetas y filas con los retrasos del canvas: Salud 0 (próxima dosis), `80 + 60 · min(i, 2)` (vacunas) y 260 (peso); Peso 0 (gráfica), 80 (formulario), `140 + 60 · min(i, 2)` (historial) y `60 · i` (esqueletos). Con reduce motion no hay entrada.
 - **`draw` y `pop` de la gráfica de peso (#199).** La línea se dibuja con `MOTION_DRAW_TIMING` (1200 ms, `Easing.bezier(0, 0, 0.58, 1)`) tras `MOTION_DRAW_DELAY_FULL_MS` (200) en Peso o `MOTION_DRAW_DELAY_MINI_MS` (300) en Salud; el último punto de Peso hace `pop` (0.6 → 1.08 → 1 en `MOTION_POINT_POP_MS`, 400) a los `MOTION_POINT_POP_DELAY_MS` (1300). Con reduce motion salen completos.
 - **Fundido del toast de Peso (#199).** `FadeIn` de `MOTION_TOAST_FADE_MS` (300) tras `MOTION_TOAST_DELAY_MS` (400), con la sombra `useShadows().toast`.
+
+## Enmienda #203 — Labio rojo en los destructivos del canvas
+
+Fecha: 2026-10-23. Feature #203 `mobile-canvas-collar-alerts`.
+
+> **Enmienda #203 — Labio rojo en los destructivos del canvas.** Los botones
+> destructivos que el canvas dibuja con labio (`device-unpair` y
+> `pairing-unpair-confirm`) llevan `style={chunkyLip.danger}` (`0 4px 0`
+> `--color-lip-danger`). El resto de destructivos `bg-danger` sigue en «Sin
+> labio» (§13) mientras su artboard no dibuje labio.
+
+Detalle y tests en `specs/mobile-canvas-collar-alerts/requirements.md` (R6 y R7).
+
+- [X] Enmienda #203 aprobada por humano
+  Firma delegada en el leader por mandato del humano del 2026-10-23 (`progress/plan_canvas-parity-2026-10-23.md` §4), igual que la de `specs/mobile-canvas-collar-alerts/requirements.md` § Aprobación.

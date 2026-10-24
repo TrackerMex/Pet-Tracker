@@ -448,7 +448,7 @@ export function PairingScreen() {
         ) : null}
 
         {phase === 'idle' && selectedPet?.device ? (
-          <View className="gap-4">
+          <View className="gap-4" style={{ flexGrow: 1 }}>
             <RiseIn delayMs={0} testID="device-title-rise">
               <Text
                 testID="device-title"
@@ -555,13 +555,16 @@ export function PairingScreen() {
               ) : null}
             </RiseIn>
 
+            <View testID="device-unpair-spacer" className="flex-1" />
+
             <Button
               testID="device-unpair"
-              className="min-h-11 w-full rounded-xl bg-danger"
+              className="h-13.5 w-full rounded-16 bg-danger"
+              style={chunkyLip.danger}
               isDisabled={releasing}
               onPress={confirmRelease}
             >
-              <Button.Label className="font-bold text-accent-foreground">
+              <Button.Label className="text-base font-extrabold text-accent-foreground">
                 {t('pairing.unpairCollar')}
               </Button.Label>
             </Button>
