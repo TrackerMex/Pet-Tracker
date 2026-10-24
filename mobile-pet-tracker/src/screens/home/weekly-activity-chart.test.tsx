@@ -2359,3 +2359,23 @@ describe('#198 R7: tarjeta semanal del canvas', () => {
     expect(result.getByText('últimos 7 días').props.className).toBe('text-11 text-muted');
   });
 });
+
+describe('#198 R8: selector y tooltip del canvas', () => {
+  it('#198 R8 pinta la métrica elegida con 12/800 en accent-strong', async () => {
+    const result = await renderChart([makeDay()]);
+    expect(result.getByTestId('weekly-activity-metric-label-activeMinutes').props.className).toBe('shrink text-xs font-extrabold text-accent-strong');
+    expect(result.getByTestId('weekly-activity-metric-selected', { includeHiddenElements: true }).props.size).toBe(13);
+  });
+
+  it.each(['distanceM', 'walkCount'])('#198 R8 pinta las otras dos con 12/600 en muted', async metric => {
+    const result = await renderChart([makeDay()]);
+    expect(result.getByTestId(`weekly-activity-metric-label-${metric}`).props.className).toBe('shrink text-xs font-semibold text-muted');
+  });
+
+  it('#198 R8 pinta el valor del tooltip con 800', async () => {
+    const result = await renderChart([makeDay()]);
+    await fireEvent.press(result.getByTestId('weekly-activity-day-2026-09-02'));
+    const children = result.getByTestId('weekly-activity-tooltip').children.filter(child => typeof child !== 'string');
+    expect(children[1].props.className).toBe('text-xs font-extrabold text-foreground');
+  });
+});
