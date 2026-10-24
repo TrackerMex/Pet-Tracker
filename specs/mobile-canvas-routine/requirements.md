@@ -460,6 +460,8 @@ delta por R en la fila.
 - Siguen igual en `9ba176f1`: § Base medida (B01–B54), la razón de `#152 R9` en E2 (Inicio sigue importando `home-entrance`), `design-drift` › `text-17` (reminders sigue en la lista), I1 = 0 y `package.json`/`bun.lock`.
 - Ningún requisito de comportamiento cambia. Tampoco cambia ningún fichero de producción ni la lista cerrada.
 
+**E4 (cuenta final de tests), firmada.** La fórmula de `tasks.md` § Cuentas restaba cuatro tests (I2 2, I4 1, I37 1), pero son cinco: I24 (R7) saca `screens/reminders/index.tsx` de `warningSites` en `legibility-classnames.test.ts`, y cada sitio de esa lista es una fila de `it.each`. El implementer lo midió en `9bb99892`: 49 `it` nuevos, iguales a los de la spec por requisito, y 5 bajas. La cifra final de jest es **N + 44**, que con N = 5015 da 5059 tests en 147 suites, no N + 45 = 5060. La fila de § Cuentas de `tasks.md` se corrige con la baja de I24. Ningún requisito, ancla ni fichero de producción cambia.
+
 **Regla de recuentos agregados.** Si al llegar a verde una R se pone rojo un `it` que no está en el inventario y ese `it` solo cuenta usos o ficheros de un literal o token, Codex lo enmienda sin parar. Son de este tipo los inventarios cerrados de radios, de `style={CONTINUOUS_CORNER}`, de `text-NN` o de `<Card`, las sumas de copy y los suelos del escáner HeroUI. La condición es que el delta medido sea exactamente el número de usos que el diff de esa R, tal como esta spec la prescribe, añade o retira. La enmienda:
 
 - da a la cifra o a la entrada su término (`// #204 Rn`, o `; #204 Rn: ±k` dentro de un comentario que ya exista);
@@ -513,6 +515,7 @@ gate de implementación: lo cierra la casilla «Smoke de R18» de § Aprobación
   Firma delegada en el leader por mandato del humano del 2026-10-23
   (`progress/plan_canvas-parity-2026-10-23.md` §4, checklist de firma pasada). Firmada el 2026-10-24 tras la auditoría de inventario (337b9809, 572e8887).
   Errata E3 (cifras tras #198 y #199) firmada también por delegación el 2026-10-24 sobre `9ba176f1`.
+  Errata E4 (cuenta final N + 44, baja de I24) firmada también por delegación el 2026-10-24 sobre `9bb99892`.
 - [x] Enmienda #204 de la carta (texto canónico en design.md § Bloque «Enmienda #204») aprobada por humano (fecha: 2026-10-23)
   Firma delegada, mismo mandato.
 - [ ] Smoke de R18 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)

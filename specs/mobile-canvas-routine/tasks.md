@@ -85,7 +85,7 @@ mergeó antes, se re-mide la base y se le suma el mismo delta.
 | `grep -cF "queryByTestId('add-reminder-back')" mobile-pet-tracker/src/screens/add-reminder/index.test.tsx` (I38) | 1 | −1 (R10) | 0 |
 | `grep -cF 'mockHomeEntrance' mobile-pet-tracker/src/screens/docs-upload-form/index.test.tsx` | 2 | −2 (R14, commit propio tras el verde) | 0 |
 | `bunx jest --runTestsByPath src/__tests__/heroui-text-size-merge.test.ts` (en `mobile-pet-tracker`); cifras del escáner `#187 R1`: ficheros con hero / `heroElements` / `cardElements` / `classNameElements`, medidas con una réplica del escáner | 32 / 223 / 33 / 174 (suelos 28 / 197 / 33 / 163) | −1 hero y −1 `className` en R8 y lo mismo en R9 (los dos `<Button.Label>` de Recordatorios pasan a `Text`); `<Card` y ficheros con hero, sin cambio | verde; 32 / 221 / 33 / 172 |
-| Tests de jest (`bunx jest` en `mobile-pet-tracker`) | N medido por el implementador | +49 `it` nuevos (R1 3, R2 2, R3 1, R4 3, R5 5, R6 1, R7 1, R8 1, R9 1, R10 4, R11 1, R12 5, R13 4, R14 1, R15 11, R16 1, R17 4) − 3 filas (I2 2, I4 1) − 1 `it` (I37) − los `it` de `#197 R20` (I1; 0 desde #200, E2) | N + 45 |
+| Tests de jest (`bunx jest` en `mobile-pet-tracker`) | N medido por el implementador | +49 `it` nuevos (R1 3, R2 2, R3 1, R4 3, R5 5, R6 1, R7 1, R8 1, R9 1, R10 4, R11 1, R12 5, R13 4, R14 1, R15 11, R16 1, R17 4) − 4 filas (I2 2, I4 1, I24 1; E4) − 1 `it` (I37) − los `it` de `#197 R20` (I1; 0 desde #200, E2) | N + 44 (E4) |
 | Suites de jest | M (se re-mide en H0) | +1 (`routine-canvas-fidelity.test.ts`) | M + 1 |
 
 El resto de anclas: requirements.md § Base medida, columna «Después».
