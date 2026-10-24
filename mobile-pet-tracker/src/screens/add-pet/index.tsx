@@ -73,12 +73,12 @@ function OptionalChip<T extends string | boolean>({
       hitSlop={TOUCH_SLOP}
       className={
         selected
-          ? 'rounded-full border border-accent bg-accent-soft px-3 py-2'
-          : 'rounded-full border border-border bg-default px-3 py-2'
+          ? 'h-11 justify-center rounded-full border border-accent bg-tab-pill px-4'
+          : 'h-11 justify-center rounded-full border border-border bg-default px-4'
       }
       onPress={() => onSelect(selected ? null : value)}
     >
-      <Text className="text-sm font-semibold text-foreground">{label}</Text>
+      <Text className={selected ? 'text-sm font-bold text-foreground' : 'text-sm font-semibold text-foreground'}>{label}</Text>
     </Pressable>
   );
 }
@@ -379,65 +379,69 @@ export function AddPetScreen() {
   function renderStep2() {
     return (
       <>
-        <Text className="text-lg font-bold text-foreground">
-          {t('addPet.medicalDetails')}
-        </Text>
+        <RiseIn testID="add-pet-rise-medical" delayMs={0} className="mt-3">
+          <Text className="text-lg font-black text-foreground">
+            {t('addPet.medicalDetails')}
+          </Text>
+        </RiseIn>
 
-        <View className="gap-1.5">
-          <FieldLabel>{t('addPet.age')}</FieldLabel>
-          <View className="flex-row gap-2">
-            {([
-              ['birthDate', t('addPet.birthDate')],
-              ['months', t('addPet.approxMonths')],
-            ] as const).map(([value, label]) => (
+        <RiseIn testID="add-pet-rise-age" delayMs={60}>
+          <View className="gap-1.5">
+            <FieldLabel>{t('addPet.age')}</FieldLabel>
+            <View className="flex-row gap-2">
+              {([
+                ['birthDate', t('addPet.birthDate')],
+                ['months', t('addPet.approxMonths')],
+              ] as const).map(([value, label]) => (
+                <Pressable
+                  key={value}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: ageMode === value }}
+                  testID={`age-mode-${value === 'birthDate' ? 'date' : value}`}
+                  hitSlop={TOUCH_SLOP}
+                  className={
+                    ageMode === value
+                      ? 'h-11 justify-center rounded-full border border-accent bg-tab-pill px-4'
+                      : 'h-11 justify-center rounded-full border border-border bg-default px-4'
+                  }
+                  onPress={() => setAgeMode(value)}
+                >
+                  <Text className={ageMode === value ? 'text-sm font-bold text-foreground' : 'text-sm font-semibold text-foreground'}>{label}</Text>
+                </Pressable>
+              ))}
+            </View>
+            {ageMode === 'birthDate' ? (
               <Pressable
-                key={value}
                 accessibilityRole="button"
-                accessibilityState={{ selected: ageMode === value }}
-                testID={`age-mode-${value === 'birthDate' ? 'date' : value}`}
-                hitSlop={TOUCH_SLOP}
-                className={
-                  ageMode === value
-                    ? 'rounded-full border border-accent bg-accent-soft px-3 py-2'
-                    : 'rounded-full border border-border bg-default px-3 py-2'
-                }
-                onPress={() => setAgeMode(value)}
+                testID="birth-date-field"
+                className="h-12 flex-row items-center gap-2 rounded-xl border-2 border-transparent bg-default px-3.5"
+                style={CONTINUOUS_CORNER}
+                onPress={() => setShowDatePicker(true)}
               >
-                <Text className="text-sm font-semibold text-foreground">{label}</Text>
+                <Calendar size={18} color={muted} />
+                <Text className={`text-15 font-semibold ${birthDate ? 'text-foreground' : 'text-muted'}`}>
+                  {birthDate
+                    ? birthDate.toLocaleDateString(locale)
+                    : t('addPet.selectBirthDate')}
+                </Text>
               </Pressable>
-            ))}
+            ) : (
+              <TextInput
+                testID="approx-age-input"
+                className="h-12 rounded-xl border-2 border-transparent bg-default px-3.5 text-15 font-semibold text-foreground"
+                style={CONTINUOUS_CORNER}
+                inputMode="numeric"
+                maxLength={3}
+                placeholder={t('addPet.months')}
+                placeholderTextColor={muted}
+                value={approxAgeMonths}
+                onChangeText={setApproxAgeMonths}
+              />
+            )}
+            {ageMode === 'birthDate' && <FieldErrorMessage testID="birth-date-field" issue={fieldErrors.birthDate} />}
+            {ageMode === 'months' && <FieldErrorMessage testID="approx-age-input" issue={fieldErrors.approxAgeMonths} />}
           </View>
-          {ageMode === 'birthDate' ? (
-            <Pressable
-              accessibilityRole="button"
-              testID="birth-date-field"
-              className="h-12 flex-row items-center gap-2 rounded-xl border-2 border-transparent bg-default px-3.5"
-              style={CONTINUOUS_CORNER}
-              onPress={() => setShowDatePicker(true)}
-            >
-              <Calendar size={18} color={muted} />
-              <Text className={`text-15 font-semibold ${birthDate ? 'text-foreground' : 'text-muted'}`}>
-                {birthDate
-                  ? birthDate.toLocaleDateString(locale)
-                  : t('addPet.selectBirthDate')}
-              </Text>
-            </Pressable>
-          ) : (
-            <TextInput
-              testID="approx-age-input"
-              className="h-12 rounded-xl border-2 border-transparent bg-default px-3.5 text-15 font-semibold text-foreground"
-              style={CONTINUOUS_CORNER}
-              inputMode="numeric"
-              maxLength={3}
-              placeholder={t('addPet.months')}
-              placeholderTextColor={muted}
-              value={approxAgeMonths}
-              onChangeText={setApproxAgeMonths}
-            />
-          )}
-          {ageMode === 'birthDate' && <FieldErrorMessage testID="birth-date-field" issue={fieldErrors.birthDate} />}
-          {ageMode === 'months' && <FieldErrorMessage testID="approx-age-input" issue={fieldErrors.approxAgeMonths} />}
-        </View>
+        </RiseIn>
 
         {showDatePicker ? (
           <Host>
@@ -456,27 +460,31 @@ export function AddPetScreen() {
           </Host>
         ) : null}
 
-        <View className="gap-1.5">
-          <FieldLabel>{t('addPet.sterilized')}</FieldLabel>
-          <View className="flex-row gap-2">
-            <OptionalChip current={sterilized} label={t('addPet.yes')} testID="sterilized-true" value={true} onSelect={setSterilized} />
-            <OptionalChip current={sterilized} label={t('addPet.no')} testID="sterilized-false" value={false} onSelect={setSterilized} />
+        <RiseIn testID="add-pet-rise-sterilized" delayMs={120}>
+          <View className="gap-1.5">
+            <FieldLabel>{t('addPet.sterilized')}</FieldLabel>
+            <View className="flex-row gap-2">
+              <OptionalChip current={sterilized} label={t('addPet.yes')} testID="sterilized-true" value={true} onSelect={setSterilized} />
+              <OptionalChip current={sterilized} label={t('addPet.no')} testID="sterilized-false" value={false} onSelect={setSterilized} />
+            </View>
           </View>
-        </View>
+        </RiseIn>
 
-        <View className="gap-1.5">
-          <FieldLabel>{t('addPet.microchip')}</FieldLabel>
-          <TextInput
-            testID="microchip-input"
-            className="h-12 rounded-xl border-2 border-transparent bg-default px-3.5 text-15 font-semibold text-foreground"
-            style={CONTINUOUS_CORNER}
-            maxLength={32}
-            placeholder={t('addPet.optional')}
-            placeholderTextColor={muted}
-            value={microchip}
-            onChangeText={setMicrochip}
-          />
-        </View>
+        <RiseIn testID="add-pet-rise-microchip" delayMs={180}>
+          <View className="gap-1.5">
+            <FieldLabel>{t('addPet.microchip')}</FieldLabel>
+            <TextInput
+              testID="microchip-input"
+              className="h-12 rounded-xl border-2 border-transparent bg-default px-3.5 text-15 font-semibold text-foreground"
+              style={CONTINUOUS_CORNER}
+              maxLength={32}
+              placeholder={t('addPet.optional')}
+              placeholderTextColor={muted}
+              value={microchip}
+              onChangeText={setMicrochip}
+            />
+          </View>
+        </RiseIn>
 
         <Button
           testID="add-pet-submit"
@@ -529,7 +537,7 @@ export function AddPetScreen() {
         contentContainerStyle={{
           paddingHorizontal: 20,
           paddingTop: 12,
-          gap: 12,
+          gap: step === 2 ? 16 : 12,
           paddingBottom: insets.bottom + 24,
         }}
       >
