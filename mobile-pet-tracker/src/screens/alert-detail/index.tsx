@@ -18,6 +18,7 @@ import { geofenceKeys } from '../../api/query-keys';
 import type { Alert } from '../../api/types';
 import { Card } from '../../components/card';
 import { PetMap, type MapCoordinates } from '../../components/pet-map';
+import { ScreenHeader } from '../../components/screen-header';
 import { useAlertsList } from '../../hooks/use-alerts-list';
 import { useAuth } from '../../providers/auth-provider';
 import { useLocale, useTranslate } from '../../providers/language-provider';
@@ -160,11 +161,9 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
       testID="screen-alert-detail"
       className={position ? 'flex-1' : 'flex-1 bg-background'}
       contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: insets.bottom + 40, gap: 14, flexGrow: 1 }}
+      contentContainerStyle={{ paddingHorizontal: 20, paddingTop: insets.top + 8, paddingBottom: insets.bottom + 40, gap: 14, flexGrow: 1 }}
     >
-      <Text testID="alert-detail-title" accessibilityRole="header" className="text-26 font-black tracking-title text-foreground">
-        {t('alerts.detailTitle')}
-      </Text>
+      <ScreenHeader testID="alert-detail" backFallback="/alerts" title={t('alerts.detailTitle')} />
       {alert ? (
         <>
           <HomeEntrance index={0} testID="alert-detail-card-entrance">{card}</HomeEntrance>
