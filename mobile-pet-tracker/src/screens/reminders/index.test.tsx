@@ -1266,7 +1266,7 @@ describe('#128 R4: el botón destructivo del sheet y su etiqueta llevan su recet
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('pinta reminders-delete-confirm con la variante danger y bg-danger, y su única etiqueta Eliminar con text-danger-foreground, haya o no un señuelo en la fuente', async () => {
+  it('pinta reminders-delete-confirm con la variante danger y bg-danger, y su única etiqueta Eliminar con text-danger-foreground, haya o no un señuelo en la fuente (enmendado por #204 R9)', async () => {
     mockListReminders.mockResolvedValue({
       kind: 'ok',
       reminders: [makeReminder()],
@@ -1281,10 +1281,10 @@ describe('#128 R4: el botón destructivo del sheet y su etiqueta llevan su recet
     const confirm = screen.getByTestId('reminders-delete-confirm');
 
     expect(confirm.props.className).toBe(
-      'pressable-feedback__root button__root button__root--variant-danger button__root--size-md w-full rounded-xl bg-danger',
+      'pressable-feedback__root button__root button__root--variant-danger button__root--size-md h-14 w-full rounded-16 bg-danger',
     );
     expect(within(confirm).getByText('Eliminar').props.className).toBe(
-      'button__label button__label--variant-danger button__label--size-md font-bold text-danger-foreground',
+      'text-17 font-extrabold text-danger-foreground',
     );
   });
 });
@@ -1898,5 +1898,32 @@ describe('#204 R8: Eliminar de la fila', () => {
     expect(button.props.className).toContain('button__root--size-md');
     expect(button.props.className).toContain('h-11 rounded-14 px-2.5 bg-category-rose');
     expect(within(button).getByText('Eliminar').props.className).toBe('text-13 font-extrabold text-danger');
+  });
+});
+
+describe('#204 R9: Eliminar de la hoja', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: canvasReminders });
+  });
+
+  it('#204 R9: Eliminar de la hoja lleva cuerpo de 56 y labio danger', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-a');
+    await fireEvent.press(screen.getByTestId('reminder-delete-a'));
+    const confirm = screen.getByTestId('reminders-delete-confirm');
+    expect(confirm.props.className).toContain('button__root--variant-danger button__root--size-md');
+    expect(confirm.props.className).toContain('h-14 w-full rounded-16 bg-danger');
+    expect(within(confirm).getByText('Eliminar').props.className).toBe(
+      'text-17 font-extrabold text-danger-foreground',
+    );
   });
 });

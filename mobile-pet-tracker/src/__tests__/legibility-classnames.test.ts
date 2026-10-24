@@ -89,9 +89,9 @@ describe('#61 R1: la etiqueta destructiva usa el token de danger', () => {
     '</Button>',
   );
 
-  it('resuelve el Button.Label con text-danger-foreground', () => {
+  it('resuelve el Button.Label con text-danger-foreground (enmendado por #204 R9)', () => {
     expect(deleteConfirm).toContain(
-      '<Button.Label className="font-bold text-danger-foreground">',
+      '<Text className="text-17 font-extrabold text-danger-foreground">',
     );
   });
 
