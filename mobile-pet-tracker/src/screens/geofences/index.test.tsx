@@ -970,3 +970,21 @@ it('#202 R3: el tile de cada fila pinta el glifo de zona del canvas', async () =
     expect((glyph.children[1] as typeof glyph).props).toMatchObject({ cx: 12, cy: 12, r: 2.5 });
   }
 });
+
+it('#202 R4: el interruptor de cada fila es ToggleSwitch', async () => {
+  const zones = [makeGeofence(), makeGeofence({ id: 'second', active: false })];
+  mockList.mockResolvedValue({ kind: 'ok', geofences: zones });
+  mockSetActive.mockResolvedValue({ kind: 'ok' });
+  await mount();
+  await screen.findByTestId('geofence-geofence-1');
+  for (const zone of zones) {
+    expect(screen.queryByTestId(`geofence-${zone.id}-active-thumb`, { includeHiddenElements: true })).not.toBeNull();
+    const toggle = screen.getByTestId(`geofence-${zone.id}-active`);
+    expect(toggle.props.accessibilityState.checked).toBe(zone.active);
+    expect(toggle.props.hitSlop).toBe(10);
+    await fireEvent.press(toggle);
+    await waitFor(() => expect(screen.getByTestId(`geofence-${zone.id}-active`).props.accessibilityState.disabled).toBe(false));
+    expect(mockSetActive).toHaveBeenLastCalledWith(apiUrl, 'token-1', 'pet-1', zone.id, !zone.active);
+  }
+  expect(mockSetActive).toHaveBeenCalledTimes(2);
+});

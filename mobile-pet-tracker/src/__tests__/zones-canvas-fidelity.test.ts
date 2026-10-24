@@ -29,3 +29,12 @@ it('#202 R3: el canvas dibuja el glifo de zona', () => {
   const production = source('screens/geofences/index.tsx');
   for (const literal of ['react-native-svg', '<Svg ', 'width={22}', 'height={22}', 'strokeWidth={2.2}', '<Circle cx={12} cy={12} r={9} strokeDasharray="3 3"', '<Circle cx={12} cy={12} r={2.5}']) contains(production, literal);
 });
+
+it('#202 R4: el canvas dibuja el interruptor 48x28', () => {
+  contains(artboard('Zonas'), 'width: 48px; height: 28px', 5);
+  contains(artboard('EditorZona'), 'width: 48px; height: 28px');
+  for (const path of ['screens/geofences/index.tsx', 'screens/geofence-editor/index.tsx']) {
+    contains(source(path), '<ToggleSwitch');
+    expect(source(path)).not.toMatch(/import \{[^}]*\bSwitch\b[^}]*\} from 'heroui-native'/);
+  }
+});

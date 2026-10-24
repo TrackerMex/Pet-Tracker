@@ -947,3 +947,14 @@ describe('#189 R22: opciones estables por rama de la cabecera', () => {
     expect(Object.is(previous, lastOptions())).toBe(true);
   });
 });
+
+it('#202 R4: «Activa» es ToggleSwitch', async () => {
+  await edit();
+  expect(screen.queryByTestId('geofence-editor-active-thumb', { includeHiddenElements: true })).not.toBeNull();
+  expect(screen.getByTestId('geofence-editor-active').props.accessibilityState.checked).toBe(true);
+  mockList.mockResolvedValue({ kind: 'ok', geofences: [{ ...casa, active: false }, parque] });
+  await fireEvent.press(screen.getByTestId('geofence-editor-active'));
+  await waitFor(() => expect(screen.getByTestId('geofence-editor-active').props.accessibilityState.checked).toBe(false));
+  expect(mockSetActive).toHaveBeenCalledTimes(1);
+  expect(mockSetActive).toHaveBeenCalledWith(apiUrl, 'token-1', 'pet-1', casa.id, false);
+});

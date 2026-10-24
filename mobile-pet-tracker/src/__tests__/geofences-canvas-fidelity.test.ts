@@ -93,10 +93,10 @@ describe('#189 R19: bloqueo sin atenuado en todas las etiquetas', () => {
     const source = readFileSync(join(process.cwd(), 'src/theme/native-styles.ts'), 'utf8');
     expect(source).toContain('export const KEEP_OPACITY = { opacity: 1 } as const;');
   });
-  it.each(screens)('#189 R19.2: $name cancela la opacidad en todas sus etiquetas con isDisabled', ({ name, ast }) => {
+  it.each(screens)('#189 R19.2: $name cancela la opacidad en todas sus etiquetas con isDisabled (enmendado por #202 R4)', ({ name, ast }) => {
     const tags: string[] = [];
     function visit(node: ts.Node) {
-      if ((ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) && ['Switch', 'Button'].includes(node.tagName.getText(ast)) && node.attributes.properties.some(attribute => ts.isJsxAttribute(attribute) && attribute.name.getText(ast) === 'isDisabled')) tags.push(node.getText(ast));
+      if ((ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) && ['Switch', 'ToggleSwitch', 'Button'].includes(node.tagName.getText(ast)) && node.attributes.properties.some(attribute => ts.isJsxAttribute(attribute) && attribute.name.getText(ast) === 'isDisabled')) tags.push(node.getText(ast));
       ts.forEachChild(node, visit);
     }
     visit(ast);
