@@ -2200,10 +2200,11 @@ describe('#194 R9: profile links to the editor and observes saved changes', () =
 describe('#196 R1: hero a sangre y contenido por rama', () => {
   beforeEach(setupProfile168);
 
-  it.each(PROFILE_BRANCHES_168)('#196 R1: en la rama $name monta el hero = $hero', async ({ pets, detail, branch, hero }) => {
+  it.each(PROFILE_BRANCHES_168)('#196 R1: en la rama $name monta el hero = $hero', async ({ name, pets, detail, branch, hero }) => {
     mockListPets.mockImplementation(async () => pets);
     mockGetPet.mockImplementation(async () => detail);
     await renderProfile();
+    if (name === 'detalle pendiente') await screen.findByTestId('pet-chip-pet-1');
     await screen.findByTestId(branch);
     const scroll = screen.getByTestId('screen-profile');
     const scrollContent = profileChild(scroll, 0);
