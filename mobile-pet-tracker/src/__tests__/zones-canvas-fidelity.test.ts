@@ -148,3 +148,18 @@ it('#202 R20: la carta ya no describe la cabecera transparente de Zonas', () => 
   expect(charter).not.toContain("bg-danger-soft`)");
   expect(charter).toContain('Cabecera en contenido (#202)');
 });
+
+
+it.each(['screens/geofences/index.tsx', 'screens/geofence-editor/index.tsx', 'components/confirm-dialog.tsx'])('#202 R25: %s no usa StyleSheet.create, clases arbitrarias ni hex', (path) => {
+  const content = source(path);
+  expect(content).not.toContain('StyleSheet.create');
+  expect(content).not.toMatch(/\b[\w-]+-\[[^\]]+\]/);
+  expect(content).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+});
+
+it('#202 R25: package.json no añade dependencias', () => {
+  const content = readFileSync(join(process.cwd(), 'package.json'), 'utf8');
+  const manifest = JSON.parse(content) as { dependencies: Record<string, string> };
+  expect(content).not.toContain('expo-linear-gradient');
+  expect(Object.keys(manifest.dependencies)).toHaveLength(44);
+});
