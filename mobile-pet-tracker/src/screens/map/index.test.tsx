@@ -1045,6 +1045,7 @@ describe('R1 (mobile-map-last-position-error-state): rama de error de last', () 
   });
 
   it('Reintentar llama al refetch de last y recupera el mapa (enmendado por #201 R11)', async () => {
+    mockUseReducedMotion.mockReturnValue(true); // #201 R11: el héroe entra con opacidad 0
     mockGetLastPosition
       .mockResolvedValueOnce({ kind: 'error' })
       .mockResolvedValue({
@@ -1112,6 +1113,7 @@ describe('R3 (mobile-map-last-position-error-state): cobertura total y exclusió
   ])(
     'muestra la rama de error y reintenta con $kind (enmendado por #201 R11)',
     async (firstState) => {
+      mockUseReducedMotion.mockReturnValue(true); // #201 R11: el héroe entra con opacidad 0
       mockGetLastPosition.mockResolvedValueOnce(firstState).mockResolvedValue({
         kind: 'ok',
         position: makeLastPosition(),
@@ -1157,6 +1159,7 @@ describe('R3 (mobile-map-last-position-error-state): cobertura total y exclusió
 
 describe('R4 (mobile-map-last-position-error-state): unauthorized de pets', () => {
   it('renderiza la rama de error de pets y dispara signOut (enmendado por #201 R11)', async () => {
+    mockUseReducedMotion.mockReturnValue(true); // #201 R11: el héroe entra con opacidad 0
     const signOut = jest.fn();
     mockUseAuth.mockReturnValue({
       status: 'authenticated',
@@ -2609,6 +2612,10 @@ describe('#201 R10: la carga dibuja el esqueleto de la pila', () => {
 
 describe('#201 R11: Pingo en las dos ramas de error', () => {
   const ERROR_IDS = ['map-error', 'map-last-error'];
+
+  beforeEach(() => {
+    mockUseReducedMotion.mockReturnValue(true); // #201 R11: el héroe entra con opacidad 0
+  });
 
   const arrange = (id: string) => {
     if (id === 'map-error') {
