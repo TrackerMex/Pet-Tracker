@@ -29,7 +29,7 @@ it('#202 R7: monta velo, tarjeta y acciones con las recetas del canvas', async (
   expect(screen.queryByTestId('dialog')).not.toBeNull();
   const modal = screen.root!;
   expect(modal.props).toMatchObject({ transparent: true, animationType: 'none', statusBarTranslucent: true, onRequestClose: onCancel });
-  expect(screen.getByTestId('dialog').props.className).toBe('flex-1 justify-center px-6');
+  expect(screen.getByTestId('dialog').props.className).toBe('flex-1 justify-center px-7');
   const scrim = screen.getByTestId('dialog-scrim');
   expect(scrim.props.className).toBe('absolute inset-0');
   expect(scrim.props.accessibilityLabel).toBe('Cancelar');
