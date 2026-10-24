@@ -218,6 +218,7 @@ describe('#174 R12: inventarios', () => {
         'screens/login/index.tsx',
         'screens/meal-schedule/index.tsx', // #179 R7
         'screens/meals-history/index.tsx', // #179 R11
+        'screens/profile/index.tsx', // #196 R6
         'screens/register/index.tsx',
         'screens/reset-password/index.tsx',
         'screens/weight-log/index.tsx', // #199 R10
@@ -241,7 +242,7 @@ describe('#174 R12: inventarios', () => {
         'screens/profile/index.tsx',
       ],
     },
-  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12) (enmendado por #197 R4) (enmendado por #197 R10) (enmendado por #197 R19) (enmendado por #200 R1 y #200 R3 y #200 R5 y #200 R12 y #200 R13) (enmendado por #199 R10) (enmendado por #199 R14) (enmendado por #199 R16) (enmendado por #198 R9, R15) (enmendado por #204 R4) (enmendado por #204 R10) (enmendado por #204 R12) (enmendado por #202 R7) (enmendado por #202 R1) (enmendado por #202 R11) (enmendado por #202 R17)', ({ pattern, files }) => {
+  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12) (enmendado por #197 R4) (enmendado por #197 R10) (enmendado por #197 R19) (enmendado por #200 R1 y #200 R3 y #200 R5 y #200 R12 y #200 R13) (enmendado por #199 R10) (enmendado por #199 R14) (enmendado por #199 R16) (enmendado por #198 R9, R15) (enmendado por #204 R4) (enmendado por #204 R10) (enmendado por #204 R12) (enmendado por #202 R7) (enmendado por #202 R1) (enmendado por #202 R11) (enmendado por #202 R17) (enmendado por #196 R6)', ({ pattern, files }) => {
     expect(filesMatching(pattern)).toEqual(files);
   });
 
