@@ -17,14 +17,15 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ForkKnife, Map, Stethoscope } from 'reicon-react-native';
 
-import { Card } from '../../components/card';
 import { PingoFloat } from '@/components/pingo-float';
 import { PingRing } from '@/components/ping-ring';
+import { PopIn } from '@/components/pop-in';
 import { RiseIn } from '@/components/rise-in';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { MOTION_FADE_TIMING, MOTION_SETTLE_SPRING, MOTION_ENTRANCE_OFFSET_Y, MOTION_ENTRANCE_SCALE, MOTION_BLINK_INTERVAL_MS, MOTION_BLINK_TIMING, MOTION_FEEDBACK_MS, MOTION_PING_TIMING } from '../../theme/motion';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import { useShadows } from '../../theme/shadows';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
 const WELCOME_CHIPS = [
@@ -38,6 +39,7 @@ export function WelcomeScreen() {
   const { status } = useAuth();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
+  const shadows = useShadows();
   const [chipInk] = useThemeColors(['accent-strong']);
   const reduceMotion = useReducedMotion();
   const pingoScale = useSharedValue(reduceMotion ? 1 : MOTION_ENTRANCE_SCALE);
@@ -85,9 +87,6 @@ export function WelcomeScreen() {
       <View testID="welcome-content" className="flex-1">
         <RiseIn testID="welcome-rise-scene" delayMs={0}>
           <View testID="welcome-scene" className="h-95 w-full items-center justify-center overflow-hidden rounded-32 bg-surface-secondary" style={CONTINUOUS_CORNER}>
-            <Card testID="welcome-bubble" variant="surface" className="px-4 py-3">
-              <Text testID="welcome-bubble-text" className="text-center text-sm font-semibold text-foreground">{t('welcome.pingoGreeting')}</Text>
-            </Card>
             <View testID="welcome-ground" className="absolute bottom-7.5 h-3.5 w-30 rounded-full bg-border" />
             <View testID="welcome-stage" className="items-center justify-center">
               {reduceMotion ? null : [0, 1, 2].map((index) => <PingRing key={index} testID={`welcome-ring-${index}`} delay={index * (MOTION_PING_TIMING.duration / 3)} className="size-65 rounded-full border-2 border-accent" />)}
@@ -100,6 +99,11 @@ export function WelcomeScreen() {
                 </Animated.View>
               </PingoFloat>
             </View>
+            <PopIn testID="welcome-bubble-pop" className="absolute top-7 right-5.5">
+              <View testID="welcome-bubble" className="rounded-tl-16 rounded-tr-16 rounded-bl-16 rounded-br-4 bg-surface px-3.5 py-2.5" style={[CONTINUOUS_CORNER, shadows.card]}>
+                <Text testID="welcome-bubble-text" className="text-sm font-bold text-foreground">{t('welcome.pingoGreeting')}</Text>
+              </View>
+            </PopIn>
           </View>
         </RiseIn>
         <RiseIn testID="welcome-rise-chips" delayMs={120} className="mt-6">
