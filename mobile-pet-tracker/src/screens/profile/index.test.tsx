@@ -71,7 +71,8 @@ const mockPetSwitcher = jest.fn<void, [{
   pets: PetProfile[];
   selectedPetId: string | null;
   onSelect: (petId: string) => void;
-  variant?: 'default' | 'avatars';
+  variant?: 'default' | 'avatars' | 'glass';
+  trailing?: ReactNode;
 }]>();
 
 jest.mock('react-native-nitro-theme-transition', () => ({
@@ -141,7 +142,8 @@ jest.mock('../../components/pet-switcher', () => {
       pets: PetProfile[];
       selectedPetId: string | null;
       onSelect: (petId: string) => void;
-      variant?: 'default' | 'avatars';
+      variant?: 'default' | 'avatars' | 'glass';
+      trailing?: ReactNode;
     }) => {
       mockPetSwitcher(props);
       const { pets, selectedPetId, onSelect } = props;
@@ -307,12 +309,12 @@ function renderProfile() {
 describe('#173 R5: cápsula de añadir mascota', () => {
   beforeEach(setupProfile168);
 
-  it('pinta la cápsula tras el título con icono oculto y texto en español', async () => {
+  it('pinta la cápsula tras el título con icono oculto y texto en español (enmendado por #196 R2)', async () => {
     await renderProfile();
     await screen.findByTestId('pet-info-card');
     const capsule = screen.getByTestId('profile-add-pet');
 
-    expect(capsule.props.className).toBe('h-9 flex-row items-center gap-1.5 rounded-full bg-tab-pill px-3.5');
+    expect(capsule.props.className).toBe('h-11 flex-row items-center gap-1.5 rounded-full bg-glass-surface-strong px-4');
     expect(capsule.props.accessibilityRole).toBe('button');
     expect(capsule.props.hitSlop).toEqual(TOUCH_SLOP);
     expect(capsule.props.style?.borderCurve).toBeUndefined();
@@ -327,6 +329,7 @@ describe('#173 R5: cápsula de añadir mascota', () => {
     const glyph = within(icon).getByTestId('profile-icon-plus', { includeHiddenElements: true });
     expect(profileChild(icon, 0)).toBe(glyph);
     expect(glyph.props.size).toBe(16);
+    expect(glyph.props.strokeWidth).toBe(2.6);
     expect(glyph.props.style).toEqual({ color: 'accent-strong' });
     const label = within(capsule).getByText('Añadir mascota');
     expect(profileChild(capsule, 1)).toBe(label);
@@ -357,11 +360,12 @@ describe('#173 R5: cápsula de añadir mascota', () => {
 describe('#173 R4: Perfil pide la variante avatars', () => {
   beforeEach(setupProfile168);
 
-  it('pasa avatars al selector compartido cuando carga la mascota', async () => {
+  it('pasa avatars al selector compartido cuando carga la mascota (enmendado por #196 R2)', async () => {
     await renderProfile();
     await screen.findByTestId('pet-info-card');
 
-    expect(mockPetSwitcher.mock.lastCall?.[0].variant).toBe('avatars');
+    expect(mockPetSwitcher.mock.lastCall?.[0].variant).toBe('glass');
+    expect(mockPetSwitcher.mock.lastCall?.[0].trailing).toBeUndefined();
   });
 });
 
@@ -688,10 +692,10 @@ describe('#65 R14 (enmendado por #173 R11): Profile cambia el idioma y repinta s
     mockSetStoredLanguage.mockResolvedValue();
   });
 
-  it('shows the current endonym and changes the live Profile copy', async () => {
+  it('shows the current endonym and changes the live Profile copy (enmendado por #196 R2)', async () => {
     await renderProfile();
 
-    expect(screen.getByText('Perfil')).toBeVisible();
+    expect(screen.getByText('Perfil')).toBeOnTheScreen();
     expect(screen.getByTestId('language-value')).toHaveTextContent('Español');
     expect(screen.getByTestId('theme-toggle')).toBeVisible();
 
@@ -700,7 +704,7 @@ describe('#65 R14 (enmendado por #173 R11): Profile cambia el idioma y repinta s
       await Promise.resolve();
     });
 
-    await waitFor(() => expect(screen.getByText('Profile')).toBeVisible());
+    await waitFor(() => expect(screen.getByText('Profile')).toBeOnTheScreen());
     expect(screen.getByTestId('language-value')).toHaveTextContent('English');
     expect(mockSetStoredLanguage).toHaveBeenCalledWith('en');
   });
@@ -1197,22 +1201,21 @@ describe('#99 R3: Perfil avisa de las notificaciones bloqueadas y abre la config
 
   afterEach(() => { mockUseNotificationsBlocked.mockReturnValue(false); });
 
-  it('con el permiso bloqueado pinta el aviso justo debajo de la cabecera, con su copy y su acción (enmendado por #196 R1)', async () => {
+  it('con el permiso bloqueado pinta el aviso justo debajo de la cabecera, con su copy y su acción (enmendado por #196 R1, R5)', async () => {
     mockUseNotificationsBlocked.mockReturnValue(true);
     await renderProfile();
     const notice = await screen.findByTestId('notifications-blocked-notice');
     const action = screen.getByTestId('notifications-open-settings');
-    const header = screen.getByTestId('profile-add-pet').parent!;
-    const content = header.parent!;
-
+    const content = screen.getByTestId('profile-content');
+    const entrance = screen.getByTestId('profile-entrance-notice');
+    expect(profileChild(content, 0)).toBe(entrance);
+    expect(entrance.children).toHaveLength(1);
+    expect(profileChild(entrance, 0)).toBe(notice);
     expect(notice).toBeVisible();
-    expect(content.props.testID).toBe('profile-content');
-    expect(content.children.indexOf(header)).toBe(0);
-    expect(content.children.indexOf(notice)).toBe(1);
-    expect(notice).toHaveProperty('props.className', 'rounded-card border border-border bg-surface p-4 shadow-sm items-start gap-3');
+    expect(notice).toHaveProperty('props.className', 'items-start gap-3 rounded-card p-3.5 bg-category-amber');
     expect(notice.children).toHaveLength(2);
     expect(notice.children[0]).toHaveTextContent(NOTICE_ES);
-    expect(notice.children[0]).toHaveProperty('props.className', 'font-normal text-foreground');
+    expect(notice.children[0]).toHaveProperty('props.className', 'text-sm leading-note font-normal text-foreground');
     expect(notice.children.indexOf(action)).toBe(1);
     expect(action).toHaveTextContent('Abrir configuración');
     expect(action.props.accessibilityRole).toBe('button');
@@ -1327,13 +1330,14 @@ const PROFILE_BRANCHES_168 = [
 describe('#168 R1: Perfil pinta el título grande en todas sus ramas', () => {
   beforeEach(setupProfile168);
 
-  it.each(PROFILE_BRANCHES_168)('pinta el título grande ($name) (enmendado por #197 R4)', async ({ pets, detail, branch }) => {
+  it.each(PROFILE_BRANCHES_168)('pinta el título grande ($name) (enmendado por #197 R4) (enmendado por #196 R2)', async ({ name, pets, detail, branch, hero }) => {
     mockListPets.mockImplementation(async () => pets);
     mockGetPet.mockImplementation(async () => detail);
     await renderProfile();
+    if (name === 'detalle pendiente') await screen.findByTestId('pet-chip-pet-1');
     await screen.findByTestId(branch);
     const title = screen.getByTestId('profile-title');
-    expect(title.props.className).toBe('text-3xl font-black tracking-title text-foreground');
+    expect(title.props.className).toBe(hero ? 'text-3xl font-black tracking-title text-accent-foreground' : 'text-3xl font-black tracking-title text-foreground');
     expect(title).toHaveTextContent('Perfil');
     expect(profileChild(title.parent!, 0)).toBe(title);
     expect(profileChild(title.parent!.parent!, 0)).toBe(title.parent);
@@ -2296,5 +2300,134 @@ describe('#196 R4: cámara flotante sobre la foto', () => {
     expect(error).toHaveTextContent(es['profile.couldNotUploadPhoto']);
     expect(error.parent).toBe(content);
     expect(profileChild(content, content.children.indexOf(error) + 1)).toBe(screen.getByTestId('profile-entrance-info'));
+  });
+});
+
+
+describe('#196 R2: título y selector en el slot fotográfico', () => {
+  beforeEach(setupProfile168);
+
+  it('#196 R2: con hero pinta título blanco, píldora de vidrio y selector glass en el slot', async () => {
+    await renderProfile();
+    await screen.findByTestId('profile-pet-card');
+    const top = screen.getByTestId('profile-hero-top');
+    expect(top.parent).toBe(screen.getByTestId('pet-hero-slot'));
+    expect(top.props.className).toBe('gap-3 px-1');
+    expect(top.children).toHaveLength(2);
+    const row = profileChild(top, 0);
+    expect(row.props.className).toBe('flex-row items-center justify-between gap-3');
+    expect(profileChild(row, 0)).toBe(screen.getByTestId('profile-title'));
+    expect(screen.getByTestId('profile-title').props.className).toBe('text-3xl font-black tracking-title text-accent-foreground');
+    expect(screen.getByTestId('profile-title')).toHaveTextContent('Perfil');
+    const capsule = screen.getByTestId('profile-add-pet');
+    expect(profileChild(row, 1)).toBe(capsule);
+    expect(capsule.props.className).toBe('h-11 flex-row items-center gap-1.5 rounded-full bg-glass-surface-strong px-4');
+    expect(profileChild(top, 1)).toBe(screen.getByTestId('pet-chip-pet-1').parent);
+    const props = mockPetSwitcher.mock.lastCall?.[0];
+    expect(props?.variant).toBe('glass');
+    expect(props?.trailing).toBeUndefined();
+    expect(props?.pets.map(({ id }) => id)).toEqual(['pet-1']);
+    expect(props?.selectedPetId).toBe('pet-1');
+    await fireEvent.press(capsule);
+    expect(mockRouter.push).toHaveBeenCalledWith('/pets/add');
+  });
+
+  it('#196 R2: con la lista pendiente el slot no monta el selector', async () => {
+    mockListPets.mockReturnValue(pending<PetsState>());
+    await renderProfile();
+    const top = await screen.findByTestId('profile-hero-top');
+    expect(top.parent).toBe(screen.getByTestId('pet-hero-slot'));
+    expect(top.children).toHaveLength(1);
+    expect(screen.getByTestId('profile-title')).toHaveTextContent('Perfil');
+    expect(mockPetSwitcher).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { name: 'vacía', pets: { kind: 'ok', pets: [] } as PetsState, branch: 'profile-pets-empty' },
+    { name: 'error de lista', pets: { kind: 'error' } as PetsState, branch: 'profile-pets-error' },
+  ])('#196 R2: sin hero ($name) pinta la fila clara al principio del contenido', async ({ pets, branch }) => {
+    mockListPets.mockResolvedValue(pets);
+    await renderProfile();
+    await screen.findByTestId(branch);
+    const content = screen.getByTestId('profile-content');
+    const row = profileChild(content, 0);
+    expect(row.props.className).toBe('flex-row items-center justify-between gap-3');
+    expect(profileChild(row, 0)).toBe(screen.getByTestId('profile-title'));
+    expect(screen.getByTestId('profile-title').props.className).toBe('text-3xl font-black tracking-title text-foreground');
+    const capsule = screen.getByTestId('profile-add-pet');
+    expect(profileChild(row, 1)).toBe(capsule);
+    expect(capsule.props.className).toBe('h-9 flex-row items-center gap-1.5 rounded-full bg-tab-pill px-3.5');
+    expect(screen.queryByTestId('profile-hero-top')).toBeNull();
+    expect(mockPetSwitcher).not.toHaveBeenCalled();
+  });
+
+  it.each([true, false])('#196 R2: el icono de añadir usa trazo 2.6 en las dos ramas (hero = %s)', async (hero) => {
+    if (!hero) mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderProfile();
+    await screen.findByTestId(hero ? 'profile-pet-card' : 'profile-pets-empty');
+    const capsule = screen.getByTestId('profile-add-pet');
+    const icon = within(capsule).getByTestId('profile-add-pet-icon', { includeHiddenElements: true });
+    const glyph = within(icon).getByTestId('profile-icon-plus', { includeHiddenElements: true });
+    expect(glyph.props.size).toBe(16);
+    expect(glyph.props.strokeWidth).toBe(2.6);
+    expect(glyph.props.style).toEqual({ color: 'accent-strong' });
+    expect(within(capsule).getByText('Añadir mascota').props.className).toBe('text-sm font-extrabold text-accent-strong');
+  });
+});
+
+describe('#196 R5: aviso ámbar de notificaciones bloqueadas', () => {
+  beforeEach(() => {
+    setupProfile168();
+    mockUseNotificationsBlocked.mockReturnValue(true);
+    mockOpenSettings.mockResolvedValue(undefined);
+  });
+  afterEach(() => mockUseNotificationsBlocked.mockReturnValue(false));
+
+  it('#196 R5: con el permiso bloqueado y hero el aviso ámbar abre el contenido', async () => {
+    await renderProfile();
+    await screen.findByTestId('profile-pet-card');
+    const content = screen.getByTestId('profile-content');
+    const entrance = screen.getByTestId('profile-entrance-notice');
+    expect(profileChild(content, 0)).toBe(entrance);
+    expect(entrance.props.index).toBe(0);
+    expect(entrance.children).toHaveLength(1);
+    const notice = screen.getByTestId('notifications-blocked-notice');
+    expect(profileChild(entrance, 0)).toBe(notice);
+    expect(notice.props.className).toBe('items-start gap-3 rounded-card p-3.5 bg-category-amber');
+    expect(notice.children).toHaveLength(2);
+    expect(profileChild(notice, 0)).toHaveTextContent(NOTICE_ES);
+    expect(profileChild(notice, 0).props.className).toBe('text-sm leading-note font-normal text-foreground');
+    expect(profileChild(notice, 1)).toBe(screen.getByTestId('notifications-open-settings'));
+  });
+
+  it('#196 R5: con el permiso bloqueado y sin hero el aviso va tras el título', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderProfile();
+    await screen.findByTestId('profile-pets-empty');
+    const content = screen.getByTestId('profile-content');
+    expect(profileChild(content, 0)).toBe(screen.getByTestId('profile-title').parent);
+    expect(profileChild(content, 1)).toBe(screen.getByTestId('profile-entrance-notice'));
+    expect(profileChild(screen.getByTestId('profile-entrance-notice'), 0)).toBe(screen.getByTestId('notifications-blocked-notice'));
+  });
+
+  it('#196 R5: el CTA del aviso lleva labio primario y abre la configuración', async () => {
+    await renderProfile();
+    const notice = await screen.findByTestId('notifications-blocked-notice');
+    const action = within(notice).getByTestId('notifications-open-settings');
+    expect(action.props.className).toBe('pressable-feedback__root button__root button__root--variant-primary button__root--size-md h-11 rounded-14 px-4.5');
+    const { result } = await renderHook(() => useChunkyLip());
+    expect(action.props.style).toEqual(result.current.primary);
+    expect(within(action).getByText('Abrir configuración').props.className).toBe('button__label button__label--variant-primary button__label--size-md text-sm font-extrabold text-accent-foreground');
+    await fireEvent.press(action);
+    expect(mockOpenSettings).toHaveBeenCalledTimes(1);
+    expect(mockRouter.push).not.toHaveBeenCalled();
+  });
+
+  it('#196 R5: con el permiso concedido no pinta el aviso', async () => {
+    mockUseNotificationsBlocked.mockReturnValue(false);
+    await renderProfile();
+    await screen.findByTestId('profile-pet-card');
+    expect(screen.queryByTestId('profile-entrance-notice')).toBeNull();
+    expect(screen.queryByTestId('notifications-blocked-notice')).toBeNull();
   });
 });
