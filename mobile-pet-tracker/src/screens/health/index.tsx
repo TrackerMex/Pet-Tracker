@@ -192,20 +192,17 @@ export function HealthScreen() {
                         <Text className="text-15 font-extrabold text-foreground">
                           {vaccine.name}
                         </Text>
-                        <Text className="font-normal text-muted">
-                          {vaccine.appliedAt}
+                        <Text testID={`vaccine-dates-${vaccine.id}`} className="text-xs text-muted">
+                          {t('health.appliedOn', { date: fmtDate(vaccine.appliedAt, locale) })}
+                          {vaccine.nextDoseAt ? (
+                            <>
+                              {' · '}
+                              <Text className={vaccine.nextDoseAt < today ? 'text-danger' : undefined}>
+                                {t('health.nextOn', { date: fmtDate(vaccine.nextDoseAt, locale) })}
+                              </Text>
+                            </>
+                          ) : null}
                         </Text>
-                        {vaccine.nextDoseAt ? (
-                          <Text
-                            className={
-                              vaccine.nextDoseAt < today
-                                ? 'font-normal text-danger'
-                                : 'font-normal text-muted'
-                            }
-                          >
-                            {vaccine.nextDoseAt}
-                          </Text>
-                        ) : null}
                         </View>
                       </Card>
                       </RiseIn>
