@@ -727,6 +727,41 @@ describe('#205 R13: NuevaContrasena, éxito', () => {
   });
 });
 
+describe('#205 R14: NuevaContrasena sin token', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+  });
+
+  it('#205 R14: la rama sin token conserva su contenedor y su título', async () => {
+    await renderRoute();
+
+    const root = screen.getByTestId('screen-reset-password');
+    expect(root.props.contentContainerStyle).toEqual({
+      flexGrow: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 24,
+      gap: 16,
+      paddingTop: 52,
+      paddingBottom: 48,
+    });
+    expect(root.props.contentInsetAdjustmentBehavior).toBe('automatic');
+    expect(screen.getByText('Restablecer contraseña').props.className)
+      .toBe('text-center text-2xl font-black text-foreground');
+    const missing = screen.getByTestId('reset-missing-token');
+    expect(missing.props.className).toBe('text-center text-danger');
+    expect(missing).toHaveTextContent('Este enlace está incompleto. Ábrelo de nuevo desde tu correo.');
+    expect(screen.queryByTestId('reset-header')).toBeNull();
+    expect(screen.queryByTestId('reset-pingo')).toBeNull();
+
+    const link = screen.getByTestId('link-login');
+    expect(link).toHaveTextContent('Volver al inicio de sesión');
+    await fireEvent.press(link);
+    expect(mockRouter.push).toHaveBeenCalledWith('/login');
+  });
+});
+
 describe('#183 R6: nueva contraseña valida en cliente', () => {
   const apiUrl = 'http://example.test/v1';
   beforeEach(() => {
