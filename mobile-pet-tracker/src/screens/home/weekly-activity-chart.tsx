@@ -34,6 +34,7 @@ import {
   TABULAR_NUMS,
 } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
+import { useShadows } from '../../theme/shadows';
 import { fmtCount, fmtKm, fmtMinutes } from './format';
 
 // react-native-chart-kit 7.0.4 geometry contract (re-derive on upgrade):
@@ -399,6 +400,7 @@ export function weekdayLabel(
 export function WeeklyActivityChart(
   { days, weekComparison, onSelectDay }: WeeklyActivityChartProps,
 ): JSX.Element {
+  const shadows = useShadows();
   const locale = useLocale();
   const t = useTranslate();
   const [chartWidth, setChartWidth] = useState(0);
@@ -486,16 +488,16 @@ export function WeeklyActivityChart(
   };
 
   return (
-    <Card testID="weekly-activity-card" className="gap-2">
+    <Card testID="weekly-activity-card" className="gap-2 px-4 py-3.5 shadow-none" style={shadows.card}>
       <View
         testID="weekly-activity-header"
         className="flex-row items-start justify-between gap-3"
       >
         <View>
-          <Text className="text-base font-bold text-foreground">
+          <Text className="text-base font-extrabold text-foreground">
             {t('weeklyActivity.title')}
           </Text>
-          <Text className="text-2xs text-muted">
+          <Text className="text-11 text-muted">
             {t('weeklyActivity.lastSevenDays')}
           </Text>
         </View>
