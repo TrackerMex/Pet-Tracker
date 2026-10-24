@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react';
 import { Text, View } from 'react-native';
 import Animated, { useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AlertTriangle, Location } from 'reicon-react-native';
+import { AlertCircle, AlertTriangle, Location, Refresh } from 'reicon-react-native';
 import { useUniwind } from 'uniwind';
 
 import { listGeofences } from '../../api/geofences';
@@ -30,6 +30,7 @@ import {
   type PetHeroStatusTone,
 } from '../../components/pet-hero-header';
 import { DEFAULT_CENTER, PetMap } from '../../components/pet-map';
+import { PopIn } from '../../components/pop-in';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
@@ -114,7 +115,7 @@ export function MapScreen() {
   const reducedMotion = useReducedMotion();
   const shadows = useShadows();
   // #201 R7
-  const [categoryRoseStrong, muted] = useThemeColors(['category-rose-strong', 'muted']);
+  const [accentForeground, categoryRoseStrong, danger, muted] = useThemeColors(['accent-foreground', 'category-rose-strong', 'danger', 'muted']);
   const { theme } = useUniwind();
   const pets = useQuery({
     queryKey: petKeys.list(),
@@ -322,16 +323,16 @@ export function MapScreen() {
       ) : null}
 
       {pets.data && isPetsError(pets.data) ? (
-        <View className="flex-1 items-center justify-center gap-3 p-6 bg-background">
-          <Text testID="map-error" className="text-danger">
-            {t('common.somethingWentWrong')}
-          </Text>
-          <Button
-            testID="map-retry"
-            onPress={() => void pets.refetch()}
-          >
-            {t('common.retry')}
-          </Button>
+        <View className="flex-1 items-center justify-center bg-background px-6 pt-15 pb-30">
+          <EmptyState
+            variant="hero"
+            testID="map-error"
+            pose="talk"
+            title={t('common.somethingWentWrong')}
+            action={{ label: t('common.retry'), onPress: () => void pets.refetch() }}
+            actionIcon={<Refresh size={20} strokeWidth={2.6} color={accentForeground} style={{ marginRight: 8 }} testID="map-error-action-icon" />}
+            badge={<PopIn testID="map-error-badge" className={`absolute bottom-8.5 right-9 size-14 items-center justify-center rounded-full border-4 border-background ${CATEGORY_SLOTS.rose.surface}`}><AlertCircle size={26} strokeWidth={2.2} color={danger} /></PopIn>}
+          />
         </View>
       ) : null}
 
@@ -365,17 +366,17 @@ export function MapScreen() {
       {petsReady && last.data && isLastError(last.data) ? (
         <View
           testID="map-last-error-state"
-          className="flex-1 items-center justify-center gap-3 p-6 bg-background"
+          className="flex-1 items-center justify-center bg-background px-6 pt-15 pb-30"
         >
-          <Text selectable testID="map-last-error" className="text-danger">
-            {t('common.somethingWentWrong')}
-          </Text>
-          <Button
-            testID="map-last-retry"
-            onPress={() => void refetchLast()}
-          >
-            {t('common.retry')}
-          </Button>
+          <EmptyState
+            variant="hero"
+            testID="map-last-error"
+            pose="talk"
+            title={t('common.somethingWentWrong')}
+            action={{ label: t('common.retry'), onPress: () => void refetchLast() }}
+            actionIcon={<Refresh size={20} strokeWidth={2.6} color={accentForeground} style={{ marginRight: 8 }} testID="map-last-error-action-icon" />}
+            badge={<PopIn testID="map-last-error-badge" className={`absolute bottom-8.5 right-9 size-14 items-center justify-center rounded-full border-4 border-background ${CATEGORY_SLOTS.rose.surface}`}><AlertCircle size={26} strokeWidth={2.2} color={danger} /></PopIn>}
+          />
         </View>
       ) : null}
 
