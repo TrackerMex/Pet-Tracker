@@ -1297,3 +1297,46 @@ describe('#199 R4: cifra y delta del mes', () => {
     expect(screen.queryByTestId('weight-month-delta')).toBeNull();
   });
 });
+
+describe('#199 R7: formulario de Peso', () => {
+  beforeEach(() => { prepareWeightLogTests(); });
+  async function form() {
+    await renderWeightLog();
+    await screen.findByTestId('weight-log-empty');
+    expect(screen.queryByTestId('weight-form')).not.toBeNull();
+    return screen.getByTestId('weight-form');
+  }
+  it('#199 R7 weight-form es un Card flat con gap-2.5 py-3.5 y entra a los 80 ms', async () => {
+    const node = await form();
+    expect(node.props.className).toBe('rounded-card border border-border bg-surface px-3.5 gap-2.5 py-3.5');
+    expect(riseDelayOf(node)).toBe(80);
+  });
+  it('#199 R7 peso y fecha comparten la primera fila y la condición va debajo', async () => {
+    const node = await form();
+    const row = node.children[0] as TestInstance;
+    expect(row.props.className).toBe('flex-row gap-2.5');
+    expect(row.children).toHaveLength(2);
+    for (const child of row.children as TestInstance[]) {
+      expect(child.props.className).toContain('flex-1');
+      expect(child.props.className).toContain('gap-1.5');
+    }
+    expect(within(row).getByTestId('weight-input')).toBeOnTheScreen();
+    expect(within(row).getByTestId('weight-date-input')).toBeOnTheScreen();
+    const condition = node.children[1] as TestInstance;
+    expect(condition.props.className).toContain('gap-1.5');
+    expect(within(condition).getByTestId('weight-bc-input')).toBeOnTheScreen();
+  });
+  it('#199 R7 las tres etiquetas pintan text-13 font-extrabold con su literal', async () => {
+    const node = await form();
+    for (const label of ['Peso', 'Fecha de medición', 'Condición corporal']) {
+      expect(within(node).getByText(label).props.className).toBe('text-13 font-extrabold text-foreground');
+    }
+  });
+  it('#199 R7 los tres inputs llevan h-12 rounded-xl bg-default', async () => {
+    const node = await form();
+    for (const id of ['weight-input', 'weight-date-input', 'weight-bc-input']) {
+      const input = within(node).getByTestId(id);
+      for (const token of ['h-12', 'rounded-xl', 'bg-default']) expect(input.props.className).toContain(token);
+    }
+  });
+});
