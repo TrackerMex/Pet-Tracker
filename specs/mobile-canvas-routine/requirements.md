@@ -519,3 +519,4 @@ gate de implementación: lo cierra la casilla «Smoke de R18» de § Aprobación
 - [x] Enmienda #204 de la carta (texto canónico en design.md § Bloque «Enmienda #204») aprobada por humano (fecha: 2026-10-23)
   Firma delegada, mismo mandato.
 - [ ] Smoke de R18 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
+  Va en el lote `progress/smoke_canvas-parity.md` (plan §6); el `done` no espera al smoke.

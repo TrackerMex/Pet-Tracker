@@ -29,3 +29,5 @@ implementador; no rebasear después de rellenarlos.
 | R16 | `__tests__/routine-canvas-fidelity.test.ts` › `#204 R16: la carta lleva su enmienda una sola vez y con su casilla` | `0361a6e7` | `bea9afd8` | cubierto |
 | R17 | `__tests__/routine-canvas-fidelity.test.ts` › `#204 R17: %s es grep-limpio` | — (nace verde; mutación) | `f79d5eef` (solo test) | cubierto |
 | R18 | Smoke humano en dev build Android (requirements.md § Cierre del humano) | n/a | n/a | pendiente (humano) |
+
+Cierre del leader (2026-10-24): el reviewer aprobó sobre `2b50c0fe` (`progress/review_mobile-canvas-routine.md`, 0 bloqueantes, 6 no bloqueantes) con el gate del leader en verde. Después se mergeó `origin/dev` con #196 (`15c72f83`, cuatro conflictos de candados agregados resueltos por unión) y se repitió el gate: exit 0, móvil 152/152 suites, 5228/5228 tests, 1 snapshot. El smoke de R18 lo cierra el humano en el lote `progress/smoke_canvas-parity.md` (plan §6).
