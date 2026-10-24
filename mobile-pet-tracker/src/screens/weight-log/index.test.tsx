@@ -254,7 +254,7 @@ describe('R7: weight log lista el historial', () => {
     );
   });
 
-  it('keeps API order and renders each weight detail', async () => {
+  it('keeps API order and renders each weight detail (enmendado por #199 R10)', async () => {
     mockListWeights.mockResolvedValue({
       kind: 'ok',
       weights: [
@@ -279,7 +279,7 @@ describe('R7: weight log lista el historial', () => {
       'weight-row-weight-2',
     ]);
     const newest = within(screen.getByTestId('weight-row-weight-1'));
-    expect(newest.getByText('12.4 kg')).toBeVisible();
+    expect(newest.getByTestId('weight-row-weight-1-delta').parent!).toHaveTextContent('12.4 kg +0.4 kg', { exact: true });
     expect(newest.getByText('2026-08-21')).toBeVisible();
     expect(newest.getByText('+0.4 kg')).toBeVisible();
     expect(newest.getByText('CC 5/9')).toBeVisible();
@@ -887,8 +887,8 @@ function prepareWeightLogTests() {
 
 describe('#169 R8: chip de delta por entrada', () => {
   const cases = [
-    ['w-up', 0.4, 'bg-danger-soft', 'text-danger', 'icon-trend-up', 'red', '+0.4 kg'],
-    ['w-down', -0.2, 'bg-success-soft', 'text-success', 'icon-trend-down', 'green', '-0.2 kg'],
+    ['w-up', 0.4, 'bg-category-rose', 'text-danger', 'icon-trend-up', 'red', '+0.4 kg'],
+    ['w-down', -0.2, 'bg-category-green', 'text-accent-strong', 'icon-trend-down', 'blue', '-0.2 kg'],
     ['w-flat', 0, 'bg-default', 'text-muted', 'icon-minus', 'gray', '0 kg'],
     ['w-none', null, 'bg-default', 'text-muted', 'icon-minus', 'gray', '—'],
   ] as const;
@@ -901,7 +901,7 @@ describe('#169 R8: chip de delta por entrada', () => {
     });
   });
 
-  it.each(cases)('fila %s con su tono, icono y texto', async (
+  it.each(cases)('fila %s con su tono, icono y texto (enmendado por #199 R10)', async (
     id, _variation, tileClassName, textClassName, iconId, color, text,
   ) => {
     await renderWeightLog();
@@ -909,19 +909,19 @@ describe('#169 R8: chip de delta por entrada', () => {
     const tile = screen.getByTestId(`weight-row-${id}-tone`);
 
     expect(tile.props.className).toContain(tileClassName);
-    for (const other of ['bg-danger-soft', 'bg-success-soft', 'bg-default']) {
+    for (const other of ['bg-category-rose', 'bg-category-green', 'bg-default']) {
       if (other !== tileClassName) expect(tile.props.className).not.toContain(other);
     }
     const icon = within(tile).getByTestId(iconId);
     expect(icon.props.style.color).toBe(color);
-    expect(icon.props.size).toBe(15);
+    expect(icon.props.size).toBe(18);
     for (const other of ['icon-trend-up', 'icon-trend-down', 'icon-minus']) {
       if (other !== iconId) expect(within(tile).queryByTestId(other)).toBeNull();
     }
     const delta = screen.getByTestId(`weight-row-${id}-delta`);
     expect(delta).toHaveTextContent(text, { exact: true });
     expect(delta.props.className).toContain(textClassName);
-    for (const other of ['text-danger', 'text-success', 'text-muted']) {
+    for (const other of ['text-danger', 'text-accent-strong', 'text-muted']) {
       if (other !== textClassName) expect(delta.props.className).not.toContain(other);
     }
   });
@@ -1384,5 +1384,26 @@ describe('#199 R9: historial de Peso', () => {
     await renderWeightLog();
     await screen.findByTestId('weight-log-empty');
     expect(screen.queryByTestId('weight-history-title')).toBeNull();
+  });
+});
+
+describe('#199 R10: fila del historial', () => {
+  beforeEach(() => { prepareWeightLogTests(); });
+  it('#199 R10 la cifra pinta text-15 font-extrabold y anida el delta en text-13', async () => {
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [makeWeight()] });
+    await renderWeightLog();
+    await screen.findByTestId('weight-row-weight-1');
+    const delta = screen.getByTestId('weight-row-weight-1-delta');
+    const figure = delta.parent!;
+    expect(figure.type).toBe('Text');
+    expect(figure.props.className).toBe('text-15 font-extrabold text-foreground');
+    expect(figure).toHaveTextContent('12.4 kg +0.4 kg', { exact: true });
+    expect(delta.props.className).toBe('text-13 text-danger');
+  });
+  it('#199 R10 sin condición corporal no pinta la línea CC', async () => {
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [makeWeight({ bodyCondition: null })] });
+    await renderWeightLog();
+    const row = await screen.findByTestId('weight-row-weight-1');
+    expect(within(row).queryByText(/^CC /)).toBeNull();
   });
 });

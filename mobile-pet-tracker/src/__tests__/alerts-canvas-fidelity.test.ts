@@ -215,6 +215,7 @@ describe('#174 R12: inventarios', () => {
         'screens/meals-history/index.tsx', // #179 R11
         'screens/register/index.tsx',
         'screens/reset-password/index.tsx',
+        'screens/weight-log/index.tsx', // #199 R10
       ],
     },
     {
@@ -241,7 +242,7 @@ describe('#174 R12: inventarios', () => {
         'screens/reminders/index.tsx', // #178 R4
       ],
     },
-  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12) (enmendado por #197 R4) (enmendado por #197 R10) (enmendado por #197 R19)', ({ pattern, files }) => {
+  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12) (enmendado por #197 R4) (enmendado por #197 R10) (enmendado por #197 R19) (enmendado por #199 R10)', ({ pattern, files }) => {
     expect(filesMatching(pattern)).toEqual(files);
   });
 

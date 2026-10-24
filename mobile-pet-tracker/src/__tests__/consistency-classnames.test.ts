@@ -168,13 +168,13 @@ describe('#62 R4: la app solo usa los radios de la escala declarada', () => {
     }
   });
 
-  it('lleva los tres tiles restantes a rounded-xl (enmendado por #177 R10)', () => {
+  it('lleva los tres tiles restantes a rounded-xl (enmendado por #177 R10) (enmendado por #199 R10)', () => {
     // #168 R8: el tile ForkKnife sale de food.tsx
     expect(readSource(join('screens', 'forgot', 'index.tsx'))).toContain( // #117 R10
       'size-13 items-center justify-center bg-accent rounded-16',
     );
     expect(readSource(join('screens', 'weight-log', 'index.tsx'))).toContain(
-      'size-8 shrink-0 items-center justify-center rounded-xl ${tileClassName}',
+      'size-9 shrink-0 items-center justify-center rounded-xl ${tileClassName}',
     );
   });
 });
