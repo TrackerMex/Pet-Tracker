@@ -1115,7 +1115,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     expect(addReminder).not.toMatch(/uppercase|tracking-widest/);
   });
 
-  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #201 R5, R13)', () => {
+  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #202 R18) (enmendado por #196 R5) (enmendado por #201 R5, R13)', () => {
     for (const [pattern, count] of [
       [/\brounded-14\b/g, 1], [/\brounded-16\b/g, 4], [/\brounded-22\b/g, 1],
     ] as const) {
@@ -1141,7 +1141,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       'screens/edit-profile/index.tsx': 1, // #194 R6
       'screens/food/index.tsx': 2, // #200 R9
       'screens/forgot/index.tsx': 3,
-      'screens/geofence-editor/index.tsx': 3, // #189 R13
+      'screens/geofence-editor/index.tsx': 4, // #189 R13; #202 R18: +1
       'screens/geofences/index.tsx': 2, // #189 R7
       'screens/health/index.tsx': 1, // #199 R14
       'screens/home/index.tsx': 1,
@@ -1162,6 +1162,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       join('screens', 'meal-schedule', 'index.tsx'), // #179 R13 comparte rounded-14
       join('screens', 'meals-history', 'index.tsx'), // #179 R13 comparte rounded-14
       join('screens', 'pairing', 'index.tsx'), // #188 R20 comparte rounded-14
+      join('screens', 'profile', 'index.tsx'), // #196 R5
     ]);
   });
 });

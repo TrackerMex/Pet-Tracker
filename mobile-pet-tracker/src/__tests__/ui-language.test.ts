@@ -76,8 +76,8 @@ describe('#65 R1: el grupo (auth) resuelve su copy por clave', () => {
 });
 
 describe('#65 R2: la barra de pestañas resuelve su copy por clave', () => {
-  it('resuelve las 5 ocurrencias normativas', () => {
-    expect(R2_TABS).toHaveLength(5);
+  it('resuelve las 5 ocurrencias normativas (enmendado por #206 R8)', () => {
+    expect(R2_TABS).toHaveLength(5 + 1);
     checkUses(R2_TABS);
   });
 });
@@ -259,8 +259,8 @@ describe('#100 R10: el detalle de alerta resuelve su copy por clave', () => {
 });
 
 describe('#41 R10: las zonas seguras resuelven su copy por clave', () => {
-  it('registra cada ocurrencia de la pantalla y de su cabecera (enmendado por #189 R1) (enmendado por #189 R2)', () => {
-    expect(R14_GEOFENCES).toHaveLength(18 + 1 + 1 + 1 + 1); // +1 #155 R8, +1 #159 R5
+  it('registra cada ocurrencia de la pantalla y de su cabecera (enmendado por #189 R1) (enmendado por #189 R2) (enmendado por #202 R10)', () => {
+    expect(R14_GEOFENCES).toHaveLength(18 + 1 + 1 + 1 + 1 + 1); // +1 #155 R8, +1 #159 R5
     expect(R14_GEOFENCES.every(({ file }) =>
       file === 'src/app/_layout.tsx' || file === 'src/screens/geofences/index.tsx',
     )).toBe(true);
@@ -269,8 +269,8 @@ describe('#41 R10: las zonas seguras resuelven su copy por clave', () => {
 });
 
 describe('#146 R10: el editor de zonas resuelve su copy por clave', () => {
-  it('registra cada ocurrencia del editor y de sus entradas (enmendado por #189 R1)', () => {
-    expect(R15_GEOFENCE_EDITOR).toHaveLength(27 - 1 + 2 + 3); // #189 R11
+  it('registra cada ocurrencia del editor y de sus entradas (enmendado por #189 R1) (enmendado por #202 R18)', () => {
+    expect(R15_GEOFENCE_EDITOR).toHaveLength(27 - 1 + 2 + 3 + 1); // #189 R11
     expect(R15_GEOFENCE_EDITOR.every(({ file }) =>
       file === 'src/app/_layout.tsx' || file === 'src/screens/geofences/index.tsx' || file === 'src/screens/geofence-editor/index.tsx',
     )).toBe(true);

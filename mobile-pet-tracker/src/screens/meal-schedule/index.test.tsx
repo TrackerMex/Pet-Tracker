@@ -136,7 +136,6 @@ jest.mock(
   () => ({
     useThemeColors: (tokens: string[]) => tokens.map(() => '#000000'),
   }),
-  { virtual: true },
 );
 
 // Jest copies process.env; Node's environment makes Date observe TZ.

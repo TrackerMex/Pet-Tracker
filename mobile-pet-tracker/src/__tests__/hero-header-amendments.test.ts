@@ -151,7 +151,7 @@ const AMENDED_DOCS_168 = [
     file: 'docs/ui-guidelines.md',
     feature: 'docs/ui-guidelines.md',
     change: 'regla N1: título grande en Salud, Nutrición y Perfil; hero solo en Inicio',
-    marker: '**Regla N1 (enmienda B4 de #168)**: Salud, Nutrición y Perfil abren con el título grande; Inicio es la única pestaña con PetHeroHeader. Devolver el hero a una de las tres es una enmienda a #168.',
+    marker: '**Regla N1 (enmienda #196)**: Inicio y Perfil abren con PetHeroHeader a sangre; Salud y Nutrición abren con el título grande. En Perfil el título «Perfil» y «Añadir mascota» van en el slot superior del hero y el nombre con los chips en su pie. Devolver el hero a Salud o a Nutrición, o quitárselo a Inicio o a Perfil, es una enmienda a #196.',
   },
 ];
 
@@ -198,7 +198,7 @@ describe('#168 R11: las specs enmendadas por #168 llevan su bloque', () => {
     }
   });
 
-  it('aplica además el marcador en prosa que la tabla R11.2 prescribe', () => {
+  it('aplica además el marcador en prosa que la tabla R11.2 prescribe (enmendado por #196 R11)', () => {
     for (const { file, marker } of AMENDED_DOCS_168) {
       const flowed = readFileSync(join(REPOSITORY_ROOT, file), 'utf8').replace(/\s+/g, ' ');
       expect({

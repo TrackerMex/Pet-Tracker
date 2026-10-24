@@ -129,7 +129,6 @@ jest.mock(
   () => ({
     useThemeColors: (tokens: string[]) => tokens,
   }),
-  { virtual: true },
 );
 
 const apiUrl = 'http://example.test/v1';

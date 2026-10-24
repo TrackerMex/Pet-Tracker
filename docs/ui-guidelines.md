@@ -130,12 +130,12 @@ Tres límites, no negociables:
    `contentContainerStyle` es `padding: 24`, `gap: 16` y `paddingBottom:
    insets.bottom + 24`, la misma holgura inferior que `(auth)` y
    `reset-password`.
-   `pets/[petId]/geofences` queda fuera de esta excepción desde #189 E4 (cabecera transparente, ver más abajo).
+   Zonas seguras y el editor de zonas quedan fuera de esta excepción desde #202 (`headerShown: false`, cabecera en contenido; ver más abajo).
 
    **Excepción nombrada (fidelidad al canvas, 2026-10-13)**: una pantalla llevada al canvas aprobado usa padding lateral 20 y el `gap` de su artboard; ver conventions.md §Dimensiones, misma excepción.
-   Zonas seguras (#189): `paddingHorizontal: 20`, `paddingTop: insets.top + 6`, `gap: 12`, `paddingBottom: insets.bottom + 40`.
+   Zonas seguras (#189, #202): `paddingHorizontal: 20`, `paddingTop: insets.top + 12`, `gap: 12`, `paddingBottom: insets.bottom + 40`.
    Hoja del Editor (#189): `paddingHorizontal: 20`, `paddingTop: 12`, `gap: 14`, `paddingBottom: insets.bottom + 36`.
-   Cabecera nativa transparente (#189 E4): Zonas seguras y la rama de formulario del Editor usan `headerTransparent: true` con `headerStyle: { backgroundColor: 'transparent' }`; el contenido empieza bajo la cabecera, el título comparte fila con la flecha, el `paddingTop` suma `insets.top` y no se usa `contentInsetAdjustmentBehavior`. Las ramas de estado del Editor conservan la cabecera opaca.
+   Cabecera en contenido (#202): Zonas seguras y el editor de zonas declaran `headerShown: false`. Zonas y las ramas de estado del Editor montan `ScreenHeader` como primer hijo del contenido; el formulario del Editor flota sobre el mapa una fila en `top: insets.top + 8` con el volver de cristal (44, `BackButton` con `strokeWidth={2.4}`) y la píldora del título, ambos con `shadows.card`.
 7. **Estados de carga**: Skeleton de heroui dimensionado como el contenido
    final. Prohibido Spinner suelto que salte el layout.
 8. **Estructura**: route delgado en `src/app/` + pantalla en `src/screens/`
@@ -220,7 +220,7 @@ Tres límites, no negociables:
       `text-17 font-bold text-accent-strong`. «Ver en el mapa» del detalle
       conserva `h-13` y su `Button.Label` `text-base font-extrabold text-foreground`.
     «Eliminar» del Editor es secundario neutro con etiqueta `text-base font-extrabold text-danger`, excepción a `text-17 … text-foreground` del neutro; sale de «Sin labio».
-    La papelera de la fila de zona es una excepción solo-icono (`size-11 rounded-xl bg-danger-soft`).
+    La papelera de la fila de zona es una excepción solo-icono (`size-11 rounded-xl` sobre `CATEGORY_SLOTS.rose.surface`, #202).
     - **Compacto**: `reminders-add-link` conserva `h-10`, `rounded-xl`,
       `gap-1.5 px-3.5`, su icono y `Button.Label` `text-sm font-extrabold text-accent-foreground`;
       usa `style={chunkyLip.primaryCompact}` (`chunkyLip.primaryCompact`, labio de 3).
@@ -567,7 +567,7 @@ de la enmienda está en su `requirements.md` §R11.
 
 - [X] Enmienda #168 aprobada por humano
 
-**Regla N1 (enmienda B4 de #168)**: Salud, Nutrición y Perfil abren con el título grande; Inicio es la única pestaña con PetHeroHeader. Devolver el hero a una de las tres es una enmienda a #168.
+**Regla N1 (enmienda #196)**: Inicio y Perfil abren con PetHeroHeader a sangre; Salud y Nutrición abren con el título grande. En Perfil el título «Perfil» y «Añadir mascota» van en el slot superior del hero y el nombre con los chips en su pie. Devolver el hero a Salud o a Nutrición, o quitárselo a Inicio o a Perfil, es una enmienda a #196.
 
 ## Enmienda #171 — confeti, ping y flotación de la celebración
 
@@ -841,9 +841,9 @@ Detalle y tests en `specs/mobile-pairing-pingo-canvas-fidelity/requirements.md` 
 
 > Enmienda de `ui-guidelines` por `mobile-geofences-canvas-fidelity` (#189). Directiva del humano: «el diseño final como el artifact». La firma de esta casilla autoriza las ediciones de R16 de `specs/mobile-geofences-canvas-fidelity/requirements.md`; nada más.
 
-- **Métricas por fidelidad al canvas (A11).** Zonas: `paddingHorizontal: 20`, `paddingTop: insets.top + 6`, `gap: 12`, `paddingBottom: insets.bottom + 40`. Hoja del Editor: `paddingHorizontal: 20`, `paddingTop: 12`, `gap: 14`, `paddingBottom: insets.bottom + 36`.
+- **Métricas por fidelidad al canvas (A11).** Zonas: `paddingHorizontal: 20`, `paddingTop: insets.top + 12`, `gap: 12`, `paddingBottom: insets.bottom + 40`. Hoja del Editor: `paddingHorizontal: 20`, `paddingTop: 12`, `gap: 14`, `paddingBottom: insets.bottom + 36`.
 - **Radios fuera de la escala (regla 12).** `rounded-14` (tile de la zona), `rounded-tile` (aviso de límite), `rounded-t-hero` (hoja del Editor) y `rounded-16` (botones). Las líneas de #175 a #180 no se tocan.
-- **Botón (regla 13).** La receta deshabilitada (`h-14 rounded-16 bg-default`, etiqueta `text-17 font-extrabold text-muted`, sin labio) la aplican «Añadir zona» en el límite y «Guardar» con el nombre vacío. «Eliminar» del Editor sale de «Sin labio»: es secundario neutro con etiqueta `text-base font-extrabold text-danger`, excepción a la etiqueta `text-17 … text-foreground` del neutro. La papelera de la fila de zona es una excepción solo-icono (`size-11 rounded-xl bg-danger-soft`).
+- **Botón (regla 13).** La receta deshabilitada (`h-14 rounded-16 bg-default`, etiqueta `text-17 font-extrabold text-muted`, sin labio) la aplican «Añadir zona» en el límite y «Guardar» con el nombre vacío. «Eliminar» del Editor sale de «Sin labio»: es secundario neutro con etiqueta `text-base font-extrabold text-danger`, excepción a la etiqueta `text-17 … text-foreground` del neutro. La papelera de la fila de zona es una excepción solo-icono (`size-11 rounded-xl` sobre `CATEGORY_SLOTS.rose.surface`, #202).
 - **Paleta categórica.** `zoneCategory` (orden `green, blue, amber, violet, rose`) es el único reparto categoría → ranura de las zonas; el color es de la posición en la lista, no de la zona.
 
 - [X] Enmienda #189 aprobada por humano
@@ -921,3 +921,15 @@ Detalle y tests en `specs/mobile-canvas-nutrition/requirements.md` (R1 a R17).
 - **`rise` en Salud y Peso (#199).** `RiseIn` (`components/rise-in.tsx`) aplica `MOTION_RISE_TIMING` y `MOTION_RISE_OFFSET_Y` a tarjetas y filas con los retrasos del canvas: Salud 0 (próxima dosis), `80 + 60 · min(i, 2)` (vacunas) y 260 (peso); Peso 0 (gráfica), 80 (formulario), `140 + 60 · min(i, 2)` (historial) y `60 · i` (esqueletos). Con reduce motion no hay entrada.
 - **`draw` y `pop` de la gráfica de peso (#199).** La línea se dibuja con `MOTION_DRAW_TIMING` (1200 ms, `Easing.bezier(0, 0, 0.58, 1)`) tras `MOTION_DRAW_DELAY_FULL_MS` (200) en Peso o `MOTION_DRAW_DELAY_MINI_MS` (300) en Salud; el último punto de Peso hace `pop` (0.6 → 1.08 → 1 en `MOTION_POINT_POP_MS`, 400) a los `MOTION_POINT_POP_DELAY_MS` (1300). Con reduce motion salen completos.
 - **Fundido del toast de Peso (#199).** `FadeIn` de `MOTION_TOAST_FADE_MS` (300) tras `MOTION_TOAST_DELAY_MS` (400), con la sombra `useShadows().toast`.
+
+## Enmienda #206 — barra de pestañas fiel al canvas
+
+Fecha: 2026-10-23. Feature #206 `mobile-canvas-tab-bar`. Excepción nombrada a D-I.
+
+1. **Iconos de la barra.** Los cinco iconos de `FloatingTabBar` se dibujan con `react-native-svg` copiando los trazados del `<nav aria-label="Pestañas">` del canvas (24 x 24, `fill="none"`, trazo redondeado de 2,4 en la pestaña activa y de 2 en las demás) y se colorean con `accent-strong` o `muted` vía `useThemeColors`. Excepción a D-I limitada a los iconos de esta barra: ningún otro icono de navegación o de acción cambia, y siguen siendo de `reicon-react-native`.
+2. **Barra.** Cápsula de 64 con relleno de 6 y hueco de 4, celdas de 52, velo `bg-glass-surface-strong` y sombra `useShadows().tabBar`. Flota a 16 de cada lado y a 12 por encima del inset inferior.
+
+Detalle y tests en `specs/mobile-canvas-tab-bar/requirements.md` (R1 a R10).
+
+- [X] Enmienda #206 aprobada por humano
+  Firma delegada en el leader por mandato del humano del 2026-10-23 (`progress/plan_canvas-parity-2026-10-23.md` §4), reflejada desde `specs/mobile-canvas-tab-bar/requirements.md` § Aprobación, ya firmada el 2026-10-23.

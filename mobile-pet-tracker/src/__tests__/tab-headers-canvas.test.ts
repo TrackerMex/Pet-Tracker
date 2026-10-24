@@ -78,10 +78,6 @@ describe('#168 R1: el título grande vive en las tres pestañas', () => {
 });
 
 describe('#168 R12: alcance cerrado', () => {
-  it('conserva PetHeroHeader solo en Inicio', () => {
-    expect(filesMatching(/<PetHeroHeader/).sort()).toEqual(['screens/home/index.tsx']);
-  });
-
   it('veta clases con corchetes en las pantallas y sus tests (enmendado por #200 R1)', () => {
     for (const file of SCREEN_AND_TEST_FILES_168) {
       expect(readSource(file)).not.toMatch(/[A-Za-z0-9_-]+-\[[^\]]+\]/);
@@ -104,5 +100,18 @@ describe('#168 R12: alcance cerrado', () => {
     for (const file of TAB_SCREENS_168) {
       expect(readSource(file)).not.toMatch(new RegExp(String.raw`#(?!\d{2,3} R\d)[\da-f]{3,8}\b`, 'i'));
     }
+  });
+});
+
+
+describe('#196 R11: alcance de la cabecera a sangre', () => {
+  it('#196 R11: PetHeroHeader solo en Inicio y Perfil', () => {
+    expect(filesMatching(/<PetHeroHeader/).sort()).toEqual(['screens/home/index.tsx', 'screens/profile/index.tsx']);
+  });
+
+  it('#196 R11: la carta recoge la enmienda N1 de #196', () => {
+    const charter = readFileSync(join(process.cwd(), '..', 'docs/ui-guidelines.md'), 'utf8');
+    expect(charter).toContain('**Regla N1 (enmienda #196)**');
+    expect(charter).not.toContain('Inicio es la única pestaña con PetHeroHeader');
   });
 });

@@ -10139,3 +10139,119 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   Ver [[flake-tinte-0d1117-bajo-carga]].
 - **Estado final:** done. El smoke queda en `progress/smoke_canvas-parity.md`. La PR a `dev` la
   mergea el leader y después se borra el worktree `Pet-Tracker-wt-199`.
+
+## Sesión 2026-10-24 — mobile-jest-virtual-mock-poisoning (id: 207)
+
+- **Feature:** arregla el flake `#0D1117` de `#172 R2`, que tumbó el CI de #202 (PR #247) y de
+  #206 (PR #248). Los `jest.mock(..., { virtual: true })` de módulos que sí existen, en los
+  `index.test.tsx` de food, health, meal-schedule y profile, envenenaban la caché de resolución de
+  jest, y `#172 R2` recibía `#0D1117`.
+- **Spec:** [[specs/mobile-jest-virtual-mock-poisoning/requirements|spec]], con firma delegada en el
+  leader por mandato del humano del 2026-10-23 (plan §4) y errata E1 (cifras de CC1 y CC4).
+- **Acciones:** implementó el subagente `implementer` (Sonnet), como fallback de CLAUDE.md
+  §Excepciones: a Codex le quedaba poca cuota semanal. R1 quita `{ virtual: true }` de los cuatro
+  ficheros. R2 añade el candado `jest-virtual-mock-lock.test.ts`, que recorre los tests de `src/`.
+  Las mutaciones de control C a F están commiteadas y revertidas (vía b de C4). Solo tests, con
+  ámbito `test(mobile)`.
+- **Resultado:** `./init.sh` del leader sobre `b1b8ec8e`, exit 0: backend 1474 tests; infra 2
+  suites / 14 tests; móvil 147 suites / 5018 tests / 1 snapshot; e2e 30 de 33 suites (3 omitidas)
+  y 468 tests (8 omitidos). Reviewer APROBADO (0 bloqueantes, 5 no bloqueantes). Reprodujo CC1 con
+  caché vacía: A `4500e89b` rojo solo en `#172 R2`; B `c56e7bc7` verde.
+- **Notas no bloqueantes:** (1) N1: `{ virtual /* c */ : true }` elude el patrón y no está entre los
+  límites declarados. (2) N2: el candado recorre `*.test.ts(x)`, pero el `testMatch` real de
+  jest-expo también corre `.test.js`, `.spec.*` y cualquier `.ts` de `__tests__/`. Hoy hay cero
+  apariciones; ampliarlo sería otra feature. (3) N3: las mutaciones M-R2e y M-R2f se tapan entre sí
+  cuando se agrupan. (4) N4 y N5 son tareas del leader al cerrar y quedan hechas en este cierre.
+  (5) Notion: no aplica (las specs firmadas por el leader no se espejan).
+- **Estado final:** done. Sin smoke. El leader mergea la PR a `dev`. Después se mergea `dev` en
+  #202, #206 y #196 para que su CI salga verde, y se borra el worktree `Pet-Tracker-wt-207`.
+
+## Sesión 2026-10-24 — mobile-canvas-zones (id: 202)
+
+- **Feature:** Zonas y el editor de zonas como sus artboards del canvas (ola 2 del plan de paridad,
+  R1–R26). Cabecera de contenido con volver y contador en fila, sin cabecera nativa; editor con
+  círculo de cristal y píldora con sombra sobre el mapa; diálogo de borrado con velo y tarjeta
+  animados; `ToggleSwitch` de 48x28; esqueletos; hoja con teclado; enmienda R20 de la carta y de
+  `docs/conventions.md`.
+- **Spec:** [[specs/mobile-canvas-zones/requirements|spec]], con firma delegada en el leader por
+  mandato del humano del 2026-10-23 (plan §4) y erratas `4c067d76` (primera parada de R7) y
+  `a7eedec0` (R7.4: `accessibilityRole="header"`, porque `role="header"` da TS2769 en RN 0.86).
+- **Acciones:** Codex implementó test-primero (rojo y verde por requisito). Mergeó `dev` (#200 y
+  #198) en `d3c2b000`. Su cierre quedó bloqueado por un rojo de `Home #190 R5` (translateY -10
+  frente a 0) más dos timeouts de 5000 ms que pasaron aislados; el gate del leader no los
+  reprodujo. El merge de `origin/dev` con #199 lo resolvió un subagente del leader en `d5399a07`
+  con la regla «dev + delta» (cuatro conflictos: `alerts-canvas-fidelity`,
+  `chunky-cta-canvas-fidelity`, `design-drift` y `language-provider`), para ahorrar cuota de Codex.
+- **Resultado:** `./init.sh` del leader sobre `83599961`, exit 0 (móvil 146 suites / 4944 tests).
+  Reviewer APROBADO ahí (0 bloqueantes, 6 no bloqueantes). Tras el merge, `./init.sh` sobre
+  `9dcf2fb1`, exit 0: backend 187 suites / 1474 tests; infra 2 suites / 14 tests; móvil 148 suites /
+  5084 tests / 1 snapshot; e2e 30 de 33 suites (3 omitidas) y 468 tests (8 omitidos); typecheck y
+  lint sin errores. El reviewer aprobó el delta del merge sin observaciones nuevas.
+- **Notas no bloqueantes:** (1) Los `Pressable` de cancelar y confirmar de `confirm-dialog.tsx` no
+  tienen feedback al pulsar (N1, C8): deuda para un id propio o antes del smoke. (2) `delayMs={0}`
+  del diálogo sin candado (N2). (3) N3 cerrada con la errata `a7eedec0`. (4) La traceability se
+  actualizó en este cierre (N4). (5) Líneas de la carta caducadas fuera de la tabla R20: 228 y 843
+  (`h-14 rounded-16 bg-default`) y 231 (`Switch` de heroui); piden enmienda con firma humana (N5).
+  (6) `71aac698` dejó rojo un candado agregado de chunky-cta que el inventario omitía; nombres
+  caducados en GZ (N6). (7) Notion: no aplica (las specs firmadas por el leader no se espejan).
+- **Estado final:** done. El smoke queda en `progress/smoke_canvas-parity.md`. La PR a `dev` la
+  mergea el leader y después se borra el worktree `Pet-Tracker-wt-202`.
+## Sesión 2026-10-24 — mobile-canvas-tab-bar (id: 206)
+
+- **Feature:** la barra de pestañas como la del canvas (ola 2 del plan de paridad, R1–R11).
+  Cápsula de 64 con relleno de 6 y hueco de 4, celdas de 52, velo `bg-glass-surface-strong` y
+  sombra `useShadows().tabBar`. Cinco iconos de trazo hueco con `react-native-svg`, píldora que se
+  desliza, fila anunciada como «Pestañas» y enmienda R9 de la carta (excepción nombrada a D-I).
+- **Spec:** [[specs/mobile-canvas-tab-bar/requirements|spec]], con firma delegada en el leader por
+  mandato del humano del 2026-10-23 (plan §4) y erratas E1 (el doble de `react-native-svg` exporta
+  `SvgXml` en el rojo de R6), E2 (fila 10 en 0 tras #200) y E3 (R9 ya no fija la enmienda al final
+  de la carta).
+- **Acciones:** Codex implementó test-primero (rojo y verde por requisito). El merge de `origin/dev`
+  con #199 quedó en `736fcf3e`. El reviewer encontró en O1 que CF `#206 R9` exigía que la enmienda
+  fuera el último bloque de la carta, lo que habría puesto rojo ese test con cualquier enmienda
+  posterior. El leader lo resolvió con la errata E3 (`850cdecc`), y el fallback Sonnet del
+  implementer borró esa aserción en `aa942254`, porque el cambio era de una línea y Codex no tenía
+  cuota.
+- **Resultado:** `./init.sh` del leader sobre `3df43a06`, exit 0: backend 187 suites / 1474 tests;
+  infra 2 suites / 14 tests; móvil 147 suites / 5046 tests / 1 snapshot; e2e 30 de 33 suites (3
+  omitidas) y 468 tests (8 omitidos). Reviewer APROBADO ahí (0 bloqueantes, 5 no bloqueantes). El
+  delta de E3 se re-revisó con tres mutaciones de la carta (enmienda ajena al final: verde; bloque
+  duplicado: rojo; texto alterado: rojo) y salió APROBADO en `4bc78c36`. No se repitió `./init.sh`
+  para ese delta de una línea: el test se corrió dirigido (14/14) y con eslint en exit 0.
+- **Notas no bloqueantes:** (1) Las celdas de la barra no tienen feedback al pulsar (O2, C8). Ya
+  pasaba antes y queda como deuda. (2) Hubo un rojo transitorio en `#194 R5` de `ui-language`
+  durante R8, explicado en el informe (O3). (3) `design.md:169` y `:195` todavía dicen «al final»,
+  pero se leen como descriptivos (residuo de la re-revisión). (4) Notion: no aplica (las specs
+  firmadas por el leader no se espejan).
+- **Estado final:** done. El smoke queda en `progress/smoke_canvas-parity.md`. El leader mergea la
+  PR a `dev` y después se borra el worktree `Pet-Tracker-wt-206`.
+
+## Sesión 2026-10-24 — mobile-profile-photo-hero-canvas (id: 196)
+
+- **Feature:** Perfil con la cabecera fotográfica del canvas (ola 1 del plan de paridad, R1–R11).
+  `PetHeroHeader` a sangre con título, píldora de añadir y selector de vidrio en el slot, y nombre
+  y chips en el pie. Cámara con labio, aviso ámbar de permisos con CTA de labio primario, «Cerrar
+  sesión» como píldora rosa, `ToggleSwitch` en el tema y trazos de icono del canvas. R10 fija 24
+  literales de tres artboards y R11 enmienda la regla N1 de la carta.
+- **Spec:** [[specs/mobile-profile-photo-hero-canvas/requirements|spec]], con firma delegada en el
+  leader por mandato del humano del 2026-10-23 (plan §4) y erratas E1–E13. Las dos paradas de
+  visibilidad bajo opacidad 0 se resolvieron con E6–E10 y E11–E12, y E13 re-midió las anclas tras
+  el merge de dev con #198 y #199.
+- **Acciones:** Codex implementó test-primero (de `1a82f15c` a `b4141f3e`). El primer gate del
+  leader salió rojo por el flake del tinte `#0D1117`, corregido después por #207. El segundo, sobre
+  `4e8c3134`, salió verde. Por la N6 del reviewer se mergeó `origin/dev` dos veces: con #202 en
+  `bb36b026` (un subagente Sonnet resolvió por unión los conflictos de `alerts-canvas-fidelity`,
+  `design-drift` y `profile-canvas-fidelity`) y con #206 en `e26b34a7` (sin conflictos).
+- **Resultado:** `./init.sh` del leader sobre `e26b34a7`, exit 0: backend 187 suites / 1474 tests;
+  móvil 151 suites / 5184 tests / 1 snapshot; e2e 30 suites y 468 tests (8 omitidos). Antes,
+  el reviewer había aprobado `4e8c3134` (0 bloqueantes, 8 no bloqueantes) con diez mutaciones,
+  todas rojas por aserción.
+- **Notas no bloqueantes:** (1) Formato de `screens/profile/index.tsx` (N2): indentación,
+  líneas en blanco y un fragmento sobrante, sin prettier en móvil. (2) La cámara y «Añadir mascota»
+  no tienen feedback al pulsar (N3, deuda de carta). (3) Los títulos de R7 y R8 usan `$0` con
+  `it.each` de primitivos y no se interpolan (N4); en specs futuras, `%s`. (4) El párrafo de
+  cierre de la trazabilidad citaba el rojo de `#0D1117` como excepción autorizada; se reescribió
+  (N1). (5) El cierre de #206 dejó su nota de fallback en `progress/current.md` de `dev`; este
+  cierre devuelve la plantilla.
+- **Estado final:** done. El smoke queda en `progress/smoke_canvas-parity.md`. El leader mergea la
+  PR a `dev` y después se borra el worktree `Pet-Tracker-wt-196`.
