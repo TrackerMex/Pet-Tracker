@@ -440,13 +440,13 @@ export function RemindersScreen() {
               <View className="w-full gap-3">
                 <Button
                   testID="reminders-delete-confirm"
-                  className="w-full rounded-xl bg-danger"
+                  className="h-14 w-full rounded-16 bg-danger" style={chunkyLip.danger}
                   variant="danger"
                   onPress={deleteSelectedReminder}
                 >
-                  <Button.Label className="font-bold text-danger-foreground">
+                  <Text className="text-17 font-extrabold text-danger-foreground">
                     {t('reminders.delete')}
-                  </Button.Label>
+                  </Text>
                 </Button>
                 <Button
                   testID="reminders-delete-cancel"
