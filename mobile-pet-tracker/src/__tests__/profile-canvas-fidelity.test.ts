@@ -57,7 +57,7 @@ describe('#173 R2: inventario de radios nuevos', () => {
 });
 
 describe('#173 R2.4: inventario de tamaños nuevos', () => {
-  it('reserva text-26 al nombre de la mascota en Perfil (enmendado por #176 R8) (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #197 R19) (enmendado por #198 R15)', () => {
+  it('reserva text-26 al nombre de la mascota en Perfil (enmendado por #176 R8) (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #197 R19) (enmendado por #198 R15) (enmendado por #204 R4)', () => {
     expect(filesMatching(/\btext-26\b/)).toEqual([
       'components/empty-state.tsx', // (enmendado por #176 R8)
       'components/screen-header.tsx',
@@ -68,7 +68,6 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/geofences/index.tsx', // #189 R1
       'screens/home/index.tsx', // #198 R15
       'screens/profile/index.tsx',
-      'screens/reminders/index.tsx', // #178 R4
     ]);
   });
   it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8) (enmendado por #189 R6) (enmendado por #200 R8) (enmendado por #199 R7) (enmendado por #199 R14) (enmendado por #198 R5)', () => {
