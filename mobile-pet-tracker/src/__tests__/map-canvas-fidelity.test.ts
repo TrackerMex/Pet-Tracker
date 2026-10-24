@@ -180,3 +180,40 @@ describe('#201 R4: la tarjeta de stats flota sin borde', () => {
     },
   ])('#201 R4: $artboard › $canvas › $production', checkRow);
 });
+
+describe('#201 R5: los tiles llevan el rótulo arriba y la tinta del canvas', () => {
+  it.each<Row>([
+    {
+      artboard: 'Mapa',
+      canvas: 'border-radius: 14px; background: var(--default); padding: 10px 12px',
+      canvasCount: 4,
+      file: 'screens/map/index.tsx',
+      production: 'flex-1 gap-0.5 rounded-14 bg-default px-3 py-2.5',
+      productionCount: 4,
+    },
+    {
+      artboard: 'Mapa',
+      canvas: 'font-size: 11px; font-weight: 600; color: var(--muted)',
+      canvasCount: 4,
+      file: 'screens/map/index.tsx',
+      production: 'text-11 font-semibold text-muted',
+      productionCount: 4,
+    },
+    {
+      artboard: 'Mapa',
+      canvas: 'font-size: 20px; font-weight: 900; color: var(--accent-strong)',
+      canvasCount: 2,
+      file: 'screens/map/index.tsx',
+      production: 'text-xl font-black text-accent-strong',
+      productionCount: 1,
+    },
+    {
+      artboard: 'Mapa',
+      canvas: 'font-size: 16px; font-weight: 700; color: var(--muted)',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'text-base font-bold text-muted',
+      productionCount: 1,
+    },
+  ])('#201 R5: $artboard › $canvas › $production', checkRow);
+});

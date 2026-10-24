@@ -1784,20 +1784,20 @@ describe('#116 R5: la batería sustituye al tile de conexión', () => {
     mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
   });
 
-  it('monta el tile de batería con valor y rótulo en ese orden', async () => {
+  it('monta el tile de batería con rótulo y valor en ese orden (enmendado por #201 R5)', async () => {
     await renderMap();
     await waitFor(() => expect(screen.getByTestId('stat-battery')).toBeVisible());
 
     let tile: TestInstance | null = screen.getByTestId('stat-battery');
-    while (tile && tile.props.className !== 'flex-1 items-center rounded-xl bg-default p-3') {
+    while (tile && tile.props.className !== 'flex-1 gap-0.5 rounded-14 bg-default px-3 py-2.5') {
       tile = tile.parent;
     }
     if (!tile) throw new Error('La batería no cuelga de su tile');
 
     expect(tile.children.length).toBe(2);
-    expect(elementChild(tile, 0).props.testID).toBe('stat-battery');
-    expect(elementChild(tile, 1)).toHaveTextContent('Batería');
-    expect(elementChild(tile, 1).props.className).toBe('mt-1 text-2xs font-normal text-muted');
+    expect(elementChild(tile, 0)).toHaveTextContent('Batería');
+    expect(elementChild(tile, 0).props.className).toBe('text-11 font-semibold text-muted');
+    expect(elementChild(tile, 1).props.testID).toBe('stat-battery');
   });
 
   it('retira stat-gps del mapa', async () => {
@@ -1815,13 +1815,13 @@ describe('#116 R6: la batería se lee con formato entero y tinta por umbral', ()
   });
 
   it.each([
-    [100, '100%', 'text-base font-black text-accent-strong'],
-    [82, '82%', 'text-base font-black text-accent-strong'],
-    [61, '61%', 'text-base font-black text-accent-strong'],
-    [60, '60%', 'text-base font-black text-warning-strong'],
-    [15, '15%', 'text-base font-black text-warning-strong'],
-    [0, '0%', 'text-base font-black text-warning-strong'],
-  ] as const)('%i se lee %s con %s', async (batteryPct, value, className) => {
+    [100, '100%', 'text-xl font-black text-accent-strong'],
+    [82, '82%', 'text-xl font-black text-accent-strong'],
+    [61, '61%', 'text-xl font-black text-accent-strong'],
+    [60, '60%', 'text-xl font-black text-warning-strong'],
+    [15, '15%', 'text-xl font-black text-warning-strong'],
+    [0, '0%', 'text-xl font-black text-warning-strong'],
+  ] as const)('%i se lee %s con %s (enmendado por #201 R5)', async (batteryPct, value, className) => {
     mockGetPet.mockResolvedValue({
       kind: 'ok',
       pet: makePet({ device: { ...makeDevice('online'), batteryPct } }),
@@ -1884,7 +1884,7 @@ describe('#116 R7: la batería cae al guion y solo la lee el detalle', () => {
     expect(battery.props.className).toBe('text-base font-black text-muted');
   });
 
-  it('lee la batería del detalle y no de la lista', async () => {
+  it('lee la batería del detalle y no de la lista (enmendado por #201 R5)', async () => {
     mockListPets.mockResolvedValue({
       kind: 'ok',
       pets: [makePet({ device: { ...makeDevice('online'), batteryPct: 10 } })],
@@ -1897,10 +1897,10 @@ describe('#116 R7: la batería cae al guion y solo la lee el detalle', () => {
     await renderMap();
     await waitFor(() => expect(screen.getByTestId('stat-battery')).toHaveTextContent('82%'));
 
-    expect(screen.getByTestId('stat-battery').props.className).toBe('text-base font-black text-accent-strong');
+    expect(screen.getByTestId('stat-battery').props.className).toBe('text-xl font-black text-accent-strong');
   });
 
-  it('repinta la batería con el poll de 15 segundos', async () => {
+  it('repinta la batería con el poll de 15 segundos (enmendado por #201 R5)', async () => {
     jest.useFakeTimers({ doNotFake: ['requestAnimationFrame'] });
     mockGetPet
       .mockResolvedValueOnce({
@@ -1928,7 +1928,7 @@ describe('#116 R7: la batería cae al guion y solo la lee el detalle', () => {
       });
       await waitFor(() => expect(screen.getByTestId('stat-battery')).toHaveTextContent('40%'));
 
-      expect(screen.getByTestId('stat-battery').props.className).toBe('text-base font-black text-warning-strong');
+      expect(screen.getByTestId('stat-battery').props.className).toBe('text-xl font-black text-warning-strong');
     } finally {
       mockFocusCleanup?.();
       jest.useRealTimers();
@@ -2306,6 +2306,47 @@ describe('#201 R4: la tarjeta de stats flota sin borde', () => {
     expect(card.children).toHaveLength(2);
     expect(elementChild(card, 0).props.className).toBe('gap-2');
     expect(elementChild(card, 1).props.testID).toBe('lost-mode-button');
+  });
+});
+
+describe('#201 R5: los tiles llevan el rótulo arriba y la tinta del canvas', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition({ staleSeconds: 15 }),
+    });
+    mockListPositions.mockResolvedValue({
+      kind: 'ok',
+      items: [makeStoredPosition({ speedKmh: 12.34 })],
+      nextCursor: null,
+    });
+    mockGetDayRoute.mockResolvedValue({
+      kind: 'ok',
+      date: '2026-08-21',
+      trips: [makeTrip({ distanceM: 2000 })],
+    });
+  });
+
+  it.each([
+    ['stat-speed', 'Velocidad', 'text-xl font-black text-accent-strong'],
+    ['stat-distance', 'Distancia', 'text-xl font-black text-foreground'],
+    ['stat-updated', 'Actualizado', 'text-base font-bold text-muted'],
+  ] as const)('#201 R5: cada valor con dato lleva la tinta del canvas: %s', async (testID, label, className) => {
+    await renderMap();
+
+    const value = await screen.findByTestId(testID);
+    await waitFor(() => expect(screen.getByTestId(testID)).not.toHaveTextContent('—'));
+
+    expect(value.props.className).toBe(className);
+    const tile = value.parent;
+    if (!tile) throw new Error('El valor no cuelga de su tile');
+    expect(tile.props.className).toBe('flex-1 gap-0.5 rounded-14 bg-default px-3 py-2.5');
+    expect(tile.children).toHaveLength(2);
+    expect(elementChild(tile, 0)).toHaveTextContent(label);
+    expect(elementChild(tile, 0).props.className).toBe('text-11 font-semibold text-muted');
+    expect(elementChild(tile, 1).props.testID).toBe(testID);
+    expect(elementChild(tile, 1).props.numberOfLines).toBe(1);
   });
 });
 

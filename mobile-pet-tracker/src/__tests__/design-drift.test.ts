@@ -1115,7 +1115,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     expect(addReminder).not.toMatch(/uppercase|tracking-widest/);
   });
 
-  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9)', () => {
+  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #201 R5)', () => {
     for (const [pattern, count] of [
       [/\brounded-14\b/g, 1], [/\brounded-16\b/g, 4], [/\brounded-22\b/g, 1],
     ] as const) {
@@ -1157,6 +1157,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       join('components', 'segmented-control.tsx'), // #191 R11
       join('screens', 'geofences', 'index.tsx'), // #189 R5
       join('screens', 'health', 'index.tsx'), // #199 R18
+      join('screens', 'map', 'index.tsx'), // #201 R5
       join('screens', 'meal-schedule', 'index.tsx'), // #179 R13 comparte rounded-14
       join('screens', 'meals-history', 'index.tsx'), // #179 R13 comparte rounded-14
       join('screens', 'pairing', 'index.tsx'), // #188 R20 comparte rounded-14
