@@ -1,4 +1,5 @@
 import * as motion from '../theme/motion';
+import { en, es } from '../i18n/catalog';
 
 declare function require(moduleName: 'fs'): { readFileSync: (path: string, encoding: 'utf8') => string };
 declare function require(moduleName: 'path'): { join: (...paths: string[]) => string };
@@ -30,5 +31,21 @@ describe('#199 R27: guardas', () => {
       MOTION_TOAST_FADE_MS: 300,
       MOTION_TOAST_DELAY_MS: 400,
     });
+  });
+});
+
+
+describe('#199 R25: copy nuevo', () => {
+  it.each([
+    ['weightLog.history', 'Historial', 'History'],
+    ['health.appliedOn', 'Aplicada {{date}}', 'Given {{date}}'],
+    ['health.nextOn', 'Próxima {{date}}', 'Next {{date}}'],
+    ['health.nextDoseToday', 'hoy', 'today'],
+    ['health.nextDoseTomorrow', 'mañana', 'tomorrow'],
+    ['health.nextDoseInDays', 'en {{days}} días', 'in {{days}} days'],
+    ['weightChart.lastSixMonths', 'Peso de los últimos 6 meses', 'Weight over the last 6 months'],
+  ] as const)('#199 R25 %s dice %s en es y %s en en', (key, spanish, english) => {
+    expect(es[key]).toBe(spanish);
+    expect(en[key]).toBe(english);
   });
 });
