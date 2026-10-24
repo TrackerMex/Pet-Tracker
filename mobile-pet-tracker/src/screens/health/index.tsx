@@ -97,14 +97,18 @@ export function HealthScreen() {
         <Text testID="health-title" className="text-3xl font-black tracking-title text-foreground">
           {t('health.health')}
         </Text>
+        {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
+          <PetSwitcher
+            variant="avatars"
+            pets={pets.data.pets}
+            selectedPetId={selectedPetId}
+            onSelect={selectPet}
+          />
+        ) : null}
       </View>
       {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
           <View testID="health-content" style={{ gap: 16 }}>
-            <PetSwitcher
-              pets={pets.data.pets}
-              selectedPetId={selectedPetId}
-              onSelect={selectPet}
-            />
+
             {selectedPetId ? (
               <View testID="vaccines-section" className="gap-3">
                 <View className="flex-row items-center gap-2">
