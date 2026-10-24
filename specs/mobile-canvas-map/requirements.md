@@ -828,6 +828,8 @@ rótulos con `getByText` y no depende del orden.
 
 **Errata E2 (2026-10-24, filas 29 y 30).** El verde de R1 cambia `map-stats` de `View` a `Animated.View`, y Reanimated entrega `props.style` como array de un elemento (`[{ bottom: 120, left: 16, position: 'absolute', right: 16 }]`) en vez del objeto. El estilo no cambia, pero las dos aserciones de MT que comparan `props.style` con `toEqual(expect.objectContaining(…))` se ponen rojas. Se enmiendan en el commit rojo de R1 con `toHaveStyle` de RNTL, que aplana el array y ya se usa en otros tests móviles; no se introduce `StyleSheet` en MT. También se acepta la enmienda mecánica que el implementer hizo en el commit rojo de R15 (`08cbc116`): `R7: ruta del día como polylines` › `R3 (android-map-never-ready): pasa una polyline mapeada por cada viaje` gana ` (enmendado por #201 R15)` y `width: 5` en cada polilínea esperada. R15 añade la clave que ese `toEqual` exacto compara, y la enmienda endurece el candado. Así el recuento de `(enmendado por #201 R` en MT queda en 23 + 1 + 2 = 26.
 
+**Errata E3 (2026-10-24, parada de R12).** Con `variant="hero"`, `EmptyState` envuelve la acción en `<id>-action-wrap`, un `Animated.View` cuya entrada (`useHeroEntrance`) arranca en `opacity: 0`. El doble de Reanimated de MT no la hace avanzar, y `toBeVisible()` mira la opacidad de los ancestros. Por eso el verde de R12 pone rojo `#155 R4: Mapa sin mascotas presenta a Pingo` › `pinta la pose, el título y la frase de Pingo`, y el de R13 pone rojos los ocho `it` de `#159 R3: el dueño sin collar puede ir a emparejar` que piden `Vincular collar` visible. Ninguno de los nueve estaba en el inventario. Se resuelve con la técnica que R11 ya usa en EH y en MT: un `beforeEach(() => { mockUseReducedMotion.mockReturnValue(true); // #201 R12/R13: el héroe entra con opacidad 0 })` dentro de `describe('#155 R4…')`, en el commit rojo de R12, y otro igual dentro de `describe('#159 R3…')`, en el commit rojo de R13. El `beforeEach` de nivel superior que devuelve `false` corre antes, así que el valor no se filtra a otros `describe`. Las aserciones y los títulos no cambian, y el recuento de `(enmendado por #201 R` en MT se queda en 26. La entrada animada del héroe ya tiene su candado en EH. Con movimiento reducido, estos `it` comprueban la rama estática, que es la que pinta la acción visible desde el primer fotograma.
+
 Se comprobó que siguen verdes sin cambios: `#116 R2 › pinta la píldora como
 hijo 0 de map-stats y la tarjeta como hijo 1` (busca `stat-speed` dentro del
 hijo 1), `#62 R3` (el aviso sigue siendo `Card` con `style` objeto),
@@ -914,6 +916,7 @@ la carta.
   Si otra feature de la ola 2 entra antes en `dev`, el handoff re-mide las cifras.
   Errata E1 (fila 28, HM) firmada también por delegación el 2026-10-24 sobre `b834a317`.
   Errata E2 (filas 29 y 30, MT, y la enmienda de R15) firmada también por delegación el 2026-10-24 sobre `87f3198e`.
+  Errata E3 (parada de R12: `beforeEach` con movimiento reducido en `#155 R4` y `#159 R3`) firmada también por delegación el 2026-10-24 sobre `9687c788`.
 
 Cierre (no gate de implementación), una casilla por smoke:
 
