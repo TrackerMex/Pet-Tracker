@@ -136,3 +136,20 @@ describe('#204 R16: Enmienda #204 de la carta', () => {
     expect(charter).toMatch(/- \[[ xX]\] Enmienda #204 aprobada por humano/);
   });
 });
+
+describe('#204 R17: fuentes limpias', () => {
+  it.each([
+    'screens/reminders/index.tsx',
+    'screens/add-reminder/index.tsx',
+    'screens/docs/index.tsx',
+    'components/screen-header.tsx',
+  ])('#204 R17: %s es grep-limpio', (file) => {
+    const text = source(`src/${file}`);
+    expect(text.length).toBeGreaterThan(0);
+    expect(text).not.toMatch(/#(?!\d{2,3} R\d)[\da-f]{3,8}\b/i);
+    expect(text).not.toMatch(/StyleSheet\.create/);
+    expect(text).not.toMatch(/[A-Za-z0-9_-]+-\[[^\]]+\]/);
+    expect(text).not.toMatch(/\p{Extended_Pictographic}/u);
+    expect(text).not.toMatch(/\b(?:shadowColor|shadowOffset|shadowOpacity|shadowRadius|elevation)\s*:/);
+  });
+});
