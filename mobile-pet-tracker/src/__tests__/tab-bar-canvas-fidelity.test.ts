@@ -70,3 +70,21 @@ it('#206 R5: la píldora copia alto 52, radio 999 y var(--pill)', () => {
   expect(source).not.toContain('left: 8');
   expect(source).not.toContain('bottom: 6');
 });
+
+it('#206 R6: los cinco iconos copian los trazados del canvas', () => {
+  for (const d of [
+    'M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z',
+    'M9 3 3 6v15l6-3 6 3 6-3V3l-6 3-6-3z', 'M9 3v15M15 6v15',
+    'M20.4 13.4 12 21l-8.4-7.6A5 5 0 0 1 12 6.6a5 5 0 0 1 8.4 6.8z', 'M3.5 12h4l2-3 3 6 2-3h5.5',
+    'M7 3v18M4 3v5a3 3 0 0 0 6 0V3', 'M18 21V3c-2.5 1-4 3.5-4 7 0 2 1.5 3 4 3',
+    'M4 21a8 8 0 0 1 16 0',
+  ]) {
+    expect(tabNav(artboards[0])).toContain(`d="${d}"`);
+    expect(source).toContain(`d="${d}"`);
+  }
+  expect(tabNav(artboards[0])).toContain('<circle cx="12" cy="8" r="4"');
+  expect(source).toContain('cx="12" cy="8" r="4"');
+  for (const literal of ['viewBox="0 0 24 24"', 'strokeLinecap="round"', 'strokeLinejoin="round"']) expect(source).toContain(literal);
+  expect(source).toContain("from 'react-native-svg'");
+  expect(source).not.toContain('reicon-react-native');
+});

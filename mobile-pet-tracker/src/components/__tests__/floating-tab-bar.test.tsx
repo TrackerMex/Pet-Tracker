@@ -51,27 +51,15 @@ jest.mock('../../theme/use-theme-colors', () => ({
   useThemeColors: (tokens: string[]) => tokens,
 }));
 
-jest.mock('reicon-react-native', () => {
-  const actual = jest.requireActual<typeof import('reicon-react-native')>(
-    'reicon-react-native',
-  );
+jest.mock('react-native-svg', () => {
   const React = jest.requireActual<typeof import('react')>('react');
-  const { View } = jest.requireActual<typeof import('react-native')>(
-    'react-native',
-  );
-  const mockIcon = (testID: string) =>
-    function MockIcon(props: Record<string, unknown>) {
-      return React.createElement(View, { testID, ...props });
-    };
-
-  return {
-    ...actual,
-    Home: mockIcon('icon-tab-home'),
-    Map: mockIcon('icon-tab-map'),
-    HeartPulse: mockIcon('icon-tab-health'),
-    ForkKnife: mockIcon('icon-tab-food'),
-    Profile: mockIcon('icon-tab-profile'),
-  };
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  function Svg(props: Record<string, unknown>) { return React.createElement(View, props); }
+  function Path(props: Record<string, unknown>) { return React.createElement(View, props); }
+  function Circle(props: Record<string, unknown>) { return React.createElement(View, props); }
+  // #206 R6: puente para reicon hasta el verde de R6
+  function SvgXml(props: Record<string, unknown>) { return React.createElement(View, props); }
+  return { __esModule: true, default: Svg, Svg, Path, Circle, SvgXml };
 });
 
 type TabPressEvent = Parameters<FloatingTabBarProps['navigation']['emit']>[0];
@@ -516,10 +504,10 @@ describe('#91 R5: con una ruta ajena las cinco celdas quedan inactivas y siguen 
     mockTheme = 'light';
   });
 
-  it('conserva el estado inactivo, los dos hijos y la navegación de cada pestaña', async () => {
+  it('conserva el estado inactivo, los dos hijos y la navegación de cada pestaña (enmendado por #206 R6)', async () => {
     const tabBar = await renderTabBar(2, routesWithAlerts);
-    const activeColor = screen.getByTestId('icon-tab-health').props.color;
-    const mutedColor = screen.getByTestId('icon-tab-map').props.color;
+    const activeColor = screen.getByTestId('icon-tab-health', { includeHiddenElements: true }).props.stroke;
+    const mutedColor = screen.getByTestId('icon-tab-map', { includeHiddenElements: true }).props.stroke;
 
     expect(activeColor).not.toBe(mutedColor);
 
@@ -538,8 +526,8 @@ describe('#91 R5: con una ruta ajena las cinco celdas quedan inactivas y siguen 
 
       expect(tab.children).toHaveLength(2);
       expect(tab).toHaveProp('accessibilityState', { selected: false });
-      expect(elementChild(tab, 0)).toHaveProp('weight', 'Outline');
-      expect(elementChild(tab, 0)).toHaveProp('color', mutedColor);
+      expect(elementChild(tab, 0)).toHaveProp('strokeWidth', 2);
+      expect(elementChild(tab, 0)).toHaveProp('stroke', mutedColor);
       expect(elementChild(tab, 1)).toHaveProp(
         'className',
         'text-2xs font-semibold text-muted',
@@ -557,6 +545,14 @@ describe('#91 R5: con una ruta ajena las cinco celdas quedan inactivas y siguen 
     expect(mockNavigate).toHaveBeenCalledWith('home');
   });
 });
+
+const ICON_SHAPES = [
+  ['home', [{ d: 'M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z' }]],
+  ['map', [{ d: 'M9 3 3 6v15l6-3 6 3 6-3V3l-6 3-6-3z' }, { d: 'M9 3v15M15 6v15' }]],
+  ['health', [{ d: 'M20.4 13.4 12 21l-8.4-7.6A5 5 0 0 1 12 6.6a5 5 0 0 1 8.4 6.8z' }, { d: 'M3.5 12h4l2-3 3 6 2-3h5.5' }]],
+  ['food', [{ d: 'M7 3v18M4 3v5a3 3 0 0 0 6 0V3' }, { d: 'M18 21V3c-2.5 1-4 3.5-4 7 0 2 1.5 3 4 3' }]],
+  ['profile', [{ cx: '12', cy: '8', r: '4' }, { d: 'M4 21a8 8 0 0 1 16 0' }]],
+] as const;
 
 describe('canvas: barra de pestañas', () => {
   beforeEach(() => {
@@ -612,6 +608,16 @@ describe('canvas: barra de pestañas', () => {
       position: 'absolute', width: 66, left: 6, top: 6, height: 52,
       borderRadius: 999, backgroundColor: 'tab-pill', transform: [{ translateX: 140 }],
     }, { shouldMatchAllProps: true });
+  });
+
+  it.each(ICON_SHAPES)('#206 R6: el icono de %s es el trazado del canvas', async (name, shapes) => {
+    await renderTabBar();
+    const icon = screen.getByTestId(`icon-tab-${name}`, { includeHiddenElements: true });
+    for (const [key, value] of Object.entries({ width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' })) {
+      expect(icon).toHaveProp(key, value);
+    }
+    expect(icon.children).toHaveLength(shapes.length);
+    shapes.forEach((shape, k) => { expect(elementChild(icon, k).props).toMatchObject(shape); });
   });
 
 });
