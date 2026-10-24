@@ -1340,3 +1340,17 @@ describe('#199 R7: formulario de Peso', () => {
     }
   });
 });
+
+describe('#199 R8: envío de Peso', () => {
+  it('#199 R8 el envío es el último hijo de weight-form y conserva h-14 rounded-16 bg-accent', async () => {
+    prepareWeightLogTests();
+    await renderWeightLog();
+    await screen.findByTestId('weight-log-empty');
+    const form = screen.getByTestId('weight-form');
+    const submit = screen.getByTestId('weight-submit');
+    expect(form.children.at(-1) === scrollSlotOf(submit, form)).toBe(true);
+    for (const token of ['h-14', 'rounded-16', 'bg-accent']) expect(submit.props.className.split(/\s+/)).toContain(token);
+    expect(within(submit).getByText('Registrar peso').props.className).toBe('text-17 font-extrabold text-accent-foreground');
+    expect(readFileSync(join(process.cwd(), 'src/screens/weight-log/index.tsx'), 'utf8')).toContain('style={chunkyLip.primary}');
+  });
+});
