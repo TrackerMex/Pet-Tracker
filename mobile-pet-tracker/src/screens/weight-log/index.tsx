@@ -41,10 +41,16 @@ import { useThemeColors } from '../../theme/use-theme-colors';
 import { MOTION_FEEDBACK_MS, MOTION_TRANSITION_MS } from '../../theme/motion';
 import { civilTodayIso } from '../../utils/civil-today-iso';
 import { monthlyWeightDelta } from '../../utils/monthly-weight-delta';
+import { CATEGORY_SLOTS } from '../../utils/category-palette';
 
 const MEASURED_AT_IN_FUTURE_MESSAGE =
   'measuredAt is too far in the future';
 const WEIGHT_TOAST_MS = 2500;
+const DELTA_TONE = {
+  up: { tile: CATEGORY_SLOTS.rose.surface, text: 'text-danger', color: 'danger' },
+  down: { tile: CATEGORY_SLOTS.green.surface, text: 'text-accent-strong', color: 'accent-strong' },
+  flat: { tile: 'bg-default', text: 'text-muted', color: 'muted' },
+} as const;
 
 function fmtVariation(variation: number | null): string {
   if (variation === null) return '—';
@@ -118,7 +124,7 @@ function WeightLogContent({ petId }: { petId: string }) {
   });
   const entries = weights.data?.kind === 'ok' ? weights.data.weights : [];
   const monthDelta = monthlyWeightDelta(entries, civilTodayIso(profileTimeZone));
-  const monthTone = weightTone(monthDelta);
+  const monthTone = DELTA_TONE[monthDelta !== null && monthDelta > 0 ? 'up' : monthDelta !== null && monthDelta < 0 ? 'down' : 'flat'];
   const toneColors = { success, danger, muted };
 
   async function handleSubmit() {
@@ -209,25 +215,22 @@ function WeightLogContent({ petId }: { petId: string }) {
           <RiseIn delayMs={0}>
           <View testID="weight-chart-card" className="gap-2 rounded-24 bg-surface-secondary p-4" style={CONTINUOUS_CORNER}>
             {entries.length > 0 ? (
-              <View testID="weight-summary">
+              <View testID="weight-summary" className="flex-row items-baseline gap-2">
                 <Text
                   testID="weight-current"
-                  className="text-3xl font-black text-foreground"
+                  className="text-34 font-black text-foreground"
                   style={TABULAR_NUMS}
                 >
                   {`${entries[0].weightKg} kg`}
                 </Text>
                 {monthDelta !== null ? (
-                  <View testID="weight-month-delta" className="flex-row items-center gap-1.5">
-                    <monthTone.Icon size={15} color={toneColors[monthTone.color]} />
                     <Text
                       testID="weight-month-delta-text"
-                      className={monthTone.summaryClassName}
+                      className={`text-sm font-extrabold ${monthTone.text}`}
                       style={TABULAR_NUMS}
                     >
                       {t('weightLog.monthDelta', { value: fmtVariation(monthDelta) })}
                     </Text>
-                  </View>
                 ) : null}
               </View>
             ) : null}
