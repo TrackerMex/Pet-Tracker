@@ -1,6 +1,6 @@
 ---
 feature: "mobile-canvas-account-flow"
-status: spec_ready     # draft | spec_ready | approved
+status: approved
 tags: [mobile, traceability]
 ---
 

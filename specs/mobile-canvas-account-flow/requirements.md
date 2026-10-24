@@ -1,6 +1,6 @@
 ---
 feature: "mobile-canvas-account-flow"
-status: spec_ready     # draft | spec_ready | approved
+status: approved
 tags: [mobile, ui, spec, canvas-parity]
 ---
 
@@ -870,11 +870,14 @@ gate de implementación: cierra la feature. Lista (también en design.md
 
 Spec (R1–R20, decisiones D1–D15):
 
-- [ ] Aprobado por humano (fecha: ____)
+- [x] Aprobado por humano (fecha: 2026-10-23)
+  Firma delegada en el leader por mandato del humano del 2026-10-23
+  (`progress/plan_canvas-parity-2026-10-23.md` §4, checklist de firma pasada). Firmada el 2026-10-24 tras la auditoría del inventario y su enmienda (8e7c8e0f, 228e4caf).
 
 Enmienda de carta `## Enmienda #205` (R20, D11):
 
-- [ ] Aprobado por humano (fecha: ____)
+- [x] Aprobado por humano (fecha: 2026-10-23)
+  Firma delegada, mismo mandato.
 
 Smoke de cierre (§Cierre del humano):
 
