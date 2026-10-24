@@ -158,25 +158,26 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     [join('screens', 'forgot', 'index.tsx'), 1], // #117 R10
     [join('screens', 'reset-password', 'index.tsx'), 4], // #172 R19: link-login del formulario
     [join('screens', 'home', 'index.tsx'), 3], // #198 R4
-    [join('screens', 'health', 'index.tsx'), 1],
+    [join('screens', 'health', 'index.tsx'), 0], // #199 R18
     [join('screens', 'food', 'index.tsx'), 1 + 1 - 1], // #200 R5; #200 R6
     [join('screens', 'map', 'index.tsx'), 2],
     [join('screens', 'profile', 'index.tsx'), 1 + 1 - 1 + 1 + 1], // #173 R5; #173 R6; #173 R8; #173 R11
     [join('screens', 'add-pet', 'index.tsx'), 1],
     [join('components', 'pet-hero-header.tsx'), 1],
+    [join('screens', 'weight-log', 'index.tsx'), 1], // #199 R4
     [join('screens', 'welcome', 'index.tsx'), 2],
   ];
 
-  it.each(inkSites)('%s pinta con text-accent-strong (%i) (enmendado por #200 R1 y #200 R5 y #200 R6) (enmendado por #198 R4)', (path, sites) => {
-    expect(readSource(path).match(/text-accent-strong\b/g)).toHaveLength(sites);
+  it.each(inkSites)('%s pinta con text-accent-strong (%i) (enmendado por #200 R1 y #200 R5 y #200 R6) (enmendado por #199 R4) (enmendado por #199 R18) (enmendado por #198 R4)', (path, sites) => {
+    expect(readSource(path).match(/text-accent-strong\b/g) ?? []).toHaveLength(sites);
   });
 
-  it('suma las trece ocurrencias que enumera la spec (enmendado por #200 R5 y #200 R6) (enmendado por #198 R4)', () => {
+  it('suma las trece ocurrencias que enumera la spec (enmendado por #200 R5 y #200 R6) (enmendado por #199 R4) (enmendado por #199 R18) (enmendado por #198 R4)', () => {
     expect(inkSites.reduce((total, [path]) => total + (readSource(path).match(/text-accent-strong\b/g) ?? []).length, 0)).toBe(
       inkSites.reduce((total, [, sites]) => total + sites, 0),
     );
     expect(
-      inkSites.reduce((total, [, sites]) => total + sites, 0),
+      inkSites.reduce((total, [path]) => total + (readSource(path).match(/text-accent-strong\b/g)?.length ?? 0), 0),
     ).toBe(
       13 + 1 + 1
         + 2 // #118 R11
@@ -188,6 +189,8 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
         + 1 // #173 R11
         + 1 // #200 R5
         - 1 // #200 R6
+        + 1 // #199 R4
+        - 1 // #199 R18
         + 1, // #198 R4: +1 Inicio
     );
   });
@@ -204,14 +207,14 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
 });
 
 describe('#61 R5: text-warning deja de usarse como color de texto', () => {
-  const warningSites = [
-    join('screens', 'health', 'index.tsx'),
+  const warningSites = [ // #199 R14: Salud sale del inventario; tinta categórica.
     join('screens', 'home', 'index.tsx'),
     join('screens', 'reminders', 'index.tsx'),
   ];
 
-  it.each(warningSites)('%s pinta su texto con text-warning-strong', (path) => {
+  it.each(warningSites)('%s pinta su texto con text-warning-strong (enmendado por #199 R14)', (path) => {
     expect(readSource(path)).toContain('text-warning-strong');
+    expect(readSource(join('screens', 'health', 'index.tsx'))).not.toContain('text-warning-strong'); // #199 R14
   });
 
   it('no deja ningún text-warning suelto en las fuentes', () => {
