@@ -1538,9 +1538,7 @@ describe('#203 R4: título y tarjeta de la vista con collar', () => {
     const { result } = await renderHook(() => useShadows());
     await renderPairing();
     const card = await screen.findByTestId('device-status-card');
-    const classes = (card.props.className as string).split(' ');
-    expect(classes).toEqual(expect.arrayContaining(['rounded-22', 'px-4', 'py-4.5', 'shadow-none']));
-    expect(classes).not.toContain('shadow-sm');
+    expect(card.props.className).toBe('rounded-card border border-border bg-surface p-4 rounded-22 px-4 py-4.5 shadow-none');
     expect(card.props.style).toMatchObject(result.current.card);
     expect(screen.getAllByTestId('device-status-rise')).toHaveLength(1);
     const rise = screen.getByTestId('device-status-rise');
@@ -1643,10 +1641,7 @@ describe('#203 R6: botón de desvincular', () => {
     const { result } = await renderHook(() => useChunkyLip());
     await renderPairing();
     const button = await screen.findByTestId('device-unpair');
-    const classes = (button.props.className as string).split(' ');
-    expect(classes.slice(-4)).toEqual(['h-13.5', 'w-full', 'rounded-16', 'bg-danger']);
-    expect(classes).not.toContain('min-h-11');
-    expect(classes).not.toContain('rounded-xl');
+    expect(button.props.className).toBe('pressable-feedback__root button__root button__root--variant-primary button__root--size-md h-13.5 w-full rounded-16 bg-danger');
     expect(button).toHaveStyle(result.current.danger);
     const label = screen.getByText('Desvincular collar');
     expect((label.props.className as string).split(' ').slice(-3)).toEqual(['text-base', 'font-extrabold', 'text-accent-foreground']);
@@ -1745,7 +1740,7 @@ describe('#203 R7: hoja de desvincular', () => {
     );
 
     const confirm = screen.getByTestId('pairing-unpair-confirm');
-    expect((confirm.props.className as string).split(' ').slice(-4)).toEqual(['w-full', 'h-13.5', 'rounded-16', 'bg-danger']);
+    expect(confirm.props.className).toBe('pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full h-13.5 rounded-16 bg-danger');
     expect(confirm).toHaveStyle(result.current.danger);
     const confirmLabel = within(confirm).getByText('Desvincular');
     expect(confirmLabel.props.className).toBe('text-base font-extrabold text-danger-foreground');
