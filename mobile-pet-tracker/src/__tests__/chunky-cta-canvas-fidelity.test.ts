@@ -67,7 +67,7 @@ const CTA_ROWS = [
   ['screens/weight-log/index.tsx', literalId('weight-submit'), 'h-14 rounded-16 bg-accent', ['isDisabled={submitting}', 'onPress={() => void handleSubmit()}']],
 ] as const;
 const NEUTRAL_ROWS = [
-  ['screens/geofence-editor/index.tsx', literalId('geofence-editor-delete'), 'flex-1 h-14 rounded-16 border-2 border-lip-gray bg-surface', 'outline', 'Text', 'text-base font-extrabold text-danger', ['isDisabled={busy}', 'onPress={confirmDelete}']], // #189 R13
+  ['screens/geofence-editor/index.tsx', literalId('geofence-editor-delete'), 'flex-1 h-14 rounded-16 border-2 border-lip-gray bg-surface', 'outline', 'Text', 'text-base font-extrabold text-danger', ['isDisabled={busy}', 'onPress={() => setDeleteVisible(true)}']], // #189 R13
   ['screens/welcome/index.tsx', literalId('welcome-have-account'), 'w-full h-14 rounded-16 border-2 border-lip-gray bg-surface', null, 'Text', 'text-17 font-bold text-accent-strong', ["onPress={() => router.push('/login')}"]],
   ['screens/forgot/index.tsx', literalId('forgot-resend'), 'w-full h-14 rounded-16 border-2 border-lip-gray bg-surface', 'secondary', 'Text', 'text-17 font-extrabold text-foreground', ['isDisabled={submitting}', 'onPress={() => void send(submittedEmail)}']],
   ['components/celebration.tsx', 'testID={secondary.testID}', 'w-full h-14 rounded-16 border-2 border-lip-gray bg-surface', null, 'Text', 'text-17 font-extrabold text-foreground', ['onPress={secondary.onPress}']],
@@ -121,7 +121,7 @@ it.each(CTA_ROWS)('#177 R3.2: %s pinta la etiqueta Text 17/800 de %s (enmendado 
 it('#177 R3.3: el inventario de Button con bg-accent está cerrado', () => {
   expect(idsWhere(tag => /\bbg-accent(?=[\s'"`])/.test(tag))).toEqual([...primaryIds, 'reminders-add-link'].sort());
 });
-it.each(NEUTRAL_ROWS)('#177 R4.1: %s pinta la receta neutra de %s (enmendado por E4 R19)', (path, anchor, classes, variant, _label, _labelClasses, keeps) => {
+it.each(NEUTRAL_ROWS)('#177 R4.1: %s pinta la receta neutra de %s (enmendado por E4 R19) (enmendado por #202 R9)', (path, anchor, classes, variant, _label, _labelClasses, keeps) => {
   const tag = openingTagWithTestId(readSource(path), anchor);
   expect(tag).toContain(`className="${classes}"`);
   expect(tag).toContain(path === 'screens/geofence-editor/index.tsx' ? 'style={[chunkyLip.neutral, KEEP_OPACITY]}' : 'style={chunkyLip.neutral}');
