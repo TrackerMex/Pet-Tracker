@@ -483,13 +483,15 @@ describe('R6: home carga pets y selecciona', () => {
     mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
   });
 
-  it('shows a loading state while pets are pending', async () => {
+  it('shows a loading state while pets are pending (enmendado por #198 R14)', async () => {
     mockListPets.mockReturnValue(pending<PetsState>());
 
     await renderHome();
 
     expect(screen.getByTestId('screen-home')).toBeVisible();
     expect(screen.getByTestId('home-loading')).toBeVisible();
+    expect(screen.getByTestId('home-loading').props.className).toBe('gap-3.5');
+    expect(screen.getByTestId('home-loading-summary', { includeHiddenElements: true }).props.className).toBe('gap-4 rounded-card border border-border bg-surface px-4 py-3.5');
   });
 
   it('pads the content below the status bar with the top safe-area inset (enmendado por #195 R15)', async () => {
@@ -1656,12 +1658,13 @@ describe('#62 R8: home carga con Skeleton dimensionado, no con Spinner suelto', 
     mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
   });
 
-  it('reserva el espacio de carga con la forma de una Card', async () => {
+  it('reserva el espacio de carga con la forma de una Card (enmendado por #198 R14)', async () => {
     await renderHome();
 
-    expect(screen.getByTestId('home-loading').props.className).toContain(
-      'h-12 w-full rounded-card',
-    );
+    const loading = screen.getByTestId('home-loading');
+    expect(loading.props.className).toBe('gap-3.5');
+    expect(loading.children.filter(child => typeof child !== 'string').map(child => child.props.testID)).toEqual(['home-loading-summary', 'home-loading-collar', 'home-loading-quick-actions', 'home-loading-weekly']);
+    expect(readFileSync(join(process.cwd(), 'src/screens/home/index.tsx'), 'utf8')).not.toMatch(/\bSpinner\b/);
   });
 });
 
@@ -4685,10 +4688,10 @@ describe('R1 (mobile-reanimated-double-dead-weight): home monta el Skeleton real
     mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
   });
 
-  it('conserva la clase base del Skeleton de HeroUI', async () => {
+  it('conserva la clase base del Skeleton de HeroUI (enmendado por #198 R14)', async () => {
     await renderHome();
 
-    expect(screen.getByTestId('home-loading').props.className).toContain(
+    expect(screen.getByTestId('home-loading-collar', { includeHiddenElements: true }).props.className).toContain(
       'skeleton__root',
     );
   });
@@ -4928,10 +4931,10 @@ describe('#152 R5: la Home envuelve cada bloque en su entrada escalonada', () =>
   });
 
   it.each([
-    ['home-loading', () => mockListPets.mockReturnValue(pending<PetsState>()), ['home-loading']],
+    ['home-loading', () => mockListPets.mockReturnValue(pending<PetsState>()), [...Array<string>(13).fill('undefined'), 'home-loading-collar', ...Array<string>(4).fill('undefined'), 'home-loading-weekly']],
     ['home-error', () => mockListPets.mockResolvedValue({ kind: 'error' }), []],
     ['home-empty', () => mockListPets.mockResolvedValue({ kind: 'ok', pets: [] }), []],
-  ])('no da entrada a home-states con %s', async (anchor, arrange, expected) => {
+  ])('no da entrada a home-states con %s (enmendado por #198 R14)', async (anchor, arrange, expected) => {
     arrange();
     await renderHome();
     await screen.findByTestId(anchor);
@@ -5896,24 +5899,28 @@ describe('#195 R15: hueco del hero y contenido que se desplaza', () => {
     expect(hero.parent!.children[0]).toBe(hero);
     expect(screen.getByTestId('screen-home').props.contentContainerStyle).toEqual({ gap: 14, paddingBottom: 120 });
   });
-  it('aplica también el hueco de 14 a las ramas de estado sin hero', async () => {
+  it('aplica también el hueco de 14 a las ramas de estado sin hero (enmendado por #198 R14)', async () => {
     mockListPets.mockReturnValue(pending<PetsState>());
     await renderHome();
     await screen.findByTestId('home-loading');
     expect(screen.getByTestId('screen-home').props.contentContainerStyle).toEqual({ gap: 14, paddingBottom: 120 });
     expect(screen.getByTestId('home-states').props.style).toEqual({ paddingHorizontal: 24, paddingTop: 52, gap: 16 });
     expect(screen.queryByTestId('pet-hero')).toBeNull();
+    expect(screen.getByTestId('home-loading').props.className).toBe('gap-3.5');
+    expect(within(screen.getByTestId('home-states')).queryByText('Inicio') === null).toBe(true);
   });
 });
 
 describe('#195 R18: estados conservados de Inicio', () => {
   beforeEach(setupHomeMotion);
 
-  it('conserva la carga de mascotas', async () => {
+  it('conserva la carga de mascotas (enmendado por #198 R14)', async () => {
     mockListPets.mockReturnValue(pending<PetsState>());
     await renderHome();
     expect(await screen.findByTestId('home-loading')).toBeVisible();
     expect(screen.queryByTestId('pet-hero')).toBeNull();
+    expect(screen.getByTestId('home-loading').props.className).toBe('gap-3.5');
+    expect(within(screen.getByTestId('home-states')).queryByText('Inicio') === null).toBe(true);
   });
 
   it('conserva el error de mascotas y su reintento', async () => {
@@ -6331,5 +6338,65 @@ describe('#198 R13: Inicio sin collar', () => {
     await screen.findByTestId('summary-note');
     await screen.findByTestId('collar-status');
     expect(screen.queryByTestId('weekly-activity-card') === null).toBe(true);
+  });
+});
+
+describe('#198 R14: esqueleto de carga del canvas', () => {
+  beforeEach(() => {
+    setupCanvasHome();
+    mockListPets.mockReturnValue(pending<PetsState>());
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('#198 R14 pinta el esqueleto con la forma del canvas y sin título', async () => {
+    await renderHome();
+    const loading = screen.getByTestId('home-loading');
+    expect(loading.props.className).toBe('gap-3.5');
+    expect(loading.children.filter(child => typeof child !== 'string').map(child => child.props.testID)).toEqual(['home-loading-summary', 'home-loading-collar', 'home-loading-quick-actions', 'home-loading-weekly']);
+    expect(within(screen.getByTestId('home-states')).queryByText('Inicio') === null).toBe(true);
+    const summary = screen.getByTestId('home-loading-summary', { includeHiddenElements: true });
+    expect(summary.props.className).toBe('gap-4 rounded-card border border-border bg-surface px-4 py-3.5');
+    expect(summary.props.style.boxShadow).toEqual(CANVAS_CARD_SHADOW);
+    for (const [id, height] of [['home-loading-collar', 'h-16'], ['home-loading-weekly', 'h-102']]) {
+      const block = screen.getByTestId(id, { includeHiddenElements: true });
+      for (const token of [height, 'w-full', 'rounded-card']) expect(block.props.className.split(' ')).toContain(token);
+    }
+  });
+
+  it('#198 R14 dibuja cuatro celdas y tres tiles en el esqueleto', async () => {
+    await renderHome();
+    const summary = screen.getByTestId('home-loading-summary', { includeHiddenElements: true });
+    const summaryChildren = summary.children.filter(child => typeof child !== 'string');
+    for (const token of ['h-4', 'w-30', 'rounded-full']) expect(summaryChildren[0].props.className.split(' ')).toContain(token);
+    const row = summaryChildren[1];
+    expect(row.props.className).toBe('flex-row gap-2');
+    const cells = row.children.filter(child => typeof child !== 'string');
+    expect(cells.length).toBe(4);
+    for (const cell of cells) {
+      expect(cell.props.className).toBe('flex-1 items-center gap-2');
+      const children = cell.children.filter(child => typeof child !== 'string');
+      expect(children.length).toBe(3);
+      for (const [index, tokens] of [[0, ['size-9', 'rounded-xl']], [1, ['h-3.5', 'w-13', 'rounded-full']], [2, ['h-2.5', 'w-9', 'rounded-full']]] as const) {
+        for (const token of tokens) expect(children[index].props.className.split(' ')).toContain(token);
+      }
+    }
+    const quick = screen.getByTestId('home-loading-quick-actions', { includeHiddenElements: true });
+    expect(quick.props.className).toBe('gap-2.5');
+    const quickChildren = quick.children.filter(child => typeof child !== 'string');
+    for (const token of ['h-3', 'w-27.5', 'rounded-full']) expect(quickChildren[0].props.className.split(' ')).toContain(token);
+    expect(quickChildren[1].props.className).toBe('flex-row gap-2.5');
+    const tiles = quickChildren[1].children.filter(child => typeof child !== 'string');
+    expect(tiles.length).toBe(3);
+    for (const tile of tiles) for (const token of ['h-23', 'flex-1', 'rounded-card']) expect(tile.props.className.split(' ')).toContain(token);
+  });
+
+  it('#198 R14 usa el Skeleton de HeroUI en cada bloque', async () => {
+    await renderHome();
+    function descendants(node: typeof screen.container): (typeof screen.container)[] {
+      return [node, ...node.children.flatMap(child => typeof child === 'string' ? [] : descendants(child))];
+    }
+    const skeletons = descendants(screen.getByTestId('home-loading')).filter(node => node.props.className?.split(' ').includes('skeleton__root'));
+    expect(skeletons.length).toBe(19);
+    for (const id of ['home-loading-collar', 'home-loading-weekly']) expect(screen.getByTestId(id, { includeHiddenElements: true }).props.className).toContain('skeleton__root');
   });
 });
