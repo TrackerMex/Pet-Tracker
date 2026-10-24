@@ -125,6 +125,7 @@ const QUICK_ACTIONS = [
     Icon: Weight,
     labelKey: 'home.quickActionWeight',
     slot: 'violet',
+    lip: 'tileViolet',
     href: (_petId: string) => '/weight-log',
   },
   {
@@ -132,6 +133,7 @@ const QUICK_ACTIONS = [
     Icon: CalendarPlus,
     labelKey: 'home.quickActionReminder',
     slot: 'amber',
+    lip: 'tileAmber',
     href: (_petId: string) => '/add-reminder',
   },
   {
@@ -139,6 +141,7 @@ const QUICK_ACTIONS = [
     Icon: FileText,
     labelKey: 'home.quickActionDocuments',
     slot: 'blue',
+    lip: 'tileBlue',
     href: (petId: string) => `/pets/${petId}/docs`,
   },
 ] as const;
@@ -664,29 +667,30 @@ export function HomeScreen() {
 
         {selectedPetId ? (
           <HomeEntrance index={3} testID="home-entrance-quick-actions">
-            <View testID="quick-actions" className="gap-3">
+            <View testID="quick-actions" className="gap-2.5">
               <Text
                 testID="quick-actions-title"
-                className="text-xs font-semibold uppercase tracking-widest text-muted"
+                className="text-xs font-bold uppercase tracking-section text-muted"
               >
                 {t('home.quickActions')}
               </Text>
-              <View testID="quick-actions-row" className="flex-row gap-3">
+              <View testID="quick-actions-row" className="flex-row gap-2.5">
                 {QUICK_ACTIONS.map(
-                  ({ testID, Icon, labelKey, slot, href }, index) => (
+                  ({ testID, Icon, labelKey, slot, lip, href }, index) => (
                     <Pressable
                       key={testID}
                       testID={testID}
                       accessibilityRole="button"
-                      className={`min-h-11 flex-1 items-center gap-1.5 rounded-xl py-3 ${CATEGORY_SLOTS[slot].surface}`}
+                      className={`h-23 flex-1 items-center justify-center gap-2 rounded-card ${CATEGORY_SLOTS[slot].surface}`}
                       style={({ pressed }) => ({
                         ...CONTINUOUS_CORNER,
+                        ...chunkyLip[lip],
                         opacity: pressed ? 0.8 : 1,
                       })}
                       onPress={() => router.push(href(selectedPetId))}
                     >
-                      <Icon size={24} color={quickActionInks[index]} />
-                      <Text className="text-2xs font-semibold text-foreground">
+                      <Icon size={26} color={quickActionInks[index]} />
+                      <Text className={`text-13 font-bold ${CATEGORY_SLOTS[slot].ink}`}>
                         {t(labelKey)}
                       </Text>
                     </Pressable>
