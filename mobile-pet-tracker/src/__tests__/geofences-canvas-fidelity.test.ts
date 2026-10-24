@@ -118,11 +118,10 @@ describe('#189 R18: candados de fuente de ambas pantallas', () => {
   it.each(screens)('#189 R18: $name no pinta emojis', ({ source }) => {
     expect(source).not.toMatch(/\p{Extended_Pictographic}|\p{Regional_Indicator}/u);
   });
-  it('#189 R18: Map, AlertCircle y Trash solo se importan de reicon', () => {
+  it('#189 R18: Map, AlertCircle y Trash solo se importan de reicon (enmendado por #202 R3)', () => {
     const icons = screens.flatMap(({ ast }) => namedImports(ast).filter(binding => ['Map', 'AlertCircle', 'Trash'].includes(binding.imported)));
     expect(icons.map(({ imported, module }) => ({ imported, module }))).toEqual([
       { imported: 'AlertCircle', module: 'reicon-react-native' },
-      { imported: 'Map', module: 'reicon-react-native' },
       { imported: 'Trash', module: 'reicon-react-native' },
     ]);
     const iconModules = screens.flatMap(({ ast }) => namedImports(ast).filter(binding => /icon|lucide|symbol/i.test(binding.module)).map(binding => binding.module));

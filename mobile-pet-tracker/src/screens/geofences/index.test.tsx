@@ -24,7 +24,14 @@ jest.mock('reicon-react-native', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
   const icon = (name: string) => function MockIcon(props: Record<string, unknown>) { return React.createElement(View, { ...props, testID: `geofences-icon-${name}` }); };
-  return { ...actual, __esModule: true, Map: icon('map'), Trash: icon('trash'), AlertCircle: icon('alert') };
+  return { ...actual, __esModule: true, Trash: icon('trash'), AlertCircle: icon('alert') };
+});
+jest.mock('react-native-svg', () => {
+  const actual = jest.requireActual('react-native-svg');
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  const host = (props: Record<string, unknown>) => React.createElement(View, props);
+  return { ...actual, __esModule: true, default: host, Circle: host };
 });
 jest.mock('../../theme/use-theme-colors', () => ({ useThemeColors: (tokens: string[]) => tokens }));
 
@@ -726,7 +733,7 @@ describe('#189 R5: filas con tile pastel, textos y controles', () => {
     jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
   });
   afterEach(() => jest.restoreAllMocks());
-  it('#189 R5: cada fila conserva su dato, icono, tinta, tipografía, destino y acciones', async () => {
+  it('#189 R5: cada fila conserva su dato, icono, tinta, tipografía, destino y acciones (enmendado por #202 R3)', async () => {
     await mount();
     await screen.findByTestId('geofence-geofence-1');
     for (const [index, zone] of rows.entries()) {
@@ -753,10 +760,10 @@ describe('#189 R5: filas con tile pastel, textos y controles', () => {
       expect(tile.props.importantForAccessibility).toBe('no-hide-descendants');
       expect(tile.props.accessibilityElementsHidden).toBe(true);
       expect(tile.children).toHaveLength(1);
-      const icon = within(tile).getByTestId('geofences-icon-map', { includeHiddenElements: true });
+      const icon = within(tile).getByTestId(`${id}-glyph`, { includeHiddenElements: true });
       expect(tile.children[0]).toBe(icon);
-      expect(icon.props.size).toBe(22);
-      expect(icon.props.color).toBe(`category-${slots[index]}-strong`);
+      expect([icon.props.width, icon.props.height]).toEqual([22, 22]);
+      expect(icon.props.stroke).toBe(`category-${slots[index]}-strong`);
       const column = edit.children[1] as ReturnType<typeof screen.getByTestId>;
       expect(column.props.className).toBe('min-w-0 flex-1');
       expect(column.children).toHaveLength(2);
@@ -794,18 +801,18 @@ describe('#189 R5: filas con tile pastel, textos y controles', () => {
       expect(mockDelete).toHaveBeenLastCalledWith(apiUrl, 'token-1', 'pet-1', zone.id);
     }
   });
-  it('#189 R5: las cinco posiciones usan verde, azul, ámbar, violeta y rosa en inglés', async () => {
+  it('#189 R5: las cinco posiciones usan verde, azul, ámbar, violeta y rosa en inglés (enmendado por #202 R3)', async () => {
     mockList.mockResolvedValue({ kind: 'ok', geofences: Array.from({ length: 5 }, (_, index) => makeGeofence({ id: `zone-${index}`, name: `Zone ${index}` })) });
     await mount('en');
     await screen.findByTestId('geofence-zone-0');
     for (const [index, slot] of ['green', 'blue', 'amber', 'violet', 'rose'].entries()) {
       const tile = screen.getByTestId(`geofence-zone-${index}-tile`, { includeHiddenElements: true });
       expect(tile.props.className).toBe(`size-11 items-center justify-center rounded-14 bg-category-${slot}`);
-      expect(within(tile).getByTestId('geofences-icon-map', { includeHiddenElements: true }).props.color).toBe(`category-${slot}-strong`);
+      expect(within(tile).getByTestId(`geofence-zone-${index}-glyph`, { includeHiddenElements: true }).props.stroke).toBe(`category-${slot}-strong`);
       expect(screen.getByTestId(`geofence-zone-${index}-delete`).props.accessibilityLabel).toBe(`Delete Zone ${index} zone`);
     }
   });
-  it('#189 R5: family conserva tile y columna, nombre seleccionable y chip sin controles', async () => {
+  it('#189 R5: family conserva tile y columna, nombre seleccionable y chip sin controles (enmendado por #202 R3)', async () => {
     mockGetPet.mockResolvedValue(petState('family'));
     await mount();
     await screen.findByTestId('geofence-geofence-1');
@@ -820,7 +827,7 @@ describe('#189 R5: filas con tile pastel, textos y controles', () => {
       expect(childTestIds(textRow)).toEqual([`${id}-tile`, undefined]);
       const tile = screen.getByTestId(`${id}-tile`, { includeHiddenElements: true });
       expect(tile.props.className).toBe(`size-11 items-center justify-center rounded-14 bg-category-${slots[index]}`);
-      expect(within(tile).getByTestId('geofences-icon-map', { includeHiddenElements: true }).props.color).toBe(`category-${slots[index]}-strong`);
+      expect(within(tile).getByTestId(`${id}-glyph`, { includeHiddenElements: true }).props.stroke).toBe(`category-${slots[index]}-strong`);
       expect(screen.getByTestId(`${id}-name`)).toHaveTextContent(zone.name);
       expect(screen.getByTestId(`${id}-name`).props.selectable).toBe(true);
       expect(screen.getByTestId(`${id}-status`)).toHaveTextContent(zone.active ? 'Activa' : 'Inactiva');
@@ -946,4 +953,20 @@ it('#202 R1: el contenido arranca en insets.top + 12', async () => {
   mockList.mockReturnValue(new Promise(() => undefined));
   await mount();
   expect(screen.getByTestId('screen-geofences').props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 40 + 12, paddingBottom: 24 + 40, gap: 12, flexGrow: 1 });
+});
+
+it('#202 R3: el tile de cada fila pinta el glifo de zona del canvas', async () => {
+  const zones = Array.from({ length: 5 }, (_, i) => makeGeofence({ id: `glyph-${i}` }));
+  mockList.mockResolvedValue({ kind: 'ok', geofences: zones });
+  await mount();
+  await screen.findByTestId('geofence-glyph-0');
+  for (const [i, color] of ['category-green-strong', 'category-blue-strong', 'category-amber-strong', 'category-violet-strong', 'category-rose-strong'].entries()) {
+    const tile = screen.getByTestId(`geofence-glyph-${i}-tile`, { includeHiddenElements: true });
+    expect(within(tile).queryByTestId(`geofence-glyph-${i}-glyph`, { includeHiddenElements: true })).not.toBeNull();
+    const glyph = within(tile).getByTestId(`geofence-glyph-${i}-glyph`, { includeHiddenElements: true });
+    expect(glyph.props).toMatchObject({ width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none', stroke: color, strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' });
+    expect(glyph.children).toHaveLength(2);
+    expect((glyph.children[0] as typeof glyph).props).toMatchObject({ cx: 12, cy: 12, r: 9, strokeDasharray: '3 3' });
+    expect((glyph.children[1] as typeof glyph).props).toMatchObject({ cx: 12, cy: 12, r: 2.5 });
+  }
 });
