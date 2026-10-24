@@ -3,7 +3,6 @@ import { Redirect } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import {
   Button,
-  Card as HeroUICard,
   Input,
   Label,
   Skeleton,
@@ -331,15 +330,17 @@ function WeightLogContent({ petId }: { petId: string }) {
           </Text>
         ) : null}
 
+        {entries.length > 0 ? <Text testID="weight-history-title" accessibilityRole="header" className="mb-1 text-17 font-extrabold text-foreground">{t('weightLog.history')}</Text> : null}
+
         {weights.data?.kind === 'ok'
-          ? weights.data.weights.map((entry) => {
+          ? weights.data.weights.map((entry, index) => {
               const { tileClassName, rowClassName, Icon, color } = weightTone(entry.variation);
 
               return (
-                <HeroUICard
-                  key={entry.id}
+                <RiseIn key={entry.id} delayMs={140 + 60 * Math.min(index, 2)}>
+                <View
                   testID={`weight-row-${entry.id}`}
-                  className="flex-row items-center gap-3 rounded-xl border border-border bg-surface px-3.5 py-3 shadow-sm"
+                  className="flex-row items-center gap-3 border-t border-border py-2.5"
                 >
                   <View
                     testID={`weight-row-${entry.id}-tone`}
@@ -375,7 +376,8 @@ function WeightLogContent({ petId }: { petId: string }) {
                   <Text className="shrink-0 text-xs font-normal text-muted">
                     {entry.measuredAt}
                   </Text>
-                </HeroUICard>
+                </View>
+                </RiseIn>
               );
             })
           : null}
