@@ -26,7 +26,7 @@ export function ConfirmDialog({ testID, visible, title, body, cancelLabel, confi
 
   return (
     <Modal transparent animationType="none" statusBarTranslucent onRequestClose={onCancel}>
-      <View testID={testID} className="flex-1 justify-center px-6">
+      <View testID={testID} className="flex-1 justify-center px-7">
         <Animated.View className="absolute inset-0" style={{ backgroundColor: SCRIM }} entering={reduceMotion ? undefined : FadeIn.duration(MOTION_TRANSITION_MS)}>
           <Pressable testID={`${testID}-scrim`} className="absolute inset-0" accessibilityLabel={cancelLabel} onPress={onCancel} />
         </Animated.View>
