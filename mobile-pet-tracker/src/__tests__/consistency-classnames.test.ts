@@ -275,6 +275,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     [join('screens', 'alert-detail', 'index.tsx'), 1], // #170 R16
     [join('screens', 'welcome', 'index.tsx'), 1], // #205 R3
     [join('screens', 'login', 'index.tsx'), 1], // #205 R8
+    [join('screens', 'reset-password', 'index.tsx'), 1], // #205 R13
   ] as const;
 
   it('declara las dos constantes nativas compartidas', () => {
@@ -333,6 +334,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
       + 1 // #205 R3
       + 1 // #205 R8
       + 1 // #205 R10
+      + 1 // #205 R13
     ); // #189 R6; #189 R5 (enmendado por #190 R13) // #191 R11 // #177 R5 // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168 R3, R8, R6; #170 R16; #171 R3: ready-done; #173 R10: ProfileTile
   });
 });
@@ -430,6 +432,7 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
       + 1 // #205 R3
       + 1 // #205 R8
       + 1 // #205 R10
+      + 1 // #205 R13
     ); // #189 R6; #189 R5 (enmendado por #190 R13) // #191 R11 // #177 R5 // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168; #170 R8: alert-detail-map; #171 R3: ready-done; #173 R10: ProfileTile
     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(1); // #177 R10
     expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 2 - 1 - 1 - 1); // #191 R11 // #179 R6, R7, R11; #178 R5, R10, R12; #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6 // #198 R3 // #198 R11 // #198 R13

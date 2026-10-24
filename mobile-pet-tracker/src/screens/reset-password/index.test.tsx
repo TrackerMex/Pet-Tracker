@@ -328,7 +328,7 @@ describe('#61 R8: las tres ramas de reset tienen contenedor de scroll', () => {
     expect(screenRoot.props.contentInsetAdjustmentBehavior).toBe('automatic');
   });
 
-  it('#172 R19: la rama de éxito ancla el enlace al pie y no centra', async () => {
+  it('#172 R19: la rama de éxito ancla el enlace al pie y no centra (enmendado por #205 R13)', async () => {
     mockResetPassword.mockResolvedValue({ kind: 'ok' });
     await renderRoute('token-123');
     await submitReset();
@@ -337,7 +337,7 @@ describe('#61 R8: las tres ramas de reset tienen contenedor de scroll', () => {
 
     expect(
       screen.getByTestId('screen-reset-password').props.contentContainerStyle,
-    ).toEqual(metrics);
+    ).toEqual(formMetrics); // #205 R13
   });
 
   it('#172 R19: la rama del formulario ancla el envío al pie y no centra (enmendado por #205 R12)', async () => {
@@ -414,15 +414,16 @@ describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
     expect(screen.getByTestId(other).props.secureTextEntry).toBe(true);
   });
 
-  it('#172 R5: Pingo de nueva contraseña flota en el formulario y en el éxito (enmendado por #205 R12)', async () => {
+  it('#172 R5: Pingo de nueva contraseña flota en el formulario y en el éxito (enmendado por #205 R12, R13)', async () => {
     await renderRoute('reset-token-172');
     expect(screen.queryByTestId('reset-pingo-float')).toBeNull(); // #205 R12
     expect(screen.getByTestId('reset-pingo').parent)
       .toHaveProperty('props.testID', 'reset-header'); // #205 R12
     await submitReset();
     expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
+    expect(screen.queryByTestId('reset-pingo-float')).toBeNull(); // #205 R13
     expect(screen.getByTestId('reset-pingo').parent)
-      .toHaveProperty('props.testID', 'reset-pingo-float');
+      .toHaveProperty('props.testID', 'reset-header'); // #205 R13
   });
 
   it('#167 R10: el formulario entra en dos tiempos (enmendado por #205 R12)', async () => {
@@ -545,16 +546,15 @@ describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
     expect(screen.getByTestId('reset-success-card').props.accessibilityLiveRegion).toBe('polite');
   });
 
-  it('#167 R10: el éxito conserva la cabecera del formulario', async () => {
+  it('#167 R10: el éxito conserva la cabecera del formulario (enmendado por #205 R13)', async () => {
     await renderRoute('reset-token-167');
     await submitReset();
     expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
     const header = screen.getByTestId('reset-header');
-    expect({ index: header.props.index, className: header.props.className }).toEqual({
-      index: 0, className: 'flex-row items-center gap-3',
-    });
+    expect(typeof header.props.entering).toBe('function'); // #205 R13
+    expect(header.props.className).toBe('flex-row items-center gap-3.5'); // #205 R13
     expect(header.children).toHaveLength(2);
-    expect(header.children[0]).toHaveProperty('props.testID', 'reset-pingo-float');
+    expect(header.children[0]).toHaveProperty('props.testID', 'reset-pingo'); // #205 R13
     expect(header.children[1]).toBe(within(header).getByText('Restablecer contraseña'));
   });
 
@@ -592,14 +592,14 @@ describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
     expect(header.parent?.children).toEqual([header, screen.getByTestId('reset-body')]);
   });
 
-  it('#167 R10: la tarjeta de estado es secondary con check y texto', async () => {
+  it('#167 R10: la tarjeta de estado es secondary con check y texto (enmendado por #205 R13)', async () => {
     await renderRoute('reset-token-167');
     await submitReset();
     expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
     const pop = screen.getByTestId('reset-success-pop');
     const card = within(pop).getByTestId('reset-success-card');
     expect(card.props.className.split(' ')).toEqual(expect.arrayContaining([
-      'rounded-card', 'bg-surface-secondary', 'flex-row', 'items-center', 'gap-3', 'px-4', 'py-3.5',
+      'rounded-16', 'bg-surface-secondary', 'flex-row', 'items-center', 'gap-3', 'px-4', 'py-3.5', // #205 R13
     ]));
     expect(card.children.map((child) => typeof child === 'string' ? child : child.props.testID))
       .toEqual(['reset-success-check', 'reset-success']);
@@ -626,14 +626,14 @@ describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
     expect(text).toHaveTextContent('Contraseña actualizada');
   });
 
-  it('#167 R10: la tarjeta de estado entra con pop', async () => {
+  it('#167 R10: la tarjeta de estado entra con pop (enmendado por #205 R13)', async () => {
     await renderRoute('reset-token-167');
     mockPopIn.mockClear();
     await submitReset();
     expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
     expect(Object.fromEntries(mockPopIn.mock.calls.map(([p]) => [
       p.testID, { className: p.className, style: p.style },
-    ]))).toEqual({ 'reset-success-pop': { className: 'w-full', style: undefined } });
+    ]))).toEqual({ 'reset-success-pop': { className: 'mt-6 w-full', style: undefined } }); // #205 R13
   });
 });
 
@@ -677,6 +677,53 @@ describe('#205 R12: NuevaContrasena, formulario', () => {
     expect(style.paddingHorizontal).toBe(20);
     expect(style.padding).toBeUndefined();
     expect(style.gap).toBeUndefined();
+  });
+});
+
+describe('#205 R13: NuevaContrasena, éxito', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockResetPassword.mockResolvedValue({ kind: 'ok' });
+  });
+
+  it('#205 R13: la tarjeta de estado es una vista de radio 16 bajo la cabecera', async () => {
+    await renderRoute('reset-token-205');
+    await submitReset();
+    expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
+
+    const pop = screen.getByTestId('reset-success-pop');
+    expect(pop.props.className).toBe('mt-6 w-full');
+    const card = within(pop).getByTestId('reset-success-card');
+    expect(card.parent?.props.testID).toBe('reset-success-pop');
+    expect(card.props.className).toBe('flex-row items-center gap-3 rounded-16 bg-surface-secondary px-4 py-3.5');
+    expect(card.props.style).toEqual({ borderCurve: 'continuous' });
+    expect(card.props.accessibilityLiveRegion).toBe('polite');
+    expect(card.children.map((child) => typeof child === 'string' ? child : child.props.testID))
+      .toEqual(['reset-success-check', 'reset-success']);
+
+    const header = screen.getByTestId('reset-header');
+    expect((header.parent?.children as TestInstance[]).map((child) => child.props.testID))
+      .toEqual(['reset-header', 'reset-success-pop', 'reset-spacer', 'link-login']);
+  });
+
+  it('#205 R13: el éxito conserva la cabecera sin flotación', async () => {
+    await renderRoute('reset-token-205');
+    await submitReset();
+    expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
+
+    expect(mockHomeEntrance).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('reset-pingo-float')).toBeNull();
+    const header = screen.getByTestId('reset-header');
+    expect(typeof header.props.entering).toBe('function');
+    expect(header.props.className).toBe('flex-row items-center gap-3.5');
+    expect((header.children as TestInstance[]).map((child) => child.props.testID))
+      .toEqual(['reset-pingo', undefined]);
+    expect(screen.getByTestId('reset-pingo').props.style).toEqual({ width: 72, height: 72 });
+    expect(within(header).getByText('Restablecer contraseña').props.className)
+      .toBe('flex-1 text-28 leading-8 font-black tracking-display text-foreground');
+    expect(screen.getByTestId('screen-reset-password').props.contentContainerStyle)
+      .toEqual({ flexGrow: 1, paddingHorizontal: 20, paddingTop: 96, paddingBottom: 48 });
   });
 });
 

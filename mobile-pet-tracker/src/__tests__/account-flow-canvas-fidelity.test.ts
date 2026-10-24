@@ -207,3 +207,19 @@ describe('#205 R12: NuevaContrasena', () => {
     expect(screen).toContain('text-28 leading-8');
   });
 });
+
+describe('#205 R13: NuevaContrasena, éxito', () => {
+  it('#205 R13: el éxito copia radio, fondo y margen del artboard', () => {
+    const nueva = canvas('NuevaContrasena');
+    expect(nueva).toContain('border-radius: 16px; background: var(--surface2)');
+    expect(nueva).toContain('margin-top: 24px');
+    expect(nueva).toContain('animation: pop 400ms ease-out 500ms both');
+    expect(nueva).toContain('animation: rise 400ms ease-out both');
+
+    const screen = source('screens/reset-password/index.tsx');
+    // La cabecera del éxito repite la del formulario: dos usos con el mismo 0 ms.
+    expect(screen.split('<RiseIn testID="reset-header" delayMs={0} className="flex-row items-center gap-3.5">')).toHaveLength(3);
+    expect(screen).toContain('<PopIn testID="reset-success-pop" className="mt-6 w-full">');
+    expect(screen).toContain('rounded-16 bg-surface-secondary px-4 py-3.5');
+  });
+});
