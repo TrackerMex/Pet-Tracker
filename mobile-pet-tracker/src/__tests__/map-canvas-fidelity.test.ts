@@ -287,7 +287,7 @@ describe('#201 R7: el botón de modo perdido es rosa con icono', () => {
       canvasCount: 1,
       file: 'screens/map/index.tsx',
       production: 'strokeWidth={2.2}',
-      productionCount: 1,
+      productionCount: 2,
     },
   ])('#201 R7: $artboard › $canvas › $production', checkRow);
 });
@@ -311,4 +311,25 @@ describe('#201 R8: el error de modo perdido vive en la tarjeta', () => {
       productionCount: 1,
     },
   ])('#201 R8: $artboard › $canvas › $production', checkRow);
+});
+
+describe('#201 R9: el aviso sin ubicación lleva icono', () => {
+  it.each<Row>([
+    {
+      artboard: 'MapaSinUbicacion',
+      canvas: 'padding: 14px 16px; border-radius: 20px',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'gap-2 px-4 py-3.5',
+      productionCount: 1,
+    },
+    {
+      artboard: 'MapaSinUbicacion',
+      canvas: 'font-size: 14px; font-weight: 600',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'text-sm font-semibold text-muted',
+      productionCount: 1,
+    },
+  ])('#201 R9: $artboard › $canvas › $production', checkRow);
 });

@@ -2502,6 +2502,34 @@ describe('#201 R8: el error de modo perdido vive en la tarjeta', () => {
   });
 });
 
+describe('#201 R9: el aviso sin ubicación lleva icono', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: null });
+  });
+
+  it('#201 R9: el aviso lleva el icono de ubicación delante del texto', async () => {
+    await renderMap();
+
+    const overlay = await screen.findByTestId('map-empty-overlay');
+    expect(overlay.props.className).toMatch(
+      / flex-row items-center justify-center gap-2 px-4 py-3\.5$/,
+    );
+    expect(overlay.props.className).not.toMatch(/(^| )p-3( |$)/);
+    expect(overlay.props.style).toEqual(
+      expect.objectContaining({ position: 'absolute', top: 52, left: 16, right: 16 }),
+    );
+    expect(overlay.children).toHaveLength(2);
+    const icon = elementChild(overlay, 0);
+    const text = elementChild(overlay, 1);
+    expect(icon.props.testID).toBe('map-empty-icon');
+    expect(icon.props).toMatchObject({ size: 18, strokeWidth: 2.2, color: '#667085' });
+    expect(text.props.testID).toBe('map-empty');
+    expect(text.props.className).toBe('text-sm font-semibold text-muted');
+    expect(text).toHaveTextContent('Sin datos de ubicación todavía');
+  });
+});
+
 describe('#201 R15: la ruta del día se dibuja con trazo 5', () => {
   it('#201 R15: Mapa pide la ruta de 5', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
