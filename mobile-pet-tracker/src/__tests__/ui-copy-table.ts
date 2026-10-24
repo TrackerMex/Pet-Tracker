@@ -574,6 +574,7 @@ export const R13_ALERT_DETAIL: UseRow[] = [
 ];
 
 export const R14_GEOFENCES: UseRow[] = [
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.loadingLabel' }, // #202 R10
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.title' },
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.counter' }, // #189 R1
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.progressLabel' }, // #189 R2
@@ -599,6 +600,7 @@ export const R14_GEOFENCES: UseRow[] = [
 ];
 
 export const R15_GEOFENCE_EDITOR: UseRow[] = [
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.loadingLabel' }, // #202 R18
   { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.title' }, // #189 R8
   { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.title' }, // #189 R8
   { file: 'src/screens/geofences/index.tsx', key: 'geofenceEditor.editLabel' },

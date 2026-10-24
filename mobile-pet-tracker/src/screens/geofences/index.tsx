@@ -1,20 +1,23 @@
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { Button, Skeleton, Switch } from 'heroui-native';
+import { Button, Skeleton } from 'heroui-native';
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
-import { AlertCircle, Map, Trash } from 'reicon-react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
+import { AlertTriangle, Trash } from 'reicon-react-native';
+import Svg, { Circle } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { GEOFENCE_MAX_PER_PET, deleteGeofence, listGeofences, setGeofenceActive, type Geofence, type GeofenceWriteState } from '../../api/geofences';
 import { getPet } from '../../api/pets';
 import { geofenceKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
+import { ConfirmDialog } from '../../components/confirm-dialog';
+import { ToggleSwitch } from '../../components/toggle-switch';
 import { EmptyState } from '../../components/empty-state';
+import { ScreenHeader } from '../../components/screen-header';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
-import { HEADER_ROW_TOP, ZONES_TITLE_OFFSET } from '../../theme/header-layout';
 import { CONTINUOUS_CORNER, KEEP_OPACITY } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS, zoneCategory } from '../../utils/category-palette';
@@ -30,6 +33,7 @@ export function GeofencesScreen({ petId }: { petId: string }) {
   const t = useTranslate();
   const insets = useSafeAreaInsets();
   const [busy, setBusy] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Geofence | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const pet = useQuery({
     queryKey: petKeys.detail(petId),
@@ -72,30 +76,21 @@ export function GeofencesScreen({ petId }: { petId: string }) {
     }
   }
 
-  function confirmDelete(geofence: Geofence) {
-    Alert.alert(
-      t('geofences.deleteTitle', { name: geofence.name }),
-      t('geofences.deleteBody'),
-      [
-        { text: t('geofences.cancel'), style: 'cancel' },
-        {
-          text: t('geofences.delete'), style: 'destructive',
-          onPress: () => void write(() => deleteGeofence(baseUrl, token ?? '', petId, geofence.id)),
-        },
-      ],
-    );
+  function deleteConfirmed() {
+    if (!deleteTarget) return;
+    const id = deleteTarget.id;
+    setDeleteTarget(null);
+    void write(() => deleteGeofence(baseUrl, token ?? '', petId, id));
   }
 
   return (
     <ScrollView
       testID="screen-geofences"
       className="flex-1 bg-background"
-      contentContainerStyle={{ paddingHorizontal: 20, paddingTop: insets.top + HEADER_ROW_TOP, paddingBottom: insets.bottom + 40, gap: 12, flexGrow: 1 }}
+      contentContainerStyle={{ paddingHorizontal: 20, paddingTop: insets.top + 12, paddingBottom: insets.bottom + 40, gap: 12, flexGrow: 1 }}
     >
-      <View testID="geofences-header" className="h-11 flex-row items-center gap-2" style={{ paddingLeft: ZONES_TITLE_OFFSET }}>
-        <Text testID="geofences-title" accessibilityRole="header" className="flex-1 text-26 font-black tracking-title text-foreground">{t('geofences.title')}</Text>
-        {geofences.data?.kind === 'ok' ? <Text testID="geofences-counter" className="text-sm font-extrabold text-muted">{t('geofences.counter', { count: geofences.data.geofences.length, max: GEOFENCE_MAX_PER_PET })}</Text> : null}
-      </View>
+      <ScreenHeader testID="geofences-header" backFallback="/profile" title={t('geofences.title')}
+        accessory={geofences.data?.kind === 'ok' ? <Text testID="geofences-counter" className="text-sm font-extrabold text-muted">{t('geofences.counter', { count: geofences.data.geofences.length, max: GEOFENCE_MAX_PER_PET })}</Text> : null} />
       {geofences.data?.kind === 'ok' ? <View testID="geofences-progress" accessibilityRole="progressbar" className="flex-row gap-1"
         accessibilityLabel={t('geofences.progressLabel', { count: zoneCount, max: GEOFENCE_MAX_PER_PET })}
         accessibilityValue={{ min: 0, max: GEOFENCE_MAX_PER_PET, now: zoneCount }}>
@@ -103,7 +98,17 @@ export function GeofencesScreen({ petId }: { petId: string }) {
           className={index < zoneCount ? 'h-1.5 flex-1 rounded-full bg-accent' : 'h-1.5 flex-1 rounded-full bg-default'} />)}
       </View> : null}
       {geofences.data === undefined || pet.data === undefined ? (
-        <Skeleton testID="geofences-loading" className="h-24 w-full rounded-card" />
+        <View testID="geofences-loading" className="gap-3" accessibilityLabel={t('geofences.loadingLabel')} accessibilityState={{ busy: true }}>
+          {[0, 1].map((i) => <Card key={i} testID={`geofences-loading-row-${i}`} className="flex-row items-center gap-3 px-3.5 py-3 shadow-none">
+            <Skeleton className="size-11 rounded-14" />
+            <View className="flex-1 gap-1.5">
+              <Skeleton className="h-3.5 rounded-full" style={{ width: '55%' }} />
+              <Skeleton className="h-2.5 rounded-full" style={{ width: '35%' }} />
+            </View>
+            <Skeleton className="h-7 w-12 rounded-full" />
+            <Skeleton className="size-11 rounded-xl" />
+          </Card>)}
+        </View>
       ) : geofences.data.kind === 'ok' ? (
         geofences.data.geofences.length === 0 ? (
           <EmptyState
@@ -116,7 +121,10 @@ export function GeofencesScreen({ petId }: { petId: string }) {
           const slot = zoneCategory(position);
           const tile = <View testID={`geofence-${geofence.id}-tile`} className={`size-11 items-center justify-center rounded-14 ${CATEGORY_SLOTS[slot].surface}`}
             style={CONTINUOUS_CORNER} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
-            <Map size={22} color={categoryColors[position % 5]} />
+            <Svg testID={`geofence-${geofence.id}-glyph`} width={22} height={22} viewBox="0 0 24 24" fill="none" stroke={categoryColors[position % 5]} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+              <Circle cx={12} cy={12} r={9} strokeDasharray="3 3" />
+              <Circle cx={12} cy={12} r={2.5} />
+            </Svg>
           </View>;
           const nameAndRadius = <View className="min-w-0 flex-1">
             <Text testID={`geofence-${geofence.id}-name`} selectable={!isOwner} className="text-base font-extrabold text-foreground">{geofence.name}</Text>
@@ -133,7 +141,7 @@ export function GeofencesScreen({ petId }: { petId: string }) {
             ) : <View testID={`geofence-${geofence.id}-text-row`} className="min-h-11 min-w-0 flex-1 flex-row items-center gap-3">{tile}{nameAndRadius}</View>}
             {isOwner ? (
               <>
-              <Switch
+              <ToggleSwitch
                 testID={`geofence-${geofence.id}-active`}
                 isSelected={geofence.active}
                 hitSlop={10}
@@ -145,9 +153,9 @@ export function GeofencesScreen({ petId }: { petId: string }) {
               <Pressable
                 testID={`geofence-${geofence.id}-delete`} accessibilityRole="button"
                 accessibilityLabel={t('geofences.deleteLabel', { name: geofence.name })}
-                className="size-11 items-center justify-center rounded-xl bg-danger-soft"
+                className={`size-11 items-center justify-center rounded-xl ${CATEGORY_SLOTS.rose.surface}`}
                 style={CONTINUOUS_CORNER} disabled={busy}
-                onPress={() => confirmDelete(geofence)}
+                onPress={() => setDeleteTarget(geofence)}
               >
                 <Trash size={20} color={danger} />
               </Pressable>
@@ -163,7 +171,7 @@ export function GeofencesScreen({ petId }: { petId: string }) {
         <EmptyState testID="geofences-no-tracking" pose="collar" title={t('geofences.noTrackingTitle')} body={t('geofences.noTrackingBody')} />
       ) : geofences.data.kind === 'unauthorized' ? null : (
         <>
-          <Text testID="geofences-error" selectable className="text-danger">
+          <Text testID="geofences-error" selectable className="text-15 leading-body text-danger">
             {geofences.data.kind === 'unreachable'
               ? t('common.cannotReachServer')
               : t('common.somethingWentWrong')}
@@ -177,8 +185,8 @@ export function GeofencesScreen({ petId }: { petId: string }) {
         <>
         {atLimit ? <HomeEntrance testID="geofences-limit-entrance" index={zoneCount}>
           <View testID="geofences-limit" className={`flex-row items-start gap-2.5 rounded-tile px-3.5 py-3 ${CATEGORY_SLOTS.amber.surface}`} style={CONTINUOUS_CORNER}>
-            <AlertCircle size={20} color={warning} />
-            <Text testID="geofences-limit-text" className={`flex-1 text-13 ${CATEGORY_SLOTS.amber.ink}`}>{t('geofenceEditor.limitNotice', { max: GEOFENCE_MAX_PER_PET })}</Text>
+            <AlertTriangle size={20} color={warning} />
+            <Text testID="geofences-limit-text" className={`flex-1 text-13 leading-note ${CATEGORY_SLOTS.amber.ink}`}>{t('geofenceEditor.limitNotice', { max: GEOFENCE_MAX_PER_PET })}</Text>
           </View>
         </HomeEntrance> : null}
         <Button testID="geofences-add" className={atLimit ? 'mt-auto h-14 rounded-16 bg-default' : 'mt-auto h-14 rounded-16 bg-accent'} style={atLimit ? KEEP_OPACITY : [chunkyLip.primary, KEEP_OPACITY]} isDisabled={busy || atLimit}
@@ -189,8 +197,12 @@ export function GeofencesScreen({ petId }: { petId: string }) {
         </>
       ) : null}
       {actionError ? (
-        <Text testID="geofences-action-error" selectable className="text-danger">{actionError}</Text>
+        <Text testID="geofences-action-error" selectable className="text-15 leading-body text-danger">{actionError}</Text>
       ) : null}
+      <ConfirmDialog testID="geofences-delete-dialog" visible={deleteTarget !== null}
+        title={t('geofences.deleteTitle', { name: deleteTarget?.name ?? '' })} body={t('geofences.deleteBody')}
+        cancelLabel={t('geofences.cancel')} confirmLabel={t('geofences.delete')}
+        onCancel={() => setDeleteTarget(null)} onConfirm={deleteConfirmed} />
     </ScrollView>
   );
 }
