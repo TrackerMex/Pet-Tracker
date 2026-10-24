@@ -119,7 +119,8 @@ cada una y el esperado también.
 
 ### R6 — Iconos SVG
 1. Rojo: en BAR sale `jest.mock('reicon-react-native', …)` y entra el doble de
-   `react-native-svg` (`default`, `Svg`, `Path`, `Circle`, `__esModule: true`,
+   `react-native-svg` (`default`, `Svg`, `Path`, `Circle`, `SvgXml` según la E1 de
+   requirements.md § Erratas del leader, `__esModule: true`,
    patrón de `src/components/__tests__/celebration.test.tsx`); añade
    `#206 R6` (`it.each(ICON_SHAPES)`) y la enmienda 7 del inventario
    (`#91 R5`: `.props.stroke`, `strokeWidth` 2, `stroke`) con sufijo

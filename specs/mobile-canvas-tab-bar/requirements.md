@@ -388,6 +388,8 @@ fija 4 de la carta), que ninguna de #196, #198 a #205 declara tocar. No toca
 
 Firmadas por delegación (mandato del humano del 2026-10-23, `progress/plan_canvas-parity-2026-10-23.md` §4).
 
+**E1 (BLOQUEO del handoff en R6), firmada.** En el commit rojo de R6 la producción todavía importa `reicon-react-native`, cuyo `createIcon.js` renderiza `SvgXml` de `react-native-svg`. Si el doble de `react-native-svg` de `src/components/__tests__/floating-tab-bar.test.tsx` no exporta `SvgXml`, cada render de BAR lanza «Element type is invalid» y caen por excepción los `it` previos. El doble pasa de `{ __esModule: true, default: Svg, Svg, Path, Circle }` a `{ __esModule: true, default: Svg, Svg, Path, Circle, SvgXml }`, con `function SvgXml(props: Record<string, unknown>) { return React.createElement(View, props); }` y el comentario `// #206 R6: puente para reicon hasta el verde de R6`. Va en el commit `test(#206): R6 …` (rojo) y se queda tras el verde. Con eso, en el rojo de R6 solo fallan las filas `#206 R6`, `#91 R5` enmendado y CF `#206 R6`.
+
 
 **Regla de recuentos agregados.** Si al llegar a verde una R se pone rojo un `it` que no está en el inventario y ese `it` solo cuenta usos o ficheros de un literal o token, Codex lo enmienda sin parar. Son de este tipo los inventarios cerrados de radios, de `style={CONTINUOUS_CORNER}`, de `text-NN` o de `<Card`, las sumas de copy y los suelos del escáner HeroUI. La condición es que el delta medido sea exactamente el número de usos que el diff de esa R, tal como esta spec la prescribe, añade o retira. La enmienda:
 
