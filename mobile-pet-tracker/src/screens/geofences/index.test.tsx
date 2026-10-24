@@ -171,13 +171,13 @@ describe('#41 R5: la pantalla pinta la lista de zonas y sus estados', () => {
     [{ kind: 'error' }, 'Algo salió mal'],
     [{ kind: 'missing-config' }, 'Algo salió mal'],
     [{ kind: 'unreachable', message: 'offline' }, 'No se pudo conectar con el servidor'],
-  ] as const)('pinta %p y Reintentar vuelve a pedir solo la lista', async (state, message) => {
+  ] as const)('pinta %p y Reintentar vuelve a pedir solo la lista (enmendado por #202 R11)', async (state, message) => {
     mockList.mockResolvedValueOnce(state).mockResolvedValue({ kind: 'ok', geofences: [makeGeofence()] });
     await mount();
     const error = await screen.findByTestId('geofences-error');
     expect(error).toHaveTextContent(message);
     expect(error.props.selectable).toBe(true);
-    expect(error.props.className).toBe('text-danger');
+    expect(error.props.className).toBe('text-15 leading-body text-danger');
     const retry = screen.getByTestId('geofences-retry');
     expect(retry.props.className).toBe('pressable-feedback__root button__root button__root--variant-primary button__root--size-md min-h-11');
     expect(retry).toHaveTextContent('Reintentar');
@@ -264,7 +264,7 @@ describe('#41 R6: el dueño activa y desactiva una zona', () => {
   it.each([
     ['error', 'Algo salió mal'], ['missing-config', 'Algo salió mal'],
     ['unreachable', 'No se pudo conectar con el servidor'], ['rejection', 'Algo salió mal'],
-  ] as const)('pinta %s sin recargar y limpia el error al siguiente intento', async (kind, message) => {
+  ] as const)('pinta %s sin recargar y limpia el error al siguiente intento (enmendado por #202 R11)', async (kind, message) => {
     mockList.mockResolvedValue({ kind: 'ok', geofences: [makeGeofence()] });
     if (kind === 'rejection') mockSetActive.mockRejectedValueOnce(new Error('offline'));
     else if (kind === 'unreachable') mockSetActive.mockResolvedValueOnce({ kind, message: 'offline' });
@@ -276,7 +276,7 @@ describe('#41 R6: el dueño activa y desactiva una zona', () => {
     const error = await screen.findByTestId('geofences-action-error');
     expect(error).toHaveTextContent(message);
     expect(error.props.selectable).toBe(true);
-    expect(error.props.className).toBe('text-danger');
+    expect(error.props.className).toBe('text-15 leading-body text-danger');
     expect(error.parent?.children.at(-1)).toBe(error);
     expect(screen.getByTestId('geofence-geofence-1-active').props.accessibilityState).toEqual({ checked: true, disabled: false });
     expect(mockList).toHaveBeenCalledTimes(1);
@@ -1076,4 +1076,16 @@ it('#202 R10: la carga se anuncia como «Cargando zonas»', async () => {
   mockList.mockReturnValue(new Promise(() => undefined));
   await mount();
   expect(screen.getByTestId('geofences-loading').props).toMatchObject({ className: 'gap-3', accessibilityLabel: 'Cargando zonas', accessibilityState: { busy: true } });
+});
+
+it.each(['unreachable', 'error', 'action'] as const)('#202 R11: %s usa 15/1.4 en danger', async (kind) => {
+  if (kind === 'action') {
+    mockList.mockResolvedValue({ kind: 'ok', geofences: [makeGeofence()] });
+    mockSetActive.mockResolvedValue({ kind: 'error' });
+  } else mockList.mockResolvedValue(kind === 'unreachable' ? { kind, message: 'offline' } : { kind });
+  await mount();
+  if (kind === 'action') await fireEvent.press(await screen.findByTestId('geofence-geofence-1-active'));
+  const error = await screen.findByTestId(kind === 'action' ? 'geofences-action-error' : 'geofences-error');
+  expect(error.props.className).toBe('text-15 leading-body text-danger');
+  expect(error.props.selectable).toBe(true);
 });

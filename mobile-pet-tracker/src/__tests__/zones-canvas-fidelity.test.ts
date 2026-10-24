@@ -57,3 +57,8 @@ it('#202 R10: el canvas dibuja la fila esqueleto', () => {
   expect(production.split('<Skeleton').length - 1).toBe(5);
   for (const literal of ['[0, 1].map', 'size-11 rounded-14', 'h-3.5 rounded-full', "style={{ width: '55%' }}", 'h-2.5 rounded-full', "style={{ width: '35%' }}", 'h-7 w-12 rounded-full', 'size-11 rounded-xl']) contains(production, literal);
 });
+
+it('#202 R11: el canvas pinta los errores a 15/1.4', () => {
+  contains(artboard('ZonasEstados'), 'font-size: 15px; line-height: 1.4', 2);
+  contains(source('screens/geofences/index.tsx'), 'className="text-15 leading-body text-danger"', 2);
+});
