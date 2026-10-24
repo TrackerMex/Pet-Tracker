@@ -438,6 +438,30 @@ Enmiendas de #197 que esta feature vuelve a tocar: **K11**/**K12** (#197 cambia 
 `#152 R7`; #198 no toca esas aserciones, solo los retardos) y **K28** (#197 crea el `describe`; #198 lo borra entero, igual que el resto de la ola 2, aunque `_layout.tsx` no cambie por D11). Ningún `it` de WC cambia de aserción: `#140 R2` y `#143 R3` fijan las clases de las columnas del día, que
 esta feature no toca; si al aplicar R8 alguno se pone rojo por compartir `font-semibold text-foreground`, se para (regla de arriba).
 
+## Erratas del leader (2026-10-24)
+
+Firmadas por delegación (mandato del humano del 2026-10-23, `progress/plan_canvas-parity-2026-10-23.md` §4).
+
+**Candados medidos en la parada de R2** (`progress/impl_mobile-canvas-home.md` §PARADA OBLIGATORIA EN R2). Los cuatro mosaicos de R2 llevan `style={CONTINUOUS_CORNER}` por la carta (§Decisiones fijas 12), y eso suma 4 usos en Inicio:
+
+| # | Candado | Antes | Después | R |
+|---|---|---|---|---|
+| K48 | CN `src/__tests__/consistency-classnames.test.ts` › `#62 R14` › `screens/home/index.tsx importa y aplica sus 1 esquinas (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9)` | fila de Inicio `1` | `5`, con `// #198 R2` | R2 |
+| K49 | CN › `#62 R14` › `fusiona la esquina una vez y la entrega a las dos ramas de Card (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9)` | `.toBe(…)` = 42 | gana `+ 4 // #198 R2` (46) | R2 |
+| K50 | CN › `#98 R10` › `deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9)` | Inicio 1 y la suma global de esquinas | Inicio `5` y la suma global `+ 4`, cada una con `// #198 R2` | R2 |
+| K51 | HP `src/__tests__/home-photo-hero-canvas.test.ts` › `'%s conserva %s en %s líneas'`, fila `['src/screens/home/index.tsx', 'style={CONTINUOUS_CORNER}', 1]` | `1` | `5`, con `// #198 R2` | R2 |
+
+Cada título lleva el sufijo ` (enmendado por #198 R2)`. Como el rojo de R2 (`a2797ab6`) ya está commiteado, las cuatro van en un commit propio `test(#198): R2 amend the corner inventories for the summary tiles`, solo con esos dos ficheros de test (el diff de producción de R2 se queda fuera). Ese commit tiene que dar rojo contra la producción de HEAD. Después va `feat(#198): R2 …` con `src/screens/home/index.tsx`, y después las sondas. #200 suma también a K49 en su branch: quien mergee después conserva los dos términos.
+
+**Regla de recuentos agregados.** Si al llegar a verde una R se pone rojo un `it` que no está en el inventario y ese `it` solo cuenta usos o ficheros de un literal o token, Codex lo enmienda sin parar. Son de este tipo los inventarios cerrados de radios, de `style={CONTINUOUS_CORNER}`, de `text-NN` o de `<Card`, las sumas de copy y los suelos del escáner HeroUI. La condición es que el delta medido sea exactamente el número de usos que el diff de esa R, tal como esta spec la prescribe, añade o retira. La enmienda:
+
+- da a la cifra o a la entrada su término (`// #198 Rn`, o `; #198 Rn: ±k` dentro de un comentario que ya exista);
+- da al título el sufijo ` (enmendado por #198 Rn)`, o añade `Rn` al paréntesis de #198 si ya existe;
+- va en el commit rojo de esa R; si ese rojo ya está commiteado, en un commit propio `test(#198): Rn amend the <candado> inventory` antes del siguiente R;
+- se apunta en la tabla «Enmiendas mecánicas» del reporte con candado, antes, después y R.
+
+El fichero de test de ese candado entra en la lista cerrada solo para esa enmienda. Sigue siendo PARADA si el delta no coincide, si el `it` afirma comportamiento o estructura y no un recuento, o si la enmienda exigiría cambiar producción.
+
 ## Desviaciones conscientes del canvas
 
 Lo que el canvas dibuja y esta feature **no** replica, con su motivo. Cada una es decisión con defecto (el leader la mira al firmar).
