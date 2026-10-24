@@ -16,6 +16,7 @@ import {
 } from '../../api/nutrition';
 import { listPets, type PetsState } from '../../api/pets';
 import { nutritionKeys, petKeys } from '../../api/query-keys';
+import { RiseIn } from '../../components/rise-in';
 import { EmptyState } from '../../components/empty-state';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { usePetSelection } from '../../hooks/use-pet-selection';
@@ -117,6 +118,41 @@ export function FoodScreen() {
     }
   }
 
+  const links = (
+    <View testID="food-links" className="gap-2">
+      <Pressable
+        testID="meal-schedule-link"
+        className="flex-row items-center gap-3 rounded-16 bg-default px-3.5 py-3"
+        style={CONTINUOUS_CORNER}
+        accessibilityRole="button"
+        onPress={() => router.push('/meal-schedule' as Href)}
+      >
+        <View className="flex-1 gap-0.5">
+          <Text testID="meal-schedule-link-title" className="text-15 font-extrabold text-foreground">
+            {t('food.mealSchedule')}
+          </Text>
+          <Text className="text-xs text-muted">{t('food.mealScheduleLinkSubtitle')}</Text>
+        </View>
+        <ChevronRight size={18} strokeWidth={2.4} color={foreground} />
+      </Pressable>
+      <Pressable
+        testID="meals-history-link"
+        className="flex-row items-center gap-3 rounded-16 bg-default px-3.5 py-3"
+        style={CONTINUOUS_CORNER}
+        accessibilityRole="button"
+        onPress={() => router.push('/meals-history' as Href)}
+      >
+        <View className="flex-1 gap-0.5">
+          <Text testID="meals-history-link-title" className="text-15 font-extrabold text-foreground">
+            {t('food.mealsHistory')}
+          </Text>
+          <Text className="text-xs text-muted">{t('food.mealsHistoryLinkSubtitle')}</Text>
+        </View>
+        <ChevronRight size={18} strokeWidth={2.4} color={foreground} />
+      </Pressable>
+    </View>
+  );
+
   return (
     <ScrollView
       testID="screen-food"
@@ -199,201 +235,209 @@ export function FoodScreen() {
         <View className="gap-3.5">
           {loadedPlan !== null ? (
             <>
-              <View
-                testID="food-plan-card"
-                className="rounded-hero bg-accent p-4.5"
-                style={[CONTINUOUS_CORNER, chunkyLip.hero]}
-              >
-                <View testID="food-plan-summary" className="flex-row items-center gap-4">
-                  <View
-                    testID="food-plan-progress"
-                    className="size-26 items-center justify-center"
-                    accessible
-                    accessibilityRole="progressbar"
-                    accessibilityLabel={t('food.kcalConsumedOfTarget', {
-                      consumed: loadedPlan.kcalConsumedToday,
-                      target: loadedPlan.merKcal,
-                    })}
-                    accessibilityValue={{ min: 0, max: 100, now: kcalPct }}
-                  >
-                    <View testID="food-plan-ring" className="absolute inset-0">
-                      <Svg width={104} height={104} viewBox="0 0 104 104">
-                        <Circle
-                          testID="food-plan-ring-track"
-                          cx={52} cy={52} r={44} fill="none"
-                          stroke={accentForeground} strokeOpacity={0.22} strokeWidth={12}
-                        />
-                        <AnimatedCircle
-                          testID="food-plan-ring-fill"
-                          cx={52} cy={52} r={44} fill="none"
-                          stroke={accentForeground} strokeWidth={12} strokeLinecap="round"
-                          strokeDasharray={KCAL_RING_CIRCUMFERENCE} transform="rotate(-90 52 52)"
-                          animatedProps={kcalRingProps}
-                        />
-                      </Svg>
-                    </View>
-                    <Text
-                      testID="food-plan-percent"
-                      className="text-24 font-black text-accent-foreground"
-                      style={TABULAR_NUMS}
-                    >
-                      {kcalPct}%
-                    </Text>
-                    <Text
-                      testID="food-plan-consumed"
-                      className="text-11 font-bold text-accent-foreground"
-                      style={TABULAR_NUMS}
-                    >
-                      {loadedPlan.kcalConsumedToday} kcal
-                    </Text>
-                  </View>
-                  <View className="flex-1 gap-1">
-                    <Text className="text-xs font-extrabold uppercase tracking-caps text-accent-foreground">
-                      {t('food.dailyTarget')}
-                    </Text>
-                    <Text
-                      testID="food-plan-kcal"
-                      className="text-24 font-black text-accent-foreground"
-                    >
-                      {t('food.dailyKcal', { kcal: loadedPlan.merKcal })}
-                    </Text>
-                    <Text
-                      testID="food-plan-grams"
-                      className="text-sm font-semibold text-accent-foreground"
-                    >
-                      {t('food.dailyGrams', { grams: loadedPlan.dailyGrams })}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-
-              <View
-                testID="food-meals-section"
-                className="gap-2 rounded-24 border border-border bg-surface p-3.5"
-                style={CONTINUOUS_CORNER}
-              >
-                <View className="flex-row items-center justify-between gap-3">
-                  <Text
-                    testID="food-meals-title"
-                    className="text-17 font-extrabold text-foreground"
-                  >
-                    {t('food.mealsToday')}
-                  </Text>
-                  <Text
-                    testID="food-meals-progress"
-                    className="text-15 font-black text-accent-strong"
-                    style={TABULAR_NUMS}
-                  >
-                    {servedMeals}/{loadedPlan.mealsPerDay}
-                  </Text>
-                </View>
-
-                {loadedPlan.mealTimes.map((mealTime, index) => {
-                  const served = loadedPlan.servedToday.includes(mealTime);
-                  const portionGrams = Math.round(
-                    loadedPlan.dailyGrams / loadedPlan.mealsPerDay,
-                  );
-
-                  return (
+              <RiseIn delayMs={0}>
+                <View
+                  testID="food-plan-card"
+                  className="rounded-hero bg-accent p-4.5"
+                  style={[CONTINUOUS_CORNER, chunkyLip.hero]}
+                >
+                  <View testID="food-plan-summary" className="flex-row items-center gap-4">
                     <View
-                      key={`${mealTime}-${index}`}
-                      testID={`meal-row-${index}`}
-                      className={index === 0
-                        ? 'flex-row items-center gap-3 py-2'
-                        : 'flex-row items-center gap-3 border-t border-border py-2'}
+                      testID="food-plan-progress"
+                      className="size-26 items-center justify-center"
+                      accessible
+                      accessibilityRole="progressbar"
+                      accessibilityLabel={t('food.kcalConsumedOfTarget', {
+                        consumed: loadedPlan.kcalConsumedToday,
+                        target: loadedPlan.merKcal,
+                      })}
+                      accessibilityValue={{ min: 0, max: 100, now: kcalPct }}
                     >
-                      <View
-                        testID={`meal-tile-${index}`}
-                        style={CONTINUOUS_CORNER}
-                        className={served
-                          ? `size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS.green.surface}`
-                          : 'size-9 items-center justify-center rounded-xl bg-default'}
-                      >
-                        {served
-                          ? <Check size={18} strokeWidth={2.6} color={greenStrong} />
-                          : <Clock size={18} strokeWidth={2.4} color={muted} />}
+                      <View testID="food-plan-ring" className="absolute inset-0">
+                        <Svg width={104} height={104} viewBox="0 0 104 104">
+                          <Circle
+                            testID="food-plan-ring-track"
+                            cx={52} cy={52} r={44} fill="none"
+                            stroke={accentForeground} strokeOpacity={0.22} strokeWidth={12}
+                          />
+                          <AnimatedCircle
+                            testID="food-plan-ring-fill"
+                            cx={52} cy={52} r={44} fill="none"
+                            stroke={accentForeground} strokeWidth={12} strokeLinecap="round"
+                            strokeDasharray={KCAL_RING_CIRCUMFERENCE} transform="rotate(-90 52 52)"
+                            animatedProps={kcalRingProps}
+                          />
+                        </Svg>
                       </View>
-                      <View className="flex-1">
-                        <Text className="text-15 font-extrabold text-foreground" style={TABULAR_NUMS}>
-                          {mealTime} <Text testID={`meal-portion-${index}`} className="font-semibold text-muted">· {portionGrams} g</Text>
-                        </Text>
-                      </View>
-                      <Pressable
-                        testID={`meal-toggle-${index}`}
-                        accessibilityRole="button"
-                        accessibilityLabel={
-                          served
-                            ? t('food.undoServed', { time: mealTime })
-                            : t('food.markServed', { time: mealTime })
-                        }
-                        disabled={pendingMealTime === mealTime}
-                        className="min-h-11 justify-center"
-                        style={({ pressed }) => ({
-                          opacity: pressed ? 0.8 : 1,
-                        })}
-                        onPress={() => void toggleMeal(mealTime, served)}
+                      <Text
+                        testID="food-plan-percent"
+                        className="text-24 font-black text-accent-foreground"
+                        style={TABULAR_NUMS}
                       >
-                        {served ? (
-                          <View testID={`meal-served-${index}`} className={`rounded-full px-2.5 py-1 ${CATEGORY_SLOTS.green.surface}`}>
-                            <Text className={`text-xs font-extrabold ${CATEGORY_SLOTS.green.ink}`}>{t('food.served')}</Text>
-                          </View>
-                        ) : (
-                          <View testID={`meal-pending-${index}`} className="h-8 justify-center rounded-full bg-accent px-3" style={chunkyLip.primaryCompact}>
-                            <Text className="text-xs font-extrabold text-accent-foreground">{t('food.markServedAction')}</Text>
-                          </View>
-                        )}
-                      </Pressable>
+                        {kcalPct}%
+                      </Text>
+                      <Text
+                        testID="food-plan-consumed"
+                        className="text-11 font-bold text-accent-foreground"
+                        style={TABULAR_NUMS}
+                      >
+                        {loadedPlan.kcalConsumedToday} kcal
+                      </Text>
                     </View>
-                  );
-                })}
+                    <View className="flex-1 gap-1">
+                      <Text className="text-xs font-extrabold uppercase tracking-caps text-accent-foreground">
+                        {t('food.dailyTarget')}
+                      </Text>
+                      <Text
+                        testID="food-plan-kcal"
+                        className="text-24 font-black text-accent-foreground"
+                      >
+                        {t('food.dailyKcal', { kcal: loadedPlan.merKcal })}
+                      </Text>
+                      <Text
+                        testID="food-plan-grams"
+                        className="text-sm font-semibold text-accent-foreground"
+                      >
+                        {t('food.dailyGrams', { grams: loadedPlan.dailyGrams })}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              </RiseIn>
 
-                {mealError !== null ? (
-                  <Text
-                    testID="food-meal-error"
-                    selectable
-                    className="text-danger"
-                  >
-                    {mealError}
-                  </Text>
-                ) : null}
-              </View>
+              <RiseIn delayMs={80}>
+                <View
+                  testID="food-meals-section"
+                  className="gap-2 rounded-24 border border-border bg-surface p-3.5"
+                  style={CONTINUOUS_CORNER}
+                >
+                  <View className="flex-row items-center justify-between gap-3">
+                    <Text
+                      testID="food-meals-title"
+                      className="text-17 font-extrabold text-foreground"
+                    >
+                      {t('food.mealsToday')}
+                    </Text>
+                    <Text
+                      testID="food-meals-progress"
+                      className="text-15 font-black text-accent-strong"
+                      style={TABULAR_NUMS}
+                    >
+                      {servedMeals}/{loadedPlan.mealsPerDay}
+                    </Text>
+                  </View>
+
+                  {loadedPlan.mealTimes.map((mealTime, index) => {
+                    const served = loadedPlan.servedToday.includes(mealTime);
+                    const portionGrams = Math.round(
+                      loadedPlan.dailyGrams / loadedPlan.mealsPerDay,
+                    );
+
+                    return (
+                      <View
+                        key={`${mealTime}-${index}`}
+                        testID={`meal-row-${index}`}
+                        className={index === 0
+                          ? 'flex-row items-center gap-3 py-2'
+                          : 'flex-row items-center gap-3 border-t border-border py-2'}
+                      >
+                        <View
+                          testID={`meal-tile-${index}`}
+                          style={CONTINUOUS_CORNER}
+                          className={served
+                            ? `size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS.green.surface}`
+                            : 'size-9 items-center justify-center rounded-xl bg-default'}
+                        >
+                          {served
+                            ? <Check size={18} strokeWidth={2.6} color={greenStrong} />
+                            : <Clock size={18} strokeWidth={2.4} color={muted} />}
+                        </View>
+                        <View className="flex-1">
+                          <Text className="text-15 font-extrabold text-foreground" style={TABULAR_NUMS}>
+                            {mealTime} <Text testID={`meal-portion-${index}`} className="font-semibold text-muted">· {portionGrams} g</Text>
+                          </Text>
+                        </View>
+                        <Pressable
+                          testID={`meal-toggle-${index}`}
+                          accessibilityRole="button"
+                          accessibilityLabel={
+                            served
+                              ? t('food.undoServed', { time: mealTime })
+                              : t('food.markServed', { time: mealTime })
+                          }
+                          disabled={pendingMealTime === mealTime}
+                          className="min-h-11 justify-center"
+                          style={({ pressed }) => ({
+                            opacity: pressed ? 0.8 : 1,
+                          })}
+                          onPress={() => void toggleMeal(mealTime, served)}
+                        >
+                          {served ? (
+                            <View testID={`meal-served-${index}`} className={`rounded-full px-2.5 py-1 ${CATEGORY_SLOTS.green.surface}`}>
+                              <Text className={`text-xs font-extrabold ${CATEGORY_SLOTS.green.ink}`}>{t('food.served')}</Text>
+                            </View>
+                          ) : (
+                            <View testID={`meal-pending-${index}`} className="h-8 justify-center rounded-full bg-accent px-3" style={chunkyLip.primaryCompact}>
+                              <Text className="text-xs font-extrabold text-accent-foreground">{t('food.markServedAction')}</Text>
+                            </View>
+                          )}
+                        </Pressable>
+                      </View>
+                    );
+                  })}
+
+                  {mealError !== null ? (
+                    <Text
+                      testID="food-meal-error"
+                      selectable
+                      className="text-danger"
+                    >
+                      {mealError}
+                    </Text>
+                  ) : null}
+                </View>
+              </RiseIn>
 
               {loadedPlan.warnings.length > 0 ? (
                 <View testID="food-warnings" className="gap-2">
-                  {loadedPlan.warnings.map((warning) => (
-                    <View
-                      key={warning.code}
-                      testID={`warning-card-${warning.code}`}
-                      className="rounded-card bg-default p-3.5"
-                      style={CONTINUOUS_CORNER}
-                    >
-                      <Text
-                        testID={`plan-warning-${warning.code}`}
-                        className="text-sm font-medium leading-note text-foreground"
+                  {loadedPlan.warnings.map((warning, index) => (
+                    <RiseIn key={warning.code} delayMs={110 + 30 * index}>
+                      <View
+                        testID={`warning-card-${warning.code}`}
+                        className="rounded-card bg-default p-3.5"
+                        style={CONTINUOUS_CORNER}
                       >
-                        {warning.message}
-                      </Text>
-                    </View>
+                        <Text
+                          testID={`plan-warning-${warning.code}`}
+                          className="text-sm font-medium leading-note text-foreground"
+                        >
+                          {warning.message}
+                        </Text>
+                      </View>
+                    </RiseIn>
                   ))}
                 </View>
               ) : null}
 
               {loadedPlan.aiExplanation !== null ? (
-                <View
-                  testID="food-ai-card"
-                  className={`flex-row gap-3 rounded-card ${CATEGORY_SLOTS.violet.surface} p-3.5`}
-                  style={CONTINUOUS_CORNER}
-                >
-                  <Sparkles size={22} strokeWidth={2.2} color={violetStrong} />
-                  <View className="flex-1 gap-0.5">
-                    <Text testID="food-ai-title" className={`text-sm font-extrabold ${CATEGORY_SLOTS.violet.ink}`}>
-                      {t('food.aiRecommendation')}
-                    </Text>
-                    <Text testID="food-ai-body" className="text-13 leading-body text-foreground">
-                      {loadedPlan.aiExplanation}
-                    </Text>
+                <RiseIn delayMs={140}>
+                  <View
+                    testID="food-ai-card"
+                    className={`flex-row gap-3 rounded-card ${CATEGORY_SLOTS.violet.surface} p-3.5`}
+                    style={CONTINUOUS_CORNER}
+                  >
+                    <Sparkles size={22} strokeWidth={2.2} color={violetStrong} />
+                    <View className="flex-1 gap-0.5">
+                      <Text testID="food-ai-title" className={`text-sm font-extrabold ${CATEGORY_SLOTS.violet.ink}`}>
+                        {t('food.aiRecommendation')}
+                      </Text>
+                      <Text testID="food-ai-body" className="text-13 leading-body text-foreground">
+                        {loadedPlan.aiExplanation}
+                      </Text>
+                    </View>
                   </View>
-                </View>
+                </RiseIn>
+
               ) : null}
             </>
           ) : null}
@@ -423,38 +467,7 @@ export function FoodScreen() {
             </View>
           ) : null}
 
-          <View testID="food-links" className="gap-2">
-            <Pressable
-              testID="meal-schedule-link"
-              className="flex-row items-center gap-3 rounded-16 bg-default px-3.5 py-3"
-              style={CONTINUOUS_CORNER}
-              accessibilityRole="button"
-              onPress={() => router.push('/meal-schedule' as Href)}
-            >
-              <View className="flex-1 gap-0.5">
-                <Text testID="meal-schedule-link-title" className="text-15 font-extrabold text-foreground">
-                  {t('food.mealSchedule')}
-                </Text>
-                <Text className="text-xs text-muted">{t('food.mealScheduleLinkSubtitle')}</Text>
-              </View>
-              <ChevronRight size={18} strokeWidth={2.4} color={foreground} />
-            </Pressable>
-            <Pressable
-              testID="meals-history-link"
-              className="flex-row items-center gap-3 rounded-16 bg-default px-3.5 py-3"
-              style={CONTINUOUS_CORNER}
-              accessibilityRole="button"
-              onPress={() => router.push('/meals-history' as Href)}
-            >
-              <View className="flex-1 gap-0.5">
-                <Text testID="meals-history-link-title" className="text-15 font-extrabold text-foreground">
-                  {t('food.mealsHistory')}
-                </Text>
-                <Text className="text-xs text-muted">{t('food.mealsHistoryLinkSubtitle')}</Text>
-              </View>
-              <ChevronRight size={18} strokeWidth={2.4} color={foreground} />
-            </Pressable>
-          </View>
+          {loadedPlan !== null ? <RiseIn delayMs={200}>{links}</RiseIn> : links}
         </View>
       ) : null}
     </ScrollView>
