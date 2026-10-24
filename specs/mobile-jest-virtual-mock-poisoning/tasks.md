@@ -1,6 +1,6 @@
 ---
 feature: "mobile-jest-virtual-mock-poisoning"
-status: spec_ready     # draft | spec_ready | approved
+status: approved     # draft | spec_ready | approved
 tags: [mobile, test-infra, spec]
 ---
 

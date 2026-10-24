@@ -1,6 +1,6 @@
 ---
 feature: "mobile-jest-virtual-mock-poisoning"
-status: spec_ready     # draft | spec_ready | approved
+status: approved     # draft | spec_ready | approved
 tags: [mobile, test-infra, spec]
 ---
 
@@ -144,4 +144,10 @@ Ninguna bloquea la firma.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-24)
+  Firma delegada en el leader por mandato del humano del 2026-10-23
+  (`progress/plan_canvas-parity-2026-10-23.md` §4). Base `bc5a26e7` (dev con #199) más la
+  errata E1 (cifras de CC1 y CC4). Pregunta abierta 1: no, el candado recorre solo `src/`.
+  Las mutaciones commiteadas C a F son la vía b de `CHECKPOINTS.md` (C4) y se aceptan; el
+  ámbito `test(mobile)` de los seis commits cumple C5. Prioridad: esta feature desbloquea el
+  CI de #202 (PR #247), rojo dos veces seguidas en `#172 R2` con `#0D1117`.
