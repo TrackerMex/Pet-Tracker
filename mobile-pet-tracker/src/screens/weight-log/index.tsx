@@ -1,5 +1,4 @@
 import { useChunkyLip } from '../../theme/chunky-lip';
-import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { Redirect } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import {
@@ -11,7 +10,7 @@ import {
   TextField,
 } from 'heroui-native';
 import { useQuery } from '@tanstack/react-query';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
@@ -85,7 +84,6 @@ function isWeightsError(state: WeightsState): boolean {
 
 function WeightLogContent({ petId }: { petId: string }) {
   const chunkyLip = useChunkyLip();
-  const headerHeight = useContext(HeaderHeightContext);
   const [success, danger, muted] = useThemeColors([
     'success',
     'danger',
@@ -191,7 +189,7 @@ function WeightLogContent({ petId }: { petId: string }) {
       testID="screen-weight-log"
       className="flex-1"
       behavior="padding"
-      keyboardVerticalOffset={headerHeight}
+      keyboardVerticalOffset={0}
     >
       <ScrollView
         testID="weight-log-form"
@@ -199,9 +197,10 @@ function WeightLogContent({ petId }: { petId: string }) {
         keyboardShouldPersistTaps="handled"
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
-          padding: 24,
-          gap: 16,
-          paddingBottom: insets.bottom + 24,
+          paddingHorizontal: 24,
+          paddingTop: insets.top + 8,
+          paddingBottom: insets.bottom + 32,
+          gap: 14,
         }}
       >
         <ScreenHeader testID="weight-log-header" size={24} backFallback="/health" title={t('weightLog.weightLog')} />
