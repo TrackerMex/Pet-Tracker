@@ -1,6 +1,6 @@
 ---
 feature: "mobile-canvas-routine"
-status: spec_ready     # draft | spec_ready | approved
+status: approved
 tags: [mobile, ui, spec]
 ---
 
@@ -485,6 +485,9 @@ gate de implementación: lo cierra la casilla «Smoke de R18» de § Aprobación
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____)
-- [ ] Enmienda #204 de la carta (texto canónico en design.md § Bloque «Enmienda #204») aprobada por humano (fecha: ____)
+- [x] Aprobado por humano (fecha: 2026-10-23)
+  Firma delegada en el leader por mandato del humano del 2026-10-23
+  (`progress/plan_canvas-parity-2026-10-23.md` §4, checklist de firma pasada). Firmada el 2026-10-24 tras la auditoría de inventario (337b9809, 572e8887).
+- [x] Enmienda #204 de la carta (texto canónico en design.md § Bloque «Enmienda #204») aprobada por humano (fecha: 2026-10-23)
+  Firma delegada, mismo mandato.
 - [ ] Smoke de R18 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
