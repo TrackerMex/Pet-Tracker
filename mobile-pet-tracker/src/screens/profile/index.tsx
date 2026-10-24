@@ -270,6 +270,32 @@ export function ProfileScreen() {
     />
   );
 
+  const titleRow = (
+  <View className="flex-row items-center justify-between gap-3">
+    <Text testID="profile-title" className={showHero ? 'text-3xl font-black tracking-title text-accent-foreground' : 'text-3xl font-black tracking-title text-foreground'}>
+      {t('profile.profile')}
+    </Text>
+    <Pressable
+      testID="profile-add-pet"
+      accessibilityRole="button"
+      hitSlop={TOUCH_SLOP}
+      className={showHero ? 'h-11 flex-row items-center gap-1.5 rounded-full bg-glass-surface-strong px-4' : 'h-9 flex-row items-center gap-1.5 rounded-full bg-tab-pill px-3.5'}
+      onPress={() => router.push('/pets/add' as Href)}
+    >
+      <View
+        testID="profile-add-pet-icon"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      >
+        <Plus size={16} strokeWidth={2.6} color={accentStrong} />
+      </View>
+      <Text className="text-sm font-extrabold text-accent-strong">
+        {t('profile.addPet')}
+      </Text>
+    </Pressable>
+  </View>
+  );
+
   return (
     <ScrollView
       testID="screen-profile"
@@ -294,6 +320,17 @@ export function ProfileScreen() {
               </View>
             ) : undefined}
           >
+            <View testID="profile-hero-top" className="gap-3 px-1">
+              {titleRow}
+              {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
+                <PetSwitcher
+                  variant="glass"
+                  pets={pets.data.pets}
+                  selectedPetId={selectedPetId}
+                  onSelect={selectPet}
+                />
+              ) : null}
+            </View>
           </PetHeroHeader>
           {pet ? (
             <BubblePop testID="profile-change-photo-pop" className="absolute bottom-24 right-5">
@@ -315,52 +352,25 @@ export function ProfileScreen() {
         </View>
       ) : null}
       <View testID="profile-content" className="gap-3.5 px-5" style={showHero ? undefined : { paddingTop: insets.top + 12 }}>
-      <View className="flex-row items-center justify-between gap-3">
-        <Text testID="profile-title" className="text-3xl font-black tracking-title text-foreground">
-          {t('profile.profile')}
-        </Text>
-        <Pressable
-          testID="profile-add-pet"
-          accessibilityRole="button"
-          hitSlop={TOUCH_SLOP}
-          className="h-9 flex-row items-center gap-1.5 rounded-full bg-tab-pill px-3.5"
-          onPress={() => router.push('/pets/add' as Href)}
-        >
-          <View
-            testID="profile-add-pet-icon"
-            accessibilityElementsHidden
-            importantForAccessibility="no-hide-descendants"
-          >
-            <Plus size={16} color={accentStrong} />
-          </View>
-          <Text className="text-sm font-extrabold text-accent-strong">
-            {t('profile.addPet')}
-          </Text>
-        </Pressable>
-      </View>
+      {!showHero ? titleRow : null}
 
       {notificationsBlocked ? (
-        <Card testID="notifications-blocked-notice" className="items-start gap-3">
-          <Text className="font-normal text-foreground">
+        <HomeEntrance index={0} testID="profile-entrance-notice"><View testID="notifications-blocked-notice" className={`items-start gap-3 rounded-card p-3.5 ${CATEGORY_SLOTS.amber.surface}`}>
+          <Text className="text-sm leading-note font-normal text-foreground">
             {t('profile.notificationsBlocked')}
           </Text>
           <Button
             testID="notifications-open-settings"
+            className="h-11 rounded-14 px-4.5"
+            style={chunkyLip.primary}
             onPress={() => void Linking.openSettings()}
           >
-            <Button.Label>{t('profile.openSettings')}</Button.Label>
+            <Button.Label className="text-sm font-extrabold text-accent-foreground">{t('profile.openSettings')}</Button.Label>
           </Button>
-        </Card>
+        </View></HomeEntrance>
       ) : null}
 
-      {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
-        <PetSwitcher
-          variant="avatars"
-          pets={pets.data.pets}
-          selectedPetId={selectedPetId}
-          onSelect={selectPet}
-        />
-      ) : null}
+
 
       {petsEmpty ? (
         <EmptyState
