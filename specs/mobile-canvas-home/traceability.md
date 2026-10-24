@@ -28,3 +28,5 @@ tags: [mobile, ui, spec]
 | R18 | `src/components/__tests__/empty-state-hero.test.tsx::#198 R18 el badge es el último hijo del escenario` | `81166c33 feat(#198): R18 add optional empty state badge icon and body` |
 
 Cada R tiene más `it` (requirements §Requisitos); la fila cita el principal. Los hashes se rellenan al cerrar; no rebasear después.
+
+Cierre del leader (2026-10-24): el `./init.sh` del leader sobre `158f4e91` sale con exit 0 (móvil 144/144 suites, 4875/4875 tests, 1 snapshot; 0 `^FAIL`), y los rojos de tinte `#0D1117` de la suite de Codex no se reproducen. Reviewer APROBADO sobre `158f4e91` (`progress/review_mobile-canvas-home.md`). Los candados de R16 (N9) y de la cláusula «únicos» de R12 (N10) son los prescritos y no detectan las mutaciones del reviewer; queda como deuda de spec. El smoke de R1, R3 a R7, R10, R11 y R13 a R16 lo cierra el humano en el lote `progress/smoke_canvas-parity.md` (plan §6).

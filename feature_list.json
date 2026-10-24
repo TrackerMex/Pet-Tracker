@@ -3467,7 +3467,7 @@
   {
     "id": 198,
     "name": "mobile-canvas-home",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P1",
     "description": "Registrada el 2026-10-23 por el plan progress/plan_canvas-parity-2026-10-23.md (ola 2). Inicio igual al canvas versión 1792777983-cd94, artboards Inicio, InicioCarga, InicioError, InicioSinCollar, InicioActividad, InicioRecordatorios e InicioVacio. Cubre C13 (resumen, collar y accesos) y C14 (actividad semanal) de progress/explore_canvas-parity-2026-10-21.md, más los estados. El hero ya lo cerró #195. Ficheros probables: screens/home/index.tsx, screens/home/collar-battery-bar.tsx, screens/home/weekly-activity-chart.tsx y sus tests. Roza #144 y #154: el spec_author decide si las absorbe. Depende de #197. Congelar los artboards en specs/mobile-canvas-home/canvas/. Firma delegada al leader. Registrada sin spec."
   },

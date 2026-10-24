@@ -517,6 +517,7 @@ Lo que jest no ve (design.md §Supuestos). Smoke en **dev build Android** (no Ex
   `#197 R20` se borra entero en el commit rojo de R1 (K28). Auditoría de inventario aplicada
   (`progress/inventory-audit_mobile-canvas-home.md`), 47/47 anclas medidas y R1–R18 trazados.
 - [ ] Smoke de R1, R3, R4, R5, R6, R7, R10, R11, R13, R14, R15 y R16 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
+  Va en el lote `progress/smoke_canvas-parity.md` (plan §6); el `done` no espera al smoke.
 
 La spec no enmienda `docs/ui-guidelines.md`: no hay casilla de enmienda de la carta.
 

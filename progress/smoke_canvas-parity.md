@@ -46,3 +46,24 @@ Pasos de R2, R3, R4, R6, R7, R10 y R12 a R15, en dev build Android (no Expo Go),
 6. Con «Eliminar animaciones» activado en Android, todo aparece sin movimiento.
 
 - [ ] Smoke de #200 recorrido por el humano
+
+## #198 mobile-canvas-home
+
+Spec: `specs/mobile-canvas-home/requirements.md` (§ Cierre del humano). Reviewer APROBADO sobre
+`158f4e91` (`progress/review_mobile-canvas-home.md`).
+
+Pasos de R1, R3 a R7, R10, R11 y R13 a R16, en dev build Android (no Expo Go), con tema claro y oscuro:
+
+1. El resumen, la tarjeta de actividad semanal y las filas de recordatorios muestran la sombra doble
+   suave y no un borde duro. La tarjeta del collar y la de última posición no tienen sombra ni borde.
+2. Los tres accesos rápidos muestran el labio interior de 4 px abajo, en su tono.
+3. La barra del collar se ve sobre el fondo de la app: color de acento por encima de 60 y ámbar en
+   60 o menos.
+4. Las entradas llegan en este orden y sin saltos: resumen, collar, accesos, actividad,
+   recordatorios y última posición. Con «Quitar animaciones» activado no hay movimiento.
+5. Carga: el esqueleto tiene la forma del canvas y no hay salto de altura al llegar los datos.
+6. Error (modo avión): disco rosa, huellas rojas, badge con «!» y «Reintentar» con icono de recarga,
+   que recupera la lista.
+7. El vacío y la pantalla sin collar se ven como sus artboards.
+
+- [ ] Smoke de #198 recorrido por el humano
