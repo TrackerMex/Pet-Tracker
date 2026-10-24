@@ -3523,7 +3523,7 @@
   {
     "id": 206,
     "name": "mobile-canvas-tab-bar",
-    "status": "pending",
+    "status": "done",
     "priority": "P1",
     "description": "Registrada el 2026-10-23 por el plan progress/plan_canvas-parity-2026-10-23.md (ola 2). Barra de pestañas flotante igual al canvas versión 1792777983-cd94: la píldora activa se desliza con spring, más el velo de vidrio, la geometría y el trazo del icono activo. Cubre C16 de progress/explore_canvas-parity-2026-10-21.md. Ficheros probables: components/floating-tab-bar.tsx y tests. Gran parte solo se ve en dispositivo: va al lote de smoke. Depende de #197. Congelar como referencia los artboards de pestaña en specs/mobile-canvas-tab-bar/canvas/. Firma delegada al leader. Registrada sin spec."
   },
