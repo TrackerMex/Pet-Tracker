@@ -251,13 +251,13 @@ export function HealthScreen() {
                 ) : null}
 
                 {weight.data?.kind === 'ok' && weight.data.weights.length === 0 ? (
-                  <Text testID="weight-card-empty" className="font-normal text-muted">
+                  <Text testID="weight-card-empty" className="text-15 leading-body text-muted">
                     {t('health.noWeightEntriesYet')}
                   </Text>
                 ) : null}
 
                 {weight.data?.kind === 'error' || weight.data?.kind === 'unreachable' ? (
-                  <Text testID="weight-card-error" className="text-danger">
+                  <Text testID="weight-card-error" className="text-15 leading-body text-danger" accessibilityRole="alert">
                     {t('health.couldNotLoadWeight')}
                   </Text>
                 ) : null}
