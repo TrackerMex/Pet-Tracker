@@ -109,11 +109,12 @@ beforeEach(() => {
 });
 
 describe('#146 R6: el editor pinta el formulario sobre el mapa y sus estados', () => {
-  it('pinta el esqueleto mientras carga la lista al editar (enmendado por #189 R14) (enmendado por #202 R17)', async () => {
+  it('pinta el esqueleto mientras carga la lista al editar (enmendado por #189 R14) (enmendado por #202 R17) (enmendado por #202 R18)', async () => {
     mockList.mockReturnValue(new Promise(() => undefined));
     await mount('geofence-1');
     const loading = screen.getByTestId('geofence-editor-loading');
-    expect(loading.props.className).toBe('skeleton__root h-24 w-full rounded-card');
+    expect(loading.props.className).toBe('gap-2.5');
+    expect(childTestIds(loading)).toEqual(['geofence-editor-loading-bar-0', 'geofence-editor-loading-bar-1', 'geofence-editor-loading-bar-2']);
     const root = screen.getByTestId('screen-geofence-editor');
     expect(root.props.className).toBe('flex-1 bg-background');
     expect(root.props.contentInsetAdjustmentBehavior).toBeUndefined();
@@ -1048,4 +1049,18 @@ it.each(['sin collar', 'no encontrada', 'solo dueño'] as const)('#202 R17: la t
   expect(card.props.className).toBe('rounded-card border border-border bg-surface p-4 shadow-sm items-center px-4 py-6');
   expect(card.children).toHaveLength(1);
   expect((card.children[0] as typeof card).props.className).toBe('text-center text-15 leading-body text-muted');
+});
+
+it('#202 R18: la carga pinta las tres barras del canvas', async () => {
+  mockList.mockReturnValue(new Promise(() => undefined));
+  await mount(casa.id);
+  expect(screen.queryByTestId('geofence-editor-loading-bar-0')).not.toBeNull();
+  const loading = screen.getByTestId('geofence-editor-loading');
+  expect(childTestIds(loading)).toEqual(['geofence-editor-loading-bar-0', 'geofence-editor-loading-bar-1', 'geofence-editor-loading-bar-2']);
+  for (const [i, classes] of ['h-12 w-full rounded-xl', 'h-2 w-full rounded-full', 'h-12 w-full rounded-16'].entries()) expect(screen.getByTestId(`geofence-editor-loading-bar-${i}`).props.className.endsWith(classes)).toBe(true);
+});
+it('#202 R18: la carga se anuncia como «Cargando zona»', async () => {
+  mockList.mockReturnValue(new Promise(() => undefined));
+  await mount(casa.id);
+  expect(screen.getByTestId('geofence-editor-loading').props).toMatchObject({ className: 'gap-2.5', accessibilityLabel: 'Cargando zona', accessibilityState: { busy: true } });
 });

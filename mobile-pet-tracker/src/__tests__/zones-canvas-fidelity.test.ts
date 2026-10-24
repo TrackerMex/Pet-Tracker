@@ -117,3 +117,11 @@ it('#202 R17: el canvas dibuja las tarjetas de estado', () => {
   contains(production, '<ScreenHeader testID="geofence-editor-header"');
   expect(production).not.toContain('Stack.Screen');
 });
+
+it('#202 R18: el canvas dibuja las tres barras', () => {
+  contains(artboard('EditorZonaEstados'), 'height: 48px');
+  contains(artboard('EditorZonaEstados'), 'height: 8px');
+  const production = source('screens/geofence-editor/index.tsx');
+  expect(production.split('<Skeleton').length - 1).toBe(3);
+  for (const [i, classes] of ['h-12 w-full rounded-xl', 'h-2 w-full rounded-full', 'h-12 w-full rounded-16'].entries()) contains(openingTag('screens/geofence-editor/index.tsx', `geofence-editor-loading-bar-${i}`), `className="${classes}"`);
+});
