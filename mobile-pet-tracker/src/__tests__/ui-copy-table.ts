@@ -195,6 +195,13 @@ export const R5_HEALTH: UseRow[] = [
   { file: 'src/components/weight-chart.tsx', key: 'weightChart.notEnoughDataYet' },
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.monthDelta' },
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.weightLogged' },
+  { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.history' }, // #199 R9
+  { file: 'src/screens/health/index.tsx', key: 'health.appliedOn' }, // #199 R17
+  { file: 'src/screens/health/index.tsx', key: 'health.nextOn' }, // #199 R17
+  { file: 'src/screens/health/index.tsx', key: 'health.nextDoseToday' }, // #199 R14
+  { file: 'src/screens/health/index.tsx', key: 'health.nextDoseTomorrow' }, // #199 R14
+  { file: 'src/screens/health/index.tsx', key: 'health.nextDoseInDays' }, // #199 R14
+  { file: 'src/components/weight-chart.tsx', key: 'weightChart.lastSixMonths' }, // #199 R5
 ];
 
 export const R6_FOOD: UseRow[] = [

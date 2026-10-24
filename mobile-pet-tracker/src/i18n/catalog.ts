@@ -181,7 +181,7 @@ export const en = {
   'health.health': 'Health',
   'health.vaccines': 'Vaccines',
   'health.nextDue': 'Next due',
-  'health.nextDoseToday': 'today',
+  'health.nextDoseToday': 'due today',
   'health.nextDoseTomorrow': 'tomorrow',
   'health.nextDoseInDays': 'in {{days}} days',
   'health.appliedOn': 'Given {{date}}',
