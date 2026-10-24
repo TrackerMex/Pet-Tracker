@@ -73,7 +73,7 @@ export function GeofenceEditorScreen({ petId, geofenceId }: { petId: string; geo
     content = null;
   } else if (list.data.kind !== 'ok') {
     content = <>
-      <Text testID="geofence-editor-load-error" selectable className="text-danger">{messageFor(t, list.data.kind)}</Text>
+      <Text testID="geofence-editor-load-error" selectable className="text-15 leading-body text-danger">{messageFor(t, list.data.kind)}</Text>
       <Button testID="geofence-editor-retry" className="min-h-11" onPress={() => void list.refetch()}>
         <Button.Label>{t('common.retry')}</Button.Label>
       </Button>
