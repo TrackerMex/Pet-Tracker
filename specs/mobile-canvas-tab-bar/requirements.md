@@ -277,7 +277,7 @@ fichero ya está). `R3_HOME` no cambia.
 ### Carta y guardas
 
 **R9. Enmienda #206 en la carta.**
-THE SYSTEM SHALL contener en `docs/ui-guidelines.md`, una sola vez y al final,
+THE SYSTEM SHALL contener en `docs/ui-guidelines.md`, una sola vez (errata E3),
 el bloque literal de `design.md` § Enmienda de la carta, con su casilla
 `- [ ] Enmienda #206 aprobada por humano`, sin cambiar el párrafo D-I.
 
@@ -401,6 +401,8 @@ Firmadas por delegación (mandato del humano del 2026-10-23, `progress/plan_canv
 - se apunta en la tabla «Enmiendas mecánicas» del reporte con candado, antes, después y R.
 
 El fichero de test de ese candado entra en la lista cerrada solo para esa enmienda. Sigue siendo PARADA si el delta no coincide, si el `it` afirma comportamiento o estructura y no un recuento, o si la enmienda exigiría cambiar producción.
+
+**E3 (R9 no fija la posición del bloque), firmada.** La review (O1) encontró en CF `#206 R9` la aserción `expect(normalized.endsWith(`${BLOQUE}\n`)).toBe(true)`, sacada del «al final» del texto EARS. Ningún otro candado del repo fija dónde va una enmienda. Con ella, toda `## Enmienda` que otra feature añada después de la #206 pone `#206 R9` en rojo en su rama. Eso afecta a #196, #201 a #205 y a la regla «dev + delta». R9 pasa a pedir el bloque «una sola vez» y deja de pedirlo «al final». La línea `endsWith` se borra del `it`. La unicidad la siguen fijando `match(/## Enmienda #206/g)` con longitud 1 y `split(BLOQUE)` con longitud 2. El bloque se queda donde está, al final de la carta en este commit. tasks.md R9 paso 2 describe dónde se escribió, no un requisito. Va en el commit `test(#206): R9 drop the charter position assert (errata E3)`. Ese commit solo toca `src/__tests__/tab-bar-canvas-fidelity.test.ts`.
 
 ## Desviaciones conscientes del canvas
 
