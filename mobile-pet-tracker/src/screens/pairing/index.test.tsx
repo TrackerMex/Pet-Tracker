@@ -1,4 +1,3 @@
-import { HeaderHeightContext } from 'expo-router/react-navigation';
 import {
   act,
   fireEvent,
@@ -50,7 +49,7 @@ jest.mock('../../providers/auth-provider', () => ({
 }));
 
 jest.mock('expo-router', () => ({
-  router: { push: jest.fn(), back: jest.fn(), dismissTo: jest.fn() },
+  router: { push: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => true), dismissTo: jest.fn() },
   useFocusEffect: jest.fn(),
   useIsFocused: () => true,
 }));
@@ -157,9 +156,7 @@ function PairingWrapper({ children }: { children: ReactNode }) {
       <LanguageProvider initial="es">
         <SelectedPetProvider>
           <PairingSelectionProbe />
-          <HeaderHeightContext.Provider value={91}>
-            {children}
-          </HeaderHeightContext.Provider>
+          {children}
         </SelectedPetProvider>
       </LanguageProvider>
     </HeroUINativeProvider>
@@ -236,7 +233,7 @@ describe('R4: /pairing monta en el Stack raíz con selector de mascota y estados
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('renders the real route with uniform metrics and a dimensioned skeleton (#95 R6)', async () => {
+  it('renders the real route with uniform metrics and a dimensioned skeleton (#95 R6) (enmendado por #203 R2)', async () => {
     mockListPets.mockReturnValue(pending<PetsState>());
 
     await renderPairing();
@@ -244,9 +241,10 @@ describe('R4: /pairing monta en el Stack raíz con selector de mascota y estados
     expect(screen.getByTestId('screen-pairing')).toBeVisible();
     expect(screen.getByTestId('pairing-form').props.contentContainerStyle).toEqual({
       paddingHorizontal: 20,
-      paddingVertical: 24,
-      gap: 16,
+      paddingTop: 48,
       paddingBottom: 48,
+      gap: 16,
+      flexGrow: 1,
     });
     expect(screen.getByTestId('pairing-skeleton')).toBeVisible();
     expect(screen.getAllByTestId(/^pairing-content-skeleton-/)).toHaveLength(3);
@@ -1013,23 +1011,12 @@ describe('#87 R15: PairingScreen lee por TanStack Query', () => {
   });
 });
 
-describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
-  it('retira el botón de volver del cuerpo', async () => {
-    process.env.EXPO_PUBLIC_API_URL = apiUrl;
-    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
-    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
-    await renderPairing();
-    await waitFor(() => expect(screen.getByTestId('screen-pairing')).toBeVisible());
-    expect(screen.queryByTestId(['pairing', 'back'].join('-'))).toBeNull();
-  });
-});
-
 describe('#148 R6: pairing se aparta del teclado en Android', () => {
   afterEach(() => {
     (Platform as { OS: string }).OS = originalOS;
   });
 
-  it('el host screen-pairing añade paddingBottom 291 al abrir el teclado', async () => {
+  it('el host screen-pairing añade paddingBottom 200 al abrir el teclado (enmendado por #203 R2)', async () => {
     (Platform as { OS: string }).OS = 'android';
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
     mockUseAuth.mockReturnValue({
@@ -1054,7 +1041,7 @@ describe('#148 R6: pairing se aparta del teclado en Android', () => {
         duration: 0, easing: 'keyboard', isEventFromThisApp: true,
       });
     });
-    await waitFor(() => expect(screen.getByTestId('screen-pairing')).toHaveStyle({ paddingBottom: 291 }));
+    await waitFor(() => expect(screen.getByTestId('screen-pairing')).toHaveStyle({ paddingBottom: 200 }));
   });
 });
 
@@ -1128,7 +1115,7 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     expect(mockClaimDevice).toHaveBeenCalledWith(apiUrl, 'jwt-token', { petId: 'pet-1', activationCode: 'ACT-002' });
   });
 
-  it('#188 R19: anchors the submit button to the bottom edge', async () => {
+  it('#188 R19: anchors the submit button to the bottom edge (enmendado por #203 R2)', async () => {
     const app = await renderPairing();
     const submit = await screen.findByTestId('pairing-submit');
     expect(screen.getByTestId('pairing-form').props.contentContainerStyle.flexGrow).toBe(1);
@@ -1143,7 +1130,7 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     mockGetPetTracking.mockResolvedValue({ kind: 'ok', tracked: true });
     await renderPairing();
     await screen.findByTestId('device-status-card');
-    expect(screen.getByTestId('pairing-form').props.contentContainerStyle).not.toHaveProperty('flexGrow');
+    expect(screen.getByTestId('pairing-form').props.contentContainerStyle).toHaveProperty('flexGrow', 1);
     expect(screen.queryByTestId('pairing-submit-spacer')).toBeNull();
   });
 
@@ -1179,7 +1166,7 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     }
   });
 
-  it('#188 R17: shows only the selected pet avatar above the hero', async () => {
+  it('#188 R17: shows only the selected pet avatar above the hero (enmendado por #203 R2)', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo' })] });
     await renderPairing();
     const avatar = await screen.findByTestId('pairing-pet-avatar');
@@ -1190,9 +1177,9 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     expect(avatar.props.className.split(' ')).toEqual(expect.arrayContaining([
       'rounded-full', 'border-2', 'border-accent', 'p-0.75',
     ]));
-    const row = screen.getByTestId('pairing-pet-row');
-    expect(row.props.className.split(' ')).toEqual(expect.arrayContaining(['w-full', 'flex-row', 'justify-end']));
-    expect(row.children).toEqual([avatar]);
+    const header = screen.getByTestId('pairing-header');
+    expect(avatar.parent!.props.testID).toBe('pairing-header');
+    expect(header.children[header.children.length - 1]).toEqual(avatar);
     expect(within(screen.getByTestId('pairing-form')).getAllByTestId(
       /^(pairing-pet-avatar|pairing-pingo)$/,
       { includeHiddenElements: true },
@@ -1467,7 +1454,7 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     expect(screen.queryByTestId('pairing-subtitle', { includeHiddenElements: true })).toBeNull();
   });
 
-  it.each(['linking', 'paired'] as const)('#188 R10: uses 20 px horizontal padding when %s', async (state) => {
+  it.each(['linking', 'paired'] as const)('#188 R10: uses 20 px horizontal padding when %s (enmendado por #203 R2)', async (state) => {
     if (state === 'paired') {
       mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ device: makeDevice() })] });
       mockGetPetTracking.mockResolvedValue({ kind: 'ok', tracked: true });
@@ -1476,10 +1463,10 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     await screen.findByTestId(state === 'paired' ? 'device-status-card' : 'pairing-title');
     expect(screen.getByTestId('pairing-form').props.contentContainerStyle).toEqual({
       paddingHorizontal: 20,
-      paddingVertical: 24,
-      gap: 16,
+      paddingTop: 48,
       paddingBottom: 48,
-      ...(state === 'linking' ? { flexGrow: 1 } : {}),
+      gap: 16,
+      flexGrow: 1,
     });
   });
 
@@ -1512,4 +1499,108 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     }
   });
 
+});
+
+describe('#203 R2: cabecera de pairing', () => {
+  const states = ['carga', 'error', 'sin mascotas', 'vincular', 'con collar'] as const;
+  const anchors: Record<(typeof states)[number], string> = {
+    carga: 'pairing-skeleton',
+    error: 'pairing-error-pets',
+    'sin mascotas': 'pairing-no-pets',
+    vincular: 'pairing-title',
+    'con collar': 'device-status-card',
+  };
+
+  async function renderState(state: (typeof states)[number]) {
+    if (state === 'carga') mockListPets.mockReturnValue(pending<PetsState>());
+    if (state === 'error') mockListPets.mockResolvedValue({ kind: 'error' });
+    if (state === 'sin mascotas') mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    if (state === 'con collar') {
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ device: makeDevice() })] });
+      mockGetPetTracking.mockResolvedValue({ kind: 'ok', tracked: true });
+    }
+    await renderPairing();
+    await screen.findByTestId(anchors[state]);
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseReducedMotion.mockReturnValue(false);
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  afterEach(() => {
+    (Platform as { OS: string }).OS = originalOS;
+  });
+
+  it.each(states)('#203 R2.1: pinta la cabecera en %s', async (state) => {
+    await renderState(state);
+    const form = screen.getByTestId('pairing-form');
+    const header = within(form).getByTestId('pairing-header');
+    const content = header.parent!;
+    expect(content.parent!.props.testID).toBe('pairing-form');
+    const first = content.children[0];
+    expect(typeof first === 'string' ? first : first.props.testID).toBe('pairing-header');
+    expect(within(header).getByTestId('pairing-header-back')).toBeOnTheScreen();
+  });
+
+  it('#203 R2.1: la celebración no pinta la cabecera', async () => {
+    mockClaimDevice.mockResolvedValue({ kind: 'ok', device: makeDevice() });
+    await renderPairing();
+    await fireEvent.changeText(await screen.findByTestId('activation-code-input'), 'ACT-001');
+    expect(screen.getByTestId('pairing-header')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId('pairing-submit'));
+    await screen.findByTestId('pairing-ready');
+    expect(screen.queryByTestId('pairing-header')).toBeNull();
+    expect(screen.queryByTestId('pairing-header-back')).toBeNull();
+  });
+
+  it('#203 R2.2: el avatar de la mascota es el accesorio de la cabecera', async () => {
+    await renderState('vincular');
+    expect(within(screen.getByTestId('pairing-header')).getByTestId('pairing-pet-avatar')).toBeOnTheScreen();
+    expect(screen.queryByTestId('pairing-pet-row')).toBeNull();
+  });
+
+  it('#203 R2.3: con collar la cabecera no lleva accesorio', async () => {
+    await renderState('con collar');
+    const header = screen.getByTestId('pairing-header');
+    expect(header.children).toHaveLength(2);
+    expect(within(header).queryByTestId('pairing-pet-avatar')).toBeNull();
+  });
+
+  it.each(states)('#203 R2.4: métricas uniformes sin cabecera nativa en %s', async (state) => {
+    await renderState(state);
+    expect(screen.getByTestId('pairing-form').props.contentContainerStyle).toEqual({
+      paddingHorizontal: 20,
+      paddingTop: 48,
+      paddingBottom: 48,
+      gap: 16,
+      flexGrow: 1,
+    });
+  });
+
+  it('#203 R2.4: con teclado de 200 el host añade paddingBottom 200', async () => {
+    (Platform as { OS: string }).OS = 'android';
+    mockListPets.mockReturnValue(pending<PetsState>());
+    await renderPairing();
+
+    const host = screen.getByTestId('screen-pairing');
+    expect(host).toHaveStyle({ paddingBottom: 0 });
+    await fireEvent(host, 'layout', {
+      persist() {},
+      nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 700 } },
+    });
+    await act(async () => {
+      DeviceEventEmitter.emit('keyboardDidShow', {
+        startCoordinates: { screenX: 0, screenY: 800, width: 400, height: 0 },
+        endCoordinates: { screenX: 0, screenY: 500, width: 400, height: 300 },
+        duration: 0, easing: 'keyboard', isEventFromThisApp: true,
+      });
+    });
+    await waitFor(() => expect(screen.getByTestId('screen-pairing')).toHaveStyle({ paddingBottom: 200 }));
+  });
 });

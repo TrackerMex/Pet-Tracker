@@ -337,10 +337,10 @@ describe('R11 (mobile-device-pairing): pairing usa el Card compartido y las dime
 
   it.each([
     'paddingHorizontal: 20',
-    'paddingVertical: 24',
+    'insets.top + 8',
     'gap: 16',
     'insets.bottom + 24',
-  ])('keeps the uniform screen metric %s', (metric) => {
+  ])('keeps the uniform screen metric %s (enmendado por #203 R2)', (metric) => {
     expect(pairingSource).toContain(metric);
   });
 
