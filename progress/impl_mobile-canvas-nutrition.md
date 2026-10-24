@@ -1,6 +1,8 @@
 # Implementación #200 — mobile-canvas-nutrition
 
-Estado: PARADA obligatoria en R9: DD #178 R13 no inventaría los dos rounded-16 nuevos de Food. No comenzar R10; feature incompleta.
+Estado final al 2026-10-24: R1–R17 implementados y verificados por requisito. PARADA en el cierre global: BackButton #172 R2 recibe el color de respaldo en la suite completa. No se declara la feature done.
+
+Las secciones anteriores a «Reanudación 2026-10-24 — 31837443» conservan la evidencia histórica de las paradas. Sus pendientes quedan sustituidos por la evidencia más reciente al final, sin borrar el historial.
 
 ## Identidad y alcance
 
@@ -130,6 +132,8 @@ Base de suite facilitada por leader: 142 suites, 4683 tests, 1 snapshot.
 
 | Candado | Antes / después | R | Evidencia |
 |---|---|---|---|
+| CF #197 R21: Punto 13 | Cola antigua de Generar plan → cola R16(e) en el bloque esperado | R16 | r16-cf-mechanical-red-200.log: 1 rojo por literal exacto; luego sonda de carta |
+| DD #178 R13 rounded16 | Sin Food → Food: 2 | R9 | Autorización expresa fila 53; 114 tests verdes y sonda R9 roja |
 
 ## Sondas de mutación
 
@@ -498,3 +502,328 @@ mobile-pet-tracker/src/theme/__tests__/motion.test.ts
 mobile-pet-tracker/src/theme/motion.ts
 ```
 Todos pertenecen al alcance original o al HT añadido expresamente por la fila 52. El único nuevo it que bloquea no fue enmendado. El rename de FO conserva el historial de git mv.
+
+
+## Reanudación 2026-10-24 — 31837443
+Identidad y HEAD verificados; árbol móvil/specs/docs limpio. Se leyó la fila 53 y la regla nueva de recuentos agregados. La parada previa está resuelta; se conservan los commits y el reporte. El leader borró el .done. No se ejecuta init.sh. Primero se aplica DD [53], después sondas de R9 y R10–R17 según tasks.md. Para un recuento nuevo se medirá el delta exacto y se registrará la enmienda autorizada, sin detenerse.
+
+DD [53]: 309a1c8e, `Tests: 114 passed, 114 total`. Sondas pendientes de R9 completadas: r9-resume-mutation-200.log `Tests: 13 failed, 394 passed, 407 total`. Se mutaron el segundo enlace, sus esquinas/radio/título, el contenedor sin plan, un consumidor restante de Card y el suelo HT; todos los candados enmendados de R9 quedaron rojos y fueron restaurados. El cambio de MS solo fue una sonda temporal, no está en git.
+
+### R10 (2026-10-24)
+Rojo ef53a51d: `Tests: 6 failed, 181 passed, 187 total`. Verde b4c2e91b: `Tests: 454 passed, 454 total`. Se borró CF #197 R20 entero (−5 casos). El negativo sin plan nació verde; mutación antes del commit: RiseIn también sin plan, `Tests: 1 failed, 121 skipped, 122 total`. Sonda posterior solo en el segundo aviso: 110 + 31 * index, `Tests: 1 failed, 115 skipped, 6 passed, 122 total`; el primer aviso sigue verde. Ambas restauradas.
+
+### R12
+Rojo e7dabe58: `Tests: 10 failed, 237 passed, 247 total`. Verde b5a0e887: `Tests: 312 passed, 312 total`. Sonda R12 (cabecera, padding, literal tracking-title y opción nativa) restaurada; resultado en r12-mutation-200.log. Enmiendas [25],[27]/[50],[37],[41]. Sale solo la fila meal-schedule de LY (−1 caso); contentInsetAdjustmentBehavior automatic conservado; headerShown sube a 3.
+
+### R13
+Rojo 009e815c: `Tests: 9 failed, 96 passed, 105 total`. Verde efdbd055: `Tests: 244 passed, 244 total`. Enmiendas [26],[27],[41]. Se conserva la posición 12 de meals-history en LY y se exige options exacto headerShown false. MH mock de ChevronLeft distingue tamaño 24 del botón de volver y tamaño 18 del calendario; no cambia los selectores anteriores. contentInsetAdjustmentBehavior automatic conservado; headerShown total=4. Sonda sobre MH, LY y AC registrada en r13-mutation-200.log y restaurada.
+
+### R14
+Rojo 3a096545: `Tests: 1 failed, 76 passed, 77 total`. Verde de implementación: `Tests: 269 passed, 269 total` (MS, DD, CC). Solo se añadió style={chunkyLip.violet}; se reutilizó la constante existente; className y variant no cambian.
+
+### R15
+Rojo 554d4935: `Tests: 15 failed, 228 passed, 243 total` (los cinco nuevos fallan por delayMs undefined, no por excepción). Verde 0a5396d6: `Tests: 243 passed, 243 total`. Sonda en MS y MH, con import de MH mutado para comprobar el segundo fichero del candado DD: mismo rojo 15/228/243; restaurada. Dobles RiseIn y riseDelayOf locales, sin importar tests ajenos. Enmiendas [28],[29],[30].
+
+R16: preflight mecánico CF #197 R21 (Punto 13) cambia solo la cola de Generar plan en la carta temporalmente: `Tests: 1 failed, 64 skipped, 65 total` (r16-cf-mechanical-red-200.log). Es el literal exacto que R16(e) sustituye, dentro de canonicalBlock; se aplica la excepción de enmienda mecánica permitida. La carta se restauró antes de escribir los nuevos tests.
+
+### R16
+Rojo 09aa0139: `Tests: 5 failed, 273 passed, 278 total` (carta y expectativas CC/DD/CF). Los 19 casos de valores/cabeceras nacieron verdes y se probaron antes del commit con la sonda de todos los valores: `Tests: 21 failed, 21 total` (incluye las dos filas de carta aún rojas). Verde c83b8147: `Tests: 278 passed, 278 total`. Sonda posterior de carta: `Tests: 5 failed, 273 passed, 278 total`, las dos filas nuevas de carta y los tres candados antiguos enmendados rojos; restaurada. Sonda separada del retardo del anillo (duración sin cambiar): `Tests: 1 failed, 20 skipped, 21 total`; restaurada. Los 21 casos NC tienen sonda de producción vista en rojo. Carta solo cambia cola de Secundarios de Horario y sección Enmienda #200; firma reflejada desde la spec aprobada.
+
+## Orden final medido con node -e (2026-10-24)
+~~~
+[4] TH title ["components/celebration.tsx","screens/food/index.tsx","screens/health/index.tsx","screens/profile/index.tsx"]
+order matches: true
+[5] EmptyState ["src/screens/alerts/index.tsx","src/screens/docs/index.tsx","src/screens/food/index.tsx","src/screens/geofences/index.tsx","src/screens/health/index.tsx","src/screens/home/index.tsx","src/screens/map/index.tsx","src/screens/profile/index.tsx","src/screens/reminders/index.tsx"]
+order matches: true
+[16] MT ["MOTION_ALERT_PING_MS","MOTION_BLINK_INTERVAL_MS","MOTION_BLINK_TIMING","MOTION_CELEBRATION_BADGE_DELAY_MS","MOTION_CELEBRATION_BADGE_POP_MS","MOTION_CELEBRATION_EASE_OUT","MOTION_CELEBRATION_PING_MS","MOTION_CELEBRATION_POP_MS","MOTION_CELEBRATION_POP_PEAK","MOTION_CELEBRATION_RISE_DELAY_MS","MOTION_CELEBRATION_RISE_OFFSET_Y","MOTION_CELEBRATION_RISE_STAGGER_MS","MOTION_CONFETTI_FALL_TIMING","MOTION_ENTRANCE_OFFSET_Y","MOTION_ENTRANCE_SCALE","MOTION_FADE_TIMING","MOTION_FEEDBACK_MS","MOTION_FILL_TIMING","MOTION_FLOAT_OFFSET_Y","MOTION_FLOAT_TIMING","MOTION_HERO_BUBBLE_POP_DELAY_MS","MOTION_HERO_CAPTION_DELAY_MS","MOTION_HERO_FADE_MS","MOTION_HERO_PING_MS","MOTION_PINGO_FLOAT_OFFSET_Y","MOTION_PINGO_FLOAT_TIMING","MOTION_PING_FROM","MOTION_PING_TIMING","MOTION_PING_TO_SCALE","MOTION_POP_SCALE","MOTION_POP_SPRING","MOTION_RING_DELAY_MS","MOTION_RING_TIMING","MOTION_RISE_OFFSET_Y","MOTION_RISE_TIMING","MOTION_SETTLE_SPRING","MOTION_STAGGER_MS","MOTION_SURFACE_MS","MOTION_TRANSITION_MS"]
+order matches: true
+[38] DD text-17 ["components/celebration.tsx","components/empty-state.tsx","screens/add-pet/index.tsx","screens/add-reminder/index.tsx","screens/alert-detail/index.tsx","screens/docs-upload-form/index.tsx","screens/edit-profile/index.tsx","screens/food/index.tsx","screens/forgot/index.tsx","screens/geofence-editor/index.tsx","screens/geofences/index.tsx","screens/home/index.tsx","screens/login/index.tsx","screens/meal-schedule/index.tsx","screens/pairing/index.tsx","screens/register/index.tsx","screens/reminders/index.tsx","screens/reset-password/index.tsx","screens/weight-log/index.tsx","screens/welcome/index.tsx"]
+order matches: true
+[39] AC tracking-caps ["screens/alerts/index.tsx","screens/food/index.tsx","screens/meal-schedule/index.tsx"]
+order matches: true
+[40] AC text-15 ["components/celebration.tsx","components/empty-state.tsx","screens/add-pet/index.tsx","screens/alert-detail/index.tsx","screens/alerts/index.tsx","screens/docs/index.tsx","screens/food/index.tsx","screens/forgot/index.tsx","screens/geofence-editor/index.tsx","screens/home/index.tsx","screens/login/index.tsx","screens/meal-schedule/index.tsx","screens/meals-history/index.tsx","screens/register/index.tsx","screens/reset-password/index.tsx"]
+order matches: true
+[41/42] AC tracking-title ["components/celebration.tsx","components/empty-state.tsx","components/pet-hero-header.tsx","components/screen-header.tsx","screens/add-pet/index.tsx","screens/add-reminder/index.tsx","screens/alert-detail/index.tsx","screens/alerts/index.tsx","screens/docs/index.tsx","screens/food/index.tsx","screens/geofence-editor/index.tsx","screens/geofences/index.tsx","screens/health/index.tsx","screens/pairing/index.tsx","screens/profile/index.tsx","screens/reminders/index.tsx"]
+order matches: true
+[44] PC avatars ["screens/food/index.tsx","screens/profile/index.tsx"]
+order matches: true
+[45] PC rounded-hero ["components/card.tsx","screens/alert-detail/index.tsx","screens/food/index.tsx","screens/profile/index.tsx"]
+order matches: true
+[46] PC text-13 ["components/form-error.tsx","screens/add-pet/index.tsx","screens/add-reminder/index.tsx","screens/alert-detail/index.tsx","screens/alerts/index.tsx","screens/docs/index.tsx","screens/edit-profile/index.tsx","screens/food/index.tsx","screens/forgot/index.tsx","screens/geofences/index.tsx","screens/login/index.tsx","screens/meal-schedule/index.tsx","screens/pairing/index.tsx","screens/profile/index.tsx","screens/register/index.tsx","screens/reminders/index.tsx","screens/reset-password/index.tsx"]
+order matches: true
+[53] DD rounded16 ["components/celebration.tsx","components/empty-state.tsx","screens/add-pet/index.tsx","screens/add-reminder/index.tsx","screens/alert-detail/index.tsx","screens/docs-upload-form/index.tsx","screens/edit-profile/index.tsx","screens/food/index.tsx","screens/forgot/index.tsx","screens/geofence-editor/index.tsx","screens/geofences/index.tsx","screens/home/index.tsx","screens/login/index.tsx","screens/pairing/index.tsx","screens/register/index.tsx","screens/reset-password/index.tsx","screens/weight-log/index.tsx","screens/welcome/index.tsx"]
+order matches: true
+~~~
+
+## Contadores finales medidos
+```json
+{
+  "Food route lines": 3,
+  "Old FO test exists": false,
+  "Copy rows old/new": [
+    0,
+    25
+  ],
+  "Food <Card / Card import": [
+    0,
+    0
+  ],
+  "Food style CONTINUOUS_CORNER": 6,
+  "Food text-accent-strong": 1,
+  "Food avatar variant": 1,
+  "Ring exports / motion exports": [
+    2,
+    39
+  ],
+  "Food old timing / old track": [
+    0,
+    0
+  ],
+  "Copy pending / markServedAction": [
+    0,
+    2
+  ],
+  "headerShown total": 4,
+  "MS/MH HomeEntrance": [
+    0,
+    0
+  ],
+  "MS/MH ScreenHeader": [
+    1,
+    1
+  ],
+  "MS/MH automatic insets": [
+    1,
+    1
+  ],
+  "MS chunkyLip declarations / violet style": [
+    1,
+    1
+  ],
+  "CF temporary foundation guard": 0,
+  "Charter old lip / amendment": [
+    0,
+    2
+  ],
+  "Dependencies / devDependencies": [
+    44,
+    8
+  ],
+  "Generated router type exists": false
+}
+```
+
+
+## R17 y comprobaciones finales del 2026-10-24
+
+R14 verde: c2b79aca. R17 nació verde en c52df92b: `Tests: 31 passed, 31 total` (21 casos R16 y 10 R17). No tiene commit feat: la implementación ya cumple. Sonda de StyleSheet en los seis ficheros, hex en las tres pantallas e import de Card en Food: `Tests: 10 failed, 21 passed, 31 total`. Sonda independiente de clase con corchetes en los seis ficheros: `Tests: 6 failed, 25 passed, 31 total`. Las dos sondas se restauraron. Cada uno de los 31 casos NC tiene al menos una mutación plantada en producción vista en rojo. No hay sondas pendientes de R9 ni de R10–R17.
+
+Casos nacidos verdes: el negativo de avisos R7 (sonda registrada al reanudar), el negativo sin plan de R10, las 17 filas de valores y las dos de cabeceras de R16, y los 10 casos R17. R11 se escribió junto a R9 y se observó rojo antes de implementar, por lo que no nació verde. La limitación de la suma interna de LG sigue descrita en R5; su fila de producción sí se comprobó por mutación.
+
+### Resultados de la última tanda TDD
+
+| Paso / commit | Log | Línea Tests |
+|---|---|---|
+| R9 DD / 309a1c8e | r9-dd53-green-200.log | `Tests:       114 passed, 114 total` |
+| R10 rojo / ef53a51d | r10-red-200.log | `Tests:       6 failed, 181 passed, 187 total` |
+| R10 verde / b4c2e91b | r10-green-200.log | `Tests:       454 passed, 454 total` |
+| R12 rojo / e7dabe58 | r12-red-200.log | `Tests:       10 failed, 237 passed, 247 total` |
+| R12 verde / b5a0e887 | r12-green-200.log | `Tests:       312 passed, 312 total` |
+| R13 rojo / 009e815c | r13-red-200.log | `Tests:       9 failed, 96 passed, 105 total` |
+| R13 verde / efdbd055 | r13-green-200.log | `Tests:       244 passed, 244 total` |
+| R14 rojo / 3a096545 | r14-red-200.log | `Tests:       1 failed, 76 passed, 77 total` |
+| R14 verde / c2b79aca | r14-green-200.log | `Tests:       269 passed, 269 total` |
+| R15 rojo / 554d4935 | r15-red-200.log | `Tests:       15 failed, 228 passed, 243 total` |
+| R15 verde / 0a5396d6 | r15-green-200.log | `Tests:       243 passed, 243 total` |
+| R16 rojo / 09aa0139 | r16-red-200.log | `Tests:       5 failed, 273 passed, 278 total` |
+| R16 verde / c83b8147 | r16-green-200.log | `Tests:       278 passed, 278 total` |
+| R17 verde / c52df92b | r17-green-200.log | `Tests:       31 passed, 31 total` |
+
+La base es 4683 tests / 142 suites / 1 snapshot. El cierre contiene 4758 tests / 143 suites / 1 snapshot: 82 casos nuevos menos 7 retirados expresamente (R9 −1, R10 −5, R12 −1). No hay otra eliminación de casos. Las 143 suites se ejecutaron; la primera corrida completa deja 139 verdes y cuatro rojas por el color de respaldo en pantallas sin cambios (detalle al final).
+
+Typecheck: `test ! -e .expo/types/router.d.ts` pasó inmediatamente antes de `bun run typecheck`; exit 0, log solo `$ tsc --noEmit`. Lint: `bunx expo lint --no-cache > ../progress/lint-200.log 2>&1 && test ! -s ../progress/lint-200.log`, exit 0 y log de 0 bytes. No se borró ni generó router.d.ts. `git diff --check` limpio.
+
+`graphify update .`: exit 0, extracción AST sin LLM de 2429 ficheros, grafo de 28237 nodos / 36409 aristas / 1872 comunidades actualizado en graphify-out (ignorado). Aviso de herramienta: 20 ficheros SQL no aportan nodos porque falta tree_sitter_sql; no se instalaron dependencias. La extracción del código TypeScript sí concluyó.
+
+`git diff c285eae4 -- mobile-pet-tracker/package.json mobile-pet-tracker/bun.lock`: vacío. Dependencias 44 / desarrollo 8. Componentes compartidos y hook de tema sin cambios. El diff del layout solo contiene las dos líneas aprobadas:
+
+```diff
+diff --git a/mobile-pet-tracker/src/app/_layout.tsx b/mobile-pet-tracker/src/app/_layout.tsx
+index 950f5873..e5c0d959 100644
+--- a/mobile-pet-tracker/src/app/_layout.tsx
++++ b/mobile-pet-tracker/src/app/_layout.tsx
+@@ -98,14 +98,14 @@ function RootStack() {
+         <Stack.Screen name="pets/[petId]/docs" options={{ ...headerOptions, title: '' }} />
+         <Stack.Screen name="pets/[petId]/docs-upload" options={{ ...headerOptions, title: '' }} />
+         <Stack.Screen name="weight-log" options={{ ...headerOptions, title: t('weightLog.weightLog') }} />
+-            <Stack.Screen name="meal-schedule" options={{ ...headerOptions, title: '' }} />
++            <Stack.Screen name="meal-schedule" options={{ headerShown: false }} />
+         <Stack.Screen name="pairing" options={{ ...headerOptions, title: '' }} />
+         <Stack.Screen name="reminders" options={{ ...headerOptions, title: '' }} />
+         <Stack.Screen name="alerts" dangerouslySingular options={{ ...headerOptions, title: '' }} />
+         <Stack.Screen name="alerts/[alertId]" dangerouslySingular options={{ ...headerOptions, title: '', contentStyle: { backgroundColor: background } }} />
+         <Stack.Screen name="pets/[petId]/geofences" options={{ ...headerOptions, title: '', ...TRANSPARENT_HEADER_OPTIONS }} />
+         <Stack.Screen name="pets/[petId]/geofence-editor" options={{ ...headerOptions, title: '' }} />
+-        <Stack.Screen name="meals-history" options={{ ...headerOptions, title: '' }} />
++        <Stack.Screen name="meals-history" options={{ headerShown: false }} />
+         <Stack.Screen name="edit-profile" options={{ ...headerOptions, title: '' }} />
+       </Stack.Protected>
+       <Stack.Protected guard={status !== 'authenticated'}>
+```
+
+### Ficheros finales de app y carta desde H0
+
+Salida de `git diff --name-only c285eae4..HEAD -- mobile-pet-tracker/ docs/`:
+
+```
+docs/ui-guidelines.md
+mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/canvas-foundations.test.ts
+mobile-pet-tracker/src/__tests__/chunky-cta-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/__tests__/heroui-text-size-merge.test.ts
+mobile-pet-tracker/src/__tests__/legibility-classnames.test.ts
+mobile-pet-tracker/src/__tests__/nutrition-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/profile-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/tab-headers-canvas.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/app/(tabs)/food.tsx
+mobile-pet-tracker/src/app/__tests__/detail-stack.test.tsx
+mobile-pet-tracker/src/app/__tests__/layout.test.tsx
+mobile-pet-tracker/src/app/_layout.tsx
+mobile-pet-tracker/src/components/__tests__/empty-state.test.tsx
+mobile-pet-tracker/src/i18n/catalog.ts
+mobile-pet-tracker/src/screens/food/index.test.tsx
+mobile-pet-tracker/src/screens/food/index.tsx
+mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx
+mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+mobile-pet-tracker/src/screens/meals-history/index.test.tsx
+mobile-pet-tracker/src/screens/meals-history/index.tsx
+mobile-pet-tracker/src/theme/__tests__/motion.test.ts
+mobile-pet-tracker/src/theme/motion.ts
+```
+
+Coincide con la lista cerrada, con HT autorizado por fila 52 y CF por la enmienda mecánica literal R16. Git detecta el rename de FO y por eso --name-only muestra su destino. Con --no-renames también figura la baja de `mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx`; no se perdieron casos por el traslado. Sin cambios en backend ni ficheros de bookkeeping del leader. No se ejecutó init.sh, push, PR, merge ni rebase.
+
+### Commits de esta reanudación
+
+```
+309a1c8e test(#200): R9 amend the rounded-16 inventory of design drift
+ef53a51d test(#200): R10 lock staggered nutrition entrances
+b4c2e91b feat(#200): R10 stagger loaded nutrition pieces with RiseIn
+e7dabe58 test(#200): R12 lock the in-content meal schedule header
+b5a0e887 feat(#200): R12 move the meal schedule header into content
+009e815c test(#200): R13 lock the in-content meals history header
+efdbd055 feat(#200): R13 move the meals history header into content
+3a096545 test(#200): R14 require a violet lip on plan generation
+c2b79aca feat(#200): R14 add the violet lip to plan generation
+554d4935 test(#200): R15 lock shared meal screen entrance delays
+0a5396d6 feat(#200): R15 use canvas entrance delays on meal screens
+09aa0139 test(#200): R16 bind nutrition fidelity to frozen canvas literals
+c83b8147 feat(#200): R16 document nutrition canvas exceptions
+c52df92b test(#200): R17 enforce nutrition screen style guards
+```
+
+
+### Sondas de la última tanda y corrida completa inicial
+
+| Sonda restaurada | Línea Tests |
+|---|---|
+| R12 cabecera, padding, tracking-title y opción nativa | `Tests: 10 failed, 237 passed, 247 total` |
+| R13 cabecera, padding, tracking-title y opción nativa | `Tests: 9 failed, 96 passed, 105 total` |
+| R15 retardos de ambas pantallas e import del segundo fichero | `Tests: 15 failed, 228 passed, 243 total` |
+
+Primera corrida completa (`bun run test`, final-tests-200.log): `Test Suites: 4 failed, 139 passed, 143 total`; `Tests: 11 failed, 4747 passed, 4758 total`; `Snapshots: 1 passed, 1 total`. Todos los tests de #200 y todos los candados de cierre están verdes. Los once rojos están en cuatro pantallas y tests sin cambios respecto de H0:
+
+| Suite sin cambios | Casos rojos | Diferencia |
+|---|---:|---|
+| reminders | 1 | labio esperado color:lip, recibido #0D1117 |
+| alert-detail | 4 | labio esperado --color-lip o --color-lip-gray, recibido #0D1117 |
+| alerts | 4 | labio esperado --color-lip-gray, recibido #0D1117 |
+| forgot | 2 | labio esperado color:lip, recibido #0D1117 |
+
+Comprobación aislada, tras esperar ambos pgrep vacíos: `bunx jest --runTestsByPath src/screens/reminders/index.test.tsx src/screens/alert-detail/index.test.tsx src/screens/alerts/index.test.tsx src/screens/forgot/index.test.tsx --testTimeout=30000`; exit 0, `Test Suites: 4 passed, 4 total`, `Tests: 323 passed, 323 total` (final-isolated-200.log). La diferencia de resultado demuestra intermitencia en la ejecución; no identifica por sí sola la causa. Se parece al síntoma de mock/tema documentado por el leader, pero afecta a otras suites. No se ha cambiado producción, hooks, mocks, configuración ni expectativas de esas pantallas. Se repite la suite completa con --no-cache para verificar el cierre con transformaciones nuevas. El aviso de worker forzado es el preexistente contemplado en el handoff.
+
+
+## Trazabilidad consolidada R1–R17 (2026-10-24)
+
+| R | Test | Commit rojo | Commit verde | Estado |
+|---|---|---|---|---|
+| R1 | DS `#200 R1`; FO y candados de ruta | f4363121 | 4c1eab22 | verificado por requisito |
+| R2 | FO `#200 R2` ×4 | a770860b | 42d516d0 | verificado por requisito |
+| R3 | FO `#200 R3` (héroe y cinco textos); HT fila 52 | 97e8fc3e | 556e103c; HT 14dee099 | verificado por requisito |
+| R4 | MT `#200 R4`; FO timing y track | ce1bb032 | f773b353 | verificado por requisito |
+| R5 | FO `#200 R5`; inventarios de Card, tinta y esquina | 4d7ddc5b | a7a23d9a | verificado por requisito |
+| R6 | FO `#200 R6` ×4; copy Marcar servido | 1a4c70c1 | dccce7d3 | verificado por requisito |
+| R7 | FO `#200 R7` ×2 (negativo nacido verde, mutado) | 96295d13 | 5df35c8a | verificado por requisito |
+| R8 | FO `#200 R8`; inventario de IA | fde92720 | fc640890 | verificado por requisito |
+| R9 | FO `#200 R9` ×2; DD fila 53 | 2194ccca | 76b5bea8; DD 309a1c8e | verificado por requisito |
+| R10 | FO `#200 R10` (6 piezas y negativo sin plan mutado); retirada CF #197 R20 | ef53a51d | b4c2e91b | verificado por requisito |
+| R11 | FO `#200 R11` (orden; rojo junto a R9) | 2194ccca | 76b5bea8 | verificado por requisito |
+| R12 | MS cabecera en loading/loaded; LY opción nativa | e7dabe58 | b5a0e887 | verificado por requisito |
+| R13 | MH cabecera en loading/loaded; LY opción nativa y posición 12 | 009e815c | efdbd055 | verificado por requisito |
+| R14 | MS `#200 R14`: labio violeta | 3a096545 | c2b79aca | verificado por requisito |
+| R15 | MS retardos 0/80/140; MH 0/100; DD imports | 554d4935 | 0a5396d6 | verificado por requisito |
+| R16 | NC 17 literales, 2 cabeceras, 2 casos de carta; CC/DD/CF | 09aa0139 | c83b8147 | verificado por requisito |
+| R17 | NC 6 casos estilo/corchetes, 3 hex, 1 Card | nace verde; 10 mutaciones rojas y 6 sondas de corchetes | c52df92b (test) | verificado por requisito |
+
+Las filas describen verificación por requisito. El resultado global de cierre se documenta a continuación; no se modifica el estado de la feature, que corresponde al leader.
+
+
+### Repetición sin caché y diagnóstico en un proceso
+
+Segunda corrida completa (`bun run test --no-cache`, final-tests-retry-200.log): exit 1, `Test Suites: 1 failed, 142 passed, 143 total`; `Tests: 1 failed, 4757 passed, 4758 total`; `Snapshots: 1 passed, 1 total`, 262,058 s. Las cuatro suites inicialmente rojas pasaron. El único rojo migra a BackButton, también sin cambios: `#172 R2: pinta ChevronLeft de 24 en foreground`, esperado color:foreground, recibido #0D1117. No es un timeout.
+
+BackButton aislado, después de ambos pgrep vacíos: `bunx jest --runTestsByPath src/components/__tests__/back-button.test.tsx --testTimeout=30000`; exit 0, `Test Suites: 1 passed, 1 total`; `Tests: 8 passed, 8 total`, 5,37 s (final-back-button-isolated-200.log). Sin cambios en el componente, su test, el hook ni el setup de Jest.
+
+Se ejecuta una última corrida completa de diagnóstico con `bun run test --runInBand --no-cache`: todos los tests, un proceso y transformaciones nuevas. Es un flag de ejecución; no cambia configuración, aserciones ni cobertura. Las dos corridas anteriores y las comprobaciones aisladas se conservan como evidencia de la intermitencia de mocks/tema. No se considera identificada la causa raíz por el mero cambio de resultado.
+
+
+## Cierre definitivo de esta reanudación — parada en validación global
+
+R1–R17 están implementados y tienen sus commits y verificaciones por requisito. La parada de inventario R9 está resuelta y no quedan requisitos de implementación por empezar. La feature no se declara done porque no se consiguió una suite completa verde.
+
+Última corrida completa: `bun run test --runInBand --no-cache` (final-tests-serial-200.log), exit 1:
+
+```
+Test Suites: 1 failed, 142 passed, 143 total
+Tests:       1 failed, 4757 passed, 4758 total
+Snapshots:   1 passed, 1 total
+Time:        446.327 s
+```
+
+El único fallo es `src/components/__tests__/back-button.test.tsx`, `#172 R2: pinta ChevronLeft de 24 en foreground`: esperado `color:foreground`, recibido `#0D1117`. BackButton aislado pasó los ocho casos (final-back-button-isolated-200.log). El fallo se reproduce en las dos corridas completas sin caché, incluida la serial; el resultado aislado no sustituye el cierre completo. La causa raíz no está resuelta. No se ajustan expectativas a un valor de respaldo.
+
+Evidencia de alcance: `git diff c285eae4 --` para BackButton, su test, use-theme-colors, chunky-lip, test/jest-setup.js, package.json y bun.lock está vacío. BackButton no figura en la lista cerrada del handoff y su producción está expresamente en «No tocar». La excepción de reejecución del leader menciona chunky-lip y geofence-editor; ambas pasan en esta última suite, y no extiende autorización para enmendar BackButton. El mandato aplicable del handoff es «Si al correr la suite aparece en rojo un it que no está allí, PARA y anótalo con el diff medido; no lo enmiendes por tu cuenta». La regla de recuentos agregados no aplica: este caso afirma comportamiento de color, no un recuento ni un literal sustituido por #200. Se entrega esta evidencia al leader, sin ampliar alcance ni hacer más cambios de producción.
+
+Todos los candados de cierre pasan dentro de esa corrida:
+
+```
+PASS src/__tests__/design-drift.test.ts
+PASS src/__tests__/consistency-classnames.test.ts
+PASS src/__tests__/legibility-classnames.test.ts
+PASS src/__tests__/chunky-cta-canvas-fidelity.test.ts
+PASS src/__tests__/alerts-canvas-fidelity.test.ts
+PASS src/__tests__/tab-headers-canvas.test.ts
+PASS src/__tests__/profile-canvas-fidelity.test.ts
+PASS src/__tests__/ui-language.test.ts
+PASS src/__tests__/canvas-foundations.test.ts
+PASS src/__tests__/nutrition-canvas-fidelity.test.ts
+```
+
+También pasan FO, MS, MH, LY, MT, HT, chunky-lip y geofence-editor. Typecheck y lint sin caché siguen verdes (no hubo cambios de código desde que se ejecutaron). Graphify actualizado con la limitación SQL ya descrita. La trazabilidad final refleja verificación por requisito y este bloqueo global. El reporte conserva las tres corridas completas, sus resultados aislados y todas las sondas, sin presentar una selección de pases como una corrida completa verde.
+
+Se deja el trabajo en la rama local, con un commit final de reporte y trazabilidad y el árbol móvil/specs/docs limpio. El handoff preexistente queda sin tocar y sin añadir a git. No se ejecutó init.sh; no se hizo push, PR, merge ni rebase. El archivo .done señala que esta ejecución terminó con la parada descrita; no implica aprobación ni estado done de la feature.
+
+### Smoke de cierre del humano (dev build Android, claro y oscuro)
+
+- [ ] Nutrición con plan: héroe morado con labio inferior, anillo tras una pausa breve y cascada de plan/comidas/IA/enlaces.
+- [ ] «Marcar servido» con labio: pasa a píldora verde «Servido», tile verde con check y avance del anillo.
+- [ ] Avisos del plan entre comidas e IA.
+- [ ] Avatares a la derecha del título; cambiar mascota recarga el plan.
+- [ ] Horario y «Generar plan» con labio violeta; Historial; ambas flechas vuelven a Nutrición sin cabecera nativa duplicada.
+- [ ] «Eliminar animaciones» de Android: todo aparece sin movimiento.
+
+No ejecutado por este agente. La casilla de smoke de la spec permanece sin marcar; corresponde al humano y no es el bloqueo automático que se informa aquí.
