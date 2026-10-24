@@ -13,14 +13,16 @@ import { getPet } from '../../api/pets';
 import { getLastPosition } from '../../api/positions';
 import { geofenceKeys, petKeys, positionKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
+import { BackButton } from '../../components/back-button';
 import { ConfirmDialog } from '../../components/confirm-dialog';
 import { ToggleSwitch } from '../../components/toggle-switch';
 import { DEFAULT_CENTER, PetMap, type MapCoordinates } from '../../components/pet-map';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
-import { EDITOR_PILL_LEFT, HEADER_BAR_HEIGHT, TRANSPARENT_HEADER_OPTIONS } from '../../theme/header-layout';
+import { TRANSPARENT_HEADER_OPTIONS } from '../../theme/header-layout';
 import { CONTINUOUS_CORNER, KEEP_OPACITY, TABULAR_NUMS } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
+import { useShadows } from '../../theme/shadows';
 import { zoomForRadius } from '../../utils/zoom-for-radius';
 
 const MIN_RADIUS = 20;
@@ -103,6 +105,7 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
   petId: string; readOnly: boolean; zone?: Geofence; geofences: Geofence[]; initialName: string; initialCenter: MapCoordinates; initialRadius: number;
 }) {
   const chunkyLip = useChunkyLip();
+  const shadows = useShadows();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
   const { theme } = useUniwind();
@@ -153,8 +156,11 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
     <KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={0}>
     <View testID="geofence-editor-map" className="flex-1">
       <PetMap onPress={readOnly ? undefined : setCenter} center={readOnly ? initialCenter : camera.center} zoom={readOnly ? zoomForRadius(initialRadius) : camera.zoom} marker={null} polylines={[]} circles={circles} colorScheme={theme === 'dark' ? 'dark' : 'light'} />
-      <View testID="geofence-editor-title-row" className="absolute justify-center" pointerEvents="box-none" style={{ top: insets.top, left: EDITOR_PILL_LEFT, height: HEADER_BAR_HEIGHT }}>
-      <BlurView testID="geofence-editor-title-blur" intensity={48} blurMethod="dimezisBlurViewSdk31Plus" tint={theme === 'dark' ? 'dark' : 'light'} className="self-start overflow-hidden rounded-full">
+      <View testID="geofence-editor-title-row" className="absolute left-4 right-4 flex-row items-center gap-2.5" pointerEvents="box-none" style={{ top: insets.top + 8 }}>
+      <BlurView testID="geofence-editor-back-blur" intensity={48} blurMethod="dimezisBlurViewSdk31Plus" tint={theme === 'dark' ? 'dark' : 'light'} className="size-11 items-center justify-center overflow-hidden rounded-full bg-glass-surface-strong" style={shadows.card}>
+        <BackButton testID="geofence-editor-back" strokeWidth={2.4} fallback={{ pathname: '/pets/[petId]/geofences', params: { petId } }} />
+      </BlurView>
+      <BlurView testID="geofence-editor-title-blur" intensity={48} blurMethod="dimezisBlurViewSdk31Plus" tint={theme === 'dark' ? 'dark' : 'light'} className="self-start overflow-hidden rounded-full" style={shadows.card}>
         <Text testID="geofence-editor-title" accessibilityRole="header" className="bg-glass-surface-strong px-4 py-2.5 text-base font-extrabold text-foreground">{t('geofenceEditor.title')}</Text>
       </BlurView>
       </View>
