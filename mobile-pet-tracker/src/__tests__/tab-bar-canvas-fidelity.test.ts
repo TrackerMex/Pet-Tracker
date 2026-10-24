@@ -88,3 +88,17 @@ it('#206 R6: los cinco iconos copian los trazados del canvas', () => {
   expect(source).toContain("from 'react-native-svg'");
   expect(source).not.toContain('reicon-react-native');
 });
+
+it.each(['Inicio', 'Mapa', 'Salud', 'Nutricion', 'Perfil'])('#206 R7: el artboard %s marca su pestaña con aria-current y trazo 2.4', (artboard) => {
+  const s = readFileSync(join(process.cwd(), '..', 'specs/mobile-canvas-tab-bar/canvas', `${artboard}.dc.html`), 'utf8');
+  const nav = tabNav(s);
+  expect(nav.match(/aria-current/g)).toHaveLength(1);
+  expect(nav.match(/stroke-width="2.4"/g)).toHaveLength(1);
+  expect(nav.match(/stroke-width="2"/g)).toHaveLength(4);
+  expect(nav.match(/<svg/g)).toHaveLength(5);
+  expect(nav.match(/<a /g)).toHaveLength(5);
+  const active = nav.match(/<a [^>]*aria-current[^>]*>/)![0];
+  const label = artboard === 'Nutricion' ? 'Nutrición' : artboard;
+  expect(active).toContain(`aria-label="${label}"`);
+  expect(source).toContain('strokeWidth={active ? 2.4 : 2}');
+});

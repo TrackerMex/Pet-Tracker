@@ -554,6 +554,11 @@ const ICON_SHAPES = [
   ['profile', [{ cx: '12', cy: '8', r: '4' }, { d: 'M4 21a8 8 0 0 1 16 0' }]],
 ] as const;
 
+const ARTBOARD_TABS = [
+  ['Inicio', 'home', 0], ['Mapa', 'map', 1], ['Salud', 'health', 2],
+  ['Nutricion', 'food', 3], ['Perfil', 'profile', 4],
+] as const;
+
 describe('canvas: barra de pestañas', () => {
   beforeEach(() => {
     jest.useFakeTimers();
@@ -618,6 +623,21 @@ describe('canvas: barra de pestañas', () => {
     }
     expect(icon.children).toHaveLength(shapes.length);
     shapes.forEach((shape, k) => { expect(elementChild(icon, k).props).toMatchObject(shape); });
+  });
+
+  it.each(ARTBOARD_TABS)('#206 R7: en %s la pestaña activa traza 2.4 en accent-strong y las demás 2 en muted', async (_artboard, activeName, index) => {
+    await renderTabBar(index);
+    for (const name of ['home', 'map', 'health', 'food', 'profile']) {
+      const active = name === activeName;
+      const icon = screen.getByTestId(`icon-tab-${name}`, { includeHiddenElements: true });
+      expect(icon).toHaveProp('stroke', active ? 'accent-strong' : 'muted');
+      expect(icon).toHaveProp('strokeWidth', active ? 2.4 : 2);
+      const tab = screen.getByTestId(`tab-${name}`);
+      expect(tab).toHaveProp('accessibilityState', { selected: active });
+      expect(elementChild(tab, 1)).toHaveProp('className', active
+        ? 'text-2xs font-semibold text-accent-strong'
+        : 'text-2xs font-semibold text-muted');
+    }
   });
 
 });
