@@ -122,31 +122,71 @@ describe('R4', () => {
 });
 
 describe('R5', () => {
-  it('aplica las dimensiones del grupo sin tab bar', async () => {
+  it('aplica las dimensiones del grupo sin tab bar (enmendado por #205 R2)', async () => {
     await renderWelcome();
     expect(screen.getByTestId('screen-welcome').props.contentContainerStyle).toEqual({
-      flexGrow: 1, justifyContent: 'center', padding: 24, gap: 16, paddingTop: 52, paddingBottom: 48,
+      flexGrow: 1, paddingHorizontal: 16, paddingTop: 52, paddingBottom: 48, // #205 R2
     });
     expect(screen.getByTestId('screen-welcome').props.className).toBe('flex-1 bg-background');
     expect(screen.getByTestId('screen-welcome').props.contentInsetAdjustmentBehavior).toBe('automatic');
   });
 
-  it('apila los siete bloques en orden', async () => {
+  it('apila los siete bloques en orden (enmendado por #205 R2)', async () => {
     await renderWelcome();
     const children = screen.getByTestId('welcome-content').children as TestInstance[];
-    expect(children).toHaveLength(7);
+    expect(children).toHaveLength(6); // #205 R2
     expect(children.map((child) => child.props.testID)).toEqual([
-      'welcome-scene', 'welcome-chips', 'welcome-brand', 'welcome-tagline',
-      'welcome-get-started', 'welcome-have-account', 'welcome-legal',
+      'welcome-rise-scene', 'welcome-rise-chips', 'welcome-rise-heading', 'welcome-spacer',
+      'welcome-rise-actions', 'welcome-legal', // #205 R2
     ]);
   });
 
-  it('pinta marca, tagline y legal con sus clases', async () => {
+  it('pinta marca, tagline y legal con sus clases (enmendado por #205 R2, R6)', async () => {
     await renderWelcome();
     expect(screen.getByTestId('welcome-brand').props.className).toBe('text-3xl font-bold text-foreground');
     expect(screen.getByTestId('welcome-tagline').props.className).toBe('text-center text-base text-muted');
     expect(screen.getByTestId('welcome-legal').props.className).toBe('text-center text-xs text-muted');
-    expect(StyleSheet.flatten(screen.getByTestId('welcome-content').props.style)).toMatchObject({ alignItems: 'center', gap: 16 });
+    expect(screen.getByTestId('welcome-rise-heading').props.className).toBe('mt-4.5 items-center gap-2'); // #205 R2
+  });
+});
+
+describe('#205 R2: Main apila sus bloques con RiseIn', () => {
+  it('#205 R2: el contenido apila escena, chips, marca, espaciador, CTAs y legal', async () => {
+    await renderWelcome();
+    const content = screen.getByTestId('welcome-content');
+    expect(content.props.className).toBe('flex-1');
+    expect(StyleSheet.flatten(content.props.style) ?? {}).not.toHaveProperty('opacity');
+    expect(StyleSheet.flatten(content.props.style) ?? {}).not.toHaveProperty('transform');
+    expect(readSource('screens/welcome/index.tsx')).not.toContain('style={entranceStyle}');
+
+    const ids = (testID: string) => (screen.getByTestId(testID).children as TestInstance[]).map((child) => child.props.testID);
+    expect(ids('welcome-content')).toEqual([
+      'welcome-rise-scene', 'welcome-rise-chips', 'welcome-rise-heading', 'welcome-spacer',
+      'welcome-rise-actions', 'welcome-legal',
+    ]);
+    expect(ids('welcome-rise-scene')).toEqual(['welcome-scene']);
+    expect(ids('welcome-rise-chips')).toEqual(['welcome-chips']);
+    expect(ids('welcome-rise-heading')).toEqual(['welcome-brand', 'welcome-tagline']);
+    expect(ids('welcome-rise-actions')).toEqual(['welcome-get-started', 'welcome-have-account']);
+
+    for (const testID of ['welcome-rise-scene', 'welcome-rise-chips', 'welcome-rise-heading', 'welcome-rise-actions']) {
+      expect(typeof screen.getByTestId(testID).props.entering).toBe('function');
+    }
+    expect(screen.getByTestId('welcome-rise-scene').props.className).toBeUndefined();
+    expect(screen.getByTestId('welcome-rise-chips').props.className).toBe('mt-6');
+    expect(screen.getByTestId('welcome-rise-heading').props.className).toBe('mt-4.5 items-center gap-2');
+    expect(screen.getByTestId('welcome-rise-actions').props.className).toBe('gap-3.5');
+    expect(screen.getByTestId('welcome-spacer').props.className).toBe('flex-1');
+    expect((screen.getByTestId('welcome-spacer').children as TestInstance[])).toHaveLength(0);
+  });
+
+  it('#205 R2: el scroll usa márgenes 16 y los insets sin centrar', async () => {
+    await renderWelcome();
+    const style = screen.getByTestId('screen-welcome').props.contentContainerStyle;
+    expect(style).toEqual({ flexGrow: 1, paddingHorizontal: 16, paddingTop: 52, paddingBottom: 48 });
+    expect(style).not.toHaveProperty('justifyContent');
+    expect(style).not.toHaveProperty('padding');
+    expect(style).not.toHaveProperty('gap');
   });
 });
 
@@ -387,13 +427,13 @@ describe('#153 R1: el saludo de Pingo existe en los dos idiomas', () => {
 
 
 describe('#153 R5: la escena de Pingo sustituye al logo', () => {
-  it('apila la escena y los seis bloques de #118 en orden', async () => {
+  it('apila la escena y los seis bloques de #118 en orden (enmendado por #205 R2)', async () => {
     await renderWelcome();
     const children = screen.getByTestId('welcome-content').children as TestInstance[];
-    expect(children).toHaveLength(7);
+    expect(children).toHaveLength(6); // #205 R2
     expect(children.map((child) => child.props.testID)).toEqual([
-      'welcome-scene', 'welcome-chips', 'welcome-brand', 'welcome-tagline',
-      'welcome-get-started', 'welcome-have-account', 'welcome-legal',
+      'welcome-rise-scene', 'welcome-rise-chips', 'welcome-rise-heading', 'welcome-spacer',
+      'welcome-rise-actions', 'welcome-legal', // #205 R2
     ]);
   });
 
@@ -489,37 +529,6 @@ describe('#153 R8: el contenido entra con las constantes de motion.ts', () => {
     for (const re of [/\b(?:duration|easing|reduceMotion):/g, /WELCOME_ENTRANCE_/g]) {
       expect((source.match(re) ?? []).length).toBe(0);
     }
-  });
-
-  it('arranca invisible y desplazado 12 puntos sin reduce motion', async () => {
-    await renderWelcome();
-    expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
-      alignItems: 'center', gap: 16, opacity: 0, transform: [{ translateY: 12 }],
-    }, { shouldMatchAllProps: true });
-  });
-
-  it('termina visible y en su sitio sin reduce motion', async () => {
-    await renderWelcome();
-    expect(screen.getByTestId('welcome-content')).toBeOnTheScreen();
-    // El muelle se asienta en unas 1,5 × 250 ms; 1000 ms deja más del doble.
-    await act(async () => { jest.advanceTimersByTime(1000); });
-    expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
-      alignItems: 'center', gap: 16, opacity: 1, transform: [{ translateY: 0 }],
-    }, { shouldMatchAllProps: true });
-  });
-
-  it('con reduce motion aparece sin desplazarse', async () => {
-    mockUseReducedMotion.mockReturnValue(true);
-    await renderWelcome();
-    expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
-      alignItems: 'center', gap: 16, opacity: 0, transform: [{ translateY: 0 }],
-    }, { shouldMatchAllProps: true });
-    // Misma ventana de 1000 ms que el asentamiento sin reduce motion.
-    await act(async () => { jest.advanceTimersByTime(1000); });
-    expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
-      alignItems: 'center', gap: 16, opacity: 1, transform: [{ translateY: 0 }],
-    }, { shouldMatchAllProps: true });
-    mockUseReducedMotion.mockReturnValue(false);
   });
 });
 

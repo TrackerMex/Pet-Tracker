@@ -27,3 +27,23 @@ describe('#205 R1: tokens del canvas de cuenta', () => {
     expect(css.match(/--radius-40: 40px;/g)).toHaveLength(1);
   });
 });
+
+describe('#205 R2: entradas de Main', () => {
+  it('#205 R2: Main sube sus bloques a 0, 120, 200 y 280 ms como el artboard', () => {
+    const main = canvas('Main');
+    expect(main).toContain('animation: rise 400ms ease-out both');
+    expect(main).toContain('animation: rise 400ms ease-out 120ms both');
+    expect(main).toContain('animation: rise 400ms ease-out 200ms both');
+    expect(main).toContain('animation: rise 400ms ease-out 280ms both');
+    expect(main).toContain('padding: 56px 16px 34px');
+    expect(main).toContain('margin-top: 24px');
+    expect(main).toContain('gap: 14px');
+
+    const welcome = source('screens/welcome/index.tsx');
+    expect(welcome).toContain('<RiseIn testID="welcome-rise-scene" delayMs={0}>');
+    expect(welcome).toContain('<RiseIn testID="welcome-rise-chips" delayMs={120} className="mt-6">');
+    expect(welcome).toContain('<RiseIn testID="welcome-rise-heading" delayMs={200} className="mt-4.5 items-center gap-2">');
+    expect(welcome).toContain('<RiseIn testID="welcome-rise-actions" delayMs={280} className="gap-3.5">');
+    expect(welcome).toContain('paddingHorizontal: 16');
+  });
+});
