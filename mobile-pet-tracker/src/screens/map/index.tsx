@@ -410,69 +410,69 @@ export function MapScreen() {
               <View className="gap-2">
                 <View className="flex-row gap-2">
                   <View
-                    className="flex-1 items-center rounded-xl bg-default p-3"
+                    className="flex-1 gap-0.5 rounded-14 bg-default px-3 py-2.5"
                     style={CONTINUOUS_CORNER}
                   >
+                    <Text className="text-11 font-semibold text-muted">
+                      {t('map.speed')}
+                    </Text>
                     <Text
                       testID="stat-speed"
-                      className="text-base font-black text-accent-strong"
+                      className="text-xl font-black text-accent-strong"
                       numberOfLines={1}
                       style={TABULAR_NUMS}
                     >
                       {fmtSpeed(latestSpeed)}
                     </Text>
-                    <Text className="mt-1 text-2xs font-normal text-muted">
-                      {t('map.speed')}
-                    </Text>
                   </View>
                   <View
-                    className="flex-1 items-center rounded-xl bg-default p-3"
+                    className="flex-1 gap-0.5 rounded-14 bg-default px-3 py-2.5"
                     style={CONTINUOUS_CORNER}
                   >
+                    <Text className="text-11 font-semibold text-muted">
+                      {t('map.distance')}
+                    </Text>
                     <Text
                       testID="stat-distance"
-                      className="text-base font-black text-accent-strong"
+                      className="text-xl font-black text-foreground"
                       numberOfLines={1}
                       style={TABULAR_NUMS}
                     >
                       {fmtKm(distanceM)}
                     </Text>
-                    <Text className="mt-1 text-2xs font-normal text-muted">
-                      {t('map.distance')}
-                    </Text>
                   </View>
                 </View>
                 <View className="flex-row gap-2">
                   <View
-                    className="flex-1 items-center rounded-xl bg-default p-3"
+                    className="flex-1 gap-0.5 rounded-14 bg-default px-3 py-2.5"
                     style={CONTINUOUS_CORNER}
                   >
+                    <Text className="text-11 font-semibold text-muted">
+                      {t('map.updated')}
+                    </Text>
                     <Text
                       testID="stat-updated"
-                      className="text-base font-black text-muted"
+                      className="text-base font-bold text-muted"
                       numberOfLines={1}
                       style={TABULAR_NUMS}
                     >
                       {updated}
                     </Text>
-                    <Text className="mt-1 text-2xs font-normal text-muted">
-                      {t('map.updated')}
-                    </Text>
                   </View>
                   <View
-                    className="flex-1 items-center rounded-xl bg-default p-3"
+                    className="flex-1 gap-0.5 rounded-14 bg-default px-3 py-2.5"
                     style={CONTINUOUS_CORNER}
                   >
+                    <Text className="text-11 font-semibold text-muted">
+                      {t('pairing.battery')}
+                    </Text>
                     <Text
                       testID="stat-battery"
-                      className={`text-base font-black ${batteryTone.text}`}
+                      className={`${batteryPct === null ? 'text-base' : 'text-xl'} font-black ${batteryTone.text}`}
                       numberOfLines={1}
                       style={TABULAR_NUMS}
                     >
                       {battery}
-                    </Text>
-                    <Text className="mt-1 text-2xs font-normal text-muted">
-                      {t('pairing.battery')}
                     </Text>
                   </View>
                 </View>
