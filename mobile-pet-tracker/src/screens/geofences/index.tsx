@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
-import { AlertCircle, Trash } from 'reicon-react-native';
+import { AlertTriangle, Trash } from 'reicon-react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -180,8 +180,8 @@ export function GeofencesScreen({ petId }: { petId: string }) {
         <>
         {atLimit ? <HomeEntrance testID="geofences-limit-entrance" index={zoneCount}>
           <View testID="geofences-limit" className={`flex-row items-start gap-2.5 rounded-tile px-3.5 py-3 ${CATEGORY_SLOTS.amber.surface}`} style={CONTINUOUS_CORNER}>
-            <AlertCircle size={20} color={warning} />
-            <Text testID="geofences-limit-text" className={`flex-1 text-13 ${CATEGORY_SLOTS.amber.ink}`}>{t('geofenceEditor.limitNotice', { max: GEOFENCE_MAX_PER_PET })}</Text>
+            <AlertTriangle size={20} color={warning} />
+            <Text testID="geofences-limit-text" className={`flex-1 text-13 leading-note ${CATEGORY_SLOTS.amber.ink}`}>{t('geofenceEditor.limitNotice', { max: GEOFENCE_MAX_PER_PET })}</Text>
           </View>
         </HomeEntrance> : null}
         <Button testID="geofences-add" className={atLimit ? 'mt-auto h-14 rounded-16 bg-default' : 'mt-auto h-14 rounded-16 bg-accent'} style={atLimit ? KEEP_OPACITY : [chunkyLip.primary, KEEP_OPACITY]} isDisabled={busy || atLimit}
