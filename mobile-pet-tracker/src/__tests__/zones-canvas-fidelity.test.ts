@@ -140,3 +140,11 @@ it('#202 R2: header-layout.ts no existe ni se importa', () => {
     .filter(path => /\.tsx?$/.test(path) && readFileSync(path, 'utf8').includes(needle));
   expect(references).toEqual([]);
 });
+
+
+it('#202 R20: la carta ya no describe la cabecera transparente de Zonas', () => {
+  const charter = readFileSync(join(process.cwd(), '..', 'docs/ui-guidelines.md'), 'utf8');
+  expect(charter).not.toContain('Cabecera nativa transparente (#189 E4)');
+  expect(charter).not.toContain("bg-danger-soft`)");
+  expect(charter).toContain('Cabecera en contenido (#202)');
+});

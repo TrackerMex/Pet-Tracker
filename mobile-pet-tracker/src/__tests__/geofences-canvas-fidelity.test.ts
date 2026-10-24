@@ -10,18 +10,18 @@ const mainRules = charter.split('## Animación (decisiones por defecto)')[0];
 const paletteRule = charter.split('**1. Paleta pastel categórica.**')[1].split('**2. Fotografía')[0];
 
 describe('#189 R16: la carta fija las excepciones de Zonas y Editor', () => {
-  it('#189 R16.1: métricas nominales de las dos pantallas bajo A11 (enmendado por E4 R24)', () => {
-    expect(mainRules).toContain('Zonas seguras (#189): `paddingHorizontal: 20`, `paddingTop: insets.top + 6`, `gap: 12`, `paddingBottom: insets.bottom + 40`.');
-    expect(charter).toContain('**Métricas por fidelidad al canvas (A11).** Zonas: `paddingHorizontal: 20`, `paddingTop: insets.top + 6`, `gap: 12`, `paddingBottom: insets.bottom + 40`.');
+  it('#189 R16.1: métricas nominales de las dos pantallas bajo A11 (enmendado por E4 R24) (enmendado por #202 R20)', () => {
+    expect(mainRules).toContain('Zonas seguras (#189, #202): `paddingHorizontal: 20`, `paddingTop: insets.top + 12`, `gap: 12`, `paddingBottom: insets.bottom + 40`.');
+    expect(charter).toContain('**Métricas por fidelidad al canvas (A11).** Zonas: `paddingHorizontal: 20`, `paddingTop: insets.top + 12`, `gap: 12`, `paddingBottom: insets.bottom + 40`.');
     expect(mainRules).toContain('Hoja del Editor (#189): `paddingHorizontal: 20`, `paddingTop: 12`, `gap: 14`, `paddingBottom: insets.bottom + 36`.');
   });
   it('#189 R16.2: radios nominales del tile, aviso, hoja y botones', () => {
     expect(mainRules).toContain('Fuera de la escala, por fidelidad al canvas (#189): `rounded-14` (tile de la zona), `rounded-tile` (aviso de límite), `rounded-t-hero` (hoja del Editor) y `rounded-16` (botones).');
   });
-  it('#189 R16.3: receta gris, Eliminar neutro y papelera solo-icono', () => {
+  it('#189 R16.3: receta gris, Eliminar neutro y papelera solo-icono (enmendado por #202 R20)', () => {
     expect(mainRules).toContain('sin labio; la aplican #189: Añadir zona en el límite y Guardar con nombre vacío.');
     expect(mainRules).toContain('«Eliminar» del Editor es secundario neutro con etiqueta `text-base font-extrabold text-danger`');
-    expect(mainRules).toContain('La papelera de la fila de zona es una excepción solo-icono (`size-11 rounded-xl bg-danger-soft`).');
+    expect(mainRules).toContain('La papelera de la fila de zona es una excepción solo-icono (`size-11 rounded-xl` sobre `CATEGORY_SLOTS.rose.surface`, #202).');
   });
   it('#189 R16.4: una sola paleta por posición para las zonas', () => {
     expect(paletteRule).toContain('`zoneCategory` (orden `green, blue, amber, violet, rose`) es el único reparto categoría → ranura de las zonas; el color es de la posición en la lista, no de la zona.');
@@ -128,12 +128,12 @@ it('#189 R22.3: el Editor no consume HeaderHeightContext ni useContext', () => {
 
 
 describe('#189 R24: carta de cabeceras transparentes y bloqueo sin atenuado', () => {
-  it('#189 R24.1: fija la transparencia y distingue las ramas opacas del Editor', () => {
-    expect(mainRules).toContain("Cabecera nativa transparente (#189 E4): Zonas seguras y la rama de formulario del Editor usan `headerTransparent: true` con `headerStyle: { backgroundColor: 'transparent' }`; el contenido empieza bajo la cabecera, el título comparte fila con la flecha, el `paddingTop` suma `insets.top` y no se usa `contentInsetAdjustmentBehavior`. Las ramas de estado del Editor conservan la cabecera opaca.");
+  it('#189 R24.1: fija la transparencia y distingue las ramas opacas del Editor (enmendado por #202 R20)', () => {
+    expect(mainRules).toContain("Cabecera en contenido (#202): Zonas seguras y el editor de zonas declaran `headerShown: false`. Zonas y las ramas de estado del Editor montan `ScreenHeader` como primer hijo del contenido; el formulario del Editor flota sobre el mapa una fila en `top: insets.top + 8` con el volver de cristal (44, `BackButton` con `strokeWidth={2.4}`) y la píldora del título, ambos con `shadows.card`.");
   });
-  it('#189 R24.2: excluye Zonas de la excepción de cabecera opaca en ambos documentos', () => {
+  it('#189 R24.2: excluye Zonas de la excepción de cabecera opaca en ambos documentos (enmendado por #202 R20)', () => {
     const conventions = readFileSync(join(process.cwd(), '..', 'docs/conventions.md'), 'utf8');
-    for (const source of [mainRules, conventions]) expect(source).toContain('`pets/[petId]/geofences` queda fuera de esta excepción desde #189 E4 (cabecera transparente, ver más abajo)');
+    for (const source of [mainRules, conventions]) expect(source).toContain('Zonas seguras y el editor de zonas quedan fuera de esta excepción desde #202 (`headerShown: false`, cabecera en contenido; ver más abajo)');
   });
   it('#189 R24.3: el bloqueo de heroui conserva opacidad y la receta gris', () => {
     expect(mainRules).toContain('El bloqueo (`isDisabled`) no atenúa: en #189 los `Switch` y `Button` de heroui cancelan el 50 % de `disabled:element-disabled` con `KEEP_OPACITY`, y la receta gris del límite no lleva opacidad.');
