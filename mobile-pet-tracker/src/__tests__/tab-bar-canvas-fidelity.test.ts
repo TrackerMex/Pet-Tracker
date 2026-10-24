@@ -134,3 +134,8 @@ it('#206 R9: la carta nombra la excepción de iconos de la barra una sola vez y 
   expect(normalized.endsWith(`${BLOQUE}\n`)).toBe(true);
   expect(charter.split('- **Iconos reicon (D-I).**')).toHaveLength(2);
 });
+
+it('#206 R10: la barra no lleva hex, clases arbitrarias, StyleSheet ni sombras de React Native', () => {
+  for (const forbidden of ['#', '-[', 'StyleSheet', 'shadowColor', 'elevation', 'text-13', 'text-15', 'text-17']) expect(source).not.toContain(forbidden);
+  expect(source.match(/text-accent-strong/g)).toHaveLength(1);
+});
