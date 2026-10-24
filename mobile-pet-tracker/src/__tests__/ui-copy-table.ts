@@ -591,6 +591,7 @@ export const R14_GEOFENCES: UseRow[] = [
 ];
 
 export const R15_GEOFENCE_EDITOR: UseRow[] = [
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.loadingLabel' }, // #202 R18
   { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.title' }, // #189 R8
   { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.title' }, // #189 R8
   { file: 'src/screens/geofences/index.tsx', key: 'geofenceEditor.editLabel' },

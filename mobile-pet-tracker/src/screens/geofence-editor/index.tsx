@@ -60,7 +60,11 @@ export function GeofenceEditorScreen({ petId, geofenceId }: { petId: string; geo
   const zone = list.data?.kind === 'ok' ? list.data.geofences.find(({ id }) => id === geofenceId) : undefined;
   let content;
   if (list.data === undefined || (!geofenceId && position.data === undefined) || pet.data === undefined) {
-    content = <Skeleton testID="geofence-editor-loading" className="h-24 w-full rounded-card" />;
+    content = <View testID="geofence-editor-loading" className="gap-2.5" accessibilityLabel={t('geofenceEditor.loadingLabel')} accessibilityState={{ busy: true }}>
+      <Skeleton testID="geofence-editor-loading-bar-0" className="h-12 w-full rounded-xl" />
+      <Skeleton testID="geofence-editor-loading-bar-1" className="h-2 w-full rounded-full" />
+      <Skeleton testID="geofence-editor-loading-bar-2" className="h-12 w-full rounded-16" />
+    </View>;
   } else if (list.data.kind === 'no-tracking') {
     content = <Card testID="geofence-editor-no-tracking" className="items-center px-4 py-6">
       <Text className={STATE_TEXT}>{messageFor(t, 'no-tracking')}</Text>
