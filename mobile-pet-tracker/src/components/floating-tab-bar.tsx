@@ -180,7 +180,7 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
               testID={`tab-${name}`}
               accessibilityRole="tab"
               accessibilityState={{ selected: isActive }}
-              className="flex-1 items-center gap-1"
+              className="h-13 flex-1 items-center justify-center gap-0.5"
               onPress={() => {
                 const event = navigation.emit({
                   type: 'tabPress',
