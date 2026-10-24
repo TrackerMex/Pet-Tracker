@@ -3,6 +3,7 @@ import { Button, Skeleton } from 'heroui-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Text, View } from 'react-native';
+import Animated, { useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
 
@@ -32,6 +33,7 @@ import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { MOTION_RISE_OFFSET_Y } from '../../theme/motion';
 import {
   CONTINUOUS_CORNER,
   TABULAR_NUMS,
@@ -41,6 +43,7 @@ import {
   MAP_CONNECTION_LABEL_KEY,
   type DeviceConnectionState,
 } from '../../utils/device-connectivity';
+import { homeEntering } from '../home/home-entrance';
 
 function isPetsError(state: PetsState): boolean {
   switch (state.kind) {
@@ -101,6 +104,7 @@ export function MapScreen() {
   const t = useTranslate();
   const { selectedPetId } = useSelectedPet();
   const insets = useSafeAreaInsets();
+  const reducedMotion = useReducedMotion();
   const { theme } = useUniwind();
   const pets = useQuery({
     queryKey: petKeys.list(),
@@ -339,7 +343,7 @@ export function MapScreen() {
               </Text>
             </Card>
           ) : null}
-          <View
+          <Animated.View
             testID="map-stats"
             style={{
               position: 'absolute',
@@ -347,7 +351,12 @@ export function MapScreen() {
               right: 16,
               bottom: insets.bottom + 96,
             }}
-            className="gap-2"
+            className="gap-2.5"
+            entering={
+              reducedMotion
+                ? undefined
+                : homeEntering(0, MOTION_RISE_OFFSET_Y)
+            }
           >
             {selectedPet ? (
               <View
@@ -480,7 +489,7 @@ export function MapScreen() {
                 {t('map.couldNotUpdateLostMode')}
               </Text>
             ) : null}
-          </View>
+          </Animated.View>
         </>
       ) : null}
     </View>
