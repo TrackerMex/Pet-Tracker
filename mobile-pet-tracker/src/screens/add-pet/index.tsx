@@ -22,6 +22,8 @@ import { petKeys } from '../../api/query-keys';
 import { Celebration } from '../../components/celebration';
 import { SegmentedControl } from '../../components/segmented-control';
 import { PetAvatar } from '../../components/pet-avatar';
+import { RiseIn } from '../../components/rise-in';
+import { ScreenHeader } from '../../components/screen-header';
 import { FieldErrorMessage } from '../../components/field-error-message';
 import type { FieldIssues } from '../../utils/account-rules';
 import { validateAddPet, validateAddPetBasics } from '../../utils/form-rules';
@@ -260,7 +262,7 @@ export function AddPetScreen() {
   function renderStep1() {
     return (
       <>
-        <View className="flex-row items-center gap-3.5">
+        <RiseIn testID="add-pet-intro" delayMs={0} className="flex-row items-center gap-3.5">
           <Pressable
             testID="add-pet-photo"
             className="size-22 items-center justify-center rounded-full border-2 border-dashed border-accent bg-surface-secondary"
@@ -288,10 +290,10 @@ export function AddPetScreen() {
             <View testID="add-pet-bubble-tail" className="absolute -left-1.5 top-5.5 size-3 rotate-45 bg-surface-secondary" />
             <Text testID="add-pet-bubble-text" className="text-13 font-semibold text-foreground">{t('addPet.pingoGreeting')}</Text>
           </View>
-        </View>
+        </RiseIn>
         {renderPhotoError()}
 
-        <Text className="text-lg font-bold text-foreground">
+        <Text className="text-base font-black text-foreground">
           {t('addPet.basicDetails')}
         </Text>
 
@@ -502,6 +504,22 @@ export function AddPetScreen() {
       behavior="padding"
       keyboardVerticalOffset={headerHeight}
     >
+      <View className="gap-3 bg-background px-5" style={{ paddingTop: insets.top + 12 }}>
+        <ScreenHeader testID="add-pet"
+          backFallback="/"
+          title={t('addPet.addPet')}
+          size={24}
+          accessory={
+            <Text testID="add-pet-step-label" className="text-13 font-extrabold text-muted">
+              {t('addPet.stepProgress', { current: step, total: 2 })}
+            </Text>
+          }
+        />
+        <View testID="add-pet-step-bar" accessibilityRole="progressbar" accessibilityValue={{ min: 1, max: 2, now: step }} className="flex-row gap-1.5">
+          <View testID="add-pet-step-segment-1" className="h-1.5 flex-1 rounded-full bg-accent" />
+          <View testID="add-pet-step-segment-2" className={step === 2 ? 'h-1.5 flex-1 rounded-full bg-accent' : 'h-1.5 flex-1 rounded-full bg-lip-gray'} />
+        </View>
+      </View>
       <ScrollView
         key={step}
         testID="add-pet-form"
@@ -515,20 +533,6 @@ export function AddPetScreen() {
           paddingBottom: insets.bottom + 24,
         }}
       >
-        <View className="flex-row items-center justify-between gap-3">
-          <View className="flex-1">
-            <Text testID="add-pet-title" accessibilityRole="header" className="text-2xl font-black tracking-title text-foreground">
-              {t('addPet.addPet')}
-            </Text>
-          </View>
-          <Text testID="add-pet-step-label" className="text-13 font-extrabold text-muted">
-            {t('addPet.stepProgress', { current: step, total: 2 })}
-          </Text>
-        </View>
-        <View testID="add-pet-step-bar" accessibilityRole="progressbar" accessibilityValue={{ min: 1, max: 2, now: step }} className="flex-row gap-1.5">
-          <View testID="add-pet-step-segment-1" className="h-1.5 flex-1 rounded-full bg-accent" />
-          <View testID="add-pet-step-segment-2" className={step === 2 ? 'h-1.5 flex-1 rounded-full bg-accent' : 'h-1.5 flex-1 rounded-full bg-lip-gray'} />
-        </View>
         {step === 1 ? renderStep1() : renderStep2()}
       </ScrollView>
       {celebratePetName !== null ? (
