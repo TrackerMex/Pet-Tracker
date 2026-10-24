@@ -291,3 +291,29 @@ describe('#205 R19: pie fijo', () => {
     expect(screen).not.toContain('HeaderHeightContext');
   });
 });
+
+describe('#205 R20: carta', () => {
+  it('#205 R20: la carta registra la enmienda #205', () => {
+    const guidelines = readFileSync(join(process.cwd(), '..', 'docs/ui-guidelines.md'), 'utf8');
+    const start = guidelines.indexOf('## Enmienda #205');
+    expect(start).toBeGreaterThanOrEqual(0);
+
+    const rest = guidelines.slice(start);
+    const next = rest.indexOf('\n## ', 1);
+    const section = next === -1 ? rest : rest.slice(0, next);
+    expect(section.startsWith('## Enmienda #205 — el flujo de cuenta como el canvas')).toBe(true);
+    for (const literal of [
+      'RiseIn',
+      'PingoFloat',
+      'ScreenHeader',
+      'headerShown: false',
+      '--radius-32',
+      '--radius-40',
+      '--text-34',
+      'PopIn',
+      'specs/mobile-canvas-account-flow/requirements.md',
+    ]) {
+      expect(section).toContain(literal);
+    }
+  });
+});
