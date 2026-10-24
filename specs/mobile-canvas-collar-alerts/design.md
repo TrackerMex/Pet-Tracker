@@ -53,12 +53,15 @@ Solo capa de presentación móvil (no hay dominio ni infraestructura nuevos):
 |---|---|
 | `src/app/_layout.tsx` | 3 líneas: `pairing`, `alerts`, `alerts/[alertId]` a `headerShown: false` |
 | `src/screens/pairing/index.tsx` | `ScreenHeader`, avatar a la cabecera, `RiseIn`, vista con collar al canvas, hoja de desvincular |
-| `src/screens/alerts/index.tsx` | `ScreenHeader` con la insignia como accesorio, `RiseIn` en filas, `paddingTop` |
+| `src/screens/alerts/index.tsx` | `ScreenHeader` con la insignia como accesorio, `RiseIn` en filas, `paddingTop`; importa `ALERT_ROW_RISE_DELAYS` de `./rise-delays` |
+| `src/screens/alerts/rise-delays.ts` | nuevo (R9): `export const ALERT_ROW_RISE_DELAYS = [0, 70, 140, 200, 260] as const;`, sin otros imports. Módulo ligero para que el test de R12 lea los retardos de producción sin cargar la pantalla (decisión del leader, 2026-10-24) |
 | `src/screens/alert-detail/index.tsx` | `ScreenHeader`, `RiseIn` 0/80, `paddingTop` |
 | `src/__tests__/collar-alerts-canvas-fidelity.test.ts` | nuevo (CF203): filas canvas ↔ producción |
-| `src/screens/pairing/index.test.tsx`, `src/screens/alerts/index.test.tsx`, `src/screens/alert-detail/index.test.tsx`, `src/app/__tests__/layout.test.tsx`, `src/__tests__/canvas-foundations.test.ts` | tests nuevos y candados del inventario |
+| `src/screens/pairing/index.test.tsx`, `src/screens/alerts/index.test.tsx`, `src/screens/alert-detail/index.test.tsx`, `src/app/__tests__/layout.test.tsx`, `src/__tests__/canvas-foundations.test.ts` | tests nuevos y candados del inventario; los dobles de `RiseIn` (R3, R9, R11), de `reicon-react-native` (`ChevronLeft`, F31/F32) y de `expo-router` de pairing (`canGoBack`, F39) |
+| `src/app/__tests__/alert-detail.navigation.test.tsx` | doble de `reicon-react-native` con `ChevronLeft` (F33, R8) |
+| `src/__tests__/alerts-canvas-fidelity.test.ts`, `src/__tests__/profile-canvas-fidelity.test.ts`, `src/__tests__/chunky-cta-canvas-fidelity.test.ts` | listas y cuenta de los candados F34–F37 |
 
-`components/celebration.tsx` no cambia.
+`components/celebration.tsx` no cambia. Además del módulo `rise-delays.ts`, el único cambio de producción fuera de las tres pantallas y `_layout.tsx` son los imports muertos que salen en el commit verde de su R (`HeaderHeightContext` y `useContext` tras R2; `Alert` tras R7).
 
 ## Piezas de #197 que se consumen
 
@@ -110,8 +113,10 @@ Cada una queda cerrada; el humano puede cambiarla en el gate.
 - **D6 — `flexGrow: 1` siempre.** Defecto: el `contentContainerStyle` de
   `pairing-form` lleva `flexGrow: 1` en todos los estados (hoy solo al vincular),
   porque la vista con collar también empuja su botón al fondo
-  (`margin-top:auto` del artboard). En carga, error y vacío no cambia nada
-  visible.
+  (`margin-top:auto` del artboard). Para que `device-unpair-spacer` (`flex-1`)
+  empuje el botón, el `View` que lo contiene (el `gap-4` externo de la vista con
+  collar) pasa a `flex-1 gap-4` (R6); el `gap-4` de dentro de la tarjeta no cambia.
+  En carga, error y vacío no cambia nada visible.
 - **D7 — Celebración sin cambios.** Defecto: no se toca
   `components/celebration.tsx`; el interlineado del cuerpo (22 px frente a
   15 × 1.5 = 22.5 del artboard) queda como desviación. `motion.ts` no se toca.
@@ -161,3 +166,11 @@ Supuestos de entorno que los tests no ven; se comprueban en el smoke del humano
    solo se observa en el dispositivo).
 5. Sin cabecera nativa, el gesto de volver de Android y el botón `-back` hacen
    lo mismo en las tres pantallas.
+6. La vista con collar de pairing (`className="flex-1 gap-4"`, R6) empuja
+   `device-unpair` al fondo en un teléfono pequeño y con la píldora y la tarjeta
+   más altas de lo normal: un hijo con `flex: 1` dentro del contenido de un
+   `ScrollView` puede colapsar su alto (la vista de vincular usa
+   `style={{ flexGrow: 1 }}` por eso). El test solo ve el `className`; si el
+   smoke muestra el botón recortado o el contenido sin altura, se pasa el
+   contenedor a `style={{ flexGrow: 1 }}` como en la vista de vincular (el test
+   de R6 cambia su aserción de `flex-1 gap-4` a `gap-4` con `flexGrow: 1`).
