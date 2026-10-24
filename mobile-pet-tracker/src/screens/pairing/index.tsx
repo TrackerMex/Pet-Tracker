@@ -1,3 +1,4 @@
+import { BottomSheet, BottomSheetView } from '@expo/ui/community/bottom-sheet';
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { Image } from 'expo-image';
 import { useQuery } from '@tanstack/react-query';
@@ -6,14 +7,13 @@ import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
-  Alert,
   ScrollView,
   Text,
   TextInput,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { InfoCircle, Package } from 'reicon-react-native';
+import { InfoCircle, LinkBroken, Package } from 'reicon-react-native';
 
 import { claimDevice, releaseDevice } from '../../api/devices';
 import { listPets, type PetsState } from '../../api/pets';
@@ -100,7 +100,7 @@ function DeviceRow({
 export function PairingScreen() {
   const chunkyLip = useChunkyLip();
   const shadows = useShadows();
-  const [muted] = useThemeColors(['muted']);
+  const [muted, danger] = useThemeColors(['muted', 'danger']);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const locale = useLocale();
@@ -116,6 +116,7 @@ export function PairingScreen() {
   const [code, setCode] = useState('');
   const [claiming, setClaiming] = useState(false);
   const [releasing, setReleasing] = useState(false);
+  const [unpairOpen, setUnpairOpen] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [phase, setPhase] = useState<'idle' | 'ready'>('idle');
   const [readyDevice, setReadyDevice] = useState<DeviceStatus | null>(null);
@@ -256,23 +257,21 @@ export function PairingScreen() {
       setActionError(t('common.somethingWentWrong'));
     } finally {
       setReleasing(false);
+      setUnpairOpen(false);
     }
   }
 
-  function confirmRelease() {
+  function openUnpair() {
     setActionError(null);
-    Alert.alert(
-      t('pairing.unpairAlertTitle'),
-      t('pairing.unpairAlertBody'),
-      [
-        { text: t('pairing.cancel'), style: 'cancel' },
-        {
-          text: t('pairing.unpair'),
-          style: 'destructive',
-          onPress: () => void handleRelease(),
-        },
-      ],
-    );
+    setUnpairOpen(true);
+  }
+
+  function closeUnpair() {
+    setUnpairOpen(false);
+  }
+
+  function confirmUnpair() {
+    void handleRelease();
   }
 
   return (
@@ -562,7 +561,7 @@ export function PairingScreen() {
               className="h-13.5 w-full rounded-16 bg-danger"
               style={chunkyLip.danger}
               isDisabled={releasing}
-              onPress={confirmRelease}
+              onPress={openUnpair}
             >
               <Button.Label className="text-base font-extrabold text-accent-foreground">
                 {t('pairing.unpairCollar')}
@@ -571,6 +570,63 @@ export function PairingScreen() {
           </View>
         ) : null}
       </ScrollView>
+
+      <View testID="pairing-unpair-host">
+        <BottomSheet
+          index={unpairOpen ? 0 : -1}
+          enablePanDownToClose
+          onClose={closeUnpair}
+          snapPoints={['50%', '100%']}
+        >
+          <BottomSheetView>
+            <View
+              testID="pairing-unpair-sheet"
+              className="items-center gap-3 bg-surface px-5 pb-9 pt-3"
+            >
+              <View
+                testID="pairing-unpair-icon"
+                className={`size-14 items-center justify-center rounded-full ${CATEGORY_SLOTS.rose.surface}`}
+              >
+                <LinkBroken size={26} strokeWidth={2.2} color={danger} />
+              </View>
+              <Text
+                testID="pairing-unpair-title"
+                className="text-center text-xl font-black text-foreground"
+              >
+                {t('pairing.unpairAlertTitle')}
+              </Text>
+              <Text
+                testID="pairing-unpair-body"
+                className="max-w-80 text-center text-sm leading-note text-muted"
+              >
+                {t('pairing.unpairAlertBody')}
+              </Text>
+              <Button
+                testID="pairing-unpair-confirm"
+                className="w-full h-13.5 rounded-16 bg-danger"
+                style={chunkyLip.danger}
+                isDisabled={releasing}
+                onPress={confirmUnpair}
+              >
+                <Text className="text-base font-extrabold text-danger-foreground">
+                  {t('pairing.unpair')}
+                </Text>
+              </Button>
+              <Button
+                testID="pairing-unpair-cancel"
+                variant="outline"
+                className="w-full h-13.5 rounded-16 border-2 border-lip-gray bg-surface"
+                style={chunkyLip.neutral}
+                onPress={closeUnpair}
+              >
+                <Text className="text-base font-extrabold text-foreground">
+                  {t('pairing.cancel')}
+                </Text>
+              </Button>
+            </View>
+          </BottomSheetView>
+        </BottomSheet>
+      </View>
     </KeyboardAvoidingView>
   );
 }
