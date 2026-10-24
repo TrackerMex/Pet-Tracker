@@ -2469,3 +2469,30 @@ describe('#196 R6: cerrar sesión como el artboard de cuenta', () => {
     expect(mockSignOut).toHaveBeenCalledTimes(1);
   });
 });
+
+
+describe('#196 R7: interruptor de tema compartido', () => {
+  beforeEach(() => {
+    setupProfile168();
+    mockTheme = 'light';
+    mockSetStoredTheme.mockResolvedValue();
+  });
+
+  it('#196 R7: el tema usa ToggleSwitch con pulgar', async () => {
+    await renderProfile();
+    const toggle = await screen.findByTestId('theme-toggle');
+    expect(toggle.props.accessibilityLabel).toBe('Usar tema oscuro');
+    expect(toggle.props.hitSlop).toEqual(TOUCH_SLOP);
+    expect(screen.getByTestId('theme-toggle-thumb', { includeHiddenElements: true })).toBeOnTheScreen();
+  });
+
+  it.each([['light', 'dark'], ['dark', 'light']] as const)('#196 R7: con tema $0 el interruptor pide $1', async (theme, next) => {
+    mockTheme = theme;
+    await renderProfile();
+    const toggle = await screen.findByTestId('theme-toggle');
+    await fireEvent.press(toggle);
+    expect(mockSetTheme).toHaveBeenCalledTimes(1);
+    expect(mockSetTheme).toHaveBeenCalledWith(next);
+    expect(mockSetStoredTheme).toHaveBeenCalledWith(next);
+  });
+});
