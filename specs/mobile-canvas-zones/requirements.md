@@ -840,3 +840,4 @@ Las casillas se comprueban con `[ xX]`.
 - [x] Enmienda de la carta (R20, `docs/ui-guidelines.md` y `docs/conventions.md`) aprobada por humano (fecha: 2026-10-23)
   Firma delegada, mismo mandato.
 - [ ] Smoke de R26 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
+  Va en el lote `progress/smoke_canvas-parity.md` (plan §6); el `done` no espera al smoke.

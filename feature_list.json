@@ -3495,7 +3495,7 @@
   {
     "id": 202,
     "name": "mobile-canvas-zones",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P1",
     "description": "Registrada el 2026-10-23 por el plan progress/plan_canvas-parity-2026-10-23.md (ola 2). Zonas seguras y Editor de zona iguales al canvas versión 1792777983-cd94, artboards Zonas, ZonasEliminar, ZonasVacio, ZonasSinCollar, ZonasSoloLectura, ZonasEstados, EditorZona, EditorZonaEstados, EditorZonaSoloLectura, EditorZonaNueva y EditorZonaError. Es la enmienda A-189 de progress/explore_canvas-parity-2026-10-21.md §7 convertida en feature, porque #189 ya está done. Incluye cablear el Switch y la cabecera de #197 en screens/geofences y screens/geofence-editor. El centro, el asa y el breathe del Editor quedan en #192. Depende de #197. Congelar los artboards en specs/mobile-canvas-zones/canvas/. Firma delegada al leader. Registrada sin spec."
   },
