@@ -210,6 +210,7 @@ describe('#174 R12: inventarios', () => {
         'screens/forgot/index.tsx',
         'screens/geofence-editor/index.tsx', // #189 R12
         'screens/home/index.tsx', // #190 R13 (enmendado por #190 R13)
+        'screens/home/weekly-activity-chart.tsx', // #198 R9
         'screens/login/index.tsx',
         'screens/meal-schedule/index.tsx', // #179 R7
         'screens/meals-history/index.tsx', // #179 R11
@@ -241,7 +242,7 @@ describe('#174 R12: inventarios', () => {
         'screens/reminders/index.tsx', // #178 R4
       ],
     },
-  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12) (enmendado por #197 R4) (enmendado por #197 R10) (enmendado por #197 R19)', ({ pattern, files }) => {
+  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12) (enmendado por #197 R4) (enmendado por #197 R10) (enmendado por #197 R19) (enmendado por #198 R9)', ({ pattern, files }) => {
     expect(filesMatching(pattern)).toEqual(files);
   });
 

@@ -2379,3 +2379,42 @@ describe('#198 R8: selector y tooltip del canvas', () => {
     expect(children[1].props.className).toBe('text-xs font-extrabold text-foreground');
   });
 });
+
+describe('#198 R9: barras y detalle del canvas', () => {
+  it.each([true, false])('#198 R9 redondea las barras a 6 sin pasar de la mitad del alto', async reduced => {
+    mockUseReducedMotion.mockReturnValue(reduced);
+    const result = await renderChart(makeWeek('2026-09-01', [45, 0]));
+    expect(result.getByTestId('weekly-activity-bar-2026-09-01', { includeHiddenElements: true }).props.rx).toBe(6);
+    expect(result.getByTestId('weekly-activity-bar-2026-09-02', { includeHiddenElements: true }).props.rx).toBe(1.5);
+  });
+
+  it.each([0, 6])('#198 R9 atenúa a 0.35 las barras no seleccionadas', async selected => {
+    const days = makeWeek('2026-09-01', [10, 20, 30, 40, 50, 60, 70]);
+    const result = await renderChart(days);
+    await fireEvent.press(result.getByTestId(`weekly-activity-day-${days[selected].date}`));
+    for (let index = 0; index < days.length; index++) {
+      const opacity = result.getByTestId(`weekly-activity-bar-${days[index].date}`, { includeHiddenElements: true }).props.fillOpacity;
+      expect(opacity).toBe(index === selected ? 1 : 0.35);
+    }
+  });
+
+  it('#198 R9 deja todas a opacidad plena sin selección', async () => {
+    const days = makeWeek('2026-09-01', [10, 20, 30, 40, 50, 60, 70]);
+    const result = await renderChart(days);
+    for (const day of days) expect(result.getByTestId(`weekly-activity-bar-${day.date}`, { includeHiddenElements: true }).props.fillOpacity).toBe(1);
+  });
+
+  it('#198 R9 viste el detalle con radio 16 y fondo default', async () => {
+    const result = await renderChart([makeDay()]);
+    await fireEvent.press(result.getByTestId('weekly-activity-day-2026-09-02'));
+    const detail = result.getByTestId('weekly-activity-detail');
+    expect(detail.props.className).toBe('gap-3 rounded-16 border border-border bg-default p-3');
+    const children = detail.children.filter(child => typeof child !== 'string');
+    expect(children[0].props.className).toBe('text-15 font-extrabold text-foreground');
+    for (const id of ['active-minutes', 'distance', 'walks', 'rest']) {
+      const value = result.getByTestId(`weekly-activity-detail-${id}`);
+      expect(value.props.className).toBe('text-sm font-bold text-foreground');
+      expect(value.parent!.children.filter(child => typeof child !== 'string')[0].props.className).toBe('text-11 text-muted');
+    }
+  });
+});
