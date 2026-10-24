@@ -1022,7 +1022,7 @@ describe('#204 R12: cabecera en contenido', () => {
   });
 
   it('#204 R12: sin nombre la cabecera dice Mascota', async () => {
-    mockGetPet.mockResolvedValue({ kind: 'not-found' });
+    mockGetPet.mockResolvedValue({ kind: 'error' });
     await renderDocs();
     const title = await screen.findByTestId('docs-header-title');
     expect(title).toHaveTextContent(es['docs.pet']);
