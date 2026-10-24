@@ -26,6 +26,12 @@ import { TOUCH_SLOP } from '../../theme/touch-target';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { calendarDaysUntil, fmtDate, fmtDayMonthLong } from '../home/format';
 
+const VARIATION_TONE = {
+  up: CATEGORY_SLOTS.rose,
+  down: CATEGORY_SLOTS.green,
+  flat: { surface: 'bg-default', ink: 'text-muted' },
+} as const;
+
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
 }
@@ -67,6 +73,8 @@ export function HealthScreen() {
     queryFn: () => listWeights(baseUrl, token ?? '', selectedPetId!),
     enabled: selectedPetId !== null,
   });
+  const variation = weight.data?.kind === 'ok' ? weight.data.weights[0]?.variation ?? null : null;
+  const variationTone = VARIATION_TONE[variation === null || variation === 0 ? 'flat' : variation > 0 ? 'up' : 'down'];
   const today = localTodayIso();
   const nextVaccine =
     vaccines.data?.kind === 'ok'
@@ -213,42 +221,30 @@ export function HealthScreen() {
             ) : null}
 
             {selectedPetId ? (
-              <Card
-                testID="weight-card"
-                className="gap-3"
-              >
-                <View className="flex-row items-baseline justify-between gap-3">
-                  <Text
-                    testID="weight-card-title"
-                    className="text-base font-bold text-foreground"
-                  >
-                    {t('health.weight')}
-                  </Text>
-                  {weight.data?.kind === 'ok' && weight.data.weights.length > 0 ? (
-                    <Text
-                      testID="weight-current"
-                      className="text-xl font-black text-accent-strong"
-                      style={TABULAR_NUMS}
-                    >
-                      {weight.data.weights[0].weightKg} kg
+              <RiseIn delayMs={260}>
+              <View testID="weight-card" className="gap-3 rounded-24 bg-surface-secondary p-4" style={CONTINUOUS_CORNER}>
+                <View className="flex-row items-end justify-between">
+                  <View className="gap-0.5">
+                    <Text testID="weight-card-title" className="text-13 font-bold text-muted">
+                      {t('health.weight')}
                     </Text>
+                    {weight.data?.kind === 'ok' && weight.data.weights.length > 0 ? (
+                      <Text testID="weight-current" className="text-3xl font-black text-foreground" style={TABULAR_NUMS}>
+                        {weight.data.weights[0].weightKg} kg
+                      </Text>
+                    ) : null}
+                  </View>
+                  {weight.data?.kind === 'ok' && weight.data.weights.length > 0 ? (
+                    <View testID="weight-variation" className={`rounded-full px-2.5 py-1 ${variationTone.surface}`}>
+                      <Text className={`text-13 font-extrabold ${variationTone.ink}`} style={TABULAR_NUMS}>
+                        {fmtVariation(variation)}
+                      </Text>
+                    </View>
                   ) : null}
                 </View>
 
                 {weight.data?.kind === 'ok' && weight.data.weights.length > 0 ? (
-                  <View className="flex-row justify-end">
-                    <Text
-                      testID="weight-variation"
-                      className="font-normal text-muted"
-                      style={TABULAR_NUMS}
-                    >
-                      {fmtVariation(weight.data.weights[0].variation)}
-                    </Text>
-                  </View>
-                ) : null}
-
-                {weight.data?.kind === 'ok' && weight.data.weights.length > 0 ? (
-                  <WeightChart entries={weight.data.weights} />
+                  <WeightChart entries={weight.data.weights} variant="mini" />
                 ) : null}
 
                 {weight.data?.kind === 'ok' && weight.data.weights.length === 0 ? (
@@ -267,16 +263,17 @@ export function HealthScreen() {
                   accessibilityRole="button"
                   testID="weight-log-link"
                   hitSlop={TOUCH_SLOP}
-                  className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+                  className="flex-row items-center justify-between rounded-14 bg-surface px-3.5 py-3"
                   style={CONTINUOUS_CORNER}
                   onPress={() => router.push('/weight-log')}
                 >
-                  <Text className="font-semibold text-foreground">
+                  <Text className="text-15 font-bold text-foreground">
                     {t('health.weightLog')}
                   </Text>
-                  <ChevronRight size={20} color={muted} />
+                  <ChevronRight size={18} color={muted} />
                 </Pressable>
-              </Card>
+              </View>
+              </RiseIn>
             ) : null}
           </View>
       ) : (
