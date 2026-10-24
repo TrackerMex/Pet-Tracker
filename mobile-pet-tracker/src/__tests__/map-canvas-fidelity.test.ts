@@ -538,3 +538,72 @@ describe('#201 R13: Pingo sin rastreo', () => {
     },
   ])('#201 R13: $artboard › $canvas › $production', checkRow);
 });
+
+const HEX_LITERAL = String.raw`#(?!\d{2,3} R\d)[\da-f]{3,8}\b`;
+const ARBITRARY_CLASS = String.raw`[A-Za-z0-9_-]+-\[[^\]]+\]`;
+
+const hexGuard = new RegExp(HEX_LITERAL, 'i');
+const arbitraryGuard = new RegExp(ARBITRARY_CLASS);
+const styleSheetGuard = /StyleSheet\.create/;
+const emojiGuard = /\p{Extended_Pictographic}/u;
+const gradientGuard = /from 'expo-linear-gradient'/;
+const blurGuard = /from 'expo-blur'/;
+const radiusGuard = /rounded-(?:2xl|xl|lg|md|sm)\b/;
+const accentGuard = /\btext-accent(?![-\w])/;
+
+const guards: Record<string, RegExp[]> = {
+  'hex y clase arbitraria': [hexGuard, arbitraryGuard],
+  'StyleSheet.create': [styleSheetGuard],
+  emoji: [emojiGuard],
+  'imports de degradado y desenfoque': [gradientGuard, blurGuard],
+  'radios fuera de la escala': [radiusGuard],
+  'text-accent sin sufijo': [accentGuard],
+};
+
+describe('#201 R16: guardas de deriva de los tres ficheros', () => {
+  const files = [
+    'screens/map/index.tsx',
+    'components/empty-state.tsx',
+    'components/pet-map.tsx',
+  ];
+
+  it.each(
+    files.flatMap(file => Object.keys(guards).map(guard => [file, guard])),
+  )('#201 R16: %s respeta la guarda %s', (file, guard) => {
+    const source = readProduction(file);
+    expect(guards[guard].filter(pattern => pattern.test(source))).toEqual([]);
+  });
+
+  it('#201 R16: el mapa importa solo sus seis iconos', () => {
+    const source = readProduction('screens/map/index.tsx');
+    const imports = [
+      ...source.matchAll(/import\s*\{([^}]*)\}\s*from\s*'reicon-react-native'/g),
+    ];
+    expect(occurrences(source, "from 'reicon-react-native'")).toBe(1);
+    expect(imports).toHaveLength(1);
+    expect(
+      imports[0][1]
+        .split(',')
+        .map(name => name.trim())
+        .filter(Boolean)
+        .sort(),
+    ).toEqual(['AlertCircle', 'AlertTriangle', 'Link', 'Location', 'Plus', 'Refresh']);
+  });
+
+  it.each<[string, RegExp]>([
+    ['#107148', hexGuard],
+    ['#D80B34', hexGuard],
+    ['w-[10px]', arbitraryGuard],
+    ['StyleSheet.create(', styleSheetGuard],
+    ['\u{1F43E}', emojiGuard],
+    ["from 'expo-blur'", blurGuard],
+    ['rounded-xl', radiusGuard],
+    ['text-accent ', accentGuard],
+  ])('#201 R16: las guardas cazan su mutación %s', (mutation, pattern) => {
+    expect(pattern.test(mutation)).toBe(true);
+  });
+
+  it('#201 R16: la guarda de hex exime las citas de requisito', () => {
+    expect(hexGuard.test('// #201 R10')).toBe(false);
+  });
+});
