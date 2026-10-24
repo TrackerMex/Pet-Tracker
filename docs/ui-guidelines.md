@@ -921,3 +921,17 @@ Detalle y tests en `specs/mobile-canvas-nutrition/requirements.md` (R1 a R17).
 - **`rise` en Salud y Peso (#199).** `RiseIn` (`components/rise-in.tsx`) aplica `MOTION_RISE_TIMING` y `MOTION_RISE_OFFSET_Y` a tarjetas y filas con los retrasos del canvas: Salud 0 (próxima dosis), `80 + 60 · min(i, 2)` (vacunas) y 260 (peso); Peso 0 (gráfica), 80 (formulario), `140 + 60 · min(i, 2)` (historial) y `60 · i` (esqueletos). Con reduce motion no hay entrada.
 - **`draw` y `pop` de la gráfica de peso (#199).** La línea se dibuja con `MOTION_DRAW_TIMING` (1200 ms, `Easing.bezier(0, 0, 0.58, 1)`) tras `MOTION_DRAW_DELAY_FULL_MS` (200) en Peso o `MOTION_DRAW_DELAY_MINI_MS` (300) en Salud; el último punto de Peso hace `pop` (0.6 → 1.08 → 1 en `MOTION_POINT_POP_MS`, 400) a los `MOTION_POINT_POP_DELAY_MS` (1300). Con reduce motion salen completos.
 - **Fundido del toast de Peso (#199).** `FadeIn` de `MOTION_TOAST_FADE_MS` (300) tras `MOTION_TOAST_DELAY_MS` (400), con la sombra `useShadows().toast`.
+
+## Enmienda #204 — rutina en el canvas: Recordatorios, Agregar recordatorio y Documentos
+
+Fecha: 2026-10-23. Feature #204 `mobile-canvas-routine`. Lleva las tres pantallas a sus artboards del canvas.
+
+1. **Entrada `rise` fuera de Inicio.** Las filas de Recordatorios y de Documentos entran con `RiseIn` (`MOTION_RISE_TIMING`, `MOTION_RISE_OFFSET_Y`), escalonadas por índice: Recordatorios con `MOTION_REMINDERS_STAGGER_MS` (70 ms) y Documentos con `MOTION_STAGGER_MS` (60 ms). Bajo reduce motion no hay entrada.
+2. **«Eliminar» de la hoja de borrado de recordatorio.** Sale de «Sin labio» (regla 13): `h-14 w-full rounded-16 bg-danger` con `style={chunkyLip.danger}` y etiqueta `Text` 17/800 `text-danger-foreground`. Con «Cancelar» (56 px, 17/800, labio `neutral`) el par de la hoja queda simétrico: sustituye el «par asimétrico» de la Enmienda #177 para esta hoja. Los demás destructivos siguen sin labio.
+3. **«Eliminar» de fila de recordatorio.** Tonal y sin labio: `h-11 rounded-14 px-2.5` sobre `CATEGORY_SLOTS.rose.surface`, `variant="danger-soft"` y etiqueta `Text` 13/800 `text-danger`.
+4. **Ámbar de la fila próxima.** Borde `border-2 border-category-amber` y badge con `CATEGORY_SLOTS.amber.surface` y `CATEGORY_SLOTS.amber.ink`; Recordatorios deja `warning-soft` y `warning-strong` para este uso.
+
+Detalle y tests en `specs/mobile-canvas-routine/requirements.md` (R1 a R18).
+
+- [X] Enmienda #204 aprobada por humano
+  Firma delegada en el leader por mandato del humano del 2026-10-23 (`progress/plan_canvas-parity-2026-10-23.md` §4), igual que la de `specs/mobile-canvas-routine/requirements.md` § Aprobación.
