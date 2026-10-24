@@ -37,10 +37,10 @@ jest.mock('heroui-native', () => {
   ) };
 });
 
-jest.mock('../home/home-entrance', () => {
+jest.mock('../../components/rise-in', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
-  return { HomeEntrance: (props: Record<string, unknown>) => React.createElement(View, props) };
+  return { RiseIn: (props: Record<string, unknown>) => React.createElement(View, props) };
 });
 
 jest.mock('expo-router', () => ({
@@ -1016,18 +1016,20 @@ describe('#180 R2: marco y orden', () => {
   });
 });
 
-it('#180 R9.1: el héroe y el mapa entran con HomeEntrance 0 y 1 (enmendado por #203 R10)', async () => {
-  mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ geofenceId: 'zone-1', payload: REAL_PAYLOAD })], nextCursor: null });
-  mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [ZONE] });
-  await renderDetail(); await screen.findByTestId('alert-detail-distance');
-  const heroEntrance = screen.getByTestId('alert-detail-card-entrance');
-  const mapEntrance = screen.getByTestId('alert-detail-map-entrance');
-  expect(heroEntrance.props.index).toBe(0); expect(mapEntrance.props.index).toBe(1);
-  expect(heroEntrance.children).toHaveLength(1); expect(mapEntrance.children).toHaveLength(1);
-  expect(elementChild(heroEntrance, 0) === screen.getByTestId('alert-detail-card')).toBe(true);
-  expect(elementChild(mapEntrance, 0) === screen.getByTestId('alert-detail-map')).toBe(true);
-  expect(detailChildren()[0] === screen.getByTestId('alert-detail')).toBe(true);
-  expect(within(heroEntrance).queryByTestId('alert-detail-title')).toBeNull();
-  expect(within(mapEntrance).queryByTestId('alert-detail-title')).toBeNull();
-  expect(detailIds().slice(-2)).toEqual(['alert-detail-spacer', 'alert-detail-ack']);
+describe('#203 R11: entrada del detalle', () => {
+  it('#203 R11: la tarjeta entra en 0 y el mapa en 80 con RiseIn', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ geofenceId: 'zone-1', payload: REAL_PAYLOAD })], nextCursor: null });
+    mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [ZONE] });
+    await renderDetail(); await screen.findByTestId('alert-detail-distance');
+    const cardEntrance = screen.getByTestId('alert-detail-card-entrance');
+    const mapEntrance = screen.getByTestId('alert-detail-map-entrance');
+    expect(cardEntrance.props.delayMs).toBe(0); expect(mapEntrance.props.delayMs).toBe(80);
+    expect(cardEntrance.children).toHaveLength(1); expect(mapEntrance.children).toHaveLength(1);
+    expect(elementChild(cardEntrance, 0) === screen.getByTestId('alert-detail-card')).toBe(true);
+    expect(elementChild(mapEntrance, 0) === screen.getByTestId('alert-detail-map')).toBe(true);
+    expect(detailChildren()[0] === screen.getByTestId('alert-detail')).toBe(true);
+    expect(within(cardEntrance).queryByTestId('alert-detail')).toBeNull();
+    expect(within(mapEntrance).queryByTestId('alert-detail')).toBeNull();
+    expect(detailIds().slice(-2)).toEqual(['alert-detail-spacer', 'alert-detail-ack']);
+  });
 });
