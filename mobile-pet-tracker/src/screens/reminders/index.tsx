@@ -390,15 +390,14 @@ export function RemindersScreen() {
                     </View>
                     <Button
                       testID={`reminder-delete-${reminder.id}`}
-                      className="rounded-xl bg-danger-soft"
+                      className={`h-11 rounded-14 px-2.5 ${CATEGORY_SLOTS.rose.surface}`}
                       isDisabled={deletingId === reminder.id}
-                      size="sm"
                       variant="danger-soft"
                       onPress={() => confirmDelete(reminder)}
                     >
-                      <Button.Label className="font-semibold text-danger">
+                      <Text className="text-13 font-extrabold text-danger">
                         {t('reminders.delete')}
-                      </Button.Label>
+                      </Text>
                     </Button>
                   </View>
                 </RiseIn>
