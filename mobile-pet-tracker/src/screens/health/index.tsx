@@ -166,17 +166,18 @@ export function HealthScreen() {
                 ) : null}
 
                 {vaccines.data?.kind === 'ok'
-                  ? vaccines.data.vaccines.map((vaccine) => {
+                  ? vaccines.data.vaccines.map((vaccine, index) => {
                       const slot = vaccine.nextDoseAt !== null && vaccine.nextDoseAt < today
                         ? 'rose'
                         : vaccine.id === nextVaccine?.id ? 'amber' : 'green';
                       const Icon = slot === 'green' ? Check : Clock;
                       const color = slot === 'rose' ? rose : slot === 'amber' ? amber : green;
                       return (
+                      <RiseIn key={vaccine.id} delayMs={80 + 60 * Math.min(index, 2)}>
                       <Card
-                        key={vaccine.id}
+                        variant="flat"
                         testID={`vaccine-row-${vaccine.id}`}
-                        className="flex-row items-center gap-3"
+                        className="flex-row items-center gap-3 py-3.5"
                       >
                         <View
                           testID={`vaccine-tile-${vaccine.id}`}
@@ -188,7 +189,7 @@ export function HealthScreen() {
                           <Icon size={20} color={color} />
                         </View>
                         <View testID={`vaccine-text-${vaccine.id}`} className="flex-1 gap-1">
-                        <Text className="font-bold text-foreground">
+                        <Text className="text-15 font-extrabold text-foreground">
                           {vaccine.name}
                         </Text>
                         <Text className="font-normal text-muted">
@@ -207,6 +208,7 @@ export function HealthScreen() {
                         ) : null}
                         </View>
                       </Card>
+                      </RiseIn>
                       );
                     })
                   : null}
