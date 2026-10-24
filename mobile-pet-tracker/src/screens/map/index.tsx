@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react';
 import { Text, View } from 'react-native';
 import Animated, { useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AlertTriangle } from 'reicon-react-native';
+import { AlertTriangle, Location } from 'reicon-react-native';
 import { useUniwind } from 'uniwind';
 
 import { listGeofences } from '../../api/geofences';
@@ -114,7 +114,7 @@ export function MapScreen() {
   const reducedMotion = useReducedMotion();
   const shadows = useShadows();
   // #201 R7
-  const [categoryRoseStrong] = useThemeColors(['category-rose-strong']);
+  const [categoryRoseStrong, muted] = useThemeColors(['category-rose-strong', 'muted']);
   const { theme } = useUniwind();
   const pets = useQuery({
     queryKey: petKeys.list(),
@@ -346,9 +346,15 @@ export function MapScreen() {
                 left: 16,
                 right: 16,
               }}
-              className="items-center p-3"
+              className="flex-row items-center justify-center gap-2 px-4 py-3.5"
             >
-              <Text testID="map-empty" className="text-muted">
+              <Location
+                size={18}
+                strokeWidth={2.2}
+                color={muted}
+                testID="map-empty-icon"
+              />
+              <Text testID="map-empty" className="text-sm font-semibold text-muted">
                 {t('map.noLocationDataYet')}
               </Text>
             </Card>
