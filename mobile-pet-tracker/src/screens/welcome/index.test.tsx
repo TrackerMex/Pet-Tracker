@@ -190,6 +190,42 @@ describe('#205 R2: Main apila sus bloques con RiseIn', () => {
   });
 });
 
+describe('#205 R3: la escena de Main', () => {
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => jest.useRealTimers());
+
+  it('#205 R3: la escena es una vista de 380 con radio 32 y esquina continua', async () => {
+    await renderWelcome();
+    const scene = screen.getByTestId('welcome-scene');
+    expect(scene.props.className).toBe('h-95 w-full items-center justify-center overflow-hidden rounded-32 bg-surface-secondary');
+    expect(StyleSheet.flatten(scene.props.style)).toEqual({ borderCurve: 'continuous' });
+    const source = readSource('screens/welcome/index.tsx');
+    expect(source).not.toMatch(/<Card\s+testID="welcome-scene"/);
+    expect(source).toMatch(/<View\s+testID="welcome-scene"/);
+  });
+
+  it('#205 R3: Pingo mide 220, flota y pisa la sombra del suelo', async () => {
+    await renderWelcome();
+    const ids = (testID: string) => (screen.getByTestId(testID).children as TestInstance[]).map((child) => child.props.testID);
+    const sceneIds = ids('welcome-scene');
+    expect(sceneIds).toContain('welcome-ground');
+    expect(sceneIds.indexOf('welcome-ground')).toBeLessThan(sceneIds.indexOf('welcome-stage'));
+    expect(screen.getByTestId('welcome-ground').props.className).toBe('absolute bottom-7.5 h-3.5 w-30 rounded-full bg-border');
+    expect(ids('welcome-stage')).toEqual(['welcome-ring-0', 'welcome-ring-1', 'welcome-ring-2', 'welcome-pingo-float']);
+    expect(ids('welcome-pingo-float')).toEqual(['welcome-pingo']);
+    expect(ids('welcome-pingo')).toEqual(['welcome-pingo-wave', 'welcome-pingo-blink']);
+
+    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo-float'))).toEqual({ transform: [{ translateY: 0 }] });
+    await act(async () => { jest.advanceTimersByTime(2000); });
+    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo-float'))).toEqual({ transform: [{ translateY: -10 }] });
+
+    const pingo = getAnimatedStyle(screen.getByTestId('welcome-pingo'));
+    expect(pingo).toMatchObject({ width: 220, height: 220 });
+    expect(JSON.stringify(pingo)).not.toContain('translateY');
+    expect(readSource('screens/welcome/index.tsx')).not.toContain('pingoFloatY');
+  });
+});
+
 describe('R9', () => {
   it('muestra el copy en español', async () => {
     await renderWelcome('es');
@@ -444,13 +480,14 @@ describe('#153 R5: la escena de Pingo sustituye al logo', () => {
     expect(readSource('screens/welcome/index.tsx')).not.toContain('splash-icon');
   });
 
-  it('pinta la escena como card secundaria con el bocadillo y Pingo', async () => {
+  it('pinta la escena como card secundaria con el bocadillo y Pingo (enmendado por #205 R3, R4)', async () => {
     await renderWelcome();
     const scene = screen.getByTestId('welcome-scene');
     expect(scene.props.className.split(' ')).toEqual(expect.arrayContaining([
-      'rounded-card', 'bg-surface-secondary', 'w-full', 'items-center', 'gap-3', 'py-6',
+      'rounded-32', 'bg-surface-secondary', 'w-full', 'items-center', 'justify-center', 'overflow-hidden', 'h-95', // #205 R3
     ]));
-    expect((scene.children as TestInstance[]).map((child) => child.props.testID)).toEqual(['welcome-bubble', 'welcome-stage']);
+    expect(scene.props.className.split(' ')).not.toContain('rounded-card'); // #205 R3
+    expect((scene.children as TestInstance[]).map((child) => child.props.testID)).toEqual(['welcome-bubble', 'welcome-ground', 'welcome-stage']); // #205 R3
   });
 
   it('pinta el bocadillo como card de superficie con el saludo', async () => {
@@ -478,10 +515,10 @@ describe('#153 R6: Pingo se pinta con su pose y su capa de parpadeo', () => {
   it.each([
     ['welcome-pingo-wave', /assets\/images\/pingo-wave\.webp$/],
     ['welcome-pingo-blink-image', /assets\/images\/pingo-wave-blink\.webp$/],
-  ] as const)('%s pinta su pose a 200×200, sin etiqueta de accesibilidad', async (testID, pattern) => {
+  ] as const)('%s pinta su pose a 220×220, sin etiqueta de accesibilidad (enmendado por #205 R3)', async (testID, pattern) => {
     await renderWelcome();
     const image = screen.getByTestId(testID);
-    expect(image.props.style).toEqual({ width: 200, height: 200 });
+    expect(image.props.style).toEqual({ width: 220, height: 220 }); // #205 R3
     expect(image.props.contentFit).toBe('contain');
     expect(image.props.source).toEqual([expect.objectContaining({ testUri: expect.stringMatching(pattern) })]);
     expect(image.props.accessibilityLabel).toBeUndefined();
@@ -555,33 +592,33 @@ describe('#153 R9: Pingo entra con un muelle de escala', () => {
   beforeEach(() => jest.useFakeTimers());
   afterEach(() => jest.useRealTimers());
 
-  it('arranca al 90 % sin reduce motion', async () => {
+  it('arranca al 90 % sin reduce motion (enmendado por #205 R3)', async () => {
     await renderWelcome();
     expect(getAnimatedStyle(screen.getByTestId('welcome-pingo'))).toEqual({
-      width: 200, height: 200, transform: [{ translateY: 0 }, { scale: 0.9 }],
+      width: 220, height: 220, transform: [{ scale: 0.9 }], // #205 R3
     });
   });
 
-  it('termina a tamaño completo sin reduce motion', async () => {
+  it('termina a tamaño completo sin reduce motion (enmendado por #205 R3)', async () => {
     await renderWelcome();
     expect(screen.getByTestId('welcome-pingo')).toBeOnTheScreen();
     // Unas 1,5 × 250 ms de asentamiento; 1000 ms deja más del doble.
     await act(async () => { jest.advanceTimersByTime(1000); });
     expect(getAnimatedStyle(screen.getByTestId('welcome-pingo'))).toEqual({
-      width: 200, height: 200, transform: [{ translateY: expect.any(Number) }, { scale: 1 }],
+      width: 220, height: 220, transform: [{ scale: 1 }], // #205 R3
     });
   });
 
-  it('con reduce motion nace a tamaño completo y no escala', async () => {
+  it('con reduce motion nace a tamaño completo y no escala (enmendado por #205 R3)', async () => {
     mockUseReducedMotion.mockReturnValue(true);
     await renderWelcome();
     expect(getAnimatedStyle(screen.getByTestId('welcome-pingo'))).toEqual({
-      width: 200, height: 200, transform: [{ translateY: 0 }, { scale: 1 }],
+      width: 220, height: 220, transform: [{ scale: 1 }], // #205 R3
     });
     // 5000 ms supera el asentamiento y el primer parpadeo de 4000 ms.
     await act(async () => { jest.advanceTimersByTime(5000); });
     expect(getAnimatedStyle(screen.getByTestId('welcome-pingo'))).toEqual({
-      width: 200, height: 200, transform: [{ translateY: 0 }, { scale: 1 }],
+      width: 220, height: 220, transform: [{ scale: 1 }], // #205 R3
     });
     mockUseReducedMotion.mockReturnValue(false);
   });
@@ -603,16 +640,6 @@ describe('#153 R10: Pingo flota en bucle', () => {
   beforeEach(() => jest.useFakeTimers());
   afterEach(() => jest.useRealTimers());
 
-  it('sube 4 puntos en medio ciclo sin reduce motion', async () => {
-    await renderWelcome();
-    expect(screen.getByTestId('welcome-pingo')).toBeOnTheScreen();
-    // Medio ciclo dura 1200 ms; 2000 ms deja 800 ms de margen.
-    await act(async () => { jest.advanceTimersByTime(2000); });
-    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo'))).toEqual({
-      width: 200, height: 200, transform: [{ translateY: -4 }, { scale: 1 }],
-    });
-  });
-
   it('repite la flotación sin fin y en vaivén', async () => {
     await renderWelcome();
     expect(screen.getByTestId('welcome-pingo')).toBeOnTheScreen();
@@ -620,25 +647,17 @@ describe('#153 R10: Pingo flota en bucle', () => {
     expect(args.filter((values) => values.length === 2 && values[0] === -1 && values[1] === true)).toEqual([[-1, true]]);
   });
 
-  it('con reduce motion no flota', async () => {
+  it('con reduce motion no flota (enmendado por #205 R3)', async () => {
     mockUseReducedMotion.mockReturnValue(true);
     await renderWelcome();
     expect(screen.getByTestId('welcome-pingo')).toBeOnTheScreen();
     // 5000 ms supera el ciclo de 2400 ms y el primer parpadeo de 4000 ms.
     await act(async () => { jest.advanceTimersByTime(5000); });
     expect(getAnimatedStyle(screen.getByTestId('welcome-pingo'))).toEqual({
-      width: 200, height: 200, transform: [{ translateY: 0 }, { scale: 1 }],
+      width: 220, height: 220, transform: [{ scale: 1 }], // #205 R3
     });
     expect(mockWithRepeat).not.toHaveBeenCalled();
     mockUseReducedMotion.mockReturnValue(false);
-  });
-
-  it('usa la flotación de motion.ts', async () => {
-    await renderWelcome();
-    expect(screen.getByTestId('welcome-pingo')).toBeOnTheScreen();
-    const source = readSource('screens/welcome/index.tsx');
-    const re = /pingoFloatY\.set\(\s*withRepeat\(\s*withTiming\(\s*-MOTION_FLOAT_OFFSET_Y,\s*MOTION_FLOAT_TIMING,?\s*\),\s*-1,\s*true,?\s*\),?\s*\)/g;
-    expect((source.match(re) ?? []).length).toBe(1);
   });
 });
 
@@ -767,11 +786,11 @@ describe('#167 R12: anillos de ping', () => {
   });
   afterEach(() => jest.useRealTimers());
 
-  it('#167 R12: el escenario apila tres anillos bajo Pingo', async () => {
+  it('#167 R12: el escenario apila tres anillos bajo Pingo (enmendado por #205 R3)', async () => {
     await renderWelcome();
     expect(screen.getByTestId('welcome-stage').children
       .map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual([
-      'welcome-ring-0', 'welcome-ring-1', 'welcome-ring-2', 'welcome-pingo',
+      'welcome-ring-0', 'welcome-ring-1', 'welcome-ring-2', 'welcome-pingo-float', // #205 R3
     ]);
   });
 
@@ -860,10 +879,10 @@ describe('#167 R12: anillos de ping', () => {
 describe('#167 R13: sin anillos con reduce motion', () => {
   beforeEach(() => mockUseReducedMotion.mockReturnValue(true));
 
-  it('#167 R13: con reduce motion el escenario solo lleva a Pingo', async () => {
+  it('#167 R13: con reduce motion el escenario solo lleva a Pingo (enmendado por #205 R3)', async () => {
     await renderWelcome();
     expect(screen.getByTestId('welcome-stage').children
-      .map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['welcome-pingo']);
+      .map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['welcome-pingo-float']); // #205 R3
   });
 
   it.each([0, 1, 2])('#167 R13: con reduce motion no hay anillo %i', async (index) => {

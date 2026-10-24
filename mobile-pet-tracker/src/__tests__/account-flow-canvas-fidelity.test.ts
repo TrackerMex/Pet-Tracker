@@ -47,3 +47,23 @@ describe('#205 R2: entradas de Main', () => {
     expect(welcome).toContain('paddingHorizontal: 16');
   });
 });
+
+describe('#205 R3: escena de Main', () => {
+  it('#205 R3: la escena y Pingo miden lo que el artboard', () => {
+    const main = canvas('Main');
+    expect(main).toContain('height: 380px');
+    expect(main).toContain('border-radius: 32px');
+    expect(main).toContain('width: 220px');
+    expect(main).toContain('width: 120px');
+    expect(main).toContain('bottom: 30px');
+    expect(main).toContain('animation: float 3s ease-in-out infinite');
+
+    const welcome = source('screens/welcome/index.tsx');
+    expect(welcome).toContain('h-95');
+    expect(welcome).toContain('rounded-32');
+    expect(welcome).toContain('width: 220');
+    expect(welcome).toContain('w-30');
+    expect(welcome).toContain('bottom-7.5');
+    expect(welcome).toContain('<PingoFloat testID="welcome-pingo-float">');
+  });
+});
