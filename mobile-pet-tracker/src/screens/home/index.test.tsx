@@ -6462,3 +6462,25 @@ describe('#198 R15: error hero de Inicio', () => {
     expect(source).not.toContain('home-retry');
   });
 });
+
+
+describe('#198 R16: vacío de Inicio conservado', () => {
+  beforeEach(() => {
+    setupCanvasHome();
+    mockUseReducedMotion.mockReturnValue(true);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('#198 R16 conserva el vacío hero sin badge ni tono de error', async () => {
+    await renderHome();
+    await waitFor(() => expect(screen.getByTestId('home-empty-title')).toHaveTextContent('Aún no tienes mascotas'));
+    expect(screen.getByTestId('home-empty').props.className).toBe('w-full items-center gap-3.5');
+    expect(screen.getByTestId('home-empty-title').props.className).toBe('text-center text-26 font-black tracking-title text-foreground');
+    expect(screen.getByTestId('home-empty-body')).toHaveTextContent('Añade a tu mascota y te ayudo a saber dónde está y cómo está.');
+    expect(screen.getByTestId('home-empty-action')).toHaveTextContent('Añadir mascota');
+    expect(screen.getByTestId('home-empty-stage-disc', { includeHiddenElements: true }).props.className).toBe('absolute size-60 rounded-full bg-surface-secondary');
+    expect(screen.getByTestId('home-empty-pose').props.source).toEqual([expect.objectContaining({ testUri: expect.stringMatching(/pingo-talk\.webp$/) })]);
+    expect(screen.queryByTestId('home-empty-badge', { includeHiddenElements: true }) === null).toBe(true);
+  });
+});
