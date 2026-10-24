@@ -251,12 +251,13 @@ describe('R4: health resuelve la mascota seleccionada', () => {
     expect((await screen.findByTestId('health-states')).props.style).toEqual({ gap: 16 });
   });
 
-  it('R8 (mobile-design-drift): reserva la altura del loading con Skeleton', async () => {
+  it('R8 (mobile-design-drift): reserva la altura del loading con Skeleton (enmendado por #199 R21)', async () => {
     mockListPets.mockReturnValue(pending<PetsState>());
 
     await renderHealth();
 
-    expect(screen.getByTestId('health-loading').props.className).toContain('h-12');
+    const loading = await screen.findByTestId('health-loading');
+    expect(within(loading).getAllByTestId(/^health-loading-\d+$/, { includeHiddenElements: true }).map(node => node.props.className)).toEqual(['skeleton__root size-10 rounded-full', 'skeleton__root size-10 rounded-full']);
   });
 
   it.each([
@@ -1461,5 +1462,30 @@ describe('#199 R20: peso vacío y con error', () => {
     expect(error).toHaveTextContent('No se pudo cargar el peso', { exact: true });
     expect(within(card).getByTestId('weight-log-link')).toBeVisible();
     expectNoWeightData199();
+  });
+});
+
+
+describe('#199 R21: estados de mascotas', () => {
+  beforeEach(setupHealth168);
+  it('#199 R21 la carga pinta dos círculos de 40 en fila', async () => {
+    mockListPets.mockReturnValue(pending<PetsState>());
+    await renderHealth();
+    const loading = await screen.findByTestId('health-loading');
+    expect(loading.type).toBe('View');
+    expect(loading.props.className).toBe('flex-row gap-2.5');
+    const circles = within(loading).getAllByTestId(/^health-loading-\d+$/, { includeHiddenElements: true });
+    expect(circles.map(node => node.props.testID)).toEqual(['health-loading-0', 'health-loading-1']);
+    expect(circles.map(node => node.props.className)).toEqual(['skeleton__root size-10 rounded-full', 'skeleton__root size-10 rounded-full']);
+    expect(loading.parent!.props.testID).toBe('health-states');
+  });
+  it('#199 R21 el error pinta el aviso en text-15 leading-body text-danger con role alert', async () => {
+    mockListPets.mockResolvedValue({ kind: 'error' });
+    await renderHealth();
+    const error = await screen.findByTestId('health-error');
+    expect(error.props.className).toBe('text-15 leading-body text-danger');
+    expect(error.props.accessibilityRole).toBe('alert');
+    expect(error).toHaveTextContent('Algo salió mal', { exact: true });
+    expect(screen.getByTestId('health-retry')).toHaveTextContent('Reintentar');
   });
 });
