@@ -363,7 +363,7 @@ describe('#146 R8: Guardar crea o actualiza la zona y vuelve a la lista', () => 
     ['no-tracking', 'Las zonas seguras necesitan un collar con plan activo.'],
     ['unreachable', 'No se pudo conectar con el servidor'],
     ['error', 'Algo salió mal'], ['missing-config', 'Algo salió mal'],
-  ] as const)('pinta %s bajo Guardar y conserva el borrador (enmendado por #189 R13)', async (kind, message) => {
+  ] as const)('pinta %s bajo Guardar y conserva el borrador (enmendado por #189 R13) (enmendado por #202 R16)', async (kind, message) => {
     mockUpdate.mockResolvedValue(kind === 'unreachable' ? { kind, message: 'offline' } : { kind });
     await edit(); const save = screen.getByTestId('geofence-editor-save');
     await fireEvent.changeText(screen.getByTestId('geofence-editor-name'), 'Mi casa');
@@ -371,7 +371,7 @@ describe('#146 R8: Guardar crea o actualiza la zona y vuelve a la lista', () => 
     const error = await screen.findByTestId('geofence-editor-error');
     expect(error).toHaveTextContent(message);
     expect(error.props.selectable).toBe(true);
-    expect(error.props.className).toBe('text-danger');
+    expect(error.props.className).toBe('text-sm leading-body text-danger');
     expect(childTestIds(screen.getByTestId('geofence-editor-actions').parent!).at(-1)).toBe('geofence-editor-error');
     expect(screen.getByTestId('geofence-editor-name').props.value).toBe('Mi casa');
     expect(screen.getByTestId('geofence-editor-radius').props.value).toBe(150);
@@ -561,7 +561,7 @@ describe('#146 R16: quien no es dueño ve la zona sin poder editarla', () => {
     expect(await screen.findByTestId('geofence-editor-loading')).toBeVisible();
     expect(screen.queryByTestId('geofence-editor-form')).toBeNull();
   });
-  it.each(['family', 'walker', 'vet', 'un error al leer el rol'] as const)('al editar como %s pinta la zona en solo lectura (enmendado por #189 R9) (enmendado por #189 R10)', async (role) => {
+  it.each(['family', 'walker', 'vet', 'un error al leer el rol'] as const)('al editar como %s pinta la zona en solo lectura (enmendado por #189 R9) (enmendado por #189 R10) (enmendado por #202 R16)', async (role) => {
     mockGetPet.mockResolvedValue(role === 'un error al leer el rol' ? { kind: 'error' } : petState(role));
     await mount('geofence-1'); await screen.findByTestId('geofence-editor-form');
     const radius = screen.getByTestId('geofence-editor-radius-value');
@@ -572,7 +572,7 @@ describe('#146 R16: quien no es dueño ve la zona sin poder editarla', () => {
     expect(radius).toHaveTextContent(catalog.es['geofences.radius'].replace('{{meters}}', '150'));
     const notice = screen.getByTestId('geofence-editor-read-only');
     expect(notice).toHaveTextContent('Solo el dueño de la mascota puede crear o editar zonas.');
-    expect(notice.props.className).toBe('text-sm font-normal text-muted');
+    expect(notice.props.className).toBe('text-sm font-normal leading-body text-muted');
     for (const id of ['name', 'map-hint', 'radius', 'active', 'reset-note', 'save', 'delete']) expect(screen.queryByTestId(`geofence-editor-${id}`)).toBeNull();
   });
   it('en solo lectura el mapa no registra toques y dibuja la zona guardada', async () => {
@@ -745,11 +745,11 @@ describe('#189 R11: bloque Radio y extremos ligados al slider', () => {
     await fireEvent(slider, 'change', 230);
     expect(value).toHaveTextContent(language === 'es' ? 'Radio de 230 m' : '230 m radius');
   });
-  it('#189 R11: en lectura conserva solo el valor sin bloque editable', async () => {
+  it('#189 R11: en lectura conserva solo el valor sin bloque editable (enmendado por #202 R16)', async () => {
     mockGetPet.mockResolvedValue(petState('family'));
     await mount(casa.id);
     const value = await screen.findByTestId('geofence-editor-radius-value');
-    expect(value.props.className).toBe('font-bold text-foreground');
+    expect(value.props.className).toBe('text-15 font-bold text-foreground');
     expect(value.props.selectable).toBe(true);
     expect(screen.getByTestId('geofence-editor-read-only')).toBeVisible();
     expect(screen.queryByTestId('geofence-editor-radius-block')).toBeNull();
@@ -1047,4 +1047,19 @@ it.each(['crear vacío', 'crear con nombre', 'editar'])('#202 R15: Eliminar y Gu
   expect(save.props.className.endsWith(` flex-2 h-13.5 rounded-16 ${kind === 'crear vacío' ? 'bg-default' : 'bg-accent'}`)).toBe(true);
   if (kind === 'editar') expect(screen.getByTestId('geofence-editor-delete').props.className.endsWith(' flex-1 h-13.5 rounded-16 border-2 border-lip-gray bg-surface')).toBe(true);
   else expect(screen.queryByTestId('geofence-editor-delete')).toBeNull();
+});
+
+it.each([
+  ['geofence-editor-reset-note', 'text-sm font-normal leading-body text-muted', 'owner'],
+  ['geofence-editor-read-only', 'text-sm font-normal leading-body text-muted', 'family'],
+  ['geofence-editor-error', 'text-sm leading-body text-danger', 'error'],
+  ['geofence-editor-radius-value', 'text-15 font-bold text-foreground', 'family'],
+] as const)('#202 R16: %s usa la receta del canvas', async (id, classes, kind) => {
+  if (kind === 'family') mockGetPet.mockResolvedValue(petState('family'));
+  if (kind === 'error') mockUpdate.mockResolvedValue({ kind: 'error' });
+  await mount(casa.id);
+  await screen.findByTestId(kind === 'family' ? 'geofence-editor-name-text' : 'geofence-editor-name');
+  if (kind === 'error') await fireEvent.press(screen.getByTestId('geofence-editor-save'));
+  const node = await screen.findByTestId(id);
+  expect(node.props.className).toBe(classes);
 });

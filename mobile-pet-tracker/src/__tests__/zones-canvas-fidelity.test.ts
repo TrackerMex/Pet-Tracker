@@ -88,3 +88,22 @@ it('#202 R15: el canvas dibuja las acciones a 54', () => {
   contains(artboard('EditorZona'), 'height: 54px', 2);
   contains(source('screens/geofence-editor/index.tsx'), 'h-13.5 rounded-16', 3);
 });
+
+function openingTag(path: string, id: string): string {
+  const content = source(path);
+  const needle = `testID="${id}"`;
+  const anchor = content.indexOf(needle);
+  expect(anchor).toBeGreaterThanOrEqual(0);
+  expect(content.lastIndexOf(needle)).toBe(anchor);
+  const next = content.indexOf('<', anchor + needle.length);
+  const block = content.slice(content.lastIndexOf('<', anchor), next < 0 ? content.length : next);
+  const selfClosing = block.indexOf('/>');
+  return selfClosing < 0 ? block : block.slice(0, selfClosing + 2);
+}
+
+it('#202 R16: el canvas pinta las notas a 14/1.4', () => {
+  for (const board of ['EditorZona', 'EditorZonaSoloLectura']) contains(artboard(board), 'font-size: 14px; line-height: 1.4');
+  for (const id of ['geofence-editor-reset-note', 'geofence-editor-read-only']) contains(openingTag('screens/geofence-editor/index.tsx', id), 'className="text-sm font-normal leading-body text-muted"');
+  contains(openingTag('screens/geofence-editor/index.tsx', 'geofence-editor-error'), 'className="text-sm leading-body text-danger"');
+  contains(openingTag('screens/geofence-editor/index.tsx', 'geofence-editor-radius-value'), "'text-15 font-bold text-foreground'");
+});
