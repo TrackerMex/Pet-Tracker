@@ -8,6 +8,7 @@ import {
 } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect } from 'react';
+import type { TestInstance } from 'test-renderer';
 
 import {
   addMealTime,
@@ -94,18 +95,22 @@ jest.mock('@expo/ui/community/datetime-picker', () => {
   };
 });
 
-const mockHomeEntrance = jest.fn<void, [import('react-native').ViewProps & { index: number }]>();
-
-jest.mock('../home/home-entrance', () => {
+jest.mock('../../components/rise-in', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
-    HomeEntrance(props: import('react-native').ViewProps & { index: number }) {
-      mockHomeEntrance(props);
+    RiseIn(props: import('react-native').ViewProps & { delayMs: number; className?: string }) {
       return React.createElement(View, props);
     },
   };
 });
+
+function riseDelayOf(node: TestInstance | null): number | undefined {
+  for (let current = node; current; current = current.parent) {
+    if (current.props.delayMs !== undefined) return current.props.delayMs;
+  }
+  return undefined;
+}
 
 jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
@@ -1123,7 +1128,7 @@ describe('#179 R5: resumen del artboard', () => {
     mockGetNutritionProfile.mockResolvedValue({ kind: 'not-found' });
   });
 
-  it('compone el resumen con eyebrow y tres columnas de valor y etiqueta (enmendado por #197 R9)', async () => {
+  it('compone el resumen con eyebrow y tres columnas de valor y etiqueta (enmendado por #197 R9) (enmendado por #200 R15)', async () => {
     await renderMealSchedule();
     const summary = await screen.findByTestId('meal-schedule-summary');
     expect(summary).toHaveProp('className', 'gap-2 rounded-24 bg-accent p-4');
@@ -1149,7 +1154,7 @@ describe('#179 R5: resumen del artboard', () => {
       expect(column.children[0]).toBe(valueNode);
       expect(column.children[1]).toBe(labelNode);
     }
-    expect(mockHomeEntrance).toHaveBeenCalledWith(expect.objectContaining({ testID: 'meal-schedule-summary-entry', index: 0 }));
+    expect(riseDelayOf(screen.getByTestId('meal-schedule-summary-entry'))).toBe(0);
     expect(screen.queryByText('656 kcal')).toBeNull();
     expect(screen.queryByText('187 g / día')).toBeNull();
     expect(screen.queryByText('2 comidas / día')).toBeNull();
@@ -1207,7 +1212,7 @@ describe('#179 R6: filas del artboard', () => {
       expect(within(text).getByText('94 g')).toHaveProp('className', 'text-13 font-semibold text-muted');
       expect(text.children[0]).toHaveTextContent(time);
       expect(text.children[1]).toHaveTextContent('94 g');
-      expect(mockHomeEntrance).toHaveBeenCalledWith(expect.objectContaining({ testID: `meal-time-entry-${index}`, index: index + 1 }));
+      expect(riseDelayOf(screen.getByTestId(`meal-time-entry-${index}`))).toBe(80 + 60 * index);
       if (owner) {
         expect(row.children[2]).toHaveProp('testID', `meal-time-edit-${index}`);
         const edit = within(row).getByTestId(`meal-time-edit-${index}`);
@@ -1222,7 +1227,7 @@ describe('#179 R6: filas del artboard', () => {
     }
   }
 
-  it('el dueño ve las dos entradas planas con Editar al final de cada fila (enmendado por #197 R9)', async () => {
+  it('el dueño ve las dos entradas planas con Editar al final de cada fila (enmendado por #197 R9) (enmendado por #200 R15)', async () => {
     mockGetPet.mockResolvedValue(petState('owner'));
     await renderMealSchedule();
     await screen.findByTestId('meal-time-edit-1');
@@ -1232,7 +1237,7 @@ describe('#179 R6: filas del artboard', () => {
     expectRows(true);
   });
 
-  it('el familiar conserva el mosaico y los dos textos sin controles de edición', async () => {
+  it('el familiar conserva el mosaico y los dos textos sin controles de edición (enmendado por #200 R15)', async () => {
     mockGetPet.mockResolvedValue(petState('family'));
     await renderMealSchedule();
     await screen.findByTestId('meal-time-row-1');
@@ -1395,4 +1400,14 @@ it('#200 R14: «Generar plan» lleva el labio violeta', async () => {
   const button = await screen.findByTestId('generate-plan-button');
   const { result } = await renderHook(() => useChunkyLip());
   expect(button).toHaveStyle(result.current.violet);
+});
+
+
+it.each([
+  ['meal-schedule-summary-entry', 0], ['meal-time-entry-0', 80], ['meal-time-entry-1', 140],
+] as const)('#200 R15: Horario entra con los retardos del canvas (%s)', async (id, delay) => {
+  mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+  mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
+  await renderMealSchedule();
+  expect((await screen.findByTestId(id)).props.delayMs).toBe(delay);
 });

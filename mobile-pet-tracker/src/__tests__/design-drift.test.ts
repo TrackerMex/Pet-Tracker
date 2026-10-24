@@ -1188,11 +1188,11 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
     for (const source of sources) expect(source).not.toMatch(forbidden);
   });
 
-  it('reutiliza entrada, paleta, esquinas y margen táctil compartidos', () => {
-    expect(schedule).toContain("import { HomeEntrance } from '../home/home-entrance';");
+  it('reutiliza entrada, paleta, esquinas y margen táctil compartidos (enmendado por #200 R15)', () => {
+    expect(schedule).toContain("import { RiseIn } from '../../components/rise-in';");
     expect(schedule).toContain("import { CATEGORY_SLOTS } from '../../utils/category-palette';");
     expect(schedule).toContain("import { TOUCH_SLOP } from '../../theme/touch-target';");
-    expect(history).toContain("import { HomeEntrance } from '../home/home-entrance';");
+    expect(history).toContain("import { RiseIn } from '../../components/rise-in';");
     expect(history).toContain("import { TOUCH_SLOP } from '../../theme/touch-target';");
     expect(history).toContain("import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';");
   });
