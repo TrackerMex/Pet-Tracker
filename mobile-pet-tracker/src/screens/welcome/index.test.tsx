@@ -144,9 +144,9 @@ describe('R5', () => {
 
   it('pinta marca, tagline y legal con sus clases (enmendado por #205 R2, R6)', async () => {
     await renderWelcome();
-    expect(screen.getByTestId('welcome-brand').props.className).toBe('text-3xl font-bold text-foreground');
-    expect(screen.getByTestId('welcome-tagline').props.className).toBe('text-center text-base text-muted');
-    expect(screen.getByTestId('welcome-legal').props.className).toBe('text-center text-xs text-muted');
+    expect(screen.getByTestId('welcome-brand').props.className).toBe('text-34 leading-10 font-black tracking-display text-foreground'); // #205 R6
+    expect(screen.getByTestId('welcome-tagline').props.className).toBe('max-w-75 text-center text-base text-muted'); // #205 R6
+    expect(screen.getByTestId('welcome-legal').props.className).toBe('mt-4 text-center text-xs text-muted'); // #205 R6
     expect(screen.getByTestId('welcome-rise-heading').props.className).toBe('mt-4.5 items-center gap-2'); // #205 R2
   });
 });
@@ -488,6 +488,17 @@ describe('#153 R1: el saludo de Pingo existe en los dos idiomas', () => {
   });
 });
 
+
+describe('#205 R6: marca y legal de Main', () => {
+  it('#205 R6: la marca pesa 34/900, el subtítulo se limita a 300 y el legal baja 16', async () => {
+    await renderWelcome('es');
+    expect(screen.getByTestId('welcome-brand').props.className).toBe('text-34 leading-10 font-black tracking-display text-foreground');
+    expect(screen.getByTestId('welcome-tagline').props.className).toBe('max-w-75 text-center text-base text-muted');
+    expect(screen.getByTestId('welcome-legal').props.className).toBe('mt-4 text-center text-xs text-muted');
+    expect(screen.getByText(es['welcome.getStarted']).props.className).toBe('text-17 font-extrabold text-accent-foreground');
+    expect(screen.getByText(es['welcome.haveAccount']).props.className).toBe('text-17 font-bold text-accent-strong');
+  });
+});
 
 describe('#205 R5: saludo de Main', () => {
   it('#205 R5: el saludo dice «Hola, soy Pingo.» y «Hi, I\'m Pingo.»', async () => {

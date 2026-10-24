@@ -84,3 +84,19 @@ describe('#205 R4: bocadillo de Main', () => {
     expect(welcome).toContain('shadows.card');
   });
 });
+
+describe('#205 R6: marca de Main', () => {
+  it('#205 R6: la marca copia tamaño, ancho y margen del artboard', () => {
+    const main = canvas('Main');
+    expect(main).toContain('font-size: 34px; line-height: 40px; font-weight: 900; letter-spacing: -0.5px');
+    expect(main).toContain('max-width: 300px');
+    expect(main).toContain('margin-top: 18px');
+    expect(main).toContain('margin: 16px 0 0');
+
+    const welcome = source('screens/welcome/index.tsx');
+    expect(welcome).toContain('text-34 leading-10 font-black tracking-display');
+    expect(welcome).toContain('max-w-75');
+    expect(welcome).toContain('mt-4.5 items-center gap-2');
+    expect(welcome).toContain('mt-4 text-center text-xs text-muted');
+  });
+});
