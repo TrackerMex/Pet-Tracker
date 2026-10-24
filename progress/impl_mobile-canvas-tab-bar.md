@@ -686,3 +686,11 @@ Verificación desde `mobile-pet-tracker/`:
 - `test ! -e .expo/types/router.d.ts` → exit 0
 
 Sin rojos, sin timeouts y sin tinte `#0D1117`. No se ejecutó `init.sh` ni se hizo push.
+
+## Errata E3 (implementer Sonnet, fallback trivial)
+Commit `aa942254` `test(#206): R9 drop the charter position assert (errata E3)`: borra solo la línea `expect(normalized.endsWith(`${BLOQUE}\n`)).toBe(true);` de `it('#206 R9: …')` en `mobile-pet-tracker/src/__tests__/tab-bar-canvas-fidelity.test.ts`.
+
+- Tests (tras el cambio): `Tests:       14 passed, 14 total`
+- Tests (mutación: `\n## Enmienda #999 — prueba\n` añadido al final de `docs/ui-guidelines.md`): `Tests:       14 passed, 14 total` (`#206 R9` verde)
+- Restauración: `git checkout HEAD -- ../docs/ui-guidelines.md`; `git status --short -- ../docs` vacío.
+- `bunx eslint src/__tests__/tab-bar-canvas-fidelity.test.ts`: exit 0.

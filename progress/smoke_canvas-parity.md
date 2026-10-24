@@ -86,3 +86,26 @@ Pasos en dev build Android (no Expo Go), con tema claro y oscuro:
 6. R24: las entradas llegan escalonadas. Con «Quitar animaciones» todo está quieto y completo.
 
 - [ ] Smoke de #199 recorrido por el humano
+
+## #206 mobile-canvas-tab-bar
+
+Spec: `specs/mobile-canvas-tab-bar/requirements.md` (§ Cierre del humano). Reviewer APROBADO sobre
+`3df43a06` y sobre el delta de la errata E3 `aa942254` (`progress/review_mobile-canvas-tab-bar.md`).
+
+Pasos en dev build Android (no Expo Go), con tema claro y oscuro:
+
+1. (S1) Los cinco iconos se ven como trazos huecos redondeados, no como siluetas negras rellenas.
+2. (S2) La cápsula proyecta una sombra suave hacia abajo.
+3. (S3) El velo se lee translúcido y claro (oscuro en tema oscuro), no como una cápsula opaca.
+4. (S4) La píldora verde coincide con la celda activa, sin asomar ni quedarse corta arriba o abajo.
+5. (S5) Ninguna etiqueta se recorta con la escala de fuente del sistema al 100 %.
+6. (S6) La pestaña activa se distingue por color, píldora y trazo más grueso.
+7. (S7) Al cambiar de pestaña la píldora se desliza y aterriza centrada; con «Quitar animaciones»
+   activado salta sin deslizarse.
+8. (S8) TalkBack anuncia la fila como «Pestañas» y cada pestaña con su nombre y su estado
+   seleccionado.
+
+Conocido antes del smoke: las celdas de la barra no tienen feedback al pulsar (O2 del reviewer; ya
+pasaba antes de #206, deuda registrada).
+
+- [ ] Smoke de #206 recorrido por el humano

@@ -931,4 +931,5 @@ Fecha: 2026-10-23. Feature #206 `mobile-canvas-tab-bar`. Excepción nombrada a D
 
 Detalle y tests en `specs/mobile-canvas-tab-bar/requirements.md` (R1 a R10).
 
-- [ ] Enmienda #206 aprobada por humano
+- [X] Enmienda #206 aprobada por humano
+  Firma delegada en el leader por mandato del humano del 2026-10-23 (`progress/plan_canvas-parity-2026-10-23.md` §4), reflejada desde `specs/mobile-canvas-tab-bar/requirements.md` § Aprobación, ya firmada el 2026-10-23.

@@ -458,3 +458,4 @@ distinto.
 - [x] Enmienda #206 de `docs/ui-guidelines.md` aprobada (texto en `design.md` § Enmienda de la carta; R9 la escribe en la carta con su propia casilla `- [ ] Enmienda #206 aprobada por humano`)
   Firma delegada, mismo mandato.
 - [ ] Smoke de R11 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
+  Va en el lote `progress/smoke_canvas-parity.md` (plan §6); el `done` no espera al smoke.
