@@ -148,7 +148,7 @@ export function GeofencesScreen({ petId }: { petId: string }) {
               <Pressable
                 testID={`geofence-${geofence.id}-delete`} accessibilityRole="button"
                 accessibilityLabel={t('geofences.deleteLabel', { name: geofence.name })}
-                className="size-11 items-center justify-center rounded-xl bg-danger-soft"
+                className={`size-11 items-center justify-center rounded-xl ${CATEGORY_SLOTS.rose.surface}`}
                 style={CONTINUOUS_CORNER} disabled={busy}
                 onPress={() => confirmDelete(geofence)}
               >
