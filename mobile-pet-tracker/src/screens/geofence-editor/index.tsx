@@ -1,9 +1,9 @@
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BlurView } from 'expo-blur';
-import { router, Stack } from 'expo-router';
+import { router } from 'expo-router';
 import { Button, Input, Label, Skeleton, Slider, TextField } from 'heroui-native';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
@@ -13,6 +13,7 @@ import { getPet } from '../../api/pets';
 import { getLastPosition } from '../../api/positions';
 import { geofenceKeys, petKeys, positionKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
+import { ScreenHeader } from '../../components/screen-header';
 import { RiseIn } from '../../components/rise-in';
 import { BackButton } from '../../components/back-button';
 import { ConfirmDialog } from '../../components/confirm-dialog';
@@ -20,14 +21,13 @@ import { ToggleSwitch } from '../../components/toggle-switch';
 import { DEFAULT_CENTER, PetMap, type MapCoordinates } from '../../components/pet-map';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
-import { TRANSPARENT_HEADER_OPTIONS } from '../../theme/header-layout';
 import { CONTINUOUS_CORNER, KEEP_OPACITY, TABULAR_NUMS } from '../../theme/native-styles';
-import { useThemeColors } from '../../theme/use-theme-colors';
 import { useShadows } from '../../theme/shadows';
 import { zoomForRadius } from '../../utils/zoom-for-radius';
 
 const MIN_RADIUS = 20;
 const MAX_RADIUS = 2000;
+const STATE_TEXT = 'text-center text-15 leading-body text-muted';
 
 function messageFor(t: ReturnType<typeof useTranslate>, kind: GeofenceSaveState['kind']): string {
   switch (kind) {
@@ -42,8 +42,6 @@ function messageFor(t: ReturnType<typeof useTranslate>, kind: GeofenceSaveState[
 }
 
 export function GeofenceEditorScreen({ petId, geofenceId }: { petId: string; geofenceId?: string }) {
-  const [background] = useThemeColors(['background']);
-  const opaqueHeader = useMemo(() => ({ headerTransparent: false, headerStyle: { backgroundColor: background } }), [background]);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
   const t = useTranslate();
@@ -64,8 +62,8 @@ export function GeofenceEditorScreen({ petId, geofenceId }: { petId: string; geo
   if (list.data === undefined || (!geofenceId && position.data === undefined) || pet.data === undefined) {
     content = <Skeleton testID="geofence-editor-loading" className="h-24 w-full rounded-card" />;
   } else if (list.data.kind === 'no-tracking') {
-    content = <Card testID="geofence-editor-no-tracking" className="items-center py-8">
-      <Text className="text-center font-normal text-muted">{messageFor(t, 'no-tracking')}</Text>
+    content = <Card testID="geofence-editor-no-tracking" className="items-center px-4 py-6">
+      <Text className={STATE_TEXT}>{messageFor(t, 'no-tracking')}</Text>
     </Card>;
   } else if (list.data.kind === 'unauthorized') {
     content = null;
@@ -77,12 +75,12 @@ export function GeofenceEditorScreen({ petId, geofenceId }: { petId: string; geo
       </Button>
     </>;
   } else if (geofenceId && !zone) {
-    content = <Card testID="geofence-editor-not-found" className="items-center py-8">
-      <Text className="text-center font-normal text-muted">{messageFor(t, 'not-found')}</Text>
+    content = <Card testID="geofence-editor-not-found" className="items-center px-4 py-6">
+      <Text className={STATE_TEXT}>{messageFor(t, 'not-found')}</Text>
     </Card>;
   } else if (!geofenceId && !isOwner) {
-    content = <Card testID="geofence-editor-owner-only" className="items-center py-8">
-      <Text className="text-center font-normal text-muted">{t('geofenceEditor.ownerOnly')}</Text>
+    content = <Card testID="geofence-editor-owner-only" className="items-center px-4 py-6">
+      <Text className={STATE_TEXT}>{t('geofenceEditor.ownerOnly')}</Text>
     </Card>;
   } else {
     const last = position.data?.kind === 'ok' ? position.data.position : null;
@@ -92,14 +90,11 @@ export function GeofenceEditorScreen({ petId, geofenceId }: { petId: string; geo
       initialCenter={zone ? { latitude: zone.centerLat, longitude: zone.centerLng } : last ? { latitude: last.lat, longitude: last.lng } : DEFAULT_CENTER}
     />;
   }
-  return <>
-    <Stack.Screen options={opaqueHeader} />
-    <ScrollView testID="screen-geofence-editor" className="flex-1 bg-background"
-    contentInsetAdjustmentBehavior="automatic"
-    contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: insets.bottom + 40, gap: 12 }}>
-    <Text testID="geofence-editor-title" accessibilityRole="header" className="text-26 font-black tracking-title text-foreground">{t('geofenceEditor.title')}</Text>
+  return <ScrollView testID="screen-geofence-editor" className="flex-1 bg-background"
+    contentContainerStyle={{ paddingHorizontal: 20, paddingTop: insets.top + 12, paddingBottom: insets.bottom + 40, gap: 12 }}>
+    <ScreenHeader testID="geofence-editor-header" backFallback={{ pathname: '/pets/[petId]/geofences', params: { petId } }} title={t('geofenceEditor.title')} />
     {content}
-  </ScrollView></>;
+  </ScrollView>;
 }
 
 function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, initialCenter, initialRadius }: {
@@ -152,9 +147,7 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
 
   const radiusValue = <Text testID="geofence-editor-radius-value" selectable style={TABULAR_NUMS} className={readOnly ? 'text-15 font-bold text-foreground' : 'text-sm font-extrabold text-accent-strong'}>{t('geofences.radius', { meters: Math.round(readOnly ? initialRadius : radius) })}</Text>;
 
-  return <>
-    <Stack.Screen options={TRANSPARENT_HEADER_OPTIONS} />
-    <KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={0}>
+  return <KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={0}>
     <View testID="geofence-editor-map" className="flex-1">
       <PetMap onPress={readOnly ? undefined : setCenter} center={readOnly ? initialCenter : camera.center} zoom={readOnly ? zoomForRadius(initialRadius) : camera.zoom} marker={null} polylines={[]} circles={circles} colorScheme={theme === 'dark' ? 'dark' : 'light'} />
       <View testID="geofence-editor-title-row" className="absolute left-4 right-4 flex-row items-center gap-2.5" pointerEvents="box-none" style={{ top: insets.top + 8 }}>
@@ -226,5 +219,5 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
       title={t('geofences.deleteTitle', { name: zone?.name ?? '' })} body={t('geofences.deleteBody')}
       cancelLabel={t('geofences.cancel')} confirmLabel={t('geofences.delete')}
       onCancel={() => setDeleteVisible(false)} onConfirm={deleteConfirmed} />
-  </KeyboardAvoidingView></>;
+  </KeyboardAvoidingView>;
 }
