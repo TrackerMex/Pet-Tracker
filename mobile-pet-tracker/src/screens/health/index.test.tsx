@@ -1015,21 +1015,25 @@ describe('#168 R2: Salud sin hero y con métricas estándar', () => {
     expect(content.props.style).toEqual({ gap: 16 });
   });
 
-  it('pone el PetSwitcher como primer hijo de health-content', async () => {
+  it('pone el PetSwitcher como primer hijo de health-content (enmendado por #199 R13)', async () => {
     await renderHealth();
     const content = await screen.findByTestId('health-content');
-    const switcher = within(elementChild(content, 0));
+    const header = screen.getByTestId('health-header');
+    expect(header.children).toHaveLength(2);
+    const switcher = within(elementChild(header, 1));
     expect(switcher.getByTestId('pet-chip-pet-1')).toBeVisible();
     expect(switcher.getByTestId('pet-chip-pet-2')).toBeVisible();
-    expect(elementChild(content, 1).props.testID).toBe('vaccines-section');
-    expect(elementChild(content, 2).props.testID).toBe('weight-card');
+    expect(elementChild(content, 0).props.testID).toBe('vaccines-section');
+    expect(elementChild(content, 1).props.testID).toBe('weight-card');
   });
 
-  it('cambia vacunas y peso al pulsar otra mascota', async () => {
+  it('cambia vacunas y peso al pulsar otra mascota (enmendado por #199 R13)', async () => {
     mockListWeights.mockImplementation(async (_url, _token, petId) => ({ kind: 'ok', weights: [makeWeight({ weightKg: petId === 'pet-2' ? 20 : 12 })] }));
     await renderHealth();
     await within(await screen.findByTestId('vaccine-row-vaccine-1')).findByText('Vacuna de Luna');
-    const switcher = within(elementChild(screen.getByTestId('health-content'), 0));
+    const header = screen.getByTestId('health-header');
+    expect(header.children).toHaveLength(2);
+    const switcher = within(elementChild(header, 1));
     await fireEvent.press(switcher.getByTestId('pet-chip-pet-2'));
     await waitFor(() => expect(within(screen.getByTestId('vaccine-row-vaccine-1')).getByText('Vacuna de Max')).toBeVisible());
     await waitFor(() => expect(screen.getByTestId('weight-current')).toHaveTextContent('20 kg'));
@@ -1142,5 +1146,22 @@ describe('#199 R12: cabecera de Salud', () => {
     expect(header.props.className).toBe('flex-row items-center justify-between');
     expect(elementChild(header, 0).props.testID).toBe('health-title');
     expect(elementChild(header, 0)).toHaveTextContent('Salud', { exact: true });
+  });
+});
+
+
+describe('#199 R13: avatares de Salud', () => {
+  beforeEach(setupHealth168);
+  it('#199 R13 el selector va en health-header tras health-title en su variante avatars', async () => {
+    await renderHealth();
+    const content = await screen.findByTestId('health-content');
+    const header = screen.getByTestId('health-header');
+    expect(header.children).toHaveLength(2);
+    expect(elementChild(header, 0).props.testID).toBe('health-title');
+    const switcher = within(elementChild(header, 1));
+    for (const id of ['pet-1', 'pet-2']) {
+      expect(switcher.getByTestId(`pet-avatar-fallback-${id}`).props.className.split(' ').slice(0, 2)).toEqual(['text-sm', 'font-extrabold']);
+    }
+    expect(within(content).queryAllByTestId(/^pet-chip-/)).toHaveLength(0);
   });
 });

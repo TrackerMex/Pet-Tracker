@@ -35,8 +35,8 @@ function filesMatching(pattern: RegExp): string[] {
 }
 
 describe('#173 R4: avatars solo en Perfil', () => {
-  it('limita la variante nueva al consumidor Perfil', () => {
-    expect(filesMatching(/variant="avatars"/)).toEqual(['screens/profile/index.tsx']);
+  it('limita la variante nueva al consumidor Perfil (enmendado por #199 R13)', () => {
+    expect(filesMatching(/variant="avatars"/)).toEqual(['screens/health/index.tsx', 'screens/profile/index.tsx']); // #199 R13
   });
 });
 
