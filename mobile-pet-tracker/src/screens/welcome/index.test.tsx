@@ -489,6 +489,20 @@ describe('#153 R1: el saludo de Pingo existe en los dos idiomas', () => {
 });
 
 
+describe('#205 R7: Main sin entradas antiguas', () => {
+  it('#205 R7: el contenido no lleva fundido ni muelle de entrada', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-content')).toBeOnTheScreen();
+    const source = readSource('screens/welcome/index.tsx');
+    expect(source).not.toContain('entranceStyle');
+    expect(source).not.toContain('translateY');
+    expect(source).not.toMatch(/\bopacity\.set\(/);
+    expect(source).not.toContain('MOTION_FADE_TIMING');
+    expect(source).not.toContain('MOTION_ENTRANCE_OFFSET_Y');
+    expect(source).toMatch(/pingoScale\.set\(\s*withSpring\(\s*1,\s*MOTION_SETTLE_SPRING,?\s*\),?\s*\)/);
+  });
+});
+
 describe('#205 R6: marca y legal de Main', () => {
   it('#205 R6: la marca pesa 34/900, el subtítulo se limita a 300 y el legal baja 16', async () => {
     await renderWelcome('es');
@@ -605,22 +619,6 @@ describe('#153 R8: el contenido entra con las constantes de motion.ts', () => {
     expect(Object.keys(require('./index'))).toEqual(['WelcomeScreen']);
   });
 
-  it('usa el fundido y el muelle de motion.ts', async () => {
-    await renderWelcome();
-    expect(screen.getByTestId('welcome-content')).toBeOnTheScreen();
-    const source = readSource('screens/welcome/index.tsx');
-    for (const re of [
-      /opacity\.set\(\s*withTiming\(\s*1,\s*MOTION_FADE_TIMING,?\s*\),?\s*\)/g,
-      /translateY\.set\(\s*withSpring\(\s*0,\s*MOTION_SETTLE_SPRING,?\s*\),?\s*\)/g,
-      /useSharedValue\(\s*reduceMotion \? 0 : MOTION_ENTRANCE_OFFSET_Y,?\s*\)/g,
-      /from '\.\.\/\.\.\/theme\/motion'/g,
-    ]) {
-      expect((source.match(re) ?? []).length).toBe(1);
-    }
-    for (const re of [/\b(?:duration|easing|reduceMotion):/g, /WELCOME_ENTRANCE_/g]) {
-      expect((source.match(re) ?? []).length).toBe(0);
-    }
-  });
 });
 
 describe('#153 E1: la carta retira WELCOME_ENTRANCE_MS de la migración pendiente', () => {
