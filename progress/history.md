@@ -10139,3 +10139,60 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   Ver [[flake-tinte-0d1117-bajo-carga]].
 - **Estado final:** done. El smoke queda en `progress/smoke_canvas-parity.md`. La PR a `dev` la
   mergea el leader y después se borra el worktree `Pet-Tracker-wt-199`.
+
+## Sesión 2026-10-24 — mobile-jest-virtual-mock-poisoning (id: 207)
+
+- **Feature:** arregla el flake `#0D1117` de `#172 R2`, que tumbó el CI de #202 (PR #247) y de
+  #206 (PR #248). Los `jest.mock(..., { virtual: true })` de módulos que sí existen, en los
+  `index.test.tsx` de food, health, meal-schedule y profile, envenenaban la caché de resolución de
+  jest, y `#172 R2` recibía `#0D1117`.
+- **Spec:** [[specs/mobile-jest-virtual-mock-poisoning/requirements|spec]], con firma delegada en el
+  leader por mandato del humano del 2026-10-23 (plan §4) y errata E1 (cifras de CC1 y CC4).
+- **Acciones:** implementó el subagente `implementer` (Sonnet), como fallback de CLAUDE.md
+  §Excepciones: a Codex le quedaba poca cuota semanal. R1 quita `{ virtual: true }` de los cuatro
+  ficheros. R2 añade el candado `jest-virtual-mock-lock.test.ts`, que recorre los tests de `src/`.
+  Las mutaciones de control C a F están commiteadas y revertidas (vía b de C4). Solo tests, con
+  ámbito `test(mobile)`.
+- **Resultado:** `./init.sh` del leader sobre `b1b8ec8e`, exit 0: backend 1474 tests; infra 2
+  suites / 14 tests; móvil 147 suites / 5018 tests / 1 snapshot; e2e 30 de 33 suites (3 omitidas)
+  y 468 tests (8 omitidos). Reviewer APROBADO (0 bloqueantes, 5 no bloqueantes). Reprodujo CC1 con
+  caché vacía: A `4500e89b` rojo solo en `#172 R2`; B `c56e7bc7` verde.
+- **Notas no bloqueantes:** (1) N1: `{ virtual /* c */ : true }` elude el patrón y no está entre los
+  límites declarados. (2) N2: el candado recorre `*.test.ts(x)`, pero el `testMatch` real de
+  jest-expo también corre `.test.js`, `.spec.*` y cualquier `.ts` de `__tests__/`. Hoy hay cero
+  apariciones; ampliarlo sería otra feature. (3) N3: las mutaciones M-R2e y M-R2f se tapan entre sí
+  cuando se agrupan. (4) N4 y N5 son tareas del leader al cerrar y quedan hechas en este cierre.
+  (5) Notion: no aplica (las specs firmadas por el leader no se espejan).
+- **Estado final:** done. Sin smoke. El leader mergea la PR a `dev`. Después se mergea `dev` en
+  #202, #206 y #196 para que su CI salga verde, y se borra el worktree `Pet-Tracker-wt-207`.
+
+## Sesión 2026-10-24 — mobile-canvas-zones (id: 202)
+
+- **Feature:** Zonas y el editor de zonas como sus artboards del canvas (ola 2 del plan de paridad,
+  R1–R26). Cabecera de contenido con volver y contador en fila, sin cabecera nativa; editor con
+  círculo de cristal y píldora con sombra sobre el mapa; diálogo de borrado con velo y tarjeta
+  animados; `ToggleSwitch` de 48x28; esqueletos; hoja con teclado; enmienda R20 de la carta y de
+  `docs/conventions.md`.
+- **Spec:** [[specs/mobile-canvas-zones/requirements|spec]], con firma delegada en el leader por
+  mandato del humano del 2026-10-23 (plan §4) y erratas `4c067d76` (primera parada de R7) y
+  `a7eedec0` (R7.4: `accessibilityRole="header"`, porque `role="header"` da TS2769 en RN 0.86).
+- **Acciones:** Codex implementó test-primero (rojo y verde por requisito). Mergeó `dev` (#200 y
+  #198) en `d3c2b000`. Su cierre quedó bloqueado por un rojo de `Home #190 R5` (translateY -10
+  frente a 0) más dos timeouts de 5000 ms que pasaron aislados; el gate del leader no los
+  reprodujo. El merge de `origin/dev` con #199 lo resolvió un subagente del leader en `d5399a07`
+  con la regla «dev + delta» (cuatro conflictos: `alerts-canvas-fidelity`,
+  `chunky-cta-canvas-fidelity`, `design-drift` y `language-provider`), para ahorrar cuota de Codex.
+- **Resultado:** `./init.sh` del leader sobre `83599961`, exit 0 (móvil 146 suites / 4944 tests).
+  Reviewer APROBADO ahí (0 bloqueantes, 6 no bloqueantes). Tras el merge, `./init.sh` sobre
+  `9dcf2fb1`, exit 0: backend 187 suites / 1474 tests; infra 2 suites / 14 tests; móvil 148 suites /
+  5084 tests / 1 snapshot; e2e 30 de 33 suites (3 omitidas) y 468 tests (8 omitidos); typecheck y
+  lint sin errores. El reviewer aprobó el delta del merge sin observaciones nuevas.
+- **Notas no bloqueantes:** (1) Los `Pressable` de cancelar y confirmar de `confirm-dialog.tsx` no
+  tienen feedback al pulsar (N1, C8): deuda para un id propio o antes del smoke. (2) `delayMs={0}`
+  del diálogo sin candado (N2). (3) N3 cerrada con la errata `a7eedec0`. (4) La traceability se
+  actualizó en este cierre (N4). (5) Líneas de la carta caducadas fuera de la tabla R20: 228 y 843
+  (`h-14 rounded-16 bg-default`) y 231 (`Switch` de heroui); piden enmienda con firma humana (N5).
+  (6) `71aac698` dejó rojo un candado agregado de chunky-cta que el inventario omitía; nombres
+  caducados en GZ (N6). (7) Notion: no aplica (las specs firmadas por el leader no se espejan).
+- **Estado final:** done. El smoke queda en `progress/smoke_canvas-parity.md`. La PR a `dev` la
+  mergea el leader y después se borra el worktree `Pet-Tracker-wt-202`.
