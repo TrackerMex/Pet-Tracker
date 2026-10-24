@@ -3606,7 +3606,8 @@ describe('#85 R10: viste las filas con el Card compartido y los tokens', () => {
     jest.restoreAllMocks();
   });
 
-  it('aplica la receta de cada nodo y ninguna otra', async () => {
+  it('aplica la receta de cada nodo y ninguna otra (enmendado por #198 R10)', async () => {
+    jest.spyOn(Uniwind, 'getCSSVariable').mockImplementation(token => token);
     await renderHome();
 
     for (const id of ['rem-b', 'rem-a', 'rem-c']) {
@@ -3617,15 +3618,18 @@ describe('#85 R10: viste las filas con el Card compartido y los tokens', () => {
       const counter = rowQueries.getByTestId(`reminders-item-${id}-days`);
 
       expect(row.props.className).toContain(
-        'rounded-card border border-border bg-surface p-4 shadow-sm',
+        'rounded-card border border-border bg-surface p-4',
       );
+      expect(row.props.className).toContain('shadow-none');
+      expect(row.props.className).not.toContain('shadow-sm');
+      expect(row.props.style.boxShadow).toEqual(CANVAS_CARD_SHADOW);
       expect(row.props.className).toContain('flex-row items-center gap-3');
       expect(title.props.className).toBe(
-        'text-sm font-semibold text-foreground',
+        'text-sm font-bold text-foreground',
       );
       expect(date.props.className).toBe('text-xs font-normal text-muted');
       expect(counter.props.className).toBe(
-        `rounded-full px-2.5 py-1 text-xs font-bold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`,
+        `rounded-full px-2.5 py-1 text-xs font-extrabold bg-category-amber text-category-amber-strong`,
       );
       expect(counter.props.style).toEqual(TABULAR_NUMS);
       expect(title.props.style).toBeUndefined();
@@ -3723,7 +3727,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
   });
 
   describe('#70 R1: estructura de la sección', () => {
-    it('dibuja la cabecera y el cuerpo de la sección', async () => {
+    it('dibuja la cabecera y el cuerpo de la sección (enmendado por #198 R10)', async () => {
       await renderHome();
 
       const section = await screen.findByTestId('reminders-section');
@@ -3733,7 +3737,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       const seeAll = within(section).getByTestId('reminders-see-all');
 
       expect(section.children).toHaveLength(2);
-      expect(section.props.className).toBe('gap-3');
+      expect(section.props.className).toBe('gap-1');
       expect(header?.props.className).toBe(
         'flex-row items-center justify-between',
       );
@@ -3741,7 +3745,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       expect(section.children[1]).toBe(body);
       expect(title).toHaveTextContent('Recordatorios');
       expect(title.props.className).toBe(
-        'text-base font-bold text-foreground',
+        'text-base font-extrabold text-foreground',
       );
       expect(seeAll).toBeVisible();
       expect(seeAll).toHaveTextContent('Ver todos');
@@ -3750,7 +3754,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
   });
 
   describe('#70 R6: datos de la próxima vacuna', () => {
-    it('liga nombre, fecha y contador a su nodo y a ninguno más', async () => {
+    it('liga nombre, fecha y contador a su nodo y a ninguno más (enmendado por #198 R10)', async () => {
       jest.useFakeTimers();
       jest.setSystemTime(new Date(2026, 8, 10, 12, 0));
       jest
@@ -3775,7 +3779,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       expect(icon.props.color).toBe('--color-category-blue-strong');
       expect(name.props.children).toBe('Antirrábica');
       expect(name.props.className).toBe(
-        'text-sm font-semibold text-foreground',
+        'text-sm font-bold text-foreground',
       );
       expect(date.props.children).toBe('15 sep 2026');
       expect(date.props.className).toBe('text-xs font-normal text-muted');
@@ -4098,7 +4102,8 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
   });
 
   describe('#70 R12: Card compartido y tokens', () => {
-    it('viste la sección con el Card compartido y los tokens', async () => {
+    it('viste la sección con el Card compartido y los tokens (enmendado por #198 R10)', async () => {
+    jest.spyOn(Uniwind, 'getCSSVariable').mockImplementation(token => token);
       const loaded = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
 
       try {
@@ -4109,8 +4114,11 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
         const disk = row.children[0];
 
         expect(row.props.className).toContain(
-          'rounded-card border border-border bg-surface p-4 shadow-sm',
+          'rounded-card border border-border bg-surface p-4',
         );
+        expect(row.props.className).toContain('shadow-none');
+        expect(row.props.className).not.toContain('shadow-sm');
+        expect(row.props.style.boxShadow).toEqual(CANVAS_CARD_SHADOW);
         expect(row.props.className).toContain('flex-row items-center gap-3');
         expect(row.children[1]).toHaveProperty('props.className', 'flex-1');
         expect(typeof disk).not.toBe('string');
@@ -4120,7 +4128,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
           );
         }
         expect(days.props.className).toBe(
-          `rounded-full px-2.5 py-1 text-xs font-bold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`,
+          `rounded-full px-2.5 py-1 text-xs font-extrabold bg-category-amber text-category-amber-strong`,
         );
         expect(days.props.style).toEqual(TABULAR_NUMS);
         expect(name.props.style).toBeUndefined();
@@ -4137,8 +4145,11 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
         const disk = row.children[0];
 
         expect(row.props.className).toContain(
-          'rounded-card border border-border bg-surface p-4 shadow-sm',
+          'rounded-card border border-border bg-surface p-4',
         );
+        expect(row.props.className).toContain('shadow-none');
+        expect(row.props.className).not.toContain('shadow-sm');
+        expect(row.props.style.boxShadow).toEqual(CANVAS_CARD_SHADOW);
         expect(typeof disk).not.toBe('string');
         if (typeof disk !== 'string') {
           expect(disk.props.className).toBe(
@@ -4346,7 +4357,7 @@ describe('#98 R7: la barra de comidas y todas sus decisiones', () => {
     jest.restoreAllMocks();
   });
 
-  it('pinta dato, icono, copy, nombre accesible, huecos, tintas y tipografía', async () => {
+  it('pinta dato, icono, copy, nombre accesible, huecos, tintas y tipografía (enmendado por #198 R10)', async () => {
     mockGetPet.mockResolvedValue({
       kind: 'ok',
       pet: makePet({ mealsToday: { served: 1, total: 2 } }),
@@ -4362,8 +4373,11 @@ describe('#98 R7: la barra de comidas y todas sus decisiones', () => {
     const disk = row.children[0];
 
     expect(row.props.className).toContain(
-      'rounded-card border border-border bg-surface p-4 shadow-sm',
+      'rounded-card border border-border bg-surface p-4',
     );
+    expect(row.props.className).toContain('shadow-none');
+    expect(row.props.className).not.toContain('shadow-sm');
+    expect(row.props.style.boxShadow).toEqual(CANVAS_CARD_SHADOW);
     expect(row.props.className).toContain('flex-row items-center gap-3');
     expect(row.props.onPress).toBeUndefined();
     expect(icon.props.size).toBe(20);
@@ -4376,7 +4390,7 @@ describe('#98 R7: la barra de comidas y todas sus decisiones', () => {
     }
     expect(title).toHaveTextContent('Comidas hoy');
     expect(title.props.className).toBe(
-      'text-sm font-semibold text-foreground',
+      'text-sm font-bold text-foreground',
     );
     expect(count).toHaveTextContent('1/2');
     expect(count.props.accessibilityLabel).toBe(
@@ -6194,6 +6208,55 @@ describe('#198 R6: retardos de entrada del canvas', () => {
         expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([delay, delay]);
       }
       await view.unmount();
+    }
+  });
+});
+
+describe('#198 R10: recordatorios del canvas', () => {
+  beforeEach(() => {
+    setupCanvasHome();
+    const dueAt = new Date(Date.now() + 86400000).toISOString();
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(82, {
+      nextVaccine: { id: 'vac-canvas', name: 'Vacuna', nextDoseAt: dueAt.slice(0, 10) },
+      mealsToday: { served: 1, total: 2 },
+    }) });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [makeReminder({ id: 'canvas', title: 'Recordatorio', dueAt })] });
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('#198 R10 pinta la cabecera con 16/800 y «Ver todos» con 12/700', async () => {
+    await renderHome();
+    const title = await screen.findByTestId('reminders-section-title');
+    expect(title.props.className).toBe('text-base font-extrabold text-foreground');
+    expect(title).toHaveTextContent('Recordatorios');
+    expect(screen.getByTestId('reminders-section').props.className).toBe('gap-1');
+    const link = screen.getByTestId('reminders-see-all');
+    expect(link.props.className).toBe('min-h-11 justify-center pl-3');
+    expect(within(link).getByText('Ver todos').props.className).toBe('text-xs font-bold text-accent-strong');
+  });
+
+  it.each([
+    { testID: 'reminders-next-vaccine' }, { testID: 'reminders-meals' },
+    { testID: 'reminders-none-upcoming' }, { testID: 'reminders-item-canvas' },
+  ])('#198 R10 viste cada fila como tarjeta con la sombra card ($testID)', async ({ testID }) => {
+    if (testID === 'reminders-none-upcoming') {
+      mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+      mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+    }
+    await renderHome();
+    const row = await screen.findByTestId(testID);
+    for (const token of ['flex-row', 'items-center', 'gap-3', 'px-3.5', 'py-3', 'shadow-none']) expect(row.props.className.split(' ')).toContain(token);
+    expect(row.props.className.split(' ')).not.toContain('shadow-sm');
+    expect(row.props.style.boxShadow).toEqual(CANVAS_CARD_SHADOW);
+  });
+
+  it('#198 R10 pinta títulos 14/700 y píldoras 12/800', async () => {
+    await renderHome();
+    for (const id of ['reminders-next-vaccine-name', 'reminders-meals-title', 'reminders-item-canvas-title']) {
+      expect((await screen.findByTestId(id)).props.className).toBe('text-sm font-bold text-foreground');
+    }
+    for (const id of ['reminders-next-vaccine-days', 'reminders-item-canvas-days']) {
+      expect((await screen.findByTestId(id)).props.className).toBe('rounded-full px-2.5 py-1 text-xs font-extrabold bg-category-amber text-category-amber-strong');
     }
   });
 });
