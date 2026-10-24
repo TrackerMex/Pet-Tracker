@@ -62,12 +62,12 @@ const CTA_ROWS = [
   ['screens/add-pet/index.tsx', literalId('add-pet-submit'), 'h-14 rounded-16 bg-accent', ['isDisabled={submitting}', 'onPress={() => void handleSubmit()}']],
   ['screens/add-reminder/index.tsx', literalId('add-reminder-submit'), 'mt-auto h-14 rounded-16 bg-accent', ['isDisabled={submitting}', 'onPress={() => void handleSubmit()}']],
   ['screens/docs-upload-form/index.tsx', literalId('docs-upload-submit'), 'h-14 rounded-16 bg-accent', ['isDisabled={uploading}', 'onPress={() => void submitDocument()}']],
-  ['screens/geofence-editor/index.tsx', literalId('geofence-editor-save'), 'flex-2 h-14 rounded-16 bg-accent', ["isDisabled={busy || name.trim() === ''}", 'onPress={() => void save()}']],
+  ['screens/geofence-editor/index.tsx', literalId('geofence-editor-save'), 'flex-2 h-13.5 rounded-16 bg-accent', ["isDisabled={busy || name.trim() === ''}", 'onPress={() => void save()}']],
   ['screens/geofences/index.tsx', literalId('geofences-add'), 'mt-auto h-14 rounded-16 bg-accent', ['isDisabled={busy || atLimit}']],
   ['screens/weight-log/index.tsx', literalId('weight-submit'), 'h-14 rounded-16 bg-accent', ['isDisabled={submitting}', 'onPress={() => void handleSubmit()}']],
 ] as const;
 const NEUTRAL_ROWS = [
-  ['screens/geofence-editor/index.tsx', literalId('geofence-editor-delete'), 'flex-1 h-14 rounded-16 border-2 border-lip-gray bg-surface', 'outline', 'Text', 'text-base font-extrabold text-danger', ['isDisabled={busy}', 'onPress={confirmDelete}']], // #189 R13
+  ['screens/geofence-editor/index.tsx', literalId('geofence-editor-delete'), 'flex-1 h-13.5 rounded-16 border-2 border-lip-gray bg-surface', 'outline', 'Text', 'text-base font-extrabold text-danger', ['isDisabled={busy}', 'onPress={() => setDeleteVisible(true)}']], // #189 R13
   ['screens/welcome/index.tsx', literalId('welcome-have-account'), 'w-full h-14 rounded-16 border-2 border-lip-gray bg-surface', null, 'Text', 'text-17 font-bold text-accent-strong', ["onPress={() => router.push('/login')}"]],
   ['screens/forgot/index.tsx', literalId('forgot-resend'), 'w-full h-14 rounded-16 border-2 border-lip-gray bg-surface', 'secondary', 'Text', 'text-17 font-extrabold text-foreground', ['isDisabled={submitting}', 'onPress={() => void send(submittedEmail)}']],
   ['components/celebration.tsx', 'testID={secondary.testID}', 'w-full h-14 rounded-16 border-2 border-lip-gray bg-surface', null, 'Text', 'text-17 font-extrabold text-foreground', ['onPress={secondary.onPress}']],
@@ -90,7 +90,7 @@ const radii = {
   'screens/docs-upload-form/index.tsx': 2,
   'screens/food/index.tsx': 2,
   'screens/forgot/index.tsx': 3,
-  'screens/geofence-editor/index.tsx': 3, // #189 R13
+  'screens/geofence-editor/index.tsx': 4, // #189 R13; #202 R18: +1
   'screens/geofences/index.tsx': 2, // #189 R7
   'screens/health/index.tsx': 1, // #199 R14
   'screens/home/index.tsx': 1,
@@ -106,7 +106,7 @@ const radii = {
 
 const disabledCtas: Record<string, string> = { 'screens/geofences/index.tsx': 'atLimit', 'screens/geofence-editor/index.tsx': "name.trim() === ''" }; // #189 R7; #189 R13
 
-it.each(CTA_ROWS)('#177 R3.1: %s pinta la receta cta de %s (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20) (enmendado por #204 R11)', (path, anchor, classes, keeps) => {
+it.each(CTA_ROWS)('#177 R3.1: %s pinta la receta cta de %s (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20) (enmendado por #204 R11) (enmendado por #202 R15)', (path, anchor, classes, keeps) => {
   const tag = openingTagWithTestId(readSource(path), anchor);
   const condition = disabledCtas[path];
   expect(tag).toContain(condition ? `className={${condition} ? '${classes.replace('bg-accent', 'bg-default')}' : '${classes}'}` : `className="${classes}"`);
@@ -124,7 +124,7 @@ it.each(CTA_ROWS)('#177 R3.2: %s pinta la etiqueta Text 17/800 de %s (enmendado 
 it('#177 R3.3: el inventario de Button con bg-accent está cerrado', () => {
   expect(idsWhere(tag => /\bbg-accent(?=[\s'"`])/.test(tag))).toEqual([...primaryIds, 'reminders-add-link'].sort());
 });
-it.each(NEUTRAL_ROWS)('#177 R4.1: %s pinta la receta neutra de %s (enmendado por E4 R19)', (path, anchor, classes, variant, _label, _labelClasses, keeps) => {
+it.each(NEUTRAL_ROWS)('#177 R4.1: %s pinta la receta neutra de %s (enmendado por E4 R19) (enmendado por #202 R9) (enmendado por #202 R15)', (path, anchor, classes, variant, _label, _labelClasses, keeps) => {
   const tag = openingTagWithTestId(readSource(path), anchor);
   expect(tag).toContain(`className="${classes}"`);
   expect(tag).toContain(path === 'screens/geofence-editor/index.tsx' ? 'style={[chunkyLip.neutral, KEEP_OPACITY]}' : 'style={chunkyLip.neutral}');
@@ -179,9 +179,9 @@ it('#177 R7.2: inventarios de las dos recetas de primario', () => {
   expect(inventory(/rounded-16 bg-accent(?=[\s'"`])/g)).toEqual(Object.fromEntries(ctaFiles.map(path => [path, path === 'screens/add-pet/index.tsx' ? 2 : 1])));
   expect(inventory(/rounded-xl bg-accent(?=[\s'"`])/g)).toEqual({ 'screens/reminders/index.tsx': 1 });
 });
-it('#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por #191 R11) (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #198 R9) (enmendado por #204 R9)', () => {
+it('#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por #191 R11) (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #198 R9) (enmendado por #204 R9) (enmendado por #202 R18)', () => {
   expect(inventory(/\brounded-16\b/g)).toEqual(radii);
-  expect(count(/\brounded-16\b/g)).toBe(26 + 1 + 1 + 1 + 2 + 2 + 1 + 1 + 1); // #200 R9 (+2); #198 R9 (+1); #199 R14 (+1) // #194 R6 // #191 R11 // #189 R7; #189 R13 // #204 R9 (+1)
+  expect(count(/\brounded-16\b/g)).toBe(26 + 1 + 1 + 1 + 2 + 2 + 1 + 1 + 1 + 1); // #204 R9 (+1) // #202 R18 (+1) // #200 R9 (+2); #198 R9 (+1); #199 R14 (+1) // #194 R6 // #191 R11 // #189 R7; #189 R13
 });
 it('#177 R7.4: solo la definición y los diecisiete consumidores usan el hook (enmendado por #197 R10) (enmendado por #200 R3)', () => {
   expect(Object.keys(inventory(/useChunkyLip/g)).sort()).toEqual([...consumers, 'theme/chunky-lip.ts'].sort());

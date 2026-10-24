@@ -466,22 +466,14 @@ describe('#41 R4: la guarda de RootStack declara las zonas seguras tras el detal
       : null).toEqual([Stack.Screen, 'pets/[petId]/geofences', undefined]);
   });
 
-  it('le da la cabecera nativa de #95 R4 con el título de zonas seguras (enmendado por E4 R21)', async () => {
+  it('le da la cabecera nativa de #95 R4 con el título de zonas seguras (enmendado por E4 R21) (enmendado por #202 R2)', async () => {
     await render(<RootLayout />);
     await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
     const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
     const group = Children.toArray(stack?.children)[4];
     if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
     const detail = Children.toArray(group.props.children)[10];
-    expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined).toEqual({
-      headerShown: true,
-      title: '',
-      headerStyle: { backgroundColor: 'transparent' },
-      headerTintColor: 'token:foreground',
-      headerTitleStyle: { fontFamily: 'Inter-Bold' },
-      headerShadowVisible: false,
-      headerTransparent: true,
-    });
+    expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined).toEqual({ headerShown: false });
   });
 });
 
@@ -506,21 +498,14 @@ describe('#146 R5: la guarda de RootStack declara el editor de zonas tras la lis
       : null).toEqual([Stack.Screen, 'pets/[petId]/geofence-editor', undefined]);
   });
 
-  it('le da la cabecera nativa de #95 R4 con el título del editor de zonas', async () => {
+  it('le da la cabecera nativa de #95 R4 con el título del editor de zonas (enmendado por #202 R2)', async () => {
     await render(<RootLayout />);
     await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
     const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
     const group = Children.toArray(stack?.children)[4];
     if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
     const detail = Children.toArray(group.props.children)[11];
-    expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined).toEqual({
-      headerShown: true,
-      title: '',
-      headerStyle: { backgroundColor: 'token:background' },
-      headerTintColor: 'token:foreground',
-      headerTitleStyle: { fontFamily: 'Inter-Bold' },
-      headerShadowVisible: false,
-    });
+    expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined).toEqual({ headerShown: false });
   });
 });
 
@@ -619,6 +604,20 @@ describe('#194 R4: the profile editor is protected', () => {
     expect(isValidElement<{ name: string }>(detail) ? [detail.type, detail.props.name] : undefined)
       .toEqual([Stack.Screen, 'edit-profile']);
   });
+});
+
+
+it('#202 R2: Zonas seguras y el editor de zonas ocultan la cabecera nativa', async () => {
+  await render(<RootLayout />);
+  await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
+  const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
+  const group = Children.toArray(stack?.children)[4];
+  expect(isValidElement(group)).toBe(true);
+  if (!isValidElement<{ children: ReactNode }>(group)) return;
+  for (const child of Children.toArray(group.props.children).slice(10, 12)) {
+    expect(isValidElement(child)).toBe(true);
+    if (isValidElement<{ options: unknown }>(child)) expect(child.props.options).toEqual({ headerShown: false });
+  }
 });
 
 

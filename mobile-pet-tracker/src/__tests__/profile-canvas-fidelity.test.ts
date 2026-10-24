@@ -41,8 +41,8 @@ describe('#173 R4: avatars solo en Perfil', () => {
 });
 
 describe('#173 R2: inventario de radios nuevos', () => {
-  it('reserva rounded-hero al Card compartido y el skeleton de Perfil (enmendado por #200 R3)', () => {
-    expect(filesMatching(/\brounded-hero\b/)).toEqual(['components/card.tsx', 'screens/alert-detail/index.tsx', 'screens/food/index.tsx', 'screens/profile/index.tsx']); // #180 R10
+  it('reserva rounded-hero al Card compartido y el skeleton de Perfil (enmendado por #200 R3) (enmendado por #202 R7)', () => {
+    expect(filesMatching(/\brounded-hero\b/)).toEqual(['components/card.tsx', 'components/confirm-dialog.tsx', 'screens/alert-detail/index.tsx', 'screens/food/index.tsx', 'screens/profile/index.tsx']); // #180 R10
   });
   it('reserva rounded-tile a sus consumidores aprobados (enmendado por #190 R13)', () => {
     expect(filesMatching(/\brounded-tile\b/)).toEqual([
@@ -57,14 +57,12 @@ describe('#173 R2: inventario de radios nuevos', () => {
 });
 
 describe('#173 R2.4: inventario de tamaños nuevos', () => {
-  it('reserva text-26 al nombre de la mascota en Perfil (enmendado por #176 R8) (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #197 R19) (enmendado por #198 R15) (enmendado por #204 R4) (enmendado por #204 R12)', () => {
+  it('reserva text-26 al nombre de la mascota en Perfil (enmendado por #176 R8) (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #197 R19) (enmendado por #198 R15) (enmendado por #204 R4) (enmendado por #204 R12) (enmendado por #202 R1) (enmendado por #202 R17)', () => {
     expect(filesMatching(/\btext-26\b/)).toEqual([
       'components/empty-state.tsx', // (enmendado por #176 R8)
       'components/screen-header.tsx',
       'screens/alert-detail/index.tsx', // #180 R1
       'screens/alerts/index.tsx', // #174 R3
-      'screens/geofence-editor/index.tsx', // #189 R8
-      'screens/geofences/index.tsx', // #189 R1
       'screens/home/index.tsx', // #198 R15
       'screens/profile/index.tsx',
     ]);

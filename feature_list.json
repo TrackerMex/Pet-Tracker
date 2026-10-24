@@ -3495,7 +3495,7 @@
   {
     "id": 202,
     "name": "mobile-canvas-zones",
-    "status": "pending",
+    "status": "done",
     "priority": "P1",
     "description": "Registrada el 2026-10-23 por el plan progress/plan_canvas-parity-2026-10-23.md (ola 2). Zonas seguras y Editor de zona iguales al canvas versión 1792777983-cd94, artboards Zonas, ZonasEliminar, ZonasVacio, ZonasSinCollar, ZonasSoloLectura, ZonasEstados, EditorZona, EditorZonaEstados, EditorZonaSoloLectura, EditorZonaNueva y EditorZonaError. Es la enmienda A-189 de progress/explore_canvas-parity-2026-10-21.md §7 convertida en feature, porque #189 ya está done. Incluye cablear el Switch y la cabecera de #197 en screens/geofences y screens/geofence-editor. El centro, el asa y el breathe del Editor quedan en #192. Depende de #197. Congelar los artboards en specs/mobile-canvas-zones/canvas/. Firma delegada al leader. Registrada sin spec."
   },
@@ -3526,5 +3526,12 @@
     "status": "pending",
     "priority": "P1",
     "description": "Registrada el 2026-10-23 por el plan progress/plan_canvas-parity-2026-10-23.md (ola 2). Barra de pestañas flotante igual al canvas versión 1792777983-cd94: la píldora activa se desliza con spring, más el velo de vidrio, la geometría y el trazo del icono activo. Cubre C16 de progress/explore_canvas-parity-2026-10-21.md. Ficheros probables: components/floating-tab-bar.tsx y tests. Gran parte solo se ve en dispositivo: va al lote de smoke. Depende de #197. Congelar como referencia los artboards de pestaña en specs/mobile-canvas-tab-bar/canvas/. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 207,
+    "name": "mobile-jest-virtual-mock-poisoning",
+    "status": "done",
+    "priority": "P1",
+    "description": "Registrada el 2026-10-24 por el diagnóstico del flake de tinte (Expected 'color:foreground', Received '#0D1117', fallback del hook real useThemeColors; deuda registrada en el cierre de #200 y vista en #198). Cuatro tests móviles (screens/food, health, meal-schedule y profile) mockean con la opción virtual de jest.mock módulos que sí existen (theme/use-theme-colors y expo-image-picker); el mapa de IDs de jest-resolve es uno por proceso y el ID sin extensión que cachea uno lo hereda cualquier test posterior del mismo proceso que mockee ese módulo sin la opción, que carga el hook real. Cambio solo de tests, sin producción: quita la opción en los cuatro y añade el candado src/__tests__/jest-virtual-mock-lock.test.ts, que falla si algún *.test.ts(x) de src la usa. Sin test determinista de la contaminación (ver design.md). El caso #200 R9 mockRouter.push 0 llamadas queda abierto. Sin dependencias. Spec en specs/mobile-jest-virtual-mock-poisoning/."
   }
 ]
