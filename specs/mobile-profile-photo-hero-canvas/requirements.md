@@ -585,6 +585,23 @@ implementación y se reporta.
 
 **Enmienda mecánica permitida**: si un `it` no inventariado se pone rojo solo porque compara contra el literal exacto que el R-id quita o sustituye (directo o vía constante/helper del test), el implementador lo enmienda en el commit rojo de ese R con el sufijo y lo apunta en la tabla «Enmiendas mecánicas» de su informe. Cualquier otro rojo no inventariado sigue siendo motivo de parada.
 
+## Erratas del leader (2026-10-24)
+
+Firmadas por delegación (mandato del humano del 2026-10-23, `progress/plan_canvas-parity-2026-10-23.md` §4).
+
+**E1 (BLOQUEO del handoff para el bloque R2+R5), firmada.** DD `src/__tests__/design-drift.test.ts` › `#178 R13: Recordatorios sin deriva` › `reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10)`. R5.2 (CTA `h-11 rounded-14`) y R6.1 (`h-13 rounded-14`) meten `rounded-14` en Perfil; en H0 hay 0. La lista de `outsideReminders(/\brounded-14\b/)` gana `join('screens', 'profile', 'index.tsx'), // #196 R5` tras la línea de `pairing`, y el título gana el sufijo ` (enmendado por #196 R5)`. Va en el rojo de R2+R5. Si otra feature ya ha añadido su sufijo a ese título cuando lo leas, añade el tuyo detrás.
+
+**E1.2.** T › `#65 R14` › `shows the current endonym and changes the live Profile copy` comprueba con `toBeVisible()` el título «Perfil» mientras `listPets` sigue pendiente. Si se pone rojo solo porque ese título vive ahora en `pet-hero-slot`, que arranca con opacidad 0, cambia en ese `it` el matcher del título de `toBeVisible()` a `toBeOnTheScreen()`. El título gana el sufijo ` (enmendado por #196 R2)` y el cambio va en el rojo de R2+R5. Si la causa es otra, PARA.
+
+**Regla de recuentos agregados.** Si al llegar a verde una R se pone rojo un `it` que no está en el inventario y ese `it` solo cuenta usos o ficheros de un literal o token, Codex lo enmienda sin parar. Son de este tipo los inventarios cerrados de radios, de `style={CONTINUOUS_CORNER}`, de `text-NN` o de `<Card`, las sumas de copy y los suelos del escáner HeroUI. La condición es que el delta medido sea exactamente el número de usos que el diff de esa R, tal como esta spec la prescribe, añade o retira. La enmienda:
+
+- da a la cifra o a la entrada su término (`// #196 Rn`, o `; #196 Rn: ±k` dentro de un comentario que ya exista);
+- da al título el sufijo ` (enmendado por #196 Rn)`, o añade `Rn` al paréntesis de #196 si ya existe;
+- va en el commit rojo de esa R; si ese rojo ya está commiteado, en un commit propio `test(#196): Rn amend the <candado> inventory` antes del siguiente R;
+- se apunta en la tabla «Enmiendas mecánicas» del reporte con candado, antes, después y R.
+
+El fichero de test de ese candado entra en la lista cerrada solo para esa enmienda. Sigue siendo PARADA si el delta no coincide, si el `it` afirma comportamiento o estructura y no un recuento, o si la enmienda exigiría cambiar producción.
+
 ## Desviaciones conscientes del canvas
 
 | # | Canvas | Producción | Por qué |
