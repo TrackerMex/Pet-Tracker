@@ -8,7 +8,8 @@ import {
   within,
 } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
+import type { TestInstance } from 'test-renderer';
 import { FadeIn, FadeOut } from 'react-native-reanimated';
 
 import {
@@ -43,6 +44,15 @@ jest.mock('../../api/health-records', () => ({
   createWeight: jest.fn(),
   listWeights: jest.fn(),
 }));
+
+jest.mock('../../components/rise-in', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return { RiseIn: ({ delayMs, testID, className, children }: { delayMs: number; testID?: string; className?: string; children: ReactNode }) => {
+    const props = { delayMs, testID, className };
+    return React.createElement(View, props, children);
+  } };
+});
 
 jest.mock('../../api/users', () => ({
   getMe: jest.fn(),
@@ -754,12 +764,12 @@ describe('#62 R9: la gráfica de peso vive dentro de una card', () => {
     });
   });
 
-  it('envuelve weight-chart con la superficie compartida', async () => {
+  it('envuelve weight-chart con la superficie compartida (enmendado por #199 R3)', async () => {
     await renderWeightLog();
 
     const card = await screen.findByTestId('weight-chart-card');
 
-    expect(card.props.className).toContain('rounded-card');
+    expect(card.props.className).toBe('gap-2 rounded-24 bg-surface-secondary p-4');
     expect(within(card).getByTestId('weight-chart')).toBeVisible();
   });
 });
@@ -965,11 +975,11 @@ describe('#169 R6: resumen del peso en la card de la gráfica', () => {
       .toEqual(['weight-summary', 'weight-chart']);
   });
 
-  it('no pinta el resumen sin entradas', async () => {
+  it('no pinta el resumen sin entradas (enmendado por #199 R3)', async () => {
     mockListWeights.mockResolvedValue({ kind: 'ok', weights: [] });
     await renderWeightLog();
-    await waitFor(() => expect(screen.getByTestId('weight-chart-empty'))
-      .toHaveTextContent('Aún no hay datos suficientes'));
+    await screen.findByTestId('weight-log-empty');
+    expect(screen.queryByTestId('weight-chart-empty')).toBeNull();
 
     expect(screen.queryByTestId('weight-summary')).toBeNull();
   });
@@ -1217,5 +1227,49 @@ describe('#199 R2: métricas del scroll de Peso', () => {
     const source = readFileSync(join(process.cwd(), 'src/screens/weight-log/index.tsx'), 'utf8');
     expect(source).toContain('keyboardVerticalOffset={0}');
     expect(source).not.toContain('HeaderHeightContext');
+  });
+});
+
+function riseDelayOf(node: TestInstance): number | undefined {
+  let host: TestInstance | null = node;
+  while (host) {
+    if (typeof host.props.delayMs === 'number') return host.props.delayMs;
+    host = host.parent;
+  }
+  return undefined;
+}
+
+function scrollSlotOf(node: TestInstance, container: TestInstance): TestInstance {
+  let slot = node;
+  while (slot.parent && slot.parent !== container) slot = slot.parent;
+  return slot;
+}
+
+describe('#199 R3: tarjeta de la gráfica de Peso', () => {
+  beforeEach(() => {
+    prepareWeightLogTests();
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [makeWeight()] });
+  });
+  it('#199 R3 weight-chart-card es un View rounded-24 bg-surface-secondary p-4 gap-2 con esquina continua', async () => {
+    await renderWeightLog();
+    const card = await screen.findByTestId('weight-chart-card');
+    expect(card.props.className).toBe('gap-2 rounded-24 bg-surface-secondary p-4');
+    expect(card.props.style).toEqual({ borderCurve: 'continuous' });
+  });
+  it('#199 R3 con registros el scroll ordena cabecera, gráfica, formulario e historial', async () => {
+    await renderWeightLog();
+    const row = await screen.findByTestId('weight-row-weight-1');
+    const header = screen.getByTestId('weight-log-header');
+    const container = header.parent!;
+    const slots = [header, screen.getByTestId('weight-chart-card'), screen.getByTestId('weight-input'), row].map(node => scrollSlotOf(node, container));
+    const positions = slots.map(node => container.children.indexOf(node));
+    expect(positions[0]).toBe(0);
+    expect(new Set(positions).size).toBe(4);
+    expect(positions).toEqual([...positions].sort((a, b) => a - b));
+  });
+  it('#199 R3 la tarjeta entra con RiseIn sin retraso', async () => {
+    await renderWeightLog();
+    const card = await screen.findByTestId('weight-chart-card');
+    expect(riseDelayOf(card)).toBe(0);
   });
 });
