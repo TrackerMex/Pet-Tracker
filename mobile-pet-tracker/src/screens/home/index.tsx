@@ -739,22 +739,22 @@ export function HomeScreen() {
 
         {selectedPetId ? (
           <HomeEntrance index={6} testID="home-entrance-reminders">
-            <View testID="reminders-section" className="gap-3">
+            <View testID="reminders-section" className="gap-1">
               <View className="flex-row items-center justify-between">
                 <Text
                   testID="reminders-section-title"
-                  className="text-base font-bold text-foreground"
+                  className="text-base font-extrabold text-foreground"
                 >
                   {t('home.reminders')}
                 </Text>
                 <Pressable
                   testID="reminders-see-all"
                   accessibilityRole="button"
-                  className="min-h-11 justify-center"
+                  className="min-h-11 justify-center pl-3"
                   style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
                   onPress={() => router.push('/reminders')}
                 >
-                  <Text className="text-xs font-semibold text-accent-strong">
+                  <Text className="text-xs font-bold text-accent-strong">
                     {t('home.remindersSeeAll')}
                   </Text>
                 </Pressable>
@@ -771,7 +771,8 @@ export function HomeScreen() {
                 {nextVaccine && nextVaccineCountdown ? (
                   <Card
                     testID="reminders-next-vaccine"
-                    className="flex-row items-center gap-3"
+                    className="flex-row items-center gap-3 px-3.5 py-3 shadow-none"
+                    style={shadows.card}
                   >
                     <View
                       className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.blue.surface}`}
@@ -781,7 +782,7 @@ export function HomeScreen() {
                     <View className="flex-1">
                       <Text
                         testID="reminders-next-vaccine-name"
-                        className="text-sm font-semibold text-foreground"
+                        className="text-sm font-bold text-foreground"
                       >
                         {nextVaccine.name}
                       </Text>
@@ -796,7 +797,7 @@ export function HomeScreen() {
                       testID="reminders-next-vaccine-days"
                       accessibilityLabel={nextVaccineCountdown.label}
                       style={TABULAR_NUMS}
-                      className={`rounded-full px-2.5 py-1 text-xs font-bold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`}
+                      className={`rounded-full px-2.5 py-1 text-xs font-extrabold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`}
                     >
                       {nextVaccineCountdown.text}
                     </Text>
@@ -806,7 +807,8 @@ export function HomeScreen() {
                 {mealsToday !== null ? (
                   <Card
                     testID="reminders-meals"
-                    className="flex-row items-center gap-3"
+                    className="flex-row items-center gap-3 px-3.5 py-3 shadow-none"
+                    style={shadows.card}
                   >
                     <View
                       className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.rose.surface}`}
@@ -817,7 +819,7 @@ export function HomeScreen() {
                       <View className="flex-row items-center justify-between">
                         <Text
                           testID="reminders-meals-title"
-                          className="text-sm font-semibold text-foreground"
+                          className="text-sm font-bold text-foreground"
                         >
                           {t('food.mealsToday')}
                         </Text>
@@ -852,7 +854,8 @@ export function HomeScreen() {
                 upcoming.length === 0 ? (
                   <Card
                     testID="reminders-none-upcoming"
-                    className="flex-row items-center gap-3"
+                    className="flex-row items-center gap-3 px-3.5 py-3 shadow-none"
+                    style={shadows.card}
                   >
                     <View
                       className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.neutral.surface}`}
@@ -878,7 +881,8 @@ export function HomeScreen() {
                     <Card
                       key={reminder.id}
                       testID={`reminders-item-${reminder.id}`}
-                      className="flex-row items-center gap-3"
+                      className="flex-row items-center gap-3 px-3.5 py-3 shadow-none"
+                      style={shadows.card}
                     >
                       <View
                         className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS[slot].surface}`}
@@ -888,7 +892,7 @@ export function HomeScreen() {
                       <View className="flex-1">
                         <Text
                           testID={`reminders-item-${reminder.id}-title`}
-                          className="text-sm font-semibold text-foreground"
+                          className="text-sm font-bold text-foreground"
                         >
                           {reminder.title}
                         </Text>
@@ -903,7 +907,7 @@ export function HomeScreen() {
                         testID={`reminders-item-${reminder.id}-days`}
                         accessibilityLabel={countdown.label}
                         style={TABULAR_NUMS}
-                        className={`rounded-full px-2.5 py-1 text-xs font-bold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`}
+                        className={`rounded-full px-2.5 py-1 text-xs font-extrabold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`}
                       >
                         {countdown.text}
                       </Text>
