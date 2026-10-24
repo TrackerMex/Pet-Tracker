@@ -378,6 +378,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
             ) : null}
             <Button
               testID="generate-plan-button"
+              style={chunkyLip.violet}
               variant="tertiary"
               className={`h-12.5 flex-1 gap-1.5 rounded-14 ${CATEGORY_SLOTS.violet.surface}`}
               isDisabled={submitting}
