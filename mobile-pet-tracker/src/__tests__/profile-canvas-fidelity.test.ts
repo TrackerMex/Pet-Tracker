@@ -41,8 +41,8 @@ describe('#173 R4: avatars solo en Perfil', () => {
 });
 
 describe('#173 R2: inventario de radios nuevos', () => {
-  it('reserva rounded-hero al Card compartido y el skeleton de Perfil (enmendado por #200 R3)', () => {
-    expect(filesMatching(/\brounded-hero\b/)).toEqual(['components/card.tsx', 'screens/alert-detail/index.tsx', 'screens/food/index.tsx', 'screens/profile/index.tsx']); // #180 R10
+  it('reserva rounded-hero al Card compartido y el skeleton de Perfil (enmendado por #200 R3) (enmendado por #196 R1)', () => {
+    expect(filesMatching(/\brounded-hero\b/)).toEqual(['components/card.tsx', 'screens/alert-detail/index.tsx', 'screens/food/index.tsx']); // #180 R10
   });
   it('reserva rounded-tile a sus consumidores aprobados (enmendado por #190 R13)', () => {
     expect(filesMatching(/\brounded-tile\b/)).toEqual([
@@ -57,7 +57,7 @@ describe('#173 R2: inventario de radios nuevos', () => {
 });
 
 describe('#173 R2.4: inventario de tamaños nuevos', () => {
-  it('reserva text-26 al nombre de la mascota en Perfil (enmendado por #176 R8) (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #197 R19)', () => {
+  it('reserva text-26 al nombre de la mascota en Perfil (enmendado por #176 R8) (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #197 R19) (enmendado por #196 R1)', () => {
     expect(filesMatching(/\btext-26\b/)).toEqual([
       'components/empty-state.tsx', // (enmendado por #176 R8)
       'components/screen-header.tsx',
@@ -66,7 +66,6 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/docs/index.tsx', // #175 R5
       'screens/geofence-editor/index.tsx', // #189 R8
       'screens/geofences/index.tsx', // #189 R1
-      'screens/profile/index.tsx',
       'screens/reminders/index.tsx', // #178 R4
     ]);
   });
@@ -94,10 +93,10 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
 });
 
 describe('#173 R3: Card hero y flat solo en Perfil', () => {
-  it('Perfil y el detalle de alerta son los consumidores de Card hero (enmendado por #180 R3) (enmendado por #176 R2)', () => {
-    expect(filesMatching(/<Card\b[^>]*\bvariant="hero"/s)).toEqual(['screens/alert-detail/index.tsx', 'screens/profile/index.tsx']); // (enmendado por #176 R2)
+  it('Perfil y el detalle de alerta son los consumidores de Card hero (enmendado por #180 R3) (enmendado por #176 R2) (enmendado por #196 R1)', () => {
+    expect(filesMatching(/<Card\b[^>]*\bvariant="hero"/s)).toEqual(['screens/alert-detail/index.tsx']); // (enmendado por #176 R2)
     const profile = readFileSync(join(sourceRoot, 'screens/profile/index.tsx'), 'utf8');
-    expect(profile.match(/variant="hero"/g)).toHaveLength(1);
+    expect(profile.match(/variant="hero"/g)).toBeNull();
   });
   it('Perfil es el único consumidor de Card flat y lo usa dos veces', () => {
     expect(filesMatching(/variant="flat"/)).toEqual(['screens/meal-schedule/index.tsx', 'screens/profile/index.tsx']); // #179 R6
