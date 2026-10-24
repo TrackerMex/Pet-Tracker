@@ -459,9 +459,9 @@ describe('#153 R3: las poses entran como WebP', () => {
 
 
 describe('#153 R1: el saludo de Pingo existe en los dos idiomas', () => {
-  it('declara el saludo en inglés y en español', () => {
-    expect(en['welcome.pingoGreeting']).toBe('Hi, I\'m Pingo. I\'ll help you know where your pet is and how they\'re doing.');
-    expect(es['welcome.pingoGreeting']).toBe('Hola, soy Pingo. Te ayudo a saber dónde está y cómo está tu mascota.');
+  it('declara el saludo en inglés y en español (enmendado por #205 R5)', () => {
+    expect(en['welcome.pingoGreeting']).toBe('Hi, I\'m Pingo.'); // #205 R5
+    expect(es['welcome.pingoGreeting']).toBe('Hola, soy Pingo.'); // #205 R5
   });
 
   it('no exclama ni lleva emoji en ningún idioma', () => {
@@ -471,14 +471,14 @@ describe('#153 R1: el saludo de Pingo existe en los dos idiomas', () => {
     }
   });
 
-  it('pinta el saludo en el bocadillo en español', async () => {
+  it('pinta el saludo en el bocadillo en español (enmendado por #205 R5)', async () => {
     await renderWelcome('es');
-    expect(screen.getByText('Hola, soy Pingo. Te ayudo a saber dónde está y cómo está tu mascota.').props.testID).toBe('welcome-bubble-text');
+    expect(screen.getByText('Hola, soy Pingo.').props.testID).toBe('welcome-bubble-text');
   });
 
-  it('pinta el saludo en el bocadillo en inglés', async () => {
+  it('pinta el saludo en el bocadillo en inglés (enmendado por #205 R5)', async () => {
     await renderWelcome('en');
-    expect(screen.getByText('Hi, I\'m Pingo. I\'ll help you know where your pet is and how they\'re doing.').props.testID).toBe('welcome-bubble-text');
+    expect(screen.getByText('Hi, I\'m Pingo.').props.testID).toBe('welcome-bubble-text');
   });
 
   it('registra la clave en la tabla de mobile-ui-language', () => {
@@ -488,6 +488,20 @@ describe('#153 R1: el saludo de Pingo existe en los dos idiomas', () => {
   });
 });
 
+
+describe('#205 R5: saludo de Main', () => {
+  it('#205 R5: el saludo dice «Hola, soy Pingo.» y «Hi, I\'m Pingo.»', async () => {
+    expect(es['welcome.pingoGreeting']).toBe('Hola, soy Pingo.');
+    expect(en['welcome.pingoGreeting']).toBe('Hi, I\'m Pingo.');
+    for (const value of [es['welcome.pingoGreeting'], en['welcome.pingoGreeting']]) {
+      expect(value).not.toContain('\n');
+      expect(value.match(/[.!?]/g)).toHaveLength(1);
+      expect(value.endsWith('.')).toBe(true);
+    }
+    await renderWelcome('es');
+    expect(screen.getByTestId('welcome-bubble-text').children).toEqual(['Hola, soy Pingo.']);
+  });
+});
 
 describe('#153 R5: la escena de Pingo sustituye al logo', () => {
   it('apila la escena y los seis bloques de #118 en orden (enmendado por #205 R2)', async () => {
