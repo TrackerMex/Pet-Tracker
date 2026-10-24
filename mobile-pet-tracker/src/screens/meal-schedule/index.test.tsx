@@ -1,6 +1,7 @@
 import {
   act,
   fireEvent,
+  renderHook,
   screen,
   waitFor,
   within,
@@ -23,6 +24,7 @@ import { getPet, type PetState } from '../../api/pets';
 import { nutritionKeys } from '../../api/query-keys';
 import type { NutritionPlan, NutritionProfile, PetProfile } from '../../api/types';
 import { es } from '../../i18n/catalog';
+import { useChunkyLip } from '../../theme/chunky-lip';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import {
@@ -1382,4 +1384,15 @@ it.each(['loading', 'loaded'])('#200 R12: Horario pinta su cabecera en contenido
   expect(screen.getByTestId('screen-meal-schedule').props.contentContainerStyle).toEqual({
     paddingHorizontal: 20, paddingTop: 48, paddingBottom: 56, gap: 14,
   });
+});
+
+
+it('#200 R14: «Generar plan» lleva el labio violeta', async () => {
+  mockGetPet.mockResolvedValue(petState('owner'));
+  mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+  mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
+  await renderMealSchedule();
+  const button = await screen.findByTestId('generate-plan-button');
+  const { result } = await renderHook(() => useChunkyLip());
+  expect(button).toHaveStyle(result.current.violet);
 });
