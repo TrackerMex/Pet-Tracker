@@ -254,7 +254,7 @@ describe('R7: weight log lista el historial', () => {
     );
   });
 
-  it('keeps API order and renders each weight detail (enmendado por #199 R10)', async () => {
+  it('keeps API order and renders each weight detail (enmendado por #199 R10) (enmendado por #199 R11)', async () => {
     mockListWeights.mockResolvedValue({
       kind: 'ok',
       weights: [
@@ -280,7 +280,7 @@ describe('R7: weight log lista el historial', () => {
     ]);
     const newest = within(screen.getByTestId('weight-row-weight-1'));
     expect(newest.getByTestId('weight-row-weight-1-delta').parent!).toHaveTextContent('12.4 kg +0.4 kg', { exact: true });
-    expect(newest.getByText('2026-08-21')).toBeVisible();
+    expect(newest.getByText('21 ago')).toBeVisible();
     expect(newest.getByText('+0.4 kg')).toBeVisible();
     expect(newest.getByText('CC 5/9')).toBeVisible();
     const oldest = within(screen.getByTestId('weight-row-weight-2'));
@@ -1405,5 +1405,22 @@ describe('#199 R10: fila del historial', () => {
     await renderWeightLog();
     const row = await screen.findByTestId('weight-row-weight-1');
     expect(within(row).queryByText(/^CC /)).toBeNull();
+  });
+});
+
+
+describe('#199 R11: fechas del historial', () => {
+  beforeEach(() => { prepareWeightLogTests(); });
+  it.each([
+    ['2025-12-31', '31 dic'],
+    ['2026-01-01', '1 ene'],
+  ])('#199 R11 la fecha %s se lee %s en text-13 font-semibold', async (measuredAt, expected) => {
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [makeWeight({ measuredAt })] });
+    await renderWeightLog();
+    const date = await screen.findByTestId('weight-row-weight-1-date');
+    expect(date.type).toBe('Text');
+    expect(date.props.className).toBe('text-13 font-semibold text-muted');
+    expect(date).toHaveTextContent(expected, { exact: true });
+    expect(screen.getByTestId('weight-date-input').props.value).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 });
