@@ -672,11 +672,11 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
     });
   });
 
-  it('aplica la receta canónica a Peso', async () => {
+  it('aplica la receta canónica a Peso (enmendado por #199 R18)', async () => {
     await renderHealth();
 
     expect((await screen.findByTestId('weight-card-title')).props.className).toBe(
-      'text-base font-bold text-foreground',
+      'text-13 font-bold text-muted',
     );
   });
 });
@@ -758,7 +758,7 @@ describe('#115 R5: la weight card dibuja la evolución con WeightChart', () => {
     mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [] });
   });
 
-  it('con dos o más registros, pasa el historial entero y en orden entre la variación y el enlace', async () => {
+  it('con dos o más registros, pasa el historial entero y en orden entre la variación y el enlace (enmendado por #199 R18)', async () => {
     const weights = [
       makeWeight({ id: 'weight-3', weightKg: 12.4, measuredAt: '2026-08-21', variation: 0.4 }),
       makeWeight({ id: 'weight-2', weightKg: 12.0, measuredAt: '2026-08-14' }),
@@ -766,27 +766,28 @@ describe('#115 R5: la weight card dibuja la evolución con WeightChart', () => {
     ];
     mockListWeights.mockResolvedValue({ kind: 'ok', weights });
     await renderHealth();
-    await screen.findByTestId('weight-chart');
+    await screen.findByTestId('weight-chart', { includeHiddenElements: true });
 
     const card = screen.getByTestId('weight-card');
-    expect(card.children).toHaveLength(4);
-    expect(elementChild(card, 1).props.className).toBe('flex-row justify-end');
-    expect(within(elementChild(card, 1)).getByTestId('weight-variation')).toHaveTextContent('+0.4 kg');
-    expect(elementChild(card, 2).props.testID).toBe('weight-chart');
-    expect(elementChild(card, 3).props.testID).toBe('weight-log-link');
+    expect(card.children).toHaveLength(3);
+    expect(elementChild(card, 0).props.className).toBe('flex-row items-end justify-between');
+    expect(within(elementChild(card, 0)).getByTestId('weight-variation')).toHaveTextContent('+0.4 kg');
+    expect(elementChild(card, 1).props.testID).toBe('weight-chart');
+    expect(elementChild(card, 2).props.testID).toBe('weight-log-link');
     expect(screen.getByTestId('weight-current')).toHaveTextContent('12.4 kg');
     const props = mockWeightChart.mock.calls.at(-1)![0];
     expect(props.entries.map(({ id }) => id)).toEqual(['weight-3', 'weight-2', 'weight-1']);
+    expect(props.variant).toBe('mini');
   });
 
-  it('con un registro, muestra el aviso de datos insuficientes de WeightChart', async () => {
+  it('con un registro, muestra el aviso de datos insuficientes de WeightChart (enmendado por #199 R18)', async () => {
     mockListWeights.mockResolvedValue({ kind: 'ok', weights: [makeWeight()] });
     await renderHealth();
     await waitFor(() => expect(screen.getByTestId('weight-chart-empty')).toHaveTextContent('Aún no hay datos suficientes'));
 
     const card = screen.getByTestId('weight-card');
-    expect(card.children).toHaveLength(4);
-    expect(elementChild(card, 2).props.testID).toBe('weight-chart-empty');
+    expect(card.children).toHaveLength(3);
+    expect(elementChild(card, 1).props.testID).toBe('weight-chart-empty');
     expect(screen.queryByTestId('weight-chart')).toBeNull();
   });
 
@@ -1024,7 +1025,7 @@ describe('#168 R2: Salud sin hero y con métricas estándar', () => {
     expect(content.props.style).toEqual({ gap: 16 });
   });
 
-  it('pone el PetSwitcher como primer hijo de health-content (enmendado por #199 R13) (enmendado por #199 R14)', async () => {
+  it('pone el PetSwitcher como primer hijo de health-content (enmendado por #199 R13) (enmendado por #199 R14) (enmendado por #199 R18)', async () => {
     await renderHealth();
     const content = await screen.findByTestId('health-content');
     const header = screen.getByTestId('health-header');
@@ -1033,7 +1034,7 @@ describe('#168 R2: Salud sin hero y con métricas estándar', () => {
     expect(switcher.getByTestId('pet-chip-pet-1')).toBeVisible();
     expect(switcher.getByTestId('pet-chip-pet-2')).toBeVisible();
     expect(elementChild(content, 1).props.testID).toBe('vaccines-section');
-    expect(elementChild(content, 2).props.testID).toBe('weight-card');
+    expect(within(elementChild(content, 2)).getByTestId('weight-card').props.testID).toBe('weight-card');
   });
 
   it('cambia vacunas y peso al pulsar otra mascota (enmendado por #199 R13)', async () => {
@@ -1321,5 +1322,70 @@ describe('#199 R17: subtítulo de vacunas', () => {
     const dates = await renderDates199({ appliedAt: '2025-12-31', nextDoseAt: null });
     expect(dates).toHaveTextContent('Aplicada 31 dic 2025', { exact: true });
     expect(within(dates).queryByText(/^Próxima /)).toBeNull();
+  });
+});
+
+
+describe('#199 R18: tarjeta de peso', () => {
+  beforeEach(() => {
+    setupHealth168();
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [makeWeight(), makeWeight({ id: 'old', measuredAt: '2025-01-01', weightKg: 12 })] });
+  });
+  it('#199 R18 weight-card es un View rounded-24 bg-surface-secondary sin borde con esquina continua', async () => {
+    await renderHealth();
+    const card = await screen.findByTestId('weight-card');
+    expect(card.type).toBe('View');
+    expect(card.props.className).toBe('gap-3 rounded-24 bg-surface-secondary p-4');
+    expect(card.props.style).toEqual({ borderCurve: 'continuous' });
+  });
+  it('#199 R18 la cabecera pone Peso y la cifra a la izquierda y la píldora a la derecha', async () => {
+    await renderHealth();
+    const current = await screen.findByTestId('weight-current');
+    const card = screen.getByTestId('weight-card');
+    const row = elementChild(card, 0);
+    expect(row.props.className).toBe('flex-row items-end justify-between');
+    const column = elementChild(row, 0);
+    expect(column.props.className).toBe('gap-0.5');
+    expect(column.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['weight-card-title', 'weight-current']);
+    expect(screen.getByTestId('weight-card-title').props.className).toBe('text-13 font-bold text-muted');
+    expect(current.props.className).toBe('text-3xl font-black text-foreground');
+    expect(current.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+    expect(elementChild(row, 1).props.testID).toBe('weight-variation');
+  });
+  it.each([
+    [0.4, 'bg-category-rose', 'text-category-rose-strong', '+0.4 kg'],
+    [-0.2, 'bg-category-green', 'text-category-green-strong', '-0.2 kg'],
+    [0, 'bg-default', 'text-muted', '0 kg'],
+  ] as const)('#199 R18 variación %s usa %s y %s', async (variation, surface, ink, expected) => {
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [makeWeight({ variation })] });
+    await renderHealth();
+    const pill = await screen.findByTestId('weight-variation');
+    expect(pill.type).toBe('View');
+    expect(pill.props.className).toBe(`rounded-full px-2.5 py-1 ${surface}`);
+    const text = elementChild(pill, 0);
+    expect(text.type).toBe('Text');
+    expect(text.props.className).toBe(`text-13 font-extrabold ${ink}`);
+    expect(text.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+    expect(text).toHaveTextContent(expected, { exact: true });
+  });
+  it('#199 R18 pasa variant mini y el historial entero a WeightChart', async () => {
+    await renderHealth();
+    await screen.findByTestId('weight-chart', { includeHiddenElements: true });
+    const props = mockWeightChart.mock.calls.at(-1)![0];
+    expect(props.variant).toBe('mini');
+    expect(props.entries.map(entry => entry.id)).toEqual(['weight-1', 'old']);
+  });
+  it('#199 R18 el enlace es rounded-14 bg-surface con etiqueta text-15 y chevron de 18', async () => {
+    await renderHealth();
+    const link = await screen.findByTestId('weight-log-link');
+    expect(link.props.className).toBe('flex-row items-center justify-between rounded-14 bg-surface px-3.5 py-3');
+    expect(link.props.style).toEqual({ borderCurve: 'continuous' });
+    expect(link.props.hitSlop).toEqual({ top: 6, bottom: 6, left: 6, right: 6 });
+    expect(within(link).getByText('Registro de peso').props.className).toBe('text-15 font-bold text-foreground');
+    expect(within(link).getByTestId('health-icon-chevron-right').props.size).toBe(18);
+  });
+  it('#199 R18 entra con RiseIn a los 260 ms', async () => {
+    await renderHealth();
+    expect(riseDelayOf(await screen.findByTestId('weight-card'))).toBe(260);
   });
 });
