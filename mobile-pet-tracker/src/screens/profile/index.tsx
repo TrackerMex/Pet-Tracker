@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { router, type Href, useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
-import { Button, Skeleton, Switch } from 'heroui-native';
+import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -21,6 +21,7 @@ import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
 import { PetHeroHeader } from '../../components/pet-hero-header';
 import { PetSwitcher } from '../../components/pet-switcher';
+import { ToggleSwitch } from '../../components/toggle-switch';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useNotificationsBlocked } from '../../hooks/use-push-registration';
 import { useAuth } from '../../providers/auth-provider';
@@ -512,7 +513,7 @@ export function ProfileScreen() {
         ) : null}
         <View testID="theme-row" className="flex-row items-center justify-between gap-4 border-t border-separator py-2.5">
           <Text className="text-sm font-semibold text-foreground">{useDarkThemeLabel}</Text>
-          <Switch
+          <ToggleSwitch
             testID="theme-toggle"
             isSelected={theme === 'dark'}
             onSelectedChange={(selected) => switchTheme(selected ? 'dark' : 'light')}
