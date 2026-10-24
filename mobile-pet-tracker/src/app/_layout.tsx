@@ -10,7 +10,7 @@ import { Uniwind } from 'uniwind';
 import { usePushRegistration } from '../hooks/use-push-registration';
 import { DEFAULT_LANGUAGE, type Language } from '../i18n/catalog';
 import { AuthProvider, useAuth } from '../providers/auth-provider';
-import { LanguageProvider, useTranslate } from '../providers/language-provider';
+import { LanguageProvider } from '../providers/language-provider';
 import { QueryProvider } from '../providers/query-provider';
 import { SelectedPetProvider } from '../providers/selected-pet-provider';
 import { TRANSPARENT_HEADER_OPTIONS } from '../theme/header-layout';
@@ -76,7 +76,6 @@ export default function RootLayout() {
 
 function RootStack() {
   const { status } = useAuth();
-  const t = useTranslate();
   const [background, foreground] = useThemeColors(['background', 'foreground']);
   const headerOptions = {
     headerShown: true,
