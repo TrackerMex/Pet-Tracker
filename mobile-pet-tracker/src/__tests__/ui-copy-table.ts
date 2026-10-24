@@ -199,29 +199,29 @@ export const R5_HEALTH: UseRow[] = [
 
 export const R6_FOOD: UseRow[] = [
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.mealSchedule' }, // #179 R4
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.food' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'common.somethingWentWrong' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'common.retry' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'common.noPetsYet' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'common.noPetsBody' }, // #155 R4
-  { file: 'src/app/(tabs)/food.tsx', key: 'profile.addPet' }, // #155 R4
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.dailyTarget' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.dailyKcal' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.dailyGrams' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.kcalConsumedOfTarget' }, // #113 R3
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.mealsToday' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.markServed' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.undoServed' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.couldNotUpdateMeal' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.pending' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.served' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.aiRecommendation' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.noMealPlanYet' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.noMealPlanBody' }, // #155 R9
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.couldNotLoadPlan' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'common.retry' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.mealSchedule' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.mealScheduleLinkSubtitle' },
+  { file: 'src/screens/food/index.tsx', key: 'food.food' },
+  { file: 'src/screens/food/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/food/index.tsx', key: 'common.retry' },
+  { file: 'src/screens/food/index.tsx', key: 'common.noPetsYet' },
+  { file: 'src/screens/food/index.tsx', key: 'common.noPetsBody' }, // #155 R4
+  { file: 'src/screens/food/index.tsx', key: 'profile.addPet' }, // #155 R4
+  { file: 'src/screens/food/index.tsx', key: 'food.dailyTarget' },
+  { file: 'src/screens/food/index.tsx', key: 'food.dailyKcal' },
+  { file: 'src/screens/food/index.tsx', key: 'food.dailyGrams' },
+  { file: 'src/screens/food/index.tsx', key: 'food.kcalConsumedOfTarget' }, // #113 R3
+  { file: 'src/screens/food/index.tsx', key: 'food.mealsToday' },
+  { file: 'src/screens/food/index.tsx', key: 'food.markServed' },
+  { file: 'src/screens/food/index.tsx', key: 'food.undoServed' },
+  { file: 'src/screens/food/index.tsx', key: 'food.couldNotUpdateMeal' },
+  { file: 'src/screens/food/index.tsx', key: 'food.markServedAction' },
+  { file: 'src/screens/food/index.tsx', key: 'food.served' },
+  { file: 'src/screens/food/index.tsx', key: 'food.aiRecommendation' },
+  { file: 'src/screens/food/index.tsx', key: 'food.noMealPlanYet' },
+  { file: 'src/screens/food/index.tsx', key: 'food.noMealPlanBody' }, // #155 R9
+  { file: 'src/screens/food/index.tsx', key: 'food.couldNotLoadPlan' },
+  { file: 'src/screens/food/index.tsx', key: 'common.retry' },
+  { file: 'src/screens/food/index.tsx', key: 'food.mealSchedule' },
+  { file: 'src/screens/food/index.tsx', key: 'food.mealScheduleLinkSubtitle' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorForbidden' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorProfileRequired' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.registerWeightFirst' },
@@ -255,8 +255,8 @@ export const R6_FOOD: UseRow[] = [
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.condition' }, // #179 R8
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.food' }, // #179 R8
   { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.mealsHistory' }, // #179 R9
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.mealsHistory' }, // #105 R5
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.mealsHistoryLinkSubtitle' }, // #105 R5
+  { file: 'src/screens/food/index.tsx', key: 'food.mealsHistory' }, // #105 R5
+  { file: 'src/screens/food/index.tsx', key: 'food.mealsHistoryLinkSubtitle' }, // #105 R5
   { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.previousMonth' }, // #105 R5
   { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.nextMonth' }, // #105 R5
   { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.emptyMonth' }, // #105 R5
