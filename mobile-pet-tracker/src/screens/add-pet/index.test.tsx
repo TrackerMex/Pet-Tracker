@@ -131,7 +131,7 @@ describe('R6: alta de mascota', () => {
     mockCreatePet.mockReturnValue(pending());
   });
 
-  it('#191 R4: el paso 1 pinta foto, burbuja y datos básicos', async () => {
+  it('#191 R4: el paso 1 pinta foto, burbuja y datos básicos (enmendado por #205 R16, R19)', async () => {
     await renderAddPet();
     const photo = screen.getByTestId('add-pet-photo');
     expect(photo.props.className).toBe('size-22 items-center justify-center rounded-full border-2 border-dashed border-accent bg-surface-secondary');
@@ -145,6 +145,7 @@ describe('R6: alta de mascota', () => {
     expect(bubble.props.className).toBe('flex-1 rounded-tile bg-surface-secondary px-3 py-2.5');
     expect(bubble).toHaveStyle({ borderCurve: 'continuous' });
     expect(bubble.parent!.props.className).toBe('flex-row items-center gap-3.5');
+    expect(bubble.parent!.props.testID).toBe('add-pet-intro'); // #205 R16
     expect(screen.getByTestId('add-pet-bubble-tail').props.className).toBe('absolute -left-1.5 top-5.5 size-3 rotate-45 bg-surface-secondary');
     expect(screen.getByTestId('add-pet-bubble-text')).toHaveTextContent('¡Hola! Cuéntame de tu nuevo compañero.');
     expect(screen.getByTestId('add-pet-bubble-text').props.className).toBe('text-13 font-semibold text-foreground');
@@ -848,17 +849,69 @@ describe('#62 R12: el placeholder del formulario sale del tema', () => {
 });
 
 describe('#191 R2: el título vive en el contenido', () => {
-  it('pinta el título antes de la foto y conserva el botón atrás nativo', async () => {
+  it('pinta el título antes de la foto y conserva el botón atrás nativo (enmendado por #205 R16)', async () => {
     process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
     mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
     mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet, clearPet: jest.fn(), });
     await renderAddPet();
-    expect(screen.queryByTestId('add-pet-back')).toBeNull();
+    expect(screen.getByTestId('add-pet-back').props.accessibilityRole).toBe('button'); // #205 R16
     const title = screen.getByTestId('add-pet-title');
     expect(title).toHaveTextContent(es['addPet.addPet']);
     expect(title.props.accessibilityRole).toBe('header');
-    expect(title.props.className).toBe('text-2xl font-black tracking-title text-foreground');
-    expect(within(screen.getByTestId('add-pet-form')).getAllByTestId(/^add-pet-(title|photo)$/).map(node => node.props.testID)).toEqual(['add-pet-title', 'add-pet-photo']);
+    expect(title.props.className).toBe('text-24 font-black tracking-title text-foreground'); // #205 R16
+    expect(within(screen.getByTestId('add-pet-form')).queryByTestId('add-pet-title')).toBeNull(); // #205 R16
+    expect(within(screen.getByTestId('screen-add-pet')).getAllByTestId(/^add-pet-(title|photo)$/).map(node => node.props.testID)).toEqual(['add-pet-title', 'add-pet-photo']); // #205 R16
+  });
+});
+
+describe('#205 R16: NuevaMascota con ScreenHeader', () => {
+  beforeEach(() => {
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet, clearPet: jest.fn() });
+  });
+
+  it('#205 R16: la cabecera es ScreenHeader con título, paso y volver', async () => {
+    await renderAddPet();
+    const header = screen.getByTestId('add-pet');
+    expect(header.props.className).toBe('flex-row items-center gap-2');
+    expect(within(header).getByTestId('add-pet-back').props.accessibilityLabel).toBe(es['common.back']);
+    const title = within(header).getByTestId('add-pet-title');
+    expect(title).toHaveTextContent(es['addPet.addPet']);
+    expect(title.props.accessibilityRole).toBe('header');
+    expect(title.props.className).toBe('text-24 font-black tracking-title text-foreground');
+    const step = within(header).getByTestId('add-pet-step-label');
+    expect(step).toHaveTextContent('1 de 2');
+    expect(step.props.className).toBe('text-13 font-extrabold text-muted');
+
+    const block = header.parent!;
+    expect(block.props.className).toBe('gap-3 bg-background px-5');
+    expect(block).toHaveStyle({ paddingTop: 52 });
+    expect(block.parent!.props.testID).toBe('screen-add-pet');
+    expect(block.parent!.children.map(node => node.props.testID)).toEqual([undefined, 'add-pet-form']);
+  });
+
+  it('#205 R16: la barra de paso queda fuera del scroll', async () => {
+    await renderAddPet();
+    const expectBarOutsideTheScroll = () => {
+      const form = within(screen.getByTestId('add-pet-form'));
+      expect(form.queryByTestId('add-pet-step-bar')).toBeNull();
+      expect(form.queryByTestId('add-pet-step-label')).toBeNull();
+      expect(screen.getByTestId('add-pet-step-bar').parent!.children.map(node => node.props.testID)).toEqual(['add-pet', 'add-pet-step-bar']);
+    };
+    expectBarOutsideTheScroll();
+    await goToStep2();
+    expectBarOutsideTheScroll();
+    expect(screen.getByTestId('add-pet-step-label')).toHaveTextContent('2 de 2');
+  });
+
+  it('#205 R16: la fila de foto sube con RiseIn y Datos básicos pesa 16/900', async () => {
+    await renderAddPet();
+    const intro = within(screen.getByTestId('add-pet-form')).getByTestId('add-pet-intro');
+    expect(typeof intro.props.entering).toBe('function');
+    expect(intro.props.className).toBe('flex-row items-center gap-3.5');
+    expect(intro.children.map(node => node.props.testID)).toEqual(['add-pet-photo', 'add-pet-bubble']);
+    expect(screen.getByText(es['addPet.basicDetails']).props.className).toBe('text-base font-black text-foreground');
   });
 });
 

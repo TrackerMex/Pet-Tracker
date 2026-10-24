@@ -223,3 +223,20 @@ describe('#205 R13: NuevaContrasena, éxito', () => {
     expect(screen).toContain('rounded-16 bg-surface-secondary px-4 py-3.5');
   });
 });
+
+describe('#205 R16: NuevaMascota', () => {
+  it('#205 R16: NuevaMascota copia cabecera, entrada y sección del artboard', () => {
+    const nueva = canvas('NuevaMascota');
+    expect(nueva).toContain('animation: rise 400ms ease-out both');
+    expect(nueva).toContain('font-size: 16px; font-weight: 900');
+    expect(nueva).toContain('width: 88px');
+    expect(nueva).toContain('gap: 14px');
+
+    const screen = source('screens/add-pet/index.tsx');
+    expect(screen).toContain('<ScreenHeader testID="add-pet"');
+    expect(screen).toContain('backFallback="/"');
+    expect(screen).toContain('size={24}');
+    expect(screen).toContain('<RiseIn testID="add-pet-intro" delayMs={0} className="flex-row items-center gap-3.5">');
+    expect(screen).toContain('text-base font-black');
+  });
+});
