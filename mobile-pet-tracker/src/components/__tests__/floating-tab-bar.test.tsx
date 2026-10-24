@@ -216,7 +216,7 @@ describe('R3: pill dimensionado y posicionado tras layout (y ausente antes)', ()
     });
     expect(indicator).toHaveAnimatedStyle({
       transform: [{ translateX: 140 }],
-    }, { shouldMatchAllProps: true });
+    });
   });
 });
 
@@ -257,7 +257,7 @@ describe('R4: pill se desliza con TAB_INDICATOR_SPRING y retarget-ea en vuelo', 
 
     expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
       transform: [{ translateX: 70 }],
-    }, { shouldMatchAllProps: true });
+    });
   });
 });
 
@@ -384,7 +384,7 @@ describe('#91 R1: una ruta fuera de TABS no monta la burbuja', () => {
 
     expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
       transform: [{ translateX: 140 }],
-    }, { shouldMatchAllProps: true });
+    });
 
     await tabBar.rerender(
       <FloatingTabBar {...tabBarProps(5, routesWithAlerts)} />,
@@ -420,7 +420,7 @@ describe('#91 R2: el primer layout coloca la burbuja por el índice de TABS', ()
 
     expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
       transform: [{ translateX: 70 }],
-    }, { shouldMatchAllProps: true });
+    });
   });
 });
 
@@ -454,7 +454,7 @@ describe('#91 R3: el cambio de ruta desliza la burbuja al índice de TABS', () =
 
     expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
       transform: [{ translateX: 140 }],
-    }, { shouldMatchAllProps: true });
+    });
   });
 });
 
@@ -483,7 +483,7 @@ describe('#91 R4: al volver de una ruta ajena la burbuja aparece ya colocada', (
 
     expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
       transform: [{ translateX: 70 }],
-    }, { shouldMatchAllProps: true });
+    });
 
     await tabBar.rerender(
       <FloatingTabBar {...tabBarProps(5, routesWithAlerts)} />,
@@ -498,13 +498,13 @@ describe('#91 R4: al volver de una ruta ajena la burbuja aparece ya colocada', (
 
     expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
       transform: [{ translateX: 140 }],
-    }, { shouldMatchAllProps: true });
+    });
 
     jest.advanceTimersByTime(300);
 
     expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
       transform: [{ translateX: 140 }],
-    }, { shouldMatchAllProps: true });
+    });
   });
 });
 
@@ -608,7 +608,10 @@ describe('canvas: barra de pestañas', () => {
     const indicator = screen.getByTestId('tab-indicator', { includeHiddenElements: true });
     expect(indicator).toHaveStyle({ width: 66, left: 6, top: 6, height: 52, borderRadius: 999, backgroundColor: 'tab-pill' });
     expect(StyleSheet.flatten(indicator.props.style)).not.toHaveProperty('bottom');
-    expect(indicator).toHaveAnimatedStyle({ transform: [{ translateX: 140 }] }, { shouldMatchAllProps: true });
+    expect(indicator).toHaveAnimatedStyle({
+      position: 'absolute', width: 66, left: 6, top: 6, height: 52,
+      borderRadius: 999, backgroundColor: 'tab-pill', transform: [{ translateX: 140 }],
+    }, { shouldMatchAllProps: true });
   });
 
 });
