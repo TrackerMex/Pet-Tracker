@@ -30,14 +30,14 @@ import { renderWithProviders } from '../../../test/render-with-providers';
 const flat = (s: unknown) => Object.assign({}, ...[s].flat(Infinity).filter(Boolean));
 
 
-const mockHomeEntrance = jest.fn<void, [import('react-native').ViewProps & { index: number }]>();
+const mockRiseIn = jest.fn<void, [import('react-native').ViewProps & { delayMs: number }]>();
 
-jest.mock('../home/home-entrance', () => {
+jest.mock('../../components/rise-in', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
-    HomeEntrance(props: import('react-native').ViewProps & { index: number }) {
-      mockHomeEntrance(props);
+    RiseIn(props: import('react-native').ViewProps & { delayMs: number }) {
+      mockRiseIn(props);
       return React.createElement(View, props);
     },
   };
@@ -1310,12 +1310,12 @@ describe('#178 R7: entrada escalonada y badge', () => {
     jest.useRealTimers();
   });
 
-  it('asigna a cada entrada su índice en el orden del fixture', async () => {
+  it('asigna a cada entrada su índice en el orden del fixture (enmendado por #204 R6)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     for (const [index, id] of ['a', 'b', 'c'].entries()) {
-      expect(mockHomeEntrance).toHaveBeenCalledWith(
-        expect.objectContaining({ testID: `reminders-entry-${id}`, index }),
+      expect(mockRiseIn).toHaveBeenCalledWith(
+        expect.objectContaining({ testID: `reminders-entry-${id}`, delayMs: index * 70 }),
       );
     }
   });
@@ -1809,3 +1809,33 @@ describe('#204 R5: estados bajo la cabecera', () => {
   });
 });
 
+describe('#204 R6: entrada de las filas', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: canvasReminders });
+  });
+
+  it('#204 R6: escalona las filas 0, 70 y 140 ms con RiseIn', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-a');
+    const delayById = new Map(
+      mockRiseIn.mock.calls
+        .map(([props]) => props)
+        .filter((props) => props.testID?.startsWith('reminders-entry-'))
+        .map((props) => [props.testID, props.delayMs] as const),
+    );
+    expect([...delayById]).toEqual([
+      ['reminders-entry-a', 0],
+      ['reminders-entry-b', 70],
+      ['reminders-entry-c', 140],
+    ]);
+  });
+});

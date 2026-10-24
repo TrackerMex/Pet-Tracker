@@ -1091,8 +1091,9 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     })).toEqual([]);
   });
 
-  it('reutiliza HomeEntrance y PopIn sin Card en Recordatorios', () => {
-    expect(reminders).toContain("from '../home/home-entrance'");
+  it('reutiliza HomeEntrance y PopIn sin Card en Recordatorios (enmendado por #204 R6)', () => {
+    expect(reminders).toContain("from '../../components/rise-in'");
+    expect(reminders).not.toContain('home-entrance');
     expect(reminders).toContain("from '../../components/pop-in'");
     expect(reminders).not.toContain('<Card');
     expect(reminders).not.toContain('components/card');
