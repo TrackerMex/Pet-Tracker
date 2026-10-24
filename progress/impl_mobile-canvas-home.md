@@ -1,6 +1,6 @@
 # Implementación mobile-canvas-home (#198)
 
-> Estado actual (2026-10-24): implementación y cierre automatizado completos. Suite final 143/143, 4795/4795 tests y snapshot 1/1; typecheck y lint sin caché verdes. Las dos paradas históricas están resueltas. No se ejecutó init.sh en las reanudaciones. Smoke Android pendiente del humano.
+> Estado actual (2026-10-24, Merge de dev): merge resuelto y commiteado en 249e3994. Typecheck y lint sin caché verdes. Suite de 4875 tests con diez fallos de tinta (uno conocido y nueve del Editor); pendiente aclarar autorización para reintentar estos últimos. Sin marcador .done.
 
 Fecha: 2026-10-23.
 
@@ -780,3 +780,82 @@ Después de verificar el commit y el árbol, la última acción será crear `pro
 Graphify final repetido tras la enmienda del provider: `graphify update .`, exit 0, AST sin LLM; 28.202 nodos, 36.357 aristas, 1.860 comunidades. Log vigente `graphify-198.log`. Solo actualiza graphify-out ignorado, con su backup automático; no se ejecuta graphify label ni se instala la dependencia SQL opcional.
 
 Comprobación previa al commit de cierre: 12/12 guardas PASS en el log final, 18/18 filas de traceability con hashes, ningún FAIL, fuentes móviles sin diff sin commitear, diff protegido vacío, lint log vacío, router.d.ts y .done ausentes. Recuenta y lista final 21/21 confirmadas; se incluyen únicamente reporte y traceability en el commit de cierre.
+
+
+## Merge de dev
+
+Entrada confirmada: branch `feature/198-mobile-canvas-home`, HEAD `6304d507`; MERGE_HEAD y origin/dev son `6bbd04858a004ea2fdf9d72eb3eb97d60b499232` (#200 Nutrición). Merge iniciado por el leader, 13 bloques en siete tests. Se mantienen los cambios no conflictivos ya preparados por el leader, incluyendo producción, docs y bookkeeping procedentes de dev; no se modifican manualmente. Snapshot del índice original en `merge-index-before-198.log`, conflictos originales en `merge-conflicts-before-198.log`.
+
+Se aplica dev + delta #198. Los sufijos #200 preceden a #198 en los títulos que chocan. Para tracking-title se conservan las retiradas de Horario/Historial de dev y solo se añade Home de #198: esas dos entradas eran contexto heredado de la base, no adiciones de #198.
+
+Base de tests nueva aportada por el leader: dev 143 suites, 4758 tests, 1 snapshot. #198 añadió 117 casos y retiró cinco de K28 contra H0. Dev ya retiró esos mismos cinco, de modo que aquí no se restan otra vez: **4758 + 117 = 4875 tests**, **143 + 1 HCF = 144 suites**, snapshot 1. Equivalente desde H0: 4683 − 5 K28 + 80 de #200 + 117 de #198 = 4875.
+
+
+Resolución de los trece bloques:
+
+| Bloque | Test / inventario | Resultado |
+|---|---|---|
+| 1 | AC tracking-title | Lista de dev (Food y retiradas de Horario/Historial) + Home de #198 R15. La fila text-15 conserva también WeeklyActivityChart de #198 R9 y Food de dev. |
+| 2 | AC título de inventarios | Sufijo #200 R1/R3/R5/R12/R13, después #198 R9/R15. |
+| 3 | CK rounded-16 | Food 2 de dev + gráfica Home 1; total 33 dev + 1 = 34. Comentarios y sufijos #200 R9, después #198 R9. |
+| 4 | CN directUses, título por fichero | Sufijo #200 R1/R5/R7/R8/R9, después #198 R2; tabla conserva Food 6 y Home 5. |
+| 5 | CN suma de esquinas, título | Sufijos en el mismo orden dev → Home. |
+| 6 | CN suma directUses + compensación Card | 47 de dev + 4 de #198 R2 = 51, con cada término anotado. |
+| 7 | CN #98 R10, título | Sufijo #200 R1/R5/R6/R7/R8/R9, después #198 R2/R3/R4/R11/R13. |
+| 8 | CN #98 R10, cifras | Home 1+4=5, Food 1+1+1+1+2=6; global de esquinas 45+4=49; accent-soft 7−3=4; tinta Home 2+1=3; tinta Food 1+1−1=1. Conserva términos de ambas features. |
+| 9 | DD radios, título | #200 R9 seguido de #198 R9; inventario conserva Food 2 y WeeklyActivityChart 1. |
+| 10 | DD text-22/text-17, título | #200 R5 seguido de #198 R15; text-22 conserva EmptyState, Alert detail y Horario; text-17 conserva Food de dev. |
+| 11 | LG tinta, dos títulos y suma | Sufijos dev primero; ruta nueva screens/food de dev, Home 3. Suma dev 21 + 1 de Home = 22, con +1/−1 de #200 R5/R6 y +1 de #198 R4. Se conserva también el cotejo de la suma contra los usos reales añadido por #198. |
+| 12 | PF text-13, título | #200 R8 seguido de #198 R5; inventario incluye Food y Home. |
+| 13 | EI número de EmptyState, título | #200 R1 seguido de #198 R15; Food se busca en screens/food y conserva 2; Home pasa de 1 a 2. |
+
+Medición independiente sobre la producción ya fusionada (sin editarla): radios rounded-16 34, esquinas directas globales 49, directUses con compensación Card 51, accent-soft 4 y suma inkSites 22. Salida guardada en `merge-counts-198.log`. El diff de los siete tests contra el stage 3 (dev) se revisó: solo añade los deltas de #198, sus sufijos y la comprobación real ya existente de LG; no revierte cambios de #200.
+
+Merge guardado con el mensaje por defecto en `249e3994 Merge remote-tracking branch 'origin/dev' into feature/198-mobile-canvas-home`. Padres: 6304d507 y 6bbd0485. Antes del commit: `git diff --name-only --diff-filter=U` y grep de marcadores vacíos, `git diff --cached --check` correcto, y comparación de todos los stage 0 contra el snapshot original idéntica. Solo se resolvieron los siete tests; Home y EmptyState no tienen diff contra 6304d507. Después del merge, mobile/specs/docs limpios; el reporte queda aparte para guardar los resultados de verificación.
+
+Typecheck del merge: gate `test ! -e .expo/types/router.d.ts` correcto, `bun run typecheck` exit 0, sin diagnósticos (`merge-typecheck-198.log`). Primer intento de lint terminado por SIGKILL: log literal `error: Failed to run "eslint" due to signal SIGKILL`, conservado en `merge-lint-killed-198.log`. No se cambian fuentes ni configuración para evitarlo; se repetirá exactamente el lint sin caché cuando no queden procesos Jest en la máquina.
+
+Reintento de lint tras esperar a que Jest dejara libre la máquina: `bunx expo lint --no-cache > ../progress/merge-lint-198.log 2>&1 && test ! -s ../progress/merge-lint-198.log`, exit 0, log 0 bytes. El intento terminado por SIGKILL se conserva aparte y no requirió cambios de código/configuración. Se inicia la suite completa en `merge-test-198.log`, con la espera compartida y sin otras verificaciones pesadas propias en paralelo.
+
+Diff solicitado, medido tras el merge con `git diff --name-only 6bbd0485..HEAD -- mobile-pet-tracker/ docs/` (también guardado en `merge-changed-files-198.log`):
+
+```text
+mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/chunky-cta-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/__tests__/home-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/home-photo-hero-canvas.test.ts
+mobile-pet-tracker/src/__tests__/legibility-classnames.test.ts
+mobile-pet-tracker/src/__tests__/profile-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/components/__tests__/empty-state-hero.test.tsx
+mobile-pet-tracker/src/components/__tests__/empty-state.test.tsx
+mobile-pet-tracker/src/components/empty-state.tsx
+mobile-pet-tracker/src/i18n/catalog.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/screens/home/collar-battery-bar.tsx
+mobile-pet-tracker/src/screens/home/index.test.tsx
+mobile-pet-tracker/src/screens/home/index.tsx
+mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx
+mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx
+```
+
+Son 20 archivos móviles y ninguno de docs/. La lista anterior al merge tenía 21 respecto de H0; canvas-foundations ya no aparece respecto de dev porque ambos lados retiraron exactamente el mismo bloque temporal K28. Frente a dev, package.json, bun.lock, layout raíz, Card, category-palette y theme/ permanecen idénticos. No se han cambiado manualmente los archivos de estado global ni las pantallas de Nutrición que llegan del merge.
+
+Durante la suite completa aparecen, además del caso conocido de Reminders #178 R4, nueve fallos fuera de la lista de reintentos de Reanudación 2: Editor de zonas #189 R13. Ocho variantes de edición (es/en × nombres Casa, vacío, espacios y Casa con espacios) fallan en línea 806 al esperar sombra lip-gray y recibir #0D1117; el caso busy falla en línea 835 al esperar lip y recibir #0D1117. No cambian clases, tamaños ni offset; el diff de pantalla/test del Editor, chunky-lip y use-theme-colors contra 6bbd0485 está vacío. Se pidió aclaración al usuario sobre extender el reintento aislado a esta suite. No se modifican expectativas ni se ejecuta ese reintento mientras la respuesta esté pendiente. Se deja terminar la corrida completa ya iniciada.
+
+La corrida completa terminó con exit 1 (`merge-test-198.log`):
+
+```text
+Test Suites: 2 failed, 142 passed, 144 total
+Tests:       10 failed, 4865 passed, 4875 total
+Snapshots:   1 passed, 1 total
+```
+
+La suma prevista se confirma: 4758 + 117 = 4875. Los siete tests de inventarios donde hubo conflictos pasan; las dos suites rojas son únicamente Reminders (un caso) y Geofence Editor (nueve casos), todos en la tinta de boxShadow con fallback #0D1117. La resolución del merge no requiere ajustes numéricos ni cambios de producción. El cierre espera la aclaración sobre el reintento del Editor. No se crea .done mientras no se haya autorizado y verificado ese cierre.
+
+Estado del cierre del merge: la Reanudación 2 §3 limita el reintento a los cinco tests enumerados y dice «Cualquier otro rojo fuera del inventario sigue siendo PARADA». Los nueve casos del Editor no figuran en esa lista, por eso se ha solicitado ampliar el alcance antes de ejecutar su reintento; la pregunta sigue pendiente. No se afirma una regresión ni se cambia el color esperado a #0D1117. Logs disponibles: merge-test-198.log (exit 1), merge-typecheck-198.log (exit 0), merge-lint-198.log (exit 0, 0 bytes) y merge-lint-killed-198.log (intento inicial SIGKILL).
+
+La resolución del merge está completa y los trece bloques quedan documentados arriba; el único paso pendiente es la validación aislada y el cierre según esa aclaración. No se ejecutaron init.sh, push, PR ni rebase. No se crea progress/impl_mobile-canvas-home.done al quedar pendiente la aceptación de la suite. El reporte se guarda en un commit propio para mantener limpio el árbol y permitir continuar directamente desde el merge resuelto.
