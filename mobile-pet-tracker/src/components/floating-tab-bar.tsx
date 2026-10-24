@@ -174,7 +174,8 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
           ]}
         />
       ) : null}
-      <View testID="tab-bar-row" className="flex-row gap-1 p-1.5">
+      <View testID="tab-bar-row" className="flex-row gap-1 p-1.5"
+        accessibilityRole="tablist" accessibilityLabel={t('tabs.bar')}>
         {TABS.map(({ name, labelKey }) => {
           const route = state.routes.find(
             (candidate) => candidate.name === name,
