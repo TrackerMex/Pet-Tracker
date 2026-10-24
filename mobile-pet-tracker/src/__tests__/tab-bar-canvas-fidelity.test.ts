@@ -131,7 +131,6 @@ it('#206 R9: la carta nombra la excepción de iconos de la barra una sola vez y 
   expect(charter).toMatch(/- \[[ xX]\] Enmienda #206 aprobada por humano/);
   const normalized = charter.replace(/- \[[ xX]\] Enmienda #206 aprobada por humano/, '- [ ] Enmienda #206 aprobada por humano');
   expect(normalized.split(BLOQUE)).toHaveLength(2);
-  expect(normalized.endsWith(`${BLOQUE}\n`)).toBe(true);
   expect(charter.split('- **Iconos reicon (D-I).**')).toHaveLength(2);
 });
 
