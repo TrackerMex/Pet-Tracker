@@ -14,13 +14,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-  ForkKnife,
-  HeartPulse,
-  Home,
-  Map,
-  Profile,
-} from 'reicon-react-native';
+import Svg, { Circle, Path } from 'react-native-svg';
 import { useUniwind } from 'uniwind';
 
 import { useTranslate } from '../providers/language-provider';
@@ -48,12 +42,30 @@ export interface FloatingTabBarProps {
 }
 
 const TABS = [
-  { name: 'home', labelKey: 'tabs.home', Icon: Home },
-  { name: 'map', labelKey: 'tabs.map', Icon: Map },
-  { name: 'health', labelKey: 'tabs.health', Icon: HeartPulse },
-  { name: 'food', labelKey: 'tabs.food', Icon: ForkKnife },
-  { name: 'profile', labelKey: 'tabs.profile', Icon: Profile },
+  { name: 'home', labelKey: 'tabs.home' },
+  { name: 'map', labelKey: 'tabs.map' },
+  { name: 'health', labelKey: 'tabs.health' },
+  { name: 'food', labelKey: 'tabs.food' },
+  { name: 'profile', labelKey: 'tabs.profile' },
 ] as const;
+
+const TAB_ICON_SHAPES = {
+  home: <Path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" />,
+  map: <><Path d="M9 3 3 6v15l6-3 6 3 6-3V3l-6 3-6-3z" /><Path d="M9 3v15M15 6v15" /></>,
+  health: <><Path d="M20.4 13.4 12 21l-8.4-7.6A5 5 0 0 1 12 6.6a5 5 0 0 1 8.4 6.8z" /><Path d="M3.5 12h4l2-3 3 6 2-3h5.5" /></>,
+  food: <><Path d="M7 3v18M4 3v5a3 3 0 0 0 6 0V3" /><Path d="M18 21V3c-2.5 1-4 3.5-4 7 0 2 1.5 3 4 3" /></>,
+  profile: <><Circle cx="12" cy="8" r="4" /><Path d="M4 21a8 8 0 0 1 16 0" /></>,
+} as const;
+
+function TabIcon({ name, color }: { name: keyof typeof TAB_ICON_SHAPES; color: string; active: boolean }) {
+  return (
+    <Svg testID={`icon-tab-${name}`} width={24} height={24}
+      viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2}
+      strokeLinecap="round" strokeLinejoin="round">
+      {TAB_ICON_SHAPES[name]}
+    </Svg>
+  );
+}
 
 export const TAB_INDICATOR_SPRING = {
   duration: 250,
@@ -163,7 +175,7 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
         />
       ) : null}
       <View testID="tab-bar-row" className="flex-row gap-1 p-1.5">
-        {TABS.map(({ name, labelKey, Icon }) => {
+        {TABS.map(({ name, labelKey }) => {
           const route = state.routes.find(
             (candidate) => candidate.name === name,
           );
@@ -193,11 +205,7 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
                 }
               }}
             >
-              <Icon
-                size={24}
-                weight={isActive ? 'Filled' : 'Outline'}
-                color={isActive ? accent : muted}
-              />
+              <TabIcon name={name} active={isActive} color={isActive ? accent : muted} />
               <Text
                 className={
                   isActive
