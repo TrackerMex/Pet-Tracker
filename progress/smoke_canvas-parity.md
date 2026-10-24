@@ -156,3 +156,32 @@ Conocido antes del smoke: la cámara y «Añadir mascota» no tienen feedback al
 reviewer; ya pasaba antes de #196, deuda registrada).
 
 - [ ] Smoke de #196 recorrido por el humano
+
+## #204 mobile-canvas-routine
+
+Spec: `specs/mobile-canvas-routine/requirements.md` (§ Cierre del humano, R18). Reviewer APROBADO
+sobre `2b50c0fe` (`progress/review_mobile-canvas-routine.md`).
+
+Pasos en dev build Android (no Expo Go), con al menos una mascota, tres recordatorios (uno a menos de
+10 días) y dos documentos, en tema claro y oscuro:
+
+1. Recordatorios desde Perfil no tiene cabecera nativa. Volver, «Recordatorios» y «Nuevo» quedan en
+   una fila bajo la barra de estado, sin solaparse con ella.
+2. Volver regresa a Perfil. Sin historial (enlace profundo o recarga en la ruta), volver también
+   lleva a Perfil.
+3. Las filas suben escalonadas, unos 70 ms entre una y otra. Con «Quitar animaciones» activado,
+   entran sin animación.
+4. La fila próxima lleva borde ámbar claro y el badge «¡Próximo!» en ámbar con texto legible.
+5. «Eliminar» de fila es rosa, de 44 px de alto, con texto rojo 13/800. Al pulsarlo se abre la hoja,
+   cuyo «Eliminar» rojo lleva un labio oscuro de 4 px y mide como «Cancelar».
+6. Agregar recordatorio desde «Nuevo»: volver y título de 24 en el contenido, y «Guardar
+   recordatorio» pegado al pie con la pantalla vacía. Al abrir el teclado en Título, el campo y el
+   botón siguen visibles sin hueco extra encima del teclado.
+7. Volver de Agregar regresa a Recordatorios, también sin historial.
+8. Documentos desde Perfil muestra volver, «DOCUMENTOS DE» y el nombre. Mientras carga, un
+   esqueleto ocupa el nombre. Las filas suben escalonadas, unos 60 ms. Con el formulario de subida
+   abierto, el teclado no tapa el campo enfocado.
+9. En una cuenta sin mascotas, Recordatorios muestra a Pingo centrado y un volver arriba a la
+   izquierda que funciona.
+
+- [ ] Smoke de #204 recorrido por el humano

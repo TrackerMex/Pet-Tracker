@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react-native';
 import type { ComponentProps } from 'react';
-import { Text } from 'react-native';
+import { Text, View } from 'react-native';
 
 type HeaderProps = ComponentProps<typeof import('../screen-header').ScreenHeader>;
 const { existsSync } = jest.requireActual<{ existsSync: (path: string) => boolean }>('fs');
@@ -59,5 +59,30 @@ describe('#197 R19: cabecera en contenido', () => {
     expect(screen.queryByTestId('header-title')).toBeNull();
     expect(screen.queryByTestId('header-eyebrow')).toBeNull();
     expect(screen.getByTestId('header').children).toHaveLength(2);
+  });
+});
+
+describe('#204 R2: marcador de título', () => {
+  const childIds = (node: ReturnType<typeof screen.getByTestId> | null | undefined) =>
+    (node?.children ?? []).map((child) => (typeof child === 'string' ? child : child.props.testID));
+
+  it('#204 R2: sin título pinta el marcador en el hueco del título', async () => {
+    await renderHeader({
+      title: undefined,
+      eyebrow: 'Documentos de',
+      titlePlaceholder: <View testID="placeholder" />,
+    });
+    const eyebrow = screen.getByTestId('header-eyebrow');
+    const placeholder = screen.getByTestId('placeholder');
+    expect(eyebrow.parent?.props.className).toBe('flex-1');
+    expect(childIds(eyebrow.parent)).toEqual(['header-eyebrow', 'placeholder']);
+    expect(childIds(placeholder.parent)).toEqual(['header-eyebrow', 'placeholder']);
+    expect(screen.queryByTestId('header-title')).toBeNull();
+  });
+
+  it('#204 R2: con título ignora el marcador', async () => {
+    await renderHeader({ title: 'Luna', titlePlaceholder: <View testID="placeholder" /> });
+    expect(screen.getByTestId('header-title')).toHaveTextContent('Luna');
+    expect(screen.queryByTestId('placeholder')).toBeNull();
   });
 });

@@ -1091,8 +1091,9 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     })).toEqual([]);
   });
 
-  it('reutiliza HomeEntrance y PopIn sin Card en Recordatorios', () => {
-    expect(reminders).toContain("from '../home/home-entrance'");
+  it('reutiliza HomeEntrance y PopIn sin Card en Recordatorios (enmendado por #204 R6)', () => {
+    expect(reminders).toContain("from '../../components/rise-in'");
+    expect(reminders).not.toContain('home-entrance');
     expect(reminders).toContain("from '../../components/pop-in'");
     expect(reminders).not.toContain('<Card');
     expect(reminders).not.toContain('components/card');
@@ -1115,9 +1116,9 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     expect(addReminder).not.toMatch(/uppercase|tracking-widest/);
   });
 
-  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #202 R18) (enmendado por #196 R5)', () => {
+  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #204 R8) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #196 R5)', () => {
     for (const [pattern, count] of [
-      [/\brounded-14\b/g, 1], [/\brounded-16\b/g, 4], [/\brounded-22\b/g, 1],
+      [/\brounded-14\b/g, 2], [/\brounded-16\b/g, 5], [/\brounded-22\b/g, 1],
     ] as const) {
       expect(reminders.match(pattern) ?? []).toHaveLength(count);
     }
