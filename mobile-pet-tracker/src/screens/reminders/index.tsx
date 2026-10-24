@@ -22,6 +22,7 @@ import type { Reminder } from '../../api/types';
 import { EmptyState } from '../../components/empty-state';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { PopIn } from '../../components/pop-in';
+import { ScreenHeader } from '../../components/screen-header';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import {
@@ -168,33 +169,30 @@ export function RemindersScreen() {
     <ScrollView
       testID="screen-reminders"
       className="flex-1 bg-background"
-      contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{
         paddingHorizontal: 20,
-        paddingTop: 24,
+        paddingTop: insets.top + 12,
         gap: 14,
         paddingBottom: insets.bottom + 24,
       }}
     >
-      <View testID="reminders-actions" className="flex-row items-center gap-2">
-        <Text
-          testID="reminders-title"
-          accessibilityRole="header"
-          className="flex-1 text-26 font-black tracking-title text-foreground"
-        >
-          {t('reminders.reminders')}
-        </Text>
-        <Button
-          testID="reminders-add-link"
-          className="rounded-xl bg-accent h-10 gap-1.5 px-3.5" style={chunkyLip.primaryCompact}
-          onPress={() => router.push('/add-reminder' as Href)}
-        >
-          <Plus size={16} color={accentForeground} />
-          <Button.Label className="text-sm font-extrabold text-accent-foreground">
-            {t('reminders.new')}
-          </Button.Label>
-        </Button>
-      </View>
+      <ScreenHeader
+        testID="reminders"
+        backFallback="/profile"
+        title={t('reminders.reminders')}
+        accessory={
+          <Button
+            testID="reminders-add-link"
+            className="rounded-xl bg-accent h-10 gap-1.5 px-3.5" style={chunkyLip.primaryCompact}
+            onPress={() => router.push('/add-reminder' as Href)}
+          >
+            <Plus size={16} color={accentForeground} />
+            <Button.Label className="text-sm font-extrabold text-accent-foreground">
+              {t('reminders.new')}
+            </Button.Label>
+          </Button>
+        }
+      />
 
       {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
         <PetSwitcher
