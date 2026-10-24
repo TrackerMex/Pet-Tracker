@@ -1,5 +1,4 @@
 import { fireEvent, render, screen, within } from '@testing-library/react-native';
-import { Uniwind } from 'uniwind';
 
 import { ConfirmDialog } from '../confirm-dialog';
 
@@ -8,6 +7,10 @@ jest.mock('react-native-reanimated', () => ({
   ...jest.requireActual('react-native-reanimated'),
   __esModule: true,
   useReducedMotion: () => mockReducedMotion(),
+}));
+
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: (tokens: string[]) => tokens.map((token) => token === 'shadow-25' ? 'rgba(13,17,23,0.25)' : `sentinel-${token}`),
 }));
 
 const onCancel = jest.fn();
@@ -20,9 +23,7 @@ const props = {
 beforeEach(() => {
   jest.clearAllMocks();
   mockReducedMotion.mockReturnValue(false);
-  jest.spyOn(Uniwind, 'getCSSVariable').mockImplementation((name) => name === '--color-shadow-25' ? 'rgba(13,17,23,0.25)' : undefined);
 });
-afterEach(() => jest.restoreAllMocks());
 
 it('#202 R7: monta velo, tarjeta y acciones con las recetas del canvas', async () => {
   await render(<ConfirmDialog {...props} />);
@@ -44,7 +45,8 @@ it('#202 R7: monta velo, tarjeta y acciones con las recetas del canvas', async (
   const title = within(card).getByTestId('dialog-title');
   const body = within(card).getByTestId('dialog-body');
   expect(title).toHaveTextContent('¿Eliminar Casa?');
-  expect(title.props).toMatchObject({ role: 'header', className: 'text-xl font-black tracking-dialog text-foreground' });
+  expect(title.props).toMatchObject({ accessibilityRole: 'header', className: 'text-xl font-black tracking-dialog text-foreground' });
+  expect(within(card).getByRole('header')).toBe(title);
   expect(body).toHaveTextContent('Esta acción no se puede deshacer.');
   expect(body.props.className).toBe('text-sm leading-normal text-muted');
   const cancel = within(card).getByTestId('dialog-cancel');
