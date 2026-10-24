@@ -924,21 +924,21 @@ export function HomeScreen() {
           <HomeEntrance index={7} testID="home-entrance-last-position">
             <Card
               testID="last-position-card"
-              className="gap-2 bg-default"
+              className="gap-2 border-0 bg-default px-4 py-3.5 shadow-none"
               onPress={() => router.push('/map')}
             >
               <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center gap-2">
-                  <View className="size-9 items-center justify-center rounded-full bg-accent-soft">
+                  <View className="size-9 items-center justify-center rounded-full bg-tab-pill">
                     <Map size={20} color={accent} />
                   </View>
-                  <Text className="font-semibold text-accent-strong">
+                  <Text className="text-15 font-bold text-accent-strong">
                     {viewOnMapLabel}
                   </Text>
                 </View>
                 <ChevronRight size={20} color={accent} />
               </View>
-              <Text testID="last-position-time" className="font-normal text-muted">
+              <Text testID="last-position-time" className="text-13 font-normal text-muted">
                 {fmtLastSeen(detail.data.pet.lastCommunicationAt, locale, t)}
               </Text>
             </Card>
