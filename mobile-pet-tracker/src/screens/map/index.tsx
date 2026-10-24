@@ -509,16 +509,17 @@ export function MapScreen() {
                     : t('map.activateLostMode')}
                 </Button.Label>
               </Button>
+              {lostModeFailed ? (
+                <Text
+                  selectable
+                  testID="lost-mode-error"
+                  accessibilityRole="alert"
+                  className="text-center text-xs font-normal text-danger"
+                >
+                  {t('map.couldNotUpdateLostMode')}
+                </Text>
+              ) : null}
             </View>
-            {lostModeFailed ? (
-              <Text
-                selectable
-                testID="lost-mode-error"
-                className="text-center text-xs font-normal text-danger"
-              >
-                {t('map.couldNotUpdateLostMode')}
-              </Text>
-            ) : null}
           </Animated.View>
         </>
       ) : null}
