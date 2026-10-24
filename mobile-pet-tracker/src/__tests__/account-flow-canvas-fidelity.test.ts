@@ -100,3 +100,35 @@ describe('#205 R6: marca de Main', () => {
     expect(welcome).toContain('mt-4 text-center text-xs text-muted');
   });
 });
+
+describe('#205 R8: Login', () => {
+  it('#205 R8: Login sube a 0, 100 y 200 ms y copia radios y márgenes', () => {
+    const login = canvas('Login');
+    expect(login).toContain('animation: rise 400ms ease-out both');
+    expect(login).toContain('animation: rise 400ms ease-out 100ms both');
+    expect(login).toContain('animation: rise 400ms ease-out 200ms both');
+    expect(login).toContain('border-radius: 16px 16px 16px 4px');
+    expect(login).toContain('rotate(-8deg)');
+    expect(login).toContain('width: 88px');
+    expect(login).toContain('padding: 56px 20px 34px');
+    expect(login).toContain('margin-top: 24px');
+    expect(login).toContain('gap: 14px');
+    expect(login).toContain('margin-left: -10px');
+    expect(login).toContain('align-items: flex-end; gap: 12px; margin-top: 8px');
+    expect(login).toContain('padding: 10px 14px');
+    expect(login).toContain('margin-bottom: 18px');
+    expect(login).toContain('margin: 20px 0 0; font-size: 30px; line-height: 36px; font-weight: 900; letter-spacing: -0.5px');
+
+    const screen = source('screens/login/index.tsx');
+    expect(screen).toContain('<RiseIn testID="login-header" delayMs={0}>');
+    expect(screen).toContain('<RiseIn testID="login-body" delayMs={100} className="mt-6 gap-4">');
+    expect(screen).toContain('<RiseIn testID="login-actions" delayMs={200} className="gap-3.5">');
+    expect(screen).toContain('paddingHorizontal: 20');
+    expect(screen).toContain('className="-ml-2.5 flex-row"');
+    expect(screen).toContain('className="mt-2 flex-row items-end gap-3"');
+    expect(screen).toContain('rounded-tl-16 rounded-tr-16 rounded-br-16 rounded-bl-4');
+    expect(screen).toContain('mb-4.5');
+    expect(screen).toContain('px-3.5 py-2.5');
+    expect(screen).toContain('className="mt-5 text-3xl font-black tracking-display text-foreground"');
+  });
+});

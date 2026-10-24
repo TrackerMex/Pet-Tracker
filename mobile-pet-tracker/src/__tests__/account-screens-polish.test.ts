@@ -29,11 +29,11 @@ const textRecipes = [
 
 describe('#172 R6: recetas de texto de cuenta', () => {
   it.each([
-    ['login', [1, 0, 0, 2, 2, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0]],
+    ['login', [0, 0, 0, 2, 2, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0]], // #205 R8
     ['register', [1, 0, 0, 7, 7, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0]],
     ['forgot', [0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0]],
     ['reset-password', [0, 0, 2, 2, 2, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0]],
-  ] as const)('#172 R6: %s pinta títulos, etiquetas, cuerpos y CTA con su receta', (screen, counts) => {
+  ] as const)('#172 R6: %s pinta títulos, etiquetas, cuerpos y CTA con su receta (enmendado por #205 R8, R9, R10, R12, R13)', (screen, counts) => {
     const source = readFileSync(join(sourceRoot, 'screens', screen, 'index.tsx'), 'utf8');
     textRecipes.forEach((literal, index) => {
       expect(source.split(literal).length - 1).toBe(counts[index]);
