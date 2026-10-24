@@ -703,3 +703,4 @@ tests no ven (design.md §Supuestos):
 - [x] Enmienda #196 aprobada por humano (regla N1 de `docs/ui-guidelines.md`, texto en `design.md` §Texto de la Enmienda #196)
   Firma delegada, mismo mandato.
 - [ ] Smoke de R1, R2, R3, R4, R5, R6, R7 y R9 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
+  Va en el lote `progress/smoke_canvas-parity.md` (plan §6); el `done` no espera al smoke.

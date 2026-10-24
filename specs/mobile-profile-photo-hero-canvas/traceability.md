@@ -47,10 +47,12 @@ leader y el smoke Android del humano siguen siendo gates externos a esta
 implementación; el checkbox de smoke no se autoaprueba. No se cambia el
 status de feature_list.json ni se hace push, PR o rebase.
 
-Verificación final medida: 144 suites, 143 passed / 1 failed; 4 823 passed /
-1 failed de 4 824, snapshot 1/1. El único rojo es el tinte #0D1117 de
-BackButton #172 R2; repetido una vez aislado da 8/8. El usuario autorizó
-expresamente esta excepción y reservó init.sh al leader. Typecheck exit 0,
+Verificación final del implementador: 144 suites, 143 passed / 1 failed;
+4 823 passed / 1 failed de 4 824, snapshot 1/1. El único rojo fue el tinte
+#0D1117 de BackButton #172 R2, un flake ajeno a #196 que corrigió después
+#207; repetido una vez aislado dio 8/8. Typecheck exit 0,
 lint vacío con --no-cache, graphify exit 0, 49 cuentas finales correctas y
 las 14 guardas requeridas en PASS. Logs y diff sin cambios de BackButton
 contra origin/dev constan en el reporte. Las sondas están revertidas.
+
+Cierre del leader (2026-10-24): el `./init.sh` del leader sobre `4e8c3134` salió con exit 0 (móvil 148/148 suites, 5084/5084 tests, 1 snapshot) y el reviewer aprobó ahí (`progress/review_mobile-profile-photo-hero-canvas.md`, 0 bloqueantes, 8 no bloqueantes). Por su N6 se mergeó `origin/dev` con #202 y #206 (`bb36b026`, tres conflictos de candados agregados resueltos por unión, y `e26b34a7`) y se repitió el gate: exit 0, móvil 151/151 suites, 5184/5184 tests, 1 snapshot. El smoke de R1–R7 y R9 lo cierra el humano en el lote `progress/smoke_canvas-parity.md` (plan §6).

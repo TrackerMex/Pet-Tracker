@@ -132,3 +132,27 @@ Conocido antes del smoke: las celdas de la barra no tienen feedback al pulsar (O
 pasaba antes de #206, deuda registrada).
 
 - [ ] Smoke de #206 recorrido por el humano
+
+## #196 mobile-profile-photo-hero-canvas
+
+Spec: `specs/mobile-profile-photo-hero-canvas/requirements.md` (§ Cierre del humano). Reviewer
+APROBADO sobre `4e8c3134` (`progress/review_mobile-profile-photo-hero-canvas.md`).
+
+Pasos en dev build Android (no Expo Go), con tema claro y oscuro:
+
+1. (R1/R2) Perfil abre con la foto a sangre de 430, sin hueco arriba. El título «Perfil» blanco se
+   lee sobre la foto gracias al scrim superior, y la píldora y el selector de vidrio se distinguen.
+2. (R3) Nombre y chips quedan al pie, sobre el degradado, legibles en los dos temas. Con nombres
+   largos los chips bajan de línea sin salirse.
+3. (R4) La cámara aparece con el `pop` tras la foto y su labio se ve bajo el círculo. Abrir el
+   selector de imágenes desde ella funciona.
+4. (R5) Con las notificaciones bloqueadas en ajustes del sistema, el aviso ámbar sale arriba.
+   «Abrir configuración» lleva a los ajustes de la app, y el interlineado del texto es 20 px aprox.
+5. (R6) «Cerrar sesión» es la píldora rosa de 52 con texto rojo de 15 y cierra la sesión.
+6. (R7) El interruptor de tema cambia de tema con el fundido de hoy.
+7. (R9) Con «Quitar animaciones» activado en Android, todo aparece sin movimiento.
+
+Conocido antes del smoke: la cámara y «Añadir mascota» no tienen feedback al pulsar (N3 del
+reviewer; ya pasaba antes de #196, deuda registrada).
+
+- [ ] Smoke de #196 recorrido por el humano
