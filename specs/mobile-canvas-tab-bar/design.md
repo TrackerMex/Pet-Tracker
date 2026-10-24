@@ -1,6 +1,6 @@
 ---
 feature: "mobile-canvas-tab-bar"
-status: spec_ready
+status: approved
 tags: [mobile, ui, spec]
 ---
 

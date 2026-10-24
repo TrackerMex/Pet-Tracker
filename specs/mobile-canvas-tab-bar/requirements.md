@@ -1,6 +1,6 @@
 ---
 feature: "mobile-canvas-tab-bar"
-status: spec_ready   # draft | spec_ready | approved
+status: approved
 tags: [mobile, ui, spec]
 ---
 
@@ -384,6 +384,20 @@ Componentes compartidos: esta feature solo cambia `FloatingTabBar` (decisión
 fija 4 de la carta), que ninguna de #196, #198 a #205 declara tocar. No toca
 `EmptyState` (#198), `motion.ts` (#199, #200) ni `PetSwitcher` (#196).
 
+## Erratas del leader (2026-10-24)
+
+Firmadas por delegación (mandato del humano del 2026-10-23, `progress/plan_canvas-parity-2026-10-23.md` §4).
+
+
+**Regla de recuentos agregados.** Si al llegar a verde una R se pone rojo un `it` que no está en el inventario y ese `it` solo cuenta usos o ficheros de un literal o token, Codex lo enmienda sin parar. Son de este tipo los inventarios cerrados de radios, de `style={CONTINUOUS_CORNER}`, de `text-NN` o de `<Card`, las sumas de copy y los suelos del escáner HeroUI. La condición es que el delta medido sea exactamente el número de usos que el diff de esa R, tal como esta spec la prescribe, añade o retira. La enmienda:
+
+- da a la cifra o a la entrada su término (`// #206 Rn`, o `; #206 Rn: ±k` dentro de un comentario que ya exista);
+- da al título el sufijo ` (enmendado por #206 Rn)`, o añade `Rn` al paréntesis de #206 si ya existe;
+- va en el commit rojo de esa R; si ese rojo ya está commiteado, en un commit propio `test(#206): Rn amend the <candado> inventory` antes del siguiente R;
+- se apunta en la tabla «Enmiendas mecánicas» del reporte con candado, antes, después y R.
+
+El fichero de test de ese candado entra en la lista cerrada solo para esa enmienda. Sigue siendo PARADA si el delta no coincide, si el `it` afirma comportamiento o estructura y no un recuento, o si la enmienda exigiría cambiar producción.
+
 ## Desviaciones conscientes del canvas
 
 | Pieza | Canvas | App tras #206 | Por qué |
@@ -432,6 +446,9 @@ La firma la delega el humano en el leader con la checklist del plan
 (`progress/plan_canvas-parity-2026-10-23.md` § 4). Cada casilla es un gate
 distinto.
 
-- [ ] Aprobado por humano (fecha: ____)
-- [ ] Enmienda #206 de `docs/ui-guidelines.md` aprobada (texto en `design.md` § Enmienda de la carta; R9 la escribe en la carta con su propia casilla `- [ ] Enmienda #206 aprobada por humano`)
+- [x] Aprobado por humano (fecha: 2026-10-23)
+  Firma delegada en el leader por mandato del humano del 2026-10-23
+  (`progress/plan_canvas-parity-2026-10-23.md` §4, checklist de firma pasada).
+- [x] Enmienda #206 de `docs/ui-guidelines.md` aprobada (texto en `design.md` § Enmienda de la carta; R9 la escribe en la carta con su propia casilla `- [ ] Enmienda #206 aprobada por humano`)
+  Firma delegada, mismo mandato.
 - [ ] Smoke de R11 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
