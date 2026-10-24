@@ -96,7 +96,7 @@ const radii = {
   'screens/home/index.tsx': 1,
   'screens/home/weekly-activity-chart.tsx': 1, // #198 R9
   'screens/login/index.tsx': 1,
-  'screens/pairing/index.tsx': 1,
+  'screens/pairing/index.tsx': 2, // #203 R6
   'screens/register/index.tsx': 1,
   'screens/reminders/index.tsx': 4,
   'screens/reset-password/index.tsx': 1,
@@ -179,9 +179,9 @@ it('#177 R7.2: inventarios de las dos recetas de primario', () => {
   expect(inventory(/rounded-16 bg-accent(?=[\s'"`])/g)).toEqual(Object.fromEntries(ctaFiles.map(path => [path, path === 'screens/add-pet/index.tsx' ? 2 : 1])));
   expect(inventory(/rounded-xl bg-accent(?=[\s'"`])/g)).toEqual({ 'screens/reminders/index.tsx': 1 });
 });
-it('#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por #191 R11) (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #198 R9)', () => {
+it('#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por #191 R11) (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #198 R9) (enmendado por #203 R6)', () => {
   expect(inventory(/\brounded-16\b/g)).toEqual(radii);
-  expect(count(/\brounded-16\b/g)).toBe(26 + 1 + 1 + 1 + 2 + 2 + 1 + 1); // #200 R9 (+2); #198 R9 (+1); #199 R14 (+1) // #194 R6 // #191 R11 // #189 R7; #189 R13
+  expect(count(/\brounded-16\b/g)).toBe(26 + 1 + 1 + 1 + 2 + 2 + 1 + 1 + 1); // #200 R9 (+2); #198 R9 (+1); #199 R14 (+1); #203 R6 (+1) // #194 R6 // #191 R11 // #189 R7; #189 R13
 });
 it('#177 R7.4: solo la definición y los diecisiete consumidores usan el hook (enmendado por #197 R10) (enmendado por #200 R3)', () => {
   expect(Object.keys(inventory(/useChunkyLip/g)).sort()).toEqual([...consumers, 'theme/chunky-lip.ts'].sort());
@@ -213,8 +213,8 @@ it.each([
 ])('#177 R8.3: %s conserva el ancla positiva %s (enmendado por #197 R10)', (path, anchor) => {
   expect(readSource(path).split(anchor).length - 1).toBe(1);
 });
-it('#177 R8.4: destructivos, tonales y reintentos no reciben labio (enmendado por #189 R13)', () => {
-  const excluded = ['device-unpair', 'reminders-delete-confirm', 'profile-sign-out', 'lost-mode-button'];
+it('#177 R8.4: destructivos, tonales y reintentos no reciben labio (enmendado por #189 R13) (enmendado por #203 R6)', () => {
+  const excluded = ['reminders-delete-confirm', 'profile-sign-out', 'lost-mode-button'];
   const tags = buttons.filter(({ tag }) => excluded.includes(idOf(tag)) || /-retry$/.test(idOf(tag)));
   for (const id of excluded) expect(tags.some(({ tag }) => idOf(tag) === id)).toBe(true);
   for (const { tag } of tags) expect(tag).not.toMatch(/chunkyLip|border-b-/);

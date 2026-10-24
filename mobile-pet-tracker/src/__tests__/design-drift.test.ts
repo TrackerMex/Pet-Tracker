@@ -1115,7 +1115,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     expect(addReminder).not.toMatch(/uppercase|tracking-widest/);
   });
 
-  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #203 R4)', () => {
+  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #203 R4) (enmendado por #203 R6)', () => {
     for (const [pattern, count] of [
       [/\brounded-14\b/g, 1], [/\brounded-16\b/g, 4], [/\brounded-22\b/g, 1],
     ] as const) {
@@ -1147,7 +1147,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       'screens/home/index.tsx': 1,
       'screens/home/weekly-activity-chart.tsx': 1, // #198 R9
       'screens/login/index.tsx': 1,
-      'screens/pairing/index.tsx': 1,
+      'screens/pairing/index.tsx': 2, // #203 R6
       'screens/register/index.tsx': 1,
       'screens/reset-password/index.tsx': 1,
       'screens/weight-log/index.tsx': 1,

@@ -30,6 +30,7 @@ import PairingRoute from '../../app/pairing';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { SelectedPetProvider, useSelectedPet } from '../../providers/selected-pet-provider';
+import { useChunkyLip } from '../../theme/chunky-lip';
 import { useShadows } from '../../theme/shadows';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
@@ -1759,5 +1760,39 @@ describe('#203 R5: píldora de rastreo y entrada del plan', () => {
     expect(rise.props.delayMs).toBe(140);
     expect(within(rise).getByTestId(planId)).toBeOnTheScreen();
     expect(rise.children).toHaveLength(1);
+  });
+});
+
+describe('#203 R6: botón de desvincular', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseReducedMotion.mockReturnValue(false);
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ device: makeDevice() })] });
+    mockGetPetTracking.mockResolvedValue({ kind: 'ok', tracked: true });
+  });
+
+  it('#203 R6: desvincular es 54, radio 16, labio rojo y va al fondo', async () => {
+    const { result } = await renderHook(() => useChunkyLip());
+    await renderPairing();
+    const button = await screen.findByTestId('device-unpair');
+    const classes = (button.props.className as string).split(' ');
+    expect(classes.slice(-4)).toEqual(['h-13.5', 'w-full', 'rounded-16', 'bg-danger']);
+    expect(classes).not.toContain('min-h-11');
+    expect(classes).not.toContain('rounded-xl');
+    expect(button).toHaveStyle(result.current.danger);
+    const label = screen.getByText('Desvincular collar');
+    expect((label.props.className as string).split(' ').slice(-3)).toEqual(['text-base', 'font-extrabold', 'text-accent-foreground']);
+    const spacer = screen.getByTestId('device-unpair-spacer');
+    expect(spacer.props.className).toBe('flex-1');
+    const container = button.parent!;
+    expect(container === spacer.parent).toBe(true);
+    const siblings = container.children;
+    expect(siblings[siblings.indexOf(button) - 1] === spacer).toBe(true);
+    expect(container.props.className).toBe('gap-4');
+    expect(container).toHaveStyle({ flexGrow: 1 });
   });
 });
