@@ -517,9 +517,7 @@ export function HomeScreen() {
                       </View>
                       <Text
                         testID="summary-weight"
-                        className={activity.data.kind === 'ok'
-                          ? 'text-base font-extrabold text-foreground'
-                          : 'text-sm font-bold text-foreground'}
+                        className="text-base font-extrabold text-foreground"
                         style={TABULAR_NUMS}
                       >
                         {fmtKg(
@@ -528,9 +526,7 @@ export function HomeScreen() {
                             : null,
                         )}
                       </Text>
-                      <Text className={activity.data.kind === 'ok'
-                        ? 'text-11 font-semibold text-muted'
-                        : 'text-2xs font-normal text-muted'}>
+                      <Text className="text-11 font-semibold text-muted">
                         {t('home.weight')}
                       </Text>
                     </View>
@@ -585,7 +581,7 @@ export function HomeScreen() {
                     ) : (
                       <Text
                         testID="summary-note"
-                        className="flex-3 self-center pl-3 font-normal text-muted"
+                        className="flex-3 self-center pl-3 text-sm leading-5 font-normal text-muted"
                       >
                         {activity.data.kind === 'no-tracking'
                           ? t('home.activityNeedsCollar')
@@ -605,7 +601,7 @@ export function HomeScreen() {
               testID="collar-card"
               className={detail.data.pet.device
                 ? 'flex-row items-center gap-3 border-0 bg-default px-3.5 py-3 shadow-none'
-                : 'gap-3 bg-default'}
+                : 'gap-3 border-0 bg-default px-4 py-3.5 shadow-none'}
             >
               {detail.data.pet.device ? (
                 <>
@@ -638,25 +634,25 @@ export function HomeScreen() {
                     <View testID="collar-icon" className="size-9 items-center justify-center rounded-full bg-tab-pill">
                       <Moon size={20} color={accent} />
                     </View>
-                    <Text testID="collar-status" className="text-base font-bold text-foreground">
+                    <Text testID="collar-status" className="text-base font-extrabold text-foreground">
                       {t(HOME_CONNECTION[connection].labelKey)}
                     </Text>
                   </View>
-                  <Text className="font-normal text-muted">{t('home.noCollar')}</Text>
+                  <Text className="text-sm font-normal text-muted">{t('home.noCollar')}</Text>
                 </>
               )}
               {detail.data.pet.device === null ? (
                     <Pressable
                       accessibilityRole="button"
                       testID="collar-pair-link"
-                      className="min-h-11 items-center justify-center rounded-xl bg-accent-soft px-4"
+                      className="h-11 items-center justify-center rounded-xl bg-tab-pill"
                       style={({ pressed }) => ({
                         ...CONTINUOUS_CORNER,
                         opacity: pressed ? 0.8 : 1,
                       })}
                       onPress={() => router.push('/pairing')}
                 >
-                  <Text className="font-bold text-foreground">
+                  <Text className="text-15 font-bold text-foreground">
                     {t('home.pairCollar')}
                   </Text>
                 </Pressable>
