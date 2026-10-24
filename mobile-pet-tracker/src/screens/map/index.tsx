@@ -265,7 +265,60 @@ export function MapScreen() {
   return (
     <View testID="screen-map" className="flex-1">
       {isLoading ? (
-        <Skeleton testID="map-loading" className="flex-1 bg-background" />
+        <View
+          testID="map-loading"
+          className="flex-1 bg-default"
+          accessibilityState={{ busy: true }}
+        >
+          <View
+            testID="map-loading-stats"
+            style={{
+              position: 'absolute',
+              left: 16,
+              right: 16,
+              bottom: insets.bottom + 96,
+            }}
+            className="gap-2.5"
+          >
+            <View
+              testID="map-loading-pill"
+              className="flex-row items-center gap-2 self-start rounded-full border border-border bg-surface py-1.5 pl-1.5 pr-3.5"
+              style={shadows.card}
+            >
+              <Skeleton variant="pulse" className="size-7 rounded-full bg-lip-gray" />
+              <Skeleton variant="pulse" className="h-3 w-37.5 rounded-full bg-lip-gray" />
+            </View>
+            <View
+              testID="map-loading-card"
+              className="gap-2.5 rounded-24 bg-surface p-3"
+              style={shadows.floating}
+            >
+              <View className="gap-2">
+                <View className="flex-row gap-2">
+                  <View className="flex-1 gap-1.5 rounded-14 bg-default px-3 py-2.5">
+                    <Skeleton variant="pulse" className="h-2.5 w-12 rounded-full bg-lip-gray" />
+                    <Skeleton variant="pulse" className="h-5.5 w-18 rounded-4 bg-lip-gray" />
+                  </View>
+                  <View className="flex-1 gap-1.5 rounded-14 bg-default px-3 py-2.5">
+                    <Skeleton variant="pulse" className="h-2.5 w-12 rounded-full bg-lip-gray" />
+                    <Skeleton variant="pulse" className="h-5.5 w-18 rounded-4 bg-lip-gray" />
+                  </View>
+                </View>
+                <View className="flex-row gap-2">
+                  <View className="flex-1 gap-1.5 rounded-14 bg-default px-3 py-2.5">
+                    <Skeleton variant="pulse" className="h-2.5 w-12 rounded-full bg-lip-gray" />
+                    <Skeleton variant="pulse" className="h-5.5 w-18 rounded-4 bg-lip-gray" />
+                  </View>
+                  <View className="flex-1 gap-1.5 rounded-14 bg-default px-3 py-2.5">
+                    <Skeleton variant="pulse" className="h-2.5 w-12 rounded-full bg-lip-gray" />
+                    <Skeleton variant="pulse" className="h-5.5 w-18 rounded-4 bg-lip-gray" />
+                  </View>
+                </View>
+              </View>
+              <Skeleton variant="pulse" className="h-12.5 rounded-14 bg-default" />
+            </View>
+          </View>
+        </View>
       ) : null}
 
       {pets.data && isPetsError(pets.data) ? (
