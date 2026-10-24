@@ -436,6 +436,8 @@ delta por R en la fila.
 
 ## Erratas del leader (2026-10-24)
 
+**E1. Casilla de la Enmienda #204 y formato de commits.** La casilla de R16 se escribe ya firmada por delegación, como la de #197: `- [X] Enmienda #204 aprobada por humano` seguida de la línea de firma delegada (mandato del humano del 2026-10-23); el test de R16 ya acepta `[ xX]`. Los commits llevan la forma `test(#204): R<n> …` / `feat(#204): R<n> …` en todos los R, también donde tasks.md escribe `test(#204 R13)` o `test(#204 R14): drop …`. El texto exacto está en el handoff (`progress/handoff_mobile-canvas-routine.md`).
+
 **Regla de recuentos agregados.** Si al llegar a verde una R se pone rojo un `it` que no está en el inventario y ese `it` solo cuenta usos o ficheros de un literal o token, Codex lo enmienda sin parar. Son de este tipo los inventarios cerrados de radios, de `style={CONTINUOUS_CORNER}`, de `text-NN` o de `<Card`, las sumas de copy y los suelos del escáner HeroUI. La condición es que el delta medido sea exactamente el número de usos que el diff de esa R, tal como esta spec la prescribe, añade o retira. La enmienda:
 
 - da a la cifra o a la entrada su término (`// #204 Rn`, o `; #204 Rn: ±k` dentro de un comentario que ya exista);
