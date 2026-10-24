@@ -87,8 +87,8 @@ jest.mock('reicon-react-native', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
   const icon = (testID: string) =>
-    function MockIcon({ size, color }: { size?: number; color?: string }) {
-      const props = { testID, size, style: { color } };
+    function MockIcon({ size, color, strokeWidth }: { size?: number; color?: string; strokeWidth?: number }) {
+      const props = { testID, size, strokeWidth, style: { color } };
       return React.createElement(Text, props);
     };
 
@@ -105,7 +105,7 @@ jest.mock('../../theme/use-theme-colors', () => {
   const colors: Record<string, string> = {
     success: 'green', danger: 'red', muted: 'gray', 'accent-strong': 'blue',
   };
-  return { useThemeColors: (tokens: readonly string[]) => tokens.map((token) => colors[token]) };
+  return { useThemeColors: (tokens: readonly string[]) => tokens.map((token) => colors[token] ?? token) };
 });
 
 jest.mock('expo-haptics', () => ({
@@ -1026,7 +1026,7 @@ describe('#169 R10: toast y háptico tras un alta correcta', () => {
   });
   afterEach(() => jest.useRealTimers());
 
-  it('muestra el toast y el háptico solo tras resolver el alta', async () => {
+  it('muestra el toast y el háptico solo tras resolver el alta (enmendado por #199 R23)', async () => {
     let resolveCreate!: (result: CreateWeightState) => void;
     mockCreateWeight.mockReturnValue(new Promise((resolve) => { resolveCreate = resolve; }));
     await renderWeightLog();
@@ -1041,7 +1041,7 @@ describe('#169 R10: toast y háptico tras un alta correcta', () => {
     expect(screen.queryByTestId('weight-toast')).not.toBeNull();
     const toast = screen.getByTestId('weight-toast');
     expect(toast.props.className)
-      .toBe('absolute top-4 flex-row items-center gap-2 self-center rounded-full border border-border bg-surface px-4 py-2.5 shadow-sm');
+      .toBe('absolute flex-row items-center gap-2 self-center rounded-full border border-border bg-surface px-4 py-2.5');
     expect(toast.props.pointerEvents).toBe('none');
     expect(toast.props.accessibilityLiveRegion).toBe('polite');
     const copy = within(toast).getByText('Anotado. Ya lo puse en la gráfica.');
@@ -1049,7 +1049,7 @@ describe('#169 R10: toast y háptico tras un alta correcta', () => {
     expect(copy.props.className).toBe('text-sm font-semibold text-foreground');
     const check = within(toast).getByTestId('icon-check');
     expect(check.props.size).toBe(16);
-    expect(check.props.style.color).toBe('green');
+    expect(check.props.style.color).toBe('blue');
     expect(within(screen.getByTestId('screen-weight-log')).getByTestId('weight-toast')).toBe(toast);
     expect(within(screen.getByTestId('weight-log-form')).queryByTestId('weight-toast')).toBeNull();
     expect(within(screen.getByTestId('screen-weight-log'))
@@ -1170,9 +1170,9 @@ describe('#169 R13: movimiento del toast', () => {
 
   afterEach(() => jest.useRealTimers());
 
-  it('el fuente declara el fundido sin ReduceMotion.Never', () => {
+  it('el fuente declara el fundido sin ReduceMotion.Never (enmendado por #199 R23)', () => {
     const source = readFileSync(join(process.cwd(), 'src/screens/weight-log/index.tsx'), 'utf8');
-    expect(source).toContain('entering={FadeIn.duration(MOTION_TRANSITION_MS)}');
+    expect(source).toContain('entering={FadeIn.duration(MOTION_TOAST_FADE_MS).delay(MOTION_TOAST_DELAY_MS)}');
     expect(source).toContain('exiting={FadeOut.duration(MOTION_FEEDBACK_MS)}');
     expect(source.split('ReduceMotion.Never').length - 1).toBe(0);
   });
@@ -1480,5 +1480,42 @@ describe('#199 R22: estados de Peso', () => {
     expect(screen.getByTestId('weight-log-retry')).toHaveTextContent('Reintentar');
     expect(screen.queryByTestId('weight-chart-card')).toBeNull();
     expect(screen.queryByTestId('weight-history-title')).toBeNull();
+  });
+});
+
+
+describe('#199 R23: toast de registro', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-09-17T23:30:00Z'));
+    prepareWeightLogTests();
+    mockCreateWeight.mockResolvedValue({ kind: 'ok', weight: makeWeight() });
+  });
+  afterEach(() => jest.useRealTimers());
+  async function showToast199() {
+    await renderWeightLog();
+    const input = await screen.findByTestId('weight-input');
+    await fireEvent.changeText(input, '12.4');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+    return screen.findByTestId('weight-toast');
+  }
+  it('#199 R23 el toast es una píldora con borde, sombra toast y top inset + 42', async () => {
+    const toast = await showToast199();
+    expect(toast.props.className).toBe('absolute flex-row items-center gap-2 self-center rounded-full border border-border bg-surface px-4 py-2.5');
+    expect(toast.props.style).toEqual([{ top: 82 }, { boxShadow: [{ offsetX: 0, offsetY: 2, blurRadius: 8, spreadDistance: 0, color: 'shadow-10' }] }]);
+  });
+  it('#199 R23 el check es de 16 en accent-strong y el texto es el de weightLog.weightLogged', async () => {
+    const toast = await showToast199();
+    const check = within(toast).getByTestId('icon-check');
+    expect(check.props.size).toBe(16);
+    expect(check.props.strokeWidth).toBe(2.6);
+    expect(check.props.style.color).toBe('blue');
+    const text = within(toast).getByText('Anotado. Ya lo puse en la gráfica.');
+    expect(text.type).toBe('Text');
+    expect(text.props.className).toBe('text-sm font-semibold text-foreground');
+  });
+  it('#199 R23 el fuente declara FadeIn.duration(MOTION_TOAST_FADE_MS).delay(MOTION_TOAST_DELAY_MS)', () => {
+    const source = readFileSync(join(process.cwd(), 'src/screens/weight-log/index.tsx'), 'utf8');
+    expect(source).toContain('entering={FadeIn.duration(MOTION_TOAST_FADE_MS).delay(MOTION_TOAST_DELAY_MS)}');
   });
 });
