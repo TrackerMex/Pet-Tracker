@@ -150,7 +150,7 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
     void run(() => deleteGeofence(baseUrl, token ?? '', petId, zone.id), leave);
   };
 
-  const radiusValue = <Text testID="geofence-editor-radius-value" selectable style={TABULAR_NUMS} className={readOnly ? 'font-bold text-foreground' : 'text-sm font-extrabold text-accent-strong'}>{t('geofences.radius', { meters: Math.round(readOnly ? initialRadius : radius) })}</Text>;
+  const radiusValue = <Text testID="geofence-editor-radius-value" selectable style={TABULAR_NUMS} className={readOnly ? 'text-15 font-bold text-foreground' : 'text-sm font-extrabold text-accent-strong'}>{t('geofences.radius', { meters: Math.round(readOnly ? initialRadius : radius) })}</Text>;
 
   return <>
     <Stack.Screen options={TRANSPARENT_HEADER_OPTIONS} />
@@ -180,7 +180,7 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
         <Input testID="geofence-editor-name" className="text-base font-semibold h-12.5 rounded-xl bg-default px-3.5" maxLength={120} value={name} onChangeText={setName} />
       </TextField>
       </>}
-      {readOnly ? <>{radiusValue}<Text testID="geofence-editor-read-only" className="text-sm font-normal text-muted">{t('geofenceEditor.ownerOnly')}</Text></> : <>
+      {readOnly ? <>{radiusValue}<Text testID="geofence-editor-read-only" className="text-sm font-normal leading-body text-muted">{t('geofenceEditor.ownerOnly')}</Text></> : <>
       <View testID="geofence-editor-radius-block" className="gap-2">
       <View className="flex-row justify-between">
         <Text testID="geofence-editor-radius-label" className="text-sm font-extrabold text-foreground">{t('geofenceEditor.radiusTitle')}</Text>
@@ -209,7 +209,7 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
           accessibilityLabel={t('geofences.activeLabel', { name: zone.name })}
           onSelectedChange={(active) => void run(() => setGeofenceActive(baseUrl, token ?? '', petId, zone.id, active), refresh)} />
       </View> : null}
-      {zone ? <Text testID="geofence-editor-reset-note" className="text-sm font-normal text-muted">{t('geofenceEditor.resetNote')}</Text> : null}
+      {zone ? <Text testID="geofence-editor-reset-note" className="text-sm font-normal leading-body text-muted">{t('geofenceEditor.resetNote')}</Text> : null}
       <View testID="geofence-editor-actions" className="flex-row gap-2.5">
       {zone ? <Button testID="geofence-editor-delete" variant="outline" className="flex-1 h-13.5 rounded-16 border-2 border-lip-gray bg-surface" style={[chunkyLip.neutral, KEEP_OPACITY]} isDisabled={busy} onPress={() => setDeleteVisible(true)}>
         <Text className="text-base font-extrabold text-danger">{t('geofences.delete')}</Text>
@@ -218,7 +218,7 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
         <Text className={name.trim() === '' ? 'text-17 font-extrabold text-muted' : 'text-17 font-extrabold text-accent-foreground'}>{t('geofenceEditor.save')}</Text>
       </Button>
       </View>
-      {error ? <Text testID="geofence-editor-error" selectable className="text-danger">{error}</Text> : null}
+      {error ? <Text testID="geofence-editor-error" selectable className="text-sm leading-body text-danger">{error}</Text> : null}
       </>}
     </ScrollView>
     </RiseIn>
