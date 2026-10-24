@@ -1,6 +1,6 @@
 ---
 feature: "mobile-canvas-map"
-status: spec_ready   # draft | spec_ready | approved
+status: approved
 tags: [mobile, ui, spec]
 ---
 
@@ -895,7 +895,14 @@ nada de esta lista (supuestos en [[design]] § Supuestos).
 Esta spec no enmienda `docs/ui-guidelines.md`: no hay casilla de enmienda de
 la carta.
 
-- [ ] Aprobado por humano (fecha: ____)
+- [x] Aprobado por humano (fecha: 2026-10-24)
+  Firma delegada en el leader por mandato del humano del 2026-10-23
+  (`progress/plan_canvas-parity-2026-10-23.md` §4, checklist de firma pasada).
+  Base `ccd5460a` (dev con #197 y #198). La auditoría de inventario
+  (`progress/inventory-audit_mobile-canvas-map.md`) dejó 17 hallazgos y los 17
+  quedan cerrados en `de2b1370` (§ Respuesta a la auditoría). Ningún doble de
+  módulo usa `{ virtual: true }` (causa del flake de tinte `#0D1117`, ver #207).
+  Si otra feature de la ola 2 entra antes en `dev`, el handoff re-mide las cifras.
 
 Cierre (no gate de implementación), una casilla por smoke:
 
