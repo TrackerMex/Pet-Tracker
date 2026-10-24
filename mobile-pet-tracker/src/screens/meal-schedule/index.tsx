@@ -20,6 +20,7 @@ import {
 } from '../../api/nutrition';
 import { getPet } from '../../api/pets';
 import { nutritionKeys, petKeys } from '../../api/query-keys';
+import { ScreenHeader } from '../../components/screen-header';
 import { Card } from '../../components/card';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
@@ -29,7 +30,7 @@ import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
-import { HomeEntrance } from '../home/home-entrance';
+import { RiseIn } from '../../components/rise-in';
 
 function isPlanError(state: NutritionPlanState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -191,18 +192,12 @@ function MealScheduleContent({ petId }: { petId: string }) {
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{
         paddingHorizontal: 20,
-        paddingTop: 24,
+        paddingTop: insets.top + 8,
         gap: 14,
-        paddingBottom: insets.bottom + 24,
+        paddingBottom: insets.bottom + 32,
       }}
     >
-      <Text
-        testID="meal-schedule-heading"
-        accessibilityRole="header"
-        className="text-2xl font-black tracking-title text-foreground"
-      >
-        {t('mealSchedule.mealSchedule')}
-      </Text>
+      <ScreenHeader testID="meal-schedule-header" size={24} backFallback="/food" title={t('mealSchedule.mealSchedule')} />
       <View testID={loading ? 'meal-schedule-loading' : undefined} className="gap-3.5">
         {!hasError && plan.data === undefined ? (
           <>
@@ -234,7 +229,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
 
       {!hasError && loadedPlan !== null ? (
         <>
-          <HomeEntrance testID="meal-schedule-summary-entry" index={0}>
+          <RiseIn testID="meal-schedule-summary-entry" delayMs={0}>
             <View
               testID="meal-schedule-summary"
               className="gap-2 rounded-24 bg-accent p-4"
@@ -270,7 +265,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
                 </View>
               </View>
             </View>
-          </HomeEntrance>
+          </RiseIn>
 
           <View testID="meal-times-section" className="gap-3.5">
             <Text className="mt-1 text-17 font-extrabold text-foreground">
@@ -282,7 +277,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
               );
 
               return (
-                <HomeEntrance key={mealTime} testID={`meal-time-entry-${index}`} index={index + 1}>
+                <RiseIn key={mealTime} testID={`meal-time-entry-${index}`} delayMs={80 + 60 * index}>
                   <Card
                     testID={`meal-time-row-${index}`}
                     variant="flat"
@@ -320,7 +315,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
                       </Button>
                     ) : null}
                   </Card>
-                </HomeEntrance>
+                </RiseIn>
               );
             })}
             {isOwner && editError !== null ? (
@@ -383,6 +378,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
             ) : null}
             <Button
               testID="generate-plan-button"
+              style={chunkyLip.violet}
               variant="tertiary"
               className={`h-12.5 flex-1 gap-1.5 rounded-14 ${CATEGORY_SLOTS.violet.surface}`}
               isDisabled={submitting}
