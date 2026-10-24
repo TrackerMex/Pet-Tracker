@@ -319,6 +319,7 @@ export function MapScreen() {
             center={center}
             marker={marker}
             polylines={polylines}
+            polylineWidth={5}
             circles={circles}
             colorScheme={theme === 'dark' ? 'dark' : 'light'}
           />
