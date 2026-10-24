@@ -77,7 +77,7 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
   const translateX = useSharedValue(0);
   const lastPositionedIndex = useRef(activeTabIndex);
   const hasLiquidGlass = isLiquidGlassAvailable();
-  const tabWidth = (containerWidth - 16) / TABS.length;
+  const tabWidth = (containerWidth - 30) / TABS.length;
   const indicatorAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.get() }],
   }));
@@ -94,7 +94,7 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
       return;
     }
 
-    const nextX = activeTabIndex * tabWidth;
+    const nextX = activeTabIndex * (tabWidth + 4);
     translateX.set(
       previousIndex < 0 ? nextX : withSpring(nextX, TAB_INDICATOR_SPRING),
     );
@@ -108,10 +108,10 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
       return;
     }
 
-    const nextTabWidth = (width - 16) / TABS.length;
+    const nextTabWidth = (width - 30) / TABS.length;
 
     if (activeTabIndex >= 0) {
-      translateX.set(activeTabIndex * nextTabWidth);
+      translateX.set(activeTabIndex * (nextTabWidth + 4));
     }
 
     lastPositionedIndex.current = activeTabIndex;
@@ -152,9 +152,9 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
             {
               position: 'absolute',
               width: tabWidth,
-              left: 8,
+              left: 6,
               top: 6,
-              bottom: 6,
+              height: 52,
               borderRadius: 999,
               backgroundColor: tabPill,
             },
