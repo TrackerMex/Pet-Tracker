@@ -354,7 +354,7 @@ describe('R5: vacunas con la próxima destacada', () => {
     expect(screen.getByText('Vacunas')).toBeVisible();
   });
 
-  it('highlights the nearest future dose and keeps row order', async () => {
+  it('highlights the nearest future dose and keeps row order (enmendado por #199 R14)', async () => {
     const vaccines = [
       makeVaccine({
         id: 'vaccine-2',
@@ -374,7 +374,7 @@ describe('R5: vacunas con la próxima destacada', () => {
     const nextCard = within(screen.getByTestId('next-vaccine-card'));
     expect(nextCard.getByText('Próxima dosis')).toBeVisible();
     expect(nextCard.getByText('Rabies')).toBeVisible();
-    expect(nextCard.getByText('1 may 2099')).toBeVisible();
+    expect(nextCard.getByTestId('next-vaccine-date')).toHaveTextContent(/^1 de mayo · en \d+ días$/);
     expect(nextCard.queryByText('2099-05-01')).toBeNull();
     expect(screen.getAllByTestId(/^vaccine-row-/).map(({ props }) => props.testID)).toEqual([
       'vaccine-row-vaccine-2',
@@ -1100,7 +1100,7 @@ describe('#168 R3: cada vacuna lleva su tile pastel', () => {
     expect(elementChild(tile, 0)).toBe(glyph);
     expect(glyph.props.size).toBe(20);
     expect(glyph.props.style).toEqual({ color });
-    expect(column.props.className).toBe('flex-1 gap-0.5');
+    expect(column.props.className).toBe('flex-1 gap-1');
     expect(column.children).toHaveLength(texts.length);
     texts.forEach((text, index) => {
       const node = within(column).getByText(text);
