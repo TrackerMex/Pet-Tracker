@@ -92,6 +92,9 @@ function fmtAgo(
 
 const POLL_MS = 15000;
 
+// #201 R6
+const STAT_DASH = 'text-xl font-black text-muted';
+
 const MAP_CONNECTION_TONE: Record<DeviceConnectionState, PetHeroStatusTone> = {
   none: 'muted',
   unknown: 'muted',
@@ -418,7 +421,7 @@ export function MapScreen() {
                     </Text>
                     <Text
                       testID="stat-speed"
-                      className="text-xl font-black text-accent-strong"
+                      className={latestSpeed == null ? STAT_DASH : 'text-xl font-black text-accent-strong'}
                       numberOfLines={1}
                       style={TABULAR_NUMS}
                     >
@@ -434,7 +437,7 @@ export function MapScreen() {
                     </Text>
                     <Text
                       testID="stat-distance"
-                      className="text-xl font-black text-foreground"
+                      className={distanceM === null ? STAT_DASH : 'text-xl font-black text-foreground'}
                       numberOfLines={1}
                       style={TABULAR_NUMS}
                     >
@@ -452,7 +455,7 @@ export function MapScreen() {
                     </Text>
                     <Text
                       testID="stat-updated"
-                      className="text-base font-bold text-muted"
+                      className={position ? 'text-base font-bold text-muted' : STAT_DASH}
                       numberOfLines={1}
                       style={TABULAR_NUMS}
                     >
@@ -468,7 +471,7 @@ export function MapScreen() {
                     </Text>
                     <Text
                       testID="stat-battery"
-                      className={`${batteryPct === null ? 'text-base' : 'text-xl'} font-black ${batteryTone.text}`}
+                      className={`text-xl font-black ${batteryTone.text}`}
                       numberOfLines={1}
                       style={TABULAR_NUMS}
                     >
