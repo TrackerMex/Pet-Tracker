@@ -2591,7 +2591,8 @@ describe('#201 R10: la carga dibuja el esqueleto de la pila', () => {
         expect(tile.children).toHaveLength(2);
       }
     }
-    expect(elementChild(card, 1).props.className).toMatch(/ h-12\.5 rounded-14 bg-default$/);
+    const actionBlock = elementChild(elementChild(card, 1), 0);
+    expect(actionBlock.props.className).toMatch(/ h-12\.5 rounded-14 bg-default$/);
   });
 
   it('#201 R10: los once bloques laten con pulse', async () => {
