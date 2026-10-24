@@ -230,3 +230,64 @@ describe('#201 R6: el guion se lee apagado', () => {
     },
   ])('#201 R6: $artboard › $canvas › $production', checkRow);
 });
+
+describe('#201 R7: el botón de modo perdido es rosa con icono', () => {
+  it.each<Row>([
+    {
+      artboard: 'Mapa',
+      canvas: 'height: 50px',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'h-12.5',
+      productionCount: 1,
+    },
+    {
+      artboard: 'Mapa',
+      canvas: 'border-radius: 14px; background: var(--rose); color: var(--rose-s)',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: '`h-12.5 gap-2 rounded-14 ${CATEGORY_SLOTS.rose.surface}`',
+      productionCount: 1,
+    },
+    {
+      artboard: 'Mapa',
+      canvas: 'border-radius: 14px; background: var(--rose); color: var(--rose-s)',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'CATEGORY_SLOTS.rose.ink',
+      productionCount: 1,
+    },
+    {
+      artboard: 'Mapa',
+      canvas: '--rose:#FFF0F3',
+      canvasCount: 1,
+      file: 'theme/global.css',
+      production: '--color-category-rose: #FFF0F3',
+      productionCount: 1,
+    },
+    {
+      artboard: 'Mapa',
+      canvas: '--rose-s:#D80B34',
+      canvasCount: 1,
+      file: 'theme/global.css',
+      production: '--color-category-rose-strong: #D80B34',
+      productionCount: 1,
+    },
+    {
+      artboard: 'Mapa',
+      canvas: 'M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: '<AlertTriangle',
+      productionCount: 1,
+    },
+    {
+      artboard: 'Mapa',
+      canvas: 'stroke-width="2.2"',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'strokeWidth={2.2}',
+      productionCount: 1,
+    },
+  ])('#201 R7: $artboard › $canvas › $production', checkRow);
+});

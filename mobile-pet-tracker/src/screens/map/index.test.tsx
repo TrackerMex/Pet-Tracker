@@ -128,6 +128,45 @@ jest.mock('react-native-reanimated', () => ({
   useReducedMotion: () => mockUseReducedMotion(),
 }));
 
+jest.mock('reicon-react-native', () => {
+  const actual = jest.requireActual<typeof import('reicon-react-native')>(
+    'reicon-react-native',
+  );
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
+  const mockIcon = (testID: string) =>
+    function MockIcon(props: Record<string, unknown>) {
+      return React.createElement(View, { testID, ...props });
+    };
+
+  return {
+    ...actual,
+    __esModule: true,
+    AlertCircle: mockIcon('icon-alert-circle'),
+    AlertTriangle: mockIcon('icon-alert-triangle'),
+    Link: mockIcon('icon-link'),
+    Location: mockIcon('icon-location'),
+    Plus: mockIcon('icon-plus'),
+    Refresh: mockIcon('icon-refresh'),
+  };
+});
+
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: (tokens: string[]) => {
+    const colors: Record<string, string> = {
+      'accent-foreground': '#FFFFFF',
+      'category-rose-strong': '#D80B34',
+      danger: '#D92D20',
+      muted: '#667085',
+      lip: '#0E5E3C',
+      'lip-gray': '#E4E7EC',
+    };
+    return tokens.map((token) => colors[token] ?? '#0D1117');
+  },
+}));
+
 const mockListGeofences = jest.mocked(listGeofences);
 const apiUrl = 'http://example.test/v1';
 const mockGetDayRoute = jest.mocked(getDayRoute);
@@ -2408,6 +2447,38 @@ describe('#201 R6: el guion se lee apagado', () => {
 
     await waitFor(() => expect(screen.getByTestId('stat-updated')).toHaveTextContent('—'));
     expect(screen.getByTestId('stat-updated').props.className).toBe(DASH_INK);
+  });
+});
+
+describe('#201 R7: el botón de modo perdido es rosa con icono', () => {
+  const ROSE_LABEL = / text-base font-extrabold text-category-rose-strong$/;
+
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+  });
+
+  it('#201 R7: el botón es rosa, sin labio y con el triángulo delante', async () => {
+    await renderMap();
+
+    const button = await screen.findByTestId('lost-mode-button');
+    expect(button.props.className).toMatch(/ h-12\.5 gap-2 rounded-14 bg-category-rose$/);
+    expect(JSON.stringify(button.props.style ?? null)).not.toContain('boxShadow');
+    const icon = within(button).getByTestId('lost-mode-icon');
+    expect(icon.props).toMatchObject({ size: 18, strokeWidth: 2.2, color: '#D80B34' });
+    const tree = JSON.stringify(screen.toJSON());
+    expect(tree.indexOf('"lost-mode-button"')).toBeLessThan(tree.indexOf('"lost-mode-icon"'));
+    expect(tree.indexOf('"lost-mode-icon"')).toBeLessThan(tree.indexOf('Activar modo perdido'));
+    expect(screen.getByText('Activar modo perdido').props.className).toMatch(ROSE_LABEL);
+  });
+
+  it('#201 R7: el rótulo de desactivar lleva la misma tinta', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ lostMode: true })] });
+
+    await renderMap();
+
+    const label = await screen.findByText('Desactivar modo perdido');
+    expect(label.props.className).toMatch(ROSE_LABEL);
   });
 });
 
