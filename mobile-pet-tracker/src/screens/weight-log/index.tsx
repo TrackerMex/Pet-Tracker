@@ -30,7 +30,7 @@ import { FieldErrorMessage } from '../../components/field-error-message';
 import type { FieldIssues } from '../../utils/account-rules';
 import { parseDecimal, validateWeight } from '../../utils/form-rules';
 import { useAuth } from '../../providers/auth-provider';
-import { useTranslate } from '../../providers/language-provider';
+import { useLocale, useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import {
   CONTINUOUS_CORNER,
@@ -41,6 +41,7 @@ import { MOTION_FEEDBACK_MS, MOTION_TRANSITION_MS } from '../../theme/motion';
 import { civilTodayIso } from '../../utils/civil-today-iso';
 import { monthlyWeightDelta } from '../../utils/monthly-weight-delta';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
+import { fmtDayMonth } from '../home/format';
 
 const MEASURED_AT_IN_FUTURE_MESSAGE =
   'measuredAt is too far in the future';
@@ -79,6 +80,7 @@ function WeightLogContent({ petId }: { petId: string }) {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const t = useTranslate();
+  const locale = useLocale();
   const insets = useSafeAreaInsets();
   const [weightText, setWeightText] = useState('');
   const [measuredAtDraft, setMeasuredAtDraft] = useState<string | null>(null);
@@ -346,8 +348,8 @@ function WeightLogContent({ petId }: { petId: string }) {
                       </Text>
                     ) : null}
                   </View>
-                  <Text className="shrink-0 text-xs font-normal text-muted">
-                    {entry.measuredAt}
+                  <Text testID={`weight-row-${entry.id}-date`} className="text-13 font-semibold text-muted">
+                    {fmtDayMonth(entry.measuredAt, locale)}
                   </Text>
                 </View>
                 </RiseIn>
