@@ -821,12 +821,16 @@ rótulos con `getByText` y no depende del orden.
 | 26 | DD › `reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #198 R9)` (sufijo: `(enmendado por #201 R5, R13)`) | lista de `rounded-14` sin el mapa; objeto `rounded16` sin el mapa | la lista gana `join('screens', 'map', 'index.tsx'), // #201 R5` entre `join('screens', 'geofences', 'index.tsx'), // #189 R5` y `join('screens', 'meal-schedule', 'index.tsx'), …` (orden de `readdirSync`, alfabético); `rounded16` gana `'screens/map/index.tsx': 1, // #201 R13` entre `'screens/login/index.tsx': 1,` y `'screens/pairing/index.tsx': 1,` | R5, R13 |
 | 27 | AF › `#174 R12: inventarios` › `it.each` `'limita $token a su inventario de producción (…) (enmendado por #198 R9, R15)'` (la plantilla gana ` (enmendado por #201 R2)`), fila `token: 'text-15'` | 16 ficheros, sin el mapa | 17: `'screens/map/index.tsx', // #201 R2` entre `'screens/login/index.tsx',` y `'screens/meal-schedule/index.tsx', // #179 R7` | R2 |
 | 28 | HM › `#187 R1: ningún componente que fusiona className lleva text-NN` › `#187 R1: el escáner cubre al menos el universo medido (…) (enmendado por #199 R19)` (el título gana ` (enmendado por #201 R4)`), tercera aserción (`cardElements`) | `toBeGreaterThanOrEqual(35 - 1 - 1 - 1 + 1)` (33; en H0 el árbol cuenta 33, 2 en el mapa) | `toBeGreaterThanOrEqual(35 - 1 - 1 - 1 + 1 - 1)` y el comentario gana `; #201 R4: -1` al final; las otras tres aserciones no cambian | R4 |
+| 29 | MT › `R8: stats calculadas de positions y trips` › `uses the latest speed, trip total, fresh age, and live GPS` (el título gana ` (enmendado por #201 R1)`) | `expect(screen.getByTestId('map-stats').props.style).toEqual(expect.objectContaining({ position: 'absolute', left: 16, right: 16, bottom: 120 }))` | `expect(screen.getByTestId('map-stats')).toHaveStyle({ position: 'absolute', left: 16, right: 16, bottom: 120 })`; el resto del `it` igual | R1 |
+| 30 | MT › `#61 R11: el overlay de stats reparte los cuatro tiles en 2x2 sin envolver` › `conserva los cuatro tiles, su orden de lectura y el overlay absoluto` (el título gana ` (enmendado por #201 R1)`) | la misma aserción de `props.style` que la fila 29 | el mismo cambio a `toHaveStyle` que la fila 29; el resto del `it` igual | R1 |
 
 **Errata E1 (2026-10-24, fila 28).** La auditoría no vio la cota de `cardElements` de HM porque no compara contra un literal del mapa: es un mínimo agregado. En H0 (`b834a317`) la cota y el recuento valen 33, así que el verde de R4 (`Card` → `View`, `<Card` del mapa 2 → 1) la deja en 32 y la pone roja. Se enmienda en el commit rojo de R4. Medido con una réplica del escáner (`heroElements` 223 ≥ 197, ficheros 32 ≥ 28, `classNameElements` 174 ≥ 163): ninguna otra cota de HM queda al límite.
 
+**Errata E2 (2026-10-24, filas 29 y 30).** El verde de R1 cambia `map-stats` de `View` a `Animated.View`, y Reanimated entrega `props.style` como array de un elemento (`[{ bottom: 120, left: 16, position: 'absolute', right: 16 }]`) en vez del objeto. El estilo no cambia, pero las dos aserciones de MT que comparan `props.style` con `toEqual(expect.objectContaining(…))` se ponen rojas. Se enmiendan en el commit rojo de R1 con `toHaveStyle` de RNTL, que aplana el array y ya se usa en otros tests móviles; no se introduce `StyleSheet` en MT. También se acepta la enmienda mecánica que el implementer hizo en el commit rojo de R15 (`08cbc116`): `R7: ruta del día como polylines` › `R3 (android-map-never-ready): pasa una polyline mapeada por cada viaje` gana ` (enmendado por #201 R15)` y `width: 5` en cada polilínea esperada. R15 añade la clave que ese `toEqual` exacto compara, y la enmienda endurece el candado. Así el recuento de `(enmendado por #201 R` en MT queda en 23 + 1 + 2 = 26.
+
 Se comprobó que siguen verdes sin cambios: `#116 R2 › pinta la píldora como
 hijo 0 de map-stats y la tarjeta como hijo 1` (busca `stat-speed` dentro del
-hijo 1), `#62 R3` (el aviso sigue siendo `Card` con `style` objeto), `#61 R11`,
+hijo 1), `#62 R3` (el aviso sigue siendo `Card` con `style` objeto),
 `#62 R15` (`TABULAR_NUMS` [mapa, 3 + 1]), `consistency-classnames`
 (`CONTINUOUS_CORNER` [mapa, 4]), design-drift `'map' importa el Card compartido`,
 `R7: no-owner deshabilitado y error visible` (`lost-mode-error` conserva sus
@@ -909,6 +913,7 @@ la carta.
   módulo usa `{ virtual: true }` (causa del flake de tinte `#0D1117`, ver #207).
   Si otra feature de la ola 2 entra antes en `dev`, el handoff re-mide las cifras.
   Errata E1 (fila 28, HM) firmada también por delegación el 2026-10-24 sobre `b834a317`.
+  Errata E2 (filas 29 y 30, MT, y la enmienda de R15) firmada también por delegación el 2026-10-24 sobre `87f3198e`.
 
 Cierre (no gate de implementación), una casilla por smoke:
 

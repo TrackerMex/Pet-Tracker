@@ -34,7 +34,7 @@ Una cuenta más, que no está en Base medida porque solo tiene sentido al final:
 
 | Comando | Base | Delta | Esperado |
 |---|---|---|---|
-| `grep -cF '(enmendado por #201 R' src/screens/map/index.test.tsx` | 0 | +23: una línea por `it` o plantilla de las filas 1–18 (5 + 7 + 3 + 4 + 1 + 3) | 23 |
+| `grep -cF '(enmendado por #201 R' src/screens/map/index.test.tsx` | 0 | +26: una línea por `it` o plantilla de las filas 1–18 (5 + 7 + 3 + 4 + 1 + 3 = 23), +1 por la enmienda de R15 y +2 por las filas 29 y 30 (errata E2) | 26 |
 | `test -e src/__tests__/map-canvas-fidelity.test.ts` | falso | nuevo (CF) | verdadero |
 
 ## Bloques por requisito
@@ -44,7 +44,7 @@ nombres de test exactos están en `requirements.md` bajo cada R; las filas, en
 su § Candados que esta feature revierte.
 
 - **R1**: (1) Doble 1 de Reanimated en MT (`__esModule: true`,
-  `mockUseReducedMotion`); MT `#201 R1` ×2; inventario filas 15 y 20 (fila 20:
+  `mockUseReducedMotion`); MT `#201 R1` ×2; inventario filas 15, 20, 29 y 30 (filas 29 y 30: `toHaveStyle`, errata E2; fila 20:
   título nuevo del `describe` de ES y plantilla `'%s no contiene %s (enmendado
   por #201 R1)'`, de 10 a 6 filas); CF R1 con `className="gap-2.5"` ×1. (2)
   `map-stats` pasa a `Animated.View` con `entering` y `gap-2.5`. (3) Nada.
