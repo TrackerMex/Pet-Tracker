@@ -1,6 +1,22 @@
 # Implementación #196: Perfil con hero fotográfico
 
-Estado actual: SEGUNDA PARADA en el verde de R2+R5. R1+R4, R3 y R11 completadas; R2+R5 conservan su rojo y el parche tentativo. E6–E10 resolvieron la primera parada. El historial y sus logs se conservan debajo. Sin init.sh, push, PR, merge ni rebase.
+Estado final: R1–R11 implementados y verificados. Suite completa: 4 823/4 824; única excepción autorizada de tinte BackButton #172 R2, aislado 8/8. Typecheck, lint vacío, graphify y 49 cuentas finales verdes. El gate init.sh del leader y el smoke Android siguen pendientes. Sin push, PR, merge ni rebase.
+
+## Resultado final de implementación
+
+| R | Commit(s) de test | Commit verde |
+|---|---|---|
+| R1/R4 | 47a0325a + 53d557f4 + 8296caef | b646864e |
+| R2/R5 | 225a291e + dbe46081 + 3e80e56c | 9845117e |
+| R3 | 1a82f15c | 9fac05f1 |
+| R6 | 4910a849 + f82c511a | 38bf092e |
+| R7 | 8bafd7fe | d97438ca |
+| R8 | 70a22d91 | 91ebce03 |
+| R9 | 2dcb5957 (nace verde) | no aplica |
+| R10 | b4141f3e (nace verde) | no aplica |
+| R11 | bebe426d | a5df30ac + b646864e |
+
+Los tests por R y sus hashes se detallan en specs/mobile-profile-photo-hero-canvas/traceability.md. Las secciones de parada conservadas más abajo son historial: sus gates se resolvieron mediante E6–E12 firmadas. Las sondas están revertidas y no hay cambios funcionales pendientes.
 
 Comprobación de entrada (salida):
 ```text
@@ -12,7 +28,7 @@ El primer comando consultó ruta, status y branch antes de leer el handoff; la c
 
 Skills cargadas: ponytail, appllama-app-design-skill, animate-expo, building-native-ui y expo-tailwind-setup (las dos últimas encontradas en el plugin expo/11c74d6b). No faltó ninguna de las skills requeridas. No se buscaron los nombres inexistentes indicados por el handoff. Sin MCP Appllama; patrones y valores de la spec/canvas, sin investigación externa ni movimiento nuevo.
 
-K35: sin efecto desde H0 (#200 ya eliminó el describe); no se toca canvas-foundations.test.ts. E1–E5 firmadas; antes de R2+R5 se comprobará de nuevo E1.
+K35: sin efecto desde H0 (#200 ya eliminó el describe); canvas-foundations.test.ts no se toca. E1 se revalidó al llegar a R2+R5 (firmada, ancla 1). E1–E12 firmadas por el leader.
 
 ## Enmiendas mecánicas
 
@@ -21,7 +37,7 @@ K35: sin efecto desde H0 (#200 ya eliminó el describe); no se toca canvas-found
 
 ## Commits y verificación
 
-El detalle medido de cada commit aparece más abajo. No se declara completa la feature.
+El detalle medido de cada commit y las paradas históricas resueltas aparece más abajo. El status de la feature sigue reservado al leader/reviewer.
 
 ## Anclas T0
 
@@ -995,3 +1011,339 @@ Las dos filas sin hero de R2 y R5.4 (permiso concedido) nacieron verdes porque c
 - Enmiendas mecánicas adicionales: ninguna; la mejora de espera toca solo un test nuevo de R1, en 8296caef. K35 sigue sin efecto y el fichero no se tocó.
 - Typecheck, lint, suite completa y graphify update no se ejecutaron: se activó una nueva parada antes de la verificación final. El guard de router.d.ts sigue comprobado ausente; graphify está disponible. No hay cifras finales completas que declarar mientras R6–R10 no se implementen.
 - Sin init.sh, push, PR, merge, rebase, instalación o AWS. Feature_list.json, STATUS.md, progress/current.md y progress/history.md permanecen intactos. El smoke Android sigue pendiente del humano; su lista ya figura en este reporte.
+
+## Reanudación E11–E12 (2026-10-24, 714038d6)
+
+Ruta y branch correctas; HEAD 714038d6, árbol inicial limpio salvo handoff sin seguimiento. Las skills cargadas en las sesiones anteriores siguen aplicadas. Nuevas instrucciones: dirigidos con runTestsByPath/runInBand/30000; solo se espera por init.sh real, no por otros Jest; el gate final es del leader.
+
+Anclas ANTES del cambio:
+
+```text
+getByTestId('pet-chip-pet-1')).toBeVisible(): 1 (esperado 1)
+getByTestId('pet-chip-pet-2')).toBeVisible(): 1 (esperado 1)
+await fireEvent.press(screen.getByTestId('pet-chip-pet-2')): 0 (esperado 0)
+expect(action.props.style).toEqual(result.current.primary): 1 (esperado 1)
+expect(action.props.style).toContainEqual(result.current.primary): 0 (esperado 0)
+```
+
+Tras el cambio: 0 / 0 / 1 / 0 / 1; las dos comparaciones de style de camera siguen intactas.
+
+- `dbe46081 test(#196): R2 R5 apply errata E11-E12 to the profile test`
+  Tests: 14 failed, 162 passed, 176 total (`test-196-e11e12-red.log`), antes de aplicar producción. Parche conservado aplicado con git apply --unidiff-zero, sin rehacerlo.
+- Primer verde tras E11/E12: 1 failed, 175 passed, 176 total (`test-196-e11e12-green.log`). Los tres fallos de la parada previa están resueltos; el único fallo nuevo era mi orden de renderHook: reemplazaba el render activo antes de fireEvent.press.
+- `3e80e56c test(#196): R5 read the lip before rendering the interactive screen`
+  Tests: el rojo previo 1 failed / 175 passed demuestra el problema del test. Se lee el hook real antes de renderProfile, sin cambiar producción ni mockear el hook.
+
+- `9845117e feat(#196): R2 R5 place profile controls over the photo and style the amber notice`
+  Tests: 176 passed, 176 total (`test-196-r2r5-restored-green.log`); seis guardas dirigidas verdes (`test-196-r2r5-guard-1.log` a `-6.log`). Todas las sondas siguientes se restauraron; no se commiteó ninguna mutación.
+
+| Sonda R2/R5 | Tests | Log |
+|---|---|---|
+| r2-probe-fallback | Tests:       2 failed, 174 skipped, 176 total | `test-196-r2-probe-fallback.log` |
+| r2-probe-pending-selector | Tests:       1 failed, 175 skipped, 176 total | `test-196-r2-probe-pending-selector.log` |
+| r2-probe-icons | Tests:       3 failed, 173 skipped, 176 total | `test-196-r2-probe-icons.log` |
+| r2-probe-variant | Tests:       2 failed, 174 skipped, 176 total | `test-196-r2-probe-variant.log` |
+| r2-probe-avatar-inventory | Tests:       1 failed, 25 skipped, 26 total | `test-196-r2-probe-avatar-inventory.log` |
+| r2-probe-selector-presence | Tests:       2 failed, 174 skipped, 176 total | `test-196-r2-probe-selector-presence.log` |
+| r2-probe-selector-action | Tests:       1 failed, 175 skipped, 176 total | `test-196-r2-probe-selector-action.log` |
+| r2-probe-title-list-pending | Tests:       1 failed, 175 skipped, 176 total | `test-196-r2-probe-title-list-pending.log` |
+| r2-probe-title-list-empty | Tests:       1 failed, 175 skipped, 176 total | `test-196-r2-probe-title-list-empty.log` |
+| r2-probe-title-list-error | Tests:       1 failed, 175 skipped, 176 total | `test-196-r2-probe-title-list-error.log` |
+| r2-probe-title-detail-pending | Tests:       1 failed, 175 skipped, 176 total | `test-196-r2-probe-title-detail-pending.log` |
+| r2-probe-title-detail-error | Tests:       1 failed, 175 skipped, 176 total | `test-196-r2-probe-title-detail-error.log` |
+| r2-probe-title-loaded | Tests:       1 failed, 175 skipped, 176 total | `test-196-r2-probe-title-loaded.log` |
+| r5-probe-gate | Tests:       5 failed, 171 skipped, 176 total | `test-196-r5-probe-gate.log` |
+| r5-probe-lip | Tests:       1 failed, 175 skipped, 176 total | `test-196-r5-probe-lip.log` |
+| r5-probe-lip-inventory | Tests:       2 failed, 75 skipped, 1 passed, 78 total | `test-196-r5-probe-lip-inventory.log` |
+| r5-probe-radius | Tests:       1 failed, 113 skipped, 114 total | `test-196-r5-probe-radius.log` |
+| r5-probe-order | Tests:       1 failed, 175 skipped, 176 total | `test-196-r5-probe-order.log` |
+| r5-probe-class | Tests:       2 failed, 174 skipped, 176 total | `test-196-r5-probe-class.log` |
+| r5-probe-action | Tests:       1 failed, 175 skipped, 176 total | `test-196-r5-probe-action.log` |
+
+E11 queda probado retirando el selector y anulando onSelect. E12: retirar solo el labio del Button del aviso pone rojo su it. R2 tiene las dos filas de fallback nacidas verdes; R5.4 nació verde, y su sonda invierte el permiso para hacerla roja. E1, K26, K31/K32 y las seis filas de K11 tienen sus sondas específicas.
+
+### R6
+
+- `4910a849 test(#196): R6 lock the rose sign-out pill and its entrance`
+  Tests: 4 failed, 174 passed, 178 total en T; 1 failed / 77 passed en chunky-cta y 1 failed / 26 passed en alerts-canvas (`test-196-r6-red*.log`). La acción de cerrar sesión nace verde porque ya llamaba a signOut; su sonda se mide aparte. K20 paso 2, K21, K24, K33 y K34 se enmiendan aquí.
+- `f82c511a test(#196): R6 check button content without its decorative feedback layer`
+  Tests: antes de esta corrección, 1 failed, 177 passed, 178 total (`test-196-r6-green.log`): HeroUI añade su highlight decorativo con pointerEvents none al host. Se exige un único hijo de contenido, sin contar esa capa interna.
+- Verde medido: 178 passed, 178 total (`test-196-r6-content-green.log`); chunky-cta 78/78, alerts-canvas 27/27, heroui-text-size-merge 25/25 (`test-196-r6-green-{labels,size,scanner}.log`).
+
+- `38bf092e feat(#196): R6 render the rose sign-out pill with its fixed entrance`
+  Tests: 178/178 en T y tres guardas 78/78, 27/27 y 25/25; seis sondas R6 en rojo y revertidas (`test-196-r6-probe-{index,class,action,text,text-inventory,labels}.log`). La acción nacida verde falla con su handler anulado.
+
+### R7
+
+- `8bafd7fe test(#196): R7 lock the shared theme switch and both directions`
+  Tests: 1 failed, 180 passed, 181 total (`test-196-r7-red.log`); el pulgar compartido falta, las dos direcciones nacen verdes porque ya existían en Switch.
+- Verde: 181 passed, 181 total (`test-196-r7-green.log`); las pruebas previas del tema siguen intactas y verdes. K35 sin efecto: R20 ya no existe; no se toca canvas-foundations.test.ts.
+
+- `d97438ca feat(#196): R7 adopt the shared theme toggle`
+  Tests: 181/181; sondas r7-probe-mount (1 failed) y r7-probe-directions (2 failed), ambas revertidas.
+
+### R8
+
+- `70a22d91 test(#196): R8 lock the four shortcut icon strokes`
+  Tests: 4 failed, 181 skipped, 185 total (`test-196-r8-red.log`), por strokeWidth ausente.
+- `91ebce03 feat(#196): R8 match the shortcut icon strokes to the canvas`
+  Tests: 185 passed, 185 total (`test-196-r8-green.log`). Sondas de Bell, FileText, Wifi y MapIcon: cada una da 1 failed / 3 passed / 181 skipped; solo se altera un icono por sonda y se restauran los cuatro.
+
+### R9
+
+Los siete it nacen verdes como exige D14: R1 retiró la entrada propia del hero, R5 fijó el aviso en 0, R6 el cierre en 4 y las entradas 1/2/3 ya existían.
+Tests: 192 passed, 192 total (`test-196-r9-born-green.log`). La fila detalle pendiente espera el selector resuelto antes del skeleton, evitando el falso verde de la primera sonda R1. No hay cambio de producción para R9.
+
+- `2dcb5957 test(#196): R9 lock fixed entrance indices across profile states`
+  Tests: 192/192; siete sondas R9 en rojo (1 failed / 191 skipped cada una) y revertidas. Cada sonda cambia un índice en una sola rama; aviso separado. Sin commit verde propio.
+
+### R10
+
+- `b4141f3e test(#196): R10 lock profile fidelity to the three frozen artboards`
+  Tests: 25 passed, 25 total (`test-196-r10-born-green.log`). Las 24 filas y la cobertura nacen verdes porque R1–R8 ya fijaron la producción y las filas de copy/danger ya existían en H0. No hay commit verde de producción para R10. Cada fila verifica primero el literal congelado y después el de producción, sin importar valores de componentes.
+
+Sondas en copias temporales exactas de P, H, catalog.ts y global.css; los artboards congelados se leen de su ubicación original. Base de la copia: 25/25 (`test-196-r10-fixture-baseline.log`). Se retiró el literal de producción de cada fila, incluyendo todas sus ocurrencias para impedir que una duplicada lo oculte: `test-196-r10-probe-01.log` a `-24.log`, 1 failed / 24 skipped cada una. La sonda de cobertura retira un artboard de la tabla copiada: `test-196-r10-probe-artboards.log`, 1 failed / 24 skipped. Las copias se eliminaron; catalog.ts, global.css y los artboards reales no se tocaron.
+
+## Cuentas finales y cierre de alcance
+
+Las 49 cuentas del handoff coinciden (progress/counts-196.log):
+
+```text
+grep -cF 'PetHeroHeader' src/screens/profile/index.tsx
+3
+Esperado: 3; coincide=True
+
+grep -cF 'variant="avatars"' src/screens/profile/index.tsx
+0
+Esperado: 0; coincide=True
+
+grep -cF 'profile-hero-skeleton' src/screens/profile/index.tsx
+0
+Esperado: 0; coincide=True
+
+grep -cF 'profile-entrance-hero' src/screens/profile/index.tsx
+0
+Esperado: 0; coincide=True
+
+grep -cF 'profile-pet-avatar' src/screens/profile/index.tsx
+0
+Esperado: 0; coincide=True
+
+grep -cF 'size={96}' src/screens/profile/index.tsx
+0
+Esperado: 0; coincide=True
+
+grep -cF 'text-26' src/screens/profile/index.tsx
+0
+Esperado: 0; coincide=True
+
+grep -cF '<Card testID="notifications-blocked-notice"' src/screens/profile/index.tsx
+0
+Esperado: 0; coincide=True
+
+grep -cF '<Card' src/screens/profile/index.tsx
+3
+Esperado: 3; coincide=True
+
+grep -cF 'paddingTop: insets.top + 12' src/screens/profile/index.tsx
+1
+Esperado: 1; coincide=True
+
+grep -cF 'padding: 20,' src/screens/profile/index.tsx
+0
+Esperado: 0; coincide=True
+
+grep -cF 'rounded-xl bg-danger-soft' src/screens/profile/index.tsx
+0
+Esperado: 0; coincide=True
+
+grep -cF '<Button.Label className="font-bold text-danger">' src/screens/profile/index.tsx
+0
+Esperado: 0; coincide=True
+
+grep -cF '<Switch' src/screens/profile/index.tsx
+0
+Esperado: 0; coincide=True
+
+grep -cF "Switch } from 'heroui-native'" src/screens/profile/index.tsx
+0
+Esperado: 0; coincide=True
+
+grep -cF 'ToggleSwitch } from' src/screens/profile/index.tsx
+1
+Esperado: 1; coincide=True
+
+grep -cF 'size={22}' src/screens/profile/index.tsx
+4
+Esperado: 4; coincide=True
+
+grep -cF 'strokeWidth' src/screens/profile/index.tsx
+6
+Esperado: 6; coincide=True
+
+grep -cF 'useChunkyLip' src/screens/profile/index.tsx
+2
+Esperado: 2; coincide=True
+
+grep -cF 'chunkyLip.primary' src/screens/profile/index.tsx
+2
+Esperado: 2; coincide=True
+
+grep -cF 'BubblePop' src/screens/profile/index.tsx
+3
+Esperado: 3; coincide=True
+
+grep -cF 'text-accent-strong' src/screens/profile/index.tsx
+3
+Esperado: 3; coincide=True
+
+grep -cF 'tracking-tight' src/screens/profile/index.tsx
+0
+Esperado: 0; coincide=True
+
+grep -cF 'text-3xl font-black tracking-title text-accent-foreground' src/screens/profile/index.tsx
+1
+Esperado: 1; coincide=True
+
+grep -cF 'text-3xl font-black tracking-title text-foreground' src/screens/profile/index.tsx
+1
+Esperado: 1; coincide=True
+
+grep -cF 'text-3xl font-black leading-8.5 tracking-display text-foreground' src/screens/profile/index.tsx
+1
+Esperado: 1; coincide=True
+
+grep -cF 'StyleSheet' src/screens/profile/index.tsx
+0
+Esperado: 0; coincide=True
+
+grep -cE '#[0-9a-fA-F]{3,8}\b' src/screens/profile/index.tsx
+0
+Esperado: 0; coincide=True
+
+grep -cF 'rounded-14' src/screens/profile/index.tsx
+2
+Esperado: 2; coincide=True
+
+grep -cF 'signOut(' src/screens/profile/index.tsx
+2
+Esperado: 2; coincide=True
+
+grep -cF 'style={CONTINUOUS_CORNER}' src/screens/profile/index.tsx
+1
+Esperado: 1; coincide=True
+
+grep -cF 'caption?: ReactNode' src/components/pet-hero-header.tsx
+1
+Esperado: 1; coincide=True
+
+grep -cF 'testID="pet-hero-caption"' src/components/pet-hero-header.tsx
+1
+Esperado: 1; coincide=True
+
+grep -cP '#(?!\d{2,3} R\d)[\da-fA-F]{3,8}\b' src/components/pet-hero-header.tsx
+0
+Esperado: 0; coincide=True
+
+grep -cF "jest.mock('react-native-reanimated'" src/screens/profile/index.test.tsx
+1
+Esperado: 1; coincide=True
+
+grep -cF 'trailing?: ReactNode' src/screens/profile/index.test.tsx
+2
+Esperado: 2; coincide=True
+
+grep -cF 'function MockIcon({ color, size }: { color?: string; size?: number })' src/screens/profile/index.test.tsx
+0
+Esperado: 0; coincide=True
+
+grep -cF "jest.mock('react-native-reanimated'" 'src/app/(tabs)/__tests__/screens.test.tsx'
+1
+Esperado: 1; coincide=True
+
+grep -cF 'toBeGreaterThanOrEqual(41)' src/__tests__/heroui-text-size-merge.test.ts
+0
+Esperado: 0; coincide=True
+
+grep -cF 'toBeGreaterThanOrEqual(39)' src/__tests__/heroui-text-size-merge.test.ts
+0
+Esperado: 0; coincide=True
+
+grep -cF 'toBeGreaterThanOrEqual(35)' src/__tests__/heroui-text-size-merge.test.ts
+0
+Esperado: 0; coincide=True
+
+grep -cF 'toBeGreaterThanOrEqual(33)' src/__tests__/heroui-text-size-merge.test.ts
+1
+Esperado: 1; coincide=True
+
+grep -cF '**Regla N1 (enmienda B4 de #168)**' src/__tests__/hero-header-amendments.test.ts
+0
+Esperado: 0; coincide=True
+
+grep -cF '**Regla N1 (enmienda #196)**' src/__tests__/hero-header-amendments.test.ts
+1
+Esperado: 1; coincide=True
+
+grep -cF "describe('#197 R20: cimientos sin cablear'" src/__tests__/canvas-foundations.test.ts
+0
+Esperado: 0; coincide=True
+
+test -e src/__tests__/profile-photo-hero-canvas.test.ts && echo creado
+creado
+Esperado: creado; coincide=True
+
+grep -cF 'Inicio es la única pestaña con PetHeroHeader' ../docs/ui-guidelines.md
+0
+Esperado: 0; coincide=True
+
+grep -cF '**Regla N1 (enmienda B4 de #168)**' ../docs/ui-guidelines.md
+0
+Esperado: 0; coincide=True
+
+grep -cF '**Regla N1 (enmienda #196)**' ../docs/ui-guidelines.md
+1
+Esperado: 1; coincide=True
+```
+
+Sin diff contra H0 en package.json, bun.lock, app/_layout.tsx, screens/home/, screens/health/, screens/map/, src/i18n/ ni ui-copy-table.ts. Sin enmiendas mecánicas adicionales: todos los candados cambiados están inventariados o firmados en E1–E12. Las mejoras de tests nuevos (espera de lista de R1, renderHook de R5 y contenido decorativo de R6) se registraron en commits de test propios.
+
+## Verificación final móvil
+
+- Guarda previa de tipos: `.expo/types/router.d.ts` ausente; `bun run typecheck` exit 0 (`progress/typecheck-196.log`). No se borró ningún fichero de tipos generado.
+- `bunx expo lint --no-cache > ../progress/lint-196.log 2>&1 && test ! -s ../progress/lint-196.log`: exit 0, log de 0 bytes; sin SIGKILL.
+- `graphify update .`: exit 0 (`progress/graphify-196.log`), actualizados los artefactos AST en graphify-out (28 376 nodos / 36 549 aristas). Sin cambios adicionales en archivos seguidos por git.
+- Suite móvil completa: `bun run test --runInBand --testTimeout=30000`, exit 1. Test Suites: 1 failed, 143 passed, 144 total. Tests: 1 failed, 4823 passed, 4824 total. Snapshots: 1 passed, 1 total. Time: 444.932 s. Log: `progress/test-196-full.log`.
+
+Las esperas de esta última reanudación se limitaron al init.sh de #206. No se esperó por otros Jest. No se han producido en los dirigidos fallos solo por timeout o por el tinte de BackButton; las sondas negativas intencionadas se distinguen en sus logs.
+
+### Excepción final autorizada: BackButton #172 R2
+
+La única aserción roja de la corrida completa es `pinta ChevronLeft de 24 en foreground`: esperaba `color:foreground` y recibió `#0D1117`. Coincide exactamente con la excepción autorizada por el usuario en la reanudación. Se repitió **una vez** el fichero aislado con runTestsByPath/runInBand/30000:
+
+Tests: 8 passed, 8 total; 1 passed suite (`progress/test-196-final-back-button-retry.log`).
+
+`git diff --stat origin/dev -- src/components/back-button.tsx src/components/__tests__/back-button.test.tsx src/theme/use-theme-colors.ts` (rutas bajo mobile-pet-tracker desde la raíz): vacío. No se enmendó el test ni se tocó su producción. No se repitió toda la suite ni se ocultó su exit 1. El init.sh del leader conserva el gate final, como ordena el usuario. No hubo otros rojos ni timeouts en la corrida completa.
+
+Las 14 guardas requeridas (DD, consistency, legibility, chunky, alerts, tab-headers, profile-canvas, hero-amendments, heroui-merge, home-photo, foundations, no-pets, ui-language y profile-photo) figuran PASS en ese log. Los 14 ficheros de implementación tocados desde H0 coinciden exactamente con la lista cerrada, contando E1. El nuevo fichero eleva las suites 143 → 144. Los tests suben 4 758 → 4 824 (+66); K35 ya estaba eliminado en H0 y no se restan tests de nuevo.
+
+### Ficheros tocados desde H0
+
+```text
+docs/ui-guidelines.md
+mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/chunky-cta-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/__tests__/hero-header-amendments.test.ts
+mobile-pet-tracker/src/__tests__/heroui-text-size-merge.test.ts
+mobile-pet-tracker/src/__tests__/profile-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/profile-photo-hero-canvas.test.ts
+mobile-pet-tracker/src/__tests__/tab-headers-canvas.test.ts
+mobile-pet-tracker/src/app/(tabs)/__tests__/screens.test.tsx
+mobile-pet-tracker/src/components/__tests__/pet-hero-header.test.tsx
+mobile-pet-tracker/src/components/pet-hero-header.tsx
+mobile-pet-tracker/src/screens/profile/index.test.tsx
+mobile-pet-tracker/src/screens/profile/index.tsx
+```
+
+No se cambia feature_list.json, STATUS.md, progress/current.md ni progress/history.md. El handoff de entrada sigue sin seguimiento, igual que al inicio. El cierre documental contiene solo el reporte y traceability; el marcador .done queda ignorado por git y se crea como última acción.
