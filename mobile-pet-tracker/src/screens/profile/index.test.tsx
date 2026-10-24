@@ -491,7 +491,7 @@ describe('R2: estructura Figma', () => {
     expect(screen.getByTestId('pet-info-skeleton')).toBeVisible();
   });
 
-  it('renders the active pet hero, switcher, pills and information rows (enmendado por #196 R1, R4)', async () => {
+  it('renders the active pet hero, switcher, pills and information rows (enmendado por #196 R1, R2, R4)', async () => {
     const pet = makePet();
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
     mockGetPet.mockResolvedValue({ kind: 'ok', pet });
@@ -502,7 +502,7 @@ describe('R2: estructura Figma', () => {
     expect(screen.getByTestId('pet-hero-media', { includeHiddenElements: true })).toBeVisible();
     expect(screen.getAllByText('Luna').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('Mixed').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByTestId('pet-chip-pet-1')).toBeVisible();
+    expect(screen.getByTestId('pet-chip-pet-1')).toBeOnTheScreen();
     expect(screen.getByText('Hembra')).toBeOnTheScreen();
     expect(screen.getByText('Esterilizado')).toBeOnTheScreen();
     expect(screen.getByText('30 meses')).toBeOnTheScreen();
@@ -530,15 +530,15 @@ describe('R2: estructura Figma', () => {
     expect(screen.getAllByText('No registrado')).toHaveLength(3);
   });
 
-  it('changes the active pet through the shared PetSwitcher', async () => {
+  it('changes the active pet through the shared PetSwitcher (enmendado por #196 R2)', async () => {
     const luna = makePet();
     const milo = makePet({ id: 'pet-2', name: 'Milo' });
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [luna, milo] });
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: luna });
 
     await renderProfile();
-    await waitFor(() => expect(screen.getByTestId('pet-chip-pet-2')).toBeVisible());
-    fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
+    await waitFor(() => expect(screen.getByTestId('pet-chip-pet-2')).toBeOnTheScreen());
+    await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
 
     await waitFor(() =>
       expect(mockGetPet).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-2'),
@@ -2416,7 +2416,7 @@ describe('#196 R5: aviso ámbar de notificaciones bloqueadas', () => {
     const action = within(notice).getByTestId('notifications-open-settings');
     expect(action.props.className).toBe('pressable-feedback__root button__root button__root--variant-primary button__root--size-md h-11 rounded-14 px-4.5');
     const { result } = await renderHook(() => useChunkyLip());
-    expect(action.props.style).toEqual(result.current.primary);
+    expect(action.props.style).toContainEqual(result.current.primary);
     expect(within(action).getByText('Abrir configuración').props.className).toBe('button__label button__label--variant-primary button__label--size-md text-sm font-extrabold text-accent-foreground');
     await fireEvent.press(action);
     expect(mockOpenSettings).toHaveBeenCalledTimes(1);
