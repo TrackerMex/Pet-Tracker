@@ -8,8 +8,8 @@ tags: [mobile, ui, spec]
 
 ## Premisas contrastadas
 
-Comprobadas contra el árbol en `origin/dev` `71ff81a1` (y contra
-`specs/mobile-canvas-foundations/` para #197, que aún no está en `dev`):
+Comprobadas contra el árbol en la base `ccd5460a` (la rama mergeada con
+`origin/dev` `329c613c`, que ya contiene #197, #198 y #200):
 
 - `src/screens/map/index.tsx` importa `Text` y `View` de `react-native`: las
   clases `text-11` y `text-15` no pasan por twMerge. Solo `Button.Label` es de
@@ -19,7 +19,17 @@ Comprobadas contra el árbol en `origin/dev` `71ff81a1` (y contra
   pasan a `hero`.
 - `EmptyState` hero ya pinta escenario (`-stage`), pose, botón
   `h-14 rounded-16 bg-accent` con `chunkyLip.primary` y un `<Plus size={20} …>`
-  con `testID` `${testID}-action-icon`. `body` es obligatorio hoy.
+  con `testID` `${testID}-action-icon`. Desde #198 R18 ya acepta
+  `badge?: ReactNode` (último hijo de `-stage`), `actionIcon?: ReactElement`
+  (sustituye al `<Plus>`) y `body?: string` (sin `body` no monta `-body` ni su
+  envoltorio); lo candan los seis `it` EH `#198 R18`. El mapa solo la consume.
+- `EmptyState` ya interpola `${CATEGORY_SLOTS.rose.surface}` en el disco del
+  tono `danger`: es el patrón que D22 copia en el mapa y que CO `#64 R9` admite
+  (solo veta `(?:bg|text)-category-\$\{` y el literal fuera de la paleta).
+- `Skeleton` de heroui-native 1.0.8 tiene `variant` (`'shimmer'` por defecto,
+  `'pulse'`, `'none'`) y, aparte, `animation` (config o `'disable-all'`). Solo
+  con `variant="pulse"` envuelve su host (`skeleton__root …`) en un
+  `Animated.View` sin `className`.
 - `PopIn` (`src/components/pop-in.tsx`) acepta `testID`, `className`, `style` y
   `children`.
 - `bg-glass-surface-strong` existe: `rgba(255,255,255,0.86)` claro (= `--glass`
@@ -32,7 +42,7 @@ Comprobadas contra el árbol en `origin/dev` `71ff81a1` (y contra
   que `AlertCircle`. El collar del canvas es `stroke-width="2"`, 26 × 26.
 - `#116 R2 › …la tarjeta como hijo 1` busca `stat-speed` dentro del hijo 1: no
   depende de que la tarjeta sea `Card`.
-- `useShadows()` de #197 devuelve `{ boxShadow: [{ offsetX, offsetY, blurRadius,
+- `useShadows()` de #197 (`src/theme/shadows.ts`) devuelve `{ boxShadow: [{ offsetX, offsetY, blurRadius,
   spreadDistance, color }] }`; `card` son dos capas (1/2 y 8/24) y `floating`
   una (12/32).
 - Ningún literal de copy del canvas falta en el catálogo (ver requisitos,
@@ -48,7 +58,8 @@ Supuestos de entorno que jest no ve; cada uno tiene su smoke en
 - **`boxShadow` en Android (S2, S3).** Las sombras de `useShadows` usan
   `boxShadow` de React Native (arquitectura nueva, SDK 57). Se supone que se
   pintan sobre la superficie del mapa.
-- **twMerge de HeroUI (S4, S7).** El test solo ve la `className` que se pasa.
+- **twMerge de HeroUI (S4, S7).** El test ve la `className` que llega al host
+  (prefijo BEM de HeroUI más la del autor), no qué clase gana al pintar.
   Que `rounded-14` y `bg-category-rose` ganen a las clases de la variante
   `danger-soft`, y `rounded-4` / `bg-lip-gray` a las de `Skeleton`, solo se ve en
   el dispositivo.
@@ -83,14 +94,15 @@ roja.
 
 ## Dependencias y precondiciones
 
-- **#197 mergeada en `dev`** antes del handoff (D21): `src/theme/shadows.ts`
-  (`useShadows`), `MOTION_RISE_OFFSET_Y` y `MOTION_RISE_TIMING` en
-  `src/theme/motion.ts`, `homeEntering` con `rise` (#197 R12), danger
-  `#D92D20`, `src/__tests__/canvas-foundations.test.ts` (fila 26 del inventario)
-  y su enmienda de `#177 R7.4` (fila 23).
-- Tras mergear #197 en la rama, re-medir la base (`tasks.md` § Cuentas) y, si
-  #197 dejó inventarios de consumidores de `homeEntering`, `MOTION_RISE_*` o
-  `useShadows` que esta spec no lista, enmendar el inventario cerrado y reabrir
+- **#197, #198 y #200 ya están en la base** (`ccd5460a`, D21): `useShadows`,
+  `MOTION_RISE_OFFSET_Y` / `MOTION_RISE_TIMING`, `homeEntering` con `rise`,
+  danger `#D92D20`, la API de `EmptyState` de #198 R18 y las enmiendas de CC
+  (`consumers` con 17 ficheros). No hay precondición de merge pendiente.
+- FN (`src/__tests__/canvas-foundations.test.ts`) no tiene candado de
+  importadores de `shadows` (`grep -cF '#197 R20'` = 0): no hay fila de FN.
+- Si `dev` avanza antes del handoff, re-medir la base (`requirements.md`
+  § Base medida y `tasks.md` § Cuentas) y, si aparece un inventario de
+  consumidores que esta spec no lista, enmendar el inventario cerrado y reabrir
   el gate solo para esas filas.
 - Ninguna dependencia nueva: `react-native-reanimated`, `react-native-svg`,
   `heroui-native`, `reicon-react-native` y `expo-maps` ya están. `expo-blur`
@@ -100,7 +112,7 @@ roja.
 ## Decisiones técnicas
 
 Las decisiones de producto están en `requirements.md` § Decisiones con defecto
-(D1–D21). Las de implementación:
+(D1–D22). Las de implementación:
 
 - **Todo en línea, como hoy.** Los cuatro tiles, los once `Skeleton` y las dos
   ramas de error se escriben en línea en `map/index.tsx`. Las cuentas de CF y
@@ -111,8 +123,13 @@ Las decisiones de producto están en `requirements.md` § Decisiones con defecto
 - **Tono del punto en línea**: sobrescritura local `bg-accent` para la rama
   `success` del mapa (D17); `STATUS_TONE_CLASSES` no cambia porque lo comparten
   otras pantallas.
-- **`EmptyState` crece lo mínimo** (R14): dos props opcionales y `body`
-  opcional. Inicio no pasa nada nuevo, así que su render no cambia.
+- **`EmptyState` no cambia** (R14): la API de `badge`, `actionIcon` y `body`
+  opcional ya la entregó #198 R18. El mapa la consume en R11–R13.
+- **El rosa por la paleta** (D22): `CATEGORY_SLOTS.rose.surface` / `.ink` en
+  plantillas de `className`, como hace `empty-state.tsx`; ningún literal
+  `bg-category-` / `text-category-` en el mapa, así CO `#64 R9` no se enmienda.
+- **`Skeleton variant="pulse"`** (D14): la prop `animation` no acepta
+  `'pulse'`; el mapa no la escribe.
 - **`PetMap`**: prop opcional `polylineWidth`; sin ella no hay clave `width`,
   así que el resto de consumidores y sus tests no cambian.
 - **CF nuevo** (`src/__tests__/map-canvas-fidelity.test.ts`): lee los
@@ -132,7 +149,7 @@ Producción:
 | Fichero | R |
 |---|---|
 | `src/screens/map/index.tsx` | R1, R2, R4–R13, R15, R16 |
-| `src/components/empty-state.tsx` | R14, R16 |
+| `src/components/empty-state.tsx` | R16 (solo lo lee la guarda de CF; no cambia) |
 | `src/components/pet-map.tsx` | R15, R16 |
 
 Tests:
@@ -141,22 +158,34 @@ Tests:
 |---|---|
 | `src/screens/map/index.test.tsx` (MT) | R1–R13, R15 y filas 1–18 del inventario |
 | `src/__tests__/map-canvas-fidelity.test.ts` (CF, nuevo) | R1, R2, R4–R13, R15, R16 |
-| `src/components/__tests__/empty-state.test.tsx` (ES) | R14 y filas 19–20 |
+| `src/components/__tests__/empty-state.test.tsx` (ES) | filas 19–20 |
 | `src/components/__tests__/pet-map.test.tsx` (PM) | R15 |
 | `src/__tests__/chunky-cta-canvas-fidelity.test.ts` (CC) | filas 21–24 |
 | `src/__tests__/legibility-classnames.test.ts` (LG) | fila 25 |
-| `src/__tests__/canvas-foundations.test.ts` (FN, de #197) | fila 26 |
+| `src/__tests__/design-drift.test.ts` (DD) | fila 26 |
+| `src/__tests__/alerts-canvas-fidelity.test.ts` (AF) | fila 27 |
 
-No cambian: `src/i18n/catalog.ts`, `src/__tests__/ui-copy-table.ts`,
-`src/theme/global.css`, `src/app/_layout.tsx`, `src/screens/home/**`,
-`package.json`.
+CC cambia en `#177 R7.2`, `R7.3`, `R7.4`, `R7.5`, `R12.1/R12.2` y `R12.3`
+(filas 21–24; los tres últimos leen la constante `consumers`).
+
+Se citan y no cambian: `src/components/__tests__/empty-state-hero.test.tsx`
+(EH, `#198 R18`, prueba de R14), `src/__tests__/consistency-classnames.test.ts`
+(CO, `#64 R9`, D22) y `src/utils/category-palette.ts`.
+
+No cambian: `src/components/empty-state.tsx`, `src/i18n/catalog.ts`,
+`src/__tests__/ui-copy-table.ts`, `src/theme/global.css`,
+`src/app/_layout.tsx`, `src/screens/home/**`, `package.json`.
 
 ## Alternativas descartadas
 
 - **`BlurView` en la píldora**: sin probar sobre la superficie nativa del mapa
   (D1).
-- **Componente de escena propio en el mapa** en vez de ampliar `EmptyState`:
-  duplicaría disco, Pingo, sombra y botón con labio que Inicio ya comparte.
+- **Componente de escena propio en el mapa** en vez de usar la API de
+  `EmptyState` de #198 R18: duplicaría disco, Pingo, sombra y botón con labio
+  que Inicio ya comparte.
+- **Literales `bg-category-rose` / `text-category-rose-strong` en el mapa**
+  enmendando CO `#64 R9`: rompería la regla de que solo la paleta nombra el
+  color categórico (D22).
 - **Mantener la tarjeta como `Card`** con clases de anulación (`border-0`,
   `shadow-none`): pelea con la receta del `Card` vía twMerge para quitar lo que
   el canvas no tiene (D4).
@@ -171,21 +200,15 @@ No cambian: `src/i18n/catalog.ts`, `src/__tests__/ui-copy-table.ts`,
 
 ## Riesgos
 
-- **Colisión con #198 en `empty-state.tsx`.** `InicioError` de #198 también
-  dibuja a Pingo con disco rosa y badge de peligro, y puede ampliar
-  `EmptyState` en paralelo. La que mergee segunda se rebasa sobre la API de la
-  primera; si #198 ya trae un `badge` con otra forma, R14 se enmienda para
-  usar esa y se reabre el gate solo para R14.
-- **#197 sin mergear.** Sin `useShadows`, `MOTION_RISE_*` ni FN, la rama no
-  compila. El handoff espera a #197 en `dev` (D21).
-- **Inventarios de #197 que esta spec no ve.** Si #197 deja candados de
-  consumidores de `homeEntering`, `MOTION_RISE_*` o `useShadows`, se ponen rojos
-  al montar el mapa. Re-medir tras el merge (ver Dependencias).
+- **Inventarios que entren en `dev` después de `ccd5460a`.** Una feature
+  mergeada más tarde puede dejar un candado de consumidores que el mapa
+  rompa. Re-medir antes del handoff (ver Dependencias).
 - **twMerge en HeroUI** con radios propios (`rounded-14`, `rounded-4`): si la
   clase de la variante gana, el smoke S4 / S7 lo ve y se resuelve con un
   `style` objeto (enmienda de R7 / R10).
-- **ES `#159 R9`** pierde cuatro filas del mapa: la intención «sin movimiento
-  en los estados sin collar» queda revertida a propósito (el canvas anima el
-  badge y la escena).
+- **ES `#159 R9`** pierde cuatro filas del mapa y cambia de título (fila 20):
+  la intención «sin movimiento en los estados sin collar» queda revertida a
+  propósito para el mapa (el canvas anima el badge y la escena); las zonas la
+  conservan.
 - **La base se mueve** si `dev` avanza: las cuentas de `tasks.md` se re-miden
   antes del handoff.

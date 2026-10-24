@@ -24,8 +24,9 @@ un requisito propio:
 | `MapaSinMascotas.dc.html` | Sin mascotas: Pingo con «Añadir mascota» | R12 |
 | `MapaSinRastreo.dc.html` | Sin collar con plan: Pingo con badge de collar y «Vincular collar» | R13 |
 
-R14 amplía `EmptyState` (badge, icono de acción y cuerpo opcional) para que
-R11–R13 no dupliquen el escenario de Pingo. R3 absorbe la feature #151
+R14 fija la API de `EmptyState` que R11–R13 consumen para no duplicar el
+escenario de Pingo (badge, icono de acción y cuerpo opcional). Esa API ya la
+entregó #198 R18: R14 no cambia producción ni añade tests (ver R14). R3 absorbe la feature #151
 (candados del nombre de la píldora). R16 es la guarda de deriva de los tres
 ficheros de producción.
 
@@ -69,27 +70,30 @@ gate, y entonces se enmienda la fila y los requisitos que cita.
 | D5 | Sombra del aviso sin ubicación | Conserva `Card` y su `shadow-sm` | `#62 R3` exige el `Card` compartido con `style` objeto; sumar `shadows.card` obliga a pelear con la clase | `style={{ …, ...shadows.card }}` y `shadow-none` |
 | D6 | Subida (`rise`) | Solo `map-stats` sube, con `homeEntering(0, MOTION_RISE_OFFSET_Y)` importado de `src/screens/home/home-entrance.tsx` (que #197 R12 pasa a `MOTION_RISE_TIMING`); el aviso sin ubicación no sube | Reutiliza la receta existente; el aviso es un `Card` con `style` objeto que `#62 R3` candado y no admite `entering` | Envolver el aviso en un `Animated.View` absoluto y enmendar `#62 R3` |
 | D7 | `pop` de los badges | `PopIn` existente (fade + muelle, 250 ms de espera) | Ya es el pop de la app (#171); el keyframe del canvas (400 ms, espera 300) no tiene receta propia | Receta nueva en `theme/motion.ts` |
-| D8 | Escenario de Pingo en error, sin mascotas y sin rastreo | `EmptyState variant="hero"`, ampliado por R14; la entrada de título, cuerpo y acción es la de `EmptyState` (muelle escalonado), no el `rise` 100/160/220 ms | El escenario ya coincide con el canvas (disco 240, Pingo 190, sombra) y lo comparte Inicio | Mover `EmptyState` a `rise` (afecta a Inicio: #198) |
+| D8 | Escenario de Pingo en error, sin mascotas y sin rastreo | `EmptyState variant="hero"` con la API de #198 R18 (R14); la entrada de título, cuerpo y acción es la de `EmptyState` (muelle escalonado), no el `rise` 100/160/220 ms | El escenario ya coincide con el canvas (disco 240, Pingo 190, sombra) y lo comparte Inicio | Mover `EmptyState` a `rise` (afecta a Inicio: #198) |
 | D9 | Pose de Mapa sin rastreo | `talk` (el blob del artboard es el de `InicioVacio`), no `collar` | El canvas dibuja el collar en el badge, no en Pingo | Mantener `collar` y enmendar R13 |
 | D10 | TestIDs de las dos ramas de error | `map-error` y `map-last-error` pasan a nombrar la raíz de `EmptyState`; el título es `-title` y la acción `-action` (`map-retry` → `map-error-action`, `map-last-retry` → `map-last-error-action`); el título deja de ser `selectable` | `EmptyState` deriva sus testIDs | — |
 | D11 | Ruta y zonas | Ruta de 5 px con la nueva prop opcional `polylineWidth` de `PetMap` (solo Mapa la pasa); relleno de zona sigue en `tab-pill` (0.14 frente a 0.12 del canvas) | Un token nuevo por 0.02 de alfa no compensa | Token `--color-map-zone` |
 | D12 | Lo que el canvas dibuja y es de otra feature | Marker, onda `ping`, etiqueta «Casa» y punto de inicio de la ruta → #192; barra de pestañas → #206; la pila conserva `bottom: insets.bottom + 96` (el 104 del canvas depende de la barra de #206) | Reparto del plan de paridad | — |
 | D13 | Altura del aviso sin ubicación | Conserva `top: insets.top + 12` | El `top: 60px` del canvas incluye la barra de estado | — |
-| D14 | Esqueleto | `Skeleton animation="pulse"` de heroui con sus valores por defecto, bloques `bg-lip-gray`; el bloque de valor (radio 6) usa `rounded-4` | No hay token de radio 6 y `rounded-md` está vetado (`consistency-classnames`) | Token `--radius-6` |
+| D14 | Esqueleto | `Skeleton variant="pulse"` de heroui-native 1.0.8 con sus valores por defecto, bloques `bg-lip-gray`; el bloque de valor (radio 6) usa `rounded-4`. La prop es `variant` (`'shimmer' \| 'pulse' \| 'none'`); `animation` es otra prop (`boolean \| 'disabled' \| …`) y no acepta `'pulse'` | No hay token de radio 6 y `rounded-md` está vetado (`consistency-classnames`) | Token `--radius-6` |
 | D15 | Feature #151 | Absorbida como R3 (cero cambio de producción) | Los tests de la píldora se reescriben aquí de todos modos | Dejarla pendiente |
 | D16 | Envoltorio de los estados de Pingo | `flex-1 items-center justify-center bg-background px-6 pt-15 pb-30` | Relleno 60/24/120 del canvas: centra por encima de la barra flotante | `p-6` de hoy |
 | D17 | Punto del estado activo | `bg-accent` local (el canvas usa `--accent`); el texto sigue `text-accent-strong`; offline conserva el tono de aviso | `STATUS_TONE_CLASSES.success.dot` es `bg-success` y lo comparten otras pantallas | — |
 | D18 | Icono «+» de Mapa sin mascotas | Trazo 2.8 pasado por `actionIcon`; el «+» por defecto de `EmptyState` (Inicio) no cambia | Fidelidad sin tocar Inicio | — |
 | D19 | Accesibilidad | `lost-mode-error` gana `accessibilityRole="alert"`; `map-loading` gana `accessibilityState={{ busy: true }}`; React Native no tiene rol `status` | Traducción directa de `role`/`aria-busy` del canvas | — |
 | D20 | Cabecera | Mapa no adopta `ScreenHeader` y `src/app/_layout.tsx` no cambia | El canvas de Mapa no tiene cabecera (mapa a sangre) | — |
-| D21 | Cimientos | Se implementa con #197 ya mergeado en `dev` (`useShadows`, `MOTION_RISE_*`, `homeEntering` con `rise`, colores claros nuevos) | R1, R2, R4, R9, R10 los usan | — |
+| D21 | Cimientos | Se implementa con #197, #198 y #200 ya mergeados en `dev` (`329c613c`, mergeado en la rama en `ccd5460a`): `useShadows`, `MOTION_RISE_*`, `homeEntering` con `rise`, colores claros nuevos y la API de `EmptyState` de #198 R18 | R1, R2, R4, R9, R10 usan los de #197; R11–R13 la de #198 | — |
+| D22 | Color categórico del mapa | El rosa de R7 y R11 se nombra con `CATEGORY_SLOTS.rose.surface` / `CATEGORY_SLOTS.rose.ink` de `src/utils/category-palette.ts` (importado como `import { CATEGORY_SLOTS } from '../../utils/category-palette';`), nunca con el literal `bg-category-` / `text-category-` en el mapa (ni en comentarios) | `consistency-classnames` `#64 R9` exige que solo el módulo de paleta nombre esas clases; `empty-state.tsx` ya usa `CATEGORY_SLOTS.rose.surface` | Enmendar `#64 R9` para admitir el mapa |
 
 ## Base medida
 
-Base congelada: `origin/dev` en `71ff81a1`. Se mide desde `mobile-pet-tracker/`,
-por contenido (nunca por número de línea). Ninguno de estos ficheros lo toca
-#197 salvo los marcados `(#197: …)`; los ficheros de #197 que aún no existen en
-la base se marcan como precondición.
+Base congelada: `ccd5460a` (rama `feature/201-mobile-canvas-map`: la spec
+mergeada con `origin/dev` `329c613c`, que ya contiene #197, #198 y #200). Se
+mide desde `mobile-pet-tracker/`, por contenido (nunca por número de línea).
+`grep -cF` cuenta **líneas**; donde la cifra cuenta ocurrencias se escribe
+`grep -oF … | wc -l`. Si `dev` se mueve antes del handoff, se re-mide este
+bloque entero.
 
 ```bash
 cd mobile-pet-tracker
@@ -102,21 +106,37 @@ grep -cF 'testID="map-retry"' $M                # 1  (R11: 1 → 0)
 grep -cF 'testID="map-last-retry"' $M           # 1  (R11: 1 → 0)
 grep -cF 'pose="collar"' $M                     # 1  (R13: 1 → 0)
 grep -cF '<Skeleton' $M                         # 1  (R10: 1 → 11)
+grep -cF 'variant="pulse"' $M                   # 0  (R10: 0 → 11)
+grep -cF 'animation=' $M                        # 0  (sin cambio: R10 no usa la prop animation)
 grep -cF 'useChunkyLip' $M                      # 0  (R13: 0 → 2: import y llamada)
+grep -cF 'const chunkyLip = useChunkyLip();' $M # 0  (R13: 0 → 1)
 grep -cF "from 'reicon-react-native'" $M        # 0  (R16: 0 → 1)
 grep -cF '<Card' $M                             # 2  (R4: 2 → 1)
 grep -cF 'rounded-xl' $M                        # 5  (R5, R7: 5 → 0)
+grep -oF 'rounded-14' $M | wc -l                # 0  (R5 +4, R7 +1, R10 +5: 0 → 10)
+grep -oF 'rounded-16' $M | wc -l                # 0  (R13: 0 → 1)
+grep -cF 'text-15' $M                           # 0  (R2: 0 → 1)
+grep -cF 'bg-category-' $M                      # 0  (sin cambio: D22)
+grep -cF 'text-category-' $M                    # 0  (sin cambio: D22)
+grep -cF "import { CATEGORY_SLOTS } from '../../utils/category-palette';" $M  # 0 (R7: 0 → 1)
+grep -oF 'CATEGORY_SLOTS.rose.surface' $M | wc -l   # 0 (R7 +1, R11 +2: 0 → 3)
+grep -oF 'CATEGORY_SLOTS.rose.ink' $M | wc -l       # 0 (R7: 0 → 1)
 grep -cF 'flex-1 items-center justify-center p-6 bg-background' $M   # 2 (R12, R13: 2 → 0)
 grep -cF 'useThemeColors' $M                    # 0  (R7, R11–R13: 0 → 2: import y llamada)
-grep -cF 'PopIn' $M                             # 0  (R11, R13)
+grep -cF '<PopIn' $M                            # 0  (R11, R13: 0 → 3)
 grep -cF 'react-native-svg' $M                  # 0  (R13: 0 → 1)
 grep -cF 'polylineWidth' src/components/pet-map.tsx            # 0 (R15)
 grep -cF "'accent-strong', 'tab-pill'" src/components/pet-map.tsx  # 1 (sin cambio)
-grep -cF 'badge' src/components/empty-state.tsx                # 0 (R14)
-grep -cF 'actionIcon' src/components/empty-state.tsx           # 0 (R14)
-grep -cF 'body: string' src/components/empty-state.tsx         # 1 (R14: 1 → 0)
-grep -cF '<Plus size={20}' src/components/empty-state.tsx      # 1 (sin cambio)
+E=src/components/empty-state.tsx                # API de #198 R18; R14 no la cambia
+grep -cF 'badge' $E                             # 3  (sin cambio)
+grep -cF 'actionIcon' $E                        # 3  (sin cambio)
+grep -cF 'body: string' $E                      # 0  (sin cambio)
+grep -cF 'body?: string' $E                     # 1  (sin cambio)
+grep -cF '<Plus size={20}' $E                   # 1  (sin cambio)
 T=src/screens/map/index.test.tsx
+grep -cF "jest.mock('react-native-reanimated'" $T       # 0  (R1: 0 → 1)
+grep -cF "jest.mock('reicon-react-native'" $T           # 0  (R7: 0 → 1)
+grep -cF "jest.mock('../../theme/use-theme-colors'" $T  # 0  (R7: 0 → 1)
 grep -cF "'map-retry'" $T                       # 2  (R11: 2 → 0)
 grep -cF "'map-last-retry'" $T                  # 5  (R11: 5 → 0)
 grep -cF 'pingo-collar' $T                      # 1  (R13: 1 → 0)
@@ -127,16 +147,37 @@ grep -cF 'mt-1 text-2xs font-normal text-muted' $T   # 1 (R5: 1 → 0)
 grep -cF "['src/screens/map/index.tsx', 2]," src/components/__tests__/empty-state.test.tsx           # 1 (R11)
 grep -cF "['src/screens/map/index.tsx', 'entering=']," src/components/__tests__/empty-state.test.tsx  # 1 (R1)
 grep -cF "[join('screens', 'map', 'index.tsx'), 2]," src/__tests__/legibility-classnames.test.ts     # 1 (R5)
-grep -cF 'screens/map/index.tsx' src/__tests__/chunky-cta-canvas-fidelity.test.ts                 # 0 (R13)
+grep -cF "'components/empty-state.tsx', 'components/toggle-switch.tsx', 'theme/shadows.ts'" src/__tests__/legibility-classnames.test.ts  # 1 (sin cambio: el mapa no pide 'accent')
+grep -cF 'los estados sin collar no traen movimiento ni dependencias' src/components/__tests__/empty-state.test.tsx  # 1 (fila 20: 1 → 0)
+grep -cF 'el sin collar del mapa no trae LayoutAnimation' src/components/__tests__/empty-state.test.tsx         # 0 (fila 20: 0 → 1)
+grep -cF "['src/screens/map/index.tsx', '" src/components/__tests__/empty-state.test.tsx  # 7 (fila 20: 7 → 3; quedan 'Text', 'Card' y 'LayoutAnimation')
+grep -cF '#201 R14' src/components/__tests__/empty-state.test.tsx                       # 0 (sin cambio: R14 no añade tests)
+grep -cF '#198 R18' src/components/__tests__/empty-state-hero.test.tsx                  # 7 (sin cambio: describe + 6 it)
+grep -oF "'screens/map/index.tsx'" src/__tests__/chunky-cta-canvas-fidelity.test.ts | wc -l   # 0 (filas 21–24: 0 → 5)
+grep -cF '(enmendado por #201 R13)' src/__tests__/chunky-cta-canvas-fidelity.test.ts          # 0 (filas 21–24: 0 → 6: R7.2, R7.3, R7.4, R7.5, R12.1/R12.2, R12.3)
+grep -cF 'diecisiete consumidores' src/__tests__/chunky-cta-canvas-fidelity.test.ts            # 1 (fila 23: 1 → 0)
+grep -cF 'los dieciocho consumidores usan el hook' src/__tests__/chunky-cta-canvas-fidelity.test.ts  # 0 (fila 23: 0 → 1)
+grep -cF 'los dieciocho ficheros respetan' src/__tests__/chunky-cta-canvas-fidelity.test.ts     # 1 (fila 23: 1 → 0)
+grep -cF 'los diecinueve ficheros respetan' src/__tests__/chunky-cta-canvas-fidelity.test.ts    # 0 (fila 23: 0 → 1)
+grep -cF "join('screens', 'map', 'index.tsx')" src/__tests__/design-drift.test.ts              # 0 (fila 26: 0 → 1)
+grep -cF "'screens/map/index.tsx': 1, // #201 R13" src/__tests__/design-drift.test.ts          # 0 (fila 26: 0 → 1)
+grep -cF '(enmendado por #198 R9) (enmendado por #201 R5, R13)' src/__tests__/design-drift.test.ts  # 0 (fila 26: 0 → 1)
+grep -cF "'screens/map/index.tsx', // #201 R2" src/__tests__/alerts-canvas-fidelity.test.ts     # 0 (fila 27: 0 → 1)
+grep -cF '(enmendado por #198 R9, R15) (enmendado por #201 R2)' src/__tests__/alerts-canvas-fidelity.test.ts  # 0 (fila 27: 0 → 1)
+grep -cF "expect(inventory.files).toEqual([join('utils', 'category-palette.ts')]);" src/__tests__/consistency-classnames.test.ts  # 1 (sin cambio: D22)
+grep -cF '#197 R20' src/__tests__/canvas-foundations.test.ts   # 0 (FN no tiene candado de importadores: no hay fila de FN)
 test ! -e src/__tests__/map-canvas-fidelity.test.ts    # verdadero (nuevo, CF)
-test ! -e src/__tests__/canvas-foundations.test.ts     # verdadero en la base; precondición: existe (#197)
-test ! -e src/theme/shadows.ts                         # verdadero en la base; precondición: existe (#197)
-grep -cF 'MOTION_RISE' src/theme/motion.ts             # 0 en la base; precondición: ≥ 2 (#197)
+test -e src/__tests__/canvas-foundations.test.ts       # verdadero (#197 mergeada)
+test -e src/theme/shadows.ts                           # verdadero (#197 mergeada)
+grep -cF 'MOTION_RISE' src/theme/motion.ts             # 2 (#197 mergeada; sin cambio)
 ```
 
-Todos los literales de canvas que citan los requisitos se comprobaron con
-`grep -cF` contra `specs/mobile-canvas-map/canvas/*.dc.html` y aparecen las
-veces que dice cada fila de CF (en R1–R15).
+Los literales de canvas que citan los requisitos se contaron por
+**ocurrencias**, no por líneas, contra `specs/mobile-canvas-map/canvas/*.dc.html`:
+`grep -oF '<literal>' <Artboard>.dc.html | wc -l`. Con `grep -cF` las cifras
+salen menores donde una línea lleva varias ocurrencias (en `MapaCarga`,
+`animation: pulse 1.4s ease-in-out infinite` da 3 líneas y 11 ocurrencias).
+CF cuenta igual, por ocurrencias, en las dos mitades: `source.split(literal).length - 1`.
 
 Abreviaturas de test:
 
@@ -145,12 +186,22 @@ Abreviaturas de test:
   `readFileSync(join(process.cwd(), '..', 'specs/mobile-canvas-map/canvas/<Artboard>.dc.html'), 'utf8')`
   y la fuente de producción con `readFileSync(join(process.cwd(), 'src', …), 'utf8')`.
   En cada fila afirma las dos mitades: la cuenta del literal del canvas y la
-  cuenta del literal de producción. Un `describe` por requisito, titulado `#201 R<n>: …`.
+  cuenta del literal de producción, ambas por ocurrencias
+  (`split(literal).length - 1`). Un `describe` por requisito, titulado `#201 R<n>: …`.
+  Las cifras de producción que da cada R son las finales. Cuando un literal lo
+  suman varios R, la fila vive en el `describe` del primero con la cuenta
+  acumulada hasta ese R, y el commit rojo de cada R posterior que lo suma sube
+  la cifra (sin sufijo: CF es de #201): `className="gap-2.5"` 1 en R1 → 2 en
+  R10; `h-12.5` 1 en R7 → 2 en R10; `bg-background px-6 pt-15 pb-30` 2 en
+  R11 → 3 en R12 → 4 en R13; `<PopIn` 2 en R11 → 3 en R13.
 - ES `src/components/__tests__/empty-state.test.tsx`
+- EH `src/components/__tests__/empty-state-hero.test.tsx` (lo creó #198; R14 lo cita, no lo cambia)
 - PM `src/components/__tests__/pet-map.test.tsx`
 - CC `src/__tests__/chunky-cta-canvas-fidelity.test.ts`
 - LG `src/__tests__/legibility-classnames.test.ts`
-- FN `src/__tests__/canvas-foundations.test.ts` (lo crea #197)
+- DD `src/__tests__/design-drift.test.ts`
+- AF `src/__tests__/alerts-canvas-fidelity.test.ts`
+- CO `src/__tests__/consistency-classnames.test.ts` (no cambia: D22)
 
 Los `it` nuevos empiezan por `#201 R<n>`. Los `it` existentes que cambian
 conservan su título y añaden ` (enmendado por #201 R<n>)`.
@@ -179,10 +230,10 @@ Nuevos:
 | `map-loading-pill` | Píldora del esqueleto | R10 |
 | `map-loading-card` | Tarjeta del esqueleto | R10 |
 | `map-error-title`, `map-error-stage`, `map-error-pose`, `map-error-action` | Derivados de `EmptyState` | R11 |
-| `map-error-badge`, `map-error-action-icon` | Badge rosa e icono de Reintentar (pasados por R14) | R11 |
+| `map-error-badge`, `map-error-action-icon` | Badge rosa e icono de Reintentar (pasados por la API de #198 R18, R14) | R11 |
 | `map-last-error-title`, `map-last-error-stage`, `map-last-error-pose`, `map-last-error-action` | Derivados de `EmptyState` | R11 |
 | `map-last-error-badge`, `map-last-error-action-icon` | Badge rosa e icono de Reintentar | R11 |
-| `map-no-pets-action-icon` | «+» de trazo 2.8 (pasado por R14; mismo nombre que el de por defecto) | R12 |
+| `map-no-pets-action-icon` | «+» de trazo 2.8 (pasado por `actionIcon`; mismo nombre que el de por defecto) | R12 |
 | `map-no-tracking-badge`, `map-no-tracking-collar`, `map-no-tracking-action-icon` | Badge del collar, su `Svg` e icono de enlace | R13 |
 
 Comprobado contra los selectores por regex del árbol
@@ -202,11 +253,48 @@ Convenciones de todos los requisitos:
   `useThemeColors(['accent-foreground', 'category-rose-strong', 'danger', 'muted'])`
   en `MapScreen` (nombres locales `accentForeground`, `categoryRoseStrong`,
   `danger`, `muted`). La lista no casa con la regex `'accent'` de LG.
+- El rosa categórico (R7, R11) sale de `CATEGORY_SLOTS.rose` (D22), con
+  `import { CATEGORY_SLOTS } from '../../utils/category-palette';` y
+  plantillas literales: `CATEGORY_SLOTS.rose.surface` vale `'bg-category-rose'`
+  y `CATEGORY_SLOTS.rose.ink` vale `'text-category-rose-strong'`. El mapa no
+  escribe `bg-category-` ni `text-category-` en ningún sitio, comentarios
+  incluidos. El `className` resultante en tiempo de ejecución es el mismo, así
+  que los MT siguen afirmando la cadena completa.
 - Los iconos son de `reicon-react-native` y van en un solo import:
   `AlertCircle, AlertTriangle, Link, Location, Plus, Refresh`.
 - Los MT nuevos van en un `describe('#201 R<n>: …')` por requisito. Los tests
   corren en tema claro: los colores esperados son los literales claros del
   canvas, nunca un valor importado de producción.
+- **Dobles de módulo de MT.** MT no tiene hoy ninguno de estos tres; se añaden
+  a nivel de módulo, cada uno en el commit rojo del primer R que lo necesita
+  (R1 el de Reanimated, R7 los otros dos), y los demás R los reutilizan:
+  1. `jest.mock('react-native-reanimated', …)`: `...jest.requireActual(…)`,
+     `__esModule: true` (sin él, el spread pierde la bandera y el import por
+     defecto `Animated` llega `undefined`) y
+     `useReducedMotion: () => mockUseReducedMotion()`, con
+     `const mockUseReducedMotion = jest.fn<boolean, []>(() => false);` en el
+     módulo y `mockUseReducedMotion.mockReturnValue(false)` en el `beforeEach`
+     de nivel superior. Precedente: el doble de `src/screens/home/index.test.tsx`,
+     del que solo se copian esas tres claves (no los `withDelay`/`withTiming`
+     falsos).
+  2. `jest.mock('reicon-react-native', …)`: `...jest.requireActual(…)`,
+     `__esModule: true` y los seis nombres de R16 sustituidos por el helper
+     `mockIcon(testID)` de `src/screens/home/index.test.tsx` (un
+     `function MockIcon(props)` que devuelve `View` con `{ testID, ...props }`):
+     `AlertCircle` → `'icon-alert-circle'`, `AlertTriangle` →
+     `'icon-alert-triangle'`, `Link` → `'icon-link'`, `Location` →
+     `'icon-location'`, `Plus` → `'icon-plus'`, `Refresh` → `'icon-refresh'`.
+     Así un `testID` pasado por producción gana al de por defecto y `size`,
+     `strokeWidth`, `color` y `style` llegan al host (el `createIcon` real los
+     consume y no los expone).
+  3. `jest.mock('../../theme/use-theme-colors', …)`: `useThemeColors` devuelve
+     `tokens.map(token => colors[token] ?? '#0D1117')` con el mapa definido
+     dentro de la fábrica, con los valores claros de `src/theme/global.css`:
+     `'accent-foreground': '#FFFFFF'`, `'category-rose-strong': '#D80B34'`,
+     `danger: '#D92D20'`, `muted: '#667085'`, `lip: '#0E5E3C'`,
+     `'lip-gray': '#E4E7EC'`. Precedente: el doble de
+     `src/components/__tests__/empty-state-hero.test.tsx`. Los `it` existentes
+     de MT que leen colores usan `expect.any(String)` y no se mueven.
 - Los `Text` de `map/index.tsx` son los de `react-native`
   (`import { Text, View } from 'react-native'`), así que `text-15` y `text-11`
   no pasan por twMerge. Solo `Button.Label` (R7) es de HeroUI, y lleva
@@ -228,8 +316,8 @@ THEN `entering` SHALL ser `undefined`.
   es `{ opacity: 0, transform: [{ translateY: 14 }] }` (literal 14, no la
   constante).
 - MT `#201 R1: con movimiento reducido map-stats no anima la entrada`: con
-  `useReducedMotion` forzado a `true` (mismo mecanismo que el test de
-  `HomeEntrance`), `props.entering` es `undefined`.
+  `mockUseReducedMotion.mockReturnValue(true)` antes del render (doble 1 de las
+  convenciones), `props.entering` es `undefined`.
 - CF `Mapa`: `animation: rise 400ms ease-out both` ×1 frente a
   `homeEntering(0, MOTION_RISE_OFFSET_Y)` ×1 en el mapa;
   `bottom: 104px; display: flex; flex-direction: column; gap: 10px` ×1 frente a
@@ -250,13 +338,18 @@ y `style={shadows.card}`, con tres hijos en orden:
    y el estado `map-pet-pill-status` (`numberOfLines={1}`,
    `className={\`text-xs font-bold ${text}\`}`).
 
-Tonos por rama (una fila de test por rama): en línea → `bg-accent` /
-`text-accent-strong` (D17); sin señal → `bg-warning-strong` /
-`text-warning-strong`; desactualizado, sin collar, detalle pendiente y detalle
-con error → `bg-muted` / `text-muted`. El `accessibilityLabel` de la píldora no
-cambia.
+Tonos por rama (una fila de test por rama; los de hoy salvo el punto en línea):
+en línea (`online`, «GPS activo») → `bg-accent` / `text-accent-strong` (D17);
+desactualizado (`offline`, «Desactualizado») → `bg-warning-strong` /
+`text-warning-strong`; sin señal (`unknown`/`none`, «Sin señal»), sin collar,
+detalle pendiente y detalle con error → `bg-muted` / `text-muted`. Es lo que
+ya resuelven `MAP_CONNECTION_TONE` y `STATUS_TONE_CLASSES`; R2 solo sustituye
+`bg-success` por `bg-accent` en el punto en línea. El `accessibilityLabel` de
+la píldora no cambia.
 
 - MT: los `it` enmendados de `#116 R2`, `#116 R3` y `#116 R4` (inventario abajo).
+- AF `#174 R12: inventarios › limita $token a su inventario de producción`,
+  fila `text-15`: la lista gana el mapa (fila 27).
 - MT `#201 R2: la píldora lleva la sombra de tarjeta de dos capas`:
   `props.style.boxShadow` tiene longitud 2 y casa con
   `[{ offsetY: 1, blurRadius: 2 }, { offsetY: 8, blurRadius: 24 }]`
@@ -332,6 +425,9 @@ WHEN el valor tiene dato, su `className` SHALL ser: velocidad
   filas (velocidad, distancia, actualizado) con posición, velocidad y ruta.
 - LG `#61 R4`: `inkSites` del mapa `2` → `2 - 1 // #201 R5` y el total
   `suma las trece ocurrencias…` con `- 1 // #201 R5`.
+- DD `reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto`:
+  la lista de `rounded-14` gana el mapa (fila 26; los cuatro tiles bastan, R7 y
+  R10 no la mueven más porque la lista es de ficheros).
 - CF `Mapa`: `border-radius: 14px; background: var(--default); padding: 10px 12px`
   ×4 / `flex-1 gap-0.5 rounded-14 bg-default px-3 py-2.5` ×4;
   `font-size: 11px; font-weight: 600; color: var(--muted)` ×4 /
@@ -361,22 +457,37 @@ literal `'text-xl font-black text-muted'`. Una rama por causa de guion:
 ### R7 — Botón de modo perdido rosa con icono (`Mapa`)
 
 THE SYSTEM SHALL pintar `lost-mode-button` como `Button variant="danger-soft"`
-con `className="h-12.5 gap-2 rounded-14 bg-category-rose"`, sin `style` de
-labio, con dos hijos en orden:
+con ``className={`h-12.5 gap-2 rounded-14 ${CATEGORY_SLOTS.rose.surface}`}``
+(D22; en ejecución, `'h-12.5 gap-2 rounded-14 bg-category-rose'`), sin `style`
+de labio, con dos hijos en orden:
 `<AlertTriangle size={18} strokeWidth={2.2} color={categoryRoseStrong} testID="lost-mode-icon" />`
-y `Button.Label className="text-base font-extrabold text-category-rose-strong"`
-con el literal de hoy («Activar modo perdido» / «Desactivar modo perdido»). Rol
+y ``Button.Label className={`text-base font-extrabold ${CATEGORY_SLOTS.rose.ink}`}``
+(en ejecución, `'text-base font-extrabold text-category-rose-strong'`) con el
+literal de hoy («Activar modo perdido» / «Desactivar modo perdido»). Rol
 no-owner, deshabilitado y mutación no cambian.
 
 - MT `#201 R7: el botón es rosa, sin labio y con el triángulo delante`:
-  `className` exacta, `props.style` sin `boxShadow`, hijos
-  `['lost-mode-icon', <Button.Label>]`, icono con `size` 18, `strokeWidth` 2.2 y
-  `color` `'#D80B34'`, `className` del rótulo exacta.
+  `className` del host de `lost-mode-button` termina en
+  `' h-12.5 gap-2 rounded-14 bg-category-rose'` (`toMatch` con la cadena
+  escapada y anclada con `$`; el host antepone el prefijo BEM de HeroUI, como
+  en `#184 R4` de `src/screens/profile/index.test.tsx`), `props.style` sin
+  `boxShadow`, el icono `lost-mode-icon` está dentro del botón y antes que el
+  rótulo en `toJSON()`, con `size` 18, `strokeWidth` 2.2 y `color` `'#D80B34'`
+  (dobles 2 y 3); el rótulo (localizado con `getByText`) tiene `className` que
+  termina en `' text-base font-extrabold text-category-rose-strong'`.
 - MT `#201 R7: el rótulo de desactivar lleva la misma tinta`: con modo perdido
-  activo, rótulo «Desactivar modo perdido» con la misma `className`.
+  activo, rótulo «Desactivar modo perdido» con la misma terminación de `className`.
+- CO `#64 R9: el color categórico solo se nombra en el módulo de paleta` sigue
+  verde sin enmienda (D22): ni R7 ni R11 escriben `bg-category-` ni
+  `text-category-` en el mapa.
+- CC `#177 R8.4: destructivos, tonales y reintentos no reciben labio` sigue
+  verde sin enmienda: el texto de la etiqueta de apertura `<Button` de
+  `lost-mode-button` (hasta el siguiente `<`) no contiene `chunkyLip` ni
+  `border-b-`.
 - CF `Mapa`: `height: 50px` ×1 / `h-12.5` ×2 (botón y esqueleto);
   `border-radius: 14px; background: var(--rose); color: var(--rose-s)` ×1 /
-  `rounded-14 bg-category-rose` ×1; `--rose:#FFF0F3` ×1 /
+  `` `h-12.5 gap-2 rounded-14 ${CATEGORY_SLOTS.rose.surface}` `` ×1 y
+  `CATEGORY_SLOTS.rose.ink` ×1 en el mapa; `--rose:#FFF0F3` ×1 /
   `--color-category-rose: #FFF0F3` ×1 en `global.css`; `--rose-s:#D80B34` ×1 /
   `--color-category-rose-strong: #D80B34` ×1 en `global.css`; el `path`
   `M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z`
@@ -408,8 +519,13 @@ y `Text testID="map-empty" className="text-sm font-semibold text-muted"`
 («Sin datos de ubicación todavía»).
 
 - MT `#201 R9: el aviso lleva el icono de ubicación delante del texto`: hijos
-  `['map-empty-icon', 'map-empty']`, icono 18 / 2.2 / `color` del token `muted`
-  claro leído de `global.css` en el propio test, y las dos `className` exactas.
+  `['map-empty-icon', 'map-empty']`, icono 18 / 2.2 / `color` `'#667085'`
+  (el `muted` claro, que sale del doble 3; el valor de `global.css` ya lo
+  candan los tests de `global-css`), y las dos `className` exactas.
+- ES `%s abre <%s testID="%s"> una sola vez` sigue verde sin enmienda: `testID`
+  sigue siendo el primer atributo de `<Text testID="map-empty"` y de
+  `<Card testID="map-empty-overlay"` (solo espacio en blanco entre etiqueta y
+  `testID`), una vez cada uno.
 - CF `MapaSinUbicacion`: `padding: 14px 16px; border-radius: 20px` ×1 /
   `gap-2 px-4 py-3.5` ×1; `font-size: 14px; font-weight: 600` ×1 /
   `text-sm font-semibold text-muted` ×1.
@@ -434,7 +550,7 @@ mismo `style` objeto que `map-stats` (R1), que contenga en orden:
    `h-12.5 rounded-14 bg-default`.
 
 Todos los `Skeleton` (11, escritos en línea) son de `heroui-native` con
-`animation="pulse"` y sus valores por defecto (D14).
+`variant="pulse"` y sus valores por defecto (D14); ninguno lleva `animation=`.
 
 - MT `#201 R10: la carga se anuncia ocupada sobre bg-default`: `className` y
   `accessibilityState` `{ busy: true }` de `map-loading`.
@@ -442,17 +558,28 @@ Todos los `Skeleton` (11, escritos en línea) son de `heroui-native` con
   y `boxShadow` (longitud 2 / 1) de `map-loading-pill` y `map-loading-card`;
   `map-loading-stats` tiene `style.bottom` 120 (con el `insets.bottom` 24 del
   mock) y los hijos `['map-loading-pill', 'map-loading-card']`.
-- MT `#201 R10: los once bloques laten con pulse`: dentro de `map-loading` hay
-  11 nodos `Skeleton` de `heroui-native` y todos tienen `animation` `'pulse'`.
+- MT `#201 R10: los once bloques laten con pulse`: con un helper recursivo
+  `descendants(node: TestInstance)` sobre `children` (los hijos `string` se
+  descartan), dentro de `screen.getByTestId('map-loading')` hay exactamente 11
+  nodos cuya `props.className` empieza por `'skeleton__root '`, y para los 11
+  `node.parent?.props.className` es `undefined` (con `variant="pulse"` el host
+  cuelga del `Animated.View` sin `className` de `PulseAnimation`; con `shimmer`
+  o `none` colgaría del `View` del autor, que siempre la tiene).
+- CF `#201 R10: los once Skeleton del mapa son pulse`: cada etiqueta de
+  apertura `<Skeleton` del mapa contiene `variant="pulse"` (11 de 11) y el mapa
+  no contiene `animation=`.
 - MT `R4: map resuelve la mascota seleccionada › R8 (mobile-design-drift): reserva el mapa completo con Skeleton`
   sigue verde sin cambios (`className` contiene `flex-1`).
 - CF `MapaCarga`: `aria-busy="true"` ×1 / `accessibilityState={{ busy: true }}`
-  ×1; `animation: pulse 1.4s ease-in-out infinite` ×11 / `animation="pulse"` ×11;
+  ×1; `animation: pulse 1.4s ease-in-out infinite` ×11 / `variant="pulse"` ×11;
   `background: var(--lip-gray)` ×10 / `bg-lip-gray` ×10;
   `width: 150px; height: 12px` ×1 / `h-3 w-37.5` ×1;
   `width: 48px; height: 10px` ×4 / `h-2.5 w-12` ×4;
   `width: 72px; height: 22px` ×4 / `h-5.5 w-18` ×4;
   `width: 28px; height: 28px` ×1 / `size-7 rounded-full bg-lip-gray` ×1.
+- DD `reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto`
+  ya suma el mapa por R5 (fila 26); los `rounded-14` de R10 no cambian el
+  inventario porque es por fichero, no por ocurrencia.
 
 ### R11 — Pingo en las dos ramas de error (`MapaError`)
 
@@ -465,15 +592,20 @@ hijo es `EmptyState variant="hero"` con ese `testID`, `pose="talk"`,
 `action={{ label: t('common.retry'), onPress: <refetch de esa misma consulta> }}`,
 `actionIcon={<Refresh size={20} strokeWidth={2.6} color={accentForeground} style={{ marginRight: 8 }} testID="<id>-action-icon" />}`
 y
-`badge={<PopIn testID="<id>-badge" className="absolute bottom-8.5 right-9 size-14 items-center justify-center rounded-full border-4 border-background bg-category-rose"><AlertCircle size={26} strokeWidth={2.2} color={danger} /></PopIn>}`.
+``badge={<PopIn testID="<id>-badge" className={`absolute bottom-8.5 right-9 size-14 items-center justify-center rounded-full border-4 border-background ${CATEGORY_SLOTS.rose.surface}`}><AlertCircle size={26} strokeWidth={2.2} color={danger} /></PopIn>}``
+(D22; en ejecución la `className` termina en `border-background bg-category-rose`).
+`badge` y `actionIcon` son la API que ya entregó #198 R18 (R14).
 Las dos ramas se escriben en línea (4 `<EmptyState` en el mapa).
 
 Una fila de test por rama (`it.each` sobre `map-error` y `map-last-error`):
 
 - MT `#201 R11: %s pinta a Pingo con badge rosa y Reintentar`: título «Algo salió
   mal», sin `<id>-body`, `<id>-pose` con `pingo-talk.webp`, acción con
-  «Reintentar», `<id>-action-icon` con `strokeWidth` 2.6, `<id>-badge` con su
-  `className` exacta y un `AlertCircle` 26 / 2.2 / `'#D92D20'` (danger de #197).
+  «Reintentar», `<id>-action-icon` con `strokeWidth` 2.6, `<id>-badge` con
+  `className` exacta
+  `'absolute bottom-8.5 right-9 size-14 items-center justify-center rounded-full border-4 border-background bg-category-rose'`
+  y, dentro, `within(badge).getByTestId('icon-alert-circle')` (doble 2) con
+  `size` 26, `strokeWidth` 2.2 y `color` `'#D92D20'` (doble 3).
 - MT `#201 R11: %s centra por encima de la barra`: el padre de `<id>` tiene
   `className` `'flex-1 items-center justify-center bg-background px-6 pt-15 pb-30'`
   y un solo hijo.
@@ -482,7 +614,7 @@ Una fila de test por rama (`it.each` sobre `map-error` y `map-last-error`):
 - ES `%s pinta %i EmptyState`: fila del mapa `2` → `2 + 2 // #201 R11`.
 - CF `MapaError`:
   `width: 56px; height: 56px; border-radius: 50%; background: var(--rose); color: var(--danger); border: 4px solid var(--bg)`
-  ×1 / `size-14 items-center justify-center rounded-full border-4 border-background bg-category-rose`
+  ×1 / `` size-14 items-center justify-center rounded-full border-4 border-background ${CATEGORY_SLOTS.rose.surface} ``
   ×2; `right: 36px; bottom: 34px` ×1 / `absolute bottom-8.5 right-9` ×2;
   `M20 12a8 8 0 1 1-2.5-5.8` ×1 / `<Refresh` ×2; `M12 8v5M12 16.5h.01` ×1 /
   `<AlertCircle` ×2; `stroke-width="2.6"` ×1 / `strokeWidth={2.6}` ×2;
@@ -511,7 +643,9 @@ WHEN la mascota no tiene collar con plan activo, THE SYSTEM SHALL pintar, como
 `EmptyState variant="hero" testID="map-no-tracking" pose="talk"` con el copy de
 hoy, con
 `badge={<PopIn testID="map-no-tracking-badge" className="absolute bottom-10 right-7.5 size-13 items-center justify-center rounded-16 bg-accent" style={chunkyLip.primary}>…</PopIn>}`
-(`chunkyLip` de `useChunkyLip()`), cuyo hijo es
+(`chunkyLip` declarado como `const chunkyLip = useChunkyLip();` en el cuerpo
+de `MapScreen`, con `import { useChunkyLip } from '../../theme/chunky-lip';`),
+cuyo hijo es
 `<Svg testID="map-no-tracking-collar" width={26} height={26} viewBox="0 0 24 24" fill="none" stroke={accentForeground} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">`
 con `<Ellipse cx="12" cy="8.5" rx="8" ry="4" />`, `<Path d="M12 12.5v3" />` y
 `<Circle cx="12" cy="18.5" r="2.5" />` de `react-native-svg`. WHEN
@@ -521,16 +655,20 @@ SHALL llevar
 IF `canPairCollar` es falso, THEN no hay acción ni icono.
 
 - MT `#201 R13: sin rastreo pinta a Pingo con el badge del collar`: `pose` con
-  `pingo-talk.webp`; `map-no-tracking-badge` con `className` exacta y
-  `style.boxShadow` no vacío; `map-no-tracking-collar` con `strokeWidth` 2 y sus
+  `pingo-talk.webp`; `map-no-tracking-badge` con `className` exacta
+  `'absolute bottom-10 right-7.5 size-13 items-center justify-center rounded-16 bg-accent'`
+  y `StyleSheet.flatten(badge.props.style).boxShadow` igual (`toEqual`) a
+  `[{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: '#0E5E3C' }]`
+  (el `lip` del doble 3); `map-no-tracking-collar` con `strokeWidth` 2 y sus
   tres hijos `Ellipse`, `Path`, `Circle` en ese orden.
 - MT `#201 R13: el dueño sin collar ve el icono de enlace`:
   `map-no-tracking-action-icon` con `strokeWidth` 2.4.
 - MT `#201 R13: sin botón no hay icono de enlace`: escenario de `#159 R4` (no
   dueño) y `queryByTestId('map-no-tracking-action-icon')` es `null`.
 - MT `#159 R2` enmendados (inventario).
-- CC: `#177 R7.2`, `#177 R7.3`, `#177 R7.4` y `#177 R7.5` suman el mapa
-  (inventario).
+- CC: `#177 R7.2`, `#177 R7.3`, `#177 R7.4`, `#177 R7.5`, `#177 R12.1/R12.2`
+  y `#177 R12.3` suman el mapa (filas 21–24); DD suma el mapa al objeto de
+  `rounded-16` (fila 26).
 - CF `MapaSinRastreo`:
   `right: 30px; bottom: 40px; width: 52px; height: 52px; border-radius: 16px; background: var(--accent)`
   ×1 / `absolute bottom-10 right-7.5 size-13 items-center justify-center rounded-16 bg-accent`
@@ -542,11 +680,11 @@ IF `canPairCollar` es falso, THEN no hay acción ni icono.
   `<Circle cx="12" cy="18.5" r="2.5"` ×1; `stroke-width="2.4"` ×2 /
   `strokeWidth={2.4}` ×1.
 
-### R14 — `EmptyState` admite badge, icono de acción y cuerpo opcional
+### R14 — `EmptyState` admite badge, icono de acción y cuerpo opcional (entregado por #198 R18)
 
-THE SYSTEM SHALL ampliar las props de `EmptyState`
-(`src/components/empty-state.tsx`) con `badge?: ReactNode` y
-`actionIcon?: ReactElement`, y hacer `body?: string` opcional:
+THE SYSTEM SHALL ofrecer en `EmptyState` (`src/components/empty-state.tsx`)
+`badge?: ReactNode`, `actionIcon?: ReactElement` y `body?: string`, con este
+comportamiento:
 
 - WHERE `variant="hero"` y `badge` está definido, `badge` SHALL renderizarse
   como último hijo de `<testID>-stage`;
@@ -556,19 +694,22 @@ THE SYSTEM SHALL ampliar las props de `EmptyState`
 - IF `body` no está definido, THEN no SHALL montarse `<testID>-body` ni su
   envoltorio de entrada, en ninguna variante.
 
-Inicio no pasa ninguna prop nueva y no cambia.
+Esa API ya está en la base (`ccd5460a`): la entregó #198 R18 y la candan sus
+seis `it`. **R14 no cambia producción ni añade tests**: no tiene commit rojo ni
+verde, y ningún bloque de E (Base medida) cambia. El mapa la consume en R11 y
+R13. Inicio no cambia.
 
-- ES `#201 R14: el badge es el último hijo del escenario`: con `badge` el
-  escenario tiene un hijo más que sin él y ese hijo es el badge.
-- ES `#201 R14: sin badge el escenario no cambia`: sin `badge` no hay nodo con
-  el `testID` del badge de prueba.
-- ES `#201 R14: actionIcon sustituye al «+» del hero`: el icono pasado está y
-  `<id>-action-icon` es él.
-- ES `#201 R14: sin actionIcon el hero conserva el «+»`: `<id>-action-icon` tiene
-  `size` 20 y `strokeWidth` `undefined`.
-- ES `#201 R14: sin body el hero no monta cuerpo` y
-  `#201 R14: sin body la variante por defecto no monta cuerpo` (una fila por
-  variante).
+- EH `#198 R18: API compartida del escenario`
+  (`src/components/__tests__/empty-state-hero.test.tsx`), seis `it` que nacen
+  verdes y deben seguir verdes al final de cada commit de #201:
+  `#198 R18 el badge es el último hijo del escenario`,
+  `#198 R18 sin badge el escenario no cambia`,
+  `#198 R18 actionIcon sustituye al «+» del hero`,
+  `#198 R18 sin actionIcon el hero conserva el «+»`,
+  `#198 R18 sin body el hero no monta cuerpo` y
+  `#198 R18 sin body la variante por defecto no monta cuerpo`.
+- Prohibido duplicarlos en ES con prefijo `#201 R14`: `grep -cF '#201 R14' src/components/__tests__/empty-state.test.tsx`
+  da `0` al final.
 
 ### R15 — La ruta se dibuja con trazo 5 (`Mapa`)
 
@@ -577,8 +718,10 @@ SHALL añadir `width: polylineWidth` a cada polilínea de ruta; IF no la recibe,
 THEN las polilíneas no llevan la clave `width`. El mapa pasa
 `polylineWidth={5}`; las zonas no cambian (D11).
 
-- PM `#201 R15: con polylineWidth cada polilínea lleva ese ancho` y
-  `#201 R15: sin polylineWidth las polilíneas no llevan ancho`.
+- PM `#201 R15: con polylineWidth cada polilínea lleva ese ancho` (cada
+  polilínea con `width` 5) y `#201 R15: sin polylineWidth las polilíneas no
+  llevan ancho` (para cada polilínea, `expect(polyline).not.toHaveProperty('width')`;
+  no vale `width` `undefined`, que pasaría con la clave presente).
 - MT `#201 R15: Mapa pide la ruta de 5`: el `PetMap` montado recibe
   `polylineWidth` 5.
 - CF `Mapa`: `stroke="#107148" stroke-width="5"` ×1 / `polylineWidth={5}` ×1 en
@@ -590,9 +733,12 @@ THE SYSTEM SHALL mantener en `src/screens/map/index.tsx`,
 `src/components/empty-state.tsx` y `src/components/pet-map.tsx`, con un `it` por
 fichero y guarda (`it.each` sobre el producto):
 
-1. cero coincidencias de `HEX_LITERAL` y de `ARBITRARY_CLASS` (las regex de
-   `src/__tests__/design-drift.test.ts`, copiadas literalmente); por eso todo
-   comentario nuevo cita `#201 R<n>`, nunca `#201` solo;
+1. cero coincidencias de `new RegExp(HEX_LITERAL, 'i')` y de
+   `new RegExp(ARBITRARY_CLASS)`, con las dos constantes copiadas literalmente
+   de `src/__tests__/design-drift.test.ts`
+   (``const HEX_LITERAL = String.raw`#(?!\d{2,3} R\d)[\da-f]{3,8}\b`;`` y
+   ``const ARBITRARY_CLASS = String.raw`[A-Za-z0-9_-]+-\[[^\]]+\]`;``); por eso
+   todo comentario nuevo cita `#201 R<n>`, nunca `#201` solo;
 2. cero `StyleSheet.create`;
 3. cero emoji (`/\p{Extended_Pictographic}/u`);
 4. cero imports de `expo-linear-gradient` y de `expo-blur`;
@@ -606,9 +752,11 @@ sus nombres, ordenados, SHALL ser `['AlertCircle', 'AlertTriangle', 'Link', 'Loc
   `#201 R16: el mapa importa solo sus seis iconos`.
 - Guarda de la guarda: `#201 R16: las guardas cazan su mutación`, un `it.each`
   que aplica cada regex a una cadena con la mutación plantada
-  (`'#107148'`, `'w-[10px]'`, `'StyleSheet.create('`, `'🐾'`,
-  `"from 'expo-blur'"`, `'rounded-xl'`, `'text-accent '`) y espera una
-  coincidencia.
+  (`'#107148'`, `'#D80B34'` (mayúsculas: prueba la bandera `'i'`),
+  `'w-[10px]'`, `'StyleSheet.create('`, `'🐾'`, `"from 'expo-blur'"`,
+  `'rounded-xl'`, `'text-accent '`), 8 filas, y espera una coincidencia en
+  cada una; y `#201 R16: la guarda de hex exime las citas de requisito`:
+  `new RegExp(HEX_LITERAL, 'i').test('// #201 R10')` es `false`.
 
 ## Candados que esta feature revierte
 
@@ -662,13 +810,14 @@ rótulos con `getByText` y no depende del orden.
 | 17 | MT › `#159 R2` › `pinta la pose del collar, el título y la frase de Pingo` (título nuevo: `pinta la pose de Pingo, el título y la frase`) | `pingo-collar.webp` | `pingo-talk.webp` | R13 |
 | 18 | MT › `#159 R2` › `queda en el sitio del texto que sustituye y sin mapa debajo` | hueco `'items-center gap-3 py-8'`, padre `'flex-1 items-center justify-center p-6 bg-background'` | hueco `'w-full items-center gap-3.5'`, padre `'flex-1 items-center justify-center bg-background px-6 pt-15 pb-30'` | R13 |
 | 19 | ES › `%s pinta %i EmptyState` | fila `['src/screens/map/index.tsx', 2]` | `2 + 2 // #201 R11` | R11 |
-| 20 | ES › `#159 R9: los estados sin collar no traen movimiento ni dependencias` | filas del mapa `'react-native-reanimated'`, `'\\bAnimated\\b'`, `'entering='` y `'MOTION_'` a 0 | esas cuatro filas del mapa se borran; la de `LayoutAnimation` se queda | R1, R13 |
-| 21 | CC › `#177 R7.2` (inventario de `/rounded-16 bg-accent(?=[\s'"\`])/`) | sin el mapa | `+ 'screens/map/index.tsx': 1` | R13 |
-| 22 | CC › `#177 R7.3` (objeto `radii` y cuenta de `rounded-16`) | sin el mapa | el mapa con 1 | R13 |
-| 23 | CC › `#177 R7.4` (`const consumers = [...ctaFiles, 'screens/reminders/index.tsx'].sort()`, enmendado por #197) | sin el mapa | con `'screens/map/index.tsx'` | R13 |
-| 24 | CC › `#177 R7.5` (inventarios `style=\{chunkyLip.primary…\}` y `chunkyLip\.primary\b`) | sin el mapa | el mapa con 1 en cada uno | R13 |
+| 20 | ES › `#159 R9: los estados sin collar no traen movimiento ni dependencias` (describe; título nuevo: `#159 R9: el sin collar del mapa no trae LayoutAnimation y el de zonas no trae movimiento ni dependencias`) › `it.each` `'%s no contiene %s'` (título nuevo de la plantilla: `'%s no contiene %s (enmendado por #201 R1)'`) | 10 filas; las del mapa `'react-native-reanimated'`, `'\\bAnimated\\b'`, `'entering='` y `'MOTION_'` a 0 | 6 filas: esas cuatro del mapa se borran; `['src/screens/map/index.tsx', 'LayoutAnimation']` y las cinco de `geofences` se quedan | R1 (la pila ya se anima con R1, así que título y filas cambian en su commit rojo; R13 no lo vuelve a tocar) |
+| 21 | CC › `#177 R7.2: inventarios de las dos recetas de primario` (primera aserción, `/rounded-16 bg-accent(?=[\s'"\`])/g`) | `toEqual(Object.fromEntries(ctaFiles.map(…)))` | `toEqual({ ...Object.fromEntries(ctaFiles.map(…)), 'screens/map/index.tsx': 1 })` con comentario `// #201 R13`; la segunda aserción no cambia | R13 |
+| 22 | CC › `#177 R7.3: inventario de los veintisiete radios de dieciséis (…) (enmendado por #198 R9)` (solo sufijo: la cifra del título ya no era la cuenta antes de #201) | `const radii` sin el mapa; `count(/\brounded-16\b/g)` `26 + 1 + 1 + 1 + 2 + 2 + 1` | `radii` gana `'screens/map/index.tsx': 1, // #201 R13` entre `'screens/login/index.tsx': 1,` y `'screens/pairing/index.tsx': 1,`; la suma gana `+ 1` y el comentario `#201 R13 (+1)` | R13 |
+| 23 | CC › la constante de fichero `const consumers = [...ctaFiles, 'screens/reminders/index.tsx', 'screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx', 'screens/food/index.tsx'].sort();`, que leen tres `it`: `#177 R7.4: solo la definición y los diecisiete consumidores usan el hook (…) (enmendado por #200 R3)` (título nuevo: `#177 R7.4: solo la definición y los dieciocho consumidores usan el hook (enmendado por #197 R10) (enmendado por #200 R3) (enmendado por #201 R13)`), `#177 R12.1/R12.2: los dieciocho ficheros respetan los guards de la carta (…)` (título nuevo: `#177 R12.1/R12.2: los diecinueve ficheros respetan los guards de la carta (enmendado por #197 R10) (enmendado por #200 R3) (enmendado por #201 R13)`) y `#177 R12.3: cada comentario de la feature nombra su requisito (…)` (solo sufijo) | 17 consumidores, sin el mapa | la lista gana `'screens/map/index.tsx'` (18; el `.sort()` la ordena); R7.4 rojo sin ella, R12.x verdes con ella | R13 |
+| 24 | CC › `#177 R7.5: inventario de los tres estilos y el tile (…) (enmendado por #200 R6)`, aserciones primera (`style=\{(?:chunkyLip\.primary|…)\}`) y cuarta (`chunkyLip\.primary\b`) | `Object.fromEntries(ctaFiles.map(…))` | `{ ...Object.fromEntries(ctaFiles.map(…)), 'screens/map/index.tsx': 1 }` en las dos; las otras cuatro no cambian | R13 |
 | 25 | LG › `#61 R4: el acento como tinta usa accent-strong` | `inkSites` `[join('screens', 'map', 'index.tsx'), 2]` y el total de `suma las trece ocurrencias que enumera la spec` | `2 - 1 // #201 R5` y el total `- 1 // #201 R5` | R5 |
-| 26 | FN › `#197 R20: nadie monta todavía los cimientos` | fila `shadows` con importadores `[]` | `['screens/map/index.tsx']` | R2 |
+| 26 | DD › `reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #198 R9)` (sufijo: `(enmendado por #201 R5, R13)`) | lista de `rounded-14` sin el mapa; objeto `rounded16` sin el mapa | la lista gana `join('screens', 'map', 'index.tsx'), // #201 R5` entre `join('screens', 'geofences', 'index.tsx'), // #189 R5` y `join('screens', 'meal-schedule', 'index.tsx'), …` (orden de `readdirSync`, alfabético); `rounded16` gana `'screens/map/index.tsx': 1, // #201 R13` entre `'screens/login/index.tsx': 1,` y `'screens/pairing/index.tsx': 1,` | R5, R13 |
+| 27 | AF › `#174 R12: inventarios` › `it.each` `'limita $token a su inventario de producción (…) (enmendado por #198 R9, R15)'` (la plantilla gana ` (enmendado por #201 R2)`), fila `token: 'text-15'` | 16 ficheros, sin el mapa | 17: `'screens/map/index.tsx', // #201 R2` entre `'screens/login/index.tsx',` y `'screens/meal-schedule/index.tsx', // #179 R7` | R2 |
 
 Se comprobó que siguen verdes sin cambios: `#116 R2 › pinta la píldora como
 hijo 0 de map-stats y la tarjeta como hijo 1` (busca `stat-speed` dentro del
@@ -708,8 +857,9 @@ Clasificado viñeta a viñeta: «feature» tiene id en `feature_list.json`;
   `polylineWidth` (R15).
 - **Feature #206** (barra de pestañas): la barra flotante y el `bottom: 104px`
   que el canvas mide contra ella.
-- **Feature #198** (Inicio): `InicioError` y cualquier cambio de Inicio. R14 no
-  cambia nada de lo que Inicio ya pasa a `EmptyState`.
+- **Feature #198** (Inicio): `InicioError` y cualquier cambio de Inicio. #198
+  R18 ya entregó la API de `EmptyState` que el mapa consume (R14); Inicio no
+  cambia y `empty-state.tsx` tampoco.
 - **Feature #151**: absorbida por R3 (D15). Pasarla a `done` es cierre del
   leader, no de esta spec; aquí solo cambia la línea `status` de #201.
 - **Decisión D8**: alinear la entrada de `EmptyState` hero con `rise`. Tocaría
@@ -759,3 +909,27 @@ Cierre (no gate de implementación), una casilla por smoke:
 - [ ] Smoke de R11 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
 - [ ] Smoke de R12 y R13 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
 - [ ] Smoke de R15 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
+
+## Respuesta a la auditoría (2026-10-24)
+
+Respuesta a `progress/inventory-audit_mobile-canvas-map.md`. Cada hallazgo se
+verificó contra el árbol en la base `ccd5460a` antes de cerrarlo; ninguno se
+rechaza.
+
+- **F1** cerrado en § Candados, fila 26 (DD, lista de `rounded-14` y objeto `rounded16`), con anclas `join('screens', 'map', 'index.tsx')` 0 → 1 y `'screens/map/index.tsx': 1, // #201 R13` 0 → 1 en § Base medida; R5, R7, R10 y R13 lo citan. Evidencia: el `it` lee todo `src/` salvo tests y Recordatorios, y el mapa tiene 0 `rounded-14` y 0 `rounded-16` hoy.
+- **F2** cerrado en D22, R7 y R11: el rosa sale de `CATEGORY_SLOTS.rose.surface` / `.ink` (`import { CATEGORY_SLOTS } from '../../utils/category-palette';`), sin literal `bg-category-` ni `text-category-` en el mapa (anclas a 0, sin cambio), y CO `#64 R9` sigue verde sin enmienda. Evidencia: `empty-state.tsx` ya interpola `${CATEGORY_SLOTS.rose.surface}`, el patrón que CO prohíbe es `(?:bg|text)-category-\$\{` y su ancla `expect(inventory.files).toEqual([join('utils', 'category-palette.ts')]);` da 1.
+- **F3** cerrado en § Candados, fila 27 (AF `text-15`, 16 → 17 ficheros) y en R2, con anclas `'screens/map/index.tsx', // #201 R2` y el sufijo de la plantilla, ambas 0 → 1.
+- **M1** cerrado en D14 y R10: `variant="pulse"` ×11 y `animation=` ×0, con el `it` MT que lo distingue por el envoltorio sin `className` de `PulseAnimation` y el `it` CF por etiqueta. Evidencia: `heroui-native/lib/module/components/skeleton/skeleton.js` desestructura `variant = 'shimmer'` y `animation` por separado, y solo `variant === 'pulse'` monta el `Animated.View` de pulso.
+- **M2** cerrado en R2: la prosa de tonos sigue a producción y a `#116 R4` (Desactualizado → `warning-strong`; Sin señal, sin collar, pendiente y error → `muted`); R2 solo cambia `bg-success` por `bg-accent`.
+- **M3** cerrado en § Convenciones, «Dobles de módulo de MT», doble 2 (`reicon-react-native` con el `mockIcon(testID)` de `src/screens/home/index.test.tsx`), añadido en el commit rojo de R7; ancla `jest.mock('reicon-react-native'` 0 → 1. R7, R9, R11, R12 y R13 leen los iconos por su `testID`.
+- **M4** cerrado en § Convenciones, doble 3 (`../../theme/use-theme-colors` con mapa de tokens y `'#0D1117'` por defecto, precedente EH), añadido en el commit rojo de R7; R7 (`'#D80B34'`), R9 (`'#667085'`), R11 (`'#D92D20'`) y R13 (`'#0E5E3C'`) citan el valor del doble. Ancla 0 → 1.
+- **M5** cerrado en R14 (reescrito como «entregado por #198 R18»): sin cambio de producción ni tests nuevos, prueba en los seis `it` EH `#198 R18` que nacen verdes, bloque E de § Base medida «sin cambio» y `grep -cF '#201 R14'` en ES a 0. Evidencia: `empty-state.tsx` ya declara `body?: string`, `badge?: ReactNode` y `actionIcon?: ReactElement`.
+- **M6** cerrado en R16: `new RegExp(HEX_LITERAL, 'i')` con las constantes copiadas literalmente, mutación `'#D80B34'` añadida (8 filas) y un `it` de la exención `// #201 R10`. Evidencia: DD instancia sus regex con la bandera `'i'`.
+- **M7** cerrado en R13: `StyleSheet.flatten(badge.props.style).boxShadow` `toEqual` una sombra exacta con `'#0E5E3C'`. Evidencia: `pop-in.tsx` pasa `style={[style, animatedStyle]}` y `chunky-lip.ts` define `primary` como `offsetY: 4` sin desenfoque.
+- **M8** cerrado en § Candados (la fila de FN se quita) y § Abreviaturas (FN fuera); ancla `grep -cF '#197 R20' src/__tests__/canvas-foundations.test.ts` = 0 en § Base medida.
+- **M9** cerrado en design.md (Premisas, Dependencias, Decisiones, Archivos afectados y Riesgos sin `EmptyState` ni #197 previos a #198) en tasks.md (sin paso 0; R14 sin rojo ni verde; las cuentas remiten a § Base medida) y en traceability.md (R14 apunta a EH `#198 R18`), más D21 y la intro de esta spec.
+- **M10** cerrado en R15: `expect(polyline).not.toHaveProperty('width')` por polilínea.
+- **M11** cerrado en § Convenciones, doble 1 (Reanimated con `...requireActual`, `__esModule: true` y `useReducedMotion: () => mockUseReducedMotion()`), añadido en el commit rojo de R1; ancla `jest.mock('react-native-reanimated'` 0 → 1.
+- **M12** cerrado en § Base medida: `grep -cF` cuenta líneas, las cifras por ocurrencia se escriben `grep -oF … | wc -l`, y CF cuenta las dos mitades con `split(literal).length - 1`.
+- **M13** cerrado en R13 (sentencia literal `const chunkyLip = useChunkyLip();`, ancla 0 → 1) y en § Candados, fila 23 (`consumers` gana el mapa; títulos nuevos «dieciocho consumidores» de R7.4 y «diecinueve ficheros» de R12.1/R12.2, que leen la misma constante; R12.3 con sufijo).
+- **M14** cerrado en § Candados, fila 20: título nuevo del `describe` (`#159 R9: el sin collar del mapa no trae LayoutAnimation y el de zonas no trae movimiento ni dependencias`) y sufijo en la plantilla del `it.each`, con anclas 1 → 0 y 0 → 1.
