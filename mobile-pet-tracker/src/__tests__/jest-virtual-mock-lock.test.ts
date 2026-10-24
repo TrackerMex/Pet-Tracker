@@ -78,3 +78,4 @@ describe('#207 R2: ningún test móvil pasa la opción virtual de jest.mock', ()
     expect(mobileTests).toContain('__tests__/jest-virtual-mock-lock.test.ts');
   });
 });
+// mutacion-d virtual: true

@@ -169,3 +169,4 @@ describe('#191 R7: validateAddPetBasics', () => {
     }
   });
 });
+jest.doMock('mutacion-b', () => ({}), { virtual:true });

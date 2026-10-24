@@ -78,7 +78,7 @@ jest.mock('../../api/media', () => ({
   uploadPhotoToUrl: jest.fn(),
 }));
 
-jest.mock('expo-image-picker', () => ({
+jest.doMock('expo-image-picker', () => ({
   launchImageLibraryAsync: jest.fn(),
 }));
 
