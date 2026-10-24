@@ -459,7 +459,7 @@ describe('#201 R11: Pingo en las dos ramas de error', () => {
       canvasCount: 1,
       file: 'screens/map/index.tsx',
       production: 'bg-background px-6 pt-15 pb-30',
-      productionCount: 2,
+      productionCount: 3,
     },
     {
       artboard: 'MapaError',
@@ -470,4 +470,17 @@ describe('#201 R11: Pingo en las dos ramas de error', () => {
       productionCount: 2,
     },
   ])('#201 R11: $artboard › $canvas › $production', checkRow);
+});
+
+describe('#201 R12: Pingo sin mascotas', () => {
+  it.each<Row>([
+    {
+      artboard: 'MapaSinMascotas',
+      canvas: 'stroke-width="2.8"',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'strokeWidth={2.8}',
+      productionCount: 1,
+    },
+  ])('#201 R12: $artboard › $canvas › $production', checkRow);
 });

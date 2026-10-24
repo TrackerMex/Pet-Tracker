@@ -1993,6 +1993,9 @@ describe('#116 R8: el mapa no estrena animación', () => {
 const mockRouter = jest.mocked(router);
 
 describe('#155 R4: Mapa sin mascotas presenta a Pingo', () => {
+  beforeEach(() => {
+    mockUseReducedMotion.mockReturnValue(true); // #201 R12/R13: el héroe entra con opacidad 0
+  });
 
   it('pinta la pose, el título y la frase de Pingo', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
@@ -2006,12 +2009,12 @@ describe('#155 R4: Mapa sin mascotas presenta a Pingo', () => {
     expect(within(screen.getByTestId('map-no-pets-action')).getByText('Añadir mascota')).toBeVisible();
   });
 
-  it('queda en el sitio del vacío que sustituye', async () => {
+  it('queda en el sitio del vacío que sustituye (enmendado por #201 R12)', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
     await renderMap();
     await screen.findByTestId('map-no-pets-pose');
     const slot = screen.getByTestId('map-no-pets');
-    expect(slot.parent?.props.className).toBe('flex-1 items-center justify-center p-6 bg-background');
+    expect(slot.parent?.props.className).toBe('flex-1 items-center justify-center bg-background px-6 pt-15 pb-30');
     expect(slot.parent?.parent?.props.testID).toBe('screen-map');
     expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['map-no-pets']);
   });
@@ -2666,6 +2669,20 @@ describe('#201 R11: Pingo en las dos ramas de error', () => {
     expect(
       root.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type))),
     ).toEqual([id]);
+  });
+});
+
+describe('#201 R12: Pingo sin mascotas', () => {
+  it('#201 R12: sin mascotas usa el escenario hero con el «+» de trazo 2.8', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+
+    await renderMap();
+
+    await screen.findByTestId('map-no-pets-stage');
+    expect(screen.getByTestId('map-no-pets-action-icon').props).toMatchObject({
+      size: 20,
+      strokeWidth: 2.8,
+    });
   });
 });
 
