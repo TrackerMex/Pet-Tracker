@@ -1354,3 +1354,35 @@ describe('#199 R8: envío de Peso', () => {
     expect(readFileSync(join(process.cwd(), 'src/screens/weight-log/index.tsx'), 'utf8')).toContain('style={chunkyLip.primary}');
   });
 });
+
+describe('#199 R9: historial de Peso', () => {
+  const history = Array.from({ length: 4 }, (_, i) => makeWeight({ id: `history-${i}`, weightKg: 12.4 - i / 10 }));
+  beforeEach(() => { prepareWeightLogTests(); mockListWeights.mockResolvedValue({ kind: 'ok', weights: history }); });
+  async function show() { await renderWeightLog(); await screen.findByTestId('weight-row-history-0'); }
+  it('#199 R9 pinta Historial con text-17 font-extrabold antes de las filas', async () => {
+    await show();
+    expect(screen.queryByTestId('weight-history-title')).not.toBeNull();
+    const title = screen.getByTestId('weight-history-title');
+    expect(title).toHaveTextContent('Historial', { exact: true });
+    expect(title.props.accessibilityRole).toBe('header');
+    expect(title.props.className).toBe('mb-1 text-17 font-extrabold text-foreground');
+    const container = title.parent!;
+    expect(container.children.indexOf(title)).toBeLessThan(container.children.indexOf(scrollSlotOf(screen.getByTestId('weight-row-history-0'), container)));
+  });
+  it('#199 R9 cada fila es un View con borde superior y py-2.5', async () => {
+    await show();
+    const rows = screen.getAllByTestId(/^weight-row-history-\d+$/);
+    expect(rows.map(row => row.props.testID)).toEqual(['weight-row-history-0', 'weight-row-history-1', 'weight-row-history-2', 'weight-row-history-3']);
+    for (const row of rows) expect(row.props.className).toBe('flex-row items-center gap-3 border-t border-border py-2.5');
+  });
+  it.each([[0, 140], [1, 200], [2, 260], [3, 260]])('#199 R9 la fila %i entra a los %i ms', async (index, delay) => {
+    await show();
+    expect(riseDelayOf(screen.getByTestId(`weight-row-history-${index}`))).toBe(delay);
+  });
+  it('#199 R9 sin registros no pinta Historial', async () => {
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [] });
+    await renderWeightLog();
+    await screen.findByTestId('weight-log-empty');
+    expect(screen.queryByTestId('weight-history-title')).toBeNull();
+  });
+});
