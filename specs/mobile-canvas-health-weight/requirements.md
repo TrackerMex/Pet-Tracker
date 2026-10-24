@@ -876,3 +876,4 @@ en el PC del humano, no en Expo Go ni en la VPS:
 - [ ] Smoke de R13 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
 - [ ] Smoke de R23 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
 - [ ] Smoke de R24 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
+  Va en el lote `progress/smoke_canvas-parity.md` (plan §6); el `done` no espera al smoke.

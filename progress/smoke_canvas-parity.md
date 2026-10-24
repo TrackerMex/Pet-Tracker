@@ -67,3 +67,22 @@ Pasos de R1, R3 a R7, R10, R11 y R13 a R16, en dev build Android (no Expo Go), c
 7. El vacío y la pantalla sin collar se ven como sus artboards.
 
 - [ ] Smoke de #198 recorrido por el humano
+
+## #199 mobile-canvas-health-weight
+
+Spec: `specs/mobile-canvas-health-weight/requirements.md` (§ Aprobación). Reviewer APROBADO sobre
+`bd20a22a` (`progress/review_mobile-canvas-health-weight.md`).
+
+Pasos en dev build Android (no Expo Go), con tema claro y oscuro:
+
+1. R1: desde Salud, la flecha de Peso vuelve a Salud. Abierto por deep link en frío, vuelve a
+   `/health`. El título no queda bajo la barra de estado.
+2. R2: con el teclado abierto se ven el peso, la fecha, la condición y el botón de envío.
+3. R5 y R6: la línea de Peso se dibuja tras unos 200 ms y la de Salud tras unos 300 ms. El punto
+   final hace su pop hacia 1,3 s. Con siete meses de registros, Peso rotula seis y la mini de Salud
+   muestra todo el historial.
+4. R13: los avatares del selector quedan alineados con el título de Salud.
+5. R23: el toast aparece bajo la cabecera tras unos 400 ms, con su sombra visible en Android.
+6. R24: las entradas llegan escalonadas. Con «Quitar animaciones» todo está quieto y completo.
+
+- [ ] Smoke de #199 recorrido por el humano

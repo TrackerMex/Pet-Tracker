@@ -3474,7 +3474,7 @@
   {
     "id": 199,
     "name": "mobile-canvas-health-weight",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P1",
     "description": "Registrada el 2026-10-23 por el plan progress/plan_canvas-parity-2026-10-23.md (ola 2). Salud y Peso iguales al canvas versión 1792777983-cd94, artboards Salud, SaludEstados, SaludSinMascota, Peso, PesoEstados y PesoRegistrado. Cubre C08 (Peso, con WeightChart en variante completa y mini) y C09 (Salud, que usa el mini) de progress/explore_canvas-parity-2026-10-21.md. Ficheros probables: screens/weight-log/index.tsx, components/weight-chart.tsx, screens/health/index.tsx, components/pet-switcher.tsx (variante), i18n/catalog.ts y tests. Cablea en sus rutas la cabecera y el rise de #197. Depende de #197. Congelar los artboards en specs/mobile-canvas-health-weight/canvas/. Firma delegada al leader. Registrada sin spec."
   },
