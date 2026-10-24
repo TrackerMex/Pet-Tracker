@@ -1273,7 +1273,7 @@ describe('#77 R2: sin actividad, la fila es la celda de peso seguida de la nota'
       'No se pudo cargar la actividad',
     ],
     ['sin configuración', { kind: 'missing-config' }, 'No se pudo cargar la actividad'],
-  ])('%s: compone la celda y la nota en una sola fila (enmendado por #198 R2)', async (_state, activityState, noteCopy) => {
+  ])('%s: compone la celda y la nota en una sola fila (enmendado por #198 R2, R13)', async (_state, activityState, noteCopy) => {
     mockGetDailyActivity.mockResolvedValue(activityState);
 
     await renderHome();
@@ -1306,10 +1306,10 @@ describe('#77 R2: sin actividad, la fila es la celda de peso seguida de la nota'
       testID: 'icon-weight', size: 18, color: '--color-category-violet-strong',
     });
     expect(cellChildren[1]).toBe(value);
-    expect(value.props.className).toBe('text-sm font-bold text-foreground');
+    expect(value.props.className).toBe('text-base font-extrabold text-foreground');
     expect(value.props.style).toEqual({ fontVariant: ['tabular-nums'] });
     expect(cellChildren[2].props.className).toBe(
-      'text-2xs font-normal text-muted',
+      'text-11 font-semibold text-muted',
     );
     expect(cellChildren[2]).toHaveTextContent('Peso');
 
@@ -1318,7 +1318,7 @@ describe('#77 R2: sin actividad, la fila es la celda de peso seguida de la nota'
       within(screen.getByTestId('summary-card')).getByTestId('summary-note'),
     ).toBe(note);
     expect(note.props.className).toBe(
-      'flex-3 self-center pl-3 font-normal text-muted',
+      'flex-3 self-center pl-3 text-sm leading-5 font-normal text-muted',
     );
     expect(note).toHaveTextContent(noteCopy);
     expect(note.props.onPress).toBeUndefined();
@@ -6279,5 +6279,57 @@ describe('#198 R11: última posición del canvas', () => {
     const time = screen.getByTestId('last-position-time');
     expect(time.props.className).toBe('text-13 font-normal text-muted');
     expect(time).toHaveTextContent(/Última señal/);
+  });
+});
+
+describe('#198 R13: Inicio sin collar', () => {
+  beforeEach(() => {
+    setupCanvasHome();
+    mockGetDailyActivity.mockResolvedValue({ kind: 'no-tracking' });
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('#198 R13 pinta peso con divisor y la nota de 14/20', async () => {
+    await renderHome();
+    const note = await screen.findByTestId('summary-note');
+    const weight = screen.getByTestId('summary-weight');
+    expect(weight.parent!.props.className).toBe('flex-1 items-center gap-1.5 border-r border-border');
+    expect(weight.parent!.parent!.props.className).toBe('flex-row gap-1');
+    expect(weight.props.className).toBe('text-base font-extrabold text-foreground');
+    expect(within(weight.parent!).getByText('Peso').props.className).toBe('text-11 font-semibold text-muted');
+    expect(note.props.className).toBe('flex-3 self-center pl-3 text-sm leading-5 font-normal text-muted');
+    expect(note).toHaveTextContent('La actividad necesita un collar con plan activo');
+  });
+
+  it('#198 R13 pinta el collar sin dispositivo en columna', async () => {
+    await renderHome();
+    const card = await screen.findByTestId('collar-card');
+    for (const token of ['gap-3', 'border-0', 'bg-default', 'px-4', 'py-3.5', 'shadow-none']) expect(card.props.className.split(' ')).toContain(token);
+    expect(card.props.className.split(' ')).not.toContain('flex-row');
+    expect(card.children.filter(child => typeof child !== 'string').length).toBe(3);
+    const status = within(card).getByTestId('collar-status');
+    expect(status.props.className).toBe('text-base font-extrabold text-foreground');
+    expect(status).toHaveTextContent('Sin collar');
+    expect(status.parent!.props.className).toBe('flex-row items-center gap-3');
+    const circle = within(card).getByTestId('collar-icon');
+    expect(circle.props.className).toBe('size-9 items-center justify-center rounded-full bg-tab-pill');
+    expect(within(circle).getByTestId('icon-moon').props).toEqual({ testID: 'icon-moon', size: 20, color: '--color-accent-strong' });
+    expect(within(card).getByText('Sin collar — solo salud').props.className).toBe('text-sm font-normal text-muted');
+  });
+
+  it('#198 R13 viste el enlace de vincular con 44 de alto, radio 12 y la píldora', async () => {
+    await renderHome();
+    const link = await screen.findByTestId('collar-pair-link');
+    expect(link.props.className).toBe('h-11 items-center justify-center rounded-xl bg-tab-pill');
+    expect(within(link).getByText('Vincular collar').props.className).toBe('text-15 font-bold text-foreground');
+    await fireEvent.press(link);
+    expect(mockRouter.push).toHaveBeenCalledWith('/pairing');
+  });
+
+  it('#198 R13 no pinta la actividad semanal', async () => {
+    await renderHome();
+    await screen.findByTestId('summary-note');
+    await screen.findByTestId('collar-status');
+    expect(screen.queryByTestId('weekly-activity-card') === null).toBe(true);
   });
 });
