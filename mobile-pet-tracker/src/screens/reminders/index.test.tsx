@@ -1875,3 +1875,27 @@ describe('#204 R7: ámbar de la fila próxima', () => {
     );
   });
 });
+
+describe('#204 R8: Eliminar de la fila', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: canvasReminders });
+  });
+
+  it('#204 R8: Eliminar de fila usa la receta rosa del canvas', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-a');
+    const button = screen.getByTestId('reminder-delete-a');
+    expect(button.props.className).toContain('button__root--variant-danger-soft');
+    expect(button.props.className).toContain('h-11 rounded-14 px-2.5 bg-category-rose');
+    expect(within(button).getByText('Eliminar').props.className).toBe('text-13 font-extrabold text-danger');
+  });
+});

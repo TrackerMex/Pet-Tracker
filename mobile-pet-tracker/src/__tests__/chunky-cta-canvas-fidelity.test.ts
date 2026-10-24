@@ -160,10 +160,10 @@ it('#177 R5.2: el tile conserva la esquina y recibe el labio con el orden exacto
   expect(tag).toContain('style={[CONTINUOUS_CORNER, chunkyLip.primary]}');
   expect(tag).not.toMatch(/border-b-4|border-black\/25/);
 });
-it('#177 R6.2: recuentos de etiquetas (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #200 R5) (enmendado por #199 R9)', () => {
+it('#177 R6.2: recuentos de etiquetas (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #200 R5) (enmendado por #199 R9) (enmendado por #204 R8)', () => {
   // #177 R6
-  expect(count(/<Button\.Label/g)).toBe(35 - 15 - 1 - 1 - 1); // #191 R11 // #189 R5; #189 R13
-  expect(count(/Button\.Label/g)).toBe(82 - 30 - 2 - 2 - 2); // #191 R11 // #189 R5; #189 R13
+  expect(count(/<Button\.Label/g)).toBe(35 - 15 - 1 - 1 - 1 - 1); // #191 R11 // #189 R5; #189 R13 // #204 R8
+  expect(count(/Button\.Label/g)).toBe(82 - 30 - 2 - 2 - 2 - 2); // #191 R11 // #189 R5; #189 R13 // #204 R8
   expect(count(/text-17/g)).toBe(8 + 15 + 1 + 1 + 1 + 1 + 1 + 1); // #200 R5; #199 R9 // #194 R6 // #191 R11 // #189 R7; #189 R13
   expect(count(/<Text className="text-17 font-extrabold text-accent-foreground">/g)).toBe(5 + 11 + 1 + 1 - 1 - 1); // #194 R6 // #191 R11 // #189 R7; #189 R13
   expect(count(/text-17 font-extrabold text-foreground/g)).toBe(3 + 3 + 1 + 1); // #200 R5; #199 R9
