@@ -176,7 +176,7 @@ it('#177 R7.1: inventarios de los labios de borde restantes (enmendado por #189 
   expect(inventory(/\bborder-b-6\b/g)).toEqual({});
   expect(count(/border-lip-gray/g)).toBe(10 + 1); // #189 R13
 });
-it('#177 R7.2: inventarios de las dos recetas de primario', () => {
+it('#177 R7.2: inventarios de las dos recetas de primario (enmendado por #201 R13)', () => {
   expect(inventory(/rounded-16 bg-accent(?=[\s'"`])/g)).toEqual({ ...Object.fromEntries(ctaFiles.map(path => [path, path === 'screens/add-pet/index.tsx' ? 2 : 1])), 'screens/map/index.tsx': 1 }); // #201 R13
   expect(inventory(/rounded-xl bg-accent(?=[\s'"`])/g)).toEqual({ 'screens/reminders/index.tsx': 1 });
 });
