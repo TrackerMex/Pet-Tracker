@@ -1089,3 +1089,45 @@ it.each(['unreachable', 'error', 'action'] as const)('#202 R11: %s usa 15/1.4 en
   expect(error.props.className).toBe('text-15 leading-body text-danger');
   expect(error.props.selectable).toBe(true);
 });
+
+
+it('#202 R21: vacía conserva EmptyState, 0/5, barra vacía y «Añadir zona»', async () => {
+  mockList.mockResolvedValue({ kind: 'ok', geofences: [] });
+  await mount();
+  const empty = await screen.findByTestId('geofences-empty');
+  expect(empty.props.className).toBe('items-center gap-3 py-8');
+  expect(screen.getByTestId('geofences-empty-title')).toHaveTextContent('Aún no hay zonas seguras');
+  expect(within(screen.getByTestId('geofences-header')).getByTestId('geofences-counter')).toHaveTextContent('0/5');
+  const progress = screen.getByTestId('geofences-progress');
+  expect(progress.children).toHaveLength(5);
+  expect(progress.props.accessibilityValue).toEqual({ min: 0, max: 5, now: 0 });
+  for (let i = 0; i < 5; i++) expect(screen.getByTestId(`geofences-progress-segment-${i}`).props.className).toBe('h-1.5 flex-1 rounded-full bg-default');
+  const add = screen.getByTestId('geofences-add');
+  expect(add.props.className.endsWith(' mt-auto h-14 rounded-16 bg-accent')).toBe(true);
+  expect(add.props.accessibilityState.disabled).toBe(false);
+  expect(within(add).getByText('Añadir zona').props.className).toBe('text-17 font-extrabold text-accent-foreground');
+});
+
+it('#202 R22: sin collar pinta solo la cabecera y el estado vacío', async () => {
+  mockList.mockResolvedValue({ kind: 'no-tracking' });
+  await mount();
+  const empty = await screen.findByTestId('geofences-no-tracking');
+  expect(childTestIds(empty.parent!)).toEqual(['geofences-header', 'geofences-no-tracking']);
+  for (const id of ['geofences-counter', 'geofences-progress', 'geofences-add']) expect(screen.queryByTestId(id)).toBeNull();
+  expect(screen.getByTestId('geofences-header-title')).toHaveTextContent('Zonas seguras');
+});
+
+it('#202 R23: solo lectura no tiene interruptor, papelera ni diálogo', async () => {
+  mockGetPet.mockResolvedValue(petState('family'));
+  mockList.mockResolvedValue({ kind: 'ok', geofences: [makeGeofence(), makeGeofence({ id: 'geofence-2', active: false })] });
+  await mount();
+  await screen.findByTestId('geofence-geofence-1');
+  for (const [id, label] of [['geofence-1', 'Activa'], ['geofence-2', 'Inactiva']]) {
+    expect(screen.queryByTestId(`geofence-${id}-active`)).toBeNull();
+    expect(screen.queryByTestId(`geofence-${id}-delete`)).toBeNull();
+    const status = screen.getByTestId(`geofence-${id}-status`);
+    expect(status).toHaveTextContent(label);
+    expect(status.props.className).toBe('self-start rounded-full bg-default px-2 py-0.5 text-2xs font-bold text-muted');
+  }
+  expect(screen.queryByTestId('geofences-delete-dialog')).toBeNull();
+});

@@ -1074,3 +1074,14 @@ it.each(['unreachable', 'error'] as const)('#202 R19: el error de carga usa 15/1
   expect(error).toHaveTextContent(kind === 'unreachable' ? 'No se pudo conectar con el servidor' : 'Algo salió mal');
   expect(screen.getByTestId('geofence-editor-retry')).toHaveTextContent('Reintentar');
 });
+
+
+it('#202 R24: crear no tiene «Activa», nota ni Eliminar', async () => {
+  await mount();
+  const name = await screen.findByTestId('geofence-editor-name');
+  expect(name.props.value).toBe('');
+  for (const id of ['geofence-editor-active-row', 'geofence-editor-reset-note', 'geofence-editor-delete']) expect(screen.queryByTestId(id)).toBeNull();
+  const save = screen.getByTestId('geofence-editor-save');
+  expect(save.props.className.endsWith(' flex-2 h-13.5 rounded-16 bg-default')).toBe(true);
+  expect(save.props.accessibilityState.disabled).toBe(true);
+});
