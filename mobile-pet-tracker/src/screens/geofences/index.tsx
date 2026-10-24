@@ -1,7 +1,7 @@
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { Button, Skeleton, Switch } from 'heroui-native';
+import { Button, Skeleton } from 'heroui-native';
 import { useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { AlertCircle, Trash } from 'reicon-react-native';
@@ -12,6 +12,7 @@ import { GEOFENCE_MAX_PER_PET, deleteGeofence, listGeofences, setGeofenceActive,
 import { getPet } from '../../api/pets';
 import { geofenceKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
+import { ToggleSwitch } from '../../components/toggle-switch';
 import { EmptyState } from '../../components/empty-state';
 import { ScreenHeader } from '../../components/screen-header';
 import { useAuth } from '../../providers/auth-provider';
@@ -135,7 +136,7 @@ export function GeofencesScreen({ petId }: { petId: string }) {
             ) : <View testID={`geofence-${geofence.id}-text-row`} className="min-h-11 min-w-0 flex-1 flex-row items-center gap-3">{tile}{nameAndRadius}</View>}
             {isOwner ? (
               <>
-              <Switch
+              <ToggleSwitch
                 testID={`geofence-${geofence.id}-active`}
                 isSelected={geofence.active}
                 hitSlop={10}

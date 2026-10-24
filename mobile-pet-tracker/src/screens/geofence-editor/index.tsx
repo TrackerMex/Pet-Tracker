@@ -2,7 +2,7 @@ import { useChunkyLip } from '../../theme/chunky-lip';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BlurView } from 'expo-blur';
 import { router, Stack } from 'expo-router';
-import { Button, Input, Label, Skeleton, Slider, Switch, TextField } from 'heroui-native';
+import { Button, Input, Label, Skeleton, Slider, TextField } from 'heroui-native';
 import { useMemo, useState } from 'react';
 import { Alert, KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,6 +13,7 @@ import { getPet } from '../../api/pets';
 import { getLastPosition } from '../../api/positions';
 import { geofenceKeys, petKeys, positionKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
+import { ToggleSwitch } from '../../components/toggle-switch';
 import { DEFAULT_CENTER, PetMap, type MapCoordinates } from '../../components/pet-map';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
@@ -197,7 +198,7 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
       </View>
       {zone ? <View testID="geofence-editor-active-row" className="flex-row items-center justify-between gap-3">
         <Text className="text-15 font-bold text-foreground">{t('geofences.statusActive')}</Text>
-        <Switch testID="geofence-editor-active" isSelected={zone.active} hitSlop={10} isDisabled={busy} style={KEEP_OPACITY}
+        <ToggleSwitch testID="geofence-editor-active" isSelected={zone.active} hitSlop={10} isDisabled={busy} style={KEEP_OPACITY}
           accessibilityLabel={t('geofences.activeLabel', { name: zone.name })}
           onSelectedChange={(active) => void run(() => setGeofenceActive(baseUrl, token ?? '', petId, zone.id, active), refresh)} />
       </View> : null}
