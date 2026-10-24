@@ -2496,3 +2496,17 @@ describe('#196 R7: interruptor de tema compartido', () => {
     expect(mockSetStoredTheme).toHaveBeenCalledWith(next);
   });
 });
+
+
+describe('#196 R8: trazo de los accesos de Perfil', () => {
+  beforeEach(setupProfile168);
+
+  it.each(['reminders-link', 'documents-link', 'pairing-link', 'geofences-link'])('#196 R8: el icono de $0 usa trazo 2.2', async (id) => {
+    await renderProfile();
+    await screen.findByTestId('profile-pet-card');
+    const icon = screen.getByTestId(`${id}-icon`, { includeHiddenElements: true });
+    const glyph = profileChild(icon, 0);
+    expect({ id, strokeWidth: glyph.props.strokeWidth }).toEqual({ id, strokeWidth: 2.2 });
+    expect(glyph.props.size).toBe(22);
+  });
+});
