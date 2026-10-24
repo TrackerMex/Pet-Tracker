@@ -86,3 +86,27 @@ Pasos en dev build Android (no Expo Go), con tema claro y oscuro:
 6. R24: las entradas llegan escalonadas. Con «Quitar animaciones» todo está quieto y completo.
 
 - [ ] Smoke de #199 recorrido por el humano
+
+## #202 mobile-canvas-zones
+
+Spec: `specs/mobile-canvas-zones/requirements.md` (§ Cierre del humano). Reviewer APROBADO sobre
+`83599961` y sobre el merge `9dcf2fb1` (`progress/review_mobile-canvas-zones.md`).
+
+Pasos en dev build Android (no Expo Go), con tema claro y oscuro:
+
+1. Zonas: el volver de la cabecera vuelve a Perfil (y sin historial a `/profile`). El título y el
+   contador van en la misma fila. No aparece la cabecera nativa.
+2. Editor, formulario: el círculo de cristal y la píldora con sombra se ven sobre el mapa, en claro
+   y en oscuro. Volver regresa a Zonas.
+3. Editor, ramas de estado: la cabecera va en el contenido con volver, sin cabecera nativa duplicada.
+4. Diálogo de borrado en Zonas y en el editor: el velo entra con fade y la tarjeta con rise. Atrás
+   de Android y el velo cierran sin borrar. «Eliminar» borra.
+5. Interruptores de 48x28 en las filas y en «Activa».
+6. Esqueletos de Zonas y del editor con la red lenta.
+7. Teclado con la hoja: el nombre sigue visible al escribir.
+8. Con «Quitar animaciones» activo no hay animaciones de entrada.
+
+Conocido antes del smoke: los botones del diálogo no tienen feedback al pulsar (N1 del reviewer, deuda
+registrada).
+
+- [ ] Smoke de #202 recorrido por el humano
