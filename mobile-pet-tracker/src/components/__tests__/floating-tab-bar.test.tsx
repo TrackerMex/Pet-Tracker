@@ -557,3 +557,24 @@ describe('#91 R5: con una ruta ajena las cinco celdas quedan inactivas y siguen 
     expect(mockNavigate).toHaveBeenCalledWith('home');
   });
 });
+
+describe('canvas: barra de pestañas', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+    mockEmit.mockReturnValue({ defaultPrevented: false });
+    mockIsLiquidGlassAvailable.mockReturnValue(false);
+    mockTheme = 'light';
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('#206 R1: la cápsula mide 64 y la fila lleva el relleno de 6 y el hueco de 4 del canvas', async () => {
+    await renderTabBar();
+
+    expect(screen.getByTestId('tab-bar-row')).toHaveProp('className', 'flex-row gap-1 p-1.5');
+    expect(screen.getByTestId('floating-tab-bar').props.className.split(' ')).toContain('h-16');
+  });
+});
