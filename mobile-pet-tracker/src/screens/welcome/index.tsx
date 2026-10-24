@@ -117,8 +117,8 @@ export function WelcomeScreen() {
           </View>
         </RiseIn>
         <RiseIn testID="welcome-rise-heading" delayMs={200} className="mt-4.5 items-center gap-2">
-          <Text testID="welcome-brand" className="text-3xl font-bold text-foreground">{t('welcome.brand')}</Text>
-          <Text testID="welcome-tagline" className="text-center text-base text-muted">{t('welcome.tagline')}</Text>
+          <Text testID="welcome-brand" className="text-34 leading-10 font-black tracking-display text-foreground">{t('welcome.brand')}</Text>
+          <Text testID="welcome-tagline" className="max-w-75 text-center text-base text-muted">{t('welcome.tagline')}</Text>
         </RiseIn>
         <View testID="welcome-spacer" className="flex-1" />
         <RiseIn testID="welcome-rise-actions" delayMs={280} className="gap-3.5">
@@ -129,7 +129,7 @@ export function WelcomeScreen() {
             <Text className="text-17 font-bold text-accent-strong">{t('welcome.haveAccount')}</Text>
           </Button>
         </RiseIn>
-        <Text testID="welcome-legal" className="text-center text-xs text-muted">{t('welcome.legalNotice')}</Text>
+        <Text testID="welcome-legal" className="mt-4 text-center text-xs text-muted">{t('welcome.legalNotice')}</Text>
       </View>
     </ScrollView>
   );
