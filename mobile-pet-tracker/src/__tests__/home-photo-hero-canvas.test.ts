@@ -120,12 +120,12 @@ describe('#195 R19: grep-clean y cuentas conservadas', () => {
     ['src/screens/home/index.tsx', 'TABULAR_NUMS', 9],
     ['src/components/pet-hero-header.tsx', 'text-accent-strong', 1],
     ['src/screens/home/index.tsx', 'text-accent-strong', 3], // #198 R4
-    ['src/screens/home/index.tsx', 'bg-accent-soft', 2], // #198 R3
+    ['src/screens/home/index.tsx', 'bg-accent-soft', 1], // #198 R3; #198 R11
     ['src/components/pet-switcher.tsx', 'bg-accent-soft', 1],
     ['src/components/pet-switcher.tsx', 'shadow-', 0],
     ['src/screens/home/index.tsx', "t('profile.addPet'", 1],
     ['src/screens/home/index.tsx', 'testID="home-alerts-bell"', 1],
-  ] as const)('%s conserva %s en %s líneas (enmendado por #198 R2, R3, R4)', (file, literal, count) => {
+  ] as const)('%s conserva %s en %s líneas (enmendado por #198 R2, R3, R4, R11)', (file, literal, count) => {
     expect(read(file).split('\n').filter((line) => line.includes(literal))).toHaveLength(count);
   });
 

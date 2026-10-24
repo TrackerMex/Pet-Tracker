@@ -1586,7 +1586,7 @@ describe('#62 R3: collar-card y last-position-card usan el Card compartido', () 
 
   it.each([
     { testId: 'collar-card', amendment: ' (enmendado por #198 R3)' },
-    { testId: 'last-position-card', amendment: '' },
+    { testId: 'last-position-card', amendment: ' (enmendado por #198 R11)' },
   ])(
     '$testId hereda radio, borde y sombra de Card$amendment',
     async ({ testId }) => {
@@ -1595,14 +1595,9 @@ describe('#62 R3: collar-card y last-position-card usan el Card compartido', () 
       const card = await screen.findByTestId(testId);
 
       expect(card.props.className).toContain('rounded-card');
-      if (testId === 'collar-card') {
-        expect(card.props.className).toContain('border-0');
-        expect(card.props.className).toContain('shadow-none');
-        expect(card.props.className).not.toContain('shadow-sm');
-      } else {
-        expect(card.props.className).toContain('border');
-        expect(card.props.className).toContain('shadow-sm');
-      }
+      expect(card.props.className).toContain('border-0');
+      expect(card.props.className).toContain('shadow-none');
+      expect(card.props.className).not.toContain('shadow-sm');
       expect(card.props.className).toContain('bg-default');
     },
   );
@@ -6258,5 +6253,31 @@ describe('#198 R10: recordatorios del canvas', () => {
     for (const id of ['reminders-next-vaccine-days', 'reminders-item-canvas-days']) {
       expect((await screen.findByTestId(id)).props.className).toBe('rounded-full px-2.5 py-1 text-xs font-extrabold bg-category-amber text-category-amber-strong');
     }
+  });
+});
+
+describe('#198 R11: última posición del canvas', () => {
+  beforeEach(() => {
+    setupCanvasHome();
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(82, { lastCommunicationAt: '2026-10-24T12:00:00.000Z' }) });
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('#198 R11 viste la última posición sin borde ni sombra', async () => {
+    await renderHome();
+    const card = await screen.findByTestId('last-position-card');
+    for (const token of ['gap-2', 'border-0', 'bg-default', 'px-4', 'py-3.5', 'shadow-none']) expect(card.props.className.split(' ')).toContain(token);
+    expect(card.props.className.split(' ')).not.toContain('shadow-sm');
+    expect(card.props.style.boxShadow).toBeUndefined();
+    expect(within(card).getByTestId('icon-map').parent!.props.className).toBe('size-9 items-center justify-center rounded-full bg-tab-pill');
+  });
+
+  it('#198 R11 pinta etiqueta 15/700 y hora de 13', async () => {
+    await renderHome();
+    const card = await screen.findByTestId('last-position-card');
+    expect(within(card).getByText('Ver en el mapa').props.className).toBe('text-15 font-bold text-accent-strong');
+    const time = screen.getByTestId('last-position-time');
+    expect(time.props.className).toBe('text-13 font-normal text-muted');
+    expect(time).toHaveTextContent('Última señal');
   });
 });
