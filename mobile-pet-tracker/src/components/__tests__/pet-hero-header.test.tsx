@@ -824,3 +824,47 @@ describe('#195 R18: estados conservados del hero', () => {
     expect(screen.getByTestId('pet-hero').props.className.split(' ')).toContain('rounded-card');
   });
 });
+
+
+describe('#196 R3: pie opcional del hero compartido', () => {
+  it('#196 R3: con caption y mascota el pie solo pinta el caption', async () => {
+    await renderHero(
+      <PetHeroHeader pet={makePet()} caption={<Text testID="custom-caption">Perfil</Text>}
+        status={{ label: 'En casa', tone: 'success' }} highlight={{ value: '12', label: 'kg' }} />,
+    );
+    const footer = screen.getByTestId('pet-hero-caption');
+    expect(footer.children).toHaveLength(1);
+    expect(elementChild(footer, 0)).toBe(screen.getByTestId('custom-caption'));
+    for (const id of ['pet-hero-status', 'pet-hero-name', 'pet-hero-breed', 'pet-hero-highlight-value', 'pet-hero-highlight-label']) {
+      expect(within(footer).queryByTestId(id)).toBeNull();
+    }
+  });
+
+  it('#196 R3: sin caption el pie no cambia', async () => {
+    await renderHero(
+      <PetHeroHeader pet={makePet()} status={{ label: 'En casa', tone: 'success' }}
+        highlight={{ value: '12', label: 'kg' }} />,
+    );
+    const footer = screen.getByTestId('pet-hero-caption');
+    expect(footer.children).toHaveLength(2);
+    expect(elementChild(footer, 0).props.className).toBe('min-w-0 flex-1 gap-1');
+    expect(within(footer).getByTestId('pet-hero-status-text')).toHaveTextContent('En casa');
+    expect(within(footer).getByTestId('pet-hero-name')).toHaveTextContent('Luna');
+    expect(within(footer).getByTestId('pet-hero-breed')).toHaveTextContent('Mixed');
+    expect(within(footer).getByTestId('pet-hero-highlight-value')).toHaveTextContent('12');
+    expect(within(footer).getByTestId('pet-hero-highlight-label')).toHaveTextContent('kg');
+  });
+
+  it('#196 R3: con caption y sin mascota el pie sigue en skeleton', async () => {
+    await renderHero(<PetHeroHeader pet={null} caption={<Text testID="custom-caption">Perfil</Text>} />);
+    const footer = screen.getByTestId('pet-hero-caption');
+    expect(footer.children).toHaveLength(1);
+    const skeletons = elementChild(footer, 0);
+    expect(skeletons.props.className).toBe('min-w-0 flex-1 gap-1');
+    expect(skeletons.children).toHaveLength(2);
+    expect(elementChild(skeletons, 0).props.className).toBe('h-9 w-40 rounded-xl');
+    expect(elementChild(skeletons, 1).props.className).toBe('h-6 w-24 rounded-xl');
+    expect(within(footer).queryByTestId('custom-caption')).toBeNull();
+    expect(within(footer).queryByTestId('pet-hero-name')).toBeNull();
+  });
+});
