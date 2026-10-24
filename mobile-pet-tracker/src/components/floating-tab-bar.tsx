@@ -139,7 +139,7 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
         >
           <View
             testID="tab-bar-overlay"
-            className="flex-1 bg-glass-surface"
+            className="flex-1 bg-glass-surface-strong"
           />
         </BlurView>
       )}
