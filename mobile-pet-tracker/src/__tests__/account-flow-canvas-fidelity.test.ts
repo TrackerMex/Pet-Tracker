@@ -149,3 +149,42 @@ describe('#205 R9: Registro', () => {
     expect(screen).toContain('<PingoFloat');
   });
 });
+
+describe('#205 R10: Recuperar', () => {
+  it('#205 R10: Recuperar copia escena, tile y márgenes', () => {
+    const recuperar = canvas('Recuperar');
+    expect(recuperar).toContain('width: 168px; height: 150px');
+    expect(recuperar).toContain('inset: 14px 10px 0');
+    expect(recuperar).toContain('border-radius: 40px');
+    expect(recuperar).toContain('right: 0; bottom: 6px; width: 52px; height: 52px; border-radius: 16px');
+    expect(recuperar).toContain('rotate(6deg)');
+    expect(recuperar).toContain('width: 120px');
+    expect(recuperar).toContain('font-size: 28px');
+    expect(recuperar).toContain('max-width: 320px');
+    expect(recuperar).toContain('margin-top: 28px');
+    expect(recuperar).toContain('animation: pop 400ms ease-out 300ms both');
+    expect(recuperar).toContain('animation: rise 400ms ease-out both');
+
+    const screen = source('screens/forgot/index.tsx');
+    expect(screen).toContain('<RiseIn testID="forgot-scene" delayMs={0} className="mt-4 h-37.5 w-42">');
+    expect(screen).toContain('h-37.5 w-42');
+    expect(screen).toContain('inset-x-2.5 top-3.5 bottom-0 rounded-40');
+    expect(screen).toContain('absolute bottom-1.5 right-0');
+    expect(screen).toContain('text-28 leading-8.5');
+    expect(screen).toContain('max-w-80');
+  });
+});
+
+describe('#205 R11: RecuperarEnviado', () => {
+  it('#205 R11: RecuperarEnviado dibuja la misma escena que Recuperar', () => {
+    const enviado = canvas('RecuperarEnviado');
+    expect(enviado).toContain('width: 168px; height: 150px');
+    expect(enviado).toContain('rotate(6deg)');
+    expect(enviado).toContain('width: 120px');
+    expect(enviado).toContain('font-size: 28px');
+    expect(enviado).toContain('max-width: 320px');
+    expect(enviado).toContain('gap: 14px');
+
+    expect(source('screens/forgot/index.tsx')).toContain('testID="forgot-actions" className="w-full gap-3.5"');
+  });
+});

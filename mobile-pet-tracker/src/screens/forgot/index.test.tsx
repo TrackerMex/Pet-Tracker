@@ -2,6 +2,7 @@ import { DeviceEventEmitter, Platform, StyleSheet } from 'react-native';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
+import type { TestInstance } from 'test-renderer';
 
 import { forgotPassword, type ForgotPasswordState } from '../../api/auth';
 import ForgotRoute from '../../app/(auth)/forgot';
@@ -138,7 +139,7 @@ describe('#117 R3: la ruta forgot delega en ForgotScreen', () => {
 });
 
 describe('#61 R8: forgot tiene contenedor de scroll con safe areas', () => {
-  it('#172 R19: centra en horizontal pero no en vertical dentro de un ScrollView con insets', async () => {
+  it('#172 R19: centra en horizontal pero no en vertical dentro de un ScrollView con insets (enmendado por #205 R10)', async () => {
     mockForgotPassword.mockResolvedValue({ kind: 'ok' });
     await renderRoute();
     const screenRoot = screen.getByTestId('forgot-form');
@@ -146,8 +147,7 @@ describe('#61 R8: forgot tiene contenedor de scroll con safe areas', () => {
     expect(screenRoot.props.contentContainerStyle).toEqual({
       flexGrow: 1,
       alignItems: 'center',
-      padding: 24,
-      gap: 16,
+      paddingHorizontal: 20, // #205 R10
       paddingTop: 52,
       paddingBottom: 48,
     });
@@ -215,10 +215,7 @@ async function submitForgot(email = 'ana@example.com') {
 }
 
 function lockTile() {
-  const siblings = (screen.getByTestId('forgot-title').parent?.children ?? []) as unknown[];
-  return siblings.filter((c) => typeof c !== 'string').find(
-    (c) => (c as { props: { testID?: string } }).props.testID === 'forgot-lock-tile',
-  );
+  return screen.getByTestId('forgot-lock-tile'); // #205 R10
 }
 
 function expectForgotError(error: string | null) {
@@ -297,20 +294,15 @@ describe('#117 R5: enviar pasa la pantalla a «Revisa tu correo»', () => {
     await expectSentState('Ana@Example.com', null);
   });
 
-  it('el tile Lock sigue en pie en los dos estados', async () => {
+  it('el tile Lock sigue en pie en los dos estados (enmendado por #205 R10)', async () => {
     mockForgotPassword.mockResolvedValue({ kind: 'ok' });
     await renderRoute();
-    const before = (screen.getByTestId('forgot-title').parent?.children ?? []) as unknown[];
+    const tileClassName = 'absolute bottom-1.5 right-0 size-13 items-center justify-center bg-accent rounded-16'; // #205 R10
 
-    expect(before.filter((c) => typeof c !== 'string').find(
-      (c) => (c as { props: { className?: string } }).props.className === 'size-13 items-center justify-center bg-accent rounded-16',
-    )).toBeDefined();
+    expect(screen.getByTestId('forgot-lock-tile').props.className).toBe(tileClassName);
     await submitForgot();
     expect(await screen.findByText('Revisa tu correo')).toBeVisible();
-    const after = (screen.getByTestId('forgot-title').parent?.children ?? []) as unknown[];
-    expect(after.filter((c) => typeof c !== 'string').find(
-      (c) => (c as { props: { className?: string } }).props.className === 'size-13 items-center justify-center bg-accent rounded-16',
-    )).toBeDefined();
+    expect(screen.getByTestId('forgot-lock-tile').props.className).toBe(tileClassName);
   });
 });
 
@@ -575,44 +567,46 @@ describe('#117 R11: la pantalla de éxito es la misma para cualquier correo', ()
 
 function expectPingoBeforeLock() {
   const pingo = screen.getByTestId('forgot-pingo');
-  const title = screen.getByTestId('forgot-title');
   expect(pingo.props.source).toEqual([
     expect.objectContaining({ testUri: expect.stringMatching(/pingo-talk\.webp$/) }),
   ]);
   expect(pingo.props.style).toEqual({ width: 120, height: 120, transform: [{ rotate: '6deg' }] });
   expect(pingo.props.accessibilityLabel).toBeUndefined();
-  const float = screen.getByTestId('forgot-pingo-float');
-  expect(float.parent).toBe(title.parent);
-  const siblings = title.parent?.children ?? [];
-  expect(siblings.indexOf(float)).toBe(siblings.findIndex((child) => child === lockTile()) - 1);
+  expect(screen.queryByTestId('forgot-pingo-float')).toBeNull(); // #205 R10
+  const scene = screen.getByTestId('forgot-scene'); // #205 R10
+  expect(pingo.parent).toBe(scene);
+  expect(lockTile().parent).toBe(scene);
+  expect((scene.children as TestInstance[]).map((child) => child.props.testID)).toEqual([
+    'forgot-scene-backdrop', 'forgot-pingo', 'forgot-lock-tile',
+  ]);
 }
 
 describe('#167 R9: Pingo y pop del candado en recuperar', () => {
-  it('#167 R9: Pingo precede al tile del candado en el formulario', async () => {
+  it('#167 R9: Pingo precede al tile del candado en el formulario (enmendado por #205 R10)', async () => {
     await renderRoute();
     expectPingoBeforeLock();
   });
 
-  it('#167 R9: Pingo precede al tile del candado tras enviar', async () => {
+  it('#167 R9: Pingo precede al tile del candado tras enviar (enmendado por #205 R10)', async () => {
     mockForgotPassword.mockResolvedValue({ kind: 'ok' });
     await renderRoute();
     await submitForgot();
     expectPingoBeforeLock();
   });
 
-  it('#167 R9: el tile entra con pop en el formulario', async () => {
+  it('#167 R9: el tile entra con pop en el formulario (enmendado por #205 R10)', async () => {
     await renderRoute();
     expect(Object.fromEntries(mockPopIn.mock.calls.map(([p]) => [
       p.testID, { className: p.className, style: StyleSheet.flatten(p.style) },
     ]))).toEqual({
       'forgot-lock-tile': {
-        className: 'size-13 items-center justify-center bg-accent rounded-16',
+        className: 'absolute bottom-1.5 right-0 size-13 items-center justify-center bg-accent rounded-16', // #205 R10
         style: { borderCurve: 'continuous', boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: 'color:lip' }] },
       },
     });
   });
 
-  it('#167 R9: el tile entra con pop tras enviar', async () => {
+  it('#167 R9: el tile entra con pop tras enviar (enmendado por #205 R10)', async () => {
     mockForgotPassword.mockResolvedValue({ kind: 'ok' });
     await renderRoute();
     mockPopIn.mockClear();
@@ -621,7 +615,7 @@ describe('#167 R9: Pingo y pop del candado en recuperar', () => {
       p.testID, { className: p.className, style: StyleSheet.flatten(p.style) },
     ]))).toEqual({
       'forgot-lock-tile': {
-        className: 'size-13 items-center justify-center bg-accent rounded-16',
+        className: 'absolute bottom-1.5 right-0 size-13 items-center justify-center bg-accent rounded-16', // #205 R10
         style: { borderCurve: 'continuous', boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: 'color:lip' }] },
       },
     });
@@ -630,16 +624,17 @@ describe('#167 R9: Pingo y pop del candado en recuperar', () => {
 
 
 describe('#172 R5: flotación de recuperar', () => {
-  it('#172 R5: Pingo de recuperar flota', async () => {
+  it('#172 R5: Pingo de recuperar flota (enmendado por #205 R10)', async () => {
     await renderRoute();
     expect(screen.getByTestId('forgot-pingo').parent)
-      .toHaveProperty('props.testID', 'forgot-pingo-float');
+      .toHaveProperty('props.testID', 'forgot-scene'); // #205 R10
+    expect(screen.queryByTestId('forgot-pingo-float')).toBeNull(); // #205 R10
   });
 });
 
 
 describe('#172 R3: Volver en recuperar', () => {
-  it('#172 R3: la fila Volver encabeza el scroll en los dos estados', async () => {
+  it('#172 R3: la fila Volver encabeza el scroll en los dos estados (enmendado por #205 R10)', async () => {
     mockForgotPassword.mockResolvedValue({ kind: 'ok' });
     await renderRoute();
     const expectTop = () => {
@@ -647,7 +642,7 @@ describe('#172 R3: Volver en recuperar', () => {
       expect(top.parent?.parent).toHaveProperty('props.testID', 'forgot-form');
       expect(top.parent?.children[0]).toBe(top);
       expect(top.children).toEqual([screen.getByTestId('forgot-back')]);
-      expect(top.props.className).toBe('w-full');
+      expect(top.props.className).toBe('-ml-2.5 w-full'); // #205 R10
     };
     expectTop();
     await submitForgot();
@@ -678,12 +673,12 @@ describe('#172 R9: error de recuperar', () => {
 });
 
 
-it('#172 R14: el candado es un tile acento con labio y Lock de 26', async () => {
+it('#172 R14: el candado es un tile acento con labio y Lock de 26 (enmendado por #205 R10)', async () => {
   mockForgotPassword.mockResolvedValue({ kind: 'ok' });
   await renderRoute();
   function expectTile() {
     const tile = screen.getByTestId('forgot-lock-tile');
-    expect(tile.props.className).toBe('size-13 items-center justify-center bg-accent rounded-16');
+    expect(tile.props.className).toBe('absolute bottom-1.5 right-0 size-13 items-center justify-center bg-accent rounded-16'); // #205 R10
     const icon = screen.getByTestId('icon-lock');
     expect(tile.children).toEqual([icon]);
     expect(icon.props.size).toBe(26);
@@ -696,16 +691,18 @@ it('#172 R14: el candado es un tile acento con labio y Lock de 26', async () => 
 });
 
 
-it('#172 R19: el espaciador empuja la CTA al pie en los dos estados', async () => {
+it('#172 R19: el espaciador empuja la CTA al pie en los dos estados (enmendado por #205 R10)', async () => {
   mockForgotPassword.mockResolvedValue({ kind: 'ok' });
   await renderRoute();
   function expectSpacer(ctaId: string) {
     const spacer = screen.getByTestId('forgot-spacer');
+    const actions = screen.getByTestId('forgot-actions'); // #205 R10
     const cta = screen.getByTestId(ctaId);
-    expect(spacer.parent).toBe(cta.parent);
+    expect(cta.parent).toBe(actions); // #205 R10
+    expect(spacer.parent).toBe(actions.parent); // #205 R10
     expect(spacer.parent).toBe(screen.getByTestId('forgot-top').parent);
     const children = spacer.parent?.children ?? [];
-    expect(children.indexOf(spacer)).toBe(children.indexOf(cta) - 1);
+    expect(children.indexOf(spacer)).toBe(children.indexOf(actions) - 1); // #205 R10
     expect(spacer.props.className).toBe('flex-1');
     expect(spacer.children).toHaveLength(0);
   }
@@ -713,6 +710,89 @@ it('#172 R19: el espaciador empuja la CTA al pie en los dos estados', async () =
   await submitForgot();
   await waitFor(() => expect(screen.getByTestId('forgot-title')).toHaveTextContent('Revisa tu correo'));
   expectSpacer('forgot-resend');
+});
+
+const SCENE_CHILDREN = ['forgot-scene-backdrop', 'forgot-pingo', 'forgot-lock-tile'];
+const TITLE_CLASS = 'mt-7 text-center text-28 leading-8.5 font-black tracking-display text-foreground';
+const BODY_CLASS = 'mt-2.5 max-w-80 text-center text-15 leading-5.5 font-normal text-muted';
+
+function testIds(node: { children: unknown[] }) {
+  return (node.children as TestInstance[]).map((child) => child.props.testID);
+}
+
+describe('#205 R10: Recuperar como el artboard', () => {
+  it('#205 R10: la escena apila fondo, Pingo y candado en 168x150', async () => {
+    await renderRoute();
+    const scene = screen.getByTestId('forgot-scene');
+    expect(typeof scene.props.entering).toBe('function');
+    expect(scene.props.className).toBe('mt-4 h-37.5 w-42');
+    expect(scene.parent).toBe(screen.getByTestId('forgot-top').parent);
+    expect(testIds(scene)).toEqual(SCENE_CHILDREN);
+
+    const backdrop = screen.getByTestId('forgot-scene-backdrop');
+    expect(backdrop.props.className).toBe('absolute inset-x-2.5 top-3.5 bottom-0 rounded-40 bg-surface-secondary');
+    expect(StyleSheet.flatten(backdrop.props.style)).toEqual({ borderCurve: 'continuous' });
+    expect(backdrop.children).toHaveLength(0);
+
+    const tile = screen.getByTestId('forgot-lock-tile');
+    expect(tile.props.className).toBe('absolute bottom-1.5 right-0 size-13 items-center justify-center bg-accent rounded-16');
+    expect(StyleSheet.flatten(tile.props.style)).toEqual({
+      borderCurve: 'continuous',
+      boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: 'color:lip' }],
+    });
+    expect(tile.children).toEqual([screen.getByTestId('icon-lock')]);
+  });
+
+  it('#205 R10: Pingo no flota y mide 120 girado 6 grados', async () => {
+    await renderRoute();
+    const pingo = screen.getByTestId('forgot-pingo');
+    expect(screen.queryByTestId('forgot-pingo-float')).toBeNull();
+    expect(pingo.parent).toBe(screen.getByTestId('forgot-scene'));
+    expect(pingo.props.className).toBe('absolute left-6 top-0');
+    expect(pingo.props.style).toEqual({ width: 120, height: 120, transform: [{ rotate: '6deg' }] });
+  });
+
+  it('#205 R10: título, cuerpo, campo y acciones siguen las medidas del artboard', async () => {
+    await renderRoute();
+    const content = screen.getByTestId('forgot-top').parent as TestInstance;
+    expect(content.parent).toBe(screen.getByTestId('forgot-form'));
+    expect(testIds(content)).toEqual([
+      'forgot-top', 'forgot-scene', 'forgot-title', 'forgot-body', undefined, 'forgot-spacer', 'forgot-actions',
+    ]);
+    expect(screen.getByTestId('forgot-top').props.className).toBe('-ml-2.5 w-full');
+    expect(screen.getByTestId('forgot-title').props.className).toBe(TITLE_CLASS);
+    expect(screen.getByTestId('forgot-body').props.className).toBe(BODY_CLASS);
+    expect((content.children[4] as TestInstance).props.className).toContain('mt-7 w-full');
+
+    const actions = screen.getByTestId('forgot-actions');
+    expect(actions.props.className).toBe('w-full gap-3.5');
+    expect(testIds(actions)).toEqual(['forgot-submit', 'link-login']);
+  });
+});
+
+describe('#205 R11: RecuperarEnviado como el artboard', () => {
+  it('#205 R11: tras enviar, la escena sigue y las acciones son Reenviar y volver', async () => {
+    mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+    await renderRoute();
+    await submitForgot();
+    expect(await screen.findByText('Revisa tu correo')).toBeVisible();
+
+    const content = screen.getByTestId('forgot-top').parent as TestInstance;
+    expect(testIds(content)).toEqual([
+      'forgot-top', 'forgot-scene', 'forgot-title', 'forgot-body', 'forgot-spacer', 'forgot-actions',
+    ]);
+    const scene = screen.getByTestId('forgot-scene');
+    expect(scene.props.className).toBe('mt-4 h-37.5 w-42');
+    expect(testIds(scene)).toEqual(SCENE_CHILDREN);
+    expect(screen.getByTestId('forgot-title').props.className).toBe(TITLE_CLASS);
+    expect(screen.getByTestId('forgot-body').props.className).toBe(BODY_CLASS);
+    expect(screen.queryByTestId('forgot-email')).toBeNull();
+    expect(screen.queryByTestId('forgot-submit')).toBeNull();
+
+    const actions = screen.getByTestId('forgot-actions');
+    expect(actions.props.className).toBe('w-full gap-3.5');
+    expect(testIds(actions)).toEqual(['forgot-resend', 'link-login']);
+  });
 });
 
 describe('#183 R5: recuperar valida en cliente', () => {

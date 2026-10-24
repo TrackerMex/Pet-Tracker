@@ -154,9 +154,9 @@ it('#177 R5.1: el compacto conserva talla, etiqueta e icono con labio de tres', 
   expect(element).toContain('<Button.Label className="text-sm font-extrabold text-accent-foreground">');
   expect(element).toContain('<Plus size={16} color={accentForeground} />');
 });
-it('#177 R5.2: el tile conserva la esquina y recibe el labio con el orden exacto', () => {
+it('#177 R5.2: el tile conserva la esquina y recibe el labio con el orden exacto (enmendado por #205 R10)', () => {
   const tag = openingTagWithTestId(readSource('screens/forgot/index.tsx'), literalId('forgot-lock-tile'));
-  expect(tag).toContain('className="size-13 items-center justify-center bg-accent rounded-16"');
+  expect(tag).toContain('className="absolute bottom-1.5 right-0 size-13 items-center justify-center bg-accent rounded-16"'); // #205 R10
   expect(tag).toContain('style={[CONTINUOUS_CORNER, chunkyLip.primary]}');
   expect(tag).not.toMatch(/border-b-4|border-black\/25/);
 });
