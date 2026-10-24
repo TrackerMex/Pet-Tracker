@@ -62,6 +62,7 @@ export const R2_TABS: UseRow[] = [
   { file: 'src/components/floating-tab-bar.tsx', key: 'tabs.health' },
   { file: 'src/components/floating-tab-bar.tsx', key: 'tabs.food' },
   { file: 'src/components/floating-tab-bar.tsx', key: 'tabs.profile' },
+  { file: 'src/components/floating-tab-bar.tsx', key: 'tabs.bar' },
 ];
 
 export const R3_HOME: UseRow[] = [
