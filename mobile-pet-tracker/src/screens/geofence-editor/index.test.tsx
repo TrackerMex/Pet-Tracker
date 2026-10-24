@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
-import { Alert, DeviceEventEmitter, StyleSheet } from 'react-native';
+import { DeviceEventEmitter, StyleSheet } from 'react-native';
 
 import { renderWithProviders } from '../../../test/render-with-providers';
 import { createGeofence, deleteGeofence, listGeofences, setGeofenceActive, updateGeofence, type Geofence } from '../../api/geofences';
@@ -460,14 +460,12 @@ describe('#146 R13: el interruptor del editor activa o desactiva la zona sin sal
   });
 });
 
-function alertButton(label: string) {
-  const button = jest.mocked(Alert.alert).mock.calls.at(-1)?.[2]?.find((item) => item.text === label);
-  expect(button).toBeDefined();
-  return button!;
+async function confirmEditorDelete() {
+  const card = await screen.findByTestId('geofence-editor-delete-dialog-card');
+  await fireEvent.press(within(card).getByTestId('geofence-editor-delete-dialog-confirm'));
 }
 
 describe('#146 R14: Eliminar en el editor borra la zona y vuelve a la lista', () => {
-  beforeEach(() => { jest.spyOn(Alert, 'alert').mockImplementation(() => undefined); });
   afterEach(() => { jest.restoreAllMocks(); });
   it('pinta Eliminar con la receta de peligro justo después de Guardar (enmendado por #189 R13)', async () => {
     await edit(); const button = screen.getByTestId('geofence-editor-delete');
@@ -486,61 +484,61 @@ describe('#146 R14: Eliminar en el editor borra la zona y vuelve a la lista', ()
     expect(screen.queryByTestId('geofence-editor-active')).toBeNull();
     expect(screen.queryByTestId('geofence-editor-delete')).toBeNull();
   });
-  it('pide confirmación con el nombre de la zona y Cancelar no borra', async () => {
+  it('pide confirmación con el nombre de la zona y Cancelar no borra (enmendado por #202 R9)', async () => {
     await edit(); await fireEvent.press(screen.getByTestId('geofence-editor-delete'));
-    expect(Alert.alert).toHaveBeenCalledTimes(1);
-    const [title, body, buttons] = jest.mocked(Alert.alert).mock.calls[0];
-    expect(title).toBe(catalog.es['geofences.deleteTitle'].replace('{{name}}', casa.name));
-    expect(body).toBe(catalog.es['geofences.deleteBody']);
-    expect(buttons?.map(({ text, style }) => ({ text, style }))).toEqual([
-      { text: catalog.es['geofences.cancel'], style: 'cancel' },
-      { text: catalog.es['geofences.delete'], style: 'destructive' },
-    ]);
-    await act(async () => { alertButton(catalog.es['geofences.cancel']).onPress?.(); });
+    const card = await screen.findByTestId('geofence-editor-delete-dialog-card');
+    expect(within(card).getByTestId('geofence-editor-delete-dialog-title')).toHaveTextContent(catalog.es['geofences.deleteTitle'].replace('{{name}}', casa.name));
+    expect(within(card).getByTestId('geofence-editor-delete-dialog-body')).toHaveTextContent(catalog.es['geofences.deleteBody']);
+    const cancel = within(card).getByTestId('geofence-editor-delete-dialog-cancel');
+    expect(cancel).toHaveTextContent(catalog.es['geofences.cancel']);
+    expect(within(card).getByTestId('geofence-editor-delete-dialog-confirm')).toHaveTextContent(catalog.es['geofences.delete']);
+    await fireEvent.press(cancel);
+    await waitFor(() => expect(screen.queryByTestId('geofence-editor-delete-dialog')).toBeNull());
     expect(mockDelete).not.toHaveBeenCalled();
   });
-  it('al confirmar borra una vez y vuelve a la lista recargada', async () => {
+  it('al confirmar borra una vez y vuelve a la lista recargada (enmendado por #202 R9)', async () => {
     const { queryClient } = await edit(); const invalidate = jest.spyOn(queryClient, 'invalidateQueries');
     await fireEvent.press(screen.getByTestId('geofence-editor-delete'));
     expect(mockDelete).not.toHaveBeenCalled();
-    await act(async () => { alertButton(catalog.es['geofences.delete']).onPress?.(); });
+    await confirmEditorDelete();
     await waitFor(() => expect(mockBack).toHaveBeenCalledTimes(1));
     expect(mockDelete).toHaveBeenCalledTimes(1);
     expect(mockDelete).toHaveBeenCalledWith(apiUrl, 'token-1', 'pet-1', 'geofence-1');
     expect(invalidate).toHaveBeenCalledWith({ queryKey: expectedListKey });
     expect(invalidate.mock.invocationCallOrder[0]).toBeLessThan(mockBack.mock.invocationCallOrder[0]);
   });
-  it('deshabilita Eliminar, Guardar y el interruptor mientras borra', async () => {
+  it('deshabilita Eliminar, Guardar y el interruptor mientras borra (enmendado por #202 R9)', async () => {
     mockDelete.mockReturnValue(new Promise(() => undefined)); await edit();
     const button = screen.getByTestId('geofence-editor-delete');
     await fireEvent.press(button);
-    await act(async () => { alertButton(catalog.es['geofences.delete']).onPress?.(); });
+    await confirmEditorDelete();
     await waitFor(() => expect(button.props.accessibilityState.disabled).toBe(true));
     expect(screen.getByTestId('geofence-editor-save').props.accessibilityState.disabled).toBe(true);
     expect(screen.getByTestId('geofence-editor-active').props.accessibilityState.disabled).toBe(true);
     await fireEvent.press(button); await fireEvent.press(screen.getByTestId('geofence-editor-save')); await fireEvent.press(screen.getByTestId('geofence-editor-active'));
-    expect(mockDelete).toHaveBeenCalledTimes(1); expect(Alert.alert).toHaveBeenCalledTimes(1);
+    expect(mockDelete).toHaveBeenCalledTimes(1); expect(screen.queryByTestId('geofence-editor-delete-dialog')).toBeNull();
     expect(mockUpdate).not.toHaveBeenCalled(); expect(mockSetActive).not.toHaveBeenCalled();
   });
-  it('un fallo al borrar pinta el error y no vuelve', async () => {
+  it('un fallo al borrar pinta el error y no vuelve (enmendado por #202 R9)', async () => {
     mockDelete.mockResolvedValue({ kind: 'unreachable', message: 'offline' }); await edit();
     await fireEvent.press(screen.getByTestId('geofence-editor-delete'));
-    await act(async () => { alertButton(catalog.es['geofences.delete']).onPress?.(); });
+    await confirmEditorDelete();
     expect(await screen.findByTestId('geofence-editor-error')).toHaveTextContent(catalog.es['common.cannotReachServer']);
     expect(mockBack).not.toHaveBeenCalled();
   });
-  it('un 401 al borrar cierra sesión una vez', async () => {
+  it('un 401 al borrar cierra sesión una vez (enmendado por #202 R9)', async () => {
     mockDelete.mockResolvedValue({ kind: 'unauthorized' }); await edit();
     await fireEvent.press(screen.getByTestId('geofence-editor-delete'));
-    await act(async () => { alertButton(catalog.es['geofences.delete']).onPress?.(); });
+    await confirmEditorDelete();
     await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
     expect(mockBack).not.toHaveBeenCalled();
   });
-  it('pinta Eliminar en inglés', async () => {
+  it('pinta Eliminar en inglés (enmendado por #202 R9)', async () => {
     await edit('en'); const button = screen.getByTestId('geofence-editor-delete');
     expect(button).toHaveTextContent(catalog.en['geofences.delete']);
     await fireEvent.press(button);
-    expect(jest.mocked(Alert.alert).mock.calls[0][0]).toBe(catalog.en['geofences.deleteTitle'].replace('{{name}}', casa.name));
+    const card = await screen.findByTestId('geofence-editor-delete-dialog-card');
+    expect(within(card).getByTestId('geofence-editor-delete-dialog-title')).toHaveTextContent(catalog.en['geofences.deleteTitle'].replace('{{name}}', casa.name));
   });
 });
 
@@ -866,17 +864,16 @@ describe('#189 R14: métricas y avisos conservados en las ramas de estado', () =
 
 
 describe('#189 R19: los controles bloqueados conservan la opacidad', () => {
-  it.each(['guardar', 'activar', 'eliminar'] as const)('#189 R19.2: bloquea los tres controles sin atenuarlos al %s, incluso al vaciar el nombre', async (action) => {
+  it.each(['guardar', 'activar', 'eliminar'] as const)('#189 R19.2: bloquea los tres controles sin atenuarlos al %s, incluso al vaciar el nombre (enmendado por #202 R9)', async (action) => {
     mockUpdate.mockReturnValue(new Promise(() => undefined));
     mockSetActive.mockReturnValue(new Promise(() => undefined));
     mockDelete.mockReturnValue(new Promise(() => undefined));
-    const alert = jest.spyOn(Alert, 'alert');
     await edit();
     if (action === 'guardar') await fireEvent.press(screen.getByTestId('geofence-editor-save'));
     if (action === 'activar') await fireEvent.press(screen.getByTestId('geofence-editor-active'));
     if (action === 'eliminar') {
       await fireEvent.press(screen.getByTestId('geofence-editor-delete'));
-      await act(async () => { alert.mock.calls.at(-1)?.[2]?.find(button => button.style === 'destructive')?.onPress?.(); });
+      await confirmEditorDelete();
     }
     await waitFor(() => expect(screen.getByTestId('geofence-editor-active').props.accessibilityState.disabled).toBe(true));
     for (const empty of [false, true]) {
@@ -887,7 +884,6 @@ describe('#189 R19: los controles bloqueados conservan la opacidad', () => {
         expect(StyleSheet.flatten(node.props.style)?.opacity).toBe(1);
       }
     }
-    alert.mockRestore();
   });
   it('#189 R19.2: Guardar vacío permanece gris, bloqueado y con opacidad 1 sin busy', async () => {
     await edit();
@@ -957,4 +953,41 @@ it('#202 R4: «Activa» es ToggleSwitch', async () => {
   await waitFor(() => expect(screen.getByTestId('geofence-editor-active').props.accessibilityState.checked).toBe(false));
   expect(mockSetActive).toHaveBeenCalledTimes(1);
   expect(mockSetActive).toHaveBeenCalledWith(apiUrl, 'token-1', 'pet-1', casa.id, false);
+});
+
+async function openEditorDelete(language: Language = 'es') {
+  await edit(language);
+  await fireEvent.press(screen.getByTestId('geofence-editor-delete'));
+  expect(screen.queryByTestId('geofence-editor-delete-dialog-card')).not.toBeNull();
+}
+it('#202 R9: Eliminar abre el diálogo con el copy exacto', async () => {
+  await openEditorDelete();
+  expect(screen.getByTestId('geofence-editor-delete-dialog-title')).toHaveTextContent('¿Eliminar Casa?');
+  expect(screen.getByTestId('geofence-editor-delete-dialog-body')).toHaveTextContent('Dejarás de recibir alertas de esta zona. Esta acción no se puede deshacer.');
+  expect(screen.getByTestId('geofence-editor-delete-dialog-cancel')).toHaveTextContent('Cancelar');
+  expect(screen.getByTestId('geofence-editor-delete-dialog-confirm')).toHaveTextContent('Eliminar');
+});
+it.each(['cancel', 'scrim'])('#202 R9: %s cierra sin borrar', async (action) => {
+  await openEditorDelete();
+  await fireEvent.press(screen.getByTestId(`geofence-editor-delete-dialog-${action}`));
+  await waitFor(() => expect(screen.queryByTestId('geofence-editor-delete-dialog')).toBeNull());
+  expect(screen.getByTestId('geofence-editor-name')).toBeVisible();
+  expect(mockDelete).not.toHaveBeenCalled();
+  expect(mockBack).not.toHaveBeenCalled();
+});
+it('#202 R9: confirmar borra una vez y vuelve a la lista', async () => {
+  await openEditorDelete();
+  await confirmEditorDelete();
+  await waitFor(() => expect(screen.getByTestId('geofence-editor-save').props.accessibilityState.disabled).toBe(false));
+  expect(screen.queryByTestId('geofence-editor-delete-dialog')).toBeNull();
+  expect(mockDelete).toHaveBeenCalledTimes(1);
+  expect(mockDelete).toHaveBeenCalledWith(apiUrl, 'token-1', 'pet-1', 'geofence-1');
+  expect(mockBack).toHaveBeenCalledTimes(1);
+});
+it('#202 R9: Eliminar abre el diálogo en inglés', async () => {
+  await openEditorDelete('en');
+  expect(screen.getByTestId('geofence-editor-delete-dialog-title')).toHaveTextContent('Delete Casa?');
+  expect(screen.getByTestId('geofence-editor-delete-dialog-body')).toHaveTextContent("You'll stop getting alerts for this zone. This can't be undone.");
+  expect(screen.getByTestId('geofence-editor-delete-dialog-cancel')).toHaveTextContent('Cancel');
+  expect(screen.getByTestId('geofence-editor-delete-dialog-confirm')).toHaveTextContent('Delete');
 });
