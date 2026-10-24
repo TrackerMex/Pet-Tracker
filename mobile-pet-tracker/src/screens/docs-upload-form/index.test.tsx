@@ -31,19 +31,6 @@ import DocsRoute from '../../app/pets/[petId]/docs';
 import DocsUploadRoute from '../../app/pets/[petId]/docs-upload';
 import { createQueryClient } from '../../providers/query-provider';
 
-const mockHomeEntrance = jest.fn<void, [import('react-native').ViewProps & { index: number }]>();
-
-jest.mock('../home/home-entrance', () => {
-  const React = jest.requireActual<typeof import('react')>('react');
-  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
-  return {
-    HomeEntrance(props: import('react-native').ViewProps & { index: number }) {
-      mockHomeEntrance(props);
-      return React.createElement(View, props);
-    },
-  };
-});
-
 jest.mock('standard-navigation', () => ({}));
 // #185 R9: renderRouter carga /mock, que omite useReducedMotion en Reanimated 4.
 jest.mock('react-native-reanimated/mock', () => ({
