@@ -500,7 +500,7 @@ describe('R7: ruta del día como polylines', () => {
     });
   });
 
-  it('R3 (android-map-never-ready): pasa una polyline mapeada por cada viaje', async () => {
+  it('R3 (android-map-never-ready): pasa una polyline mapeada por cada viaje (enmendado por #201 R15)', async () => {
     const first = makeTrip();
     const second = makeTrip({
       index: 1,
@@ -527,6 +527,7 @@ describe('R7: ruta del día como polylines', () => {
             { latitude: 19.433, longitude: -99.1328 },
           ],
           color: expect.any(String),
+          width: 5,
         },
         {
           id: 'trip-1',
@@ -535,6 +536,7 @@ describe('R7: ruta del día como polylines', () => {
             { latitude: 19.45, longitude: -99.11 },
           ],
           color: expect.any(String),
+          width: 5,
         },
       ]);
     });
@@ -2158,4 +2160,29 @@ describe('#159 R4: nadie más ve el botón de emparejar', () => {
       expect(screen.queryByTestId('map-no-tracking-action')).toBeNull();
     },
   );
+});
+
+describe('#201 R15: la ruta del día se dibuja con trazo 5', () => {
+  it('#201 R15: Mapa pide la ruta de 5', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition(),
+    });
+    mockGetDayRoute.mockResolvedValue({
+      kind: 'ok',
+      date: '2026-08-21',
+      trips: [makeTrip()],
+    });
+
+    await renderMap();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('map-view').props.polylines).toHaveLength(1),
+    );
+    for (const polyline of screen.getByTestId('map-view').props
+      .polylines as { width?: number }[]) {
+      expect(polyline.width).toBe(5);
+    }
+  });
 });
