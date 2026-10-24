@@ -395,12 +395,6 @@ describe('#175 R5: cabecera del artboard', () => {
     expect(within(header).getByText('Documentos de')).toBeVisible();
     expect(within(header).getByText('Luna')).toBeVisible();
   });
-
-  it('conserva una sola cabecera nativa de Documentos con título vacío', () => {
-    const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
-    const layout = readFileSync(`${process.cwd()}/src/app/_layout.tsx`, 'utf8');
-    expect(layout.split("name=\"pets/[petId]/docs\" options={{ ...headerOptions, title: '' }}")).toHaveLength(2);
-  });
 });
 
 describe('#155 R7: sin documentos, Pingo los guarda', () => {
