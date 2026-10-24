@@ -115,3 +115,33 @@ Test Suites: 3 skipped, 30 passed, 30 of 33 total
 Tests:       8 skipped, 468 passed, 476 total
 exit=0
 ```
+
+## Re-revisión de la errata E3 (2026-10-24)
+Veredicto: APROBADO
+
+Alcance: solo el delta `ae64f05b..aa942254`. Sin `./init.sh` por decisión del leader: el delta borra una línea de test y CI corre la suite completa.
+
+### Delta
+`git diff ae64f05b aa942254 --stat`: 2 ficheros, 3 inserciones, 2 borrados.
+- `850cdecc` solo toca `specs/mobile-canvas-tab-bar/requirements.md`. En el EARS de R9, «una sola vez y al final» pasa a «una sola vez (errata E3)». Añade además el párrafo E3 en «Erratas del leader». Nada más cambia.
+- `aa942254` solo toca `mobile-pet-tracker/src/__tests__/tab-bar-canvas-fidelity.test.ts` y borra una sola línea, `expect(normalized.endsWith(`${BLOQUE}\n`)).toBe(true);`. Las otras cuatro aserciones del `it` `#206 R9` siguen intactas: `match(/## Enmienda #206/g)` 1, casilla `[ xX]`, `split(BLOQUE)` 2 y `split` D-I 2. Esto coincide con lo que dice E3.
+
+### Evidencia
+Todo se corrió en `mobile-pet-tracker/` con `bunx jest --runTestsByPath src/__tests__/tab-bar-canvas-fidelity.test.ts --runInBand --testTimeout=30000`. Cada mutación se restauró con `git checkout HEAD -- docs/ui-guidelines.md`.
+
+| Corrida | Mutación en `docs/ui-guidelines.md` | Esperado | Resultado |
+|---|---|---|---|
+| Base | ninguna | verde | exit 0, `Tests: 14 passed, 14 total` |
+| (a) | se añade `\n## Enmienda #999 — prueba\n` al final | verde | exit 0, `Tests: 14 passed, 14 total`, `#206 R9` ✓ |
+| (b) | `## Enmienda #206 — barra de pestañas fiel al canvas` duplicada antes de `## Enmienda #67` (línea 417) | rojo en R9 | exit 1, `Tests: 1 failed, 13 passed, 14 total`. Falla `#206 R9` en `:130` `match(/## Enmienda #206/g)`, «Expected length: 1, Received length: 2» |
+| (c) | «Flota a 16 de cada lado» pasa a «Vuela a 16 de cada lado» dentro del bloque #206 | rojo en R9 | exit 1, `Tests: 1 failed, 13 passed, 14 total`. Falla `#206 R9` en `:133` `split(BLOQUE)`, «Expected length: 2, Received length: 1» |
+| Tras restaurar | ninguna | verde | `Tests: 14 passed, 14 total` |
+
+- `bunx eslint src/__tests__/tab-bar-canvas-fidelity.test.ts`: exit 0.
+- `git status --short -- docs/ mobile-pet-tracker/` tras restaurar: 0 líneas. Lo que queda sucio en el árbol es del leader y anterior a esta re-revisión (`progress/current.md`, `progress/impl_mobile-canvas-tab-bar.md`, más los dos sin versionar de O5).
+- Logs de las mutaciones: `/tmp/claude-1002/-home-claude-sites-Pet-Tracker/ad9357a2-d69d-40e4-8877-cbe2e7790272/scratchpad/mut_a.log`, `/tmp/claude-1002/-home-claude-sites-Pet-Tracker/ad9357a2-d69d-40e4-8877-cbe2e7790272/scratchpad/mut_b.log`, `/tmp/claude-1002/-home-claude-sites-Pet-Tracker/ad9357a2-d69d-40e4-8877-cbe2e7790272/scratchpad/mut_c.log`.
+
+### O1
+Resuelta. Una `## Enmienda` ajena puesta después de la #206 ya no pone `#206 R9` en rojo (a). La unicidad sigue fijada por dos candados: el encabezado duplicado lo pilla `match` (b) y el texto alterado lo pilla `split(BLOQUE)` (c).
+
+Residuo informativo, no bloqueante: `specs/mobile-canvas-tab-bar/design.md:169` («Texto literal que R9 añade al final de `docs/ui-guidelines.md`») y `:195` («Enmienda #206» al final) siguen diciendo «al final». E3 solo trata como descriptivo `tasks.md` R9 paso 2. A estas dos líneas de design.md les corresponde la misma lectura, porque describen dónde se escribió el bloque y no son requisito. Ningún test las lee.
