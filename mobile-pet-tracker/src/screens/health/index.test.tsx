@@ -1000,11 +1000,11 @@ describe('#168 R1: Salud pinta el título grande en todas sus ramas', () => {
 describe('#168 R2: Salud sin hero y con métricas estándar', () => {
   beforeEach(setupHealth168);
 
-  it('con mascotas, health-title y health-content son los únicos hijos del scroll, en ese orden', async () => {
+  it('con mascotas, health-title y health-content son los únicos hijos del scroll, en ese orden (enmendado por #199 R12)', async () => {
     await renderHealth();
     const content = await screen.findByTestId('health-content');
     expect(content.parent!.parent).toBe(screen.getByTestId('screen-health'));
-    expect(content.parent!.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['health-title', 'health-content']);
+    expect(content.parent!.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['health-header', 'health-content']);
     expect(screen.queryByTestId('pet-hero')).toBeNull();
   });
 
@@ -1036,12 +1036,12 @@ describe('#168 R2: Salud sin hero y con métricas estándar', () => {
     expect(screen.queryByText('Vacuna de Luna')).toBeNull();
   });
 
-  it.each(HEALTH_BRANCHES_168.slice(0, 5))('sin contenido ($name), health-title precede a health-states', async ({ state, branch }) => {
+  it.each(HEALTH_BRANCHES_168.slice(0, 5))('sin contenido ($name), health-title precede a health-states (enmendado por #199 R12)', async ({ state, branch }) => {
     mockListPets.mockImplementation(async () => state);
     await renderHealth();
     await screen.findByTestId(branch);
     const states = screen.getByTestId('health-states');
-    expect(states.parent!.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['health-title', 'health-states']);
+    expect(states.parent!.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['health-header', 'health-states']);
     expect(states.props.style).toEqual({ gap: 16 });
     expect(within(states).queryByTestId('health-title')).toBeNull();
     expect(screen.queryByTestId('pet-hero')).toBeNull();
@@ -1124,5 +1124,23 @@ describe('#181 R6: health hereda la limpieza de selección', () => {
     await waitFor(() => expect(screen.getByTestId('selected-pet-id')).toHaveTextContent('none'));
     await screen.findByTestId('health-empty');
     await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+  });
+});
+
+
+describe('#199 R12: cabecera de Salud', () => {
+  beforeEach(setupHealth168);
+  it('#199 R12 con mascotas, health-header y health-content son los únicos hijos del scroll', async () => {
+    await renderHealth();
+    const content = await screen.findByTestId('health-content');
+    expect(content.parent!.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['health-header', 'health-content']);
+  });
+  it('#199 R12 health-header es una fila justify-between que empieza por health-title', async () => {
+    await renderHealth();
+    const header = await screen.findByTestId('health-header');
+    expect(header.type).toBe('View');
+    expect(header.props.className).toBe('flex-row items-center justify-between');
+    expect(elementChild(header, 0).props.testID).toBe('health-title');
+    expect(elementChild(header, 0)).toHaveTextContent('Salud', { exact: true });
   });
 });
