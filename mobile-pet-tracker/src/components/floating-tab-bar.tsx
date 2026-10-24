@@ -57,10 +57,10 @@ const TAB_ICON_SHAPES = {
   profile: <><Circle cx="12" cy="8" r="4" /><Path d="M4 21a8 8 0 0 1 16 0" /></>,
 } as const;
 
-function TabIcon({ name, color }: { name: keyof typeof TAB_ICON_SHAPES; color: string; active: boolean }) {
+function TabIcon({ name, color, active }: { name: keyof typeof TAB_ICON_SHAPES; color: string; active: boolean }) {
   return (
     <Svg testID={`icon-tab-${name}`} width={24} height={24}
-      viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2}
+      viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={active ? 2.4 : 2}
       strokeLinecap="round" strokeLinejoin="round">
       {TAB_ICON_SHAPES[name]}
     </Svg>
