@@ -806,6 +806,12 @@ React Native).
 Firmadas por delegación (mandato del humano del 2026-10-23, `progress/plan_canvas-parity-2026-10-23.md` §4).
 
 
+**E2 (F1 tras #200, suelo `classNameElements`), firmada.** En H0 `f8909d7b` (merge de `origin/dev` 6bbd0485 con #200) la réplica del escáner mide `cardElements` 35 y `classNameElements` 165, no 41 y 171: #200 retiró seis `Card` con `className`. Las cuatro `Card` que #205 retira llevan `className`, así que el suelo `toBeGreaterThanOrEqual(163)` se pondría rojo en R8 (162). Se trata igual que `cardElements`: en los commits rojos de R3, R4, R8 y R13, `toBeGreaterThanOrEqual(163)` gana un ` - 1` por R (`163 - 1 - 1 - 1 - 1` al final) y su comentario cierra con `; #205 R3, R4, R8, R13: -1, -1, -1, -1`. La expresión de `cardElements` parte de `35`, no de `41`: `toBeGreaterThanOrEqual(35 - 1 - 1 - 1 - 1)`, con el mismo cierre de comentario tras el `; #200 R9: -2` actual. El sufijo de título de F1 sigue siendo uno solo, en R3. Medida final: `cardElements` 31, `classNameElements` 161.
+
+**E3 (títulos con sufijo de #200).** Ocho `it` del inventario ya llevan un sufijo ` (enmendado por #200 …)` que la tabla no cita (`layout.test.tsx` `#194 R4`, `heroui-text-size-merge` `#187 R1`, `chunky-cta-canvas-fidelity` `#177 R7.3`, `alerts-canvas-fidelity` `#174 R12`, los tres de `consistency-classnames` y `design-drift` `#178 R13`). Cada `it` se localiza por su prefijo hasta el primer ` (enmendado por` y el sufijo de #205 va una vez al final del título real. Las expresiones de partida son las re-medidas en el handoff (chunky `26 + 1 + 1 + 1 + 2 + 2` = 33; sumas de `consistency-classnames` 47 y 45). El contenido de cada fila no cambia.
+
+**E4 (`#197 R20` ya borrado).** #200 borró el `describe('#197 R20: cimientos sin cablear')` de `canvas-foundations.test.ts`: R2 no lo toca y el reporte lo anota.
+
 **Regla de recuentos agregados.** Si al llegar a verde una R se pone rojo un `it` que no está en el inventario y ese `it` solo cuenta usos o ficheros de un literal o token, Codex lo enmienda sin parar. Son de este tipo los inventarios cerrados de radios, de `style={CONTINUOUS_CORNER}`, de `text-NN` o de `<Card`, las sumas de copy y los suelos del escáner HeroUI. La condición es que el delta medido sea exactamente el número de usos que el diff de esa R, tal como esta spec la prescribe, añade o retira. La enmienda:
 
 - da a la cifra o a la entrada su término (`// #205 Rn`, o `; #205 Rn: ±k` dentro de un comentario que ya exista);
