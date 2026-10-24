@@ -153,14 +153,21 @@ export function RemindersScreen() {
   const petsEmpty = pets.data?.kind === 'ok' && pets.data.pets.length === 0;
   if (petsEmpty) {
     return (
-      <View testID="reminders-no-pets-screen" className="flex-1 items-center justify-center p-6 bg-background">
-        <EmptyState
-          testID="reminders-no-pets"
-          pose="talk"
-          title={t('common.noPetsYet')}
-          body={t('common.noPetsBody')}
-          action={{ label: t('profile.addPet'), onPress: () => router.push('/pets/add') }}
-        />
+      <View
+        testID="reminders-no-pets-frame"
+        className="flex-1 bg-background"
+        style={{ paddingTop: insets.top + 12, paddingHorizontal: 20 }}
+      >
+        <ScreenHeader testID="reminders-no-pets-header" backFallback="/profile" />
+        <View testID="reminders-no-pets-screen" className="flex-1 items-center justify-center p-6 bg-background">
+          <EmptyState
+            testID="reminders-no-pets"
+            pose="talk"
+            title={t('common.noPetsYet')}
+            body={t('common.noPetsBody')}
+            action={{ label: t('profile.addPet'), onPress: () => router.push('/pets/add') }}
+          />
+        </View>
       </View>
     );
   }
