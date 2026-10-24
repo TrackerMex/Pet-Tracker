@@ -156,6 +156,9 @@ jest.mock('reicon-react-native', () => {
 
   return {
     ...actual,
+    Battery: mockIcon('icon-battery'),
+    Wifi: mockIcon('icon-wifi'),
+    WifiOff: mockIcon('icon-wifi-off'),
     Weight: mockIcon('icon-weight'),
     Walk: mockIcon('icon-walk'),
     Moon: mockIcon('icon-moon'),
@@ -1581,16 +1584,25 @@ describe('#62 R3: collar-card y last-position-card usan el Card compartido', () 
     mockGetDailyActivity.mockResolvedValue({ kind: 'no-tracking' });
   });
 
-  it.each(['collar-card', 'last-position-card'])(
-    '%s hereda radio, borde y sombra de Card',
-    async (testId) => {
+  it.each([
+    { testId: 'collar-card', amendment: ' (enmendado por #198 R3)' },
+    { testId: 'last-position-card', amendment: '' },
+  ])(
+    '$testId hereda radio, borde y sombra de Card$amendment',
+    async ({ testId }) => {
       await renderHome();
 
       const card = await screen.findByTestId(testId);
 
       expect(card.props.className).toContain('rounded-card');
-      expect(card.props.className).toContain('border');
-      expect(card.props.className).toContain('shadow-sm');
+      if (testId === 'collar-card') {
+        expect(card.props.className).toContain('border-0');
+        expect(card.props.className).toContain('shadow-none');
+        expect(card.props.className).not.toContain('shadow-sm');
+      } else {
+        expect(card.props.className).toContain('border');
+        expect(card.props.className).toContain('shadow-sm');
+      }
       expect(card.props.className).toContain('bg-default');
     },
   );
@@ -5117,13 +5129,17 @@ describe('#152 R8: la batería del collar se dibuja como barra', () => {
     expect(fill).toHaveAnimatedStyle({ width: `${pct}%` }, { shouldMatchAllProps: true });
   });
 
-  it('pone la barra detrás del porcentaje en su fila', async () => {
+  it('pone la barra detrás del porcentaje en su fila (enmendado por #198 R3)', async () => {
     await renderMotionHome();
     const track = screen.getByTestId('collar-battery-track');
     const battery = screen.getByTestId('collar-battery');
-    expect(track.parent).toBe(battery.parent);
-    const siblings = track.parent?.children.filter((child) => typeof child !== 'string');
-    expect(siblings?.indexOf(track)).toBe((siblings?.indexOf(battery) ?? -1) + 1);
+    const status = screen.getByTestId('collar-status');
+    expect(track.parent === status.parent).toBe(true);
+    const siblings = track.parent!.children.filter(child => typeof child !== 'string');
+    expect(siblings.indexOf(track)).toBe(siblings.indexOf(status) + 1);
+    const card = screen.getByTestId('collar-card');
+    expect(battery.parent === card).toBe(true);
+    expect(card.children.filter(child => typeof child !== 'string')[2] === battery).toBe(true);
   });
 
   it('llena la barra desde vacía con el preset de barra', async () => {
@@ -5995,5 +6011,62 @@ describe('#198 R2: celdas del resumen', () => {
       expect(value.props.style).toEqual({ fontVariant: ['tabular-nums'] });
       expect(within(value.parent!).getByText(label).props.className).toBe('text-11 font-semibold text-muted');
     }
+  });
+});
+
+describe('#198 R3: collar con dispositivo', () => {
+  beforeEach(() => {
+    setupCanvasHome();
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet() });
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('#198 R3 pinta el collar en una fila sin borde ni sombra', async () => {
+    await renderHome();
+    const card = await screen.findByTestId('collar-card');
+    for (const token of ['flex-row', 'items-center', 'gap-3', 'border-0', 'bg-default', 'px-3.5', 'py-3', 'shadow-none']) expect(card.props.className.split(' ')).toContain(token);
+    expect(card.props.className).not.toContain('shadow-sm');
+  });
+
+  it('#198 R3 ordena círculo, columna de estado y barra, y porcentaje', async () => {
+    await renderHome();
+    const battery = await screen.findByTestId('collar-battery');
+    const card = screen.getByTestId('collar-card');
+    const status = screen.getByTestId('collar-status');
+    const track = screen.getByTestId('collar-battery-track');
+    const children = card.children.filter(child => typeof child !== 'string');
+    expect(children.length).toBe(3);
+    expect(children[0] === screen.getByTestId('collar-icon')).toBe(true);
+    expect(children[1] === status.parent).toBe(true);
+    expect(children[2] === battery).toBe(true);
+    expect(status.parent!.props.className).toBe('flex-1 gap-1.5');
+    expect(status.parent!.children.length).toBe(2);
+    expect(status.parent!.children[0] === status).toBe(true);
+    expect(status.parent!.children[1] === track).toBe(true);
+    expect(status.props.className).toBe('text-15 font-bold text-foreground');
+    expect(battery.props.className).toContain('text-15 font-extrabold');
+    expect(battery.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+  });
+
+  it.each([
+    { connection: 'online', connectivity: 'online', iconID: 'icon-wifi' },
+    { connection: 'offline', connectivity: 'offline', iconID: 'icon-wifi-off' },
+    { connection: 'unknown', connectivity: null, iconID: 'icon-wifi-off' },
+  ])('#198 R3 pinta el círculo de 40 con la píldora y el icono en accent-strong ($connection)', async ({ connectivity, iconID }) => {
+    const pet = makeMotionPet();
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: { ...pet, device: { ...pet.device!, connectivity } } });
+    await renderHome();
+    await screen.findByTestId('collar-status');
+    const circle = screen.getByTestId('collar-icon');
+    expect(circle.props.className).toBe('size-10 items-center justify-center rounded-full bg-tab-pill');
+    expect(circle.children.length).toBe(1);
+    expect(within(circle).getByTestId(iconID).props).toEqual({ testID: iconID, size: 20, color: '--color-accent-strong' });
+  });
+
+  it('#198 R3 no pinta el icono Battery', async () => {
+    await renderHome();
+    await screen.findByTestId('collar-battery');
+    expect(screen.queryByTestId('icon-battery') === null).toBe(true);
+    expect(readFileSync(join(process.cwd(), 'src/screens/home/index.tsx'), 'utf8')).not.toMatch(/\bBattery\b/);
   });
 });
