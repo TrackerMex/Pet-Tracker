@@ -339,7 +339,7 @@ export function RemindersScreen() {
                 <RiseIn key={reminder.id} testID={`reminders-entry-${reminder.id}`} delayMs={i * MOTION_REMINDERS_STAGGER_MS}>
                   <View
                     testID={`reminder-row-${reminder.id}`}
-                    className={`flex-row items-center gap-3 rounded-22 bg-surface p-3.5 ${upcoming ? 'border-2 border-warning-soft' : 'border border-border'}${inactive ? ' opacity-50' : ''}`}
+                    className={`flex-row items-center gap-3 rounded-22 bg-surface p-3.5 ${upcoming ? 'border-2 border-category-amber' : 'border border-border'}${inactive ? ' opacity-50' : ''}`}
                     style={CONTINUOUS_CORNER}
                   >
                     <View
@@ -358,7 +358,7 @@ export function RemindersScreen() {
                           <PopIn testID={`reminder-upcoming-pop-${reminder.id}`}>
                             <Text
                               testID={`reminder-upcoming-${reminder.id}`}
-                              className="rounded-full bg-warning-soft px-2 py-0.75 text-11 font-extrabold text-warning-strong"
+                              className={`rounded-full px-2 py-0.75 text-11 font-extrabold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`}
                             >
                               {t('reminders.upcoming')}
                             </Text>
