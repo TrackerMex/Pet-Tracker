@@ -1,10 +1,9 @@
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { Image } from 'expo-image';
-import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { useQuery } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
-import { useContext, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Alert,
@@ -25,6 +24,7 @@ import { Card } from '../../components/card';
 import { Celebration } from '../../components/celebration';
 import { PetAvatar } from '../../components/pet-avatar';
 import { PetSwitcher } from '../../components/pet-switcher';
+import { ScreenHeader } from '../../components/screen-header';
 import { PingRing } from '@/components/ping-ring';
 import { PingoFloat } from '@/components/pingo-float';
 import { usePetSelection } from '../../hooks/use-pet-selection';
@@ -48,17 +48,15 @@ const PAIRING_AVATAR_SLOTS = ['amber', 'violet', 'blue', 'green', 'rose'] as con
 function PairingPetAvatar({ pet, index }: { pet: PetProfile; index: number }) {
   const slot = PAIRING_AVATAR_SLOTS[index % PAIRING_AVATAR_SLOTS.length];
   return (
-    <View testID="pairing-pet-row" className="w-full flex-row justify-end">
-      <View testID="pairing-pet-avatar" accessibilityLabel={pet.name} className="rounded-full border-2 border-accent p-0.75">
-        <View testID="pairing-pet-avatar-disc" className={`size-9 items-center justify-center overflow-hidden rounded-full ${CATEGORY_SLOTS[slot].surface}`}>
-          {pet.photoUrl ? (
-            <PetAvatar name={pet.name} photoUrl={pet.photoUrl} size={36} cacheKey={pet.id} testID="pairing-pet-avatar-image" />
-          ) : (
-            <Text testID="pairing-pet-avatar-fallback" className={`text-sm font-extrabold ${CATEGORY_SLOTS[slot].ink}`}>
-              {pet.name.charAt(0).toUpperCase()}
-            </Text>
-          )}
-        </View>
+    <View testID="pairing-pet-avatar" accessibilityLabel={pet.name} className="rounded-full border-2 border-accent p-0.75">
+      <View testID="pairing-pet-avatar-disc" className={`size-9 items-center justify-center overflow-hidden rounded-full ${CATEGORY_SLOTS[slot].surface}`}>
+        {pet.photoUrl ? (
+          <PetAvatar name={pet.name} photoUrl={pet.photoUrl} size={36} cacheKey={pet.id} testID="pairing-pet-avatar-image" />
+        ) : (
+          <Text testID="pairing-pet-avatar-fallback" className={`text-sm font-extrabold ${CATEGORY_SLOTS[slot].ink}`}>
+            {pet.name.charAt(0).toUpperCase()}
+          </Text>
+        )}
       </View>
     </View>
   );
@@ -98,7 +96,6 @@ function DeviceRow({
 export function PairingScreen() {
   const chunkyLip = useChunkyLip();
   const [muted] = useThemeColors(['muted']);
-  const headerHeight = useContext(HeaderHeightContext);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const locale = useLocale();
@@ -278,7 +275,7 @@ export function PairingScreen() {
       testID="screen-pairing"
       className="flex-1"
       behavior="padding"
-      keyboardVerticalOffset={headerHeight}
+      keyboardVerticalOffset={0}
     >
       <ScrollView
         testID="pairing-form"
@@ -287,14 +284,22 @@ export function PairingScreen() {
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           paddingHorizontal: 20,
-          paddingVertical: 24,
-          gap: 16,
+          paddingTop: insets.top + 8,
           paddingBottom: insets.bottom + 24,
-          ...(isLinking ? { flexGrow: 1 } : {}),
+          gap: 16,
+          flexGrow: 1,
         }}
       >
-        {isLinking && selectedPet && pets.data?.kind === 'ok' ? (
-          <PairingPetAvatar pet={selectedPet} index={pets.data.pets.findIndex(({ id }) => id === selectedPet.id)} />
+        {phase !== 'ready' ? (
+          <ScreenHeader
+            testID="pairing-header"
+            backFallback="/profile"
+            accessory={
+              isLinking && selectedPet && pets.data?.kind === 'ok' ? (
+                <PairingPetAvatar pet={selectedPet} index={pets.data.pets.findIndex(({ id }) => id === selectedPet.id)} />
+              ) : undefined
+            }
+          />
         ) : null}
 
         {phase === 'idle' && selectedPet?.device === null ? (
