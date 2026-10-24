@@ -241,7 +241,7 @@ describe('R7: weight log lista el historial', () => {
     ).toHaveProperty('paddingTop', 48);
   });
 
-  it('R8 (mobile-design-drift): reserva la altura del loading con Skeleton', async () => {
+  it('R8 (mobile-design-drift): reserva la altura del loading con Skeleton (enmendado por #199 R22)', async () => {
     mockListWeights.mockReturnValue(pending<WeightsState>());
 
     await renderWeightLog();
@@ -249,9 +249,7 @@ describe('R7: weight log lista el historial', () => {
     await waitFor(() =>
       expect(screen.getByTestId('weight-log-loading')).toBeVisible(),
     );
-    expect(screen.getByTestId('weight-log-loading').props.className).toContain(
-      'h-40',
-    );
+    expect(within(screen.getByTestId('weight-log-loading')).getAllByTestId(/^weight-log-skeleton-row-\d+$/, { includeHiddenElements: true })).toHaveLength(3);
   });
 
   it('keeps API order and renders each weight detail (enmendado por #199 R10) (enmendado por #199 R11)', async () => {
@@ -1422,5 +1420,65 @@ describe('#199 R11: fechas del historial', () => {
     expect(date.props.className).toBe('text-13 font-semibold text-muted');
     expect(date).toHaveTextContent(expected, { exact: true });
     expect(screen.getByTestId('weight-date-input').props.value).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+});
+
+
+describe('#199 R22: estados de Peso', () => {
+  beforeEach(() => { prepareWeightLogTests(); });
+  async function renderLoading199() {
+    mockListWeights.mockReturnValue(pending<WeightsState>());
+    await renderWeightLog();
+    return screen.findByTestId('weight-log-loading');
+  }
+  function skeletonRows199() {
+    return screen.getAllByTestId(/^weight-log-skeleton-row-\d+$/, { includeHiddenElements: true });
+  }
+  it('#199 R22 en carga pinta cabecera, formulario y tres filas esqueleto', async () => {
+    const loading = await renderLoading199();
+    expect(skeletonRows199().map(node => node.props.testID)).toEqual(['weight-log-skeleton-row-0', 'weight-log-skeleton-row-1', 'weight-log-skeleton-row-2']);
+    const container = screen.getByTestId('weight-log-header').parent!;
+    const slots = [screen.getByTestId('weight-log-header'), screen.getByTestId('weight-form'), loading].map(node => scrollSlotOf(node, container));
+    expect(slots.map(node => container.children.indexOf(node))).toEqual([0, 1, 2]);
+    expect(screen.queryByTestId('weight-chart-card')).toBeNull();
+    expect(screen.queryByTestId('weight-history-title')).toBeNull();
+  });
+  it('#199 R22 cada fila esqueleto lleva tile y tres barras con sus clases', async () => {
+    await renderLoading199();
+    for (const row of skeletonRows199()) {
+      expect(row.props.className).toBe('flex-row items-center gap-3 border-t border-border py-2.5');
+      const parts = row.children.filter((child): child is TestInstance => typeof child !== 'string');
+      expect(parts).toHaveLength(3);
+      expect(parts[0].props.className).toBe('skeleton__root size-9 rounded-xl');
+      expect(parts[1].props.className).toBe('flex-1 gap-1.5');
+      expect(parts[1].children.filter((child): child is TestInstance => typeof child !== 'string').map(child => child.props.className)).toEqual(['skeleton__root h-3.5 w-2/5 rounded-full', 'skeleton__root h-2.5 w-1/5 rounded-full']);
+      expect(parts[2].props.className).toBe('skeleton__root h-3 w-9.5 rounded-full');
+    }
+  });
+  it.each([[0, 0], [1, 60], [2, 120]])('#199 R22 la fila esqueleto %i entra a los %i ms', async (index, delay) => {
+    await renderLoading199();
+    expect(riseDelayOf(screen.getByTestId(`weight-log-skeleton-row-${index}`, { includeHiddenElements: true }))).toBe(delay);
+  });
+  it('#199 R22 sin registros pinta el aviso bajo el formulario sin tarjeta ni Historial', async () => {
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [] });
+    await renderWeightLog();
+    const empty = await screen.findByTestId('weight-log-empty');
+    expect(empty.props.className).toBe('text-15 leading-body text-muted');
+    const container = empty.parent!;
+    expect(container.children.indexOf(scrollSlotOf(screen.getByTestId('weight-form'), container))).toBeLessThan(container.children.indexOf(empty));
+    expect(screen.queryByTestId('weight-chart-card')).toBeNull();
+    expect(screen.queryByTestId('weight-history-title')).toBeNull();
+  });
+  it('#199 R22 con error pinta el aviso con role alert y Reintentar bajo el formulario', async () => {
+    mockListWeights.mockResolvedValue({ kind: 'error' });
+    await renderWeightLog();
+    const error = await screen.findByTestId('weight-log-error');
+    expect(error.props.className).toBe('text-15 leading-body text-danger');
+    expect(error.props.accessibilityRole).toBe('alert');
+    const container = screen.getByTestId('weight-log-header').parent!;
+    expect(container.children.indexOf(scrollSlotOf(screen.getByTestId('weight-form'), container))).toBeLessThan(container.children.indexOf(scrollSlotOf(error, container)));
+    expect(screen.getByTestId('weight-log-retry')).toHaveTextContent('Reintentar');
+    expect(screen.queryByTestId('weight-chart-card')).toBeNull();
+    expect(screen.queryByTestId('weight-history-title')).toBeNull();
   });
 });
