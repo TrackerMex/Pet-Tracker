@@ -399,7 +399,7 @@ describe('R4: map resuelve la mascota seleccionada', () => {
     { kind: 'error' } as PetsState,
     { kind: 'unreachable', message: 'network down' } as PetsState,
     { kind: 'missing-config' } as PetsState,
-  ])('shows and retries pet-list state $kind', async (firstState) => {
+  ])('shows and retries pet-list state $kind (enmendado por #201 R11)', async (firstState) => {
     mockListPets
       .mockResolvedValueOnce(firstState)
       .mockResolvedValueOnce({ kind: 'ok', pets: [] });
@@ -407,7 +407,7 @@ describe('R4: map resuelve la mascota seleccionada', () => {
     await renderMap();
     await waitFor(() => expect(screen.getByTestId('map-error')).toBeVisible());
 
-    await fireEvent.press(screen.getByTestId('map-retry'));
+    await fireEvent.press(screen.getByTestId('map-error-action'));
 
     await waitFor(() => expect(screen.getByTestId('map-no-pets')).toBeVisible());
     expect(mockListPets).toHaveBeenCalledTimes(2);
@@ -1029,23 +1029,22 @@ describe('R1 (mobile-map-last-position-error-state): rama de error de last', () 
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('muestra mensaje y Reintentar cuando last devuelve error', async () => {
+  it('muestra mensaje y Reintentar cuando last devuelve error (enmendado por #201 R11)', async () => {
     mockGetLastPosition.mockResolvedValue({ kind: 'error' });
 
     await renderMap();
 
     await waitFor(() => {
-      expect(screen.getByTestId('map-last-error')).toHaveTextContent(
+      expect(screen.getByTestId('map-last-error-title')).toHaveTextContent(
         'Algo salió mal',
       );
     });
-    expect(screen.getByTestId('map-last-error').props.selectable).toBe(true);
-    expect(screen.getByTestId('map-last-retry')).toHaveTextContent('Reintentar');
+    expect(screen.getByTestId('map-last-error-action')).toHaveTextContent('Reintentar');
     expect(screen.queryByTestId('map-view')).toBeNull();
     expect(screen.queryByTestId('map-error')).toBeNull();
   });
 
-  it('Reintentar llama al refetch de last y recupera el mapa', async () => {
+  it('Reintentar llama al refetch de last y recupera el mapa (enmendado por #201 R11)', async () => {
     mockGetLastPosition
       .mockResolvedValueOnce({ kind: 'error' })
       .mockResolvedValue({
@@ -1055,10 +1054,10 @@ describe('R1 (mobile-map-last-position-error-state): rama de error de last', () 
 
     await renderMap();
     await waitFor(() => {
-      expect(screen.getByTestId('map-last-retry')).toBeVisible();
+      expect(screen.getByTestId('map-last-error-action')).toBeVisible();
     });
 
-    fireEvent.press(screen.getByTestId('map-last-retry'));
+    fireEvent.press(screen.getByTestId('map-last-error-action'));
 
     await waitFor(() => expect(screen.getByTestId('map-view')).toBeVisible());
     expect(mockGetLastPosition.mock.calls.length).toBeGreaterThanOrEqual(2);
@@ -1111,7 +1110,7 @@ describe('R3 (mobile-map-last-position-error-state): cobertura total y exclusió
     { kind: 'unreachable', message: 'network down' },
     { kind: 'missing-config' },
   ])(
-    'muestra la rama de error y reintenta con $kind',
+    'muestra la rama de error y reintenta con $kind (enmendado por #201 R11)',
     async (firstState) => {
       mockGetLastPosition.mockResolvedValueOnce(firstState).mockResolvedValue({
         kind: 'ok',
@@ -1120,10 +1119,10 @@ describe('R3 (mobile-map-last-position-error-state): cobertura total y exclusió
 
       await renderMap();
       await waitFor(() => {
-        expect(screen.getByTestId('map-last-retry')).toBeVisible();
+        expect(screen.getByTestId('map-last-error-action')).toBeVisible();
       });
 
-      fireEvent.press(screen.getByTestId('map-last-retry'));
+      fireEvent.press(screen.getByTestId('map-last-error-action'));
 
       await waitFor(() =>
         expect(screen.getByTestId('map-view')).toBeVisible(),
@@ -1157,7 +1156,7 @@ describe('R3 (mobile-map-last-position-error-state): cobertura total y exclusió
 });
 
 describe('R4 (mobile-map-last-position-error-state): unauthorized de pets', () => {
-  it('renderiza la rama de error de pets y dispara signOut', async () => {
+  it('renderiza la rama de error de pets y dispara signOut (enmendado por #201 R11)', async () => {
     const signOut = jest.fn();
     mockUseAuth.mockReturnValue({
       status: 'authenticated',
@@ -1170,7 +1169,7 @@ describe('R4 (mobile-map-last-position-error-state): unauthorized de pets', () =
     await renderMap();
 
     await waitFor(() => expect(screen.getByTestId('map-error')).toBeVisible());
-    expect(screen.getByTestId('map-retry')).toBeVisible();
+    expect(screen.getByTestId('map-error-action')).toBeVisible();
     expect(signOut).toHaveBeenCalled();
     expect(mockGetLastPosition).not.toHaveBeenCalled();
   });
@@ -2605,6 +2604,61 @@ describe('#201 R10: la carga dibuja el esqueleto de la pila', () => {
     for (const node of skeletons) {
       expect(node.parent?.props.className).toBeUndefined();
     }
+  });
+});
+
+describe('#201 R11: Pingo en las dos ramas de error', () => {
+  const ERROR_IDS = ['map-error', 'map-last-error'];
+
+  const arrange = (id: string) => {
+    if (id === 'map-error') {
+      mockListPets.mockResolvedValue({ kind: 'error' });
+      return;
+    }
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'error' });
+  };
+
+  it.each(ERROR_IDS)('#201 R11: %s pinta a Pingo con badge rosa y Reintentar', async (id) => {
+    arrange(id);
+
+    await renderMap();
+
+    const pose = await screen.findByTestId(`${id}-pose`);
+    expect(pose.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
+    ]);
+    expect(screen.getByTestId(`${id}-title`)).toHaveTextContent('Algo salió mal');
+    expect(screen.queryByTestId(`${id}-body`)).toBeNull();
+    expect(within(screen.getByTestId(`${id}-action`)).getByText('Reintentar')).toBeVisible();
+    expect(screen.getByTestId(`${id}-action-icon`).props).toMatchObject({
+      size: 20,
+      strokeWidth: 2.6,
+      color: '#FFFFFF',
+    });
+    const badge = screen.getByTestId(`${id}-badge`);
+    expect(badge.props.className).toBe(
+      'absolute bottom-8.5 right-9 size-14 items-center justify-center rounded-full border-4 border-background bg-category-rose',
+    );
+    expect(within(badge).getByTestId('icon-alert-circle').props).toMatchObject({
+      size: 26,
+      strokeWidth: 2.2,
+      color: '#D92D20',
+    });
+  });
+
+  it.each(ERROR_IDS)('#201 R11: %s centra por encima de la barra', async (id) => {
+    arrange(id);
+
+    await renderMap();
+
+    const root = await screen.findByTestId(id);
+    expect(root.parent?.props.className).toBe(
+      'flex-1 items-center justify-center bg-background px-6 pt-15 pb-30',
+    );
+    expect(
+      root.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type))),
+    ).toEqual([id]);
   });
 });
 

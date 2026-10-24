@@ -287,7 +287,7 @@ describe('#201 R7: el botón de modo perdido es rosa con icono', () => {
       canvasCount: 1,
       file: 'screens/map/index.tsx',
       production: 'strokeWidth={2.2}',
-      productionCount: 2,
+      productionCount: 4,
     },
   ])('#201 R7: $artboard › $canvas › $production', checkRow);
 });
@@ -407,4 +407,67 @@ describe('#201 R10: el esqueleto de la pila', () => {
     }
     expect(source).not.toContain('animation=');
   });
+});
+
+describe('#201 R11: Pingo en las dos ramas de error', () => {
+  it.each<Row>([
+    {
+      artboard: 'MapaError',
+      canvas:
+        'width: 56px; height: 56px; border-radius: 50%; background: var(--rose); color: var(--danger); border: 4px solid var(--bg)',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production:
+        'size-14 items-center justify-center rounded-full border-4 border-background ${CATEGORY_SLOTS.rose.surface}',
+      productionCount: 2,
+    },
+    {
+      artboard: 'MapaError',
+      canvas: 'right: 36px; bottom: 34px',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'absolute bottom-8.5 right-9',
+      productionCount: 2,
+    },
+    {
+      artboard: 'MapaError',
+      canvas: 'M20 12a8 8 0 1 1-2.5-5.8',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: '<Refresh',
+      productionCount: 2,
+    },
+    {
+      artboard: 'MapaError',
+      canvas: 'M12 8v5M12 16.5h.01',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: '<AlertCircle',
+      productionCount: 2,
+    },
+    {
+      artboard: 'MapaError',
+      canvas: 'stroke-width="2.6"',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'strokeWidth={2.6}',
+      productionCount: 2,
+    },
+    {
+      artboard: 'MapaError',
+      canvas: 'padding: 60px 24px 120px',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'bg-background px-6 pt-15 pb-30',
+      productionCount: 2,
+    },
+    {
+      artboard: 'MapaError',
+      canvas: 'animation: pop 400ms ease-out 300ms both',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: '<PopIn',
+      productionCount: 2,
+    },
+  ])('#201 R11: $artboard › $canvas › $production', checkRow);
 });
