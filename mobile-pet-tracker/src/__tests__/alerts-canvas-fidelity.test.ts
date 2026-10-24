@@ -202,6 +202,7 @@ describe('#174 R12: inventarios', () => {
       pattern: /(?<![\w-])text-15\b/,
       files: [
         'components/celebration.tsx',
+        'components/confirm-dialog.tsx',
         'components/empty-state.tsx', // (enmendado por #176 R9)
         'screens/add-pet/index.tsx', // #191 R11
         'screens/alert-detail/index.tsx', // #180 R3
@@ -241,7 +242,7 @@ describe('#174 R12: inventarios', () => {
         'screens/reminders/index.tsx', // #178 R4
       ],
     },
-  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12) (enmendado por #197 R4) (enmendado por #197 R10) (enmendado por #197 R19)', ({ pattern, files }) => {
+  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12) (enmendado por #197 R4) (enmendado por #197 R10) (enmendado por #197 R19) (enmendado por #202 R7)', ({ pattern, files }) => {
     expect(filesMatching(pattern)).toEqual(files);
   });
 
