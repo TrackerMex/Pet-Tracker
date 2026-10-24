@@ -57,7 +57,7 @@ describe('#173 R2: inventario de radios nuevos', () => {
 });
 
 describe('#173 R2.4: inventario de tamaños nuevos', () => {
-  it('reserva text-26 al nombre de la mascota en Perfil (enmendado por #176 R8) (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #197 R19)', () => {
+  it('reserva text-26 al nombre de la mascota en Perfil (enmendado por #176 R8) (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #197 R19) (enmendado por #198 R15)', () => {
     expect(filesMatching(/\btext-26\b/)).toEqual([
       'components/empty-state.tsx', // (enmendado por #176 R8)
       'components/screen-header.tsx',
@@ -66,11 +66,12 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/docs/index.tsx', // #175 R5
       'screens/geofence-editor/index.tsx', // #189 R8
       'screens/geofences/index.tsx', // #189 R1
+      'screens/home/index.tsx', // #198 R15
       'screens/profile/index.tsx',
       'screens/reminders/index.tsx', // #178 R4
     ]);
   });
-  it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8) (enmendado por #189 R6) (enmendado por #200 R8)', () => {
+  it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8) (enmendado por #189 R6) (enmendado por #200 R8) (enmendado por #198 R5)', () => {
     expect(filesMatching(/\btext-13\b/)).toEqual([
       'components/form-error.tsx',
       'screens/add-pet/index.tsx', // #191 R11
@@ -82,6 +83,7 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/food/index.tsx',
       'screens/forgot/index.tsx',
       'screens/geofences/index.tsx', // #189 R6
+      'screens/home/index.tsx', // #198 R5
       'screens/login/index.tsx',
       'screens/meal-schedule/index.tsx', // #179 R6
       'screens/pairing/index.tsx', // #188 R18

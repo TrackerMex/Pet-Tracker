@@ -93,6 +93,7 @@ const radii = {
   'screens/geofence-editor/index.tsx': 3, // #189 R13
   'screens/geofences/index.tsx': 2, // #189 R7
   'screens/home/index.tsx': 1,
+  'screens/home/weekly-activity-chart.tsx': 1, // #198 R9
   'screens/login/index.tsx': 1,
   'screens/pairing/index.tsx': 1,
   'screens/register/index.tsx': 1,
@@ -177,9 +178,9 @@ it('#177 R7.2: inventarios de las dos recetas de primario', () => {
   expect(inventory(/rounded-16 bg-accent(?=[\s'"`])/g)).toEqual(Object.fromEntries(ctaFiles.map(path => [path, path === 'screens/add-pet/index.tsx' ? 2 : 1])));
   expect(inventory(/rounded-xl bg-accent(?=[\s'"`])/g)).toEqual({ 'screens/reminders/index.tsx': 1 });
 });
-it('#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por #191 R11) (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #200 R9)', () => {
+it('#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por #191 R11) (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #200 R9) (enmendado por #198 R9)', () => {
   expect(inventory(/\brounded-16\b/g)).toEqual(radii);
-  expect(count(/\brounded-16\b/g)).toBe(26 + 1 + 1 + 1 + 2 + 2); // #200 R9 // #194 R6 // #191 R11 // #189 R7; #189 R13
+  expect(count(/\brounded-16\b/g)).toBe(26 + 1 + 1 + 1 + 2 + 2 + 1); // #200 R9 (+2); #198 R9 (+1) // #194 R6 // #191 R11 // #189 R7; #189 R13
 });
 it('#177 R7.4: solo la definición y los diecisiete consumidores usan el hook (enmendado por #197 R10) (enmendado por #200 R3)', () => {
   expect(Object.keys(inventory(/useChunkyLip/g)).sort()).toEqual([...consumers, 'theme/chunky-lip.ts'].sort());
