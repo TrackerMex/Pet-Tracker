@@ -240,3 +240,14 @@ describe('#205 R16: NuevaMascota', () => {
     expect(screen).toContain('text-base font-black');
   });
 });
+
+describe('#205 R17: selector segmentado', () => {
+  it('#205 R17: la opción seleccionada lleva la sombra segment del canvas', () => {
+    expect(canvas('NuevaMascota')).toContain('box-shadow: 0 2px 6px rgba(13,17,23,0.10)');
+
+    const selector = source('components/segmented-control.tsx');
+    expect(selector).toContain('const shadows = useShadows();');
+    expect(selector).toContain('style={[CONTINUOUS_CORNER, selected ? shadows.segment : null]}');
+    expect(selector).not.toContain('shadow-sm');
+  });
+});

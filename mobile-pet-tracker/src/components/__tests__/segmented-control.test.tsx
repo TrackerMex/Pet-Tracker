@@ -1,7 +1,9 @@
-import { fireEvent, render, screen, within } from '@testing-library/react-native';
+import { fireEvent, render, renderHook, screen, within } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
+import { StyleSheet } from 'react-native';
 
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import { useShadows } from '../../theme/shadows';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 
 type Props = {
@@ -20,15 +22,20 @@ const options = [
 ];
 
 describe('#191 R5: SegmentedControl', () => {
-  it('aplica las recetas, esquinas y estados accesibles a cada opción', async () => {
+  it('aplica las recetas, esquinas y estados accesibles a cada opción (enmendado por #205 R17)', async () => {
+    const { result } = await renderHook(() => useShadows());
+    const shadows = result.current;
     await render(<SegmentedControl options={options} value="dog" onSelect={jest.fn()} />);
     expect(screen.getByTestId('dog').parent!.props.className).toBe('flex-row gap-1 rounded-14 bg-default p-1');
     expect(screen.getByTestId('dog').parent!.props.style).toEqual(CONTINUOUS_CORNER);
     for (const option of options) {
       const segment = screen.getByTestId(option.testID);
       const selected = option.value === 'dog';
-      expect(segment.props.className).toBe('h-9.5 flex-1 items-center justify-center rounded-10' + (selected ? ' bg-surface shadow-sm' : ''));
-      expect(segment.props.style).toEqual(CONTINUOUS_CORNER);
+      expect(segment.props.className).toBe('h-9.5 flex-1 items-center justify-center rounded-10' + (selected ? ' bg-surface' : '')); // #205 R17
+      const style = StyleSheet.flatten(segment.props.style); // #205 R17
+      expect(style).toMatchObject(CONTINUOUS_CORNER); // #205 R17
+      if (selected) expect(style).toMatchObject(shadows.segment); // #205 R17
+      else expect(style).not.toHaveProperty('boxShadow'); // #205 R17
       expect(segment.props.hitSlop).toEqual(TOUCH_SLOP);
       expect(segment.props.accessibilityRole).toBe('button');
       expect(segment.props.accessibilityState).toEqual({ selected });

@@ -773,7 +773,7 @@ describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
   });
 });
 
-describe('#62 R11: los selectores de especie usan la receta segmentada (enmendado por #191 R5)', () => {
+describe('#62 R11: los selectores de especie usan la receta segmentada (enmendado por #191 R5) (enmendado por #205 R17)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
@@ -795,7 +795,7 @@ describe('#62 R11: los selectores de especie usan la receta segmentada (enmendad
 
     const chip = screen.getByTestId(testID);
 
-    expect(chip.props.className).toBe('h-9.5 flex-1 items-center justify-center rounded-10' + (testID === 'species-dog' ? ' bg-surface shadow-sm' : ''));
+    expect(chip.props.className).toBe('h-9.5 flex-1 items-center justify-center rounded-10' + (testID === 'species-dog' ? ' bg-surface' : '')); // #205 R17
     expect(chip.props.className).not.toContain('px-4');
     expect(within(chip).getByText(label).props.className).toBe(
       testID === 'species-dog' ? 'text-sm font-extrabold text-accent-strong' : 'text-sm font-extrabold text-muted',
