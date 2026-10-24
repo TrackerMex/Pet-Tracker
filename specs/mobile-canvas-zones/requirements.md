@@ -772,6 +772,26 @@ caen en ficheros que ya están y `ConfirmDialog` no llama a `t`).
 
 **Enmienda mecánica permitida**: si un `it` no inventariado se pone rojo solo porque compara contra el literal exacto que el R-id quita o sustituye (directo o vía constante/helper del test), el implementador lo enmienda en el commit rojo de ese R con el sufijo y lo apunta en la tabla «Enmiendas mecánicas» de su informe. Cualquier otro rojo no inventariado sigue siendo motivo de parada.
 
+## Erratas del leader (2026-10-24)
+
+Firmadas por delegación (mandato del humano del 2026-10-23, `progress/plan_canvas-parity-2026-10-23.md` §4).
+
+**R7.1, margen del velo (parada de Codex tras el verde de R1).** El velo de `canvas/ZonasEliminar.dc.html` centra la tarjeta con `padding: 0 28px`, no con 24 px. R7.1 pasa a ser `View testID={testID} className="flex-1 justify-center px-7"` (`--spacing` es `0.25rem`, así que `px-7` mide 28 px). El resto de R7 coincide con el artboard y no cambia. Tests:
+
+- CD `#202 R7: monta velo, tarjeta y acciones con las recetas del canvas` espera `flex-1 justify-center px-7` en el `View` raíz.
+- ZF `#202 R7: el canvas dibuja el diálogo de borrado` añade a lo que ya afirma de `ZonasEliminar.dc.html` el literal `padding: 0 28px`.
+
+Como los commits de R7 ya existen, van en dos commits propios antes del siguiente R pendiente: `test(#202): R7 align the dialog inset with the frozen canvas` (rojo: CD falla porque recibe `px-6`) y `feat(#202): R7 inset the dialog 28 px like the canvas` (solo cambia `px-6` por `px-7` en `src/components/confirm-dialog.tsx`). No se reescriben los commits anteriores.
+
+**Regla de recuentos agregados.** Si al llegar a verde una R se pone rojo un `it` que no está en el inventario y ese `it` solo cuenta usos o ficheros de un literal o token, Codex lo enmienda sin parar. Son de este tipo los inventarios cerrados de radios, de `style={CONTINUOUS_CORNER}`, de `text-NN` o de `<Card`, las sumas de copy y los suelos del escáner HeroUI. La condición es que el delta medido sea exactamente el número de usos que el diff de esa R, tal como esta spec la prescribe, añade o retira. La enmienda:
+
+- da a la cifra o a la entrada su término (`// #202 Rn`, o `; #202 Rn: ±k` dentro de un comentario que ya exista);
+- da al título el sufijo ` (enmendado por #202 Rn)`, o añade `Rn` al paréntesis de #202 si ya existe;
+- va en el commit rojo de esa R; si ese rojo ya está commiteado, en un commit propio `test(#202): Rn amend the <candado> inventory` antes del siguiente R;
+- se apunta en la tabla «Enmiendas mecánicas» del reporte con candado, antes, después y R.
+
+El fichero de test de ese candado entra en la lista cerrada solo para esa enmienda. Sigue siendo PARADA si el delta no coincide, si el `it` afirma comportamiento o estructura y no un recuento, o si la enmienda exigiría cambiar producción.
+
 ## Desviaciones conscientes del canvas
 
 - Volver del formulario del Editor: chevron 24 de `BackButton` (canvas 22); no se añade prop `size` (D3).
