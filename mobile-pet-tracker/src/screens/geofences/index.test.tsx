@@ -12,7 +12,6 @@ import { petKeys } from '../../api/query-keys';
 import type { PetProfile } from '../../api/types';
 import type { Language } from '../../i18n/catalog';
 import { LanguageProvider } from '../../providers/language-provider';
-import { HEADER_ROW_TOP, ZONES_TITLE_OFFSET } from '../../theme/header-layout';
 import { GeofencesScreen } from '.';
 
 jest.mock('../home/home-entrance', () => {
@@ -33,7 +32,7 @@ jest.mock('../../api/geofences', () => ({
   GEOFENCE_MAX_PER_PET: jest.requireActual('../../api/geofences').GEOFENCE_MAX_PER_PET,
   deleteGeofence: jest.fn(), listGeofences: jest.fn(), setGeofenceActive: jest.fn(),
 }));
-jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
+jest.mock('expo-router', () => ({ router: { push: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false), replace: jest.fn() } }));
 jest.mock('../../api/pets', () => ({ getPet: jest.fn() }));
 const mockSignOut = jest.fn().mockResolvedValue(undefined);
 jest.mock('../../providers/auth-provider', () => ({
@@ -112,15 +111,15 @@ describe('#41 R5: la pantalla pinta la lista de zonas y sus estados', () => {
     expect(screen.queryByTestId('geofences-empty')).toBeNull();
   });
 
-  it('respeta las métricas A11 bajo cabecera nativa (enmendado por #189 R3) (enmendado por E4 R21)', async () => {
+  it('respeta las métricas A11 bajo cabecera nativa (enmendado por #189 R3) (enmendado por E4 R21) (enmendado por #202 R1)', async () => {
     mockList.mockResolvedValue({ kind: 'ok', geofences: [makeGeofence()] });
     await mount();
     await screen.findByTestId('geofence-geofence-1');
     const root = screen.getByTestId('screen-geofences');
     expect(root.props.className).toBe('flex-1 bg-background');
     expect(root.props.contentInsetAdjustmentBehavior).toBeUndefined();
-    expect(root.props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 46, paddingBottom: 64, gap: 12, flexGrow: 1 });
-    expect(root.props.contentContainerStyle.paddingTop).toBe(40 + HEADER_ROW_TOP);
+    expect(root.props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 52, paddingBottom: 64, gap: 12, flexGrow: 1 });
+    expect(root.props.contentContainerStyle.paddingTop).toBe(40 + 12);
   });
 
 
@@ -617,30 +616,30 @@ describe('#159 R6: en Zonas seguras nadie ve el botón de emparejar', () => {
 
 
 describe('#189 R1: título y contador en el contenido', () => {
-  it.each(['es', 'en'] as const)('#189 R1.2: el título de %s tiene clase, rol y posición exactos (enmendado por #189 R3) (enmendado por E4 R21)', async (language) => {
+  it.each(['es', 'en'] as const)('#189 R1.2: el título de %s tiene clase, rol y posición exactos (enmendado por #189 R3) (enmendado por E4 R21) (enmendado por #202 R1)', async (language) => {
     mockList.mockResolvedValue({ kind: 'ok', geofences: [makeGeofence()] });
     await mount(language);
     const row = await screen.findByTestId('geofence-geofence-1');
     const header = screen.getByTestId('geofences-header');
-    expect(header.props.className).toBe('h-11 flex-row items-center gap-2');
-    expect(StyleSheet.flatten(header.props.style)).toEqual({ paddingLeft: ZONES_TITLE_OFFSET });
+    expect(header.props.className).toBe('flex-row items-center gap-2');
+    expect(header.props.style).toBeUndefined();
     expect(header.parent!.children[0]).toBe(header);
     expect(header.parent).toBe(row.parent?.parent);
-    const title = screen.getByTestId('geofences-title');
-    expect(header.children[0]).toBe(title);
-    expect(title.props.className).toBe('flex-1 text-26 font-black tracking-title text-foreground');
+    const title = screen.getByTestId('geofences-header-title');
+    expect(header.children[1]).toBe(title.parent);
+    expect(title.props.className).toBe('text-26 font-black tracking-title text-foreground');
     expect(title.props.accessibilityRole).toBe('header');
     expect(title).toHaveTextContent(language === 'es' ? 'Zonas seguras' : 'Safe zones');
   });
-  it.each([0, 3, 5])('#189 R1.3: cuenta %i zonas con la lista cargada', async (count) => {
+  it.each([0, 3, 5])('#189 R1.3: cuenta %i zonas con la lista cargada (enmendado por #202 R1)', async (count) => {
     mockList.mockResolvedValue({ kind: 'ok', geofences: Array.from({ length: count }, (_, i) => makeGeofence({ id: `zone-${i}` })) });
     await mount();
     const counter = await screen.findByTestId('geofences-counter');
     expect(counter).toHaveTextContent(`${count}/5`);
     expect(counter.props.className).toBe('text-sm font-extrabold text-muted');
     const header = screen.getByTestId('geofences-header');
-    expect(header.children).toHaveLength(2);
-    expect(header.children[1]).toBe(counter);
+    expect(header.children).toHaveLength(3);
+    expect(header.children.at(-1)).toBe(counter);
   });
   it('#189 R1.3: family recibe el contador en inglés', async () => {
     mockGetPet.mockResolvedValue(petState('family'));
@@ -648,7 +647,7 @@ describe('#189 R1: título y contador en el contenido', () => {
     await mount('en');
     expect(await screen.findByTestId('geofences-counter')).toHaveTextContent('1/5');
   });
-  it.each(['loading', 'no-tracking', 'error', 'unauthorized'] as const)('#189 R1.2/R1.3: %s conserva solo el título', async (kind) => {
+  it.each(['loading', 'no-tracking', 'error', 'unauthorized'] as const)('#189 R1.2/R1.3: %s conserva solo el título (enmendado por #202 R1)', async (kind) => {
     if (kind === 'loading') mockList.mockReturnValue(new Promise(() => undefined));
     else mockList.mockResolvedValue({ kind });
     await mount();
@@ -658,8 +657,8 @@ describe('#189 R1: título y contador en el contenido', () => {
     else await waitFor(() => expect(childTestIds(screen.getByTestId('geofences-header').parent!)).toEqual(['geofences-header']));
     const header = screen.getByTestId('geofences-header');
     expect(header.parent!.children[0]).toBe(header);
-    expect(header.children).toHaveLength(1);
-    expect(childTestIds(header)).toEqual(['geofences-title']);
+    expect(header.children).toHaveLength(2);
+    expect(within(header).getByTestId('geofences-header-title')).toBeOnTheScreen();
     expect(screen.queryByTestId('geofences-counter')).toBeNull();
   });
 });
@@ -921,4 +920,30 @@ it('#189 R20.1: el límite conserva disabled:element-disabled y cancela su opaci
   expect(add.props.className).toContain('disabled:element-disabled');
   expect(add.props.accessibilityState.disabled).toBe(true);
   expect(StyleSheet.flatten(add.props.style)).toEqual({ borderCurve: 'continuous', transform: [{ scale: 1 }], opacity: 1 });
+});
+
+
+it.each(['carga', 'error', 'sin collar', 'vacía', 'con zonas'])('#202 R1: %s monta ScreenHeader con título y volver', async (kind) => {
+  if (kind === 'carga') mockList.mockReturnValue(new Promise(() => undefined));
+  else if (kind === 'error') mockList.mockResolvedValue({ kind: 'error' });
+  else if (kind === 'sin collar') mockList.mockResolvedValue({ kind: 'no-tracking' });
+  else mockList.mockResolvedValue({ kind: 'ok', geofences: kind === 'vacía' ? [] : [makeGeofence()] });
+  await mount();
+  await screen.findByTestId(kind === 'carga' ? 'geofences-loading' : kind === 'error' ? 'geofences-error' : kind === 'sin collar' ? 'geofences-no-tracking' : kind === 'vacía' ? 'geofences-empty' : 'geofence-geofence-1');
+  expect(screen.queryByTestId('geofences-header-back')).not.toBeNull();
+  const header = screen.getByTestId('geofences-header');
+  expect(within(header).getByTestId('geofences-header-title')).toHaveTextContent('Zonas seguras');
+  const back = within(header).getByTestId('geofences-header-back');
+  expect(back.props.accessibilityLabel).toBe('Volver');
+  if (kind === 'vacía' || kind === 'con zonas') expect(within(header).getByTestId('geofences-counter')).toHaveTextContent(kind === 'vacía' ? '0/5' : '1/5');
+  else expect(screen.queryByTestId('geofences-counter')).toBeNull();
+  await fireEvent.press(back);
+  expect(router.replace).toHaveBeenCalledTimes(1);
+  expect(router.replace).toHaveBeenCalledWith('/profile');
+});
+
+it('#202 R1: el contenido arranca en insets.top + 12', async () => {
+  mockList.mockReturnValue(new Promise(() => undefined));
+  await mount();
+  expect(screen.getByTestId('screen-geofences').props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 40 + 12, paddingBottom: 24 + 40, gap: 12, flexGrow: 1 });
 });
