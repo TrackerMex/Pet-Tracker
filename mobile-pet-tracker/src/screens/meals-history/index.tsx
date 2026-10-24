@@ -18,6 +18,7 @@ import {
   currentMonth, longDayLabel, monthGrid, monthOf, monthRange,
   monthTitle, shiftMonth, weekdayHeaders,
 } from '../../utils/month-grid';
+import { ScreenHeader } from '../../components/screen-header';
 import { HomeEntrance } from '../home/home-entrance';
 
 function DayNumber({ date, testID, className }: { date: string; testID?: string; className: string }) {
@@ -221,11 +222,9 @@ function MealsHistoryContent({ petId }: { petId: string }) {
       testID="screen-meals-history"
       className="flex-1 bg-background"
       contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: insets.bottom + 24 }}
+      contentContainerStyle={{ paddingHorizontal: 20, paddingTop: insets.top + 8, gap: 14, paddingBottom: insets.bottom + 32 }}
     >
-      <Text testID="meals-history-heading" accessibilityRole="header" className="text-2xl font-black tracking-title text-foreground">
-        {t('mealsHistory.mealsHistory')}
-      </Text>
+      <ScreenHeader testID="meals-history-header" size={24} backFallback="/food" title={t('mealsHistory.mealsHistory')} />
       {content}
     </ScrollView>
   );
