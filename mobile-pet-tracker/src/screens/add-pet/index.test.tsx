@@ -889,7 +889,7 @@ describe('#205 R16: NuevaMascota con ScreenHeader', () => {
     expect(block.props.className).toBe('gap-3 bg-background px-5');
     expect(block).toHaveStyle({ paddingTop: 52 });
     expect(block.parent!.props.testID).toBe('screen-add-pet');
-    expect(block.parent!.children.map(node => node.props.testID)).toEqual([undefined, 'add-pet-form', 'add-pet-footer']); // #205 R19
+    expect(block.parent!.children.map(node => (typeof node === 'string' ? node : node.props.testID))).toEqual([undefined, 'add-pet-form', 'add-pet-footer']); // #205 R19
   });
 
   it('#205 R16: la barra de paso queda fuera del scroll', async () => {
@@ -898,7 +898,7 @@ describe('#205 R16: NuevaMascota con ScreenHeader', () => {
       const form = within(screen.getByTestId('add-pet-form'));
       expect(form.queryByTestId('add-pet-step-bar')).toBeNull();
       expect(form.queryByTestId('add-pet-step-label')).toBeNull();
-      expect(screen.getByTestId('add-pet-step-bar').parent!.children.map(node => node.props.testID)).toEqual(['add-pet', 'add-pet-step-bar']);
+      expect(screen.getByTestId('add-pet-step-bar').parent!.children.map(node => (typeof node === 'string' ? node : node.props.testID))).toEqual(['add-pet', 'add-pet-step-bar']);
     };
     expectBarOutsideTheScroll();
     await goToStep2();
@@ -911,7 +911,7 @@ describe('#205 R16: NuevaMascota con ScreenHeader', () => {
     const intro = within(screen.getByTestId('add-pet-form')).getByTestId('add-pet-intro');
     expect(typeof intro.props.entering).toBe('function');
     expect(intro.props.className).toBe('flex-row items-center gap-3.5');
-    expect(intro.children.map(node => node.props.testID)).toEqual(['add-pet-photo', 'add-pet-bubble']);
+    expect(intro.children.map(node => (typeof node === 'string' ? node : node.props.testID))).toEqual(['add-pet-photo', 'add-pet-bubble']);
     expect(screen.getByText(es['addPet.basicDetails']).props.className).toBe('text-base font-black text-foreground');
   });
 });
@@ -939,7 +939,7 @@ describe('#205 R18: NuevaMascota2', () => {
       'add-pet-rise-microchip',
     ]);
     for (const block of blocks) expect(typeof block.props.entering).toBe('function');
-    expect(blocks[0].parent!.children.slice(0, 4).map(node => node.props.testID)).toEqual(blocks.map(node => node.props.testID));
+    expect(blocks[0].parent!.children.slice(0, 4).map(node => (typeof node === 'string' ? node : node.props.testID))).toEqual(blocks.map(node => node.props.testID));
     expect(blocks[0].props.className).toBe('mt-3');
     const title = within(blocks[0]).getByText(es['addPet.medicalDetails']);
     expect(title.props.className).toBe('text-lg font-black text-foreground');
@@ -1019,7 +1019,7 @@ describe('#205 R19: pie fijo de NuevaMascota', () => {
     expect(within(screen.getByTestId('add-pet-form')).queryByTestId('add-pet-footer')).toBeNull();
     expect(screen.queryByTestId(absent)).toBeNull();
     expect(footer.parent!.props.testID).toBe('screen-add-pet');
-    expect(footer.parent!.children.map(node => node.props.testID)).toEqual([undefined, 'add-pet-form', 'add-pet-footer']);
+    expect(footer.parent!.children.map(node => (typeof node === 'string' ? node : node.props.testID))).toEqual([undefined, 'add-pet-form', 'add-pet-footer']);
   }
 
   it('#205 R19: el paso 1 lleva Continuar en el pie, fuera del scroll', async () => {
