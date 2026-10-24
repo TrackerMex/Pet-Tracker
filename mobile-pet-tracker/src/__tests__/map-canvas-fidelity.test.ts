@@ -52,7 +52,7 @@ describe('#201 R1: la pila de stats sube al entrar', () => {
       canvasCount: 1,
       file: 'screens/map/index.tsx',
       production: 'className="gap-2.5"',
-      productionCount: 1,
+      productionCount: 2,
     },
   ])('#201 R1: $artboard › $canvas', checkRow);
 });
@@ -78,7 +78,7 @@ describe('#201 R2: la píldora es de cristal', () => {
       canvasCount: 1,
       file: 'screens/map/index.tsx',
       production: 'py-1.5 pl-1.5 pr-3.5',
-      productionCount: 1,
+      productionCount: 2,
     },
     {
       artboard: 'Mapa',
@@ -145,7 +145,7 @@ describe('#201 R2: la píldora es de cristal', () => {
       canvasCount: 1,
       file: 'screens/map/index.tsx',
       production: 'shadows.card',
-      productionCount: 1,
+      productionCount: 2,
     },
   ])('#201 R2: $artboard › $canvas › $production', checkRow);
 });
@@ -159,7 +159,7 @@ describe('#201 R4: la tarjeta de stats flota sin borde', () => {
       canvasCount: 1,
       file: 'screens/map/index.tsx',
       production: 'gap-2.5 rounded-24 bg-surface p-3',
-      productionCount: 1,
+      productionCount: 2,
     },
     {
       artboard: 'Mapa',
@@ -168,7 +168,7 @@ describe('#201 R4: la tarjeta de stats flota sin borde', () => {
       canvasCount: 1,
       file: 'screens/map/index.tsx',
       production: 'shadows.floating',
-      productionCount: 1,
+      productionCount: 2,
     },
     {
       artboard: 'Mapa',
@@ -176,7 +176,7 @@ describe('#201 R4: la tarjeta de stats flota sin borde', () => {
       canvasCount: 1,
       file: 'screens/map/index.tsx',
       production: 'className="gap-2"',
-      productionCount: 1,
+      productionCount: 2,
     },
   ])('#201 R4: $artboard › $canvas › $production', checkRow);
 });
@@ -239,7 +239,7 @@ describe('#201 R7: el botón de modo perdido es rosa con icono', () => {
       canvasCount: 1,
       file: 'screens/map/index.tsx',
       production: 'h-12.5',
-      productionCount: 1,
+      productionCount: 2,
     },
     {
       artboard: 'Mapa',
@@ -332,4 +332,79 @@ describe('#201 R9: el aviso sin ubicación lleva icono', () => {
       productionCount: 1,
     },
   ])('#201 R9: $artboard › $canvas › $production', checkRow);
+});
+
+describe('#201 R10: el esqueleto de la pila', () => {
+  it.each<Row>([
+    {
+      artboard: 'MapaCarga',
+      canvas: 'aria-busy="true"',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'accessibilityState={{ busy: true }}',
+      productionCount: 1,
+    },
+    {
+      artboard: 'MapaCarga',
+      canvas: 'animation: pulse 1.4s ease-in-out infinite',
+      canvasCount: 11,
+      file: 'screens/map/index.tsx',
+      production: 'variant="pulse"',
+      productionCount: 11,
+    },
+    {
+      artboard: 'MapaCarga',
+      canvas: 'background: var(--lip-gray)',
+      canvasCount: 10,
+      file: 'screens/map/index.tsx',
+      production: 'bg-lip-gray',
+      productionCount: 10,
+    },
+    {
+      artboard: 'MapaCarga',
+      canvas: 'width: 150px; height: 12px',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'h-3 w-37.5',
+      productionCount: 1,
+    },
+    {
+      artboard: 'MapaCarga',
+      canvas: 'width: 48px; height: 10px',
+      canvasCount: 4,
+      file: 'screens/map/index.tsx',
+      production: 'h-2.5 w-12',
+      productionCount: 4,
+    },
+    {
+      artboard: 'MapaCarga',
+      canvas: 'width: 72px; height: 22px',
+      canvasCount: 4,
+      file: 'screens/map/index.tsx',
+      production: 'h-5.5 w-18',
+      productionCount: 4,
+    },
+    {
+      artboard: 'MapaCarga',
+      canvas: 'width: 28px; height: 28px',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'size-7 rounded-full bg-lip-gray',
+      productionCount: 1,
+    },
+  ])('#201 R10: $artboard › $canvas › $production', checkRow);
+
+  it('#201 R10: los once Skeleton del mapa son pulse', () => {
+    const source = readProduction('screens/map/index.tsx');
+    const openings = source
+      .split('<Skeleton')
+      .slice(1)
+      .map((chunk) => chunk.slice(0, chunk.indexOf('/>')));
+
+    expect(openings).toHaveLength(11);
+    for (const opening of openings) {
+      expect(opening).toContain('variant="pulse"');
+    }
+    expect(source).not.toContain('animation=');
+  });
 });

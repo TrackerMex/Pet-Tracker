@@ -2530,6 +2530,83 @@ describe('#201 R9: el aviso sin ubicación lleva icono', () => {
   });
 });
 
+describe('#201 R10: la carga dibuja el esqueleto de la pila', () => {
+  beforeEach(() => {
+    mockListPets.mockReturnValue(pending<PetsState>());
+  });
+
+  function descendants(node: TestInstance): TestInstance[] {
+    return [
+      node,
+      ...node.children.flatMap((child) => (typeof child === 'string' ? [] : descendants(child))),
+    ];
+  }
+
+  it('#201 R10: la carga se anuncia ocupada sobre bg-default', async () => {
+    await renderMap();
+
+    const loading = screen.getByTestId('map-loading');
+    expect(loading.props.className).toBe('flex-1 bg-default');
+    expect(loading.props.accessibilityState).toEqual({ busy: true });
+    expect(loading.children).toHaveLength(1);
+    expect(elementChild(loading, 0).props.testID).toBe('map-loading-stats');
+  });
+
+  it('#201 R10: la carga dibuja píldora y tarjeta con sus recetas', async () => {
+    await renderMap();
+
+    const stats = screen.getByTestId('map-loading-stats');
+    expect(stats.props.className).toBe('gap-2.5');
+    expect(stats.props.style).toMatchObject({
+      position: 'absolute',
+      left: 16,
+      right: 16,
+      bottom: 120,
+    });
+    expect(stats.children).toHaveLength(2);
+    expect(elementChild(stats, 0).props.testID).toBe('map-loading-pill');
+    expect(elementChild(stats, 1).props.testID).toBe('map-loading-card');
+
+    const pill = screen.getByTestId('map-loading-pill');
+    expect(pill.props.className).toBe(
+      'flex-row items-center gap-2 self-start rounded-full border border-border bg-surface py-1.5 pl-1.5 pr-3.5',
+    );
+    expect(pill.props.style?.boxShadow).toHaveLength(2);
+    expect(pill.children).toHaveLength(2);
+
+    const card = screen.getByTestId('map-loading-card');
+    expect(card.props.className).toBe('gap-2.5 rounded-24 bg-surface p-3');
+    expect(card.props.style?.boxShadow).toHaveLength(1);
+    expect(card.children).toHaveLength(2);
+    const grid = elementChild(card, 0);
+    expect(grid.props.className).toBe('gap-2');
+    expect(grid.children).toHaveLength(2);
+    for (const row of grid.children) {
+      if (typeof row === 'string') throw new Error('Expected an element child');
+      expect(row.props.className).toBe('flex-row gap-2');
+      expect(row.children).toHaveLength(2);
+      for (const tile of row.children) {
+        if (typeof tile === 'string') throw new Error('Expected an element child');
+        expect(tile.props.className).toBe('flex-1 gap-1.5 rounded-14 bg-default px-3 py-2.5');
+        expect(tile.children).toHaveLength(2);
+      }
+    }
+    expect(elementChild(card, 1).props.className).toMatch(/ h-12\.5 rounded-14 bg-default$/);
+  });
+
+  it('#201 R10: los once bloques laten con pulse', async () => {
+    await renderMap();
+
+    const skeletons = descendants(screen.getByTestId('map-loading')).filter((node) =>
+      String(node.props.className ?? '').startsWith('skeleton__root '),
+    );
+    expect(skeletons).toHaveLength(11);
+    for (const node of skeletons) {
+      expect(node.parent?.props.className).toBeUndefined();
+    }
+  });
+});
+
 describe('#201 R15: la ruta del día se dibuja con trazo 5', () => {
   it('#201 R15: Mapa pide la ruta de 5', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
