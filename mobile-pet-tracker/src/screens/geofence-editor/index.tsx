@@ -177,7 +177,7 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
       {readOnly ? <Text testID="geofence-editor-name-text" selectable className="text-base font-extrabold text-foreground">{zone?.name}</Text> : <>
       <TextField>
         <Label><Label.Text className="text-sm font-extrabold text-foreground">{t('geofenceEditor.nameLabel')}</Label.Text></Label>
-        <Input testID="geofence-editor-name" className="h-12.5 rounded-xl bg-default px-3.5" maxLength={120} value={name} onChangeText={setName} />
+        <Input testID="geofence-editor-name" className="text-base font-semibold h-12.5 rounded-xl bg-default px-3.5" maxLength={120} value={name} onChangeText={setName} />
       </TextField>
       </>}
       {readOnly ? <>{radiusValue}<Text testID="geofence-editor-read-only" className="text-sm font-normal text-muted">{t('geofenceEditor.ownerOnly')}</Text></> : <>
