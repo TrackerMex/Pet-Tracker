@@ -422,7 +422,7 @@ describe('R5: vacunas con la próxima destacada', () => {
     expect(screen.queryByTestId('next-vaccine-card')).toBeNull();
   });
 
-  it('marks an overdue next-dose date with the danger token', async () => {
+  it('marks an overdue next-dose date with the danger token (enmendado por #199 R17)', async () => {
     mockListVaccines.mockResolvedValue({
       kind: 'ok',
       vaccines: [makeVaccine({ nextDoseAt: '2000-06-01' })],
@@ -433,7 +433,7 @@ describe('R5: vacunas con la próxima destacada', () => {
     await waitFor(() =>
       expect(screen.getByTestId('vaccine-row-vaccine-1')).toBeVisible(),
     );
-    const overdueDate = screen.getByText('2000-06-01');
+    const overdueDate = screen.getByText('Próxima 1 jun 2000');
     expect(overdueDate.props.className).toContain('text-danger');
   });
 
@@ -1077,11 +1077,11 @@ describe('#168 R3: cada vacuna lleva su tile pastel', () => {
   afterEach(() => jest.useRealTimers());
 
   it.each([
-    { id: 'overdue', surface: 'size-10 items-center justify-center rounded-xl bg-category-rose', icon: 'health-icon-clock', color: 'category-rose-strong', texts: ['Vencida', '2026-01-01', '2026-02-28'], dateClass: 'font-normal text-danger' },
-    { id: 'next', surface: 'size-10 items-center justify-center rounded-xl bg-category-amber', icon: 'health-icon-clock', color: 'category-amber-strong', texts: ['Próxima', '2026-01-02', '2026-03-31'], dateClass: 'font-normal text-muted' },
-    { id: 'future', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Futura', '2026-01-03', '2026-04-02'], dateClass: 'font-normal text-muted' },
-    { id: 'completed', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Sin próxima dosis', '2026-01-04'], dateClass: 'font-normal text-muted' },
-  ])('pinta el estado de $id con su icono y textos (enmendado por #199 R16)', async ({ id, surface, icon, color, texts, dateClass }) => {
+    { id: 'overdue', surface: 'size-10 items-center justify-center rounded-xl bg-category-rose', icon: 'health-icon-clock', color: 'category-rose-strong', texts: ['Vencida', 'Aplicada 1 ene 2026 · Próxima 28 feb 2026'], dateClass: 'text-danger' },
+    { id: 'next', surface: 'size-10 items-center justify-center rounded-xl bg-category-amber', icon: 'health-icon-clock', color: 'category-amber-strong', texts: ['Próxima', 'Aplicada 2 ene 2026 · Próxima 31 mar 2026'], dateClass: undefined },
+    { id: 'future', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Futura', 'Aplicada 3 ene 2026 · Próxima 2 abr 2026'], dateClass: undefined },
+    { id: 'completed', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Sin próxima dosis', 'Aplicada 4 ene 2026'], dateClass: undefined },
+  ])('pinta el estado de $id con su icono y textos (enmendado por #199 R16) (enmendado por #199 R17)', async ({ id, surface, icon, color, texts, dateClass }) => {
     await renderHealth();
     const row = await screen.findByTestId(`vaccine-row-${id}`);
     const scope = within(row);
@@ -1105,8 +1105,12 @@ describe('#168 R3: cada vacuna lleva su tile pastel', () => {
     texts.forEach((text, index) => {
       const node = within(column).getByText(text);
       expect(elementChild(column, index)).toBe(node);
-      expect(node.props.className).toBe(index === 0 ? 'text-15 font-extrabold text-foreground' : index === 1 ? 'font-normal text-muted' : dateClass);
+      expect(node.props.className).toBe(index === 0 ? 'text-15 font-extrabold text-foreground' : 'text-xs text-muted');
     });
+    const dates = scope.getByTestId(`vaccine-dates-${id}`);
+    const next = within(dates).queryByText(/^Próxima /);
+    if (id === 'completed') expect(next).toBeNull();
+    else expect(next!.props.className).toBe(dateClass);
   });
 });
 
@@ -1281,5 +1285,41 @@ describe('#199 R16: filas de vacunas', () => {
   it.each([[0, 80], [1, 140], [2, 200], [3, 200]])('#199 R16 la fila %i entra a los %i ms', async (index, delay) => {
     await renderHealth();
     expect(riseDelayOf(await screen.findByTestId(`vaccine-row-vax-${index}`))).toBe(delay);
+  });
+});
+
+
+describe('#199 R17: subtítulo de vacunas', () => {
+  beforeEach(() => {
+    setupHealth168();
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(2026, 2, 31, 12));
+  });
+  afterEach(() => jest.useRealTimers());
+  async function renderDates199(overrides: Partial<Vaccine>) {
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [makeVaccine(overrides)] });
+    await renderHealth();
+    return screen.findByTestId('vaccine-dates-vaccine-1');
+  }
+  it('#199 R17 dice Aplicada y Próxima en una línea', async () => {
+    const dates = await renderDates199({ appliedAt: '2025-12-31', nextDoseAt: '2026-01-01' });
+    expect(dates.type).toBe('Text');
+    expect(dates.props.className).toBe('text-xs text-muted');
+    expect(dates).toHaveTextContent('Aplicada 31 dic 2025 · Próxima 1 ene 2026', { exact: true });
+    expect(screen.getByTestId('vaccine-text-vaccine-1').children).toHaveLength(2);
+    expect(within(dates).getByText('Próxima 1 ene 2026').parent === dates).toBe(true);
+  });
+  it('#199 R17 una dosis vencida pinta Próxima en text-danger', async () => {
+    const dates = await renderDates199({ nextDoseAt: '2026-03-30' });
+    expect(within(dates).getByText('Próxima 30 mar 2026').props.className).toBe('text-danger');
+  });
+  it('#199 R17 una dosis vigente no pinta text-danger', async () => {
+    const dates = await renderDates199({ nextDoseAt: '2026-04-01' });
+    expect(within(dates).getByText('Próxima 1 abr 2026').props.className).not.toBe('text-danger');
+  });
+  it('#199 R17 sin próxima dosis solo dice Aplicada', async () => {
+    const dates = await renderDates199({ appliedAt: '2025-12-31', nextDoseAt: null });
+    expect(dates).toHaveTextContent('Aplicada 31 dic 2025', { exact: true });
+    expect(within(dates).queryByText(/^Próxima /)).toBeNull();
   });
 });
