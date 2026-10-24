@@ -10,7 +10,7 @@ import { Uniwind } from 'uniwind';
 import { usePushRegistration } from '../hooks/use-push-registration';
 import { DEFAULT_LANGUAGE, type Language } from '../i18n/catalog';
 import { AuthProvider, useAuth } from '../providers/auth-provider';
-import { LanguageProvider, useTranslate } from '../providers/language-provider';
+import { LanguageProvider } from '../providers/language-provider';
 import { QueryProvider } from '../providers/query-provider';
 import { SelectedPetProvider } from '../providers/selected-pet-provider';
 import { TRANSPARENT_HEADER_OPTIONS } from '../theme/header-layout';
@@ -76,7 +76,6 @@ export default function RootLayout() {
 
 function RootStack() {
   const { status } = useAuth();
-  const t = useTranslate();
   const [background, foreground] = useThemeColors(['background', 'foreground']);
   const headerOptions = {
     headerShown: true,
@@ -97,7 +96,7 @@ function RootStack() {
         <Stack.Screen name="pets/add" options={{ ...headerOptions, title: '' }} />
         <Stack.Screen name="pets/[petId]/docs" options={{ ...headerOptions, title: '' }} />
         <Stack.Screen name="pets/[petId]/docs-upload" options={{ ...headerOptions, title: '' }} />
-        <Stack.Screen name="weight-log" options={{ ...headerOptions, title: t('weightLog.weightLog') }} />
+        <Stack.Screen name="weight-log" options={{ headerShown: false }} />
             <Stack.Screen name="meal-schedule" options={{ headerShown: false }} />
         <Stack.Screen name="pairing" options={{ ...headerOptions, title: '' }} />
         <Stack.Screen name="reminders" options={{ ...headerOptions, title: '' }} />

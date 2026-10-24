@@ -1,4 +1,5 @@
 import { useChunkyLip } from '../../theme/chunky-lip';
+import { useShadows } from '../../theme/shadows';
 import { BubblePop } from './bubble-pop';
 import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
@@ -16,8 +17,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
+  Alert,
   Bacteria,
-  Battery,
   Bell,
   Bone,
   CalendarPlus,
@@ -28,6 +29,7 @@ import {
   Moon,
   Pill,
   Plus,
+  Refresh,
   Stethoscope,
   Syringe,
   Walk,
@@ -112,12 +114,20 @@ const REMINDER_ROW_ICONS: Record<ReminderType, IconComponent> = {
   custom: Bell,
 };
 
+const SUMMARY_TILES = [
+  { slot: 'violet', Icon: Weight },
+  { slot: 'green', Icon: Walk },
+  { slot: 'blue', Icon: Moon },
+  { slot: 'amber', Icon: Map },
+] as const;
+
 const QUICK_ACTIONS = [
   {
     testID: 'quick-action-weight',
     Icon: Weight,
     labelKey: 'home.quickActionWeight',
     slot: 'violet',
+    lip: 'tileViolet',
     href: (_petId: string) => '/weight-log',
   },
   {
@@ -125,6 +135,7 @@ const QUICK_ACTIONS = [
     Icon: CalendarPlus,
     labelKey: 'home.quickActionReminder',
     slot: 'amber',
+    lip: 'tileAmber',
     href: (_petId: string) => '/add-reminder',
   },
   {
@@ -132,6 +143,7 @@ const QUICK_ACTIONS = [
     Icon: FileText,
     labelKey: 'home.quickActionDocuments',
     slot: 'blue',
+    lip: 'tileBlue',
     href: (petId: string) => `/pets/${petId}/docs`,
   },
 ] as const;
@@ -182,6 +194,7 @@ function dueCountdown(
 
 export function HomeScreen() {
   const chunkyLip = useChunkyLip();
+  const shadows = useShadows();
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
   const locale = useLocale();
@@ -194,16 +207,19 @@ export function HomeScreen() {
     petId: string;
   } | null>(null);
   const insets = useSafeAreaInsets();
-  const [accent, success, warning, muted, vaccineInk, mealsInk, foreground] =
+  const [accent, muted, vaccineInk, mealsInk, foreground, dangerForeground, accentForeground] =
     useThemeColors([
       'accent-strong',
-      'success',
-      'warning',
       'muted',
       'category-blue-strong',
       'category-rose-strong',
       'foreground',
+      'danger-foreground',
+      'accent-foreground',
     ]);
+  const summaryInks = useThemeColors(
+    SUMMARY_TILES.map(({ slot }) => `category-${slot}-strong`),
+  );
   const quickActionInks = useThemeColors(
     QUICK_ACTIONS.map(({ slot }) => `category-${slot}-strong`),
   );
@@ -414,29 +430,55 @@ export function HomeScreen() {
             gap: 16,
           }}
         >
-          <Text className="text-2xl font-black text-foreground">
-            {t('home.home')}
-          </Text>
+          {pets.data !== undefined ? (
+            <Text className="text-26 font-black tracking-title text-foreground">
+              {t('home.home')}
+            </Text>
+          ) : null}
 
           {pets.data === undefined ? (
-            <Skeleton
-              testID="home-loading"
-              className="h-12 w-full rounded-card"
-            />
+            <View testID="home-loading" className="gap-3.5">
+              <View
+                testID="home-loading-summary"
+                className="gap-4 rounded-card border border-border bg-surface px-4 py-3.5"
+                style={{ ...CONTINUOUS_CORNER, ...shadows.card }}
+              >
+                <Skeleton className="h-4 w-30 rounded-full" />
+                <View className="flex-row gap-2">
+                  {Array.from({ length: 4 }, (_, index) => (
+                    <View key={index} className="flex-1 items-center gap-2">
+                      <Skeleton className="size-9 rounded-xl" />
+                      <Skeleton className="h-3.5 w-13 rounded-full" />
+                      <Skeleton className="h-2.5 w-9 rounded-full" />
+                    </View>
+                  ))}
+                </View>
+              </View>
+              <Skeleton testID="home-loading-collar" className="h-16 w-full rounded-card" />
+              <View testID="home-loading-quick-actions" className="gap-2.5">
+                <Skeleton className="h-3 w-27.5 rounded-full" />
+                <View className="flex-row gap-2.5">
+                  {Array.from({ length: 3 }, (_, index) => (
+                    <Skeleton key={index} className="h-23 flex-1 rounded-card" />
+                  ))}
+                </View>
+              </View>
+              <Skeleton testID="home-loading-weekly" className="h-102 w-full rounded-card" />
+            </View>
           ) : null}
 
           {pets.data && isPetsError(pets.data) ? (
-            <View className="items-start gap-3">
-              <Text testID="home-error" className="text-danger">
-                {t('common.somethingWentWrong')}
-              </Text>
-              <Button
-                testID="home-retry"
-                onPress={() => void pets.refetch()}
-              >
-                {t('common.retry')}
-              </Button>
-            </View>
+            <EmptyState
+              testID="home-error"
+              variant="hero"
+              tone="danger"
+              pose="talk"
+              title={t('home.loadPetsErrorTitle')}
+              body={t('home.loadPetsErrorBody')}
+              action={{ label: t('common.retry'), onPress: () => void pets.refetch() }}
+              badge={<View testID="home-error-badge" className="absolute right-10.5 top-6.5 size-11 items-center justify-center rounded-full border-3 border-background bg-danger"><Alert size={24} color={dangerForeground} /></View>}
+              actionIcon={<Refresh size={20} color={accentForeground} style={{ marginRight: 8 }} testID="home-error-action-icon" />}
+            />
           ) : null}
         </View>
       )}
@@ -480,11 +522,11 @@ export function HomeScreen() {
         ) : null}
 
         {selectedPetId ? (
-          <HomeEntrance index={1} testID="home-entrance-summary">
-            <Card testID="summary-card" className="gap-4">
+          <HomeEntrance index={2} testID="home-entrance-summary">
+            <Card testID="summary-card" className="gap-3 px-2 py-3.5 shadow-none" style={shadows.card}>
               <Text
                 testID="summary-card-title"
-                className="text-base font-bold text-foreground"
+                className="px-2 text-base font-extrabold text-foreground"
               >
                 {t('home.summaryTitle')}
               </Text>
@@ -496,12 +538,16 @@ export function HomeScreen() {
               {activity.data !== undefined &&
               activity.data.kind !== 'unauthorized' ? (
                 <Animated.View testID="summary-reveal" entering={homeEntering(0, 0)}>
-                  <View className="flex-row">
-                    <View className="flex-1 items-center gap-1 border-r border-border">
-                      <Weight size={20} color={muted} />
+                  <View className="flex-row gap-1">
+                    <View className={activity.data.kind === 'ok'
+                      ? 'flex-1 items-center gap-1.5'
+                      : 'flex-1 items-center gap-1.5 border-r border-border'}>
+                      <View testID="summary-tile-weight" className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS[SUMMARY_TILES[0].slot].surface}`} style={CONTINUOUS_CORNER}>
+                        <Weight size={18} color={summaryInks[0]} />
+                      </View>
                       <Text
                         testID="summary-weight"
-                        className="text-sm font-bold text-foreground"
+                        className="text-base font-extrabold text-foreground"
                         style={TABULAR_NUMS}
                       >
                         {fmtKg(
@@ -510,48 +556,54 @@ export function HomeScreen() {
                             : null,
                         )}
                       </Text>
-                      <Text className="text-2xs font-normal text-muted">
+                      <Text className="text-11 font-semibold text-muted">
                         {t('home.weight')}
                       </Text>
                     </View>
                     {activity.data.kind === 'ok' ? (
                       <>
-                        <View className="flex-1 items-center gap-1 border-r border-border">
-                          <Walk size={20} color={muted} />
+                        <View className="flex-1 items-center gap-1.5">
+                          <View testID="summary-tile-activity" className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS[SUMMARY_TILES[1].slot].surface}`} style={CONTINUOUS_CORNER}>
+                            <Walk size={18} color={summaryInks[1]} />
+                          </View>
                           <Text
                             testID="summary-activity"
-                            className="text-sm font-bold text-foreground"
+                            className="text-base font-extrabold text-foreground"
                             style={TABULAR_NUMS}
                           >
                             {fmtMinutes(today?.activeMinutes ?? null)}
                           </Text>
-                          <Text className="text-2xs font-normal text-muted">
+                          <Text className="text-11 font-semibold text-muted">
                             {t('home.activity')}
                           </Text>
                         </View>
-                        <View className="flex-1 items-center gap-1 border-r border-border">
-                          <Moon size={20} color={muted} />
+                        <View className="flex-1 items-center gap-1.5">
+                          <View testID="summary-tile-sleep" className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS[SUMMARY_TILES[2].slot].surface}`} style={CONTINUOUS_CORNER}>
+                            <Moon size={18} color={summaryInks[2]} />
+                          </View>
                           <Text
                             testID="summary-sleep"
-                            className="text-sm font-bold text-foreground"
+                            className="text-base font-extrabold text-foreground"
                             style={TABULAR_NUMS}
                           >
                             {fmtMinutes(today?.restMinutes ?? null)}
                           </Text>
-                          <Text className="text-2xs font-normal text-muted">
+                          <Text className="text-11 font-semibold text-muted">
                             {t('home.sleep')}
                           </Text>
                         </View>
-                        <View className="flex-1 items-center gap-1">
-                          <Map size={20} color={muted} />
+                        <View className="flex-1 items-center gap-1.5">
+                          <View testID="summary-tile-distance" className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS[SUMMARY_TILES[3].slot].surface}`} style={CONTINUOUS_CORNER}>
+                            <Map size={18} color={summaryInks[3]} />
+                          </View>
                           <Text
                             testID="summary-distance"
-                            className="text-sm font-bold text-foreground"
+                            className="text-base font-extrabold text-foreground"
                             style={TABULAR_NUMS}
                           >
                             {fmtKm(today?.distanceM ?? null)}
                           </Text>
-                          <Text className="text-2xs font-normal text-muted">
+                          <Text className="text-11 font-semibold text-muted">
                             {t('home.distance')}
                           </Text>
                         </View>
@@ -559,7 +611,7 @@ export function HomeScreen() {
                     ) : (
                       <Text
                         testID="summary-note"
-                        className="flex-3 self-center pl-3 font-normal text-muted"
+                        className="flex-3 self-center pl-3 text-sm leading-5 font-normal text-muted"
                       >
                         {activity.data.kind === 'no-tracking'
                           ? t('home.activityNeedsCollar')
@@ -574,76 +626,63 @@ export function HomeScreen() {
         ) : null}
 
         {detail.data?.kind === 'ok' && connection ? (
-          <HomeEntrance index={2} testID="home-entrance-collar">
+          <HomeEntrance index={3} testID="home-entrance-collar">
             <Card
               testID="collar-card"
-              className="gap-3 bg-default"
+              className={detail.data.pet.device
+                ? 'flex-row items-center gap-3 border-0 bg-default px-3.5 py-3 shadow-none'
+                : 'gap-3 border-0 bg-default px-4 py-3.5 shadow-none'}
             >
-              <View className="flex-row items-center gap-3">
-                <View className="size-9 items-center justify-center rounded-full bg-accent-soft">
-                  {connection === 'none' ? (
-                    <Moon size={20} color={accent} />
-                  ) : connection === 'online' ? (
-                    <Wifi size={20} color={accent} />
-                  ) : (
-                    <WifiOff size={20} color={accent} />
-                  )}
-                </View>
-                <Text
-                  testID="collar-status"
-                  className="text-base font-bold text-foreground"
-                >
-                  {t(HOME_CONNECTION[connection].labelKey)}
-                </Text>
-              </View>
               {detail.data.pet.device ? (
-                <View className="flex-row items-center gap-2">
-                  <Battery
-                    size={18}
-                    color={
-                      detail.data.pet.device.batteryPct === null
-                        ? muted
-                        : detail.data.pet.device.batteryPct > 60
-                          ? success
-                          : warning
-                    }
-                  />
+                <>
+                  <View testID="collar-icon" className="size-10 items-center justify-center rounded-full bg-tab-pill">
+                    {connection === 'online' ? <Wifi size={20} color={accent} /> : <WifiOff size={20} color={accent} />}
+                  </View>
+                  <View className="flex-1 gap-1.5">
+                    <Text testID="collar-status" className="text-15 font-bold text-foreground">
+                      {t(HOME_CONNECTION[connection].labelKey)}
+                    </Text>
+                    {detail.data.pet.device.batteryPct !== null ? (
+                      <CollarBatteryBar pct={detail.data.pet.device.batteryPct} />
+                    ) : null}
+                  </View>
                   <Text
                     testID="collar-battery"
                     style={TABULAR_NUMS}
-                    className={
-                      detail.data.pet.device.batteryPct === null
-                        ? 'font-normal text-muted'
-                        : detail.data.pet.device.batteryPct > 60
-                          ? 'font-semibold text-success'
-                          : 'font-semibold text-warning-strong'
-                    }
+                    className={detail.data.pet.device.batteryPct === null
+                      ? 'font-normal text-muted'
+                      : detail.data.pet.device.batteryPct > 60
+                        ? 'text-15 font-extrabold text-accent-strong'
+                        : 'text-15 font-extrabold text-warning-strong'}
                   >
-                    {detail.data.pet.device.batteryPct === null
-                      ? '—'
-                      : `${detail.data.pet.device.batteryPct}%`}
+                    {detail.data.pet.device.batteryPct === null ? '—' : `${detail.data.pet.device.batteryPct}%`}
                   </Text>
-                  {detail.data.pet.device.batteryPct !== null ? (
-                    <CollarBatteryBar pct={detail.data.pet.device.batteryPct} />
-                  ) : null}
-                </View>
+                </>
               ) : (
-                <Text className="font-normal text-muted">
-                  {t('home.noCollar')}
-                </Text>
+                <>
+                  <View className="flex-row items-center gap-3">
+                    <View testID="collar-icon" className="size-9 items-center justify-center rounded-full bg-tab-pill">
+                      <Moon size={20} color={accent} />
+                    </View>
+                    <Text testID="collar-status" className="text-base font-extrabold text-foreground">
+                      {t(HOME_CONNECTION[connection].labelKey)}
+                    </Text>
+                  </View>
+                  <Text className="text-sm font-normal text-muted">{t('home.noCollar')}</Text>
+                </>
               )}
               {detail.data.pet.device === null ? (
                     <Pressable
                       accessibilityRole="button"
                       testID="collar-pair-link"
-                      className="min-h-11 items-center justify-center rounded-xl bg-accent-soft px-4"
+                      className="h-11 items-center justify-center rounded-xl bg-tab-pill"
                       style={({ pressed }) => ({
                         ...CONTINUOUS_CORNER,
                         opacity: pressed ? 0.8 : 1,
                       })}
                       onPress={() => router.push('/pairing')}
                 >
-                  <Text className="font-bold text-foreground">
+                  <Text className="text-15 font-bold text-foreground">
                     {t('home.pairCollar')}
                   </Text>
                 </Pressable>
@@ -653,30 +692,31 @@ export function HomeScreen() {
         ) : null}
 
         {selectedPetId ? (
-          <HomeEntrance index={3} testID="home-entrance-quick-actions">
-            <View testID="quick-actions" className="gap-3">
+          <HomeEntrance index={4} testID="home-entrance-quick-actions">
+            <View testID="quick-actions" className="gap-2.5">
               <Text
                 testID="quick-actions-title"
-                className="text-xs font-semibold uppercase tracking-widest text-muted"
+                className="text-xs font-bold uppercase tracking-section text-muted"
               >
                 {t('home.quickActions')}
               </Text>
-              <View testID="quick-actions-row" className="flex-row gap-3">
+              <View testID="quick-actions-row" className="flex-row gap-2.5">
                 {QUICK_ACTIONS.map(
-                  ({ testID, Icon, labelKey, slot, href }, index) => (
+                  ({ testID, Icon, labelKey, slot, lip, href }, index) => (
                     <Pressable
                       key={testID}
                       testID={testID}
                       accessibilityRole="button"
-                      className={`min-h-11 flex-1 items-center gap-1.5 rounded-xl py-3 ${CATEGORY_SLOTS[slot].surface}`}
+                      className={`h-23 flex-1 items-center justify-center gap-2 rounded-card ${CATEGORY_SLOTS[slot].surface}`}
                       style={({ pressed }) => ({
                         ...CONTINUOUS_CORNER,
+                        ...chunkyLip[lip],
                         opacity: pressed ? 0.8 : 1,
                       })}
                       onPress={() => router.push(href(selectedPetId))}
                     >
-                      <Icon size={24} color={quickActionInks[index]} />
-                      <Text className="text-2xs font-semibold text-foreground">
+                      <Icon size={26} color={quickActionInks[index]} />
+                      <Text className={`text-13 font-bold ${CATEGORY_SLOTS[slot].ink}`}>
                         {t(labelKey)}
                       </Text>
                     </Pressable>
@@ -688,7 +728,7 @@ export function HomeScreen() {
         ) : null}
 
         {selectedPetId && (activity.data === undefined || activity.data.kind === 'ok') ? (
-          <HomeEntrance index={4} testID="home-entrance-weekly">
+          <HomeEntrance index={5} testID="home-entrance-weekly">
             {activity.data === undefined ? (
               <Skeleton
                 testID="weekly-activity-skeleton"
@@ -724,23 +764,23 @@ export function HomeScreen() {
         ) : null}
 
         {selectedPetId ? (
-          <HomeEntrance index={5} testID="home-entrance-reminders">
-            <View testID="reminders-section" className="gap-3">
+          <HomeEntrance index={6} testID="home-entrance-reminders">
+            <View testID="reminders-section" className="gap-1">
               <View className="flex-row items-center justify-between">
                 <Text
                   testID="reminders-section-title"
-                  className="text-base font-bold text-foreground"
+                  className="text-base font-extrabold text-foreground"
                 >
                   {t('home.reminders')}
                 </Text>
                 <Pressable
                   testID="reminders-see-all"
                   accessibilityRole="button"
-                  className="min-h-11 justify-center"
+                  className="min-h-11 justify-center pl-3"
                   style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
                   onPress={() => router.push('/reminders')}
                 >
-                  <Text className="text-xs font-semibold text-accent-strong">
+                  <Text className="text-xs font-bold text-accent-strong">
                     {t('home.remindersSeeAll')}
                   </Text>
                 </Pressable>
@@ -757,7 +797,8 @@ export function HomeScreen() {
                 {nextVaccine && nextVaccineCountdown ? (
                   <Card
                     testID="reminders-next-vaccine"
-                    className="flex-row items-center gap-3"
+                    className="flex-row items-center gap-3 px-3.5 py-3 shadow-none"
+                    style={shadows.card}
                   >
                     <View
                       className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.blue.surface}`}
@@ -767,7 +808,7 @@ export function HomeScreen() {
                     <View className="flex-1">
                       <Text
                         testID="reminders-next-vaccine-name"
-                        className="text-sm font-semibold text-foreground"
+                        className="text-sm font-bold text-foreground"
                       >
                         {nextVaccine.name}
                       </Text>
@@ -782,7 +823,7 @@ export function HomeScreen() {
                       testID="reminders-next-vaccine-days"
                       accessibilityLabel={nextVaccineCountdown.label}
                       style={TABULAR_NUMS}
-                      className={`rounded-full px-2.5 py-1 text-xs font-bold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`}
+                      className={`rounded-full px-2.5 py-1 text-xs font-extrabold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`}
                     >
                       {nextVaccineCountdown.text}
                     </Text>
@@ -792,7 +833,8 @@ export function HomeScreen() {
                 {mealsToday !== null ? (
                   <Card
                     testID="reminders-meals"
-                    className="flex-row items-center gap-3"
+                    className="flex-row items-center gap-3 px-3.5 py-3 shadow-none"
+                    style={shadows.card}
                   >
                     <View
                       className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.rose.surface}`}
@@ -803,7 +845,7 @@ export function HomeScreen() {
                       <View className="flex-row items-center justify-between">
                         <Text
                           testID="reminders-meals-title"
-                          className="text-sm font-semibold text-foreground"
+                          className="text-sm font-bold text-foreground"
                         >
                           {t('food.mealsToday')}
                         </Text>
@@ -838,7 +880,8 @@ export function HomeScreen() {
                 upcoming.length === 0 ? (
                   <Card
                     testID="reminders-none-upcoming"
-                    className="flex-row items-center gap-3"
+                    className="flex-row items-center gap-3 px-3.5 py-3 shadow-none"
+                    style={shadows.card}
                   >
                     <View
                       className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.neutral.surface}`}
@@ -864,7 +907,8 @@ export function HomeScreen() {
                     <Card
                       key={reminder.id}
                       testID={`reminders-item-${reminder.id}`}
-                      className="flex-row items-center gap-3"
+                      className="flex-row items-center gap-3 px-3.5 py-3 shadow-none"
+                      style={shadows.card}
                     >
                       <View
                         className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS[slot].surface}`}
@@ -874,7 +918,7 @@ export function HomeScreen() {
                       <View className="flex-1">
                         <Text
                           testID={`reminders-item-${reminder.id}-title`}
-                          className="text-sm font-semibold text-foreground"
+                          className="text-sm font-bold text-foreground"
                         >
                           {reminder.title}
                         </Text>
@@ -889,7 +933,7 @@ export function HomeScreen() {
                         testID={`reminders-item-${reminder.id}-days`}
                         accessibilityLabel={countdown.label}
                         style={TABULAR_NUMS}
-                        className={`rounded-full px-2.5 py-1 text-xs font-bold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`}
+                        className={`rounded-full px-2.5 py-1 text-xs font-extrabold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`}
                       >
                         {countdown.text}
                       </Text>
@@ -903,24 +947,24 @@ export function HomeScreen() {
         ) : null}
 
         {detail.data?.kind === 'ok' && detail.data.pet.device ? (
-          <HomeEntrance index={6} testID="home-entrance-last-position">
+          <HomeEntrance index={7} testID="home-entrance-last-position">
             <Card
               testID="last-position-card"
-              className="gap-2 bg-default"
+              className="gap-2 border-0 bg-default px-4 py-3.5 shadow-none"
               onPress={() => router.push('/map')}
             >
               <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center gap-2">
-                  <View className="size-9 items-center justify-center rounded-full bg-accent-soft">
+                  <View className="size-9 items-center justify-center rounded-full bg-tab-pill">
                     <Map size={20} color={accent} />
                   </View>
-                  <Text className="font-semibold text-accent-strong">
+                  <Text className="text-15 font-bold text-accent-strong">
                     {viewOnMapLabel}
                   </Text>
                 </View>
                 <ChevronRight size={20} color={accent} />
               </View>
-              <Text testID="last-position-time" className="font-normal text-muted">
+              <Text testID="last-position-time" className="text-13 font-normal text-muted">
                 {fmtLastSeen(detail.data.pet.lastCommunicationAt, locale, t)}
               </Text>
             </Card>

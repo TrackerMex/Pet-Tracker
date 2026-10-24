@@ -98,3 +98,16 @@ export const MOTION_RING_TIMING = {
   reduceMotion: ReduceMotion.System,
 };
 export const MOTION_RING_DELAY_MS = 200;
+
+// #199 R27: draw, point pop and success-toast timings from the frozen canvas.
+export const MOTION_DRAW_TIMING = {
+  duration: 1200,
+  easing: Easing.bezier(0, 0, 0.58, 1),
+  reduceMotion: ReduceMotion.System,
+};
+export const MOTION_DRAW_DELAY_FULL_MS = 200;
+export const MOTION_DRAW_DELAY_MINI_MS = 300;
+export const MOTION_POINT_POP_MS = 400;
+export const MOTION_POINT_POP_DELAY_MS = 1300;
+export const MOTION_TOAST_FADE_MS = 300;
+export const MOTION_TOAST_DELAY_MS = 400;

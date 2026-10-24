@@ -1,17 +1,15 @@
 import { useChunkyLip } from '../../theme/chunky-lip';
-import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { Redirect } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import {
   Button,
-  Card as HeroUICard,
   Input,
   Label,
   Skeleton,
   TextField,
 } from 'heroui-native';
 import { useQuery } from '@tanstack/react-query';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
@@ -25,25 +23,35 @@ import {
 import { healthKeys, userKeys } from '../../api/query-keys';
 import { getMe } from '../../api/users';
 import { Card } from '../../components/card';
+import { ScreenHeader } from '../../components/screen-header';
+import { RiseIn } from '../../components/rise-in';
 import { WeightChart } from '../../components/weight-chart';
 import { FieldErrorMessage } from '../../components/field-error-message';
 import type { FieldIssues } from '../../utils/account-rules';
 import { parseDecimal, validateWeight } from '../../utils/form-rules';
 import { useAuth } from '../../providers/auth-provider';
-import { useTranslate } from '../../providers/language-provider';
+import { useLocale, useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import {
   CONTINUOUS_CORNER,
   TABULAR_NUMS,
 } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
-import { MOTION_FEEDBACK_MS, MOTION_TRANSITION_MS } from '../../theme/motion';
+import { MOTION_FEEDBACK_MS, MOTION_TOAST_FADE_MS, MOTION_TOAST_DELAY_MS } from '../../theme/motion';
+import { useShadows } from '../../theme/shadows';
 import { civilTodayIso } from '../../utils/civil-today-iso';
 import { monthlyWeightDelta } from '../../utils/monthly-weight-delta';
+import { CATEGORY_SLOTS } from '../../utils/category-palette';
+import { fmtDayMonth } from '../home/format';
 
 const MEASURED_AT_IN_FUTURE_MESSAGE =
   'measuredAt is too far in the future';
 const WEIGHT_TOAST_MS = 2500;
+const DELTA_TONE = {
+  up: { tile: CATEGORY_SLOTS.rose.surface, text: 'text-danger', color: 'danger' },
+  down: { tile: CATEGORY_SLOTS.green.surface, text: 'text-accent-strong', color: 'accent-strong' },
+  flat: { tile: 'bg-default', text: 'text-muted', color: 'muted' },
+} as const;
 
 function fmtVariation(variation: number | null): string {
   if (variation === null) return '—';
@@ -51,30 +59,10 @@ function fmtVariation(variation: number | null): string {
 }
 
 function weightTone(variation: number | null) {
-  if (variation !== null && variation > 0) {
-    return {
-      tileClassName: 'bg-danger-soft',
-      rowClassName: 'text-xs font-semibold text-danger',
-      summaryClassName: 'text-sm font-semibold text-danger',
-      Icon: TrendUp,
-      color: 'danger' as const,
-    };
-  }
-  if (variation !== null && variation < 0) {
-    return {
-      tileClassName: 'bg-success-soft',
-      rowClassName: 'text-xs font-semibold text-success',
-      summaryClassName: 'text-sm font-semibold text-success',
-      Icon: TrendDown,
-      color: 'success' as const,
-    };
-  }
+  const direction = variation !== null && variation > 0 ? 'up' : variation !== null && variation < 0 ? 'down' : 'flat';
   return {
-    tileClassName: 'bg-default',
-    rowClassName: 'text-xs font-semibold text-muted',
-    summaryClassName: 'text-sm font-semibold text-muted',
-    Icon: Minus,
-    color: 'muted' as const,
+    ...DELTA_TONE[direction],
+    Icon: direction === 'up' ? TrendUp : direction === 'down' ? TrendDown : Minus,
   };
 }
 
@@ -84,15 +72,16 @@ function isWeightsError(state: WeightsState): boolean {
 
 function WeightLogContent({ petId }: { petId: string }) {
   const chunkyLip = useChunkyLip();
-  const headerHeight = useContext(HeaderHeightContext);
-  const [success, danger, muted] = useThemeColors([
-    'success',
+  const shadows = useShadows();
+  const [danger, muted, accentStrong] = useThemeColors([
     'danger',
     'muted',
+    'accent-strong',
   ]);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const t = useTranslate();
+  const locale = useLocale();
   const insets = useSafeAreaInsets();
   const [weightText, setWeightText] = useState('');
   const [measuredAtDraft, setMeasuredAtDraft] = useState<string | null>(null);
@@ -119,7 +108,7 @@ function WeightLogContent({ petId }: { petId: string }) {
   const entries = weights.data?.kind === 'ok' ? weights.data.weights : [];
   const monthDelta = monthlyWeightDelta(entries, civilTodayIso(profileTimeZone));
   const monthTone = weightTone(monthDelta);
-  const toneColors = { success, danger, muted };
+  const toneColors = { danger, muted, 'accent-strong': accentStrong };
 
   async function handleSubmit() {
     setFormError(null);
@@ -190,7 +179,7 @@ function WeightLogContent({ petId }: { petId: string }) {
       testID="screen-weight-log"
       className="flex-1"
       behavior="padding"
-      keyboardVerticalOffset={headerHeight}
+      keyboardVerticalOffset={0}
     >
       <ScrollView
         testID="weight-log-form"
@@ -198,49 +187,51 @@ function WeightLogContent({ petId }: { petId: string }) {
         keyboardShouldPersistTaps="handled"
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
-          padding: 24,
-          gap: 16,
-          paddingBottom: insets.bottom + 24,
+          paddingHorizontal: 24,
+          paddingTop: insets.top + 8,
+          paddingBottom: insets.bottom + 32,
+          gap: 14,
         }}
       >
-        {weights.data?.kind === 'ok' ? (
-          <Card testID="weight-chart-card" className="gap-4">
+        <ScreenHeader testID="weight-log-header" size={24} backFallback="/health" title={t('weightLog.weightLog')} />
+        {weights.data?.kind === 'ok' && entries.length > 0 ? (
+          <RiseIn delayMs={0}>
+          <View testID="weight-chart-card" className="gap-2 rounded-24 bg-surface-secondary p-4" style={CONTINUOUS_CORNER}>
             {entries.length > 0 ? (
-              <View testID="weight-summary">
+              <View testID="weight-summary" className="flex-row items-baseline gap-2">
                 <Text
                   testID="weight-current"
-                  className="text-3xl font-black text-foreground"
+                  className="text-34 font-black text-foreground"
                   style={TABULAR_NUMS}
                 >
                   {`${entries[0].weightKg} kg`}
                 </Text>
                 {monthDelta !== null ? (
-                  <View testID="weight-month-delta" className="flex-row items-center gap-1.5">
-                    <monthTone.Icon size={15} color={toneColors[monthTone.color]} />
                     <Text
                       testID="weight-month-delta-text"
-                      className={monthTone.summaryClassName}
+                      className={`text-sm font-extrabold ${monthTone.text}`}
                       style={TABULAR_NUMS}
                     >
                       {t('weightLog.monthDelta', { value: fmtVariation(monthDelta) })}
                     </Text>
-                  </View>
                 ) : null}
               </View>
             ) : null}
             <WeightChart entries={weights.data.weights} />
-          </Card>
+          </View>
+          </RiseIn>
         ) : null}
 
-        {weights.data?.kind === 'ok' ? (
-          <Card className="gap-4">
-            <TextField isInvalid={Boolean(fieldErrors.weight)}>
-              <Label className="text-2xs font-semibold text-foreground">
+        <RiseIn delayMs={80}>
+          <Card testID="weight-form" variant="flat" className="gap-2.5 py-3.5">
+            <View className="flex-row gap-2.5">
+              <TextField className="flex-1 gap-1.5" isInvalid={Boolean(fieldErrors.weight)}>
+              <Label><Text className="text-13 font-extrabold text-foreground">
                 {t('weightLog.weight')}
-              </Label>
+              </Text></Label>
               <Input
                 testID="weight-input"
-                className="rounded-xl bg-default"
+                className="h-12 rounded-xl bg-default"
                 keyboardType="decimal-pad"
                 placeholder={t('weightLog.weightKg')}
                 value={weightText}
@@ -248,26 +239,27 @@ function WeightLogContent({ petId }: { petId: string }) {
               />
               <FieldErrorMessage testID="weight-input" issue={fieldErrors.weight} />
             </TextField>
-            <TextField isInvalid={Boolean(fieldErrors.measuredAt)}>
-              <Label className="text-2xs font-semibold text-foreground">
+              <TextField className="flex-1 gap-1.5" isInvalid={Boolean(fieldErrors.measuredAt)}>
+              <Label><Text className="text-13 font-extrabold text-foreground">
                 {t('weightLog.measuredAt')}
-              </Label>
+              </Text></Label>
               <Input
                 testID="weight-date-input"
-                className="rounded-xl bg-default"
+                className="h-12 rounded-xl bg-default"
                 placeholder={t('weightLog.yyyyMmDd')}
                 value={measuredAt}
                 onChangeText={setMeasuredAtDraft}
               />
               <FieldErrorMessage testID="weight-date-input" issue={fieldErrors.measuredAt} />
             </TextField>
-            <TextField isInvalid={Boolean(fieldErrors.bodyCondition)}>
-              <Label className="text-2xs font-semibold text-foreground">
+            </View>
+            <TextField className="gap-1.5" isInvalid={Boolean(fieldErrors.bodyCondition)}>
+              <Label><Text className="text-13 font-extrabold text-foreground">
                 {t('weightLog.bodyCondition')}
-              </Label>
+              </Text></Label>
               <Input
                 testID="weight-bc-input"
-                className="rounded-xl bg-default"
+                className="h-12 rounded-xl bg-default"
                 keyboardType="number-pad"
                 placeholder={t('weightLog.bodyConditionPlaceholder')}
                 value={bodyConditionText}
@@ -293,18 +285,28 @@ function WeightLogContent({ petId }: { petId: string }) {
               </Text>
             </Button>
           </Card>
-        ) : null}
+        </RiseIn>
 
         {weights.data === undefined ? (
-          <Skeleton
-            testID="weight-log-loading"
-            className="h-40 w-full rounded-card"
-          />
+          <View testID="weight-log-loading">
+            {[0, 1, 2].map(index => (
+              <RiseIn key={index} delayMs={60 * index}>
+                <View testID={`weight-log-skeleton-row-${index}`} className="flex-row items-center gap-3 border-t border-border py-2.5">
+                  <Skeleton className="size-9 rounded-xl" />
+                  <View className="flex-1 gap-1.5">
+                    <Skeleton className="h-3.5 w-2/5 rounded-full" />
+                    <Skeleton className="h-2.5 w-1/5 rounded-full" />
+                  </View>
+                  <Skeleton className="h-3 w-9.5 rounded-full" />
+                </View>
+              </RiseIn>
+            ))}
+          </View>
         ) : null}
 
         {weights.data && isWeightsError(weights.data) ? (
           <View className="items-start gap-3">
-            <Text testID="weight-log-error" className="text-danger">
+            <Text testID="weight-log-error" className="text-15 leading-body text-danger" accessibilityRole="alert">
               {t('common.somethingWentWrong')}
             </Text>
             <Button
@@ -317,56 +319,51 @@ function WeightLogContent({ petId }: { petId: string }) {
         ) : null}
 
         {weights.data?.kind === 'ok' && weights.data.weights.length === 0 ? (
-          <Text testID="weight-log-empty" className="text-muted">
+          <Text testID="weight-log-empty" className="text-15 leading-body text-muted">
             {t('weightLog.noWeightEntriesYet')}
           </Text>
         ) : null}
 
+        {entries.length > 0 ? <Text testID="weight-history-title" accessibilityRole="header" className="mb-1 text-17 font-extrabold text-foreground">{t('weightLog.history')}</Text> : null}
+
         {weights.data?.kind === 'ok'
-          ? weights.data.weights.map((entry) => {
-              const { tileClassName, rowClassName, Icon, color } = weightTone(entry.variation);
+          ? weights.data.weights.map((entry, index) => {
+              const { tile: tileClassName, text, Icon, color } = weightTone(entry.variation);
+              const rowClassName = `text-13 ${text}`;
 
               return (
-                <HeroUICard
-                  key={entry.id}
+                <RiseIn key={entry.id} delayMs={140 + 60 * Math.min(index, 2)}>
+                <View
                   testID={`weight-row-${entry.id}`}
-                  className="flex-row items-center gap-3 rounded-xl border border-border bg-surface px-3.5 py-3 shadow-sm"
+                  className="flex-row items-center gap-3 border-t border-border py-2.5"
                 >
                   <View
                     testID={`weight-row-${entry.id}-tone`}
-                    className={`size-8 shrink-0 items-center justify-center rounded-xl ${tileClassName}`}
+                    className={`size-9 shrink-0 items-center justify-center rounded-xl ${tileClassName}`}
                     style={CONTINUOUS_CORNER}
                   >
-                    <Icon size={15} color={toneColors[color]} />
+                    <Icon size={18} color={toneColors[color]} />
                   </View>
                   <View className="min-w-0 flex-1 gap-1">
-                    <View className="flex-row items-baseline gap-1.5">
-                      <Text
-                        className="font-bold text-foreground"
-                        style={TABULAR_NUMS}
-                      >
-                        {entry.weightKg} kg
-                      </Text>
-                      <Text
-                        testID={`weight-row-${entry.id}-delta`}
-                        className={rowClassName}
-                        style={TABULAR_NUMS}
-                      >
+                    <Text className="text-15 font-extrabold text-foreground" style={TABULAR_NUMS}>
+                      {`${entry.weightKg} kg `}
+                      <Text testID={`weight-row-${entry.id}-delta`} className={rowClassName} style={TABULAR_NUMS}>
                         {fmtVariation(entry.variation)}
                       </Text>
-                    </View>
+                    </Text>
                     {entry.bodyCondition !== null ? (
-                      <Text className="text-xs font-normal text-muted">
+                      <Text className="text-xs text-muted">
                         {t('weightLog.bodyConditionValue', {
                           value: entry.bodyCondition,
                         })}
                       </Text>
                     ) : null}
                   </View>
-                  <Text className="shrink-0 text-xs font-normal text-muted">
-                    {entry.measuredAt}
+                  <Text testID={`weight-row-${entry.id}-date`} className="text-13 font-semibold text-muted">
+                    {fmtDayMonth(entry.measuredAt, locale)}
                   </Text>
-                </HeroUICard>
+                </View>
+                </RiseIn>
               );
             })
           : null}
@@ -374,13 +371,14 @@ function WeightLogContent({ petId }: { petId: string }) {
       {toastVisible ? (
         <Animated.View
           testID="weight-toast"
-          entering={FadeIn.duration(MOTION_TRANSITION_MS)}
+          entering={FadeIn.duration(MOTION_TOAST_FADE_MS).delay(MOTION_TOAST_DELAY_MS)}
           exiting={FadeOut.duration(MOTION_FEEDBACK_MS)}
-          className="absolute top-4 flex-row items-center gap-2 self-center rounded-full border border-border bg-surface px-4 py-2.5 shadow-sm"
+          className="absolute flex-row items-center gap-2 self-center rounded-full border border-border bg-surface px-4 py-2.5"
+          style={[{ top: insets.top + 42 }, shadows.toast]}
           pointerEvents="none"
           accessibilityLiveRegion="polite"
         >
-          <Check size={16} color={success} />
+          <Check size={16} strokeWidth={2.6} color={accentStrong} />
           <Text className="text-sm font-semibold text-foreground">
             {t('weightLog.weightLogged')}
           </Text>
