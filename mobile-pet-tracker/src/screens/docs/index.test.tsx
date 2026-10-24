@@ -26,14 +26,14 @@ import { LanguageProvider } from '../../providers/language-provider';
 import { DocsScreen } from '.';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
-const mockHomeEntrance = jest.fn<void, [import('react-native').ViewProps & { index: number }]>();
+const mockRiseIn = jest.fn<void, [import('react-native').ViewProps & { delayMs: number }]>();
 
-jest.mock('../home/home-entrance', () => {
+jest.mock('../../components/rise-in', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
-    HomeEntrance(props: import('react-native').ViewProps & { index: number }) {
-      mockHomeEntrance(props);
+    RiseIn(props: import('react-native').ViewProps & { delayMs: number }) {
+      mockRiseIn(props);
       return React.createElement(View, props);
     },
   };
@@ -687,7 +687,7 @@ describe('#175 R6: fila del artboard', () => {
     expect(screen.queryByText(/^2025-12-02$/)).toBeNull();
   });
 
-  it('envuelve cada fila con su índice y conserva el orden del backend', async () => {
+  it('envuelve cada fila con su índice y conserva el orden del backend (enmendado por #204 R14)', async () => {
     mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [
       { ...docOne, id: 'third' },
       { ...docOne, id: 'first' },
@@ -700,10 +700,10 @@ describe('#175 R6: fila del artboard', () => {
     ]);
     for (const [index, id] of ['third', 'first', 'second'].entries()) {
       const entry = screen.getByTestId(`docs-entry-${id}`);
-      expect(entry.props.index).toBe(index);
+      expect(entry.props.delayMs).toBe(index * 60);
       expect(entry.children).toHaveLength(1);
       expect(entry.children[0]).toHaveProperty('props.testID', `doc-${id}`);
-      expect(mockHomeEntrance).toHaveBeenCalledWith(expect.objectContaining({ index, testID: `docs-entry-${id}` }));
+      expect(mockRiseIn).toHaveBeenCalledWith(expect.objectContaining({ delayMs: index * 60, testID: `docs-entry-${id}` }));
     }
     expect(screen.getAllByTestId(/^doc-/).map(({ props }) => props.testID)).toEqual([
       'doc-third', 'doc-first', 'doc-second',
@@ -821,7 +821,7 @@ describe('#175 R9: filtrar por categoría', () => {
   it.each([
     ['blue', 'vaccine'], ['green', 'checkup'], ['amber', 'deworming'],
     ['violet', 'analysis'], ['neutral', 'unknown'],
-  ] as const)('filtra %s, conserva el orden y renumera las entradas (enmendado por #204 R12)', async (slot, id) => {
+  ] as const)('filtra %s, conserva el orden y renumera las entradas (enmendado por #204 R12) (enmendado por #204 R14)', async (slot, id) => {
     const original = filterDocs.find((document) => document.id === id)!;
     mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [{ ...original, id: 'extra' }, ...filterDocs] });
     await renderDocs();
@@ -830,8 +830,8 @@ describe('#175 R9: filtrar por categoría', () => {
     await waitFor(() => expect(docsChildren()).toEqual([
       'docs-header', 'docs-filters', 'docs-entry-extra', `docs-entry-${id}`, 'docs-upload',
     ]));
-    expect(screen.getByTestId('docs-entry-extra').props.index).toBe(0);
-    expect(screen.getByTestId(`docs-entry-${id}`).props.index).toBe(1);
+    expect(screen.getByTestId('docs-entry-extra').props.delayMs).toBe(0);
+    expect(screen.getByTestId(`docs-entry-${id}`).props.delayMs).toBe(60);
     for (const candidate of ['all', 'blue', 'green', 'amber', 'violet', 'neutral']) {
       expect(screen.getByTestId(`docs-filter-${candidate}`).props.accessibilityState).toEqual({ selected: candidate === slot });
     }
@@ -1086,5 +1086,28 @@ describe('#204 R13: estados de Documentos bajo la cabecera', () => {
       .getAllByTestId(new RegExp(`^(docs-header|${node})$`))
       .map(({ props }) => props.testID);
     expect(order).toEqual(['docs-header', node]);
+  });
+});
+
+describe('#204 R14: entrada de las filas de Documentos', () => {
+  it('#204 R14: escalona las filas 0, 60 y 120 ms con RiseIn', async () => {
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [
+      { ...docOne, id: 'third' },
+      { ...docOne, id: 'first' },
+      { ...docOne, id: 'second' },
+    ] });
+    await renderDocs();
+    await screen.findByTestId('doc-third');
+    const delayById = new Map(
+      mockRiseIn.mock.calls
+        .map(([props]) => props)
+        .filter((props) => props.testID?.startsWith('docs-entry-'))
+        .map((props) => [props.testID, props.delayMs] as const),
+    );
+    expect([...delayById]).toEqual([
+      ['docs-entry-third', 0],
+      ['docs-entry-first', 60],
+      ['docs-entry-second', 120],
+    ]);
   });
 });
