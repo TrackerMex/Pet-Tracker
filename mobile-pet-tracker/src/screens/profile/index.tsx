@@ -533,16 +533,18 @@ export function ProfileScreen() {
         </Pressable>
       </Card></HomeEntrance>
 
+      <HomeEntrance index={4} testID="profile-entrance-sign-out">
       <Button
         testID="profile-sign-out"
-        className="rounded-xl bg-danger-soft"
+        className={`h-13 rounded-14 ${CATEGORY_SLOTS.rose.surface}`}
         variant="danger-soft"
         onPress={() => void signOut()}
       >
-        <Button.Label className="font-bold text-danger">
+        <Text className="text-15 font-extrabold text-danger">
           {t('profile.signOut')}
-        </Button.Label>
+        </Text>
       </Button>
+      </HomeEntrance>
       </View>
     </ScrollView>
   );
