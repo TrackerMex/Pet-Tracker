@@ -48,3 +48,13 @@ it('#206 R3: la sombra copia 0 10px 30px rgba(13,17,23,0.12)', () => {
   expect(source).toContain('shadows.tabBar');
   for (const forbidden of ['shadow-lg', 'shadowColor', 'elevation']) expect(source).not.toContain(forbidden);
 });
+
+it('#206 R4: la celda copia flex 1, alto 52, columna centrada y hueco 2', () => {
+  const cells = tabNav(artboards[0]).match(/<a [^>]+>/g)!;
+  expect(cells).toHaveLength(5);
+  for (const cell of cells) {
+    expect(cell).toContain('flex: 1; height: 52px');
+    expect(cell).toContain('flex-direction: column; align-items: center; justify-content: center; gap: 2px');
+  }
+  expect(source).toContain('"h-13 flex-1 items-center justify-center gap-0.5"');
+});

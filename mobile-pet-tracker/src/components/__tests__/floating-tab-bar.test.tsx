@@ -592,4 +592,11 @@ describe('canvas: barra de pestañas', () => {
     });
   });
 
+  it('#206 R4: cada celda mide 52 y centra icono y etiqueta con hueco de 2', async () => {
+    await renderTabBar();
+    for (const name of ['home', 'map', 'health', 'food', 'profile']) {
+      expect(screen.getByTestId(`tab-${name}`)).toHaveProp('className', 'h-13 flex-1 items-center justify-center gap-0.5');
+    }
+  });
+
 });
