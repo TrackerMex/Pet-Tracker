@@ -10140,6 +10140,32 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
 - **Estado final:** done. El smoke queda en `progress/smoke_canvas-parity.md`. La PR a `dev` la
   mergea el leader y después se borra el worktree `Pet-Tracker-wt-199`.
 
+## Sesión 2026-10-24 — mobile-jest-virtual-mock-poisoning (id: 207)
+
+- **Feature:** arregla el flake `#0D1117` de `#172 R2`, que tumbó el CI de #202 (PR #247) y de
+  #206 (PR #248). Los `jest.mock(..., { virtual: true })` de módulos que sí existen, en los
+  `index.test.tsx` de food, health, meal-schedule y profile, envenenaban la caché de resolución de
+  jest, y `#172 R2` recibía `#0D1117`.
+- **Spec:** [[specs/mobile-jest-virtual-mock-poisoning/requirements|spec]], con firma delegada en el
+  leader por mandato del humano del 2026-10-23 (plan §4) y errata E1 (cifras de CC1 y CC4).
+- **Acciones:** implementó el subagente `implementer` (Sonnet), como fallback de CLAUDE.md
+  §Excepciones: a Codex le quedaba poca cuota semanal. R1 quita `{ virtual: true }` de los cuatro
+  ficheros. R2 añade el candado `jest-virtual-mock-lock.test.ts`, que recorre los tests de `src/`.
+  Las mutaciones de control C a F están commiteadas y revertidas (vía b de C4). Solo tests, con
+  ámbito `test(mobile)`.
+- **Resultado:** `./init.sh` del leader sobre `b1b8ec8e`, exit 0: backend 1474 tests; infra 2
+  suites / 14 tests; móvil 147 suites / 5018 tests / 1 snapshot; e2e 30 de 33 suites (3 omitidas)
+  y 468 tests (8 omitidos). Reviewer APROBADO (0 bloqueantes, 5 no bloqueantes). Reprodujo CC1 con
+  caché vacía: A `4500e89b` rojo solo en `#172 R2`; B `c56e7bc7` verde.
+- **Notas no bloqueantes:** (1) N1: `{ virtual /* c */ : true }` elude el patrón y no está entre los
+  límites declarados. (2) N2: el candado recorre `*.test.ts(x)`, pero el `testMatch` real de
+  jest-expo también corre `.test.js`, `.spec.*` y cualquier `.ts` de `__tests__/`. Hoy hay cero
+  apariciones; ampliarlo sería otra feature. (3) N3: las mutaciones M-R2e y M-R2f se tapan entre sí
+  cuando se agrupan. (4) N4 y N5 son tareas del leader al cerrar y quedan hechas en este cierre.
+  (5) Notion: no aplica (las specs firmadas por el leader no se espejan).
+- **Estado final:** done. Sin smoke. El leader mergea la PR a `dev`. Después se mergea `dev` en
+  #202, #206 y #196 para que su CI salga verde, y se borra el worktree `Pet-Tracker-wt-207`.
+
 ## Sesión 2026-10-24 — mobile-canvas-tab-bar (id: 206)
 
 - **Feature:** la barra de pestañas como la del canvas (ola 2 del plan de paridad, R1–R11).
