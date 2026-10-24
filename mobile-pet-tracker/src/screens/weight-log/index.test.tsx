@@ -945,12 +945,12 @@ describe('#169 R6: resumen del peso en la card de la gráfica', () => {
   it.each([
     ['Pacific/Pago_Pago', '2026-09-30', '+1.4 kg este mes'],
     ['Pacific/Kiritimati', '2026-10-01', null],
-  ] as const)('en %s pinta el peso actual y el delta del día civil (enmendado por #199 R4)', async (timezone, today, delta) => {
+  ] as const)('en %s pinta el peso actual y el delta del día civil (enmendado por #199 R4) (enmendado por #199 R7)', async (timezone, today, delta) => {
     mockGetMe.mockResolvedValue({ kind: 'ok', me: makeProfile(timezone) });
     await renderWeightLog();
     await waitFor(() => expect(screen.getByTestId('weight-date-input').props.value).toBe(today));
 
-    const current = screen.getByTestId('weight-current');
+    const current = await screen.findByTestId('weight-current');
     expect(current).toHaveTextContent('12.4 kg', { exact: true });
     expect(current.props.className).toBe('text-34 font-black text-foreground');
     expect(current.props.style).toEqual({ fontVariant: ['tabular-nums'] });
@@ -1336,7 +1336,7 @@ describe('#199 R7: formulario de Peso', () => {
     const node = await form();
     for (const id of ['weight-input', 'weight-date-input', 'weight-bc-input']) {
       const input = within(node).getByTestId(id);
-      for (const token of ['h-12', 'rounded-xl', 'bg-default']) expect(input.props.className).toContain(token);
+      for (const token of ['h-12', 'rounded-xl', 'bg-default']) expect(input.props.className.split(/\s+/)).toContain(token);
     }
   });
 });
