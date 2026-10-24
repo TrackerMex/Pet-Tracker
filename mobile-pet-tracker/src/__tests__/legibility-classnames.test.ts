@@ -209,10 +209,9 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
 describe('#61 R5: text-warning deja de usarse como color de texto', () => {
   const warningSites = [ // #199 R14: Salud sale del inventario; tinta categórica.
     join('screens', 'home', 'index.tsx'),
-    join('screens', 'reminders', 'index.tsx'),
   ];
 
-  it.each(warningSites)('%s pinta su texto con text-warning-strong (enmendado por #199 R14)', (path) => {
+  it.each(warningSites)('%s pinta su texto con text-warning-strong (enmendado por #199 R14) (enmendado por #204 R7)', (path) => {
     expect(readSource(path)).toContain('text-warning-strong');
     expect(readSource(join('screens', 'health', 'index.tsx'))).not.toContain('text-warning-strong'); // #199 R14
   });
@@ -221,9 +220,9 @@ describe('#61 R5: text-warning deja de usarse como color de texto', () => {
     expect(filesMatching(/text-warning(?![-\w])/)).toEqual([]);
   });
 
-  it('conserva el ámbar puro como relleno de badge', () => {
+  it('conserva el ámbar puro como relleno de badge (enmendado por #204 R7)', () => {
     expect(readSource(join('screens', 'reminders', 'index.tsx'))).toContain(
-      'bg-warning-soft',
+      'CATEGORY_SLOTS.amber.surface',
     );
   });
 });

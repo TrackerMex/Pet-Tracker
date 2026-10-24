@@ -519,11 +519,11 @@ describe('#178 R6: fila del canvas', () => {
     jest.useRealTimers();
   });
 
-  it('distingue las recetas de fila próxima, lejana e inactiva', async () => {
+  it('distingue las recetas de fila próxima, lejana e inactiva (enmendado por #204 R7)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     for (const [id, className] of [
-      ['a', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border-2 border-warning-soft'],
+      ['a', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border-2 border-category-amber'],
       ['b', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border'],
       ['c', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border opacity-50'],
     ]) {
@@ -1328,12 +1328,12 @@ describe('#178 R7: entrada escalonada y badge', () => {
     }
   });
 
-  it('envuelve el badge próximo con PopIn y la receta del canvas', async () => {
+  it('envuelve el badge próximo con PopIn y la receta del canvas (enmendado por #204 R7)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     const badge = within(screen.getByTestId('reminder-upcoming-pop-a')).getByTestId('reminder-upcoming-a');
     expect(badge).toHaveTextContent('¡Próximo!');
-    expect(badge.props.className).toBe('rounded-full bg-warning-soft px-2 py-0.75 text-11 font-extrabold text-warning-strong');
+    expect(badge.props.className).toBe('rounded-full px-2 py-0.75 text-11 font-extrabold bg-category-amber text-category-amber-strong');
   });
 
   it('reserva el pop para la fila próxima y lo omite en la lejana', async () => {
@@ -1837,5 +1837,41 @@ describe('#204 R6: entrada de las filas', () => {
       ['reminders-entry-b', 70],
       ['reminders-entry-c', 140],
     ]);
+  });
+});
+
+describe('#204 R7: ámbar de la fila próxima', () => {
+  beforeAll(() => { hostProcess.env.TZ = 'America/Mexico_City'; });
+  afterAll(() => {
+    if (originalTimezone === undefined) delete hostProcess.env.TZ;
+    else hostProcess.env.TZ = originalTimezone;
+  });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers({ now: new Date('2026-12-30T15:00:00.000Z') });
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: canvasReminders });
+  });
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+
+  it('#204 R7: la fila próxima y su badge usan el ámbar del canvas', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-a');
+    expect(screen.getByTestId('reminder-row-a').props.className).toBe(
+      'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border-2 border-category-amber',
+    );
+    expect(screen.getByTestId('reminder-upcoming-a').props.className).toBe(
+      'rounded-full px-2 py-0.75 text-11 font-extrabold bg-category-amber text-category-amber-strong',
+    );
   });
 });
