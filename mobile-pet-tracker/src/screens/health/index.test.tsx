@@ -1241,3 +1241,22 @@ describe('#199 R14: panel de la próxima dosis', () => {
     expect(riseDelayOf(await screen.findByTestId('next-vaccine-card'))).toBe(0);
   });
 });
+
+
+describe('#199 R15: título de Vacunas', () => {
+  beforeEach(setupHealth168);
+  it('#199 R15 Vacunas es un h2 de text-lg font-extrabold sin icono', async () => {
+    await renderHealth();
+    const title = await screen.findByTestId('vaccines-title');
+    expect(title.type).toBe('Text');
+    expect(title.props.accessibilityRole).toBe('header');
+    expect(title.props.className).toBe('mt-1 text-lg font-extrabold text-foreground');
+    expect(title).toHaveTextContent('Vacunas', { exact: true });
+    expect(elementChild(screen.getByTestId('vaccines-section'), 0).props.testID).toBe('vaccines-title');
+    expect(within(screen.getByTestId('vaccines-section')).queryByTestId('health-icon-heart-pulse')).toBeNull();
+  });
+  it('#199 R15 vaccines-section separa sus hijos con gap-2.5', async () => {
+    await renderHealth();
+    expect((await screen.findByTestId('vaccines-section')).props.className).toBe('gap-2.5');
+  });
+});
