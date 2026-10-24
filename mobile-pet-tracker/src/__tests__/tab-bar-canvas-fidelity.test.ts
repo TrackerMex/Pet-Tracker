@@ -102,3 +102,12 @@ it.each(['Inicio', 'Mapa', 'Salud', 'Nutricion', 'Perfil'])('#206 R7: el artboar
   expect(active).toContain(`aria-label="${label}"`);
   expect(source).toContain('strokeWidth={active ? 2.4 : 2}');
 });
+
+it('#206 R8: el nombre de la fila es el aria-label del canvas', () => {
+  for (const s of artboards) expect(s).toContain('<nav aria-label="Pestañas"');
+  const catalog = readFileSync(join(process.cwd(), 'src/i18n/catalog.ts'), 'utf8');
+  expect(catalog).toContain("'tabs.bar': 'Tabs'");
+  expect(catalog).toContain("'tabs.bar': 'Pestañas'");
+  expect(source).toContain('accessibilityRole="tablist"');
+  expect(source).toContain("t('tabs.bar')");
+});

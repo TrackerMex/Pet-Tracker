@@ -640,4 +640,26 @@ describe('canvas: barra de pestañas', () => {
     }
   });
 
+  it('#206 R8: la fila es una lista de pestañas llamada Pestañas', async () => {
+    await renderTabBar();
+    expect(screen.getByTestId('tab-bar-row')).toHaveProp('accessibilityRole', 'tablist');
+    expect(screen.getByTestId('tab-bar-row')).toHaveProp('accessibilityLabel', 'Pestañas');
+    for (const name of ['home', 'map', 'health', 'food', 'profile']) {
+      expect(screen.getByTestId(`tab-${name}`)).toHaveProp('accessibilityRole', 'tab');
+    }
+  });
+
+  it('#206 R8: en inglés la lista de pestañas se llama Tabs', async () => {
+    await render(
+      <HeroUINativeProvider>
+        <LanguageProvider initial="en"><FloatingTabBar {...tabBarProps()} /></LanguageProvider>
+      </HeroUINativeProvider>,
+    );
+    expect(screen.getByTestId('tab-bar-row')).toHaveProp('accessibilityRole', 'tablist');
+    expect(screen.getByTestId('tab-bar-row')).toHaveProp('accessibilityLabel', 'Tabs');
+    for (const name of ['home', 'map', 'health', 'food', 'profile']) {
+      expect(screen.getByTestId(`tab-${name}`)).toHaveProp('accessibilityRole', 'tab');
+    }
+  });
+
 });

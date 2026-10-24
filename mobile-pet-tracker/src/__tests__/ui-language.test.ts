@@ -76,8 +76,8 @@ describe('#65 R1: el grupo (auth) resuelve su copy por clave', () => {
 });
 
 describe('#65 R2: la barra de pestañas resuelve su copy por clave', () => {
-  it('resuelve las 5 ocurrencias normativas', () => {
-    expect(R2_TABS).toHaveLength(5);
+  it('resuelve las 5 ocurrencias normativas (enmendado por #206 R8)', () => {
+    expect(R2_TABS).toHaveLength(5 + 1);
     checkUses(R2_TABS);
   });
 });
