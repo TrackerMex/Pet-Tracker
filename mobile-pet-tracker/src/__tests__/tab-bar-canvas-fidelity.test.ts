@@ -37,3 +37,14 @@ it('#206 R2: el velo copia var(--glass) a .86 en claro y en oscuro', () => {
   expect(source).toContain('"flex-1 bg-glass-surface-strong"');
   expect(source).not.toContain('"flex-1 bg-glass-surface"');
 });
+
+it('#206 R3: la sombra copia 0 10px 30px rgba(13,17,23,0.12)', () => {
+  for (const s of artboards) expect(tabNav(s)).toContain('box-shadow: 0 10px 30px rgba(13,17,23,0.12)');
+  const shadows = readFileSync(join(process.cwd(), 'src/theme/shadows.ts'), 'utf8');
+  const css = readFileSync(join(process.cwd(), 'src/theme/global.css'), 'utf8');
+  expect(shadows).toContain('tabBar: { boxShadow: [layer(10, 30, 0, twelve)] }');
+  expect(css).toContain('--color-shadow-12: rgba(13,17,23,0.12);');
+  expect(source).toContain('useShadows()');
+  expect(source).toContain('shadows.tabBar');
+  for (const forbidden of ['shadow-lg', 'shadowColor', 'elevation']) expect(source).not.toContain(forbidden);
+});

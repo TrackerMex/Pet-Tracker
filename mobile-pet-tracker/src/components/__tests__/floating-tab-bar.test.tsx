@@ -582,4 +582,14 @@ describe('canvas: barra de pestañas', () => {
     expect(screen.getByTestId('tab-bar-overlay')).toHaveProp('className', 'flex-1 bg-glass-surface-strong');
   });
 
+  it('#206 R3: la sombra es la tabBar del canvas y no la clase shadow-lg', async () => {
+    await renderTabBar();
+    const root = screen.getByTestId('floating-tab-bar');
+    expect(root).toHaveProp('className', 'absolute h-16 overflow-hidden rounded-full border border-border');
+    expect(root).toHaveStyle({
+      boxShadow: [{ offsetX: 0, offsetY: 10, blurRadius: 30, spreadDistance: 0, color: 'shadow-12' }],
+      bottom: 46, left: 16, right: 16,
+    });
+  });
+
 });
