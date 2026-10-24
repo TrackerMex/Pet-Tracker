@@ -1115,7 +1115,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     expect(addReminder).not.toMatch(/uppercase|tracking-widest/);
   });
 
-  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #196 R5)', () => {
+  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #196 R5)', () => {
     for (const [pattern, count] of [
       [/\brounded-14\b/g, 1], [/\brounded-16\b/g, 4], [/\brounded-22\b/g, 1],
     ] as const) {
@@ -1143,7 +1143,9 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       'screens/forgot/index.tsx': 3,
       'screens/geofence-editor/index.tsx': 3, // #189 R13
       'screens/geofences/index.tsx': 2, // #189 R7
+      'screens/health/index.tsx': 1, // #199 R14
       'screens/home/index.tsx': 1,
+      'screens/home/weekly-activity-chart.tsx': 1, // #198 R9
       'screens/login/index.tsx': 1,
       'screens/pairing/index.tsx': 1,
       'screens/register/index.tsx': 1,
@@ -1154,6 +1156,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     expect(outsideReminders(/\brounded-14\b/)).toEqual([
       join('components', 'segmented-control.tsx'), // #191 R11
       join('screens', 'geofences', 'index.tsx'), // #189 R5
+      join('screens', 'health', 'index.tsx'), // #199 R18
       join('screens', 'meal-schedule', 'index.tsx'), // #179 R13 comparte rounded-14
       join('screens', 'meals-history', 'index.tsx'), // #179 R13 comparte rounded-14
       join('screens', 'pairing', 'index.tsx'), // #188 R20 comparte rounded-14
@@ -1223,9 +1226,10 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
     expect(schedule.indexOf('testID="meal-schedule-header"')).toBeLessThan(schedule.indexOf('testID="meal-schedule-summary"'));
   });
 
-  it('limita text-22 a Horario y text-17 al inventario de E1.2 (enmendado por #177 R10) (enmendado por #200 R5)', () => {
+  it('limita text-22 a Horario y text-17 al inventario de E1.2 (enmendado por #177 R10) (enmendado por #200 R5) (enmendado por #198 R15)', () => {
     const productionFilesMatching = (pattern: RegExp) => filesMatching(pattern).filter(path => !/\.test\.tsx?$/.test(path)).sort();
     expect(productionFilesMatching(/\btext-22\b/)).toEqual([
+      'components/empty-state.tsx', // #198 R15
       join('screens', 'alert-detail', 'index.tsx'), // #180 R3
       join('screens', 'meal-schedule', 'index.tsx'),
     ]);

@@ -195,8 +195,7 @@ describe('#174 R12: inventarios', () => {
     {
       token: 'tracking-caps',
       pattern: /(?<![\w-])tracking-caps\b/,
-      files: ['screens/alerts/index.tsx',
-        'screens/food/index.tsx', 'screens/meal-schedule/index.tsx'], // #179 R5; #174 R12
+      files: ['screens/alerts/index.tsx', 'screens/food/index.tsx', 'screens/health/index.tsx', 'screens/meal-schedule/index.tsx'], // #179 R5; #174 R12; #200 R5; #199 R14
     },
     {
       token: 'text-15',
@@ -211,13 +210,16 @@ describe('#174 R12: inventarios', () => {
         'screens/food/index.tsx',
         'screens/forgot/index.tsx',
         'screens/geofence-editor/index.tsx', // #189 R12
+        'screens/health/index.tsx', // #199 R16
         'screens/home/index.tsx', // #190 R13 (enmendado por #190 R13)
+        'screens/home/weekly-activity-chart.tsx', // #198 R9
         'screens/login/index.tsx',
         'screens/meal-schedule/index.tsx', // #179 R7
         'screens/meals-history/index.tsx', // #179 R11
         'screens/profile/index.tsx', // #196 R6
         'screens/register/index.tsx',
         'screens/reset-password/index.tsx',
+        'screens/weight-log/index.tsx', // #199 R10
       ],
     },
     {
@@ -237,12 +239,13 @@ describe('#174 R12: inventarios', () => {
         'screens/geofence-editor/index.tsx', // #189 R8
       'screens/geofences/index.tsx', // #189 R1
         'screens/health/index.tsx',
+        'screens/home/index.tsx', // #198 R15
         'screens/pairing/index.tsx', // #188 R16
         'screens/profile/index.tsx',
         'screens/reminders/index.tsx', // #178 R4
       ],
     },
-  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12) (enmendado por #197 R4) (enmendado por #197 R10) (enmendado por #197 R19) (enmendado por #200 R1 y #200 R3 y #200 R5 y #200 R12 y #200 R13) (enmendado por #196 R6)', ({ pattern, files }) => {
+  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12) (enmendado por #197 R4) (enmendado por #197 R10) (enmendado por #197 R19) (enmendado por #200 R1 y #200 R3 y #200 R5 y #200 R12 y #200 R13) (enmendado por #199 R10) (enmendado por #199 R14) (enmendado por #199 R16) (enmendado por #198 R9, R15) (enmendado por #196 R6)', ({ pattern, files }) => {
     expect(filesMatching(pattern)).toEqual(files);
   });
 

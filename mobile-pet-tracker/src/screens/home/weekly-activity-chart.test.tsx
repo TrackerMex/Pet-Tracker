@@ -138,7 +138,8 @@ jest.mock('react-native-chart-kit/v2', () => {
 jest.mock('../../theme/use-theme-colors', () => ({
   useThemeColors: (mockTokens: readonly string[]) =>
     mockTokens.map((token) =>
-      token === 'accent-foreground' || token === 'accent-strong'
+      token.startsWith('shadow-') ? `--color-${token}`
+        : token === 'accent-foreground' || token === 'accent-strong'
         ? `${mockTheme}-${token}`
         : `resolved-${token}`,
     ),
@@ -948,7 +949,7 @@ describe('R6: el selector cambia de métrica sin volver a pedir nada', () => {
 });
 
 describe('R9: el selector sigue el tema de la app', () => {
-  it('adapta píldora, texto e icono con los tokens de tabs en ambos temas', async () => {
+  it('adapta píldora, texto e icono con los tokens de tabs en ambos temas (enmendado por #198 R8)', async () => {
     const days = makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]);
     mockTheme = 'dark';
     const dark = await renderChart(days);
@@ -976,7 +977,7 @@ describe('R9: el selector sigue el tema de la app', () => {
     expect(
       dark.getByTestId('weekly-activity-metric-label-distanceM').props
         .className,
-    ).toContain('text-foreground');
+    ).toContain('text-muted');
 
     await dark.unmount();
     mockTheme = 'light';
@@ -1005,7 +1006,7 @@ describe('R9: el selector sigue el tema de la app', () => {
     expect(
       light.getByTestId('weekly-activity-metric-label-distanceM').props
         .className,
-    ).toContain('text-foreground');
+    ).toContain('text-muted');
     expect(
       readFileSync(chartSourcePath, 'utf8'),
     ).not.toContain('appearance=');
@@ -2337,5 +2338,83 @@ describe('#143 R3: con la primera métrica y un día seleccionado, cada columna 
       [selected, [label, ['weekly-activity-missing-2026-09-07', dash]]],
       [resting, [label, ['weekly-activity-value-2026-09-08', value]]],
     ]);
+  });
+});
+
+describe('#198 R7: tarjeta semanal del canvas', () => {
+  it('#198 R7 viste la tarjeta con padding 14/16 y la sombra card', async () => {
+    const result = await renderChart([makeDay()]);
+    const card = result.getByTestId('weekly-activity-card');
+    for (const token of ['gap-2', 'px-4', 'py-3.5', 'shadow-none']) expect(card.props.className.split(' ')).toContain(token);
+    expect(card.props.className.split(' ')).not.toContain('shadow-sm');
+    expect(card.props.style.boxShadow).toEqual([
+      { offsetX: 0, offsetY: 1, blurRadius: 2, spreadDistance: 0, color: '--color-shadow-near' },
+      { offsetX: 0, offsetY: 8, blurRadius: 24, spreadDistance: 0, color: '--color-shadow-far' },
+    ]);
+  });
+
+  it('#198 R7 pinta título 16/800 y subtítulo de 11', async () => {
+    const result = await renderChart([makeDay()]);
+    expect(result.getByText('Actividad semanal').props.className).toBe('text-base font-extrabold text-foreground');
+    expect(result.getByText('últimos 7 días').props.className).toBe('text-11 text-muted');
+  });
+});
+
+describe('#198 R8: selector y tooltip del canvas', () => {
+  it('#198 R8 pinta la métrica elegida con 12/800 en accent-strong', async () => {
+    const result = await renderChart([makeDay()]);
+    expect(result.getByTestId('weekly-activity-metric-label-activeMinutes').props.className).toBe('shrink text-xs font-extrabold text-accent-strong');
+    expect(result.getByTestId('weekly-activity-metric-selected', { includeHiddenElements: true }).props.size).toBe(13);
+  });
+
+  it.each(['distanceM', 'walkCount'])('#198 R8 pinta las otras dos con 12/600 en muted', async metric => {
+    const result = await renderChart([makeDay()]);
+    expect(result.getByTestId(`weekly-activity-metric-label-${metric}`).props.className).toBe('shrink text-xs font-semibold text-muted');
+  });
+
+  it('#198 R8 pinta el valor del tooltip con 800', async () => {
+    const result = await renderChart([makeDay()]);
+    await fireEvent.press(result.getByTestId('weekly-activity-day-2026-09-02'));
+    const children = result.getByTestId('weekly-activity-tooltip').children.filter(child => typeof child !== 'string');
+    expect(children[1].props.className).toBe('text-xs font-extrabold text-foreground');
+  });
+});
+
+describe('#198 R9: barras y detalle del canvas', () => {
+  it.each([true, false])('#198 R9 redondea las barras a 6 sin pasar de la mitad del alto', async reduced => {
+    mockUseReducedMotion.mockReturnValue(reduced);
+    const result = await renderChart(makeWeek('2026-09-01', [45, 0]));
+    expect(result.getByTestId('weekly-activity-bar-2026-09-01', { includeHiddenElements: true }).props.rx).toBe(6);
+    expect(result.getByTestId('weekly-activity-bar-2026-09-02', { includeHiddenElements: true }).props.rx).toBe(1.5);
+  });
+
+  it.each([0, 6])('#198 R9 atenúa a 0.35 las barras no seleccionadas', async selected => {
+    const days = makeWeek('2026-09-01', [10, 20, 30, 40, 50, 60, 70]);
+    const result = await renderChart(days);
+    await fireEvent.press(result.getByTestId(`weekly-activity-day-${days[selected].date}`));
+    for (let index = 0; index < days.length; index++) {
+      const opacity = result.getByTestId(`weekly-activity-bar-${days[index].date}`, { includeHiddenElements: true }).props.fillOpacity;
+      expect(opacity).toBe(index === selected ? 1 : 0.35);
+    }
+  });
+
+  it('#198 R9 deja todas a opacidad plena sin selección', async () => {
+    const days = makeWeek('2026-09-01', [10, 20, 30, 40, 50, 60, 70]);
+    const result = await renderChart(days);
+    for (const day of days) expect(result.getByTestId(`weekly-activity-bar-${day.date}`, { includeHiddenElements: true }).props.fillOpacity).toBe(1);
+  });
+
+  it('#198 R9 viste el detalle con radio 16 y fondo default', async () => {
+    const result = await renderChart([makeDay()]);
+    await fireEvent.press(result.getByTestId('weekly-activity-day-2026-09-02'));
+    const detail = result.getByTestId('weekly-activity-detail');
+    expect(detail.props.className).toBe('gap-3 rounded-16 border border-border bg-default p-3');
+    const children = detail.children.filter(child => typeof child !== 'string');
+    expect(children[0].props.className).toBe('text-15 font-extrabold text-foreground');
+    for (const id of ['active-minutes', 'distance', 'walks', 'rest']) {
+      const value = result.getByTestId(`weekly-activity-detail-${id}`);
+      expect(value.props.className).toBe('text-sm font-bold text-foreground');
+      expect(value.parent!.children.filter(child => typeof child !== 'string')[0].props.className).toBe('text-11 text-muted');
+    }
   });
 });
