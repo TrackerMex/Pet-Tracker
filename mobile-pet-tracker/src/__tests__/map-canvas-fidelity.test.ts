@@ -69,3 +69,83 @@ describe('#201 R15: la ruta del mapa se dibuja con trazo 5', () => {
     },
   ])('#201 R15: $artboard › $canvas', checkRow);
 });
+
+describe('#201 R2: la píldora es de cristal', () => {
+  it.each<Row>([
+    {
+      artboard: 'Mapa',
+      canvas: 'padding: 6px 14px 6px 6px',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'py-1.5 pl-1.5 pr-3.5',
+      productionCount: 1,
+    },
+    {
+      artboard: 'Mapa',
+      canvas: '--glass:rgba(255,255,255,0.86)',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'bg-glass-surface-strong',
+      productionCount: 1,
+    },
+    {
+      artboard: 'Mapa',
+      canvas: '--glass:rgba(255,255,255,0.86)',
+      canvasCount: 1,
+      file: 'theme/global.css',
+      production: '--color-glass-surface-strong: rgba(255,255,255,0.86)',
+      productionCount: 1,
+    },
+    {
+      artboard: 'Mapa',
+      canvas: 'width: 28px; height: 28px',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'size={28}',
+      productionCount: 1,
+    },
+    {
+      artboard: 'Mapa',
+      canvas: 'font-size: 15px; font-weight: 800',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'text-15 font-extrabold',
+      productionCount: 1,
+    },
+    {
+      artboard: 'Mapa',
+      canvas:
+        'gap: 5px; font-size: 12px; font-weight: 700; color: var(--accent-strong)',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'gap-1.25',
+      productionCount: 1,
+    },
+    {
+      artboard: 'Mapa',
+      canvas:
+        'gap: 5px; font-size: 12px; font-weight: 700; color: var(--accent-strong)',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'text-xs font-bold',
+      productionCount: 1,
+    },
+    {
+      artboard: 'Mapa',
+      canvas:
+        'width: 7px; height: 7px; border-radius: 50%; background: var(--accent)',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'size-1.75 rounded-full',
+      productionCount: 1,
+    },
+    {
+      artboard: 'Mapa',
+      canvas: 'box-shadow: var(--shadow)',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'shadows.card',
+      productionCount: 1,
+    },
+  ])('#201 R2: $artboard › $canvas › $production', checkRow);
+});

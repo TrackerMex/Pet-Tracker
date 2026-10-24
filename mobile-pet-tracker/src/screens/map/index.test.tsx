@@ -1633,15 +1633,15 @@ describe('#116 R2: la píldora existe encima de la tarjeta de stats', () => {
     expect(within(elementChild(stats, 1)).getByTestId('stat-speed')).toBeVisible();
   });
 
-  it('compone la cápsula con la receta exacta y sin esquina continua', async () => {
+  it('compone la cápsula con la receta exacta y sin esquina continua (enmendado por #201 R2)', async () => {
     await renderMap();
     await waitFor(() => expect(screen.getByTestId('map-pet-pill')).toBeVisible());
 
     const pill = screen.getByTestId('map-pet-pill');
     expect(pill.props.className).toBe(
-      'flex-row items-center gap-2 self-start rounded-full border border-border bg-surface px-3 py-2 shadow-sm',
+      'flex-row items-center gap-2 self-start rounded-full border border-border bg-glass-surface-strong py-1.5 pl-1.5 pr-3.5',
     );
-    expect(pill.props.style).toBeUndefined();
+    expect(pill.props.style?.boxShadow).toHaveLength(2);
   });
 
   it('no pinta la píldora mientras la selección no está en la lista', async () => {
@@ -1661,17 +1661,17 @@ describe('#116 R3: la píldora muestra avatar y nombre', () => {
     mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
   });
 
-  it('pinta el avatar de 24 sin foto', async () => {
+  it('pinta el avatar de 28 sin foto (enmendado por #201 R2)', async () => {
     await renderMap();
     await waitFor(() => expect(screen.getByTestId('map-pet-pill')).toBeVisible());
 
     const avatar = elementChild(screen.getByTestId('map-pet-pill'), 0);
     expect(avatar.props.testID).toBe('map-pet-pill-avatar');
-    expect(avatar.props.width).toBe(24);
-    expect(avatar.props.height).toBe(24);
+    expect(avatar.props.width).toBe(28);
+    expect(avatar.props.height).toBe(28);
   });
 
-  it('pinta la foto de la lista con su cacheKey', async () => {
+  it('pinta la foto de la lista con su cacheKey (enmendado por #201 R2)', async () => {
     mockListPets.mockResolvedValue({
       kind: 'ok',
       pets: [makePet({ photoUrl: 'https://cdn.example/luna.jpg' })],
@@ -1686,10 +1686,10 @@ describe('#116 R3: la píldora muestra avatar y nombre', () => {
 
     const avatar = elementChild(screen.getByTestId('map-pet-pill'), 0);
     expect(avatar.props.source).toEqual([{ uri: 'https://cdn.example/luna.jpg', cacheKey: 'pet-1' }]);
-    expect(avatar.props.style).toEqual({ width: 24, height: 24, borderRadius: 12 });
+    expect(avatar.props.style).toEqual({ width: 28, height: 28, borderRadius: 14 });
   });
 
-  it('rotula el nombre de la lista en una línea', async () => {
+  it('rotula el nombre de la lista en una línea (enmendado por #201 R2)', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ name: 'Luna' })] });
     mockGetPet.mockResolvedValue({
       kind: 'ok',
@@ -1704,7 +1704,7 @@ describe('#116 R3: la píldora muestra avatar y nombre', () => {
     const name = elementChild(screen.getByTestId('map-pet-pill'), 1);
     expect(name.props.testID).toBe('map-pet-pill-name');
     expect(name).toHaveTextContent('Luna');
-    expect(name.props.className).toBe('shrink text-xs font-bold text-foreground');
+    expect(name.props.className).toBe('shrink text-15 font-extrabold text-foreground');
     expect(name.props.numberOfLines).toBe(1);
   });
 
@@ -1718,13 +1718,13 @@ describe('#116 R4: la píldora muestra el estado del GPS', () => {
   });
 
   it.each([
-    ['online', makeDevice('online'), 'GPS activo', 'bg-success', 'text-accent-strong'],
+    ['online', makeDevice('online'), 'GPS activo', 'bg-accent', 'text-accent-strong'],
     ['offline', makeDevice('offline'), 'Desactualizado', 'bg-warning-strong', 'text-warning-strong'],
     ['unknown', makeDevice('mystery'), 'Sin señal', 'bg-muted', 'text-muted'],
     ['sin collar', null, 'Sin señal', 'bg-muted', 'text-muted'],
     ['detalle pendiente', null, '—', 'bg-muted', 'text-muted'],
     ['detalle con error', null, '—', 'bg-muted', 'text-muted'],
-  ] as const)('%s: rotula su estado con su punto y su tinta', async (scenario, device, label, dotClass, textClass) => {
+  ] as const)('%s: rotula su estado con su punto y su tinta (enmendado por #201 R2)', async (scenario, device, label, dotClass, textClass) => {
     if (scenario === 'detalle pendiente') {
       mockGetPet.mockReturnValue(pending<PetState>());
     } else if (scenario === 'detalle con error') {
@@ -1745,21 +1745,21 @@ describe('#116 R4: la píldora muestra el estado del GPS', () => {
 
     const status = screen.getByTestId('map-pet-pill-status');
     expect(status).toHaveTextContent(label);
-    expect(screen.getByTestId('map-pet-pill-dot').props.className).toBe(`size-2 rounded-full ${dotClass}`);
-    expect(status.props.className).toBe(`text-2xs font-semibold ${textClass}`);
+    expect(screen.getByTestId('map-pet-pill-dot').props.className).toBe(`size-1.75 rounded-full ${dotClass}`);
+    expect(status.props.className).toBe(`text-xs font-bold ${textClass}`);
     expect(screen.getByTestId('map-pet-pill').props.accessibilityLabel).toBe(`Luna, ${label}`);
   });
 
-  it('fija cuatro hijos en orden: avatar, nombre, punto, estado', async () => {
+  it('fija tres hijos en orden: avatar, nombre, grupo del GPS (enmendado por #201 R2)', async () => {
     await renderMap();
     await waitFor(() =>
       expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent('GPS activo'),
     );
 
     const pill = screen.getByTestId('map-pet-pill');
-    expect(pill.children).toHaveLength(4);
-    expect([0, 1, 2, 3].map((index) => elementChild(pill, index).props.testID)).toEqual([
-      'map-pet-pill-avatar', 'map-pet-pill-name', 'map-pet-pill-dot', 'map-pet-pill-status',
+    expect(pill.children).toHaveLength(3);
+    expect([0, 1, 2].map((index) => elementChild(pill, index).props.testID)).toEqual([
+      'map-pet-pill-avatar', 'map-pet-pill-name', 'map-pet-pill-gps',
     ]);
   });
 
@@ -2193,6 +2193,35 @@ describe('#201 R1: la pila de stats sube al entrar', () => {
 
     const stats = await screen.findByTestId('map-stats');
     expect(stats.props.entering).toBeUndefined();
+  });
+});
+
+describe('#201 R2: la píldora es de cristal', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+  });
+
+  it('#201 R2: la píldora lleva la sombra de tarjeta de dos capas', async () => {
+    await renderMap();
+
+    const pill = await screen.findByTestId('map-pet-pill');
+    expect(pill.props.style?.boxShadow).toHaveLength(2);
+    expect(pill.props.style?.boxShadow).toMatchObject([
+      { offsetY: 1, blurRadius: 2 },
+      { offsetY: 8, blurRadius: 24 },
+    ]);
+  });
+
+  it('#201 R2: el punto y el estado van juntos en map-pet-pill-gps', async () => {
+    await renderMap();
+
+    const gps = await screen.findByTestId('map-pet-pill-gps');
+    expect(gps.props.className).toBe('flex-row items-center gap-1.25');
+    expect(gps.children).toHaveLength(2);
+    expect([0, 1].map((index) => elementChild(gps, index).props.testID)).toEqual([
+      'map-pet-pill-dot', 'map-pet-pill-status',
+    ]);
   });
 });
 
