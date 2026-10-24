@@ -20,6 +20,7 @@ jest.mock('expo-router', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
+    router: { back: jest.fn(), replace: jest.fn(), canGoBack: jest.fn(() => false) },
     Redirect: ({ href }: { href: string }) => {
       const props = { testID: 'meals-history-redirect', href };
       return React.createElement(View, props);
@@ -46,7 +47,7 @@ jest.mock('react-native-safe-area-context', () => ({
 jest.mock('reicon-react-native', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
   const icon = (testID: string) => function MockIcon({ color, size }: { color?: string; size?: number }) {
-    return <Text testID={testID} style={{ color }} {...{ size }} />;
+    return <Text testID={testID === 'meals-history-icon-prev' && size === 24 ? 'meals-history-icon-back' : testID} style={{ color }} {...{ size }} />;
   };
   return {
     ChevronLeft: icon('meals-history-icon-prev'),
@@ -111,14 +112,14 @@ describe('#105 R9: meals history preserves the four screen states', () => {
     expect(mockGetMealsHistory).not.toHaveBeenCalled();
   });
 
-  it('shows only one skeleton while the initial request is pending', async () => {
+  it('shows only one skeleton while the initial request is pending (enmendado por #200 R13)', async () => {
     mockGetMealsHistory.mockReturnValue(new Promise<MealsHistoryState>(() => undefined));
     await renderHistory();
     await waitFor(() => expect(screen.getByTestId('meals-history-skeleton')).toBeVisible());
     expect(screen.getAllByTestId('meals-history-skeleton')).toHaveLength(1);
     expect(screen.queryByTestId('meals-history-grid')).toBeNull();
     expect(screen.getByTestId('screen-meals-history')).toHaveProp('contentInsetAdjustmentBehavior', 'automatic');
-    expect(screen.getByTestId('screen-meals-history')).toHaveProp('contentContainerStyle', { paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48 });
+    expect(screen.getByTestId('screen-meals-history')).toHaveProp('contentContainerStyle', { paddingHorizontal: 20, paddingTop: 48, gap: 14, paddingBottom: 56 });
   });
 
   it('shows an error and retries until the grid appears', async () => {
@@ -403,30 +404,30 @@ describe('#105 R13: tapping a served day reveals its inline detail', () => {
 
 describe('#179 R9: marco y título en contenido', () => {
   function expectHeading() {
-    const heading = screen.getByTestId('meals-history-heading');
+    const heading = screen.getByTestId('meals-history-header-title');
     expect(heading).toHaveTextContent('Historial de comidas');
     expect(heading).toHaveProp('accessibilityRole', 'header');
-    expect(heading).toHaveProp('className', 'text-2xl font-black tracking-title text-foreground');
+    expect(heading).toHaveProp('className', 'text-24 font-black tracking-title text-foreground');
   }
 
-  it('conserva el marco y el título mientras carga el mes', async () => {
+  it('conserva el marco y el título mientras carga el mes (enmendado por #200 R13)', async () => {
     mockGetMealsHistory.mockReturnValue(new Promise<MealsHistoryState>(() => undefined));
     await renderHistory();
     await screen.findByTestId('meals-history-skeleton');
     expectHeading();
     expect(screen.getByTestId('screen-meals-history')).toHaveProp('contentContainerStyle', {
-      paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48,
+      paddingHorizontal: 20, paddingTop: 48, gap: 14, paddingBottom: 56,
     });
   });
 
-  it('conserva el título en el estado de error', async () => {
+  it('conserva el título en el estado de error (enmendado por #200 R13)', async () => {
     mockGetMealsHistory.mockResolvedValue({ kind: 'error' });
     await renderHistory();
     await screen.findByTestId('meals-history-error');
     expectHeading();
   });
 
-  it('muestra un único título cuando el calendario está cargado', async () => {
+  it('muestra un único título cuando el calendario está cargado (enmendado por #200 R13)', async () => {
     await renderHistory();
     await screen.findByTestId('meals-history-grid');
     expectHeading();
@@ -604,5 +605,20 @@ describe('#179 R12: panel del día', () => {
     await fireEvent.press(screen.getByTestId('meals-history-day-2026-01-05'));
     await screen.findByTestId('meals-history-detail');
     expectTimes(expectPanel(5, 'lunes, 5 de enero'), ['06:00', '09:00', '12:00', '15:00', '18:00']);
+  });
+});
+
+
+it.each(['loading', 'loaded'])('#200 R13: Historial pinta su cabecera en contenido (%s)', async (state) => {
+  if (state === 'loading') mockGetMealsHistory.mockReturnValue(new Promise<MealsHistoryState>(() => undefined));
+  await renderHistory();
+  await screen.findByTestId(state === 'loading' ? 'meals-history-skeleton' : 'meals-history-grid');
+  const header = screen.getByTestId('meals-history-header');
+  const first = header.parent?.children[0];
+  expect(typeof first === 'string' ? first : first?.props.testID).toBe('meals-history-header');
+  expect(screen.getByTestId('meals-history-header-title')).toHaveTextContent(es['mealsHistory.mealsHistory']);
+  expect(screen.queryByTestId('meals-history-heading')).toBeNull();
+  expect(screen.getByTestId('screen-meals-history').props.contentContainerStyle).toEqual({
+    paddingHorizontal: 20, paddingTop: 48, paddingBottom: 56, gap: 14,
   });
 });
