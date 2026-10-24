@@ -721,6 +721,20 @@ forma `#205 R<n>` que `HEX_LITERAL` exime, no hay `StyleSheet.create`, no hay
 `text-13/15/17` nuevo va dentro de un componente HeroUI (todos van en `Text` de
 React Native).
 
+## Erratas del leader (2026-10-24)
+
+Firmadas por delegación (mandato del humano del 2026-10-23, `progress/plan_canvas-parity-2026-10-23.md` §4).
+
+
+**Regla de recuentos agregados.** Si al llegar a verde una R se pone rojo un `it` que no está en el inventario y ese `it` solo cuenta usos o ficheros de un literal o token, Codex lo enmienda sin parar. Son de este tipo los inventarios cerrados de radios, de `style={CONTINUOUS_CORNER}`, de `text-NN` o de `<Card`, las sumas de copy y los suelos del escáner HeroUI. La condición es que el delta medido sea exactamente el número de usos que el diff de esa R, tal como esta spec la prescribe, añade o retira. La enmienda:
+
+- da a la cifra o a la entrada su término (`// #205 Rn`, o `; #205 Rn: ±k` dentro de un comentario que ya exista);
+- da al título el sufijo ` (enmendado por #205 Rn)`, o añade `Rn` al paréntesis de #205 si ya existe;
+- va en el commit rojo de esa R; si ese rojo ya está commiteado, en un commit propio `test(#205): Rn amend the <candado> inventory` antes del siguiente R;
+- se apunta en la tabla «Enmiendas mecánicas» del reporte con candado, antes, después y R.
+
+El fichero de test de ese candado entra en la lista cerrada solo para esa enmienda. Sigue siendo PARADA si el delta no coincide, si el `it` afirma comportamiento o estructura y no un recuento, o si la enmienda exigiría cambiar producción.
+
 ## Desviaciones conscientes del canvas
 
 | Canvas | Producción | Motivo |
