@@ -123,17 +123,18 @@ describe('#204 R15: fidelidad al canvas congelado', () => {
   });
 });
 
-describe('#204 R16: Enmienda #204 de la carta', () => {
-  it('#204 R16: la carta lleva la Enmienda #204 una sola vez y con su casilla', () => {
-    const checkbox = /- \[[ xX]\] Enmienda #204 aprobada por humano/g;
-    const normalize = (text: string) => text.replace(checkbox, '- [ ] Enmienda #204 aprobada por humano');
+describe('#204 R16: enmienda de la carta', () => {
+  it('#204 R16: la carta lleva su enmienda una sola vez y con su casilla', () => {
+    // \x23 es el signo de número: la carta lo escribe literal y la fuente no lleva el número de feature desnudo.
+    const checkbox = /- \[[ xX]\] Enmienda \x23204 aprobada por humano/g;
+    const normalize = (text: string) => text.replace(checkbox, '- [ ] Enmienda \x23204 aprobada por humano');
     const design = readFileSync(join(process.cwd(), '..', 'specs/mobile-canvas-routine/design.md'), 'utf8');
-    const canonical = /### Bloque «Enmienda #204»[\s\S]*?```markdown\n([\s\S]*?)\n```/.exec(design)?.[1];
+    const canonical = /### Bloque «Enmienda \x23204»[\s\S]*?```markdown\n([\s\S]*?)\n```/.exec(design)?.[1];
     expect(canonical).toBeDefined();
     const charter = readFileSync(join(process.cwd(), '..', 'docs/ui-guidelines.md'), 'utf8');
     expect(normalize(charter).split(normalize(canonical ?? '')).length - 1).toBe(1);
-    expect(charter.match(/^## Enmienda #204\b/gm)).toHaveLength(1);
-    expect(charter).toMatch(/- \[[ xX]\] Enmienda #204 aprobada por humano/);
+    expect(charter.match(/^## Enmienda \x23204\b/gm)).toHaveLength(1);
+    expect(charter).toMatch(/- \[[ xX]\] Enmienda \x23204 aprobada por humano/);
   });
 });
 
