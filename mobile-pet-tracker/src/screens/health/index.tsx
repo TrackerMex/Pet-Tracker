@@ -93,9 +93,11 @@ export function HealthScreen() {
         paddingBottom: insets.bottom + 96,
       }}
     >
-      <Text testID="health-title" className="text-3xl font-black tracking-title text-foreground">
-        {t('health.health')}
-      </Text>
+      <View testID="health-header" className="flex-row items-center justify-between">
+        <Text testID="health-title" className="text-3xl font-black tracking-title text-foreground">
+          {t('health.health')}
+        </Text>
+      </View>
       {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
           <View testID="health-content" style={{ gap: 16 }}>
             <PetSwitcher
