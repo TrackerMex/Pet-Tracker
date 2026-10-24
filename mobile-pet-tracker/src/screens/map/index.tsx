@@ -402,7 +402,11 @@ export function MapScreen() {
                 </View>
               </View>
             ) : null}
-            <Card className="p-3">
+            <View
+              testID="map-stats-card"
+              className="gap-2.5 rounded-24 bg-surface p-3"
+              style={shadows.floating}
+            >
               <View className="gap-2">
                 <View className="flex-row gap-2">
                   <View
@@ -473,23 +477,23 @@ export function MapScreen() {
                   </View>
                 </View>
               </View>
-            </Card>
-            <Button
-              testID="lost-mode-button"
-              isDisabled={!canSetLostMode || lostModeBusy}
-              onPress={handleLostMode}
-              variant="danger-soft"
-              accessibilityState={{
-                disabled: !canSetLostMode || lostModeBusy,
-              }}
-              className="rounded-xl border border-danger/20 bg-danger-soft"
-            >
-              <Button.Label className="font-bold text-danger">
-                {selectedPet?.lostMode
-                  ? t('map.deactivateLostMode')
-                  : t('map.activateLostMode')}
-              </Button.Label>
-            </Button>
+              <Button
+                testID="lost-mode-button"
+                isDisabled={!canSetLostMode || lostModeBusy}
+                onPress={handleLostMode}
+                variant="danger-soft"
+                accessibilityState={{
+                  disabled: !canSetLostMode || lostModeBusy,
+                }}
+                className="rounded-xl border border-danger/20 bg-danger-soft"
+              >
+                <Button.Label className="font-bold text-danger">
+                  {selectedPet?.lostMode
+                    ? t('map.deactivateLostMode')
+                    : t('map.activateLostMode')}
+                </Button.Label>
+              </Button>
+            </View>
             {lostModeFailed ? (
               <Text
                 selectable
