@@ -10101,3 +10101,41 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   conjunto completo, no un caso concreto. Coincide con [[clausulas-universales-candadas-en-un-caso]].
 - **Estado final:** done. El smoke queda en `progress/smoke_canvas-parity.md`. La PR a `dev` la
   mergea el leader y después se borra el worktree `Pet-Tracker-wt-198`.
+
+## Sesión 2026-10-24 — mobile-canvas-health-weight (id: 199)
+
+- **Feature:** Salud y Peso como sus artboards del canvas (ola 2 del plan de paridad, R1–R27).
+  Peso con cabecera propia y vuelta a `/health` (R1), formulario con teclado (R2), tarjeta, filas
+  y esqueletos con `RiseIn` (R3, R9, R22), delta con su tono (R4, R10), `WeightChart` completa y
+  mini (R5, R6), etiquetas y envío del formulario (R7, R8), fechas (R11) y toast con sombra
+  `toast` (R23). Salud con cabecera en fila y selector de avatares (R12, R13), próxima dosis
+  (R14), vacunas (R15–R17), peso con la mini (R18), carga y error (R19–R21). Carta, copy,
+  anclas congeladas, tokens y guardas (R24–R27).
+- **Spec:** [[specs/mobile-canvas-health-weight/requirements|spec]], con firma delegada en el
+  leader por mandato del humano del 2026-10-23 (plan §4): firma `cf0ae073`, re-firma `96f076f4`
+  con `RiseIn` de #197, enmienda E1 (`f6f28512`, `48dd0f02`) y erratas `25979e93` (hook sin uso
+  en `_layout.tsx` y regla de recuentos agregados) y `26df9541` (copy en inglés de la dosis de hoy).
+- **Acciones:** Codex implementó test-primero (rojo `test(#199)` y verde `feat(#199)` por requisito;
+  R8 y R26 nacen verdes con sonda). Paró por el hook sin uso de `_layout.tsx`, por UL `#194 R5` en
+  R25, por el gate global y por un rojo de navegación ajeno (`#200 R9`). Mergeó `dev` dos veces
+  durante la implementación. El último merge de `origin/dev` (#198) lo resolvió un subagente del
+  leader en `d80357d0` con la regla «dev + delta», para ahorrar cuota de Codex (desviación del plan,
+  que pedía al Codex de la feature). Reviewer APROBADO sobre `bd20a22a` (0 bloqueantes, 11 no
+  bloqueantes, 32 mutaciones rojas; `progress/review_mobile-canvas-health-weight.md`).
+- **Resultado:** el primer `./init.sh` del leader, sobre `d49e10da`, cayó por el flake de tinte
+  `#0D1117` (BackButton `#172 R2`, sin diff, aislado 8/8). El segundo, sobre `bd20a22a`, exit 0:
+  backend 187 suites / 1474 tests; infra 2 suites / 14 tests; móvil 146 suites / 5015 tests /
+  1 snapshot; e2e 30 de 33 suites (3 omitidas) y 468 tests (8 omitidos); typecheck y lint sin
+  errores. La enmienda #199 de la carta va con su casilla firmada por delegación.
+- **Notas no bloqueantes:** (1) Cuatro títulos con otra redacción que la citada (N1) y la fila R27
+  abreviada (N2). (2) `describe('#199 R27: guardas')` duplicado (N3). (3) `tasks.md` cita PCF
+  `#173 R3` por `#173 R4` (N4). (4) LY se enmendó por otra vía que la del inventario (N5). (5) La
+  fixture `ui-copy-table.ts` entra en el commit `feat` de R25 (N6). (6) Rama `else` inalcanzable
+  en `weight-log/index.tsx` (N8). (7) El cuerpo de `48dd0f02` no repite la línea del mandato (N11).
+  (8) Las seis casillas de smoke siguen abiertas (N10): van en el lote del plan §6. (9) Notion: no
+  aplica (las specs firmadas por el leader no se espejan, plan §1).
+- **Lección:** el flake de tinte `#0D1117` tiene causa confirmada: `jest.mock` con
+  `{ virtual: true }` de módulos reales envenena la cache de IDs de jest-resolve. Lo arregla #207.
+  Ver [[flake-tinte-0d1117-bajo-carga]].
+- **Estado final:** done. El smoke queda en `progress/smoke_canvas-parity.md`. La PR a `dev` la
+  mergea el leader y después se borra el worktree `Pet-Tracker-wt-199`.
