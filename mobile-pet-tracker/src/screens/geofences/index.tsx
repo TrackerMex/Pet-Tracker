@@ -12,9 +12,9 @@ import { getPet } from '../../api/pets';
 import { geofenceKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
+import { ScreenHeader } from '../../components/screen-header';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
-import { HEADER_ROW_TOP, ZONES_TITLE_OFFSET } from '../../theme/header-layout';
 import { CONTINUOUS_CORNER, KEEP_OPACITY } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS, zoneCategory } from '../../utils/category-palette';
@@ -90,12 +90,10 @@ export function GeofencesScreen({ petId }: { petId: string }) {
     <ScrollView
       testID="screen-geofences"
       className="flex-1 bg-background"
-      contentContainerStyle={{ paddingHorizontal: 20, paddingTop: insets.top + HEADER_ROW_TOP, paddingBottom: insets.bottom + 40, gap: 12, flexGrow: 1 }}
+      contentContainerStyle={{ paddingHorizontal: 20, paddingTop: insets.top + 12, paddingBottom: insets.bottom + 40, gap: 12, flexGrow: 1 }}
     >
-      <View testID="geofences-header" className="h-11 flex-row items-center gap-2" style={{ paddingLeft: ZONES_TITLE_OFFSET }}>
-        <Text testID="geofences-title" accessibilityRole="header" className="flex-1 text-26 font-black tracking-title text-foreground">{t('geofences.title')}</Text>
-        {geofences.data?.kind === 'ok' ? <Text testID="geofences-counter" className="text-sm font-extrabold text-muted">{t('geofences.counter', { count: geofences.data.geofences.length, max: GEOFENCE_MAX_PER_PET })}</Text> : null}
-      </View>
+      <ScreenHeader testID="geofences-header" backFallback="/profile" title={t('geofences.title')}
+        accessory={geofences.data?.kind === 'ok' ? <Text testID="geofences-counter" className="text-sm font-extrabold text-muted">{t('geofences.counter', { count: geofences.data.geofences.length, max: GEOFENCE_MAX_PER_PET })}</Text> : null} />
       {geofences.data?.kind === 'ok' ? <View testID="geofences-progress" accessibilityRole="progressbar" className="flex-row gap-1"
         accessibilityLabel={t('geofences.progressLabel', { count: zoneCount, max: GEOFENCE_MAX_PER_PET })}
         accessibilityValue={{ min: 0, max: GEOFENCE_MAX_PER_PET, now: zoneCount }}>
