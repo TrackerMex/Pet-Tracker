@@ -20,6 +20,7 @@ import {
 } from '../../api/nutrition';
 import { getPet } from '../../api/pets';
 import { nutritionKeys, petKeys } from '../../api/query-keys';
+import { ScreenHeader } from '../../components/screen-header';
 import { Card } from '../../components/card';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
@@ -191,18 +192,12 @@ function MealScheduleContent({ petId }: { petId: string }) {
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{
         paddingHorizontal: 20,
-        paddingTop: 24,
+        paddingTop: insets.top + 8,
         gap: 14,
-        paddingBottom: insets.bottom + 24,
+        paddingBottom: insets.bottom + 32,
       }}
     >
-      <Text
-        testID="meal-schedule-heading"
-        accessibilityRole="header"
-        className="text-2xl font-black tracking-title text-foreground"
-      >
-        {t('mealSchedule.mealSchedule')}
-      </Text>
+      <ScreenHeader testID="meal-schedule-header" size={24} backFallback="/food" title={t('mealSchedule.mealSchedule')} />
       <View testID={loading ? 'meal-schedule-loading' : undefined} className="gap-3.5">
         {!hasError && plan.data === undefined ? (
           <>
