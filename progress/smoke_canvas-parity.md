@@ -86,3 +86,73 @@ Pasos en dev build Android (no Expo Go), con tema claro y oscuro:
 6. R24: las entradas llegan escalonadas. Con «Quitar animaciones» todo está quieto y completo.
 
 - [ ] Smoke de #199 recorrido por el humano
+
+## #202 mobile-canvas-zones
+
+Spec: `specs/mobile-canvas-zones/requirements.md` (§ Cierre del humano). Reviewer APROBADO sobre
+`83599961` y sobre el merge `9dcf2fb1` (`progress/review_mobile-canvas-zones.md`).
+
+Pasos en dev build Android (no Expo Go), con tema claro y oscuro:
+
+1. Zonas: el volver de la cabecera vuelve a Perfil (y sin historial a `/profile`). El título y el
+   contador van en la misma fila. No aparece la cabecera nativa.
+2. Editor, formulario: el círculo de cristal y la píldora con sombra se ven sobre el mapa, en claro
+   y en oscuro. Volver regresa a Zonas.
+3. Editor, ramas de estado: la cabecera va en el contenido con volver, sin cabecera nativa duplicada.
+4. Diálogo de borrado en Zonas y en el editor: el velo entra con fade y la tarjeta con rise. Atrás
+   de Android y el velo cierran sin borrar. «Eliminar» borra.
+5. Interruptores de 48x28 en las filas y en «Activa».
+6. Esqueletos de Zonas y del editor con la red lenta.
+7. Teclado con la hoja: el nombre sigue visible al escribir.
+8. Con «Quitar animaciones» activo no hay animaciones de entrada.
+
+Conocido antes del smoke: los botones del diálogo no tienen feedback al pulsar (N1 del reviewer, deuda
+registrada).
+
+- [ ] Smoke de #202 recorrido por el humano
+## #206 mobile-canvas-tab-bar
+
+Spec: `specs/mobile-canvas-tab-bar/requirements.md` (§ Cierre del humano). Reviewer APROBADO sobre
+`3df43a06` y sobre el delta de la errata E3 `aa942254` (`progress/review_mobile-canvas-tab-bar.md`).
+
+Pasos en dev build Android (no Expo Go), con tema claro y oscuro:
+
+1. (S1) Los cinco iconos se ven como trazos huecos redondeados, no como siluetas negras rellenas.
+2. (S2) La cápsula proyecta una sombra suave hacia abajo.
+3. (S3) El velo se lee translúcido y claro (oscuro en tema oscuro), no como una cápsula opaca.
+4. (S4) La píldora verde coincide con la celda activa, sin asomar ni quedarse corta arriba o abajo.
+5. (S5) Ninguna etiqueta se recorta con la escala de fuente del sistema al 100 %.
+6. (S6) La pestaña activa se distingue por color, píldora y trazo más grueso.
+7. (S7) Al cambiar de pestaña la píldora se desliza y aterriza centrada; con «Quitar animaciones»
+   activado salta sin deslizarse.
+8. (S8) TalkBack anuncia la fila como «Pestañas» y cada pestaña con su nombre y su estado
+   seleccionado.
+
+Conocido antes del smoke: las celdas de la barra no tienen feedback al pulsar (O2 del reviewer; ya
+pasaba antes de #206, deuda registrada).
+
+- [ ] Smoke de #206 recorrido por el humano
+
+## #196 mobile-profile-photo-hero-canvas
+
+Spec: `specs/mobile-profile-photo-hero-canvas/requirements.md` (§ Cierre del humano). Reviewer
+APROBADO sobre `4e8c3134` (`progress/review_mobile-profile-photo-hero-canvas.md`).
+
+Pasos en dev build Android (no Expo Go), con tema claro y oscuro:
+
+1. (R1/R2) Perfil abre con la foto a sangre de 430, sin hueco arriba. El título «Perfil» blanco se
+   lee sobre la foto gracias al scrim superior, y la píldora y el selector de vidrio se distinguen.
+2. (R3) Nombre y chips quedan al pie, sobre el degradado, legibles en los dos temas. Con nombres
+   largos los chips bajan de línea sin salirse.
+3. (R4) La cámara aparece con el `pop` tras la foto y su labio se ve bajo el círculo. Abrir el
+   selector de imágenes desde ella funciona.
+4. (R5) Con las notificaciones bloqueadas en ajustes del sistema, el aviso ámbar sale arriba.
+   «Abrir configuración» lleva a los ajustes de la app, y el interlineado del texto es 20 px aprox.
+5. (R6) «Cerrar sesión» es la píldora rosa de 52 con texto rojo de 15 y cierra la sesión.
+6. (R7) El interruptor de tema cambia de tema con el fundido de hoy.
+7. (R9) Con «Quitar animaciones» activado en Android, todo aparece sin movimiento.
+
+Conocido antes del smoke: la cámara y «Añadir mascota» no tienen feedback al pulsar (N3 del
+reviewer; ya pasaba antes de #196, deuda registrada).
+
+- [ ] Smoke de #196 recorrido por el humano

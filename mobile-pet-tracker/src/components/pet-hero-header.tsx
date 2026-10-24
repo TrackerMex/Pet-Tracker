@@ -84,6 +84,7 @@ export interface PetHeroHeaderProps {
   status?: PetHeroStatus;
   /** Slot de la zona superior. El hero NO conoce a su contenido (D2). */
   children?: ReactNode;
+  caption?: ReactNode;
 }
 
 export function PetHeroHeader({
@@ -92,6 +93,7 @@ export function PetHeroHeader({
   highlight,
   status,
   children,
+  caption,
 }: PetHeroHeaderProps) {
   const insets = useSafeAreaInsets();
   const [background, scrim] = useThemeColors(['background', 'scrim']);
@@ -219,72 +221,76 @@ export function PetHeroHeader({
         className="absolute inset-x-4 bottom-1.5 flex-row items-end justify-between gap-3"
         style={captionStyle}
       >
-        <View className="min-w-0 flex-1 gap-1">
-          {pet ? (
-            <>
-              {status ? (
-                <View
-                  testID="pet-hero-status"
-                  accessible
-                  accessibilityLabel={status.label}
-                  className={`flex-row items-center gap-1.5 self-start rounded-full px-2.5 py-0.75 ${tone.surface}`}
-                >
-                  <View
-                    testID="pet-hero-status-dot"
-                    className={`relative size-2 rounded-full ${tone.dot}`}
-                  >
-                    {pulses ? (
-                      <PingRing
-                        testID="pet-hero-status-ping"
-                        className="inset-0 rounded-full bg-accent"
-                        delay={0}
-                        timing={{ ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_HERO_PING_MS }}
-                      />
-                    ) : null}
-                  </View>
+        {pet && caption != null ? caption : (
+          <>
+            <View className="min-w-0 flex-1 gap-1">
+              {pet ? (
+                <>
+                  {status ? (
+                    <View
+                      testID="pet-hero-status"
+                      accessible
+                      accessibilityLabel={status.label}
+                      className={`flex-row items-center gap-1.5 self-start rounded-full px-2.5 py-0.75 ${tone.surface}`}
+                    >
+                      <View
+                        testID="pet-hero-status-dot"
+                        className={`relative size-2 rounded-full ${tone.dot}`}
+                      >
+                        {pulses ? (
+                          <PingRing
+                            testID="pet-hero-status-ping"
+                            className="inset-0 rounded-full bg-accent"
+                            delay={0}
+                            timing={{ ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_HERO_PING_MS }}
+                          />
+                        ) : null}
+                      </View>
+                      <Text
+                        testID="pet-hero-status-text"
+                        className={`text-xs font-bold ${tone.text}`}
+                      >
+                        {status.label}
+                      </Text>
+                    </View>
+                  ) : null}
                   <Text
-                    testID="pet-hero-status-text"
-                    className={`text-xs font-bold ${tone.text}`}
+                    testID="pet-hero-name"
+                    className="text-3xl font-black leading-8.5 tracking-title text-foreground"
                   >
-                    {status.label}
+                    {pet.name}
                   </Text>
-                </View>
-              ) : null}
-              <Text
-                testID="pet-hero-name"
-                className="text-3xl font-black leading-8.5 tracking-title text-foreground"
-              >
-                {pet.name}
-              </Text>
-              <Text testID="pet-hero-breed" className="text-sm font-normal text-muted">
-                {pet.breed ?? '—'}
-              </Text>
-            </>
-          ) : (
-            <>
-              <Skeleton className="h-9 w-40 rounded-xl" />
-              <Skeleton className="h-6 w-24 rounded-xl" />
-            </>
-          )}
-        </View>
+                  <Text testID="pet-hero-breed" className="text-sm font-normal text-muted">
+                    {pet.breed ?? '—'}
+                  </Text>
+                </>
+              ) : (
+                <>
+                  <Skeleton className="h-9 w-40 rounded-xl" />
+                  <Skeleton className="h-6 w-24 rounded-xl" />
+                </>
+              )}
+            </View>
 
-        {highlight ? (
-          <View className="items-end">
-            <Text
-              testID="pet-hero-highlight-value"
-              className="text-28 font-black leading-8 text-foreground"
-              style={TABULAR_NUMS}
-            >
-              {highlight.value}
-            </Text>
-            <Text
-              testID="pet-hero-highlight-label"
-              className="text-xs font-semibold text-muted"
-            >
-              {highlight.label}
-            </Text>
-          </View>
-        ) : null}
+            {highlight ? (
+              <View className="items-end">
+                <Text
+                  testID="pet-hero-highlight-value"
+                  className="text-28 font-black leading-8 text-foreground"
+                  style={TABULAR_NUMS}
+                >
+                  {highlight.value}
+                </Text>
+                <Text
+                  testID="pet-hero-highlight-label"
+                  className="text-xs font-semibold text-muted"
+                >
+                  {highlight.label}
+                </Text>
+              </View>
+            ) : null}
+          </>
+        )}
       </AnimatedView>
       </View>
     </View>

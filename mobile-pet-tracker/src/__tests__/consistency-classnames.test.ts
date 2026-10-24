@@ -726,10 +726,10 @@ it('#180 R7.5: el ack del detalle lleva rounded-16 con su labio (enmendado por #
 });
 
 
-it('#189 R9: la hoja del Editor combina esquina continua y flex sin perderlos (enmendado por E4 R19) (enmendado por E4 R22)', () => {
+it('#189 R9: la hoja del Editor combina esquina continua y flex sin perderlos (enmendado por E4 R19) (enmendado por E4 R22) (enmendado por #202 R13)', () => {
   const source = readSource(join('screens', 'geofence-editor', 'index.tsx'));
   expect(source).toContain("import { CONTINUOUS_CORNER, KEEP_OPACITY, TABULAR_NUMS } from '../../theme/native-styles';");
-  expect(source).toContain('style={[CONTINUOUS_CORNER, { flexGrow: 0, flexShrink: 1 }]}');
+  expect(source).toContain('style={[CONTINUOUS_CORNER, { flexGrow: 0, flexShrink: 1 }, shadows.sheet]}');
   expect(source.match(/\bCONTINUOUS_CORNER\b/g)).toHaveLength(2);
   expect(source).toContain('<KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={0}>');
 });

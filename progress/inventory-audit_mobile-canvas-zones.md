@@ -1,0 +1,41 @@
+# Auditoría del inventario «Candados que esta feature revierte» (#202 mobile-canvas-zones)
+
+Estado: COMPLETA dentro del presupuesto de 80 llamadas. Cubiertos: GZ, GE, LY, GF y candados de la carta, anclas de §Base medida y los agregados que escanean todo el árbol (consistency-classnames, design-drift, heroui-text-size-merge, empty-state, ui-language). NO leídos a fondo por presupuesto: `legibility-classnames`, `tab-headers-canvas`, tests de `motion.ts`, `chunky-cta-canvas-fidelity` (solo se confirmó que existe y escanea el árbol), `profile-canvas-fidelity` y `language-provider.test.tsx` (posible candado de longitud del catálogo por las dos claves nuevas `geofences.loadingLabel` y `geofenceEditor.loadingLabel`: no se encontró con `git grep`, queda para el implementador).
+Solo lectura sobre el árbol (branch `feature/202-mobile-canvas-zones`); este es el único fichero escrito. Rutas bajo `mobile-pet-tracker/`.
+GZ = `src/screens/geofences/index.test.tsx`; GE = `src/screens/geofence-editor/index.test.tsx`; LY = `src/app/__tests__/layout.test.tsx`; GF = `src/__tests__/geofences-canvas-fidelity.test.ts`; CC = `src/__tests__/consistency-classnames.test.ts`.
+
+## Faltan
+
+| # | Fichero › describe › it | Literal o estructura que lo rompe | Hoy afirma | Pasa a afirmar | R |
+|---|---|---|---|---|---|
+| F1 | GZ › `#189 R5: filas con tile pastel, textos y controles` › `las cinco posiciones usan verde, azul, ámbar, violeta y rosa en inglés` (l.798-808) | `getByTestId('geofences-icon-map', ...)` l.805 (el doble de reicon `Map` deja de renderizarse; R3 pinta `Svg`) | `.props.color` del icono `Map` = `category-${slot}-strong` por posición | glifo `geofence-${id}-glyph` (`Svg`) con `stroke` = color fuerte de la ranura | R3 |
+| F2 | GZ › `#189 R5...` › `family conserva tile y columna, nombre seleccionable y chip sin controles` (l.809-832, literal en l.824) | `getByTestId('geofences-icon-map', ...)` l.824 | `.props.color` del `Map` por fila | glifo `Svg` con `stroke` por fila | R3 |
+| F3 | GE › `#146 R14: Eliminar en el editor borra la zona y vuelve a la lista` › `un fallo al borrar pinta el error y no vuelve` (l.525-531) | `alertButton(catalog.es['geofences.delete']).onPress?.()` l.528; el helper (l.463-467) lee `Alert.alert.mock.calls.at(-1)?.[2]` | confirma el borrado por el espía de `Alert` | confirma pulsando `geofence-editor-delete-dialog-confirm` | R9 |
+| F4 | GE › `#146 R14: ...` › `un 401 al borrar cierra sesión una vez` (l.532-538) | `alertButton(...)` l.535 | confirma por el espía de `Alert` | confirma pulsando `-confirm` | R9 |
+| F5 | GE › `#189 R9: hoja estática solapada y capas del mapa` › `#189 R9: compone la hoja al %s sin fondo que tape el mapa (enmendado por E4 R22)` (`it.each` 3 filas, l.659-698) | l.665 `childTestIds(root)` = `['geofence-editor-map','geofence-editor-form']`; l.671 `form.props.className` = `'-mt-6.5 rounded-t-hero bg-surface'` | hijos de la raíz y clase de la hoja de hoy (mismas aserciones que el `it` inventariado de `#146 R6`) | hijos `[..., 'geofence-editor-form-entrance']`; clase `rounded-t-hero bg-surface` | R13 |
+| F6 | CC › `#98 R10: los candados que esta feature no mueve` › `deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban (enmendado por #177 R10) (enmendado por #190 R13)` (l.392-407) | `count(/style=\{CONTINUOUS_CORNER\}/g)` global, suma aritmética hardcodeada en l.407, que incluye los 3 usos de Zonas (tile, papelera, aviso) | suma de hoy | misma suma re-medida si R3/R5/R6/R10 mueven un `style={CONTINUOUS_CORNER}` (el tile y la papelera de Zonas, y las filas `Card` del esqueleto) | R3, R5, R6, R10 |
+
+## Sobran o mal descritos
+
+| # | Fila del inventario | Por qué | R |
+|---|---|---|---|
+| M1 | GZ › `#41 R6` › `un rechazo…` (el `it` del error de acción) | No hay `it` con ese nombre. El real es el `it.each` de errores de acción (l.257-284, 4 filas: error, missing-config, unreachable, rejection) con `text-danger` en l.272. Nombrarlo por contenido | R11 |
+| M2 | GZ › `#41 R5` › métricas A11 | «Hoy afirma `paddingTop: 40 + HEADER_ROW_TOP`» es incompleto: el mismo `it` fija también `paddingTop: 46` literal (l.122, dentro del `toEqual` del `contentContainerStyle`) que pasa a 52 | R1 |
+| M3 | R6 (texto del requisito, papelera) | La papelera de hoy no tiene `hitSlop` (el `hitSlop={10}` de `index.tsx` es del `Switch`) y GZ `#189 R5` afirma `trash.props.hitSlop` indefinido (l.785). Si R6 lo exige, ese `it` se pone rojo sin estar inventariado | R6 |
+| M4 | Agregados: `__tests__/chunky-cta.test.ts` y `__tests__/consistency.test.ts` | Esos ficheros no existen. Los reales son `chunky-cta-canvas-fidelity.test.ts` y `consistency-classnames.test.ts` (en `src/__tests__/`). Las filas `#197 R20` de `canvas-foundations.test.ts` apuntan a un fichero de #197 ausente en este árbol (esperado: se mide contra #197) | R10, R15, R17, R18 |
+| M5 | GE › `#146 R8` › `un rechazo pinta el error genérico…` | No afirma `text-danger`. El `it` que lo hace es el `it.each` `pinta %s bajo Guardar y conserva el borrador (enmendado por #189 R13)` (8 filas, `text-danger` en l.375) | R16 |
+| M6 | GE › `#146 R6` › `pinta el esqueleto mientras carga la lista al editar (enmendado por #189 R14)` | La columna R lista solo R18, pero el mismo `it` fija `contentInsetAdjustmentBehavior: 'automatic'` (l.121) y `paddingTop: 24` (l.122), que cambia R17 (sin `contentInset`, `40 + 12`). Añadir R17 | R17, R18 |
+| M7 | R2 (candado ZF «ningún .ts/.tsx bajo src/ contiene `theme/header-layout`») | Observación fuera del inventario: ese `it` vive en `src/__tests__/zones-canvas-fidelity.test.ts`, que bajo `src/` contendría el propio literal; es tautológico (o falla) salvo que construya la cadena indirectamente o excluya su propio fichero | R2 |
+| M8 | CC › `#62 R14` (fila «geofences 4, editor 2») | Mezcla tres cosas. (a) La tabla `directUses` de `#62 R14` (l.255) da `geofences: 3` para `style={CONTINUOUS_CORNER}` (no 4) y no tiene fila del Editor; su suma está en l.322. (b) El «editor 2» sale de otro `it` no nombrado: el de nivel raíz `#189 R9: la hoja del Editor combina esquina continua y flex sin perderlos (enmendado por E4 R19) (enmendado por E4 R22)` (l.697-703), que cuenta `\bCONTINUOUS_CORNER\b` ×2 y exige el import `{ CONTINUOUS_CORNER, KEEP_OPACITY, TABULAR_NUMS }`, `style={[CONTINUOUS_CORNER, { flexGrow: 0, flexShrink: 1 }]}` y la línea `<KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={0}>`; R13 (hoja en `RiseIn`) o R12/R17 (cabecera) pueden mover cualquiera de esas tres cadenas. (c) La suma global es el `it` de F6 | R10, R13, R17, R18 |
+
+## Anclas
+
+| # | Ancla | Declarada | Medida | OK |
+|---|---|---|---|---|
+| A1 | §Base medida «antes» (todas las `grep -cF` / `grep -oF` / `test -e` / `test ! -e` de l.67-115) | cifras de l.67-115 | coinciden con este árbol; los ceros de símbolos nuevos y los estados `test -e` / `test ! -e` también. Los «después» son futuros por diseño | sí |
+| A2 | `headerShown` en `src/app/_layout.tsx` | 2 | 2 | sí |
+| A3 | importadores de `theme/header-layout` | GF, GZ, GE y LY (filas del inventario) | GF l.2 y l.40, `_layout.tsx:16`, GE test l.16, GE prod l.19, GZ test l.15, GZ prod l.17: coinciden con las filas | sí |
+| A4 | `R14_GEOFENCES` / `R15_GEOFENCE_EDITOR` en `ui-language.test.ts` | `18 + 1 + 1 + 1 + 1` y `27 - 1 + 2 + 3` | l.263 y l.273 coinciden | sí |
+| A5 | `heroui-text-size-merge.test.ts` (umbrales `>=` del escáner) | no inventariado | medido: 31 ficheros, hero 211 (umbral 197), card 41 (umbral 41, margen 0), className 169 (umbral 163). Con Skeleton 1→5 y 1→3 y dos `Switch` menos, hero y card no bajan mientras ninguna `Card` desaparezca | sí |
+| A6 | CC `#62 R14`: «geofences 4, editor 2» | 4 / 2 | `style={CONTINUOUS_CORNER}` en Zonas = 3 (tabla l.255); Editor no está en esa tabla y su 2 es `\bCONTINUOUS_CORNER\b` (import + array) en otro `it` | no coincide con lo declarado (ver M8) |
+| A7 | `empty-state.test.tsx` l.373-377 (Zonas sin `react-native-reanimated`, `\bAnimated\b`, `LayoutAnimation`, `entering=`, `MOTION_`) y l.204 (2 `<EmptyState`) | prohibiciones y cifra de hoy | la spec solo mete `RiseIn` en el Editor (0→2) y el `entering=` del velo en `components/confirm-dialog.tsx`; Zonas no los recibe | sí |

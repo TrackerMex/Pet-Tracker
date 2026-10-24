@@ -106,7 +106,6 @@ jest.mock(
         return mockTheme === 'dark' ? '#F7F8FA' : '#0D1117';
       }),
   }),
-  { virtual: true },
 );
 
 const apiUrl = 'http://example.test/v1';
