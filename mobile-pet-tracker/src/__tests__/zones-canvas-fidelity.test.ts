@@ -62,3 +62,12 @@ it('#202 R11: el canvas pinta los errores a 15/1.4', () => {
   contains(artboard('ZonasEstados'), 'font-size: 15px; line-height: 1.4', 2);
   contains(source('screens/geofences/index.tsx'), 'className="text-15 leading-body text-danger"', 2);
 });
+
+it('#202 R12: el canvas dibuja la fila flotante', () => {
+  contains(artboard('EditorZona'), 'top: 52px');
+  contains(artboard('EditorZona'), 'stroke-width="2.4"');
+  const production = source('screens/geofence-editor/index.tsx');
+  contains(production, 'style={{ top: insets.top + 8 }}');
+  contains(production, '<BackButton testID="geofence-editor-back" strokeWidth={2.4}');
+  contains(production, 'style={shadows.card}', 2);
+});

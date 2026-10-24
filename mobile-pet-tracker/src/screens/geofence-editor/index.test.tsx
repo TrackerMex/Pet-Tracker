@@ -13,7 +13,6 @@ import { getLastPosition } from '../../api/positions';
 import type { LastPosition, PetProfile } from '../../api/types';
 import { catalog, type Language } from '../../i18n/catalog';
 import { LanguageProvider } from '../../providers/language-provider';
-import { EDITOR_PILL_LEFT, HEADER_BAR_HEIGHT } from '../../theme/header-layout';
 import { GeofenceEditorScreen } from '.';
 
 jest.mock('../../theme/use-theme-colors', () => ({ useThemeColors: (tokens: string[]) => tokens }));
@@ -29,7 +28,7 @@ jest.mock('../../providers/auth-provider', () => ({
   useAuth: () => ({ status: 'authenticated', token: 'token-1', signOut: mockSignOut }),
 }));
 const mockStackScreen = jest.fn<null, [{ options: object }]>(() => null);
-jest.mock('expo-router', () => ({ router: { back: jest.fn() }, Stack: { Screen: (props: { options: object }) => mockStackScreen(props) } }));
+jest.mock('expo-router', () => ({ router: { back: jest.fn(), canGoBack: jest.fn(() => false), replace: jest.fn() }, Stack: { Screen: (props: { options: object }) => mockStackScreen(props) } }));
 jest.mock('expo-maps', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
@@ -605,7 +604,7 @@ describe('#189 R8: título en contenido y píldora de cristal sobre el mapa', ()
   it.each([
     ['editar', 'es', 'light'], ['crear', 'es', 'light'], ['lectura', 'es', 'light'],
     ['editar', 'en', 'dark'], ['crear', 'en', 'dark'], ['lectura', 'en', 'dark'],
-  ] as const)('#189 R8: título del formulario al %s en %s (%s) (enmendado por E4 R22)', async (kind, language, theme) => {
+  ] as const)('#189 R8: título del formulario al %s en %s (%s) (enmendado por E4 R22) (enmendado por #202 R12)', async (kind, language, theme) => {
     mockTheme = theme;
     if (kind === 'lectura') mockGetPet.mockResolvedValue(petState('family'));
     await mount(kind === 'crear' ? undefined : casa.id, language);
@@ -626,11 +625,11 @@ describe('#189 R8: título en contenido y píldora de cristal sobre el mapa', ()
     const row = screen.getByTestId('geofence-editor-title-row');
     expect(blur.parent).toBe(row);
     expect(row.parent).toBe(map);
-    expect(row.props.className).toBe('absolute justify-center');
+    expect(row.props.className).toBe('absolute left-4 right-4 flex-row items-center gap-2.5');
     expect(row.props.pointerEvents).toBe('box-none');
-    expect(StyleSheet.flatten(row.props.style)).toEqual({ top: 40, left: 70, height: 56 });
-    expect(StyleSheet.flatten(row.props.style)).toEqual({ top: 40, left: EDITOR_PILL_LEFT, height: HEADER_BAR_HEIGHT });
-    expect(childTestIds(row)).toEqual(['geofence-editor-title-blur']);
+    expect(StyleSheet.flatten(row.props.style)).toEqual({ top: 48 });
+    expect(StyleSheet.flatten(row.props.style)).toEqual({ top: 40 + 8 });
+    expect(childTestIds(row)).toEqual(['geofence-editor-back-blur', 'geofence-editor-title-blur']);
     expect(childTestIds(map).slice(0, 2)).toEqual(['map-view', 'geofence-editor-title-row']);
   });
   it.each(['carga', 'no-tracking', 'error', 'no-encontrada', 'solo-dueño'] as const)('#189 R8: título plano primero en %s', async (kind) => {
@@ -990,4 +989,31 @@ it('#202 R9: Eliminar abre el diálogo en inglés', async () => {
   expect(screen.getByTestId('geofence-editor-delete-dialog-body')).toHaveTextContent("You'll stop getting alerts for this zone. This can't be undone.");
   expect(screen.getByTestId('geofence-editor-delete-dialog-cancel')).toHaveTextContent('Cancel');
   expect(screen.getByTestId('geofence-editor-delete-dialog-confirm')).toHaveTextContent('Delete');
+});
+
+it.each(['crear', 'editar', 'solo lectura'])('#202 R12: la fila flotante pinta volver de cristal y píldora con sombra en %s', async (kind) => {
+  if (kind === 'solo lectura') mockGetPet.mockResolvedValue(petState('family'));
+  await mount(kind === 'crear' ? undefined : casa.id);
+  await screen.findByTestId('geofence-editor-form');
+  expect(screen.queryByTestId('geofence-editor-back-blur')).not.toBeNull();
+  const row = screen.getByTestId('geofence-editor-title-row');
+  expect(row.props.className).toBe('absolute left-4 right-4 flex-row items-center gap-2.5');
+  expect(row.props.pointerEvents).toBe('box-none');
+  expect(StyleSheet.flatten(row.props.style)).toEqual({ top: 40 + 8 });
+  expect(childTestIds(row)).toEqual(['geofence-editor-back-blur', 'geofence-editor-title-blur']);
+  for (const id of ['geofence-editor-back-blur', 'geofence-editor-title-blur']) {
+    const blur = screen.getByTestId(id);
+    expect(blur.props).toMatchObject({ intensity: 48, blurMethod: 'dimezisBlurViewSdk31Plus', tint: 'light' });
+    expect(StyleSheet.flatten(blur.props.style)).toEqual({ boxShadow: [
+      { offsetX: 0, offsetY: 1, blurRadius: 2, spreadDistance: 0, color: 'shadow-near' },
+      { offsetX: 0, offsetY: 8, blurRadius: 24, spreadDistance: 0, color: 'shadow-far' },
+    ] });
+  }
+  const backBlur = screen.getByTestId('geofence-editor-back-blur');
+  expect(backBlur.props.className).toBe('size-11 items-center justify-center overflow-hidden rounded-full bg-glass-surface-strong');
+  const back = within(backBlur).getByTestId('geofence-editor-back');
+  expect(back.props.accessibilityLabel).toBe('Volver');
+  await fireEvent.press(back);
+  expect(router.replace).toHaveBeenCalledTimes(1);
+  expect(router.replace).toHaveBeenCalledWith({ pathname: '/pets/[petId]/geofences', params: { petId: 'pet-1' } });
 });
