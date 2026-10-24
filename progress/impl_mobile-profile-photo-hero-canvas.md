@@ -1347,3 +1347,85 @@ mobile-pet-tracker/src/screens/profile/index.tsx
 ```
 
 No se cambia feature_list.json, STATUS.md, progress/current.md ni progress/history.md. El handoff de entrada sigue sin seguimiento, igual que al inicio. El cierre documental contiene solo el reporte y traceability; el marcador .done queda ignorado por git y se crea como última acción.
+
+## Merge de origin/dev (#198, #199)
+
+Estado: terminado (2026-10-24). Base: HEAD de la feature `3440fcc4`; merge `1635e47d`.
+
+### Fetch y merge-base
+
+- `git fetch origin`: `origin/dev` = `8bd88522` (merge de la PR #246, #199), con `329c613c` (PR #245, #198) debajo.
+- merge-base feature/dev: `6bbd0485`. 137 commits de dev que la feature no tenía; 33 de la feature que dev no tiene.
+- Ficheros que tocaron los dos lados desde la merge-base: `docs/ui-guidelines.md`, `feature_list.json` y cinco guardas de `src/__tests__/` (las cinco en conflicto).
+- dev no toca `package.json` ni `bun.lock`: no hace falta `bun install`.
+
+### Conflictos y resolución
+
+`git merge origin/dev` (sin --no-ff extra ni squash): 5 ficheros en conflicto, todos títulos o filas de candados agregados. Criterio común: el título conserva las enmiendas de dev en su orden y añade detrás la de #196; las listas y cuentas suman las filas de los dos lados.
+
+| Fichero (`mobile-pet-tracker/src/__tests__/`) | Choque | Resolución |
+|---|---|---|
+| `alerts-canvas-fidelity.test.ts` › `#174 R12: inventarios` › `limita $token a su inventario de producción (…)` | Título: dev añadió `(enmendado por #199 R10) (enmendado por #199 R14) (enmendado por #199 R16) (enmendado por #198 R9, R15)`, la feature `(enmendado por #196 R6)` | Título de dev + ` (enmendado por #196 R6)`. Las listas se fusionaron solas: `text-15` lleva las filas de dev (`health`, `home/weekly-activity-chart`, `weight-log`) y la de la feature (`profile`, #196 R6) en orden; `tracking-title` lleva `home` (#198 R15). |
+| `chunky-cta-canvas-fidelity.test.ts` › `#177 R6.2: recuentos de etiquetas (…)` | Título (#199 R9 frente a #196 R6) y cuentas: la feature bajó `<Button\.Label` (−1) y `Button\.Label` (−2); dev subió `text-17` (+1) | Título de dev + ` (enmendado por #196 R6)`; `<Button\.Label` y `Button\.Label` de la feature (dev no los mueve); `text-17` de dev (la feature no lo mueve). R7.3 (`radii`, `rounded-16` +2 de dev), R7.4, R7.5 y R8.1 (de la feature) se fusionaron solos. |
+| `design-drift.test.ts` › `#178 R13` › `reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (…)` | Título: dev `(enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9)`, la feature `(enmendado por #196 R5)` | Título de dev + ` (enmendado por #196 R5)`. El cuerpo se fusionó solo: `rounded16` con `health` y `home/weekly-activity-chart` de dev; `outsideReminders(rounded-14)` con `health` (#199 R18) de dev y `profile` (#196 R5, E1) de la feature. |
+| `heroui-text-size-merge.test.ts` › `#187 R1: el escáner cubre al menos el universo medido (…)` | Título y piso de `cardElements`: la feature `35 → 33` (#196 R1, R5: −2); dev `35 → 35 - 1 - 1 - 1 + 1` (#199 R3, R14, R18, R19) | Título de dev + ` (enmendado por #196 R1, R5)`; piso `toBeGreaterThanOrEqual(35 - 1 - 1 - 1 + 1 - 2)` (= 31), con el estilo de expresión de dev y el comentario de dev + `; #196 R1, R5: -2 (la tarjeta hero y el aviso de Perfil dejan de ser Card)`. Mueve el ancla de E2: ver Erratas propuestas. |
+| `profile-canvas-fidelity.test.ts` (3 bloques) | (1) `limita la variante nueva al consumidor Perfil (…)`: dev añadió Salud (`#199 R13`), la feature quitó Perfil (`#196 R2`). (2) título de `reserva text-26 …`: `#198 R15` frente a `#196 R1`. (3) lista de `text-26`: dev añadió `home` (#198 R15), la feature quitó `profile` (#196 R1) | (1) Título de dev + ` (enmendado por #196 R2)`; lista `['screens/food/index.tsx', 'screens/health/index.tsx']` con comentario `// #200 R2; #199 R13; #196 R2: Perfil sale`. (2) Título de dev + ` (enmendado por #196 R1)`. (3) Lista de dev sin `'screens/profile/index.tsx'`. `Card flat` (dev, #199 R7, R16) se fusionó solo. La lista de (1) mueve el texto de E3: ver Erratas propuestas. |
+
+Sin conflicto, fusionados por git:
+
+- `docs/ui-guidelines.md`: se conservan las dos enmiendas (`**Regla N1 (enmienda #196)**` y la sección `## Enmienda #199: Salud y Peso al canvas`, más las dos líneas de escala de #199). Anclas de la feature: `Inicio es la única pestaña con PetHeroHeader` 0, `**Regla N1 (enmienda B4 de #168)**` 0, `**Regla N1 (enmienda #196)**` 1.
+- `feature_list.json`: la orden era tomar la versión de dev porque «la feature no lo toca», pero la feature sí lo toca: la rama lleva `#196` `pending → spec_ready` (commit de la spec). Tomar dev a ciegas devolvía #196 a `pending`. Los hunks no se solapan (#196 frente a #198/#199) y git los fusionó solos; el resultado es la versión de dev más el `spec_ready` de #196. Se deja así; el leader decide si lo quiere de otra forma.
+- `STATUS.md` y `progress/history.md`: la feature no los toca; quedan como en dev.
+
+### Medición tras el merge
+
+Todo desde `mobile-pet-tracker/`, sobre el commit de merge `1635e47d` (padres `3440fcc4` y `8bd88522`), exit medido sin pipe. Los logs `*.log` están ignorados por git (`.gitignore:13`).
+
+- `test ! -e .expo/types/router.d.ts && bun run typecheck`: exit 0 (`progress/typecheck-196-merge.log`).
+- `bunx expo lint --no-cache > ../progress/lint-196-merge.log 2>&1 && test ! -s ../progress/lint-196-merge.log`: exit 0, log de 0 bytes.
+- jest dirigido, `bunx jest --runTestsByPath <rutas absolutas> --runInBand --testTimeout=30000`: exit 0. Test Suites: 17 passed, 17 total. Tests: 814 passed, 814 total (`progress/test-196-merge.log`). Ficheros:
+  - tests de la lista «Ficheros tocados desde H0»: `alerts-canvas-fidelity`, `chunky-cta-canvas-fidelity`, `design-drift`, `hero-header-amendments`, `heroui-text-size-merge`, `profile-canvas-fidelity`, `profile-photo-hero-canvas`, `tab-headers-canvas` (en `src/__tests__/`), `src/app/(tabs)/__tests__/screens.test.tsx`, `src/components/__tests__/pet-hero-header.test.tsx` y `src/screens/profile/index.test.tsx`;
+  - los 5 en conflicto ya están en esa lista;
+  - guardas de `src/__tests__/` que cambiaron en dev desde la merge-base y no estaban arriba: `consistency-classnames`, `health-weight-canvas-fidelity`, `home-canvas-fidelity`, `home-photo-hero-canvas`, `legibility-classnames` y `ui-language` (`ui-copy-table.ts` es módulo de datos, lo cubre `ui-language`).
+- Corrida extra, fuera de la lista pedida: `src/components/__tests__/empty-state.test.tsx` y `src/screens/home/index.test.tsx`, porque #198 cambió Inicio y esa pantalla monta el `PetHeroHeader` que #196 modificó (`caption`). Exit 0: 2 passed, 420 tests passed (`progress/test-196-merge-extra.log`).
+- Sin rojos, sin timeouts y sin el flake `#172 R2` / `#0D1117`: no hubo nada que repetir. Los bloques `● Console` del log son avisos `console.warn` de Uniwind (`--theme`, `--color-foreground`), no fallos.
+- No se corrió la suite completa ni `./init.sh` (gate del leader).
+
+### Ajustes mecánicos de test
+
+Ninguno. Fuera de los 5 conflictos (resueltos dentro del commit de merge) no hizo falta tocar ningún test ni producción: no hay commits de ajuste.
+
+### Cuentas re-medidas
+
+Re-medidas las 49 cuentas del bloque «Cuentas finales» con el mismo comando y desde `mobile-pet-tracker/` (`progress/counts-196-merge.log`): 48 coinciden, 1 se mueve por el merge.
+
+| Cuenta | Antes del merge | Base dev (`8bd88522`) | Delta #196 | Tras el merge |
+|---|---|---|---|---|
+| `grep -cF 'toBeGreaterThanOrEqual(33)' src/__tests__/heroui-text-size-merge.test.ts` | 1 | 0 | 0 (el piso de #196 ya no se escribe `33`) | 0 |
+| `grep -cF 'toBeGreaterThanOrEqual(35)' src/__tests__/heroui-text-size-merge.test.ts` | 0 | 0 | 0 | 0 (coincide) |
+| nueva: `grep -cF 'toBeGreaterThanOrEqual(35 - 1 - 1 - 1 + 1)' src/__tests__/heroui-text-size-merge.test.ts` | — | 1 | -1 | 0 |
+| nueva: `grep -cF 'toBeGreaterThanOrEqual(35 - 1 - 1 - 1 + 1 - 2)' src/__tests__/heroui-text-size-merge.test.ts` | — | 0 | +1 | 1 |
+
+El valor del piso pasa de 33 a 31: base de dev 33 (`35 - 1 - 1 - 1 + 1`, #199 R3, R14, R18, R19) + delta de #196 −2 (tarjeta hero y aviso de Perfil). Las cuentas sobre `P`, `H`, `T`, `screens.test.tsx`, `hero-header-amendments`, `canvas-foundations` y `docs/ui-guidelines.md` no se mueven: dev no toca esos ficheros salvo `ui-guidelines.md`, donde las tres anclas siguen en 0/0/1.
+
+Otra lista exacta que el merge movió (no es cuenta del bloque, sí texto de la spec): `profile-canvas-fidelity` › avatars, `grep -cF "toEqual(['screens/food/index.tsx', 'screens/health/index.tsx'])"` = 1.
+
+### Erratas propuestas a la spec
+
+No se ha tocado `specs/mobile-profile-photo-hero-canvas/`. Dos erratas para que las firme el leader, ambas en `requirements.md`:
+
+| Fila | Texto actual | Texto nuevo propuesto | Por qué |
+|---|---|---|---|
+| E2 (K40 tras #200) | «K40 deja de ser `41 → 39` y pasa a `toBeGreaterThanOrEqual(33)`, con el comentario ampliado por `; #196 R1, R5: -2 (…)` y el título con ` (enmendado por #196 R1, R5)` detrás del de #200. […] Anclas: `toBeGreaterThanOrEqual(35)` 1 → 0 y `toBeGreaterThanOrEqual(33)` 0 → 1» | Añadir: «**Tras el merge de dev (#199):** #199 R3, R14, R18, R19 dejaron el piso en `toBeGreaterThanOrEqual(35 - 1 - 1 - 1 + 1)` (= 33) con el título terminado en ` (enmendado por #199 R19)`. K40 pasa a `toBeGreaterThanOrEqual(35 - 1 - 1 - 1 + 1 - 2)` (= 31), comentario de dev + `; #196 R1, R5: -2 (la tarjeta hero y el aviso de Perfil dejan de ser Card)`, título con ` (enmendado por #196 R1, R5)` detrás del de #199. Anclas: `toBeGreaterThanOrEqual(35 - 1 - 1 - 1 + 1)` 1 → 0 y `toBeGreaterThanOrEqual(35 - 1 - 1 - 1 + 1 - 2)` 0 → 1; `(35)` y `(33)` quedan en 0.» | #199 cambió el mismo piso a forma de expresión; la cifra literal `33` deja de existir en el fichero y el ancla `(33)` da 0. El delta de #196 (−2) no cambia. |
+| E3 (K26 tras #200) | «K26 pasa a `['screens/food/index.tsx']`, no a `[]`, y el título gana ` (enmendado por #196 R2)` detrás del de #200.» | Añadir: «**Tras el merge de dev (#199):** Salud consume `variant="avatars"` desde #199 R13, así que K26 pasa a `['screens/food/index.tsx', 'screens/health/index.tsx']` (comentario `// #200 R2; #199 R13; #196 R2: Perfil sale`) y el título lleva ` (enmendado por #196 R2)` detrás de ` (enmendado por #199 R13)`.» | dev añadió Salud a la lista; #196 sigue quitando solo Perfil. D6 no cambia. |
+
+Comprobadas y sin errata: E1 (la fila de `profile` sigue tras `pairing`; `health` de #199 R18 entra antes, en su orden), E4/K27 (`rounded-hero`, dev no lo toca), K28 (la regla «la misma lista sin Perfil» aguanta con `home` de #198 R15), K30–K33 (relativas; dev no toca `consumers`, R7.4, R7.5 ni R8.1 y solo mueve `text-17`, que #196 no toca) y K34 (`profile` en su sitio ordenado de `text-15`). Las filas `(41)`/`(39)` de `tasks.md` §Cuentas ya estaban superadas por E2 antes del merge; no es efecto de este merge.
+
+### graphify y commits
+
+- `graphify update .` desde la raíz del worktree: exit 0, 28 638 nodos / 36 860 aristas / 1 890 comunidades. Sin cambios en ficheros seguidos por git.
+- Commits (branch `feature/196-mobile-profile-photo-hero-canvas`, sin push):
+  - `1635e47d chore(#196): mergea origin/dev (#198, #199) en la feature` (merge, padres `3440fcc4` + `8bd88522`);
+  - sin commits de ajuste mecánico;
+  - `docs(#196): registra el merge de dev (#198, #199)` con este informe.
+- `progress/handoff_mobile-profile-photo-hero-canvas.md` sigue sin seguimiento, igual que antes del merge.
