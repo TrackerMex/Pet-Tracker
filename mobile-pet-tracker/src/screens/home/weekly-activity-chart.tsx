@@ -96,12 +96,14 @@ const AnimatedView = Animated.createAnimatedComponent(View);
 function ActivityBar({
   bar,
   fill,
+  fillOpacity,
   average,
   averageColor,
   chartWidth,
   drawAverage,
 }: BarChartRenderBarProps<ChartDatum> & {
   average: number | null;
+  fillOpacity: number;
   averageColor: string;
   chartWidth: number;
   drawAverage: boolean;
@@ -152,7 +154,8 @@ function ActivityBar({
           y={bar.baselineY - height}
           width={bar.width}
           height={height}
-          rx={Math.min(bar.width, height) / 2}
+          rx={Math.min(6, height / 2)}
+          fillOpacity={fillOpacity}
           fill={fill}
         />
       ) : (
@@ -162,7 +165,8 @@ function ActivityBar({
           animatedProps={animatedProps}
           x={bar.x}
           width={bar.width}
-          rx={Math.min(bar.width, height) / 2}
+          rx={Math.min(6, height / 2)}
+          fillOpacity={fillOpacity}
           fill={fill}
         />
       )}
@@ -239,10 +243,10 @@ function DetailMetric({
 }): JSX.Element {
   return (
     <View className="flex-1 gap-1">
-      <Text className="text-2xs text-muted">{label}</Text>
+      <Text className="text-11 text-muted">{label}</Text>
       <Text
         testID={testID}
-        className="text-sm font-semibold text-foreground"
+        className="text-sm font-bold text-foreground"
         style={TABULAR_NUMS}
       >
         {value}
@@ -587,6 +591,7 @@ export function WeeklyActivityChart(
               <ActivityBar
                 key={barProps.bar.key}
                 {...barProps}
+                fillOpacity={selection === null || barProps.bar.dataIndex === selection.dataIndex ? 1 : 0.35}
                 average={average}
                 averageColor={muted}
                 chartWidth={chartWidth}
@@ -683,10 +688,10 @@ export function WeeklyActivityChart(
           {selectedDay ? (
             <View
               testID="weekly-activity-detail"
-              className="gap-3 rounded-xl border border-border bg-surface-secondary p-3"
+              className="gap-3 rounded-16 border border-border bg-default p-3"
               style={CONTINUOUS_CORNER}
             >
-              <Text className="font-bold text-foreground">
+              <Text className="text-15 font-extrabold text-foreground">
                 {weekdayLabel(selectedDay.date, locale, 'long')}
               </Text>
               {selectedDay.source === 'missing' ? (
