@@ -593,6 +593,8 @@ en el commit verde de R6; su casilla está en §Aprobación:
 
 ## Erratas del leader (2026-10-24)
 
+**E1. Forma del bloque de la Enmienda #203 en la carta.** La cita de § «Enmienda #203 a la carta» va envuelta en la forma de las demás enmiendas (la de #197): encabezado `## Enmienda #203 — Labio rojo en los destructivos del canvas` (lo exige `#195 R20`, que cuenta los `## Enmienda #`), la línea `Fecha: 2026-10-23. Feature #203 `mobile-canvas-collar-alerts`.`, la cita literal sin cambios, la línea `Detalle y tests en `specs/mobile-canvas-collar-alerts/requirements.md` (R6 y R7).` y la casilla `- [X] Enmienda #203 aprobada por humano` con la nota de firma delegada. El texto exacto está en el handoff (`progress/handoff_mobile-canvas-collar-alerts.md` § Enmienda #203). `grep -c '^## Enmienda' ../docs/ui-guidelines.md` pasa de 24 a 25.
+
 **Regla de recuentos agregados.** Si al llegar a verde una R se pone rojo un `it` que no está en el inventario y ese `it` solo cuenta usos o ficheros de un literal o token, Codex lo enmienda sin parar. Son de este tipo los inventarios cerrados de radios, de `style={CONTINUOUS_CORNER}`, de `text-NN` o de `<Card`, las sumas de copy y los suelos del escáner HeroUI. La condición es que el delta medido sea exactamente el número de usos que el diff de esa R, tal como esta spec la prescribe, añade o retira. La enmienda:
 
 - da a la cifra o a la entrada su término (`// #203 Rn`, o `; #203 Rn: ±k` dentro de un comentario que ya exista);
