@@ -4,7 +4,7 @@ import { BlurView } from 'expo-blur';
 import { router, Stack } from 'expo-router';
 import { Button, Input, Label, Skeleton, Slider, TextField } from 'heroui-native';
 import { useMemo, useState } from 'react';
-import { Alert, KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
 
@@ -13,6 +13,7 @@ import { getPet } from '../../api/pets';
 import { getLastPosition } from '../../api/positions';
 import { geofenceKeys, petKeys, positionKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
+import { ConfirmDialog } from '../../components/confirm-dialog';
 import { ToggleSwitch } from '../../components/toggle-switch';
 import { DEFAULT_CENTER, PetMap, type MapCoordinates } from '../../components/pet-map';
 import { useAuth } from '../../providers/auth-provider';
@@ -109,6 +110,7 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token, signOut } = useAuth();
   const [busy, setBusy] = useState(false);
+  const [deleteVisible, setDeleteVisible] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState(initialName);
   const [center, setCenter] = useState(initialCenter);
@@ -138,13 +140,10 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
       : createGeofence(baseUrl, token ?? '', petId, draft), leave);
   };
 
-  const confirmDelete = () => {
+  const deleteConfirmed = () => {
     if (!zone) return;
-    Alert.alert(t('geofences.deleteTitle', { name: zone.name }), t('geofences.deleteBody'), [
-      { text: t('geofences.cancel'), style: 'cancel' },
-      { text: t('geofences.delete'), style: 'destructive',
-        onPress: () => void run(() => deleteGeofence(baseUrl, token ?? '', petId, zone.id), leave) },
-    ]);
+    setDeleteVisible(false);
+    void run(() => deleteGeofence(baseUrl, token ?? '', petId, zone.id), leave);
   };
 
   const radiusValue = <Text testID="geofence-editor-radius-value" selectable style={TABULAR_NUMS} className={readOnly ? 'font-bold text-foreground' : 'text-sm font-extrabold text-accent-strong'}>{t('geofences.radius', { meters: Math.round(readOnly ? initialRadius : radius) })}</Text>;
@@ -204,7 +203,7 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
       </View> : null}
       {zone ? <Text testID="geofence-editor-reset-note" className="text-sm font-normal text-muted">{t('geofenceEditor.resetNote')}</Text> : null}
       <View testID="geofence-editor-actions" className="flex-row gap-2.5">
-      {zone ? <Button testID="geofence-editor-delete" variant="outline" className="flex-1 h-14 rounded-16 border-2 border-lip-gray bg-surface" style={[chunkyLip.neutral, KEEP_OPACITY]} isDisabled={busy} onPress={confirmDelete}>
+      {zone ? <Button testID="geofence-editor-delete" variant="outline" className="flex-1 h-14 rounded-16 border-2 border-lip-gray bg-surface" style={[chunkyLip.neutral, KEEP_OPACITY]} isDisabled={busy} onPress={() => setDeleteVisible(true)}>
         <Text className="text-base font-extrabold text-danger">{t('geofences.delete')}</Text>
       </Button> : null}
       <Button testID="geofence-editor-save" className={name.trim() === '' ? 'flex-2 h-14 rounded-16 bg-default' : 'flex-2 h-14 rounded-16 bg-accent'} style={name.trim() === '' ? KEEP_OPACITY : [chunkyLip.primary, KEEP_OPACITY]} isDisabled={busy || name.trim() === ''} onPress={() => void save()}>
@@ -214,5 +213,9 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
       {error ? <Text testID="geofence-editor-error" selectable className="text-danger">{error}</Text> : null}
       </>}
     </ScrollView>
+    <ConfirmDialog testID="geofence-editor-delete-dialog" visible={deleteVisible}
+      title={t('geofences.deleteTitle', { name: zone?.name ?? '' })} body={t('geofences.deleteBody')}
+      cancelLabel={t('geofences.cancel')} confirmLabel={t('geofences.delete')}
+      onCancel={() => setDeleteVisible(false)} onConfirm={deleteConfirmed} />
   </KeyboardAvoidingView></>;
 }
