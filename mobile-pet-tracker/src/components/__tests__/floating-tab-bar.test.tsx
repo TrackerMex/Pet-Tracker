@@ -577,4 +577,9 @@ describe('canvas: barra de pestañas', () => {
     expect(screen.getByTestId('tab-bar-row')).toHaveProp('className', 'flex-row gap-1 p-1.5');
     expect(screen.getByTestId('floating-tab-bar').props.className.split(' ')).toContain('h-16');
   });
+  it('#206 R2: el velo del fallback es el glass .86 del canvas', async () => {
+    await renderTabBar();
+    expect(screen.getByTestId('tab-bar-overlay')).toHaveProp('className', 'flex-1 bg-glass-surface-strong');
+  });
+
 });
