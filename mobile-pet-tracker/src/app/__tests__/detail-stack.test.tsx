@@ -3,6 +3,15 @@ import { join } from 'path';
 
 const app = join(process.cwd(), 'src/app');
 
+it('#200 R1: Nutrición es una ruta delgada sobre src/screens/food', () => {
+  const source = readFileSync(join(app, '(tabs)/food.tsx'), 'utf8');
+  expect(source.trim().split('\n').length).toBeLessThanOrEqual(5);
+  expect(source).toContain("import { FoodScreen } from '../../screens/food';");
+  expect(source).toContain('export default function FoodRoute() { return <FoodScreen />; }');
+  expect(existsSync(join(process.cwd(), 'src/screens/food/index.tsx'))).toBe(true);
+  expect(existsSync(join(app, '(tabs)/__tests__/food.test.tsx'))).toBe(false);
+});
+
 describe('#95 R2: las seis rutas de detalle viven en la raíz de src/app', () => {
   it.each([
     ['add-reminder.tsx', '(tabs)/add-reminder.tsx', '../screens/add-reminder'],
