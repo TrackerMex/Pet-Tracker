@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
@@ -191,7 +191,7 @@ describe('R3: pill dimensionado y posicionado tras layout (y ausente antes)', ()
     jest.useRealTimers();
   });
 
-  it('espera un ancho válido y usa la geometría exacta para el tab activo', async () => {
+  it('espera un ancho válido y usa la geometría exacta para el tab activo (enmendado por #206 R5)', async () => {
     await renderTabBar(2);
 
     expect(screen.queryByTestId('tab-indicator')).not.toBeOnTheScreen();
@@ -207,16 +207,16 @@ describe('R3: pill dimensionado y posicionado tras layout (y ausente antes)', ()
     const style = StyleSheet.flatten(indicator.props.style);
 
     expect(style).toMatchObject({
-      width: 68.8,
-      left: 8,
+      width: 66,
+      left: 6,
       top: 6,
-      bottom: 6,
+      height: 52,
       borderRadius: 999,
       backgroundColor: expect.any(String),
     });
     expect(indicator).toHaveAnimatedStyle({
-      transform: [{ translateX: 137.6 }],
-    });
+      transform: [{ translateX: 140 }],
+    }, { shouldMatchAllProps: true });
   });
 });
 
@@ -240,7 +240,7 @@ describe('R4: pill se desliza con TAB_INDICATOR_SPRING y retarget-ea en vuelo', 
     });
   });
 
-  it('retarget-ea un cambio nuevo mientras el primer desplazamiento sigue en vuelo', async () => {
+  it('retarget-ea un cambio nuevo mientras el primer desplazamiento sigue en vuelo (enmendado por #206 R5)', async () => {
     const tabBar = await renderTabBar(0);
 
     await fireEvent(screen.getByTestId('floating-tab-bar'), 'layout', {
@@ -256,8 +256,8 @@ describe('R4: pill se desliza con TAB_INDICATOR_SPRING y retarget-ea en vuelo', 
     jest.advanceTimersByTime(1000);
 
     expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
-      transform: [{ translateX: 68.8 }],
-    });
+      transform: [{ translateX: 70 }],
+    }, { shouldMatchAllProps: true });
   });
 });
 
@@ -372,7 +372,7 @@ describe('#91 R1: una ruta fuera de TABS no monta la burbuja', () => {
     expect(screen.queryByTestId('tab-indicator')).not.toBeOnTheScreen();
   });
 
-  it('desmonta la burbuja al navegar de health a alerts', async () => {
+  it('desmonta la burbuja al navegar de health a alerts (enmendado por #206 R5)', async () => {
     const tabBar = await renderTabBar(2, routesWithAlerts);
 
     await fireEvent(screen.getByTestId('floating-tab-bar'), 'layout', {
@@ -383,8 +383,8 @@ describe('#91 R1: una ruta fuera de TABS no monta la burbuja', () => {
     jest.advanceTimersByTime(300);
 
     expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
-      transform: [{ translateX: 137.6 }],
-    });
+      transform: [{ translateX: 140 }],
+    }, { shouldMatchAllProps: true });
 
     await tabBar.rerender(
       <FloatingTabBar {...tabBarProps(5, routesWithAlerts)} />,
@@ -408,7 +408,7 @@ describe('#91 R2: el primer layout coloca la burbuja por el índice de TABS', ()
     jest.useRealTimers();
   });
 
-  it('usa el índice de map en TABS aunque difiera de state.index', async () => {
+  it('usa el índice de map en TABS aunque difiera de state.index (enmendado por #206 R5)', async () => {
     await renderTabBar(2, routesAlertsFirst);
 
     await fireEvent(screen.getByTestId('floating-tab-bar'), 'layout', {
@@ -419,8 +419,8 @@ describe('#91 R2: el primer layout coloca la burbuja por el índice de TABS', ()
     jest.advanceTimersByTime(300);
 
     expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
-      transform: [{ translateX: 68.8 }],
-    });
+      transform: [{ translateX: 70 }],
+    }, { shouldMatchAllProps: true });
   });
 });
 
@@ -437,7 +437,7 @@ describe('#91 R3: el cambio de ruta desliza la burbuja al índice de TABS', () =
     jest.useRealTimers();
   });
 
-  it('anima health a su índice en TABS aunque difiera de state.index', async () => {
+  it('anima health a su índice en TABS aunque difiera de state.index (enmendado por #206 R5)', async () => {
     const tabBar = await renderTabBar(2, routesAlertsFirst);
 
     await fireEvent(screen.getByTestId('floating-tab-bar'), 'layout', {
@@ -453,8 +453,8 @@ describe('#91 R3: el cambio de ruta desliza la burbuja al índice de TABS', () =
     jest.advanceTimersByTime(400);
 
     expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
-      transform: [{ translateX: 137.6 }],
-    });
+      transform: [{ translateX: 140 }],
+    }, { shouldMatchAllProps: true });
   });
 });
 
@@ -471,7 +471,7 @@ describe('#91 R4: al volver de una ruta ajena la burbuja aparece ya colocada', (
     jest.useRealTimers();
   });
 
-  it('reaparece en la pestaña nueva sin animarse desde una ranura invisible', async () => {
+  it('reaparece en la pestaña nueva sin animarse desde una ranura invisible (enmendado por #206 R5)', async () => {
     const tabBar = await renderTabBar(1, routesWithAlerts);
 
     await fireEvent(screen.getByTestId('floating-tab-bar'), 'layout', {
@@ -482,8 +482,8 @@ describe('#91 R4: al volver de una ruta ajena la burbuja aparece ya colocada', (
     jest.advanceTimersByTime(300);
 
     expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
-      transform: [{ translateX: 68.8 }],
-    });
+      transform: [{ translateX: 70 }],
+    }, { shouldMatchAllProps: true });
 
     await tabBar.rerender(
       <FloatingTabBar {...tabBarProps(5, routesWithAlerts)} />,
@@ -497,14 +497,14 @@ describe('#91 R4: al volver de una ruta ajena la burbuja aparece ya colocada', (
     );
 
     expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
-      transform: [{ translateX: 137.6 }],
-    });
+      transform: [{ translateX: 140 }],
+    }, { shouldMatchAllProps: true });
 
     jest.advanceTimersByTime(300);
 
     expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
-      transform: [{ translateX: 137.6 }],
-    });
+      transform: [{ translateX: 140 }],
+    }, { shouldMatchAllProps: true });
   });
 });
 
@@ -597,6 +597,18 @@ describe('canvas: barra de pestañas', () => {
     for (const name of ['home', 'map', 'health', 'food', 'profile']) {
       expect(screen.getByTestId(`tab-${name}`)).toHaveProp('className', 'h-13 flex-1 items-center justify-center gap-0.5');
     }
+  });
+
+  it('#206 R5: la píldora ocupa la celda activa de 52 con el paso de 70', async () => {
+    await renderTabBar(2);
+    await fireEvent(screen.getByTestId('floating-tab-bar'), 'layout', {
+      nativeEvent: { layout: { width: 360, height: 64, x: 0, y: 0 } },
+    });
+    await act(() => { jest.advanceTimersByTime(300); });
+    const indicator = screen.getByTestId('tab-indicator', { includeHiddenElements: true });
+    expect(indicator).toHaveStyle({ width: 66, left: 6, top: 6, height: 52, borderRadius: 999, backgroundColor: 'tab-pill' });
+    expect(StyleSheet.flatten(indicator.props.style)).not.toHaveProperty('bottom');
+    expect(indicator).toHaveAnimatedStyle({ transform: [{ translateX: 140 }] }, { shouldMatchAllProps: true });
   });
 
 });

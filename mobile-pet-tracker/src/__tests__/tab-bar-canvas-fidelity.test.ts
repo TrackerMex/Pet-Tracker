@@ -58,3 +58,15 @@ it('#206 R4: la celda copia flex 1, alto 52, columna centrada y hueco 2', () => 
   }
   expect(source).toContain('"h-13 flex-1 items-center justify-center gap-0.5"');
 });
+
+it('#206 R5: la píldora copia alto 52, radio 999 y var(--pill)', () => {
+  const active = tabNav(artboards[0]).match(/<a [^>]*aria-current[^>]*>/)![0];
+  for (const literal of ['height: 52px', 'background: var(--pill)', 'border-radius: 999px']) expect(active).toContain(literal);
+  for (const s of artboards) {
+    expect(s).toContain('--pill:rgba(23,130,85,0.14)');
+    expect(s).toContain('--pill:rgba(23,130,85,0.22)');
+  }
+  for (const literal of ['(containerWidth - 30) / TABS.length', 'activeTabIndex * (tabWidth + 4)', 'left: 6', 'top: 6', 'height: 52']) expect(source).toContain(literal);
+  expect(source).not.toContain('left: 8');
+  expect(source).not.toContain('bottom: 6');
+});
