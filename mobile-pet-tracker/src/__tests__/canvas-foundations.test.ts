@@ -274,8 +274,12 @@ describe('#197 R21: carta canónica', () => {
   it('#197 R21: la carta declara el interlineado', () => {
     expect(charter.split(canonicalBlock('Línea de interlineado'))).toHaveLength(2);
   });
-  it('#197 R21: el punto 13 describe los labios por estilo', () => {
-    expect(charter.split(canonicalBlock('Punto 13'))).toHaveLength(2);
+  it('#197 R21: el punto 13 describe los labios por estilo (enmendado por #200 R16)', () => {
+    const expected = canonicalBlock('Punto 13').replace(
+      '«Generar plan» es tonal de la categoría violeta y sigue sin labio hasta #200.',
+      '«Generar plan» es tonal de la categoría violeta con `style={chunkyLip.violet}` (#200 R14).',
+    );
+    expect(charter.split(expected)).toHaveLength(2);
   });
   it('#197 R21: la enmienda está una sola vez y con su casilla', () => {
     const normalized = charter.replace(/- \[[ xX]\] Enmienda #197 aprobada por humano/g, '- [ ] Enmienda #197 aprobada por humano');

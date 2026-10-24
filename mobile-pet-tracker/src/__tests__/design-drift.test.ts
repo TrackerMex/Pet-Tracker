@@ -62,7 +62,7 @@ describe('#179 R2: enmienda de fidelidad al canvas en Horario e Historial', () =
   const charter = readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
   const heading = '## Enmienda de fidelidad al canvas (2026-10-13)';
   const radiusRule = 'Fuera de la escala, por fidelidad al canvas (#179): `rounded-10` (10 px), «Editar» de la fila de Horario; `rounded-14` (14 px), mosaico de la fila y botones de acción de Horario y horas del panel del día de Historial; `rounded-24` (24 px), resumen de Horario y calendario y panel del día de Historial, que son `View` y no `Card` porque `twMerge` no sustituye `rounded-card` por un radio con nombre de valor.';
-  const actionRule = '    - **Secundarios de Horario** (fidelidad al canvas, #179; labio por estilo, #197): «Editar» `h-9 rounded-10 border-2 border-lip-gray bg-surface` con `style={chunkyLip.neutralCompact}` y «Añadir comida» `h-12.5 rounded-14 border-2 border-lip-gray bg-surface` con `style={chunkyLip.neutral}`, con el labio colgando fuera del alto; el resumen verde lleva `chunkyLip.summary`; «Generar plan» es tonal de la categoría violeta y sigue sin labio hasta #200.';
+  const actionRule = '    - **Secundarios de Horario** (fidelidad al canvas, #179; labio por estilo, #197): «Editar» `h-9 rounded-10 border-2 border-lip-gray bg-surface` con `style={chunkyLip.neutralCompact}` y «Añadir comida» `h-12.5 rounded-14 border-2 border-lip-gray bg-surface` con `style={chunkyLip.neutral}`, con el labio colgando fuera del alto; el resumen verde lleva `chunkyLip.summary`; «Generar plan» es tonal de la categoría violeta con `style={chunkyLip.violet}` (#200 R14).';
 
   it('conserva las directivas, las frases y los tres tamaños de Horario', () => {
     expect(charter.split(heading)).toHaveLength(2);
@@ -91,7 +91,7 @@ describe('#179 R2: enmienda de fidelidad al canvas en Horario e Historial', () =
     expect(radios.split(radiusRule)).toHaveLength(2);
   });
 
-  it('sitúa la receta de secundarios de Horario antes de Sin labio (enmendado por #197 R21)', () => {
+  it('sitúa la receta de secundarios de Horario antes de Sin labio (enmendado por #197 R21) (enmendado por #200 R16)', () => {
     const actions = charter.slice(charter.indexOf('13. **Botón con cuerpo**'));
     expect(actions.split(actionRule)).toHaveLength(2);
     expect(actions.indexOf(actionRule)).toBeLessThan(actions.indexOf('- **Sin labio**:'));

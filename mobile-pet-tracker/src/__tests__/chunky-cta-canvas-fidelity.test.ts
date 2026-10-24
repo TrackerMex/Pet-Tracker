@@ -223,14 +223,14 @@ it('#177 R8.4: destructivos, tonales y reintentos no reciben labio (enmendado po
 
 const preservedLines = [
   "    - **Chip seleccionado** (fidelidad al canvas, #178; labio por estilo, #197): cápsula `rounded-full bg-accent` con `style={chunkyLip.primaryCompact}`, un labio de 3 px que cuelga fuera del alto; el chip sin seleccionar no lleva labio.",
-  "    - **Secundarios de Horario** (fidelidad al canvas, #179; labio por estilo, #197): «Editar» `h-9 rounded-10 border-2 border-lip-gray bg-surface` con `style={chunkyLip.neutralCompact}` y «Añadir comida» `h-12.5 rounded-14 border-2 border-lip-gray bg-surface` con `style={chunkyLip.neutral}`, con el labio colgando fuera del alto; el resumen verde lleva `chunkyLip.summary`; «Generar plan» es tonal de la categoría violeta y sigue sin labio hasta #200.",
+  "    - **Secundarios de Horario** (fidelidad al canvas, #179; labio por estilo, #197): «Editar» `h-9 rounded-10 border-2 border-lip-gray bg-surface` con `style={chunkyLip.neutralCompact}` y «Añadir comida» `h-12.5 rounded-14 border-2 border-lip-gray bg-surface` con `style={chunkyLip.neutral}`, con el labio colgando fuera del alto; el resumen verde lleva `chunkyLip.summary`; «Generar plan» es tonal de la categoría violeta con `style={chunkyLip.violet}` (#200 R14).",
   "    - **Sin labio**: los tonales (`bg-accent-soft`, `bg-default`), los",
   "    - **Secundario compacto de fila** (#174; labio por estilo, #197): el ack de cada fila abierta de Alertas lleva `h-8.5 rounded-10 border-2 border-lip-gray bg-surface px-3` con `style={chunkyLip.neutralCompact}`, etiqueta `text-xs font-extrabold text-foreground` y `hitSlop={TOUCH_SLOP}` (34 + 12 = 46 de diana). Es la única excepción a la receta del secundario neutro; el inventario de #166 R3 lo lista por su `testID`.",
   "    - Primario del detalle de alerta (#180): ack con labio, h-14 rounded-16, etiqueta text-17 font-extrabold; el secundario «Ver en el mapa» es h-13 rounded-16 con el icono Map."
 ];
 const guidelines = readFileSync(join(process.cwd(), '..', 'docs/ui-guidelines.md'), 'utf8');
 const bodyRule = guidelines.split('13. **Botón con cuerpo**')[1].split('## Animación (decisiones por defecto)')[0];
-it('#177 R11.1: la carta declara la receta global y conserva sus excepciones (enmendado por #197 R21)', () => {
+it('#177 R11.1: la carta declara la receta global y conserva sus excepciones (enmendado por #197 R21) (enmendado por #200 R16)', () => {
   for (const literal of [
     'sombra sólida sin desenfoque', '`--lip`', '`--color-lip`', '`--color-lip-gray`', 'fuera del cuerpo',
     '`h-14 rounded-16 bg-accent`', '`style={chunkyLip.primary}`', '`text-17 font-extrabold text-accent-foreground`',
