@@ -627,6 +627,12 @@ Anclas en T: `grep -cF "getByTestId('pet-chip-pet-1')).toBeVisible()"` 1 → 0; 
 
 E11 y E12 van en un commit `test(#196): R2 R5 apply errata E11-E12 to the profile test` antes del verde de R2+R5, como se hizo con E6–E8 en `53d557f4`. Para los `it` que nombran, sustituyen la frase «es parada» igual que E6 a E10. Cualquier otro rojo que cause el doble sigue siendo parada.
 
+**E13 (K40 y K26 tras el merge de dev con #198 y #199, `1635e47d`), firmada.** Corrige E2 y E3, que se escribieron contra el H0 de #200:
+- K40: #199 R3, R14, R18 y R19 dejaron el piso de `cardElements` en `toBeGreaterThanOrEqual(35 - 1 - 1 - 1 + 1)` (= 33). El delta de #196 R1, R5 (−2) se escribe detrás: `toBeGreaterThanOrEqual(35 - 1 - 1 - 1 + 1 - 2)` (= 31). Anclas de E2 tras el merge: `grep -cF 'toBeGreaterThanOrEqual(33)'` = 0 (no 1) y `grep -cF 'toBeGreaterThanOrEqual(35 - 1 - 1 - 1 + 1 - 2)'` = 1. El sufijo ` (enmendado por #196 R1, R5)` va al final del título, detrás de los de #199.
+- K26: Salud consume `variant="avatars"` desde #199 R13, así que la lista queda `['screens/food/index.tsx', 'screens/health/index.tsx']` (ancla `grep -cF "toEqual(['screens/food/index.tsx', 'screens/health/index.tsx'])"` = 1) y el título lleva ` (enmendado por #196 R2)` detrás de ` (enmendado por #199 R13)`.
+
+No cambia ningún requisito de comportamiento. Las demás cuentas del bloque «Cuentas finales» (48 de 49) no se mueven con el merge (medido en `progress/impl_mobile-profile-photo-hero-canvas.md` §Merge de origin/dev).
+
 **Regla de recuentos agregados.** Si al llegar a verde una R se pone rojo un `it` que no está en el inventario y ese `it` solo cuenta usos o ficheros de un literal o token, Codex lo enmienda sin parar. Son de este tipo los inventarios cerrados de radios, de `style={CONTINUOUS_CORNER}`, de `text-NN` o de `<Card`, las sumas de copy y los suelos del escáner HeroUI. La condición es que el delta medido sea exactamente el número de usos que el diff de esa R, tal como esta spec la prescribe, añade o retira. La enmienda:
 
 - da a la cifra o a la entrada su término (`// #196 Rn`, o `; #196 Rn: ±k` dentro de un comentario que ya exista);
@@ -693,6 +699,7 @@ tests no ven (design.md §Supuestos):
   Aceptados los bloques R1+R4 y R2+R5 (D14), R3.2 movido a R1.4 y K9 en dos pasos. El doble de
   reanimated de K38/K39 no se ha corrido en jest: si un `it` previo se pone rojo con él, es parada.
   Anclas re-medidas tras el merge de #197 en `dev` (81cb6d6b).
+  Errata E13 (merge de dev con #198 y #199) firmada también por delegación el 2026-10-24 sobre `1635e47d`.
 - [x] Enmienda #196 aprobada por humano (regla N1 de `docs/ui-guidelines.md`, texto en `design.md` §Texto de la Enmienda #196)
   Firma delegada, mismo mandato.
 - [ ] Smoke de R1, R2, R3, R4, R5, R6, R7 y R9 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
