@@ -195,7 +195,7 @@ describe('#174 R12: inventarios', () => {
     {
       token: 'tracking-caps',
       pattern: /(?<![\w-])tracking-caps\b/,
-      files: ['screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx'], // #179 R5; #174 R12
+      files: ['screens/alerts/index.tsx', 'screens/health/index.tsx', 'screens/meal-schedule/index.tsx'], // #179 R5; #174 R12; #199 R14
     },
     {
       token: 'text-15',
@@ -242,7 +242,7 @@ describe('#174 R12: inventarios', () => {
         'screens/reminders/index.tsx', // #178 R4
       ],
     },
-  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12) (enmendado por #197 R4) (enmendado por #197 R10) (enmendado por #197 R19) (enmendado por #199 R10)', ({ pattern, files }) => {
+  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12) (enmendado por #197 R4) (enmendado por #197 R10) (enmendado por #197 R19) (enmendado por #199 R10) (enmendado por #199 R14)', ({ pattern, files }) => {
     expect(filesMatching(pattern)).toEqual(files);
   });
 

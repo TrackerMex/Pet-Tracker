@@ -30,6 +30,7 @@ import { TOUCH_SLOP } from '../../theme/touch-target';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
 let mockTheme: 'light' | 'dark' = 'light';
+let mockSemanticColors = false;
 
 jest.mock('../../api/pets', () => ({
   listPets: jest.fn(),
@@ -50,6 +51,12 @@ jest.mock('../../components/weight-chart', () => {
   };
 });
 
+jest.mock('../../components/rise-in', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return { RiseIn: ({ delayMs, testID, className, children }: { delayMs: number; testID?: string; className?: string; children: ReactNode }) => React.createElement(View, { delayMs, testID, className }, children) };
+});
+
 jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
 }));
@@ -67,8 +74,8 @@ jest.mock('react-native-safe-area-context', () => ({
 jest.mock('reicon-react-native', () => {
   const { View } = jest.requireActual('react-native');
   const icon = (testID: string) =>
-    function MockIcon({ color, size }: { color?: string; size?: number }) {
-      return <View {...{ size }} testID={testID} style={{ color }} />;
+    function MockIcon({ color, size, strokeWidth }: { color?: string; size?: number; strokeWidth?: number }) {
+      return <View {...{ size, strokeWidth }} testID={testID} style={{ color }} />;
     };
 
   return {
@@ -85,6 +92,7 @@ jest.mock(
   () => ({
     useThemeColors: (tokens: string[]) =>
       tokens.map((token) => {
+        if (mockSemanticColors) return token;
         if (token.startsWith('category-')) return token;
         if (token === 'warning') {
           return mockTheme === 'dark' ? '#FBBF24' : '#F59E0B';
@@ -201,6 +209,7 @@ async function renderHealth(language: 'es' | 'en' = 'es') {
 
 beforeEach(() => {
   mockTheme = 'light';
+  mockSemanticColors = false;
 });
 
 describe('R4: health resuelve la mascota seleccionada', () => {
@@ -834,21 +843,21 @@ describe('#115 R6: la próxima vacuna dice fecha y días restantes', () => {
   afterEach(() => jest.useRealTimers());
 
   it.each([
-    { row: 'a', language: 'es', tz: 'UTC', now: '2026-12-31 12:00', past: '2026-12-30', next: '2026-12-31', days: 'Hoy', label: undefined, date: '31 dic 2026' },
-    { row: 'b', language: 'es', tz: 'UTC', now: '2026-12-31 12:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'Faltan 2 días', date: '2 ene 2027' },
-    { row: 'c', language: 'es', tz: 'UTC', now: '2027-01-01 12:00', past: '2026-12-31', next: '2027-01-01', days: 'Hoy', label: undefined, date: '1 ene 2027' },
-    { row: 'd', language: 'es', tz: 'UTC', now: '2027-01-30 12:00', past: '2027-01-29', next: '2027-02-03', days: '4 d', label: 'Faltan 4 días', date: '3 feb 2027' },
-    { row: 'e', language: 'es', tz: 'UTC', now: '2026-12-31 12:00', past: undefined, next: '2027-12-31', days: '365 d', label: 'Faltan 365 días', date: '31 dic 2027' },
-    { row: 'f', language: 'en', tz: 'UTC', now: '2026-12-31 12:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'In 2 days', date: 'Jan 2, 2027' },
-    { row: 'g', language: 'en', tz: 'UTC', now: '2027-01-01 12:00', past: '2026-12-31', next: '2027-01-01', days: 'Today', label: undefined, date: 'Jan 1, 2027' },
-    { row: 'h', language: 'es', tz: 'America/Mexico_City', now: '2026-12-31 20:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'Faltan 2 días', date: '2 ene 2027' },
-    { row: 'i', language: 'es', tz: 'UTC', now: '2026-12-31 06:00', past: '2026-12-30', next: '2026-12-31', days: 'Hoy', label: undefined, date: '31 dic 2026' },
-    { row: 'j', language: 'es', tz: 'UTC', now: '2026-12-31 06:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'Faltan 2 días', date: '2 ene 2027' },
-    { row: 'k', language: 'es', tz: 'America/New_York', now: '2027-03-13 23:30', past: '2027-03-12', next: '2027-03-15', days: '2 d', label: 'Faltan 2 días', date: '15 mar 2027' },
-    { row: 'l', language: 'es', tz: 'Pacific/Auckland', now: '2027-01-01 10:00', past: '2026-12-31', next: '2027-01-03', days: '2 d', label: 'Faltan 2 días', date: '3 ene 2027' },
-    { row: 'm', language: 'es', tz: 'America/New_York', now: '2027-11-06 12:00', past: '2027-11-05', next: '2027-11-08', days: '2 d', label: 'Faltan 2 días', date: '8 nov 2027' },
-    { row: 'n', language: 'es', tz: 'UTC', now: '2026-12-31 12:00', past: '2026-12-30', next: '2027-01-01', days: '1 d', label: 'Faltan 1 días', date: '1 ene 2027' },
-  ] as const)('fila $row: hoy $now, próxima $next', async ({ language, tz, now, past, next, days, label, date }) => {
+    { row: 'a', language: 'es', tz: 'UTC', now: '2026-12-31 12:00', past: '2026-12-30', next: '2026-12-31', days: 'Hoy', label: undefined, date: '31 de diciembre · hoy' },
+    { row: 'b', language: 'es', tz: 'UTC', now: '2026-12-31 12:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'Faltan 2 días', date: '2 de enero · en 2 días' },
+    { row: 'c', language: 'es', tz: 'UTC', now: '2027-01-01 12:00', past: '2026-12-31', next: '2027-01-01', days: 'Hoy', label: undefined, date: '1 de enero · hoy' },
+    { row: 'd', language: 'es', tz: 'UTC', now: '2027-01-30 12:00', past: '2027-01-29', next: '2027-02-03', days: '4 d', label: 'Faltan 4 días', date: '3 de febrero · en 4 días' },
+    { row: 'e', language: 'es', tz: 'UTC', now: '2026-12-31 12:00', past: undefined, next: '2027-12-31', days: '365 d', label: 'Faltan 365 días', date: '31 de diciembre · en 365 días' },
+    { row: 'f', language: 'en', tz: 'UTC', now: '2026-12-31 12:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'In 2 days', date: 'January 2 · in 2 days' },
+    { row: 'g', language: 'en', tz: 'UTC', now: '2027-01-01 12:00', past: '2026-12-31', next: '2027-01-01', days: 'Today', label: undefined, date: 'January 1 · today' },
+    { row: 'h', language: 'es', tz: 'America/Mexico_City', now: '2026-12-31 20:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'Faltan 2 días', date: '2 de enero · en 2 días' },
+    { row: 'i', language: 'es', tz: 'UTC', now: '2026-12-31 06:00', past: '2026-12-30', next: '2026-12-31', days: 'Hoy', label: undefined, date: '31 de diciembre · hoy' },
+    { row: 'j', language: 'es', tz: 'UTC', now: '2026-12-31 06:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'Faltan 2 días', date: '2 de enero · en 2 días' },
+    { row: 'k', language: 'es', tz: 'America/New_York', now: '2027-03-13 23:30', past: '2027-03-12', next: '2027-03-15', days: '2 d', label: 'Faltan 2 días', date: '15 de marzo · en 2 días' },
+    { row: 'l', language: 'es', tz: 'Pacific/Auckland', now: '2027-01-01 10:00', past: '2026-12-31', next: '2027-01-03', days: '2 d', label: 'Faltan 2 días', date: '3 de enero · en 2 días' },
+    { row: 'm', language: 'es', tz: 'America/New_York', now: '2027-11-06 12:00', past: '2027-11-05', next: '2027-11-08', days: '2 d', label: 'Faltan 2 días', date: '8 de noviembre · en 2 días' },
+    { row: 'n', language: 'es', tz: 'UTC', now: '2026-12-31 12:00', past: '2026-12-30', next: '2027-01-01', days: '1 d', label: 'Faltan 1 días', date: '1 de enero · mañana' },
+  ] as const)('fila $row: hoy $now, próxima $next (enmendado por #199 R14)', async ({ language, tz, now, past, next, days, label, date }) => {
     // Jest copies process.env; Node's environment makes Date observe TZ.
     const hostProcess = process.getBuiltinModule('process');
     const previousTZ = hostProcess.env.TZ;
@@ -883,7 +892,7 @@ describe('#115 R6: la próxima vacuna dice fecha y días restantes', () => {
     { branch: 'hoy', next: '2026-12-31', text: 'Hoy' },
   ] as const;
 
-  it.each(NEXT_CARD_BRANCHES)('ordena la card en icono, columna y días, con la fecha en la columna ($branch)', async ({ next, text }) => {
+  it.each(NEXT_CARD_BRANCHES)('ordena la card en icono, columna y días, con la fecha en la columna ($branch) (enmendado por #199 R14)', async ({ next, text }) => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date(2026, 12 - 1, 31, 12, 0));
     mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [makeVaccine({ nextDoseAt: next })] });
@@ -894,7 +903,7 @@ describe('#115 R6: la próxima vacuna dice fecha y días restantes', () => {
     expect(card.children).toHaveLength(3);
     expect(elementChild(card, 2).props.testID).toBe('next-vaccine-days');
     const column = elementChild(card, 1);
-    expect(column.props.className).toBe('flex-1 gap-1');
+    expect(column.props.className).toBe('flex-1 gap-0.5');
     expect(column.children).toHaveLength(3);
     expect(elementChild(column, 0)).toHaveTextContent('Próxima dosis', { exact: true });
     expect(elementChild(column, 1)).toHaveTextContent('Rabies', { exact: true });
@@ -902,7 +911,7 @@ describe('#115 R6: la próxima vacuna dice fecha y días restantes', () => {
     expect(within(elementChild(card, 0)).getByTestId('health-icon-syringe')).toBeVisible();
   });
 
-  it.each(NEXT_CARD_BRANCHES)('pinta los días con la receta exacta ($branch)', async ({ next, text }) => {
+  it.each(NEXT_CARD_BRANCHES)('pinta los días con la receta exacta ($branch) (enmendado por #199 R14)', async ({ next, text }) => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date(2026, 12 - 1, 31, 12, 0));
     mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [makeVaccine({ nextDoseAt: next })] });
@@ -910,9 +919,9 @@ describe('#115 R6: la próxima vacuna dice fecha y días restantes', () => {
     await waitFor(() => expect(screen.getByTestId('next-vaccine-days')).toHaveTextContent(text, { exact: true }));
     const days = screen.getByTestId('next-vaccine-days');
 
-    expect(days.props.className).toBe('text-lg font-black text-warning-strong');
+    expect(days.props.className).toBe('text-28 font-black text-category-amber-strong');
     expect(days.props.style).toEqual({ fontVariant: ['tabular-nums'] });
-    expect(screen.getByTestId('next-vaccine-date').props.className).toBe('font-normal text-muted');
+    expect(screen.getByTestId('next-vaccine-date').props.className).toBe('text-13 font-semibold text-category-amber-strong');
   });
 });
 
@@ -1015,7 +1024,7 @@ describe('#168 R2: Salud sin hero y con métricas estándar', () => {
     expect(content.props.style).toEqual({ gap: 16 });
   });
 
-  it('pone el PetSwitcher como primer hijo de health-content (enmendado por #199 R13)', async () => {
+  it('pone el PetSwitcher como primer hijo de health-content (enmendado por #199 R13) (enmendado por #199 R14)', async () => {
     await renderHealth();
     const content = await screen.findByTestId('health-content');
     const header = screen.getByTestId('health-header');
@@ -1023,8 +1032,8 @@ describe('#168 R2: Salud sin hero y con métricas estándar', () => {
     const switcher = within(elementChild(header, 1));
     expect(switcher.getByTestId('pet-chip-pet-1')).toBeVisible();
     expect(switcher.getByTestId('pet-chip-pet-2')).toBeVisible();
-    expect(elementChild(content, 0).props.testID).toBe('vaccines-section');
-    expect(elementChild(content, 1).props.testID).toBe('weight-card');
+    expect(elementChild(content, 1).props.testID).toBe('vaccines-section');
+    expect(elementChild(content, 2).props.testID).toBe('weight-card');
   });
 
   it('cambia vacunas y peso al pulsar otra mascota (enmendado por #199 R13)', async () => {
@@ -1091,7 +1100,7 @@ describe('#168 R3: cada vacuna lleva su tile pastel', () => {
     expect(elementChild(tile, 0)).toBe(glyph);
     expect(glyph.props.size).toBe(20);
     expect(glyph.props.style).toEqual({ color });
-    expect(column.props.className).toBe('flex-1 gap-1');
+    expect(column.props.className).toBe('flex-1 gap-0.5');
     expect(column.children).toHaveLength(texts.length);
     texts.forEach((text, index) => {
       const node = within(column).getByText(text);
@@ -1163,5 +1172,72 @@ describe('#199 R13: avatares de Salud', () => {
       expect(switcher.getByTestId(`pet-avatar-fallback-${id}`).props.className.split(' ').slice(0, 2)).toEqual(['text-sm', 'font-extrabold']);
     }
     expect(within(content).queryAllByTestId(/^pet-chip-/)).toHaveLength(0);
+  });
+});
+
+
+function riseDelayOf(node: TestInstance): number | undefined {
+  let host: TestInstance | null = node;
+  while (host) {
+    if (typeof host.props.delayMs === 'number') return host.props.delayMs;
+    host = host.parent;
+  }
+  return undefined;
+}
+
+describe('#199 R14: panel de la próxima dosis', () => {
+  beforeEach(() => {
+    setupHealth168();
+    mockSemanticColors = true;
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(2026, 9, 6, 12));
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [makeVaccine({ nextDoseAt: '2026-10-12' })] });
+  });
+  afterEach(() => jest.useRealTimers());
+  it('#199 R14 next-vaccine-card es un View rounded-24 sobre el pastel ámbar con esquina continua', async () => {
+    await renderHealth();
+    const card = await screen.findByTestId('next-vaccine-card');
+    expect(card.type).toBe('View');
+    expect(card.props.className).toBe('flex-row items-center gap-3.5 rounded-24 p-4 bg-category-amber');
+    expect(card.props.style).toEqual({ borderCurve: 'continuous' });
+    const content = screen.getByTestId('health-content');
+    expect(within(elementChild(content, 0)).getByTestId('next-vaccine-card').props.testID).toBe('next-vaccine-card');
+    expect(elementChild(content, 1).props.testID).toBe('vaccines-section');
+  });
+  it('#199 R14 el tile es size-13 rounded-16 bg-surface con la jeringa a 26 en warning', async () => {
+    await renderHealth();
+    const tile = elementChild(await screen.findByTestId('next-vaccine-card'), 0);
+    expect(tile.props.className).toBe('size-13 items-center justify-center rounded-16 bg-surface');
+    expect(tile.props.style).toEqual({ borderCurve: 'continuous' });
+    const icon = within(tile).getByTestId('health-icon-syringe');
+    expect(icon.props.size).toBe(26);
+    expect(icon.props.strokeWidth).toBe(2.2);
+    expect(icon.props.style.color).toBe('warning');
+  });
+  it('#199 R14 caps, nombre y fecha llevan sus clases exactas', async () => {
+    await renderHealth();
+    const card = await screen.findByTestId('next-vaccine-card');
+    const column = elementChild(card, 1);
+    expect(column.props.className).toBe('flex-1 gap-0.5');
+    expect(elementChild(column, 0).props.className).toBe('text-xs font-extrabold uppercase tracking-caps text-category-amber-strong');
+    expect(elementChild(column, 1).props.className).toBe('text-lg font-black text-foreground');
+    expect(screen.getByTestId('next-vaccine-date').props.className).toBe('text-13 font-semibold text-category-amber-strong');
+    expect(screen.getByTestId('next-vaccine-days').props.className).toBe('text-28 font-black text-category-amber-strong');
+    expect(screen.getByTestId('next-vaccine-days').props.style).toEqual({ fontVariant: ['tabular-nums'] });
+  });
+  it.each([
+    ['31 de diciembre · hoy', '2025-12-31', '2025-12-31'],
+    ['1 de enero · mañana', '2025-12-31', '2026-01-01'],
+    ['12 de octubre · en 6 días', '2026-10-06', '2026-10-12'],
+  ])('#199 R14 la fecha dice %s', async (expected, today, nextDoseAt) => {
+    const [year, month, day] = today.split('-').map(Number);
+    jest.setSystemTime(new Date(year, month - 1, day, 12));
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [makeVaccine({ nextDoseAt })] });
+    await renderHealth();
+    expect(await screen.findByTestId('next-vaccine-date')).toHaveTextContent(expected, { exact: true });
+  });
+  it('#199 R14 entra con RiseIn sin retraso', async () => {
+    await renderHealth();
+    expect(riseDelayOf(await screen.findByTestId('next-vaccine-card'))).toBe(0);
   });
 });
