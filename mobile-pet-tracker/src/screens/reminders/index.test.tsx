@@ -1750,3 +1750,62 @@ describe('#204 R4: cabecera en contenido', () => {
     expect(scroll.props.contentInsetAdjustmentBehavior).toBeUndefined();
   });
 });
+
+describe('#204 R5: estados bajo la cabecera', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it.each([
+    ['reminders-loading'],
+    ['reminders-error'],
+    ['reminders-empty'],
+    ['reminders-action-error'],
+  ])('#204 R5: la cabecera encabeza el estado %s', async (stateId) => {
+    if (stateId === 'reminders-loading') {
+      mockListReminders.mockReturnValue(pending<RemindersState>());
+    } else if (stateId === 'reminders-error') {
+      mockListReminders.mockResolvedValue({ kind: 'error' });
+    } else if (stateId === 'reminders-empty') {
+      mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+    } else {
+      mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [makeReminder()] });
+      mockDeleteReminder.mockResolvedValue({ kind: 'forbidden' });
+    }
+    await renderReminders();
+    if (stateId === 'reminders-action-error') {
+      await screen.findByTestId('reminder-delete-reminder-1');
+      await confirmDelete('reminder-1');
+    }
+    await screen.findByTestId(stateId);
+    const ids = within(screen.getByTestId('screen-reminders'))
+      .getAllByTestId(/^(reminders|reminders-loading|reminders-error|reminders-empty|reminders-action-error)$/)
+      .map((node) => node.props.testID);
+    expect(ids.indexOf('reminders')).toBeGreaterThanOrEqual(0);
+    expect(ids.indexOf('reminders')).toBeLessThan(ids.indexOf(stateId));
+  });
+
+  it('#204 R5: sin mascotas conserva volver encima del vacío', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+    await renderReminders();
+    const frame = await screen.findByTestId('reminders-no-pets-frame');
+    expect(frame.props.className).toBe('flex-1 bg-background');
+    expect(flat(frame.props.style)).toMatchObject({ paddingTop: 52, paddingHorizontal: 20 });
+    expect(frame.children.map((child) => (typeof child === 'string' ? child : child.props.testID))).toEqual([
+      'reminders-no-pets-header',
+      'reminders-no-pets-screen',
+    ]);
+    expect(screen.getByTestId('reminders-no-pets-header-back')).toBeTruthy();
+    expect(screen.queryByTestId('reminders-no-pets-header-title')).toBeNull();
+  });
+});
+
