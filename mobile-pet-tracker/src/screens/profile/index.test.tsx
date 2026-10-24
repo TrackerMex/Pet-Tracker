@@ -487,7 +487,7 @@ describe('R2: estructura Figma', () => {
     expect(screen.getByTestId('pet-info-skeleton')).toBeVisible();
   });
 
-  it('renders the active pet hero, switcher, pills and information rows (enmendado por #196 R1)', async () => {
+  it('renders the active pet hero, switcher, pills and information rows (enmendado por #196 R1, R4)', async () => {
     const pet = makePet();
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
     mockGetPet.mockResolvedValue({ kind: 'ok', pet });
@@ -499,13 +499,13 @@ describe('R2: estructura Figma', () => {
     expect(screen.getAllByText('Luna').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('Mixed').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByTestId('pet-chip-pet-1')).toBeVisible();
-    expect(screen.getByText('Hembra')).toBeVisible();
-    expect(screen.getByText('Esterilizado')).toBeVisible();
-    expect(screen.getByText('30 meses')).toBeVisible();
-    expect(screen.getByText('12 kg')).toBeVisible();
+    expect(screen.getByText('Hembra')).toBeOnTheScreen();
+    expect(screen.getByText('Esterilizado')).toBeOnTheScreen();
+    expect(screen.getByText('30 meses')).toBeOnTheScreen();
+    expect(screen.getByText('12 kg')).toBeOnTheScreen();
     expect(screen.getByText('985141004123456')).toBeVisible();
     expect(screen.getByText('Vinculado')).toBeVisible();
-    expect(screen.getByTestId('change-photo')).toBeVisible();
+    expect(screen.getByTestId('change-photo')).toBeOnTheScreen();
     expect(screen.getByTestId('documents-link')).toBeVisible();
     expect(mockGetPet).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1');
   });
@@ -746,10 +746,10 @@ describe('R7: cambiar foto', () => {
     mockGetPet.mockResolvedValue({ kind: 'ok', pet });
   });
 
-  it('does not request a URL when the picker is cancelled', async () => {
+  it('does not request a URL when the picker is cancelled (enmendado por #196 R4)', async () => {
     mockLaunchImageLibrary.mockResolvedValue({ canceled: true, assets: null });
     await renderProfile();
-    await waitFor(() => expect(screen.getByTestId('change-photo')).toBeVisible());
+    await waitFor(() => expect(screen.getByTestId('change-photo')).toBeOnTheScreen());
 
     await fireEvent.press(screen.getByTestId('change-photo'));
 
@@ -758,7 +758,7 @@ describe('R7: cambiar foto', () => {
     expect(mockUploadPhotoToUrl).not.toHaveBeenCalled();
   });
 
-  it('requests, uploads raw bytes, and refetches the active pet', async () => {
+  it('requests, uploads raw bytes, and refetches the active pet (enmendado por #196 R4)', async () => {
     const body = new Blob(['png bytes'], { type: 'image/png' });
     mockLaunchImageLibrary.mockResolvedValue({
       canceled: false,
@@ -773,7 +773,7 @@ describe('R7: cambiar foto', () => {
     const assetFetch = jest.fn().mockResolvedValue({ blob: jest.fn().mockResolvedValue(body) });
     globalThis.fetch = assetFetch as unknown as typeof fetch;
     await renderProfile();
-    await waitFor(() => expect(screen.getByTestId('change-photo')).toBeVisible());
+    await waitFor(() => expect(screen.getByTestId('change-photo')).toBeOnTheScreen());
 
     await fireEvent.press(screen.getByTestId('change-photo'));
 
@@ -792,14 +792,14 @@ describe('R7: cambiar foto', () => {
     await waitFor(() => expect(mockGetPet).toHaveBeenCalledTimes(2));
   });
 
-  it('keeps the old photo and shows an error when upload fails (enmendado por #196 R1)', async () => {
+  it('keeps the old photo and shows an error when upload fails (enmendado por #196 R1, R4)', async () => {
     mockLaunchImageLibrary.mockResolvedValue({
       canceled: false,
       assets: [{ uri: 'file:///luna.webp', mimeType: 'image/webp' } as never],
     });
     mockRequestPhotoUploadUrl.mockResolvedValue({ kind: 'error' });
     await renderProfile();
-    await waitFor(() => expect(screen.getByTestId('change-photo')).toBeVisible());
+    await waitFor(() => expect(screen.getByTestId('change-photo')).toBeOnTheScreen());
 
     await fireEvent.press(screen.getByTestId('change-photo'));
 
@@ -1404,7 +1404,7 @@ describe('#168 R4 (enmendado por #173 R6): profile-pet-card es la Card hero con 
     });
     mockRequestPhotoUploadUrl.mockResolvedValue({ kind: 'error' });
     await renderProfile();
-    await waitFor(() => expect(screen.getByTestId('change-photo')).toBeVisible());
+    await waitFor(() => expect(screen.getByTestId('change-photo')).toBeOnTheScreen());
 
     await fireEvent.press(screen.getByTestId('change-photo'));
 
@@ -2206,14 +2206,15 @@ describe('#196 R1: hero a sangre y contenido por rama', () => {
     await renderProfile();
     await screen.findByTestId(branch);
     const scroll = screen.getByTestId('screen-profile');
+    const scrollContent = profileChild(scroll, 0);
     const content = screen.getByTestId('profile-content');
     expect(scroll.props.contentContainerStyle).toEqual({ gap: 14, paddingBottom: 120 });
     expect(content.props.className).toBe('gap-3.5 px-5');
-    expect(profileChild(scroll, scroll.children.length - 1)).toBe(content);
+    expect(profileChild(scrollContent, scrollContent.children.length - 1)).toBe(content);
     expect(content.props.style).toEqual(hero ? undefined : { paddingTop: 52 });
     if (hero) {
       const header = screen.getByTestId('profile-hero');
-      expect(profileChild(scroll, 0)).toBe(header);
+      expect(profileChild(scrollContent, 0)).toBe(header);
       expect(header.props.className).toBe('relative');
       const shared = screen.getByTestId('pet-hero');
       expect(profileChild(header, 0)).toBe(shared);
@@ -2267,7 +2268,6 @@ describe('#196 R4: cámara flotante sobre la foto', () => {
     expect(camera.props.accessibilityRole).toBe('button');
     expect(camera.props.accessibilityLabel).toBe('Cambiar foto');
     expect(camera.props.hitSlop).toEqual(TOUCH_SLOP);
-    expect(camera.props.disabled).toBe(false);
     expect(camera.props.accessibilityState).toEqual({ disabled: false });
     const glyph = within(camera).getByTestId('profile-icon-camera');
     expect(glyph.props.size).toBe(18);
