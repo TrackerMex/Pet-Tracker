@@ -23,7 +23,7 @@ import { PopIn } from '@/components/pop-in';
 import { RiseIn } from '@/components/rise-in';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
-import { MOTION_FADE_TIMING, MOTION_SETTLE_SPRING, MOTION_ENTRANCE_OFFSET_Y, MOTION_ENTRANCE_SCALE, MOTION_BLINK_INTERVAL_MS, MOTION_BLINK_TIMING, MOTION_FEEDBACK_MS, MOTION_PING_TIMING } from '../../theme/motion';
+import { MOTION_SETTLE_SPRING, MOTION_ENTRANCE_SCALE, MOTION_BLINK_INTERVAL_MS, MOTION_BLINK_TIMING, MOTION_FEEDBACK_MS, MOTION_PING_TIMING } from '../../theme/motion';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useShadows } from '../../theme/shadows';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -48,17 +48,9 @@ export function WelcomeScreen() {
   }));
   const pingoBlink = useSharedValue(0);
   const blinkStyle = useAnimatedStyle(() => ({ opacity: pingoBlink.get() }));
-  const opacity = useSharedValue(0);
-  const translateY = useSharedValue(reduceMotion ? 0 : MOTION_ENTRANCE_OFFSET_Y);
-  const entranceStyle = useAnimatedStyle(() => ({
-    opacity: opacity.get(),
-    transform: [{ translateY: translateY.get() }],
-  }));
 
   useEffect(() => {
-    opacity.set(withTiming(1, MOTION_FADE_TIMING));
     if (!reduceMotion) {
-      translateY.set(withSpring(0, MOTION_SETTLE_SPRING));
       pingoScale.set(withSpring(1, MOTION_SETTLE_SPRING));
       pingoBlink.set(
         withRepeat(
@@ -70,7 +62,7 @@ export function WelcomeScreen() {
         ),
       );
     }
-  }, [opacity, translateY, reduceMotion, pingoScale, pingoBlink]);
+  }, [reduceMotion, pingoScale, pingoBlink]);
 
   if (status === 'authenticated') return <Redirect href="/home" />;
 
