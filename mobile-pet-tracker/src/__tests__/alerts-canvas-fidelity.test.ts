@@ -195,7 +195,7 @@ describe('#174 R12: inventarios', () => {
     {
       token: 'tracking-caps',
       pattern: /(?<![\w-])tracking-caps\b/,
-      files: ['screens/alerts/index.tsx', 'screens/health/index.tsx', 'screens/meal-schedule/index.tsx'], // #179 R5; #174 R12; #199 R14
+      files: ['screens/alerts/index.tsx', 'screens/food/index.tsx', 'screens/health/index.tsx', 'screens/meal-schedule/index.tsx'], // #179 R5; #174 R12; #200 R5; #199 R14
     },
     {
       token: 'text-15',
@@ -207,6 +207,7 @@ describe('#174 R12: inventarios', () => {
         'screens/alert-detail/index.tsx', // #180 R3
         'screens/alerts/index.tsx', // #174 R12: delta sobre la lista medida en H0
         'screens/docs/index.tsx', // #175 R6
+        'screens/food/index.tsx',
         'screens/forgot/index.tsx',
         'screens/geofence-editor/index.tsx', // #189 R12
         'screens/health/index.tsx', // #199 R16
@@ -223,7 +224,6 @@ describe('#174 R12: inventarios', () => {
       token: 'tracking-title',
       pattern: /(?<![\w-])tracking-title\b/,
       files: [
-        'app/(tabs)/food.tsx',
         'components/celebration.tsx',
         'components/empty-state.tsx', // (enmendado por #176 R8)
         'components/pet-hero-header.tsx', // #195 R6
@@ -233,17 +233,16 @@ describe('#174 R12: inventarios', () => {
         'screens/alert-detail/index.tsx', // #180 R1
         'screens/alerts/index.tsx', // #174 R12: H0 sin consumidores
         'screens/docs/index.tsx', // #175 R5
+        'screens/food/index.tsx',
         'screens/geofence-editor/index.tsx', // #189 R8
       'screens/geofences/index.tsx', // #189 R1
         'screens/health/index.tsx',
-        'screens/meal-schedule/index.tsx', // #179 R4
-        'screens/meals-history/index.tsx', // #179 R9
         'screens/pairing/index.tsx', // #188 R16
         'screens/profile/index.tsx',
         'screens/reminders/index.tsx', // #178 R4
       ],
     },
-  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12) (enmendado por #197 R4) (enmendado por #197 R10) (enmendado por #197 R19) (enmendado por #199 R10) (enmendado por #199 R14) (enmendado por #199 R16)', ({ pattern, files }) => {
+  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12) (enmendado por #197 R4) (enmendado por #197 R10) (enmendado por #197 R19) (enmendado por #200 R1 y #200 R3 y #200 R5 y #200 R12 y #200 R13) (enmendado por #199 R10) (enmendado por #199 R14) (enmendado por #199 R16)', ({ pattern, files }) => {
     expect(filesMatching(pattern)).toEqual(files);
   });
 

@@ -91,6 +91,14 @@ export const MOTION_RISE_TIMING = {
   reduceMotion: ReduceMotion.System,
 };
 
+// #200 R4: ring literal del canvas.
+export const MOTION_RING_TIMING = {
+  duration: 1100,
+  easing: Easing.bezier(0, 0, 0.58, 1),
+  reduceMotion: ReduceMotion.System,
+};
+export const MOTION_RING_DELAY_MS = 200;
+
 // #199 R27: draw, point pop and success-toast timings from the frozen canvas.
 export const MOTION_DRAW_TIMING = {
   duration: 1200,
