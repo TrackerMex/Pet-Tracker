@@ -1,5 +1,5 @@
 import { useChunkyLip } from '../../theme/chunky-lip';
-import { HeaderHeightContext, usePreventRemove } from 'expo-router/react-navigation';
+import { usePreventRemove } from 'expo-router/react-navigation';
 import { Host } from '@expo/ui';
 import ExpoDateTimePicker from '@expo/ui/community/datetime-picker';
 import { useQuery } from '@tanstack/react-query';
@@ -7,7 +7,7 @@ import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Button } from 'heroui-native';
 import { Calendar, Camera } from 'reicon-react-native';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -93,7 +93,6 @@ function FieldLabel({ children }: { children: string }) {
 
 export function AddPetScreen() {
   const chunkyLip = useChunkyLip();
-  const headerHeight = useContext(HeaderHeightContext);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const pets = useQuery({
@@ -364,14 +363,6 @@ export function AddPetScreen() {
             allowEmpty
           />
         </View>
-
-        <Button
-          testID="add-pet-continue"
-          className="h-14 rounded-16 bg-accent" style={chunkyLip.primary}
-          onPress={() => handleContinue()}
-        >
-          <Text className="text-17 font-extrabold text-accent-foreground">{t('addPet.continue')}</Text>
-        </Button>
       </>
     );
   }
@@ -486,17 +477,6 @@ export function AddPetScreen() {
           </View>
         </RiseIn>
 
-        <Button
-          testID="add-pet-submit"
-          className="h-14 rounded-16 bg-accent" style={chunkyLip.primary}
-          isDisabled={submitting}
-          onPress={() => void handleSubmit()}
-        >
-          <Text className="text-17 font-extrabold text-accent-foreground">
-            {t('addPet.savePet')}
-          </Text>
-        </Button>
-
         {formError ? (
           <Text testID="add-pet-error" className="text-danger">{formError}</Text>
         ) : null}
@@ -510,7 +490,7 @@ export function AddPetScreen() {
       testID="screen-add-pet"
       className="flex-1"
       behavior="padding"
-      keyboardVerticalOffset={headerHeight}
+      keyboardVerticalOffset={0}
     >
       <View className="gap-3 bg-background px-5" style={{ paddingTop: insets.top + 12 }}>
         <ScreenHeader testID="add-pet"
@@ -543,6 +523,30 @@ export function AddPetScreen() {
       >
         {step === 1 ? renderStep1() : renderStep2()}
       </ScrollView>
+      {celebratePetName === null ? (
+        <View testID="add-pet-footer" className="bg-background px-5 pt-4" style={{ paddingBottom: Math.max(insets.bottom, 16) }}>
+          {step === 1 ? (
+            <Button
+              testID="add-pet-continue"
+              className="h-14 rounded-16 bg-accent" style={chunkyLip.primary}
+              onPress={() => handleContinue()}
+            >
+              <Text className="text-17 font-extrabold text-accent-foreground">{t('addPet.continue')}</Text>
+            </Button>
+          ) : (
+            <Button
+              testID="add-pet-submit"
+              className="h-14 rounded-16 bg-accent" style={chunkyLip.primary}
+              isDisabled={submitting}
+              onPress={() => void handleSubmit()}
+            >
+              <Text className="text-17 font-extrabold text-accent-foreground">
+                {t('addPet.savePet')}
+              </Text>
+            </Button>
+          )}
+        </View>
+      ) : null}
       {celebratePetName !== null ? (
         <Celebration
           testID="add-pet-celebration"
