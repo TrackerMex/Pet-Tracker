@@ -10,7 +10,6 @@ import { useUniwind } from 'uniwind';
 import { Map } from 'reicon-react-native';
 
 import { AlertPingRing } from './ping-ring';
-import { HomeEntrance } from '../home/home-entrance';
 
 import { ackAlert } from '../../api/alerts';
 import { listGeofences } from '../../api/geofences';
@@ -18,6 +17,7 @@ import { geofenceKeys } from '../../api/query-keys';
 import type { Alert } from '../../api/types';
 import { Card } from '../../components/card';
 import { PetMap, type MapCoordinates } from '../../components/pet-map';
+import { RiseIn } from '../../components/rise-in';
 import { ScreenHeader } from '../../components/screen-header';
 import { useAlertsList } from '../../hooks/use-alerts-list';
 import { useAuth } from '../../providers/auth-provider';
@@ -166,8 +166,8 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
       <ScreenHeader testID="alert-detail" backFallback="/alerts" title={t('alerts.detailTitle')} />
       {alert ? (
         <>
-          <HomeEntrance index={0} testID="alert-detail-card-entrance">{card}</HomeEntrance>
-          {position ? <HomeEntrance index={1} testID="alert-detail-map-entrance"><AlertDetailMap alert={alert} position={position} /></HomeEntrance> : null}
+          <RiseIn delayMs={0} testID="alert-detail-card-entrance">{card}</RiseIn>
+          {position ? <RiseIn delayMs={80} testID="alert-detail-map-entrance"><AlertDetailMap alert={alert} position={position} /></RiseIn> : null}
           <Button
             testID="alert-detail-view-map"
             variant="secondary"
