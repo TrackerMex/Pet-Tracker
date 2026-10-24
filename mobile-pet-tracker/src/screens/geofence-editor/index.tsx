@@ -13,6 +13,7 @@ import { getPet } from '../../api/pets';
 import { getLastPosition } from '../../api/positions';
 import { geofenceKeys, petKeys, positionKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
+import { RiseIn } from '../../components/rise-in';
 import { BackButton } from '../../components/back-button';
 import { ConfirmDialog } from '../../components/confirm-dialog';
 import { ToggleSwitch } from '../../components/toggle-switch';
@@ -168,8 +169,9 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
         <Text testID="geofence-editor-map-hint" className="bg-glass-surface-strong px-3 py-1.5 text-xs font-bold text-foreground">{t('geofenceEditor.mapHint')}</Text>
       </BlurView>}
     </View>
-    <ScrollView testID="geofence-editor-form" className="-mt-6.5 rounded-t-hero bg-surface"
-      style={[CONTINUOUS_CORNER, { flexGrow: 0, flexShrink: 1 }]} keyboardShouldPersistTaps="handled"
+    <RiseIn testID="geofence-editor-form-entrance" delayMs={0} className="-mt-6.5 shrink">
+    <ScrollView testID="geofence-editor-form" className="rounded-t-hero bg-surface"
+      style={[CONTINUOUS_CORNER, { flexGrow: 0, flexShrink: 1 }, shadows.sheet]} keyboardShouldPersistTaps="handled"
       contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 12, gap: 14, paddingBottom: insets.bottom + 36 }}>
       <View testID="geofence-editor-grabber" className="h-1.25 w-10 self-center rounded-full bg-lip-gray" importantForAccessibility="no-hide-descendants" accessibilityElementsHidden />
       {readOnly ? <Text testID="geofence-editor-name-text" selectable className="text-base font-extrabold text-foreground">{zone?.name}</Text> : <>
@@ -219,6 +221,7 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
       {error ? <Text testID="geofence-editor-error" selectable className="text-danger">{error}</Text> : null}
       </>}
     </ScrollView>
+    </RiseIn>
     <ConfirmDialog testID="geofence-editor-delete-dialog" visible={deleteVisible}
       title={t('geofences.deleteTitle', { name: zone?.name ?? '' })} body={t('geofences.deleteBody')}
       cancelLabel={t('geofences.cancel')} confirmLabel={t('geofences.delete')}
