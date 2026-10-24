@@ -5,7 +5,8 @@ import { useCallback, useState } from 'react';
 import { Text, View } from 'react-native';
 import Animated, { useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AlertCircle, AlertTriangle, Location, Plus, Refresh } from 'reicon-react-native';
+import Svg, { Circle, Ellipse, Path } from 'react-native-svg';
+import { AlertCircle, AlertTriangle, Link, Location, Plus, Refresh } from 'reicon-react-native';
 import { useUniwind } from 'uniwind';
 
 import { listGeofences } from '../../api/geofences';
@@ -35,6 +36,7 @@ import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { useChunkyLip } from '../../theme/chunky-lip';
 import { MOTION_RISE_OFFSET_Y } from '../../theme/motion';
 import {
   CONTINUOUS_CORNER,
@@ -114,6 +116,7 @@ export function MapScreen() {
   const insets = useSafeAreaInsets();
   const reducedMotion = useReducedMotion();
   const shadows = useShadows();
+  const chunkyLip = useChunkyLip(); // #201 R13
   // #201 R7
   const [accentForeground, categoryRoseStrong, danger, muted] = useThemeColors(['accent-foreground', 'category-rose-strong', 'danger', 'muted']);
   const { theme } = useUniwind();
@@ -354,13 +357,24 @@ export function MapScreen() {
       ) : null}
 
       {petsReady && last.data?.kind === 'no-tracking' ? (
-        <View className="flex-1 items-center justify-center p-6 bg-background">
+        <View className="flex-1 items-center justify-center bg-background px-6 pt-15 pb-30">
           <EmptyState
+            variant="hero"
             testID="map-no-tracking"
-            pose="collar"
+            pose="talk"
             title={t('map.noTrackingTitle')}
             body={t('map.noTrackingBody')}
             action={canPairCollar ? { label: t('home.pairCollar'), onPress: () => router.push('/pairing') } : undefined}
+            actionIcon={canPairCollar ? <Link size={20} strokeWidth={2.4} color={accentForeground} style={{ marginRight: 8 }} testID="map-no-tracking-action-icon" /> : undefined}
+            badge={
+              <PopIn testID="map-no-tracking-badge" className="absolute bottom-10 right-7.5 size-13 items-center justify-center rounded-16 bg-accent" style={chunkyLip.primary}>
+                <Svg testID="map-no-tracking-collar" width={26} height={26} viewBox="0 0 24 24" fill="none" stroke={accentForeground} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <Ellipse cx="12" cy="8.5" rx="8" ry="4" />
+                  <Path d="M12 12.5v3" />
+                  <Circle cx="12" cy="18.5" r="2.5" />
+                </Svg>
+              </PopIn>
+            }
           />
         </View>
       ) : null}
