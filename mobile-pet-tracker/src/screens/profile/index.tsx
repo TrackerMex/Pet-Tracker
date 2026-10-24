@@ -265,7 +265,7 @@ export function ProfileScreen() {
     <ProfileTile
       testID="reminders-link"
       slot="violet"
-      icon={<Bell size={22} color={violet} />}
+      icon={<Bell size={22} strokeWidth={2.2} color={violet} />}
       label={t('profile.reminders')}
       onPress={() => router.push('/reminders' as Href)}
     />
@@ -440,14 +440,14 @@ export function ProfileScreen() {
               <ProfileTile
                 testID="documents-link"
                 slot="blue"
-                icon={<FileText size={22} color={blue} />}
+                icon={<FileText size={22} strokeWidth={2.2} color={blue} />}
                 label={t('profile.documents')}
                 onPress={() => router.push(`/pets/${pet.id}/docs` as Href)}
               />
               <ProfileTile
                 testID="pairing-link"
                 slot="green"
-                icon={<Wifi size={22} color={green} />}
+                icon={<Wifi size={22} strokeWidth={2.2} color={green} />}
                 label={t('profile.gpsCollar')}
                 onPress={() => router.push('/pairing' as Href)}
               />
@@ -456,7 +456,7 @@ export function ProfileScreen() {
               <ProfileTile
                 testID="geofences-link"
                 slot="amber"
-                icon={<MapIcon size={22} color={amber} />}
+                icon={<MapIcon size={22} strokeWidth={2.2} color={amber} />}
                 label={t('geofences.title')}
                 onPress={() => router.push(`/pets/${pet.id}/geofences` as Href)}
               />
