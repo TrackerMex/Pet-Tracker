@@ -86,21 +86,22 @@ tres ficheros contiene instrucciones dirigidas a un agente.
 ## Dependencias y precondiciones
 
 - **#197 en la base** (`81cb6d6b`): `ScreenHeader` y `BackButton` (`router.canGoBack() ? router.back() : router.replace(fallback)`), `RiseIn`, `useChunkyLip()` con la variante `danger` y `MOTION_RISE_TIMING` / `MOTION_RISE_OFFSET_Y`.
+- **#200, #198 y #199 en la base H0 `9ba176f1`** (E2, E3). Las filas de abajo que las nombran ya están resueltas en H0 y solo quedan como historial. Siguen abiertas #196, #202, #203 y #205.
 - **Sin dependencias nuevas, sin coste, nada en AWS.** `node_modules` ya está instalado en el worktree (`bun install --frozen-lockfile`).
 - **Features paralelas que no están en `dev`** y ficheros compartidos:
 
 | Fichero compartido | Otras features | Riesgo | Resolución |
 |---|---|---|---|
-| `src/theme/motion.ts` y la lista «no exporta nada más» de `motion.test.ts` | #199 (+7 exports), #200 (+2) | Conflicto de texto en la misma lista | Conservar todas las altas, en orden de `.sort()` |
-| `src/app/_layout.tsx` y `layout.test.tsx` (`#95 R4`, `#114 R4`) | #199 (weight-log), #203 (alerts), #200, #202 | Conflicto en líneas vecinas | Cada línea es de una ruta: conservar todas |
-| `__tests__/profile-canvas-fidelity.test.ts` (lista `text-26`, I32) | #196, #200, #203 | Conflicto de texto en la misma lista de ficheros: cada feature que pasa un título a `ScreenHeader` borra su línea | Cada línea es de un fichero: conservar todas las bajas; la lista final es la de `components/screen-header.tsx` más los ficheros que aún pinten `text-26` |
-| `__tests__/alerts-canvas-fidelity.test.ts` (lista `tracking-title`, I33) | #196, #200, #203 | Mismo mecanismo que la lista `text-26`, en la fila `tracking-title` del `it.each` | Conservar todas las bajas; el título del `it.each` acumula un sufijo por feature y R |
+| `src/theme/motion.ts` y la lista «no exporta nada más» de `motion.test.ts` | #199 (+7 exports), #200 (+2), ya en la base `9ba176f1` (E3) | Conflicto de texto en la misma lista | Conservar todas las altas, en orden de `.sort()` |
+| `src/app/_layout.tsx` y `layout.test.tsx` (`#95 R4`, `#114 R4`) | #203 (alerts), #202; #199 (weight-log) y #200 ya en la base `9ba176f1` | Conflicto en líneas vecinas | Cada línea es de una ruta: conservar todas |
+| `__tests__/profile-canvas-fidelity.test.ts` (lista `text-26`, I32) | #196, #203; #198 y #200 ya en la base `9ba176f1` | Conflicto de texto en la misma lista de ficheros: cada feature que pasa un título a `ScreenHeader` borra su línea | Cada línea es de un fichero: conservar todas las bajas; la lista final es la de `components/screen-header.tsx` más los ficheros que aún pinten `text-26` |
+| `__tests__/alerts-canvas-fidelity.test.ts` (lista `tracking-title`, I33) | #196, #203; #198, #199 y #200 ya en la base `9ba176f1` | Mismo mecanismo que la lista `text-26`, en la fila `tracking-title` del `it.each` | Conservar todas las bajas; el título del `it.each` acumula un sufijo por feature y R |
 | `canvas-foundations.test.ts` › `#197 R20` | Toda feature que adopte `ScreenHeader` o `RiseIn` | La primera que mergee lo borra | Si ya no existe, el paso de R1 no tiene efecto |
-| `src/components/screen-header.tsx` | #199, #200, #202, #203 y #205 lo **consumen**; ninguna spec de la ola lo modifica | Si otra añade una prop, conflicto en el tipo | #204 es dueña de la prop opcional `titlePlaceholder` (decisión del leader, D8); la otra rebasa detrás |
+| `src/components/screen-header.tsx` | #202, #203 y #205 lo **consumen** (#199 y #200 ya en la base `9ba176f1`); ninguna spec de la ola lo modifica | Si otra añade una prop, conflicto en el tipo | #204 es dueña de la prop opcional `titlePlaceholder` (decisión del leader, D8); la otra rebasa detrás |
 | Final de `docs/ui-guidelines.md` | Toda feature con enmienda | Conflicto de texto al final | Conservar los bloques en orden de número de feature |
 | Recuentos de `chunky-cta-canvas-fidelity.test.ts` (`#177 R6.2`, `R7.3`) | Toda feature que toque `Button.Label`, `text-17` o radios de 16 | Cifras encadenadas | Re-medir tras cada merge (tasks.md § Cuentas) |
 
-#198 (`EmptyState`) y #196 (`trailing` de `PetSwitcher`) tocan componentes
+#198 (`EmptyState`, ya en la base `9ba176f1`) y #196 (`trailing` de `PetSwitcher`) tocan componentes
 que #204 usa pero no modifica: sin colisión.
 
 ## Decisiones técnicas
@@ -181,7 +182,7 @@ No se tocan: `i18n/catalog.ts`, `ui-copy-table.ts`, `theme/global.css`,
 
 ## Riesgos
 
-- **Conflictos de texto** con #196, #199, #200, #202 y #203 en `motion.test.ts`, `layout.test.tsx`, las listas `text-26` y `tracking-title` de `profile-canvas-fidelity.test.ts` y `alerts-canvas-fidelity.test.ts`, y el final de la carta: ver § Dependencias.
+- **Conflictos de texto** con #196, #202 y #203 (#198, #199 y #200 ya en la base `9ba176f1`) en `motion.test.ts`, `layout.test.tsx`, las listas `text-26` y `tracking-title` de `profile-canvas-fidelity.test.ts` y `alerts-canvas-fidelity.test.ts`, y el final de la carta: ver § Dependencias.
 - **Recuentos encadenados** de `chunky-cta` y `design-drift` si otra feature mergea antes: re-medir con tasks.md § Cuentas antes de cada commit.
 - **Comparar nodos con `toBe`** en los tests de estructura de cabecera puede tumbar el worker de jest en paralelo: comparar por `testID`.
 - **Candados que nacen verdes** (R15, R17): se prueban plantando una mutación (tasks.md).
