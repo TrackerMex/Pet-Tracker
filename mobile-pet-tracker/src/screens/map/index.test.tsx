@@ -42,6 +42,7 @@ import type {
   StoredPosition,
   TripDetail,
 } from '../../api/types';
+import { PetAvatar } from '../../components/pet-avatar';
 import { en, es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
@@ -2222,6 +2223,60 @@ describe('#201 R2: la píldora es de cristal', () => {
     expect([0, 1].map((index) => elementChild(gps, index).props.testID)).toEqual([
       'map-pet-pill-dot', 'map-pet-pill-status',
     ]);
+  });
+});
+
+describe('#201 R3 (#151): la píldora nombra y pinta la mascota de la lista', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({
+      kind: 'ok',
+      pets: [makePet({ name: 'Luna' })],
+    });
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ name: 'Rocky', device: makeDevice('online') }),
+    });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+  });
+
+  const withoutTestId = (node: TestInstance) =>
+    JSON.stringify(node.toJSON(), (key, value: unknown) =>
+      key === 'testID' ? undefined : value,
+    );
+
+  it('#201 R3 (#151): la píldora sigue el nombre de la lista aunque el detalle diga otro', async () => {
+    await renderMap();
+    await waitFor(() =>
+      expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent('GPS activo'),
+    );
+
+    expect(screen.getByTestId('map-pet-pill-name')).toHaveTextContent('Luna');
+    expect(screen.getByTestId('map-pet-pill').props.accessibilityLabel).toBe('Luna, GPS activo');
+  });
+
+  it('#201 R3 (#151): la cara de la píldora es la de la lista', async () => {
+    await renderMap();
+    await waitFor(() =>
+      expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent('GPS activo'),
+    );
+    const pillFace = withoutTestId(screen.getByTestId('map-pet-pill-avatar'));
+
+    const luna = await renderWithProviders(<PetAvatar size={28} name="Luna" photoUrl={null} />);
+    const lunaFace = withoutTestId(luna.getByTestId('pet-avatar'));
+    const rocky = await renderWithProviders(<PetAvatar size={28} name="Rocky" photoUrl={null} />);
+    const rockyFace = withoutTestId(rocky.getByTestId('pet-avatar'));
+
+    expect(pillFace).toBe(lunaFace);
+    expect(pillFace).not.toBe(rockyFace);
+  });
+
+  it('#201 R3 (#151): la sonda distingue las dos caras', async () => {
+    const luna = await renderWithProviders(<PetAvatar size={28} name="Luna" photoUrl={null} />);
+    const lunaFace = withoutTestId(luna.getByTestId('pet-avatar'));
+    const rocky = await renderWithProviders(<PetAvatar size={28} name="Rocky" photoUrl={null} />);
+    const rockyFace = withoutTestId(rocky.getByTestId('pet-avatar'));
+
+    expect(lunaFace).not.toBe(rockyFace);
   });
 });
 
