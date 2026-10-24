@@ -785,6 +785,21 @@ feature en mergear conserva las dos entradas.
 - Además, la baja de `src/app/_layout.tsx` en `SCREEN_FILES` (UL `#194 R5`) se adelanta de R25 a R1, porque R1 mueve la fila de `_layout`; y cada clave nueva del catálogo entra en el `feat` de su primer uso (R5, R9, R14, R17), no en R25: `TranslationKey = keyof typeof en` no admite una clave antes de que exista.
 - HT (`src/__tests__/heroui-text-size-merge.test.ts`) › `#187 R1: el escáner cubre al menos el universo medido (enmendado por #177 R9) (enmendado por #189 R5, R10, R13)` (añadido del leader, 2026-10-23, tras la misma parada en #200): el `<Card` de la gráfica que sale en R3 baja el suelo de `cardElements` de `toBeGreaterThanOrEqual(41)` a `40`, con `; #199 R3: -1` al final del comentario de esa línea y el sufijo ` (enmendado por #199 R3)` tras el de #189, en `test(#199): R3`. Los otros tres suelos (`heroElements` ≥ 197, `classNameElements` ≥ 163, ficheros con hero ≥ 28) solo se tocan si se ponen rojos, y entonces bajan exactamente al valor recibido, con su término en el comentario. Si R3 ya está commiteado cuando leas esto, va en un commit propio `test(#199): R3 lower the Card floor of the HeroUI scanner` antes del siguiente R.
 
+## Erratas del leader (2026-10-24)
+
+Firmadas por delegación (mandato del humano del 2026-10-23, `progress/plan_canvas-parity-2026-10-23.md` §4).
+
+**Hook sin uso en `_layout.tsx` (parada de lint tras R1).** R1 saca el título de la cabecera nativa de `weight-log`, y con eso `const t = useTranslate();` de `RootStack` (`src/app/_layout.tsx`) se queda sin uso: lint da el warning de `t`. Se autoriza quitar esa línea. Si después `grep -c 'useTranslate' src/app/_layout.tsx` da 1 (solo el import), quita también el import. Va en un commit propio `refactor(#199): R1 drop the unused translator from the root stack`, antes de R2. Al comparar `_layout.tsx` con H0, el diff permitido queda en la entrada de `weight-log` más estas una o dos líneas.
+
+**Regla de recuentos agregados.** Si al llegar a verde una R se pone rojo un `it` que no está en el inventario y ese `it` solo cuenta usos o ficheros de un literal o token, Codex lo enmienda sin parar. Son de este tipo los inventarios cerrados de radios, de `style={CONTINUOUS_CORNER}`, de `text-NN` o de `<Card`, las sumas de copy y los suelos del escáner HeroUI. La condición es que el delta medido sea exactamente el número de usos que el diff de esa R, tal como esta spec la prescribe, añade o retira. La enmienda:
+
+- da a la cifra o a la entrada su término (`// #199 Rn`, o `; #199 Rn: ±k` dentro de un comentario que ya exista);
+- da al título el sufijo ` (enmendado por #199 Rn)`, o añade `Rn` al paréntesis de #199 si ya existe;
+- va en el commit rojo de esa R; si ese rojo ya está commiteado, en un commit propio `test(#199): Rn amend the <candado> inventory` antes del siguiente R;
+- se apunta en la tabla «Enmiendas mecánicas» del reporte con candado, antes, después y R.
+
+El fichero de test de ese candado entra en la lista cerrada solo para esa enmienda. Sigue siendo PARADA si el delta no coincide, si el `it` afirma comportamiento o estructura y no un recuento, o si la enmienda exigiría cambiar producción.
+
 ## Desviaciones conscientes del canvas
 
 | Canvas | App | Por qué | Decisión |
