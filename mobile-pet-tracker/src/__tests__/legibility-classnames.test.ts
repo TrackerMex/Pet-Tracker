@@ -164,16 +164,17 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     [join('screens', 'profile', 'index.tsx'), 1 + 1 - 1 + 1 + 1], // #173 R5; #173 R6; #173 R8; #173 R11
     [join('screens', 'add-pet', 'index.tsx'), 1],
     [join('components', 'pet-hero-header.tsx'), 1],
+    [join('screens', 'weight-log', 'index.tsx'), 1], // #199 R4
     [join('screens', 'welcome', 'index.tsx'), 2],
   ];
 
-  it.each(inkSites)('%s pinta con text-accent-strong (%i)', (path, sites) => {
+  it.each(inkSites)('%s pinta con text-accent-strong (%i) (enmendado por #199 R4)', (path, sites) => {
     expect(readSource(path).match(/text-accent-strong\b/g)).toHaveLength(sites);
   });
 
-  it('suma las trece ocurrencias que enumera la spec', () => {
+  it('suma las trece ocurrencias que enumera la spec (enmendado por #199 R4)', () => {
     expect(
-      inkSites.reduce((total, [, sites]) => total + sites, 0),
+      inkSites.reduce((total, [path]) => total + (readSource(path).match(/text-accent-strong\b/g)?.length ?? 0), 0),
     ).toBe(
       13 + 1 + 1
         + 2 // #118 R11
@@ -182,7 +183,8 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
         + 1 // #173 R5
         - 1 // #173 R6
         + 1 // #173 R8
-        + 1, // #173 R11
+        + 1 // #173 R11
+        + 1, // #199 R4
     );
   });
 

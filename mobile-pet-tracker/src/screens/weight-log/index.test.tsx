@@ -945,21 +945,20 @@ describe('#169 R6: resumen del peso en la card de la gráfica', () => {
   it.each([
     ['Pacific/Pago_Pago', '2026-09-30', '+1.4 kg este mes'],
     ['Pacific/Kiritimati', '2026-10-01', null],
-  ] as const)('en %s pinta el peso actual y el delta del día civil', async (timezone, today, delta) => {
+  ] as const)('en %s pinta el peso actual y el delta del día civil (enmendado por #199 R4)', async (timezone, today, delta) => {
     mockGetMe.mockResolvedValue({ kind: 'ok', me: makeProfile(timezone) });
     await renderWeightLog();
     await waitFor(() => expect(screen.getByTestId('weight-date-input').props.value).toBe(today));
 
     const current = screen.getByTestId('weight-current');
     expect(current).toHaveTextContent('12.4 kg', { exact: true });
-    expect(current.props.className).toBe('text-3xl font-black text-foreground');
+    expect(current.props.className).toBe('text-34 font-black text-foreground');
     expect(current.props.style).toEqual({ fontVariant: ['tabular-nums'] });
     if (delta !== null) {
       const deltaText = screen.getByTestId('weight-month-delta-text');
       expect(deltaText).toHaveTextContent('+1.4 kg este mes', { exact: true });
       expect(deltaText.props.style).toEqual({ fontVariant: ['tabular-nums'] });
-      expect(screen.getByTestId('weight-month-delta').props.className)
-        .toBe('flex-row items-center gap-1.5');
+      expect(screen.queryByTestId('weight-month-delta')).toBeNull();
     } else {
       expect(screen.queryByTestId('weight-month-delta')).toBeNull();
     }
@@ -998,16 +997,16 @@ describe('#169 R7: tono del delta del mes', () => {
     ['> 0', [
       makeWeight({ id: 'weight-2', measuredAt: '2026-09-15', weightKg: 12.4 }),
       makeWeight({ id: 'weight-1', measuredAt: '2026-09-02', weightKg: 12.0 }),
-    ], '+0.4 kg este mes', 'text-sm font-semibold text-danger', 'icon-trend-up', 'red', ['icon-trend-down', 'icon-minus']],
+    ], '+0.4 kg este mes', 'text-sm font-extrabold text-danger', 'icon-trend-up', 'red', ['icon-trend-down', 'icon-minus']],
     ['< 0', [
       makeWeight({ id: 'weight-2', measuredAt: '2026-09-15', weightKg: 11.7 }),
       makeWeight({ id: 'weight-1', measuredAt: '2026-08-30', weightKg: 12.0 }),
-    ], '-0.3 kg este mes', 'text-sm font-semibold text-success', 'icon-trend-down', 'green', ['icon-trend-up', 'icon-minus']],
+    ], '-0.3 kg este mes', 'text-sm font-extrabold text-accent-strong', 'icon-trend-down', 'green', ['icon-trend-up', 'icon-minus']],
     ['= 0', [
       makeWeight({ id: 'weight-2', measuredAt: '2026-09-15', weightKg: 12.0 }),
       makeWeight({ id: 'weight-1', measuredAt: '2026-08-30', weightKg: 12.0 }),
-    ], '0 kg este mes', 'text-sm font-semibold text-muted', 'icon-minus', 'gray', ['icon-trend-up', 'icon-trend-down']],
-  ] as const)('rama %s: texto, clase e icono', async (_branch, entries, text, className, iconId, color, absent) => {
+    ], '0 kg este mes', 'text-sm font-extrabold text-muted', 'icon-minus', 'gray', ['icon-trend-up', 'icon-trend-down']],
+  ] as const)('rama %s: texto, clase e icono (enmendado por #199 R4)', async (_branch, entries, text, className) => {
     mockListWeights.mockResolvedValue({ kind: 'ok', weights: [...entries] });
     await renderWeightLog();
     await waitFor(() => expect(screen.getByTestId('weight-month-delta-text'))
@@ -1015,11 +1014,9 @@ describe('#169 R7: tono del delta del mes', () => {
 
     expect(screen.getByTestId('weight-month-delta-text')).toHaveTextContent(text, { exact: true });
     expect(screen.getByTestId('weight-month-delta-text').props.className).toBe(className);
-    const delta = within(screen.getByTestId('weight-month-delta'));
-    const icon = delta.getByTestId(iconId);
-    expect(icon.props.size).toBe(15);
-    expect(icon.props.style.color).toBe(color);
-    for (const other of absent) expect(delta.queryByTestId(other)).toBeNull();
+    expect(screen.queryByTestId('weight-month-delta')).toBeNull();
+    const summary = within(screen.getByTestId('weight-summary'));
+    for (const id of ['icon-trend-up', 'icon-trend-down', 'icon-minus']) expect(summary.queryByTestId(id)).toBeNull();
   });
 });
 
@@ -1271,5 +1268,32 @@ describe('#199 R3: tarjeta de la gráfica de Peso', () => {
     await renderWeightLog();
     const card = await screen.findByTestId('weight-chart-card');
     expect(riseDelayOf(card)).toBe(0);
+  });
+});
+
+describe('#199 R4: cifra y delta del mes', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-09-17T18:00:00Z'));
+    prepareWeightLogTests();
+    mockGetMe.mockResolvedValue({ kind: 'ok', me: makeProfile('America/Mexico_City') });
+  });
+  afterEach(() => jest.useRealTimers());
+  async function show(latest: number) {
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [makeWeight({ measuredAt: '2026-09-15', weightKg: latest }), makeWeight({ id: 'previous', measuredAt: '2026-08-30', weightKg: 12 })] });
+    await renderWeightLog();
+    await screen.findByTestId('weight-current');
+  }
+  it('#199 R4 la cifra usa text-34 font-black text-foreground', async () => {
+    await show(12.4);
+    expect(screen.getByTestId('weight-summary').props.className).toBe('flex-row items-baseline gap-2');
+    expect(screen.getByTestId('weight-current').props.className).toBe('text-34 font-black text-foreground');
+    expect(screen.getByTestId('weight-current').props.style).toEqual({ fontVariant: ['tabular-nums'] });
+  });
+  it.each([['sube', 'text-danger', 12.4], ['baja', 'text-accent-strong', 11.7], ['igual', 'text-muted', 12]] as const)('#199 R4 delta %s pinta %s sin icono', async (_name, tone, latest) => {
+    await show(latest);
+    expect(screen.getByTestId('weight-month-delta-text').props.className).toBe(`text-sm font-extrabold ${tone}`);
+    expect(screen.getByTestId('weight-month-delta-text').props.style).toEqual({ fontVariant: ['tabular-nums'] });
+    expect(screen.queryByTestId('weight-month-delta')).toBeNull();
   });
 });
