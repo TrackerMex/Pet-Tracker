@@ -171,7 +171,7 @@ export function GeofencesScreen({ petId }: { petId: string }) {
         <EmptyState testID="geofences-no-tracking" pose="collar" title={t('geofences.noTrackingTitle')} body={t('geofences.noTrackingBody')} />
       ) : geofences.data.kind === 'unauthorized' ? null : (
         <>
-          <Text testID="geofences-error" selectable className="text-danger">
+          <Text testID="geofences-error" selectable className="text-15 leading-body text-danger">
             {geofences.data.kind === 'unreachable'
               ? t('common.cannotReachServer')
               : t('common.somethingWentWrong')}
@@ -197,7 +197,7 @@ export function GeofencesScreen({ petId }: { petId: string }) {
         </>
       ) : null}
       {actionError ? (
-        <Text testID="geofences-action-error" selectable className="text-danger">{actionError}</Text>
+        <Text testID="geofences-action-error" selectable className="text-15 leading-body text-danger">{actionError}</Text>
       ) : null}
       <ConfirmDialog testID="geofences-delete-dialog" visible={deleteTarget !== null}
         title={t('geofences.deleteTitle', { name: deleteTarget?.name ?? '' })} body={t('geofences.deleteBody')}
