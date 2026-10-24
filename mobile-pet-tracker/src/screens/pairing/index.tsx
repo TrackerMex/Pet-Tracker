@@ -517,37 +517,43 @@ export function PairingScreen() {
               </Card>
             </RiseIn>
 
-            {tracking.data === undefined ? (
-              <Skeleton
-                testID="plan-skeleton"
-                className="h-8 w-44 rounded-full"
-              />
-            ) : null}
+            <RiseIn delayMs={140} testID="device-plan-rise">
+              {tracking.data === undefined ? (
+                <Skeleton
+                  testID="plan-skeleton"
+                  className="h-8 w-44 rounded-full"
+                />
+              ) : null}
 
-            {tracking.data?.kind === 'ok' && tracking.data.tracked ? (
-              <View
-                testID="plan-tracked"
-                className="self-start rounded-full bg-accent-soft px-3 py-2"
-              >
-                <Text className="font-semibold text-success">
-                  {t('pairing.gpsTrackingActive')}
+              {tracking.data?.kind === 'ok' && tracking.data.tracked ? (
+                <View
+                  testID="plan-tracked"
+                  className="h-9 flex-row items-center gap-2 self-start rounded-full bg-tab-pill px-3.5"
+                >
+                  <View
+                    testID="plan-tracked-dot"
+                    className="size-2 rounded-full bg-accent"
+                  />
+                  <Text className="text-sm font-bold text-accent-strong">
+                    {t('pairing.gpsTrackingActive')}
+                  </Text>
+                </View>
+              ) : null}
+
+              {tracking.data?.kind === 'ok' && !tracking.data.tracked ? (
+                <Card testID="plan-free" variant="secondary">
+                  <Text className="font-normal text-foreground" selectable>
+                    {t('pairing.freePlanNoActivePlan')}
+                  </Text>
+                </Card>
+              ) : null}
+
+              {tracking.data && isTrackingError(tracking.data) ? (
+                <Text testID="plan-unknown" className="text-muted" selectable>
+                  {t('pairing.planStatusUnavailable')}
                 </Text>
-              </View>
-            ) : null}
-
-            {tracking.data?.kind === 'ok' && !tracking.data.tracked ? (
-              <Card testID="plan-free" variant="secondary">
-                <Text className="font-normal text-foreground" selectable>
-                  {t('pairing.freePlanNoActivePlan')}
-                </Text>
-              </Card>
-            ) : null}
-
-            {tracking.data && isTrackingError(tracking.data) ? (
-              <Text testID="plan-unknown" className="text-muted" selectable>
-                {t('pairing.planStatusUnavailable')}
-              </Text>
-            ) : null}
+              ) : null}
+            </RiseIn>
 
             <Button
               testID="device-unpair"
