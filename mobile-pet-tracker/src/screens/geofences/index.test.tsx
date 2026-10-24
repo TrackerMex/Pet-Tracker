@@ -98,11 +98,12 @@ beforeEach(() => {
 });
 
 describe('#41 R5: la pantalla pinta la lista de zonas y sus estados', () => {
-  it('pinta el esqueleto mientras carga la lista', async () => {
+  it('pinta el esqueleto mientras carga la lista (enmendado por #202 R10)', async () => {
     mockList.mockReturnValue(new Promise(() => undefined));
     await mount();
     const skeleton = screen.getByTestId('geofences-loading');
-    expect(skeleton.props.className).toBe('skeleton__root h-24 w-full rounded-card');
+    expect(skeleton.props.className).toBe('gap-3');
+    expect(childTestIds(skeleton)).toEqual(['geofences-loading-row-0', 'geofences-loading-row-1']);
     expect(mockList).toHaveBeenCalledTimes(1);
     expect(mockList).toHaveBeenCalledWith(apiUrl, 'token-1', 'pet-1');
     expect(mockGetPet).toHaveBeenCalledWith(apiUrl, 'token-1', 'pet-1');
@@ -1046,4 +1047,33 @@ it('#202 R8: confirmar borra una vez y cierra el diálogo', async () => {
   expect(screen.queryByTestId('geofences-delete-dialog')).toBeNull();
   expect(mockDelete).toHaveBeenCalledTimes(1);
   expect(mockDelete).toHaveBeenCalledWith(apiUrl, 'token-1', 'pet-1', 'geofence-1');
+});
+
+it('#202 R10: la carga pinta dos filas con la forma de la fila', async () => {
+  mockList.mockReturnValue(new Promise(() => undefined));
+  await mount();
+  const loading = screen.getByTestId('geofences-loading');
+  expect(screen.queryByTestId('geofences-loading-row-0')).not.toBeNull();
+  expect(childTestIds(loading)).toEqual(['geofences-loading-row-0', 'geofences-loading-row-1']);
+  for (const i of [0, 1]) {
+    const row = screen.getByTestId(`geofences-loading-row-${i}`);
+    expect(row.props.className).toBe('rounded-card border border-border bg-surface p-4 flex-row items-center gap-3 px-3.5 py-3 shadow-none');
+    expect(row.children).toHaveLength(4);
+    const [tile, column, toggle, trash] = row.children as (typeof row)[];
+    expect(tile.props.className.endsWith('size-11 rounded-14')).toBe(true);
+    expect(column.props.className).toBe('flex-1 gap-1.5');
+    expect(column.children).toHaveLength(2);
+    const [name, radius] = column.children as (typeof row)[];
+    expect(name.props.className.endsWith('h-3.5 rounded-full')).toBe(true);
+    expect(StyleSheet.flatten(name.props.style).width).toBe('55%');
+    expect(radius.props.className.endsWith('h-2.5 rounded-full')).toBe(true);
+    expect(StyleSheet.flatten(radius.props.style).width).toBe('35%');
+    expect(toggle.props.className.endsWith('h-7 w-12 rounded-full')).toBe(true);
+    expect(trash.props.className.endsWith('size-11 rounded-xl')).toBe(true);
+  }
+});
+it('#202 R10: la carga se anuncia como «Cargando zonas»', async () => {
+  mockList.mockReturnValue(new Promise(() => undefined));
+  await mount();
+  expect(screen.getByTestId('geofences-loading').props).toMatchObject({ className: 'gap-3', accessibilityLabel: 'Cargando zonas', accessibilityState: { busy: true } });
 });

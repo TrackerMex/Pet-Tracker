@@ -49,3 +49,11 @@ it('#202 R6: el canvas pinta la papelera sobre rose', () => {
   contains(artboard('Zonas'), 'var(--rose)', 5);
   contains(source('screens/geofences/index.tsx'), 'rounded-xl ${CATEGORY_SLOTS.rose.surface}');
 });
+
+it('#202 R10: el canvas dibuja la fila esqueleto', () => {
+  contains(artboard('ZonasEstados'), 'width: 55%; height: 14px; border-radius: 7px');
+  contains(artboard('ZonasEstados'), 'width: 35%');
+  const production = source('screens/geofences/index.tsx');
+  expect(production.split('<Skeleton').length - 1).toBe(5);
+  for (const literal of ['[0, 1].map', 'size-11 rounded-14', 'h-3.5 rounded-full', "style={{ width: '55%' }}", 'h-2.5 rounded-full', "style={{ width: '35%' }}", 'h-7 w-12 rounded-full', 'size-11 rounded-xl']) contains(production, literal);
+});
