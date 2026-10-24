@@ -2482,6 +2482,26 @@ describe('#201 R7: el botón de modo perdido es rosa con icono', () => {
   });
 });
 
+describe('#201 R8: el error de modo perdido vive en la tarjeta', () => {
+  it('#201 R8: el error de modo perdido es el último hijo de la tarjeta y se anuncia', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+    mockSetLostMode.mockResolvedValueOnce({ kind: 'forbidden' });
+
+    await renderMap();
+    await fireEvent.press(await screen.findByTestId('lost-mode-button'));
+
+    const error = await screen.findByTestId('lost-mode-error');
+    const card = screen.getByTestId('map-stats-card');
+    expect(card.children).toHaveLength(3);
+    expect(elementChild(card, 0).props.className).toBe('gap-2');
+    expect(elementChild(card, 1).props.testID).toBe('lost-mode-button');
+    expect(elementChild(card, 2).props.testID).toBe('lost-mode-error');
+    expect(error.props.accessibilityRole).toBe('alert');
+    expect(error.props.className).toBe('text-center text-xs font-normal text-danger');
+  });
+});
+
 describe('#201 R15: la ruta del día se dibuja con trazo 5', () => {
   it('#201 R15: Mapa pide la ruta de 5', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });

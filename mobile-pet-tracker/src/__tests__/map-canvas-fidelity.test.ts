@@ -291,3 +291,24 @@ describe('#201 R7: el botón de modo perdido es rosa con icono', () => {
     },
   ])('#201 R7: $artboard › $canvas › $production', checkRow);
 });
+
+describe('#201 R8: el error de modo perdido vive en la tarjeta', () => {
+  it.each<Row>([
+    {
+      artboard: 'MapaModoPerdidoError',
+      canvas: 'role="alert"',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'accessibilityRole="alert"',
+      productionCount: 1,
+    },
+    {
+      artboard: 'MapaModoPerdidoError',
+      canvas: 'font-size: 12px; line-height: 16px; color: var(--danger)',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'text-center text-xs font-normal text-danger',
+      productionCount: 1,
+    },
+  ])('#201 R8: $artboard › $canvas › $production', checkRow);
+});
