@@ -23,7 +23,7 @@ implementador; no rebasear después de rellenarlos.
 | R10 | `screens/add-reminder/index.test.tsx` › `#204 R10: …` (4) | — | — | pendiente |
 | R11 | `screens/add-reminder/index.test.tsx` › `#204 R11: Guardar se apoya al pie del formulario` | — | — | pendiente |
 | R12 | `screens/docs/index.test.tsx` › `#204 R12: …` (5) | — | — | pendiente |
-| R13 | `screens/docs/index.test.tsx` › `#204 R13: la cabecera encabeza el estado %s` | — | — | pendiente |
+| R13 | `screens/docs/index.test.tsx` › `#204 R13: la cabecera encabeza el estado %s` | — (nace verde; mutación) | — | pendiente |
 | R14 | `screens/docs/index.test.tsx` › `#204 R14: escalona las filas 0, 60 y 120 ms con RiseIn` | — | — | pendiente |
 | R15 | `__tests__/routine-canvas-fidelity.test.ts` › `#204 R15: %s sigue al canvas` | — (nace verde; mutación) | — | pendiente |
 | R16 | `__tests__/routine-canvas-fidelity.test.ts` › `#204 R16: la carta lleva la Enmienda #204…` | — | — | pendiente |

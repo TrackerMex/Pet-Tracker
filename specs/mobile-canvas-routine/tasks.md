@@ -23,14 +23,20 @@ Por qué este orden: R2 (`titlePlaceholder`) va antes de R12, que lo usa; R3
 R10 deja `flexGrow: 1`, que R11 necesita; R12 crea `docs-header`, que R13
 aserta. Ningún test rojo aserta nodos que cree un R posterior.
 
-R15 y R17 son candados sobre lo ya implementado y **nacen verdes**: van en un
-único commit `test(#204 R15)` / `test(#204 R17)`. Para demostrar que no son
-tautológicos, antes de commitear el implementador planta una mutación por
-candado en la zona que mira (R15: `MOTION_REMINDERS_STAGGER_MS = 60` en
-`theme/motion.ts`; R17: un `#FFFFFF` en un comentario de
-`screens/docs/index.tsx`), ve el rojo, la revierte y lo apunta en su informe
-(tabla «Mutaciones plantadas»). R16 sí tiene rojo (la carta aún no tiene el
-bloque).
+R13, R15 y R17 son candados sobre lo ya implementado y **nacen verdes**: van en
+un único commit `test(#204 R13)` / `test(#204 R15)` / `test(#204 R17)`. R13
+nace verde porque el verde de R12 ya antepone `docs-header` a todos los estados.
+Para demostrar que no son tautológicos, antes de commitear el implementador
+planta una mutación por candado en la zona que mira (R13: mover `docs-header`
+detrás del estado en `screens/docs/index.tsx`; R15:
+`MOTION_REMINDERS_STAGGER_MS = 60` en `theme/motion.ts`; R17: un `#FFFFFF` en
+un comentario de `screens/docs/index.tsx`), ve el rojo, la revierte y lo apunta en su informe
+(tabla «Mutaciones plantadas»; R13 además en «filas que nacen verdes por
+requisito previo»). R16 sí tiene rojo (la carta aún no tiene el bloque).
+
+Enmiendas que **nacen verdes** y no cuentan como rojo: I11 (opcional, R4) e I39
+(R12). El resto de las filas I32 a I38 son rojos estructurales y van en el
+commit rojo de su R.
 
 ## Notas para el handoff a Codex
 
@@ -64,7 +70,20 @@ antes, re-medir la base y sumar el mismo delta.
 | `#177 R6.2`: expresión de `Button\.Label` | `82 - 30 - 2 - 2 - 2` | `- 2 - 2` (R8, R9) | 42 |
 | `#177 R6.2`: expresión de `text-17` | `8 + 15 + 1 + 1 + 1 + 1` | `+ 1` (R9) | 28 |
 | `#177 R7.3`: total de radios 16 | `26 + 1 + 1 + 1 + 2` | `+ 1` (R9) | 32 |
-| Tests de jest (`bunx jest` en `mobile-pet-tracker`) | N medido por el implementador | +49 `it` nuevos (R1 3, R2 2, R3 1, R4 3, R5 5, R6 1, R7 1, R8 1, R9 1, R10 4, R11 1, R12 5, R13 4, R14 1, R15 11, R16 1, R17 4) − 3 filas (I2 2, I4 1) − los `it` de `#197 R20` (I1, medidos al borrarlos) | N + 46 − I1 |
+| `grep -cF 'text-26' mobile-pet-tracker/src/screens/reminders/index.tsx mobile-pet-tracker/src/screens/docs/index.tsx mobile-pet-tracker/src/screens/add-reminder/index.tsx` | 1, 1 y 0 | −1 (R4), −1 (R12), 0 | 0, 0 y 0 |
+| `grep -cF 'tracking-title' mobile-pet-tracker/src/screens/reminders/index.tsx mobile-pet-tracker/src/screens/docs/index.tsx mobile-pet-tracker/src/screens/add-reminder/index.tsx` | 1, 1 y 1 | −1 (R4), −1 (R12), −1 (R10) | 0, 0 y 0 |
+| `grep -cF "'screens/reminders/index.tsx', // #178 R4" mobile-pet-tracker/src/__tests__/profile-canvas-fidelity.test.ts mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts` (I32, I33) | 1 y 1 | −1 y −1 (R4) | 0 y 0 |
+| `grep -cF "'screens/docs/index.tsx', // #175 R5" mobile-pet-tracker/src/__tests__/profile-canvas-fidelity.test.ts mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts` (I32, I33) | 1 y 1 | −1 y −1 (R12) | 0 y 0 |
+| `grep -cF "'screens/add-reminder/index.tsx', // #178 R10" mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts` (I33) | 1 | −1 (R10) | 0 |
+| `grep -cF "'View'" mobile-pet-tracker/src/screens/docs/index.test.tsx mobile-pet-tracker/src/screens/docs-upload-form/index.test.tsx` (I35 con I21 dentro, I36) | 10 y 2 | −10 y −2 (R12) | 0 y 0 |
+| `grep -cF 'header.children' mobile-pet-tracker/src/screens/docs/index.test.tsx` (I34) | 3 | −3 (R12) | 0 |
+| `grep -cF 'header.props.className' mobile-pet-tracker/src/screens/docs/index.test.tsx` (I34) | 1 | −1 (R12) | 0 |
+| `grep -cF 'una sola cabecera nativa' mobile-pet-tracker/src/screens/docs/index.test.tsx` (I37) | 1 | −1 (R1) | 0 |
+| `grep -cF "queryByTestId('docs-back')" mobile-pet-tracker/src/screens/docs/index.test.tsx` (I39) | 1 | −1 (R12) | 0 |
+| `grep -cF "queryByTestId('add-reminder-back')" mobile-pet-tracker/src/screens/add-reminder/index.test.tsx` (I38) | 1 | −1 (R10) | 0 |
+| `grep -cF 'mockHomeEntrance' mobile-pet-tracker/src/screens/docs-upload-form/index.test.tsx` | 2 | −2 (R14, commit propio tras el verde) | 0 |
+| `bunx jest --runTestsByPath src/__tests__/heroui-text-size-merge.test.ts` (en `mobile-pet-tracker`); cifras del escáner `#187 R1`: ficheros con hero / `heroElements` / `cardElements` / `classNameElements`, medidas con una réplica del escáner | 32 / 213 / 41 / 171 (suelos 28 / 197 / 41 / 163) | −1 hero y −1 `className` en R8 y lo mismo en R9 (los dos `<Button.Label>` de Recordatorios pasan a `Text`); `<Card` y ficheros con hero, sin cambio | verde; 32 / 211 / 41 / 169 |
+| Tests de jest (`bunx jest` en `mobile-pet-tracker`) | N medido por el implementador | +49 `it` nuevos (R1 3, R2 2, R3 1, R4 3, R5 5, R6 1, R7 1, R8 1, R9 1, R10 4, R11 1, R12 5, R13 4, R14 1, R15 11, R16 1, R17 4) − 3 filas (I2 2, I4 1) − 1 `it` (I37) − los `it` de `#197 R20` (I1, medidos al borrarlos) | N + 45 − I1 |
 | Suites de jest | M | +1 (`routine-canvas-fidelity.test.ts`) | M + 1 |
 
 El resto de anclas: requirements.md § Base medida, columna «Después».
@@ -72,7 +91,7 @@ El resto de anclas: requirements.md § Base medida, columna «Después».
 ## Bloques por requisito
 
 ### R1 — Rutas sin cabecera nativa
-1. Rojo: describe `#204 R1` en `src/app/__tests__/layout.test.tsx` (it.each de 3 rutas); enmiendas I2 e I4; borrar entero el describe `#197 R20` (I1).
+1. Rojo: describe `#204 R1` en `src/app/__tests__/layout.test.tsx` (it.each de 3 rutas); enmiendas I2 e I4; borrar entero el describe `#197 R20` (I1); borrar entero, sin sufijo, el `it` `conserva una sola cabecera nativa de Documentos con título vacío` de `src/screens/docs/index.test.tsx` (I37). Ficheros de test de R1 (lista cerrada): `src/app/__tests__/layout.test.tsx`, `src/__tests__/canvas-foundations.test.ts` y `src/screens/docs/index.test.tsx` (solo para I37).
 2. Verde: `src/app/_layout.tsx`, las tres `Stack.Screen` a `options={{ headerShown: false }}`.
 3. Refactor: ninguno previsto.
 
@@ -87,7 +106,7 @@ El resto de anclas: requirements.md § Base medida, columna «Después».
 3. Refactor: ninguno.
 
 ### R4 — Cabecera y marco de Recordatorios
-1. Rojo: tres `it` `#204 R4` en `src/screens/reminders/index.test.tsx`; enmiendas I3, I6, I7, I8, I9, I10, I11.
+1. Rojo: tres `it` `#204 R4` en `src/screens/reminders/index.test.tsx`; enmiendas I3, I6, I7, I8, I9, I10 (rojos) y la parte R4 de I32 e I33 (quitar la línea `'screens/reminders/index.tsx', // #178 R4` de las listas `text-26` y `tracking-title`, con su sufijo). I11 es opcional (higiene, nace verde): no cuenta como rojo de R4. El doble de `expo-router` del fichero, hoy `router: { push: jest.fn(), back: jest.fn() }` (con `useFocusEffect` y `useIsFocused` al lado), gana `canGoBack: jest.fn(), replace: jest.fn()` dentro de `router` para el `it` «volver sin historial» (el mismo commit rojo). Ficheros de test de R4 (lista cerrada): `src/screens/reminders/index.test.tsx`, `src/__tests__/profile-canvas-fidelity.test.ts` y `src/__tests__/alerts-canvas-fidelity.test.ts`.
 2. Verde: `ScreenHeader testID="reminders"` con `accessory` «Nuevo», marco `insets.top + 12`, sin `contentInsetAdjustmentBehavior`.
 3. Refactor: quitar imports que queden sin uso.
 
@@ -117,7 +136,7 @@ El resto de anclas: requirements.md § Base medida, columna «Después».
 3. Refactor: ninguno.
 
 ### R10 — Cabecera, marco y teclado de Agregar
-1. Rojo: cuatro `it` `#204 R10` en `src/screens/add-reminder/index.test.tsx`; enmiendas I16, I17, I18, I19.
+1. Rojo: cuatro `it` `#204 R10` en `src/screens/add-reminder/index.test.tsx`; enmiendas I16, I17, I18, I19, I38 (quitar la aserción de nulo de `add-reminder-back` y renombrar el `it`) y la parte R10 de I33 (quitar la línea `'screens/add-reminder/index.tsx', // #178 R10` de la lista `tracking-title`, con su sufijo). El doble de `expo-router` del fichero, hoy `router: { push: jest.fn(), back: jest.fn(), dismissTo: jest.fn() }`, gana `canGoBack: jest.fn(), replace: jest.fn()` dentro de `router` para el `it` «volver sin historial» (el mismo commit rojo). Ficheros de test de R10 (lista cerrada): `src/screens/add-reminder/index.test.tsx` y `src/__tests__/alerts-canvas-fidelity.test.ts`.
 2. Verde: `ScreenHeader testID="add-reminder" size={24}`, marco con `flexGrow: 1`, sin `HeaderHeightContext` ni `keyboardVerticalOffset`.
 3. Refactor: quitar `useContext` si queda sin uso.
 
@@ -127,18 +146,18 @@ El resto de anclas: requirements.md § Base medida, columna «Después».
 3. Refactor: ninguno.
 
 ### R12 — Cabecera, marco y teclado de Documentos
-1. Rojo: cinco `it` `#204 R12` en `src/screens/docs/index.test.tsx`; enmiendas I20 e I21.
+1. Rojo: cinco `it` `#204 R12` en `src/screens/docs/index.test.tsx`; enmiendas I20, I21, I34 (reescribir `pinta una columna sin gap con eyebrow y título exactos` para leer `docs-header-eyebrow` y `docs-header-title`), I35 (`'View'` a `'docs-header'` en las diez listas, I21 incluida), I36 (lo mismo en `src/screens/docs-upload-form/index.test.tsx`), la parte R12 de I32 e I33 (quitar la línea `'screens/docs/index.tsx', // #175 R5` de las listas `text-26` y `tracking-title`, con su sufijo) e I39 (higiene, nace verde: quitar la aserción de nulo de `docs-back` y sufijar el `it`). El doble de `expo-router` de `src/screens/docs/index.test.tsx`, hoy `jest.mock('expo-router', () => ({ router: { push: jest.fn(), back: jest.fn(), dismissTo: jest.fn() } }));`, gana `canGoBack: jest.fn(), replace: jest.fn()` dentro de `router` para el `it` «volver sin historial lleva a Perfil» (el mismo commit rojo). Ficheros de test de R12 (lista cerrada): `src/screens/docs/index.test.tsx`, `src/screens/docs-upload-form/index.test.tsx`, `src/__tests__/profile-canvas-fidelity.test.ts` y `src/__tests__/alerts-canvas-fidelity.test.ts`.
 2. Verde: `ScreenHeader testID="docs-header"` con eyebrow, `title` o `titlePlaceholder`; marco `insets.top + 12`; sin `HeaderHeightContext` ni `keyboardVerticalOffset`.
 3. Refactor: ninguno.
 
 ### R13 — Estados de Documentos bajo la cabecera
-1. Rojo: it.each `#204 R13` (4 estados). Si nace verde por R12, apuntarlo en el informe («filas que nacen verdes por requisito previo») y plantar una mutación (mover `docs-header` detrás del estado) para ver su rojo.
-2. Verde: sin cambio de producción esperado más allá de R12.
+1. Nace verde por R12 (su verde ya antepone `docs-header` a todos los estados): commit único `test(#204 R13)` con el it.each `#204 R13` (4 estados). Apuntarlo en el informe («filas que nacen verdes por requisito previo») y plantar una mutación (mover `docs-header` detrás del estado) para ver su rojo, revertirla y anotarla en «Mutaciones plantadas».
+2. Verde: ninguno (sin cambio de producción más allá de R12).
 3. Refactor: ninguno.
 
 ### R14 — `RiseIn` en filas de Documentos
 1. Rojo: `it('#204 R14: …')` con el doble de `rise-in`; enmienda I22.
-2. Verde: `RiseIn` con `delayMs={index * MOTION_STAGGER_MS}`; quitar el import de `home-entrance`.
+2. Verde: `RiseIn` con `delayMs={index * MOTION_STAGGER_MS}`; quitar el import de `home-entrance`. Al llegar a verde correr también `bunx jest --runTestsByPath src/screens/docs-upload-form/index.test.tsx`: ese fichero renderiza `DocsRoute` y hoy dobla `HomeEntrance` a un `View`; tras R14 pinta `RiseIn` real sobre `react-native-reanimated/mock`. Si queda verde, el doble `mockHomeEntrance` (la constante `const mockHomeEntrance = jest.fn…` y el `jest.mock('../home/home-entrance', …)`) queda muerto y se borra, autorizado, en un commit propio `test(#204 R14): drop the dead home-entrance double in docs-upload-form` justo después del verde (nunca dentro del commit verde). Si el fichero se pone rojo por la forma del árbol de las filas, es parada (rojo no inventariado). Ficheros de test de R14 (lista cerrada): `src/screens/docs/index.test.tsx` y `src/screens/docs-upload-form/index.test.tsx` (solo para ese borrado).
 3. Refactor: ninguno.
 
 ### R15 — Fidelidad al canvas

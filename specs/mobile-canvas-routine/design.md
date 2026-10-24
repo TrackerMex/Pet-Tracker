@@ -92,9 +92,11 @@ tres ficheros contiene instrucciones dirigidas a un agente.
 | Fichero compartido | Otras features | Riesgo | Resolución |
 |---|---|---|---|
 | `src/theme/motion.ts` y la lista «no exporta nada más» de `motion.test.ts` | #199 (+7 exports), #200 (+2) | Conflicto de texto en la misma lista | Conservar todas las altas, en orden de `.sort()` |
-| `src/app/_layout.tsx` y `layout.test.tsx` (`#95 R4`, `#114 R4`) | #199 (`alerts`), #200, #202 | Conflicto en líneas vecinas | Cada línea es de una ruta: conservar todas |
+| `src/app/_layout.tsx` y `layout.test.tsx` (`#95 R4`, `#114 R4`) | #199 (weight-log), #203 (alerts), #200, #202 | Conflicto en líneas vecinas | Cada línea es de una ruta: conservar todas |
+| `__tests__/profile-canvas-fidelity.test.ts` (lista `text-26`, I32) | #196, #200, #203 | Conflicto de texto en la misma lista de ficheros: cada feature que pasa un título a `ScreenHeader` borra su línea | Cada línea es de un fichero: conservar todas las bajas; la lista final es la de `components/screen-header.tsx` más los ficheros que aún pinten `text-26` |
+| `__tests__/alerts-canvas-fidelity.test.ts` (lista `tracking-title`, I33) | #196, #200, #203 | Mismo mecanismo que la lista `text-26`, en la fila `tracking-title` del `it.each` | Conservar todas las bajas; el título del `it.each` acumula un sufijo por feature y R |
 | `canvas-foundations.test.ts` › `#197 R20` | Toda feature que adopte `ScreenHeader` o `RiseIn` | La primera que mergee lo borra | Si ya no existe, el paso de R1 no tiene efecto |
-| `src/components/screen-header.tsx` | #199, #200, #202 lo **consumen**; ninguna spec medida lo modifica | Si otra añade una prop, conflicto en el tipo | #204 es dueña de `titlePlaceholder`; la otra rebasa detrás |
+| `src/components/screen-header.tsx` | #199, #200, #202, #203 y #205 lo **consumen**; ninguna spec de la ola lo modifica | Si otra añade una prop, conflicto en el tipo | #204 es dueña de la prop opcional `titlePlaceholder` (decisión del leader, D8); la otra rebasa detrás |
 | Final de `docs/ui-guidelines.md` | Toda feature con enmienda | Conflicto de texto al final | Conservar los bloques en orden de número de feature |
 | Recuentos de `chunky-cta-canvas-fidelity.test.ts` (`#177 R6.2`, `R7.3`) | Toda feature que toque `Button.Label`, `text-17` o radios de 16 | Cifras encadenadas | Re-medir tras cada merge (tasks.md § Cuentas) |
 
@@ -148,7 +150,8 @@ de `domain`, `application`, `infrastructure` ni del backend.
 | `screens/docs/index.tsx` | cabecera con esqueleto, marco, teclado, `RiseIn` | R12 a R14 |
 | `../docs/ui-guidelines.md` | bloque «Enmienda #204» al final | R16 |
 | Tests nuevos o ampliados | `app/__tests__/layout.test.tsx`, `components/__tests__/screen-header.test.tsx`, `theme/__tests__/motion.test.ts`, `screens/reminders/index.test.tsx`, `screens/add-reminder/index.test.tsx`, `screens/docs/index.test.tsx`, `__tests__/routine-canvas-fidelity.test.ts` (nuevo) | R1 a R17 |
-| Tests enmendados | los del inventario I1 a I31 (requirements.md), incluidos `canvas-foundations`, `legibility-classnames`, `chunky-cta-canvas-fidelity` y `design-drift` | — |
+| Tests enmendados | los del inventario I1 a I39 (requirements.md), incluidos `canvas-foundations`, `legibility-classnames`, `chunky-cta-canvas-fidelity` y `design-drift`; y, desde la auditoría de inventario, `__tests__/profile-canvas-fidelity.test.ts` (I32: R4, R12), `__tests__/alerts-canvas-fidelity.test.ts` (I33: R4, R10, R12) y `screens/docs-upload-form/index.test.tsx` (I36: R12; en R14 también, solo para borrar su doble muerto de `home-entrance`) | R1 a R14 |
+| Ficheros de test que toca R12 (lista cerrada) | `screens/docs/index.test.tsx` (cinco `it` nuevos, I20, I21, I34, I35, I39), `screens/docs-upload-form/index.test.tsx` (I36), `__tests__/profile-canvas-fidelity.test.ts` (I32) y `__tests__/alerts-canvas-fidelity.test.ts` (I33) | R12 |
 
 No se tocan: `i18n/catalog.ts`, `ui-copy-table.ts`, `theme/global.css`,
 `theme/chunky-lip.ts`, `components/rise-in.tsx`, `components/back-button.tsx`,
@@ -178,7 +181,7 @@ No se tocan: `i18n/catalog.ts`, `ui-copy-table.ts`, `theme/global.css`,
 
 ## Riesgos
 
-- **Conflictos de texto** con #199, #200 y #202 en `motion.test.ts`, `layout.test.tsx` y el final de la carta: ver § Dependencias.
+- **Conflictos de texto** con #196, #199, #200, #202 y #203 en `motion.test.ts`, `layout.test.tsx`, las listas `text-26` y `tracking-title` de `profile-canvas-fidelity.test.ts` y `alerts-canvas-fidelity.test.ts`, y el final de la carta: ver § Dependencias.
 - **Recuentos encadenados** de `chunky-cta` y `design-drift` si otra feature mergea antes: re-medir con tasks.md § Cuentas antes de cada commit.
 - **Comparar nodos con `toBe`** en los tests de estructura de cabecera puede tumbar el worker de jest en paralelo: comparar por `testID`.
 - **Candados que nacen verdes** (R15, R17): se prueban plantando una mutación (tasks.md).
