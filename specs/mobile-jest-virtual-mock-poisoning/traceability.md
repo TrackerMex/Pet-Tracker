@@ -33,3 +33,5 @@ prueban que el barrido ve `(tabs)`, `.ts` fuera de `__tests__`, `doMock`, clave 
 al propio candado.
 
 Criterios de cierre medidos por el implementer en `progress/impl_mobile-jest-virtual-mock-poisoning.md`: CC1 (A y B), CC2, CC3 y CC5. CC4 lo mide el leader con `./init.sh`; CC6 es este fichero.
+
+Cierre del leader (2026-10-24): el `./init.sh` del leader sobre `b1b8ec8e` salió con exit 0 (móvil 147/147 suites, 5018/5018 tests, 1 snapshot; CC4 exacto), y el reviewer aprobó ahí (`progress/review_mobile-jest-virtual-mock-poisoning.md`, 0 bloqueantes, 5 no bloqueantes). CC1 lo reprodujo el reviewer con caché vacía en un worktree temporal: A `4500e89b` exit 1 (único rojo `#172 R2`, `#0D1117`) y B `c56e7bc7` exit 0. Sin smoke: la feature solo toca tests.
