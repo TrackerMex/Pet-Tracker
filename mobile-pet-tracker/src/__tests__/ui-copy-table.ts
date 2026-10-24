@@ -74,7 +74,8 @@ export const R3_HOME: UseRow[] = [
   { file: 'src/screens/home/index.tsx', key: 'home.noLocationDataYet' },
   { file: 'src/screens/home/index.tsx', key: 'home.lastSeen' },
   { file: 'src/screens/home/index.tsx', key: 'home.home' },
-  { file: 'src/screens/home/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/home/index.tsx', key: 'home.loadPetsErrorTitle' }, // #198 R15
+  { file: 'src/screens/home/index.tsx', key: 'home.loadPetsErrorBody' }, // #198 R15
   { file: 'src/screens/home/index.tsx', key: 'common.retry' },
   { file: 'src/screens/home/index.tsx', key: 'common.noPetsYet' },
   { file: 'src/screens/home/index.tsx', key: 'common.noPetsBody' }, // #155 R4
@@ -157,7 +158,7 @@ export const R5_HEALTH: UseRow[] = [
   { file: 'src/utils/form-rules.ts', key: 'validation.weightRange' }, // #186 R2
   { file: 'src/utils/form-rules.ts', key: 'validation.bodyConditionRange' }, // #186 R2
   { file: 'src/utils/form-rules.ts', key: 'validation.invalidDate' }, // #186 R2
-  { file: 'src/app/_layout.tsx', key: 'weightLog.weightLog' }, // #95 R4
+  { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.weightLog' }, // #199 R1
   { file: 'src/screens/health/index.tsx', key: 'health.health' },
   { file: 'src/screens/health/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/health/index.tsx', key: 'common.retry' },
@@ -196,6 +197,13 @@ export const R5_HEALTH: UseRow[] = [
   { file: 'src/components/weight-chart.tsx', key: 'weightChart.notEnoughDataYet' },
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.monthDelta' },
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.weightLogged' },
+  { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.history' }, // #199 R9
+  { file: 'src/screens/health/index.tsx', key: 'health.appliedOn' }, // #199 R17
+  { file: 'src/screens/health/index.tsx', key: 'health.nextOn' }, // #199 R17
+  { file: 'src/screens/health/index.tsx', key: 'health.nextDoseToday' }, // #199 R14
+  { file: 'src/screens/health/index.tsx', key: 'health.nextDoseTomorrow' }, // #199 R14
+  { file: 'src/screens/health/index.tsx', key: 'health.nextDoseInDays' }, // #199 R14
+  { file: 'src/components/weight-chart.tsx', key: 'weightChart.lastSixMonths' }, // #199 R5
 ];
 
 export const R6_FOOD: UseRow[] = [

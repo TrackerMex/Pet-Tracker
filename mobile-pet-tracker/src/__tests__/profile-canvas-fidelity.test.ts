@@ -35,8 +35,8 @@ function filesMatching(pattern: RegExp): string[] {
 }
 
 describe('#173 R4: avatars solo en Perfil', () => {
-  it('limita la variante nueva al consumidor Perfil (enmendado por #200 R2)', () => {
-    expect(filesMatching(/variant="avatars"/)).toEqual(['screens/food/index.tsx', 'screens/profile/index.tsx']);
+  it('limita la variante nueva al consumidor Perfil (enmendado por #200 R2) (enmendado por #199 R13)', () => {
+    expect(filesMatching(/variant="avatars"/)).toEqual(['screens/food/index.tsx', 'screens/health/index.tsx', 'screens/profile/index.tsx']); // #200 R2; #199 R13
   });
 });
 
@@ -57,7 +57,7 @@ describe('#173 R2: inventario de radios nuevos', () => {
 });
 
 describe('#173 R2.4: inventario de tamaños nuevos', () => {
-  it('reserva text-26 al nombre de la mascota en Perfil (enmendado por #176 R8) (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #197 R19)', () => {
+  it('reserva text-26 al nombre de la mascota en Perfil (enmendado por #176 R8) (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #197 R19) (enmendado por #198 R15)', () => {
     expect(filesMatching(/\btext-26\b/)).toEqual([
       'components/empty-state.tsx', // (enmendado por #176 R8)
       'components/screen-header.tsx',
@@ -66,11 +66,12 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/docs/index.tsx', // #175 R5
       'screens/geofence-editor/index.tsx', // #189 R8
       'screens/geofences/index.tsx', // #189 R1
+      'screens/home/index.tsx', // #198 R15
       'screens/profile/index.tsx',
       'screens/reminders/index.tsx', // #178 R4
     ]);
   });
-  it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8) (enmendado por #189 R6) (enmendado por #200 R8)', () => {
+  it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8) (enmendado por #189 R6) (enmendado por #200 R8) (enmendado por #199 R7) (enmendado por #199 R14) (enmendado por #198 R5)', () => {
     expect(filesMatching(/\btext-13\b/)).toEqual([
       'components/form-error.tsx',
       'screens/add-pet/index.tsx', // #191 R11
@@ -82,6 +83,8 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/food/index.tsx',
       'screens/forgot/index.tsx',
       'screens/geofences/index.tsx', // #189 R6
+      'screens/health/index.tsx', // #199 R14
+      'screens/home/index.tsx', // #198 R5
       'screens/login/index.tsx',
       'screens/meal-schedule/index.tsx', // #179 R6
       'screens/pairing/index.tsx', // #188 R18
@@ -89,6 +92,7 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/register/index.tsx',
       'screens/reminders/index.tsx', // #178 R6
       'screens/reset-password/index.tsx',
+      'screens/weight-log/index.tsx', // #199 R7
     ]);
   });
 });
@@ -99,8 +103,8 @@ describe('#173 R3: Card hero y flat solo en Perfil', () => {
     const profile = readFileSync(join(sourceRoot, 'screens/profile/index.tsx'), 'utf8');
     expect(profile.match(/variant="hero"/g)).toHaveLength(1);
   });
-  it('Perfil es el único consumidor de Card flat y lo usa dos veces', () => {
-    expect(filesMatching(/variant="flat"/)).toEqual(['screens/meal-schedule/index.tsx', 'screens/profile/index.tsx']); // #179 R6
+  it('Perfil es el único consumidor de Card flat y lo usa dos veces (enmendado por #199 R7) (enmendado por #199 R16)', () => {
+    expect(filesMatching(/variant="flat"/)).toEqual(['screens/health/index.tsx', 'screens/meal-schedule/index.tsx', 'screens/profile/index.tsx', 'screens/weight-log/index.tsx']); // #179 R6; #199 R7; #199 R16
     const profile = readFileSync(join(sourceRoot, 'screens/profile/index.tsx'), 'utf8');
     expect(profile.match(/variant="flat"/g)).toHaveLength(2);
   });

@@ -74,6 +74,7 @@ Tres límites, no negociables:
    Tamaños de letra fuera de la escala de Tailwind (fidelidad al canvas, #173): `--text-13: 13px`, `--text-26: 26px`, `--text-11: 11px`, `--text-15: 15px`, `--text-17: 17px`, `--text-22: 22px`; cada uno es token aunque se use una vez, porque la clase arbitraria está prohibida.
    Tracking fuera de la escala de Tailwind (fidelidad al canvas, #174): `--tracking-title: -0.02em`, `--tracking-caps: 0.06em`, `--tracking-eyebrow: 0.08em`, `--tracking-code: 0.14em`, `--tracking-display: -0.5px`, `--tracking-section: 1.5px`, `--tracking-mono: 0.04em`, `--tracking-dialog: -0.01em` (#197); la clase `tracking-*` va con una clase `text-*` en el mismo elemento, porque uniwind multiplica el `em` por su tamaño.
    Interlineado fuera de la escala de Tailwind (fidelidad al canvas, #197): `--leading-body: 1.4`, `--leading-note: 1.45`; la clase `leading-*` va con una clase `text-*` en el mismo elemento, porque uniwind multiplica el interlineado sin unidad por su tamaño. Los interlineados en píxeles del canvas usan la escala de Tailwind (`leading-3.5`, `leading-5.25`, `leading-8`, `leading-8.5`) y 1.5 es `leading-normal`.
+   Tamaños fuera de la escala, por fidelidad al canvas (#199): `--text-34` (34 px), cifra de Peso.
 3. **Grep-clean permanente** (criterio de aceptación de toda feature móvil):
    - cero hex fuera de `src/theme/`
    - cero clases arbitrarias `[...]` (`rounded-[20px]`, `text-[10px]`,
@@ -201,6 +202,8 @@ Tres límites, no negociables:
     Fuera de la escala, por fidelidad al canvas (#177): `rounded-16` es el radio de todo botón de 56 de alto y del tile del candado; el compacto de 40 conserva `rounded-xl`.
 
     Fuera de la escala, por fidelidad al canvas (#191): `rounded-10` (10 px) y `rounded-14` (14 px), segmentos y contenedor del selector segmentado de Nueva mascota; `rounded-tile` (18 px) de la burbuja de Pingo, que es un `View` y no un `Card`.
+
+    Fuera de la escala, por fidelidad al canvas (#199): `rounded-24` (24 px), tarjeta de la gráfica de Peso, panel de la próxima dosis y tarjeta de peso de Salud, que son `View` con `CONTINUOUS_CORNER`; `rounded-16` (16 px), tile del panel de la próxima dosis; `rounded-14` (14 px), enlace al registro de peso de Salud.
 
 13. **Botón con cuerpo** (feature #166, 2026-10-11). Los botones de acción
     llevan un labio inferior: una sombra sólida sin desenfoque en `--lip`
@@ -912,6 +915,12 @@ Detalle y tests en `specs/mobile-canvas-nutrition/requirements.md` (R1 a R17).
 
 - [X] Enmienda #200 aprobada por humano
   Firma delegada en el leader por mandato del humano del 2026-10-23 (`progress/plan_canvas-parity-2026-10-23.md` §4), reflejada desde `specs/mobile-canvas-nutrition/requirements.md` § Aprobación, ya firmada el 2026-10-23.
+
+## Enmienda #199: Salud y Peso al canvas (2026-10-23)
+
+- **`rise` en Salud y Peso (#199).** `RiseIn` (`components/rise-in.tsx`) aplica `MOTION_RISE_TIMING` y `MOTION_RISE_OFFSET_Y` a tarjetas y filas con los retrasos del canvas: Salud 0 (próxima dosis), `80 + 60 · min(i, 2)` (vacunas) y 260 (peso); Peso 0 (gráfica), 80 (formulario), `140 + 60 · min(i, 2)` (historial) y `60 · i` (esqueletos). Con reduce motion no hay entrada.
+- **`draw` y `pop` de la gráfica de peso (#199).** La línea se dibuja con `MOTION_DRAW_TIMING` (1200 ms, `Easing.bezier(0, 0, 0.58, 1)`) tras `MOTION_DRAW_DELAY_FULL_MS` (200) en Peso o `MOTION_DRAW_DELAY_MINI_MS` (300) en Salud; el último punto de Peso hace `pop` (0.6 → 1.08 → 1 en `MOTION_POINT_POP_MS`, 400) a los `MOTION_POINT_POP_DELAY_MS` (1300). Con reduce motion salen completos.
+- **Fundido del toast de Peso (#199).** `FadeIn` de `MOTION_TOAST_FADE_MS` (300) tras `MOTION_TOAST_DELAY_MS` (400), con la sombra `useShadows().toast`.
 
 ## Enmienda #206 — barra de pestañas fiel al canvas
 
