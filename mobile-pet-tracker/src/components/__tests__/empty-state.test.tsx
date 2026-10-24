@@ -364,19 +364,15 @@ describe('#159 R8: la nota de Inicio sigue en texto y dice la verdad', () => {
   });
 });
 
-describe('#159 R9: los estados sin collar no traen movimiento ni dependencias', () => {
+describe('#159 R9: el sin collar del mapa no trae LayoutAnimation y el de zonas no trae movimiento ni dependencias', () => {
   it.each([
-    ['src/screens/map/index.tsx', 'react-native-reanimated'],
-    ['src/screens/map/index.tsx', '\\bAnimated\\b'],
     ['src/screens/map/index.tsx', 'LayoutAnimation'],
-    ['src/screens/map/index.tsx', 'entering='],
-    ['src/screens/map/index.tsx', 'MOTION_'],
     ['src/screens/geofences/index.tsx', 'react-native-reanimated'],
     ['src/screens/geofences/index.tsx', '\\bAnimated\\b'],
     ['src/screens/geofences/index.tsx', 'LayoutAnimation'],
     ['src/screens/geofences/index.tsx', 'entering='],
     ['src/screens/geofences/index.tsx', 'MOTION_'],
-  ])('%s no contiene %s', (path, pattern) => {
+  ])('%s no contiene %s (enmendado por #201 R1)', (path, pattern) => {
     const source = readFileSync(join(process.cwd(), path), 'utf8');
     expect(source).not.toMatch(new RegExp(pattern));
   });

@@ -55,6 +55,7 @@ import { renderWithProviders } from '../../../test/render-with-providers';
 let mockFocusCleanup: (() => void) | undefined;
 let mockTheme: 'light' | 'dark' = 'light';
 let mockIsFocused = true;
+const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
 
 jest.mock('../../api/geofences', () => ({ listGeofences: jest.fn() }));
 
@@ -118,6 +119,12 @@ jest.mock('react-native-safe-area-context', () => ({
 jest.mock('uniwind', () => ({
   ...jest.requireActual('uniwind'),
   useUniwind: () => ({ theme: mockTheme, hasAdaptiveThemes: false }),
+}));
+
+jest.mock('react-native-reanimated', () => ({
+  ...jest.requireActual<typeof import('react-native-reanimated')>('react-native-reanimated'),
+  __esModule: true,
+  useReducedMotion: () => mockUseReducedMotion(),
 }));
 
 const mockListGeofences = jest.mocked(listGeofences);
@@ -266,6 +273,7 @@ beforeEach(() => {
   mockTheme = 'light';
   initialSelectedPetId = null;
   mockIsFocused = true;
+  mockUseReducedMotion.mockReturnValue(false);
   process.env.EXPO_PUBLIC_API_URL = apiUrl;
   mockUseAuth.mockReturnValue({
     status: 'authenticated',
@@ -1932,13 +1940,15 @@ describe('#116 R7: la batería cae al guion y solo la lee el detalle', () => {
 });
 
 describe('#116 R8: el mapa no estrena animación', () => {
-  it('no importa Reanimated ni anima el punto', () => {
-    const source = readFileSync(
-      join(process.cwd(), 'src', 'screens', 'map', 'index.tsx'),
-      'utf8',
-    );
-    expect(source).not.toContain('react-native-reanimated');
-    expect(source).not.toMatch(/\bAnimated\b/);
+  it('el punto del GPS no anima (enmendado por #201 R1)', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+
+    await renderMap();
+
+    const dot = await screen.findByTestId('map-pet-pill-dot');
+    expect(dot.type).toBe('View');
+    expect(dot.props.entering).toBeUndefined();
   });
 });
 
@@ -2160,6 +2170,34 @@ describe('#159 R4: nadie más ve el botón de emparejar', () => {
       expect(screen.queryByTestId('map-no-tracking-action')).toBeNull();
     },
   );
+});
+
+describe('#201 R1: la pila de stats sube al entrar', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+  });
+
+  it('#201 R1: map-stats sube 14 desde transparente', async () => {
+    await renderMap();
+
+    const stats = await screen.findByTestId('map-stats');
+    expect(stats.props.className).toBe('gap-2.5');
+    expect(typeof stats.props.entering).toBe('function');
+    expect(stats.props.entering({}).initialValues).toEqual({
+      opacity: 0,
+      transform: [{ translateY: 14 }],
+    });
+  });
+
+  it('#201 R1: con movimiento reducido map-stats no anima la entrada', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+
+    await renderMap();
+
+    const stats = await screen.findByTestId('map-stats');
+    expect(stats.props.entering).toBeUndefined();
+  });
 });
 
 describe('#201 R15: la ruta del día se dibuja con trazo 5', () => {

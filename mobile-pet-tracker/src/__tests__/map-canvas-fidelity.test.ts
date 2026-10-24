@@ -36,6 +36,27 @@ const checkRow = (row: Row) => {
   );
 };
 
+describe('#201 R1: la pila de stats sube al entrar', () => {
+  it.each<Row>([
+    {
+      artboard: 'Mapa',
+      canvas: 'animation: rise 400ms ease-out both',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'homeEntering(0, MOTION_RISE_OFFSET_Y)',
+      productionCount: 1,
+    },
+    {
+      artboard: 'Mapa',
+      canvas: 'bottom: 104px; display: flex; flex-direction: column; gap: 10px',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'className="gap-2.5"',
+      productionCount: 1,
+    },
+  ])('#201 R1: $artboard › $canvas', checkRow);
+});
+
 describe('#201 R15: la ruta del mapa se dibuja con trazo 5', () => {
   it.each<Row>([
     {
