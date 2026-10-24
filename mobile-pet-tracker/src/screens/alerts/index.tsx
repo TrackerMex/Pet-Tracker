@@ -9,6 +9,7 @@ import type { Alert } from '../../api/types';
 import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
 import { PopIn } from '../../components/pop-in';
+import { RiseIn } from '../../components/rise-in';
 import { ScreenHeader } from '../../components/screen-header';
 import { useAlertsList } from '../../hooks/use-alerts-list';
 import { useAuth } from '../../providers/auth-provider';
@@ -21,9 +22,7 @@ import { settleAlertAck } from '../../utils/alert-ack-outcome';
 import { alertTypeMeta } from '../../utils/alert-meta';
 import { alertSection } from '../../utils/alert-sections';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
-import { HomeEntrance } from '../home/home-entrance';
-
-const ALERT_ROW_ENTRANCE_LIMIT = 5;
+import { ALERT_ROW_RISE_DELAYS } from './rise-delays';
 
 function fmtOpenedAt(
   iso: string,
@@ -262,10 +261,10 @@ export function AlertsScreen() {
               )}
             </Card>
           );
-          const row = index < ALERT_ROW_ENTRANCE_LIMIT ? (
-            <HomeEntrance index={index} testID={`${rowId}-entrance`}>
+          const row = index < ALERT_ROW_RISE_DELAYS.length ? (
+            <RiseIn delayMs={ALERT_ROW_RISE_DELAYS[index]} testID={`${rowId}-entrance`}>
               {card}
-            </HomeEntrance>
+            </RiseIn>
           ) : card;
           const section = alertSection(item.openedAt, now);
           const firstInSection = index === 0 || alertSection(rows[index - 1].openedAt, now) !== section;
