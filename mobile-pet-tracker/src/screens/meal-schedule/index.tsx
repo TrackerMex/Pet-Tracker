@@ -30,7 +30,7 @@ import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
-import { HomeEntrance } from '../home/home-entrance';
+import { RiseIn } from '../../components/rise-in';
 
 function isPlanError(state: NutritionPlanState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -229,7 +229,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
 
       {!hasError && loadedPlan !== null ? (
         <>
-          <HomeEntrance testID="meal-schedule-summary-entry" index={0}>
+          <RiseIn testID="meal-schedule-summary-entry" delayMs={0}>
             <View
               testID="meal-schedule-summary"
               className="gap-2 rounded-24 bg-accent p-4"
@@ -265,7 +265,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
                 </View>
               </View>
             </View>
-          </HomeEntrance>
+          </RiseIn>
 
           <View testID="meal-times-section" className="gap-3.5">
             <Text className="mt-1 text-17 font-extrabold text-foreground">
@@ -277,7 +277,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
               );
 
               return (
-                <HomeEntrance key={mealTime} testID={`meal-time-entry-${index}`} index={index + 1}>
+                <RiseIn key={mealTime} testID={`meal-time-entry-${index}`} delayMs={80 + 60 * index}>
                   <Card
                     testID={`meal-time-row-${index}`}
                     variant="flat"
@@ -315,7 +315,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
                       </Button>
                     ) : null}
                   </Card>
-                </HomeEntrance>
+                </RiseIn>
               );
             })}
             {isOwner && editError !== null ? (
