@@ -285,12 +285,14 @@ export function HealthScreen() {
           style={{ gap: 16 }}
         >
           {pets.data === undefined ? (
-            <Skeleton testID="health-loading" className="h-12 w-full rounded-card" />
+            <View testID="health-loading" className="flex-row gap-2.5">
+              {[0, 1].map(index => <Skeleton key={index} testID={`health-loading-${index}`} className="size-10 rounded-full" />)}
+            </View>
           ) : null}
 
           {pets.data && isPetsError(pets.data) ? (
             <View className="items-start gap-3">
-              <Text testID="health-error" className="text-danger">
+              <Text testID="health-error" className="text-15 leading-body text-danger" accessibilityRole="alert">
                 {t('common.somethingWentWrong')}
               </Text>
               <Button
