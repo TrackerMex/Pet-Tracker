@@ -156,6 +156,11 @@ jest.mock('reicon-react-native', () => {
 
   return {
     ...actual,
+    Alert: mockIcon('icon-alert'),
+    Refresh: mockIcon('icon-refresh'),
+    Battery: mockIcon('icon-battery'),
+    Wifi: mockIcon('icon-wifi'),
+    WifiOff: mockIcon('icon-wifi-off'),
     Weight: mockIcon('icon-weight'),
     Walk: mockIcon('icon-walk'),
     Moon: mockIcon('icon-moon'),
@@ -480,13 +485,15 @@ describe('R6: home carga pets y selecciona', () => {
     mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
   });
 
-  it('shows a loading state while pets are pending', async () => {
+  it('shows a loading state while pets are pending (enmendado por #198 R14)', async () => {
     mockListPets.mockReturnValue(pending<PetsState>());
 
     await renderHome();
 
     expect(screen.getByTestId('screen-home')).toBeVisible();
     expect(screen.getByTestId('home-loading')).toBeVisible();
+    expect(screen.getByTestId('home-loading').props.className).toBe('gap-3.5');
+    expect(screen.getByTestId('home-loading-summary', { includeHiddenElements: true }).props.className).toBe('gap-4 rounded-card border border-border bg-surface px-4 py-3.5');
   });
 
   it('pads the content below the status bar with the top safe-area inset (enmendado por #195 R15)', async () => {
@@ -505,15 +512,16 @@ describe('R6: home carga pets y selecciona', () => {
     });
   });
 
-  it('shows an error and retries the pet list', async () => {
+  it('shows an error and retries the pet list (enmendado por #198 R15)', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
     mockListPets
       .mockResolvedValueOnce({ kind: 'unreachable', message: 'network down' })
       .mockResolvedValueOnce({ kind: 'ok', pets: [] });
 
     await renderHome();
-    await waitFor(() => expect(screen.getByTestId('home-error')).toBeVisible());
+    await waitFor(() => expect(screen.getByTestId('home-error-title')).toHaveTextContent('No pude cargar a tus mascotas'));
 
-    await fireEvent.press(screen.getByTestId('home-retry'));
+    await fireEvent.press(screen.getByTestId('home-error-action'));
 
     await waitFor(() => expect(screen.getByTestId('home-empty')).toBeVisible());
     expect(mockListPets).toHaveBeenCalledTimes(2);
@@ -1270,7 +1278,7 @@ describe('#77 R2: sin actividad, la fila es la celda de peso seguida de la nota'
       'No se pudo cargar la actividad',
     ],
     ['sin configuración', { kind: 'missing-config' }, 'No se pudo cargar la actividad'],
-  ])('%s: compone la celda y la nota en una sola fila', async (_state, activityState, noteCopy) => {
+  ])('%s: compone la celda y la nota en una sola fila (enmendado por #198 R2, R13)', async (_state, activityState, noteCopy) => {
     mockGetDailyActivity.mockResolvedValue(activityState);
 
     await renderHome();
@@ -1284,7 +1292,7 @@ describe('#77 R2: sin actividad, la fila es la celda de peso seguida de la nota'
     const rowChildren = row.children.filter((child) => typeof child !== 'string');
     const cellChildren = cell.children.filter((child) => typeof child !== 'string');
 
-    expect(row.props.className).toBe('flex-row');
+    expect(row.props.className).toBe('flex-row gap-1');
     expect(row.props.accessible).toBeUndefined();
     expect(row.props.accessibilityLabel).toBeUndefined();
     expect(rowChildren).toHaveLength(2);
@@ -1292,22 +1300,21 @@ describe('#77 R2: sin actividad, la fila es la celda de peso seguida de la nota'
     expect(rowChildren[1].props.testID).toBe('summary-note');
 
     expect(cell.props.className).toBe(
-      'flex-1 items-center gap-1 border-r border-border',
+      'flex-1 items-center gap-1.5 border-r border-border',
     );
     expect(cell.props.accessible).toBeUndefined();
     expect(cell.props.accessibilityLabel).toBeUndefined();
     expect(cell.props.onPress).toBeUndefined();
     expect(cellChildren).toHaveLength(3);
-    expect(cellChildren[0].props).toEqual({
-      testID: 'icon-weight',
-      size: 20,
-      color: '--color-muted',
+    expect(cellChildren[0].props.className).toBe('size-9 items-center justify-center rounded-xl bg-category-violet');
+    expect(within(cellChildren[0]).getByTestId('icon-weight').props).toEqual({
+      testID: 'icon-weight', size: 18, color: '--color-category-violet-strong',
     });
     expect(cellChildren[1]).toBe(value);
-    expect(value.props.className).toBe('text-sm font-bold text-foreground');
+    expect(value.props.className).toBe('text-base font-extrabold text-foreground');
     expect(value.props.style).toEqual({ fontVariant: ['tabular-nums'] });
     expect(cellChildren[2].props.className).toBe(
-      'text-2xs font-normal text-muted',
+      'text-11 font-semibold text-muted',
     );
     expect(cellChildren[2]).toHaveTextContent('Peso');
 
@@ -1316,7 +1323,7 @@ describe('#77 R2: sin actividad, la fila es la celda de peso seguida de la nota'
       within(screen.getByTestId('summary-card')).getByTestId('summary-note'),
     ).toBe(note);
     expect(note.props.className).toBe(
-      'flex-3 self-center pl-3 font-normal text-muted',
+      'flex-3 self-center pl-3 text-sm leading-5 font-normal text-muted',
     );
     expect(note).toHaveTextContent(noteCopy);
     expect(note.props.onPress).toBeUndefined();
@@ -1582,16 +1589,20 @@ describe('#62 R3: collar-card y last-position-card usan el Card compartido', () 
     mockGetDailyActivity.mockResolvedValue({ kind: 'no-tracking' });
   });
 
-  it.each(['collar-card', 'last-position-card'])(
-    '%s hereda radio, borde y sombra de Card',
-    async (testId) => {
+  it.each([
+    { testId: 'collar-card', amendment: ' (enmendado por #198 R3)' },
+    { testId: 'last-position-card', amendment: ' (enmendado por #198 R11)' },
+  ])(
+    '$testId hereda radio, borde y sombra de Card$amendment',
+    async ({ testId }) => {
       await renderHome();
 
       const card = await screen.findByTestId(testId);
 
       expect(card.props.className).toContain('rounded-card');
-      expect(card.props.className).toContain('border');
-      expect(card.props.className).toContain('shadow-sm');
+      expect(card.props.className).toContain('border-0');
+      expect(card.props.className).toContain('shadow-none');
+      expect(card.props.className).not.toContain('shadow-sm');
       expect(card.props.className).toContain('bg-default');
     },
   );
@@ -1626,11 +1637,11 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
     });
   });
 
-  it('aplica la receta canónica a Today\'s Summary', async () => {
+  it('aplica la receta canónica a Today\'s Summary (enmendado por #198 R1)', async () => {
     await renderHome();
 
     expect((await screen.findByTestId('summary-card-title')).props.className).toBe(
-      'text-base font-bold text-foreground',
+      'px-2 text-base font-extrabold text-foreground',
     );
   });
 });
@@ -1650,12 +1661,13 @@ describe('#62 R8: home carga con Skeleton dimensionado, no con Spinner suelto', 
     mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
   });
 
-  it('reserva el espacio de carga con la forma de una Card', async () => {
+  it('reserva el espacio de carga con la forma de una Card (enmendado por #198 R14)', async () => {
     await renderHome();
 
-    expect(screen.getByTestId('home-loading').props.className).toContain(
-      'h-12 w-full rounded-card',
-    );
+    const loading = screen.getByTestId('home-loading');
+    expect(loading.props.className).toBe('gap-3.5');
+    expect(loading.children.filter(child => typeof child !== 'string').map(child => child.props.testID)).toEqual(['home-loading-summary', 'home-loading-collar', 'home-loading-quick-actions', 'home-loading-weekly']);
+    expect(readFileSync(join(process.cwd(), 'src/screens/home/index.tsx'), 'utf8')).not.toMatch(/\bSpinner\b/);
   });
 });
 
@@ -2090,7 +2102,7 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
     ]);
   });
 
-  it('renders exactly three dividers between the four cells', async () => {
+  it('renders exactly three dividers between the four cells (enmendado por #198 R2)', async () => {
     await renderHome();
 
     await screen.findByTestId('summary-weight');
@@ -2105,16 +2117,16 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
         .parent?.props.className?.includes('border-r border-border'),
     );
 
-    expect(dividedCells).toHaveLength(3);
+    expect(dividedCells).toHaveLength(0);
   });
 
-  it('keeps the row flush without spacing utilities', async () => {
+  it('keeps the row flush without spacing utilities (enmendado por #198 R2)', async () => {
     await renderHome();
 
     const activityValue = await screen.findByTestId('summary-activity');
     const rowClassName = activityValue.parent?.parent?.props.className;
 
-    expect(rowClassName).toBe('flex-row');
+    expect(rowClassName).toBe('flex-row gap-1');
     expect(rowClassName).not.toContain('gap-3');
     expect(rowClassName).not.toContain('justify-between');
   });
@@ -2200,7 +2212,7 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
     ]);
   });
 
-  it('#69 R9: usa iconos de reicon y ningún emoji', () => {
+  it('#69 R9: usa iconos de reicon y ningún emoji (enmendado por #198 R2)', () => {
     const source = readFileSync(
       join(process.cwd(), 'src/screens/home/index.tsx'),
       'utf8',
@@ -2217,7 +2229,7 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
     // cannot see: a platform branch, or a CSS variable name written by hand.
     expect(
       source.match(
-        /<(?:Weight|Walk|Moon|Map) size=\{20\} color=\{muted\} \/>/g,
+        /<(?:Weight|Walk|Moon|Map) size=\{18\} color=\{summaryInks\[\d\]\} \/>/g,
       ) ?? [],
     ).toHaveLength(4);
     for (const emoji of ['⚖️', '⚡', '🦮', '📍']) {
@@ -2239,13 +2251,13 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
     });
 
     const cells = [
-      ['summary-weight', 'icon-weight'],
-      ['summary-activity', 'icon-walk'],
-      ['summary-sleep', 'icon-moon'],
-      ['summary-distance', 'icon-map'],
+      ['summary-weight', 'icon-weight', '--color-category-violet-strong'],
+      ['summary-activity', 'icon-walk', '--color-category-green-strong'],
+      ['summary-sleep', 'icon-moon', '--color-category-blue-strong'],
+      ['summary-distance', 'icon-map', '--color-category-amber-strong'],
     ] as const;
 
-    it('con las métricas de hoy', async () => {
+    it('con las métricas de hoy (enmendado por #198 R2)', async () => {
       await renderHome();
       await waitFor(() =>
         expect(screen.getByTestId('summary-weight')).toHaveTextContent(
@@ -2253,7 +2265,7 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
         ),
       );
 
-      for (const [valueTestID, iconTestID] of cells) {
+      for (const [valueTestID, iconTestID, ink] of cells) {
         // #126 R1: counted by the cell's children, not by testID: the icon,
         // the value and the label, with the icon first.
         const children = screen
@@ -2261,15 +2273,13 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
           .parent!.children.filter((child) => typeof child !== 'string');
 
         expect(children).toHaveLength(3);
-        expect(children[0].props).toEqual({
-          testID: iconTestID,
-          size: 20,
-          color: '--color-muted',
+        expect(within(children[0]).getByTestId(iconTestID).props).toEqual({
+          testID: iconTestID, size: 18, color: ink,
         });
       }
     });
 
-    it('sin métricas ni peso', async () => {
+    it('sin métricas ni peso (enmendado por #198 R2)', async () => {
       const pet = makePet({ currentWeightKg: null });
       mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
       mockGetPet.mockResolvedValue({ kind: 'ok', pet });
@@ -2297,16 +2307,14 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
       expect(screen.getByTestId('summary-weight')).toHaveTextContent('—');
       expect(screen.getByTestId('summary-activity')).toHaveTextContent('—');
 
-      for (const [valueTestID, iconTestID] of cells) {
+      for (const [valueTestID, iconTestID, ink] of cells) {
         const children = screen
           .getByTestId(valueTestID)
           .parent!.children.filter((child) => typeof child !== 'string');
 
         expect(children).toHaveLength(3);
-        expect(children[0].props).toEqual({
-          testID: iconTestID,
-          size: 20,
-          color: '--color-muted',
+        expect(within(children[0]).getByTestId(iconTestID).props).toEqual({
+          testID: iconTestID, size: 18, color: ink,
         });
       }
     });
@@ -2377,7 +2385,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
     jest.restoreAllMocks();
   });
 
-  it('dibuja el rótulo y los tres tiles en orden', async () => {
+  it('dibuja el rótulo y los tres tiles en orden (enmendado por #198 R5)', async () => {
     await renderHome();
 
     const quickActions = await screen.findByTestId('quick-actions');
@@ -2389,7 +2397,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
 
     expect(title).toHaveTextContent('Accesos rápidos');
     expect(title.props.className).toBe(
-      'text-xs font-semibold uppercase tracking-widest text-muted',
+      'text-xs font-bold uppercase tracking-section text-muted',
     );
     expect(tileTestIds).toEqual([
       'quick-action-weight',
@@ -2467,7 +2475,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
     }
   });
 
-  it('liga icono, etiqueta, fondo, destino, tinta y color de etiqueta de cada tile y de ninguno más', async () => {
+  it('liga icono, etiqueta, fondo, destino, tinta y color de etiqueta de cada tile y de ninguno más (enmendado por #198 R5)', async () => {
     jest
       .spyOn(Uniwind, 'getCSSVariable')
       .mockImplementation((token) => token);
@@ -2481,7 +2489,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
         'Peso',
         'bg-category-violet',
         '--color-category-violet-strong',
-        'text-foreground',
+        'text-category-violet-strong',
         '/weight-log',
       ],
       [
@@ -2490,7 +2498,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
         'Recordatorio',
         'bg-category-amber',
         '--color-category-amber-strong',
-        'text-foreground',
+        'text-category-amber-strong',
         '/add-reminder',
       ],
       [
@@ -2499,7 +2507,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
         'Documentos',
         'bg-category-blue',
         '--color-category-blue-strong',
-        'text-foreground',
+        'text-category-blue-strong',
         '/pets/pet-1/docs',
       ],
     ] as const;
@@ -2541,7 +2549,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
     expect(source).not.toMatch(/(?:bg|text)-category-/);
   });
 
-  it('da a cada tile 44 pt de objetivo táctil', async () => {
+  it('da a cada tile 44 pt de objetivo táctil (enmendado por #198 R5)', async () => {
     await renderHome();
 
     const quickActions = await screen.findByTestId('quick-actions');
@@ -2552,13 +2560,13 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
     ]) {
       const tile = within(quickActions).getByTestId(testID);
 
-      expect(tile.props.className).toContain('min-h-11');
+      expect(tile.props.className).toContain('h-23');
       expect(tile.props.className).toContain('flex-1');
       expect(tile.props.hitSlop).toBeUndefined();
     }
   });
 
-  it('usa iconos de reicon y ningún emoji', async () => {
+  it('usa iconos de reicon y ningún emoji (enmendado por #198 R5)', async () => {
     const source = readFileSync(
       join(process.cwd(), 'src/screens/home/index.tsx'),
       'utf8',
@@ -2574,7 +2582,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
     for (const iconName of ['Weight', 'CalendarPlus', 'FileText']) {
       expect(reiconImport).toMatch(new RegExp(`\\b${iconName}\\b`));
     }
-    expect(source.match(/<Icon size=\{24\}/g)).toHaveLength(1);
+    expect(source.match(/<Icon size=\{26\}/g)).toHaveLength(1);
     expect(quickActions).not.toMatch(/\b(?:HeartPulse|ForkKnife)\b/);
     for (const emoji of ['🗺️', '🏃', '💉', '🍽️']) {
       expect(source).not.toContain(emoji);
@@ -2588,7 +2596,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
       ['quick-action-documents', 'icon-file-text'],
     ] as const) {
       const tile = screen.getByTestId(testID);
-      expect(within(tile).getByTestId(iconTestID).props.size).toBe(24);
+      expect(within(tile).getByTestId(iconTestID).props.size).toBe(26);
     }
   });
 
@@ -2680,6 +2688,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
 describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin candado', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(Uniwind, 'getCSSVariable').mockImplementation(token => token);
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
     mockUseAuth.mockReturnValue({
       status: 'authenticated',
@@ -2701,21 +2710,21 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
     jest.restoreAllMocks();
   });
 
-  it('#81 R1: cada etiqueta lleva la receta entera y ningún estilo en línea', async () => {
+  it('#81 R1: cada etiqueta lleva la receta entera y ningún estilo en línea (enmendado por #198 R5)', async () => {
     await renderHome();
     await screen.findByTestId('quick-action-weight');
 
-    for (const [testID, label] of [
-      ['quick-action-weight', 'Peso'],
-      ['quick-action-reminder', 'Recordatorio'],
-      ['quick-action-documents', 'Documentos'],
+    for (const [testID, label, ink] of [
+      ['quick-action-weight', 'Peso', 'text-category-violet-strong'],
+      ['quick-action-reminder', 'Recordatorio', 'text-category-amber-strong'],
+      ['quick-action-documents', 'Documentos', 'text-category-blue-strong'],
     ] as const) {
       const labelNode = within(screen.getByTestId(testID)).getByText(label);
 
       // #81 R1: the whole class list with toBe, because toContain lets a
       // contradicting token such as font-bold through.
       expect(labelNode.props.className).toBe(
-        'text-2xs font-semibold text-foreground',
+        `text-13 font-bold ${ink}`,
       );
       expect(labelNode.props.style).toBeUndefined();
     }
@@ -2742,7 +2751,7 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
     }
   });
 
-  it('#81 R3: cada tile lleva rounded-xl como único radio y la esquina continua', async () => {
+  it('#81 R3: cada tile lleva rounded-xl como único radio y la esquina continua (enmendado por #198 R5)', async () => {
     await renderHome();
     await screen.findByTestId('quick-action-weight');
 
@@ -2757,17 +2766,18 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
         tile.props.className
           .split(' ')
           .filter((token: string) => /^rounded(?:-|$)/.test(token)),
-      ).toEqual(['rounded-xl']);
+      ).toEqual(['rounded-card']);
       // #136 R2: at rest the corner travels with the opacity of the pressed
       // recipe; #136 R1 locks the pressed and released values.
       expect(tile.props.style).toEqual({
         borderCurve: 'continuous',
+        boxShadow: CANVAS_TILE_SHADOWS.get(testID),
         opacity: 1,
       });
     }
   });
 
-  it('#136 R1: cada tile baja a opacidad 0.8 mientras se pulsa y vuelve a 1 al soltarlo, con la esquina continua', async () => {
+  it('#136 R1: cada tile baja a opacidad 0.8 mientras se pulsa y vuelve a 1 al soltarlo, con la esquina continua (enmendado por #198 R5)', async () => {
     await renderHome();
     await screen.findByTestId('quick-action-weight');
     const testIDs = [
@@ -2783,6 +2793,7 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
       // matches a subset and would let a stray key or a lost corner through.
       expect(tile.props.style).toEqual({
         borderCurve: 'continuous',
+        boxShadow: CANVAS_TILE_SHADOWS.get(testID),
         opacity: 1,
       });
 
@@ -2795,6 +2806,7 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
 
       expect(tile.props.style).toEqual({
         borderCurve: 'continuous',
+        boxShadow: CANVAS_TILE_SHADOWS.get(testID),
         opacity: 0.8,
       });
       // #136 R1: only the pressed tile dims. A pressed state shared by the row
@@ -2802,6 +2814,7 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
       for (const otherID of testIDs.filter((id) => id !== testID)) {
         expect(screen.getByTestId(otherID).props.style).toEqual({
           borderCurve: 'continuous',
+          boxShadow: CANVAS_TILE_SHADOWS.get(otherID),
           opacity: 1,
         });
       }
@@ -2818,13 +2831,14 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
       await waitFor(() =>
         expect(tile.props.style).toEqual({
           borderCurve: 'continuous',
+          boxShadow: CANVAS_TILE_SHADOWS.get(testID),
           opacity: 1,
         }),
       );
     }
   });
 
-  it('#81 R4: la sección pone el rótulo encima de la fila, y la fila, los tres tiles sin envoltorio', async () => {
+  it('#81 R4: la sección pone el rótulo encima de la fila, y la fila, los tres tiles sin envoltorio (enmendado por #198 R5)', async () => {
     await renderHome();
     const quickActions = await screen.findByTestId('quick-actions');
     const title = within(quickActions).getByTestId('quick-actions-title');
@@ -2839,7 +2853,7 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
       'props.testID',
       'quick-actions-row',
     );
-    expect(quickActions.props.className).toBe('gap-3');
+    expect(quickActions.props.className).toBe('gap-2.5');
     expect(quickActions.props.style).toBeUndefined();
     expect(title.props.style).toBeUndefined();
     // #81 R4: the tiles by children, so a wrapper around a tile turns red.
@@ -2852,7 +2866,7 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
       'quick-action-reminder',
       'quick-action-documents',
     ]);
-    expect(tileRow.props.className).toBe('flex-row gap-3');
+    expect(tileRow.props.className).toBe('flex-row gap-2.5');
     expect(tileRow.props.style).toBeUndefined();
   });
 
@@ -3593,7 +3607,8 @@ describe('#85 R10: viste las filas con el Card compartido y los tokens', () => {
     jest.restoreAllMocks();
   });
 
-  it('aplica la receta de cada nodo y ninguna otra', async () => {
+  it('aplica la receta de cada nodo y ninguna otra (enmendado por #198 R10)', async () => {
+    jest.spyOn(Uniwind, 'getCSSVariable').mockImplementation(token => token);
     await renderHome();
 
     for (const id of ['rem-b', 'rem-a', 'rem-c']) {
@@ -3604,15 +3619,18 @@ describe('#85 R10: viste las filas con el Card compartido y los tokens', () => {
       const counter = rowQueries.getByTestId(`reminders-item-${id}-days`);
 
       expect(row.props.className).toContain(
-        'rounded-card border border-border bg-surface p-4 shadow-sm',
+        'rounded-card border border-border bg-surface p-4',
       );
+      expect(row.props.className).toContain('shadow-none');
+      expect(row.props.className).not.toContain('shadow-sm');
+      expect(row.props.style.boxShadow).toEqual(CANVAS_CARD_SHADOW);
       expect(row.props.className).toContain('flex-row items-center gap-3');
       expect(title.props.className).toBe(
-        'text-sm font-semibold text-foreground',
+        'text-sm font-bold text-foreground',
       );
       expect(date.props.className).toBe('text-xs font-normal text-muted');
       expect(counter.props.className).toBe(
-        `rounded-full px-2.5 py-1 text-xs font-bold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`,
+        `rounded-full px-2.5 py-1 text-xs font-extrabold bg-category-amber text-category-amber-strong`,
       );
       expect(counter.props.style).toEqual(TABULAR_NUMS);
       expect(title.props.style).toBeUndefined();
@@ -3710,7 +3728,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
   });
 
   describe('#70 R1: estructura de la sección', () => {
-    it('dibuja la cabecera y el cuerpo de la sección', async () => {
+    it('dibuja la cabecera y el cuerpo de la sección (enmendado por #198 R10)', async () => {
       await renderHome();
 
       const section = await screen.findByTestId('reminders-section');
@@ -3720,7 +3738,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       const seeAll = within(section).getByTestId('reminders-see-all');
 
       expect(section.children).toHaveLength(2);
-      expect(section.props.className).toBe('gap-3');
+      expect(section.props.className).toBe('gap-1');
       expect(header?.props.className).toBe(
         'flex-row items-center justify-between',
       );
@@ -3728,7 +3746,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       expect(section.children[1]).toBe(body);
       expect(title).toHaveTextContent('Recordatorios');
       expect(title.props.className).toBe(
-        'text-base font-bold text-foreground',
+        'text-base font-extrabold text-foreground',
       );
       expect(seeAll).toBeVisible();
       expect(seeAll).toHaveTextContent('Ver todos');
@@ -3737,7 +3755,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
   });
 
   describe('#70 R6: datos de la próxima vacuna', () => {
-    it('liga nombre, fecha y contador a su nodo y a ninguno más', async () => {
+    it('liga nombre, fecha y contador a su nodo y a ninguno más (enmendado por #198 R10)', async () => {
       jest.useFakeTimers();
       jest.setSystemTime(new Date(2026, 8, 10, 12, 0));
       jest
@@ -3762,7 +3780,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       expect(icon.props.color).toBe('--color-category-blue-strong');
       expect(name.props.children).toBe('Antirrábica');
       expect(name.props.className).toBe(
-        'text-sm font-semibold text-foreground',
+        'text-sm font-bold text-foreground',
       );
       expect(date.props.children).toBe('15 sep 2026');
       expect(date.props.className).toBe('text-xs font-normal text-muted');
@@ -4085,7 +4103,8 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
   });
 
   describe('#70 R12: Card compartido y tokens', () => {
-    it('viste la sección con el Card compartido y los tokens', async () => {
+    it('viste la sección con el Card compartido y los tokens (enmendado por #198 R10)', async () => {
+    jest.spyOn(Uniwind, 'getCSSVariable').mockImplementation(token => token);
       const loaded = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
 
       try {
@@ -4096,8 +4115,11 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
         const disk = row.children[0];
 
         expect(row.props.className).toContain(
-          'rounded-card border border-border bg-surface p-4 shadow-sm',
+          'rounded-card border border-border bg-surface p-4',
         );
+        expect(row.props.className).toContain('shadow-none');
+        expect(row.props.className).not.toContain('shadow-sm');
+        expect(row.props.style.boxShadow).toEqual(CANVAS_CARD_SHADOW);
         expect(row.props.className).toContain('flex-row items-center gap-3');
         expect(row.children[1]).toHaveProperty('props.className', 'flex-1');
         expect(typeof disk).not.toBe('string');
@@ -4107,7 +4129,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
           );
         }
         expect(days.props.className).toBe(
-          `rounded-full px-2.5 py-1 text-xs font-bold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`,
+          `rounded-full px-2.5 py-1 text-xs font-extrabold bg-category-amber text-category-amber-strong`,
         );
         expect(days.props.style).toEqual(TABULAR_NUMS);
         expect(name.props.style).toBeUndefined();
@@ -4124,8 +4146,11 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
         const disk = row.children[0];
 
         expect(row.props.className).toContain(
-          'rounded-card border border-border bg-surface p-4 shadow-sm',
+          'rounded-card border border-border bg-surface p-4',
         );
+        expect(row.props.className).toContain('shadow-none');
+        expect(row.props.className).not.toContain('shadow-sm');
+        expect(row.props.style.boxShadow).toEqual(CANVAS_CARD_SHADOW);
         expect(typeof disk).not.toBe('string');
         if (typeof disk !== 'string') {
           expect(disk.props.className).toBe(
@@ -4333,7 +4358,7 @@ describe('#98 R7: la barra de comidas y todas sus decisiones', () => {
     jest.restoreAllMocks();
   });
 
-  it('pinta dato, icono, copy, nombre accesible, huecos, tintas y tipografía', async () => {
+  it('pinta dato, icono, copy, nombre accesible, huecos, tintas y tipografía (enmendado por #198 R10)', async () => {
     mockGetPet.mockResolvedValue({
       kind: 'ok',
       pet: makePet({ mealsToday: { served: 1, total: 2 } }),
@@ -4349,8 +4374,11 @@ describe('#98 R7: la barra de comidas y todas sus decisiones', () => {
     const disk = row.children[0];
 
     expect(row.props.className).toContain(
-      'rounded-card border border-border bg-surface p-4 shadow-sm',
+      'rounded-card border border-border bg-surface p-4',
     );
+    expect(row.props.className).toContain('shadow-none');
+    expect(row.props.className).not.toContain('shadow-sm');
+    expect(row.props.style.boxShadow).toEqual(CANVAS_CARD_SHADOW);
     expect(row.props.className).toContain('flex-row items-center gap-3');
     expect(row.props.onPress).toBeUndefined();
     expect(icon.props.size).toBe(20);
@@ -4363,7 +4391,7 @@ describe('#98 R7: la barra de comidas y todas sus decisiones', () => {
     }
     expect(title).toHaveTextContent('Comidas hoy');
     expect(title.props.className).toBe(
-      'text-sm font-semibold text-foreground',
+      'text-sm font-bold text-foreground',
     );
     expect(count).toHaveTextContent('1/2');
     expect(count.props.accessibilityLabel).toBe(
@@ -4663,10 +4691,10 @@ describe('R1 (mobile-reanimated-double-dead-weight): home monta el Skeleton real
     mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
   });
 
-  it('conserva la clase base del Skeleton de HeroUI', async () => {
+  it('conserva la clase base del Skeleton de HeroUI (enmendado por #198 R14)', async () => {
     await renderHome();
 
-    expect(screen.getByTestId('home-loading').props.className).toContain(
+    expect(screen.getByTestId('home-loading-collar', { includeHiddenElements: true }).props.className).toContain(
       'skeleton__root',
     );
   });
@@ -4761,16 +4789,16 @@ describe('#152 R5: la Home envuelve cada bloque en su entrada escalonada', () =>
     }
   });
 
-  it('escalona las entradas cada 60 ms en el orden de los bloques (enmendado por #190 R6)', async () => {
+  it('escalona las entradas cada 60 ms en el orden de los bloques (enmendado por #190 R6) (enmendado por #198 R6)', async () => {
     await renderMotionHome();
     for (const [id, delay] of [
       ['home-entrance-pingo', 0], // (enmendado por #190 R6)
-      ['home-entrance-summary', 60],
-      ['home-entrance-collar', 120],
-      ['home-entrance-quick-actions', 180],
-      ['home-entrance-weekly', 240],
-      ['home-entrance-reminders', 300],
-      ['home-entrance-last-position', 360],
+      ['home-entrance-summary', 120],
+      ['home-entrance-collar', 180],
+      ['home-entrance-quick-actions', 240],
+      ['home-entrance-weekly', 300],
+      ['home-entrance-reminders', 360],
+      ['home-entrance-last-position', 420],
     ] as const) {
       jest.mocked(withDelay).mockClear();
       screen.getByTestId(id).props.entering({});
@@ -4906,10 +4934,10 @@ describe('#152 R5: la Home envuelve cada bloque en su entrada escalonada', () =>
   });
 
   it.each([
-    ['home-loading', () => mockListPets.mockReturnValue(pending<PetsState>()), ['home-loading']],
+    ['home-loading', () => mockListPets.mockReturnValue(pending<PetsState>()), [...Array<string>(13).fill('undefined'), 'home-loading-collar', ...Array<string>(4).fill('undefined'), 'home-loading-weekly']],
     ['home-error', () => mockListPets.mockResolvedValue({ kind: 'error' }), []],
     ['home-empty', () => mockListPets.mockResolvedValue({ kind: 'ok', pets: [] }), []],
-  ])('no da entrada a home-states con %s', async (anchor, arrange, expected) => {
+  ])('no da entrada a home-states con %s (enmendado por #198 R14)', async (anchor, arrange, expected) => {
     arrange();
     await renderHome();
     await screen.findByTestId(anchor);
@@ -5003,11 +5031,11 @@ describe('#152 R6: la entrada se reproduce una vez por montaje', () => {
 describe('#152 R7: las cifras del resumen aparecen con un fundido', () => {
   beforeEach(setupHomeMotion);
 
-  it('envuelve la fila del resumen sin tocarla', async () => {
+  it('envuelve la fila del resumen sin tocarla (enmendado por #198 R2)', async () => {
     await renderMotionHome();
     const reveal = screen.getByTestId('summary-reveal');
     const row = screen.getByTestId('summary-weight').parent?.parent;
-    expect(row?.props.className).toBe('flex-row');
+    expect(row?.props.className).toBe('flex-row gap-1');
     expect(row?.parent).toBe(reveal);
     expect(reveal.children.filter((child) => typeof child !== 'string')).toEqual([row]);
     expect(reveal.props.style).toBeUndefined();
@@ -5033,14 +5061,14 @@ describe('#152 R7: las cifras del resumen aparecen con un fundido', () => {
 
   const expectRowUntouched = (reveal: typeof screen.container) => {
     const row = screen.getByTestId('summary-weight').parent?.parent;
-    expect(row?.props.className).toBe('flex-row');
+    expect(row?.props.className).toBe('flex-row gap-1');
     expect(row?.parent).toBe(reveal);
     expect(reveal.children.filter((child) => typeof child !== 'string')).toEqual([row]);
     expect(reveal.props.style).toBeUndefined();
     expect(reveal.props.className).toBeUndefined();
   };
 
-  it('no anima la entrada bajo reduce motion (enmendado por #197 R13)', async () => {
+  it('no anima la entrada bajo reduce motion (enmendado por #197 R13) (enmendado por #198 R2)', async () => {
     mockUseReducedMotion.mockReturnValue(true);
     await renderMotionHome();
     const reveal = screen.getByTestId('summary-reveal');
@@ -5058,7 +5086,7 @@ describe('#152 R7: las cifras del resumen aparecen con un fundido', () => {
     { kind: 'error' },
     { kind: 'unreachable', message: 'network down' },
     { kind: 'missing-config' },
-  ])('funde igual la fila con la actividad en $kind', async (state) => {
+  ])('funde igual la fila con la actividad en $kind (enmendado por #198 R2)', async (state) => {
     mockGetDailyActivity.mockResolvedValue(state);
     await renderHome();
     const reveal = await screen.findByTestId('summary-reveal');
@@ -5107,28 +5135,32 @@ describe('#152 R8: la batería del collar se dibuja como barra', () => {
   beforeEach(setupHomeMotion);
 
   it.each([
-    [82, 'bg-success'],
-    [61, 'bg-success'],
+    [82, 'bg-accent'],
+    [61, 'bg-accent'],
     [60, 'bg-warning-strong'],
     [12, 'bg-warning-strong'],
-  ] as const)('pinta %i% con %s', async (pct, color) => {
+  ] as const)('pinta %i% con %s (enmendado por #198 R4)', async (pct, color) => {
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(pct) });
     await renderMotionHome();
     const track = screen.getByTestId('collar-battery-track');
     const fill = screen.getByTestId('collar-battery-fill');
-    expect(track.props.className).toBe('h-1.5 flex-1 overflow-hidden rounded-full bg-surface');
+    expect(track.props.className).toBe('h-2 w-full overflow-hidden rounded-full bg-background');
     expect(fill.props.className).toBe(`h-full rounded-full ${color}`);
     expect(track.children.filter((child) => typeof child !== 'string')).toEqual([fill]);
     expect(fill).toHaveAnimatedStyle({ width: `${pct}%` }, { shouldMatchAllProps: true });
   });
 
-  it('pone la barra detrás del porcentaje en su fila', async () => {
+  it('pone la barra detrás del porcentaje en su fila (enmendado por #198 R3)', async () => {
     await renderMotionHome();
     const track = screen.getByTestId('collar-battery-track');
     const battery = screen.getByTestId('collar-battery');
-    expect(track.parent).toBe(battery.parent);
-    const siblings = track.parent?.children.filter((child) => typeof child !== 'string');
-    expect(siblings?.indexOf(track)).toBe((siblings?.indexOf(battery) ?? -1) + 1);
+    const status = screen.getByTestId('collar-status');
+    expect(track.parent === status.parent).toBe(true);
+    const siblings = track.parent!.children.filter(child => typeof child !== 'string');
+    expect(siblings.indexOf(track)).toBe(siblings.indexOf(status) + 1);
+    const card = screen.getByTestId('collar-card');
+    expect(battery.parent === card).toBe(true);
+    expect(card.children.filter(child => typeof child !== 'string')[2] === battery).toBe(true);
   });
 
   it('llena la barra desde vacía con el preset de barra', async () => {
@@ -5664,7 +5696,7 @@ describe('#190 R4: Pingo usa su pose decorativa de 56 px', () => {
 describe('#190 R6: los índices son fijos aunque falte un bloque', () => {
   beforeEach(setupHomeMotion);
 
-  it('conserva los huecos del collar sin última posición y de la actividad ausente', async () => {
+  it('conserva los huecos del collar sin última posición y de la actividad ausente (enmendado por #198 R6)', async () => {
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
     mockGetDailyActivity.mockResolvedValue({ kind: 'error' });
     await renderHome();
@@ -5672,9 +5704,9 @@ describe('#190 R6: los índices son fijos aunque falte un bloque', () => {
     expect(screen.queryByTestId('home-entrance-weekly')).toBeNull();
     expect(screen.queryByTestId('home-entrance-last-position')).toBeNull();
     for (const [id, delay] of [
-      ['home-entrance-pingo', 0], ['home-entrance-summary', 60],
-      ['home-entrance-collar', 120], ['home-entrance-quick-actions', 180],
-      ['home-entrance-reminders', 300],
+      ['home-entrance-pingo', 0], ['home-entrance-summary', 120],
+      ['home-entrance-collar', 180], ['home-entrance-quick-actions', 240],
+      ['home-entrance-reminders', 360],
     ] as const) {
       jest.mocked(withDelay).mockClear();
       screen.getByTestId(id).props.entering({});
@@ -5870,31 +5902,36 @@ describe('#195 R15: hueco del hero y contenido que se desplaza', () => {
     expect(hero.parent!.children[0]).toBe(hero);
     expect(screen.getByTestId('screen-home').props.contentContainerStyle).toEqual({ gap: 14, paddingBottom: 120 });
   });
-  it('aplica también el hueco de 14 a las ramas de estado sin hero', async () => {
+  it('aplica también el hueco de 14 a las ramas de estado sin hero (enmendado por #198 R14)', async () => {
     mockListPets.mockReturnValue(pending<PetsState>());
     await renderHome();
     await screen.findByTestId('home-loading');
     expect(screen.getByTestId('screen-home').props.contentContainerStyle).toEqual({ gap: 14, paddingBottom: 120 });
     expect(screen.getByTestId('home-states').props.style).toEqual({ paddingHorizontal: 24, paddingTop: 52, gap: 16 });
     expect(screen.queryByTestId('pet-hero')).toBeNull();
+    expect(screen.getByTestId('home-loading').props.className).toBe('gap-3.5');
+    expect(within(screen.getByTestId('home-states')).queryByText('Inicio') === null).toBe(true);
   });
 });
 
 describe('#195 R18: estados conservados de Inicio', () => {
   beforeEach(setupHomeMotion);
 
-  it('conserva la carga de mascotas', async () => {
+  it('conserva la carga de mascotas (enmendado por #198 R14)', async () => {
     mockListPets.mockReturnValue(pending<PetsState>());
     await renderHome();
     expect(await screen.findByTestId('home-loading')).toBeVisible();
     expect(screen.queryByTestId('pet-hero')).toBeNull();
+    expect(screen.getByTestId('home-loading').props.className).toBe('gap-3.5');
+    expect(within(screen.getByTestId('home-states')).queryByText('Inicio') === null).toBe(true);
   });
 
-  it('conserva el error de mascotas y su reintento', async () => {
+  it('conserva el error de mascotas y su reintento (enmendado por #198 R15)', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
     mockListPets.mockResolvedValue({ kind: 'unreachable', message: 'down' });
     await renderHome();
-    expect(await screen.findByTestId('home-error')).toBeVisible();
-    expect(screen.getByTestId('home-retry')).toBeVisible();
+    expect(await screen.findByTestId('home-error-title')).toHaveTextContent('No pude cargar a tus mascotas');
+    expect(screen.getByTestId('home-error-action')).toBeVisible();
     expect(screen.queryByTestId('pet-hero')).toBeNull();
   });
 
@@ -5913,5 +5950,537 @@ describe('#195 R18: estados conservados de Inicio', () => {
     expect(screen.getByTestId('pet-hero-retry')).toBeVisible();
     expect(screen.getByTestId('pet-hero-skeleton')).toBeVisible();
     expect(screen.getByTestId('pet-chip-pet-1')).toBeOnTheScreen();
+  });
+});
+
+const CANVAS_CARD_SHADOW = [
+  { offsetX: 0, offsetY: 1, blurRadius: 2, spreadDistance: 0, color: '--color-shadow-near' },
+  { offsetX: 0, offsetY: 8, blurRadius: 24, spreadDistance: 0, color: '--color-shadow-far' },
+];
+
+function setupCanvasHome() {
+  jest.clearAllMocks();
+  process.env.EXPO_PUBLIC_API_URL = apiUrl;
+  mockUseAuth.mockReturnValue({
+    status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+  } satisfies AuthContextValue);
+  mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+  mockGetDailyActivity.mockResolvedValue({
+    kind: 'ok', days: [makeDay()],
+    weekComparison: { distanceM: 5, activeMinutes: 10, walkCount: 20 },
+  });
+  jest.spyOn(Uniwind, 'getCSSVariable').mockImplementation(token => token);
+}
+
+describe('#198 R1: resumen del canvas', () => {
+  beforeEach(setupCanvasHome);
+
+  it('#198 R1 viste summary-card con padding 14/8, hueco 12 y la sombra card', async () => {
+    await renderHome();
+    const card = await screen.findByTestId('summary-card');
+    for (const token of ['gap-3', 'px-2', 'py-3.5', 'shadow-none']) {
+      expect(card.props.className.split(' ')).toContain(token);
+    }
+    for (const token of ['shadow-sm', 'gap-4']) {
+      expect(card.props.className.split(' ')).not.toContain(token);
+    }
+    expect(card.props.style.boxShadow).toEqual(CANVAS_CARD_SHADOW);
+  });
+
+  it('#198 R1 pinta el título con 16/800 y su sangría de 8', async () => {
+    await renderHome();
+    const title = await screen.findByTestId('summary-card-title');
+    expect(title.props.className).toBe('px-2 text-base font-extrabold text-foreground');
+    expect(title).toHaveTextContent('Resumen de hoy');
+  });
+});
+
+describe('#198 R2: celdas del resumen', () => {
+  beforeEach(setupCanvasHome);
+  afterEach(() => jest.restoreAllMocks());
+
+  it('#198 R2 pinta cuatro celdas sin divisores en el orden del canvas', async () => {
+    await renderHome();
+    await screen.findByTestId('summary-distance');
+    const row = screen.getByTestId('summary-weight').parent!.parent!;
+    expect(row.props.className).toBe('flex-row gap-1');
+    const cells = row.children.filter(child => typeof child !== 'string');
+    expect(cells).toEqual(['weight', 'activity', 'sleep', 'distance'].map(id => screen.getByTestId(`summary-${id}`).parent));
+    for (const cell of cells) {
+      expect(cell.props.className).toBe('flex-1 items-center gap-1.5');
+      expect(cell.props.className).not.toContain('border-r');
+    }
+  });
+
+  it.each([
+    ['weight', 'bg-category-violet', '--color-category-violet-strong', 'icon-weight'],
+    ['activity', 'bg-category-green', '--color-category-green-strong', 'icon-walk'],
+    ['sleep', 'bg-category-blue', '--color-category-blue-strong', 'icon-moon'],
+    ['distance', 'bg-category-amber', '--color-category-amber-strong', 'icon-map'],
+  ])('#198 R2 da a cada mosaico su hueco y su tinta', async (metric, surface, ink, iconID) => {
+    await renderHome();
+    await screen.findByTestId(`summary-${metric}`);
+    const tile = screen.getByTestId(`summary-tile-${metric}`);
+    expect(tile.props.className).toBe(`size-9 items-center justify-center rounded-xl ${surface}`);
+    expect(tile.parent!.children[0]).toBe(tile);
+    expect(tile.children).toHaveLength(1);
+    expect(within(tile).getByTestId(iconID).props).toEqual({ testID: iconID, size: 18, color: ink });
+  });
+
+  it('#198 R2 viste valor y etiqueta con 16/800 y 11/600', async () => {
+    await renderHome();
+    await screen.findByTestId('summary-distance');
+    for (const [metric, label] of [['weight', 'Peso'], ['activity', 'Actividad'], ['sleep', 'Descanso'], ['distance', 'Distancia']]) {
+      const value = screen.getByTestId(`summary-${metric}`);
+      expect(value.props.className).toBe('text-base font-extrabold text-foreground');
+      expect(value.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+      expect(within(value.parent!).getByText(label).props.className).toBe('text-11 font-semibold text-muted');
+    }
+  });
+});
+
+describe('#198 R3: collar con dispositivo', () => {
+  beforeEach(() => {
+    setupCanvasHome();
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet() });
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('#198 R3 pinta el collar en una fila sin borde ni sombra', async () => {
+    await renderHome();
+    const card = await screen.findByTestId('collar-card');
+    for (const token of ['flex-row', 'items-center', 'gap-3', 'border-0', 'bg-default', 'px-3.5', 'py-3', 'shadow-none']) expect(card.props.className.split(' ')).toContain(token);
+    expect(card.props.className).not.toContain('shadow-sm');
+  });
+
+  it('#198 R3 ordena círculo, columna de estado y barra, y porcentaje', async () => {
+    await renderHome();
+    const battery = await screen.findByTestId('collar-battery');
+    const card = screen.getByTestId('collar-card');
+    const status = screen.getByTestId('collar-status');
+    const track = screen.getByTestId('collar-battery-track');
+    const children = card.children.filter(child => typeof child !== 'string');
+    expect(children.length).toBe(3);
+    expect(children[0] === screen.getByTestId('collar-icon')).toBe(true);
+    expect(children[1] === status.parent).toBe(true);
+    expect(children[2] === battery).toBe(true);
+    expect(status.parent!.props.className).toBe('flex-1 gap-1.5');
+    expect(status.parent!.children.length).toBe(2);
+    expect(status.parent!.children[0] === status).toBe(true);
+    expect(status.parent!.children[1] === track).toBe(true);
+    expect(status.props.className).toBe('text-15 font-bold text-foreground');
+    expect(battery.props.className).toContain('text-15 font-extrabold');
+    expect(battery.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+  });
+
+  it.each([
+    { connection: 'online', connectivity: 'online', iconID: 'icon-wifi' },
+    { connection: 'offline', connectivity: 'offline', iconID: 'icon-wifi-off' },
+    { connection: 'unknown', connectivity: null, iconID: 'icon-wifi-off' },
+  ])('#198 R3 pinta el círculo de 40 con la píldora y el icono en accent-strong ($connection)', async ({ connectivity, iconID }) => {
+    const pet = makeMotionPet();
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: { ...pet, device: { ...pet.device!, connectivity } } });
+    await renderHome();
+    await screen.findByTestId('collar-status');
+    const circle = screen.getByTestId('collar-icon');
+    expect(circle.props.className).toBe('size-10 items-center justify-center rounded-full bg-tab-pill');
+    expect(circle.children.length).toBe(1);
+    expect(within(circle).getByTestId(iconID).props).toEqual({ testID: iconID, size: 20, color: '--color-accent-strong' });
+  });
+
+  it('#198 R3 no pinta el icono Battery', async () => {
+    await renderHome();
+    await screen.findByTestId('collar-battery');
+    expect(screen.queryByTestId('icon-battery') === null).toBe(true);
+    expect(readFileSync(join(process.cwd(), 'src/screens/home/index.tsx'), 'utf8')).not.toMatch(/\bBattery\b/);
+  });
+});
+
+describe('#198 R4: batería del canvas', () => {
+  beforeEach(() => {
+    setupCanvasHome();
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet() });
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('#198 R4 pinta la barra de 8 sobre el fondo de la app', async () => {
+    const view = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
+    const track = await screen.findByTestId('collar-battery-track');
+    expect(track.props.className).toBe('h-2 w-full overflow-hidden rounded-full bg-background');
+    await view.unmount();
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(null) });
+    await renderHome();
+    const battery = await screen.findByTestId('collar-battery');
+    expect(battery).toHaveTextContent('—');
+    expect(battery.props.className).toBe('font-normal text-muted');
+    expect(screen.queryByTestId('collar-battery-track') === null).toBe(true);
+  });
+
+  it.each([
+    { pct: 72, fill: 'bg-accent', ink: 'text-accent-strong' },
+    { pct: 61, fill: 'bg-accent', ink: 'text-accent-strong' },
+    { pct: 60, fill: 'bg-warning-strong', ink: 'text-warning-strong' },
+    { pct: 12, fill: 'bg-warning-strong', ink: 'text-warning-strong' },
+  ])('#198 R4 tiñe barra y cifra por umbral ($pct)', async ({ pct, fill, ink }) => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(pct) });
+    await renderHome();
+    const track = await screen.findByTestId('collar-battery-track');
+    expect(track.props.className).toBe('h-2 w-full overflow-hidden rounded-full bg-background');
+    expect(screen.getByTestId('collar-battery-fill').props.className).toBe(`h-full rounded-full ${fill}`);
+    expect(screen.getByTestId('collar-battery').props.className).toBe(`text-15 font-extrabold ${ink}`);
+  });
+});
+
+const CANVAS_TILE_SHADOWS = new Map([
+  ['quick-action-weight', [{ offsetX: 0, offsetY: -4, blurRadius: 0, spreadDistance: 0, color: '--color-lip-tile-violet', inset: true }]],
+  ['quick-action-reminder', [{ offsetX: 0, offsetY: -4, blurRadius: 0, spreadDistance: 0, color: '--color-lip-tile-amber', inset: true }]],
+  ['quick-action-documents', [{ offsetX: 0, offsetY: -4, blurRadius: 0, spreadDistance: 0, color: '--color-lip-tile-blue', inset: true }]],
+]);
+
+describe('#198 R5: accesos rápidos del canvas', () => {
+  beforeEach(setupCanvasHome);
+  afterEach(() => jest.restoreAllMocks());
+  const tiles = [
+    { id: 'quick-action-weight', surface: 'bg-category-violet', ink: 'text-category-violet-strong', iconInk: '--color-category-violet-strong', iconID: 'icon-weight', label: 'Peso' },
+    { id: 'quick-action-reminder', surface: 'bg-category-amber', ink: 'text-category-amber-strong', iconInk: '--color-category-amber-strong', iconID: 'icon-calendar-plus', label: 'Recordatorio' },
+    { id: 'quick-action-documents', surface: 'bg-category-blue', ink: 'text-category-blue-strong', iconInk: '--color-category-blue-strong', iconID: 'icon-file-text', label: 'Documentos' },
+  ];
+
+  it('#198 R5 pinta el rótulo con 12/700, tracking de sección y mayúsculas', async () => {
+    await renderHome();
+    const title = await screen.findByTestId('quick-actions-title');
+    expect(title.props.className).toBe('text-xs font-bold uppercase tracking-section text-muted');
+    expect(title).toHaveTextContent('Accesos rápidos');
+    expect(screen.getByTestId('quick-actions').props.className).toBe('gap-2.5');
+    expect(screen.getByTestId('quick-actions-row').props.className).toBe('flex-row gap-2.5');
+  });
+
+  it.each(tiles)('#198 R5 viste cada tile con 92 de alto, radio 20 y su labio interior ($id)', async ({ id, surface }) => {
+    await renderHome();
+    const tile = await screen.findByTestId(id);
+    expect(tile.props.className).toBe(`h-23 flex-1 items-center justify-center gap-2 rounded-card ${surface}`);
+    expect(tile.props.style).toEqual({ borderCurve: 'continuous', boxShadow: CANVAS_TILE_SHADOWS.get(id), opacity: 1 });
+  });
+
+  it.each(tiles)('#198 R5 pinta icono de 26 y etiqueta 13/700 en la tinta del hueco ($id)', async ({ id, ink, iconInk, iconID, label }) => {
+    await renderHome();
+    const tile = await screen.findByTestId(id);
+    const icon = within(tile).getByTestId(iconID);
+    expect(icon.props.size).toBe(26);
+    expect(icon.props.color).toBe(iconInk);
+    expect(within(tile).getByText(label).props.className).toBe(`text-13 font-bold ${ink}`);
+  });
+});
+
+describe('#198 R6: retardos de entrada del canvas', () => {
+  beforeEach(setupHomeMotion);
+
+  it('#198 R6 escalona los bloques con los retardos del canvas', async () => {
+    await renderMotionHome();
+    const delays = [
+      ['home-entrance-summary', 120], ['home-entrance-collar', 180],
+      ['home-entrance-quick-actions', 240], ['home-entrance-weekly', 300],
+      ['home-entrance-reminders', 360], ['home-entrance-last-position', 420],
+    ] as const;
+    for (const [id, delay] of delays) {
+      jest.mocked(withDelay).mockClear();
+      screen.getByTestId(id).props.entering({});
+      expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([delay, delay]);
+    }
+    mockUseReducedMotion.mockReturnValue(true);
+    await screen.rerender(<HomeScreen />);
+    for (const [id] of delays) expect(screen.getByTestId(id).props.entering).toBeUndefined();
+  });
+
+  it('#198 R6 conserva el hueco de cada índice aunque falte un bloque', async () => {
+    for (const withoutDevice of [true, false]) {
+      mockGetPet.mockResolvedValue(withoutDevice ? { kind: 'ok', pet: makePet() } : { kind: 'error' });
+      mockGetDailyActivity.mockResolvedValue(withoutDevice ? { kind: 'error' } : {
+        kind: 'ok', days: [makeDay()], weekComparison: { distanceM: null, activeMinutes: null, walkCount: null },
+      });
+      const view = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
+      await screen.findByTestId(withoutDevice ? 'summary-note' : 'pet-hero-error');
+      await screen.findByTestId(withoutDevice ? 'collar-status' : 'weekly-activity-card');
+      expect(screen.queryByTestId('home-entrance-last-position') === null).toBe(true);
+      const delays: [string, number][] = [
+        ['home-entrance-summary', 120], ['home-entrance-quick-actions', 240], ['home-entrance-reminders', 360],
+        withoutDevice ? ['home-entrance-collar', 180] : ['home-entrance-weekly', 300],
+      ];
+      expect(screen.queryByTestId(withoutDevice ? 'home-entrance-weekly' : 'home-entrance-collar') === null).toBe(true);
+      for (const [id, delay] of delays) {
+        jest.mocked(withDelay).mockClear();
+        screen.getByTestId(id).props.entering({});
+        expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([delay, delay]);
+      }
+      await view.unmount();
+    }
+  });
+});
+
+describe('#198 R10: recordatorios del canvas', () => {
+  beforeEach(() => {
+    setupCanvasHome();
+    const dueAt = new Date(Date.now() + 86400000).toISOString();
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(82, {
+      nextVaccine: { id: 'vac-canvas', name: 'Vacuna', nextDoseAt: dueAt.slice(0, 10) },
+      mealsToday: { served: 1, total: 2 },
+    }) });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [makeReminder({ id: 'canvas', title: 'Recordatorio', dueAt })] });
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('#198 R10 pinta la cabecera con 16/800 y «Ver todos» con 12/700', async () => {
+    await renderHome();
+    const title = await screen.findByTestId('reminders-section-title');
+    expect(title.props.className).toBe('text-base font-extrabold text-foreground');
+    expect(title).toHaveTextContent('Recordatorios');
+    expect(screen.getByTestId('reminders-section').props.className).toBe('gap-1');
+    const link = screen.getByTestId('reminders-see-all');
+    expect(link.props.className).toBe('min-h-11 justify-center pl-3');
+    expect(within(link).getByText('Ver todos').props.className).toBe('text-xs font-bold text-accent-strong');
+  });
+
+  it.each([
+    { testID: 'reminders-next-vaccine' }, { testID: 'reminders-meals' },
+    { testID: 'reminders-none-upcoming' }, { testID: 'reminders-item-canvas' },
+  ])('#198 R10 viste cada fila como tarjeta con la sombra card ($testID)', async ({ testID }) => {
+    if (testID === 'reminders-none-upcoming') {
+      mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+      mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+    }
+    await renderHome();
+    const row = await screen.findByTestId(testID);
+    for (const token of ['flex-row', 'items-center', 'gap-3', 'px-3.5', 'py-3', 'shadow-none']) expect(row.props.className.split(' ')).toContain(token);
+    expect(row.props.className.split(' ')).not.toContain('shadow-sm');
+    expect(row.props.style.boxShadow).toEqual(CANVAS_CARD_SHADOW);
+  });
+
+  it('#198 R10 pinta títulos 14/700 y píldoras 12/800', async () => {
+    await renderHome();
+    for (const id of ['reminders-next-vaccine-name', 'reminders-meals-title', 'reminders-item-canvas-title']) {
+      expect((await screen.findByTestId(id)).props.className).toBe('text-sm font-bold text-foreground');
+    }
+    for (const id of ['reminders-next-vaccine-days', 'reminders-item-canvas-days']) {
+      expect((await screen.findByTestId(id)).props.className).toBe('rounded-full px-2.5 py-1 text-xs font-extrabold bg-category-amber text-category-amber-strong');
+    }
+  });
+});
+
+describe('#198 R11: última posición del canvas', () => {
+  beforeEach(() => {
+    setupCanvasHome();
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(82, { lastCommunicationAt: '2026-10-24T12:00:00.000Z' }) });
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('#198 R11 viste la última posición sin borde ni sombra', async () => {
+    await renderHome();
+    const card = await screen.findByTestId('last-position-card');
+    for (const token of ['gap-2', 'border-0', 'bg-default', 'px-4', 'py-3.5', 'shadow-none']) expect(card.props.className.split(' ')).toContain(token);
+    expect(card.props.className.split(' ')).not.toContain('shadow-sm');
+    expect(card.props.style.boxShadow).toBeUndefined();
+    expect(within(card).getByTestId('icon-map').parent!.props.className).toBe('size-9 items-center justify-center rounded-full bg-tab-pill');
+  });
+
+  it('#198 R11 pinta etiqueta 15/700 y hora de 13', async () => {
+    await renderHome();
+    const card = await screen.findByTestId('last-position-card');
+    expect(within(card).getByText('Ver en el mapa').props.className).toBe('text-15 font-bold text-accent-strong');
+    const time = screen.getByTestId('last-position-time');
+    expect(time.props.className).toBe('text-13 font-normal text-muted');
+    expect(time).toHaveTextContent(/Última señal/);
+  });
+});
+
+describe('#198 R13: Inicio sin collar', () => {
+  beforeEach(() => {
+    setupCanvasHome();
+    mockGetDailyActivity.mockResolvedValue({ kind: 'no-tracking' });
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('#198 R13 pinta peso con divisor y la nota de 14/20', async () => {
+    await renderHome();
+    const note = await screen.findByTestId('summary-note');
+    const weight = screen.getByTestId('summary-weight');
+    expect(weight.parent!.props.className).toBe('flex-1 items-center gap-1.5 border-r border-border');
+    expect(weight.parent!.parent!.props.className).toBe('flex-row gap-1');
+    expect(weight.props.className).toBe('text-base font-extrabold text-foreground');
+    expect(within(weight.parent!).getByText('Peso').props.className).toBe('text-11 font-semibold text-muted');
+    expect(note.props.className).toBe('flex-3 self-center pl-3 text-sm leading-5 font-normal text-muted');
+    expect(note).toHaveTextContent('La actividad necesita un collar con plan activo');
+  });
+
+  it('#198 R13 pinta el collar sin dispositivo en columna', async () => {
+    await renderHome();
+    const card = await screen.findByTestId('collar-card');
+    for (const token of ['gap-3', 'border-0', 'bg-default', 'px-4', 'py-3.5', 'shadow-none']) expect(card.props.className.split(' ')).toContain(token);
+    expect(card.props.className.split(' ')).not.toContain('flex-row');
+    expect(card.children.filter(child => typeof child !== 'string').length).toBe(3);
+    const status = within(card).getByTestId('collar-status');
+    expect(status.props.className).toBe('text-base font-extrabold text-foreground');
+    expect(status).toHaveTextContent('Sin collar');
+    expect(status.parent!.props.className).toBe('flex-row items-center gap-3');
+    const circle = within(card).getByTestId('collar-icon');
+    expect(circle.props.className).toBe('size-9 items-center justify-center rounded-full bg-tab-pill');
+    expect(within(circle).getByTestId('icon-moon').props).toEqual({ testID: 'icon-moon', size: 20, color: '--color-accent-strong' });
+    expect(within(card).getByText('Sin collar — solo salud').props.className).toBe('text-sm font-normal text-muted');
+  });
+
+  it('#198 R13 viste el enlace de vincular con 44 de alto, radio 12 y la píldora', async () => {
+    await renderHome();
+    const link = await screen.findByTestId('collar-pair-link');
+    expect(link.props.className).toBe('h-11 items-center justify-center rounded-xl bg-tab-pill');
+    expect(within(link).getByText('Vincular collar').props.className).toBe('text-15 font-bold text-foreground');
+    await fireEvent.press(link);
+    expect(mockRouter.push).toHaveBeenCalledWith('/pairing');
+  });
+
+  it('#198 R13 no pinta la actividad semanal', async () => {
+    await renderHome();
+    await screen.findByTestId('summary-note');
+    await screen.findByTestId('collar-status');
+    expect(screen.queryByTestId('weekly-activity-card') === null).toBe(true);
+  });
+});
+
+describe('#198 R14: esqueleto de carga del canvas', () => {
+  beforeEach(() => {
+    setupCanvasHome();
+    mockListPets.mockReturnValue(pending<PetsState>());
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('#198 R14 pinta el esqueleto con la forma del canvas y sin título', async () => {
+    await renderHome();
+    const loading = screen.getByTestId('home-loading');
+    expect(loading.props.className).toBe('gap-3.5');
+    expect(loading.children.filter(child => typeof child !== 'string').map(child => child.props.testID)).toEqual(['home-loading-summary', 'home-loading-collar', 'home-loading-quick-actions', 'home-loading-weekly']);
+    expect(within(screen.getByTestId('home-states')).queryByText('Inicio') === null).toBe(true);
+    const summary = screen.getByTestId('home-loading-summary', { includeHiddenElements: true });
+    expect(summary.props.className).toBe('gap-4 rounded-card border border-border bg-surface px-4 py-3.5');
+    expect(summary.props.style.boxShadow).toEqual(CANVAS_CARD_SHADOW);
+    for (const [id, height] of [['home-loading-collar', 'h-16'], ['home-loading-weekly', 'h-102']]) {
+      const block = screen.getByTestId(id, { includeHiddenElements: true });
+      for (const token of [height, 'w-full', 'rounded-card']) expect(block.props.className.split(' ')).toContain(token);
+    }
+  });
+
+  it('#198 R14 dibuja cuatro celdas y tres tiles en el esqueleto', async () => {
+    await renderHome();
+    const summary = screen.getByTestId('home-loading-summary', { includeHiddenElements: true });
+    const summaryChildren = summary.children.filter(child => typeof child !== 'string');
+    for (const token of ['h-4', 'w-30', 'rounded-full']) expect(summaryChildren[0].props.className.split(' ')).toContain(token);
+    const row = summaryChildren[1];
+    expect(row.props.className).toBe('flex-row gap-2');
+    const cells = row.children.filter(child => typeof child !== 'string');
+    expect(cells.length).toBe(4);
+    for (const cell of cells) {
+      expect(cell.props.className).toBe('flex-1 items-center gap-2');
+      const children = cell.children.filter(child => typeof child !== 'string');
+      expect(children.length).toBe(3);
+      for (const [index, tokens] of [[0, ['size-9', 'rounded-xl']], [1, ['h-3.5', 'w-13', 'rounded-full']], [2, ['h-2.5', 'w-9', 'rounded-full']]] as const) {
+        for (const token of tokens) expect(children[index].props.className.split(' ')).toContain(token);
+      }
+    }
+    const quick = screen.getByTestId('home-loading-quick-actions', { includeHiddenElements: true });
+    expect(quick.props.className).toBe('gap-2.5');
+    const quickChildren = quick.children.filter(child => typeof child !== 'string');
+    for (const token of ['h-3', 'w-27.5', 'rounded-full']) expect(quickChildren[0].props.className.split(' ')).toContain(token);
+    expect(quickChildren[1].props.className).toBe('flex-row gap-2.5');
+    const tiles = quickChildren[1].children.filter(child => typeof child !== 'string');
+    expect(tiles.length).toBe(3);
+    for (const tile of tiles) for (const token of ['h-23', 'flex-1', 'rounded-card']) expect(tile.props.className.split(' ')).toContain(token);
+  });
+
+  it('#198 R14 usa el Skeleton de HeroUI en cada bloque', async () => {
+    await renderHome();
+    function descendants(node: typeof screen.container): (typeof screen.container)[] {
+      return [node, ...node.children.flatMap(child => typeof child === 'string' ? [] : descendants(child))];
+    }
+    const skeletons = descendants(screen.getByTestId('home-loading')).filter(node => node.props.className?.split(' ').includes('skeleton__root'));
+    expect(skeletons.length).toBe(19);
+    for (const id of ['home-loading-collar', 'home-loading-weekly']) expect(screen.getByTestId(id, { includeHiddenElements: true }).props.className).toContain('skeleton__root');
+  });
+});
+
+
+describe('#198 R15: error hero de Inicio', () => {
+  beforeEach(() => {
+    setupCanvasHome();
+    mockUseReducedMotion.mockReturnValue(true);
+    mockListPets.mockResolvedValue({ kind: 'unreachable', message: 'down' });
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('#198 R15 pinta el título de Inicio y el escenario de error', async () => {
+    await renderHome();
+    await waitFor(() => expect(screen.getByTestId('home-error-title')).toHaveTextContent('No pude cargar a tus mascotas'));
+    expect(within(screen.getByTestId('home-states')).getByText('Inicio').props.className).toBe('text-26 font-black tracking-title text-foreground');
+    expect(screen.getByTestId('home-error').props.className).toBe('w-full items-center gap-3.5');
+    expect(screen.getByTestId('home-error-title').props.className).toBe('text-center text-22 font-black tracking-title text-foreground');
+    expect(screen.getByTestId('home-error-pose').props.source).toEqual([expect.objectContaining({ testUri: expect.stringMatching(/pingo-talk\.webp$/) })]);
+  });
+
+  it('#198 R15 reintenta desde home-error-action', async () => {
+    mockListPets.mockReset().mockResolvedValueOnce({ kind: 'unreachable', message: 'down' }).mockResolvedValueOnce({ kind: 'ok', pets: [makePet()] });
+    await renderHome();
+    await waitFor(() => expect(screen.getByTestId('home-error-action')).toBeVisible());
+    await fireEvent.press(screen.getByTestId('home-error-action'));
+    await waitFor(() => expect(screen.getByTestId('summary-card')).toBeVisible());
+    expect(screen.queryByTestId('home-error') === null).toBe(true);
+  });
+
+  it.each([
+    { language: 'es', title: 'No pude cargar a tus mascotas', body: 'Revisa tu conexión y vuelve a intentarlo.', action: 'Reintentar' },
+    { language: 'en', title: "I couldn't load your pets", body: 'Check your connection and try again.', action: 'Retry' },
+  ] as const)('#198 R15 pinta el copy del error en los dos idiomas', async ({ language, title, body, action }) => {
+    await renderWithProviders(<HomeScreen />, { wrapper: language === 'es' ? HomeWrapper : HomeWrapperEn });
+    await waitFor(() => expect(screen.getByTestId('home-error-title')).toHaveTextContent(title));
+    expect(screen.getByTestId('home-error-body')).toHaveTextContent(body);
+    expect(screen.getByTestId('home-error-action')).toHaveTextContent(action);
+  });
+
+  it('#198 R15 pasa el badge de peligro y el icono de recarga', async () => {
+    await renderHome();
+    await waitFor(() => expect(screen.getByTestId('home-error-action')).toBeVisible());
+    const stage = screen.getByTestId('home-error-stage', { includeHiddenElements: true });
+    const badge = screen.getByTestId('home-error-badge', { includeHiddenElements: true });
+    expect(stage.children.at(-1) === badge).toBe(true);
+    expect(badge.props.className).toBe('absolute right-10.5 top-6.5 size-11 items-center justify-center rounded-full border-3 border-background bg-danger');
+    expect(badge.children.length).toBe(1);
+    const alert = within(badge).getByTestId('icon-alert', { includeHiddenElements: true });
+    expect(alert.props.size).toBe(24);
+    expect(alert.props.color).toBe('--color-danger-foreground');
+    const refresh = within(screen.getByTestId('home-error-action')).getByTestId('home-error-action-icon', { includeHiddenElements: true });
+    expect(refresh.props.size).toBe(20);
+    expect(refresh.props.color).toBe('--color-accent-foreground');
+    expect(refresh.props.style).toEqual({ marginRight: 8 });
+    const source = readFileSync(join(process.cwd(), 'src/screens/home/index.tsx'), 'utf8');
+    expect(source.match(/<Refresh size=\{20\} color=\{accentForeground\}/g)).toHaveLength(1);
+    expect(source).not.toContain('home-retry');
+  });
+});
+
+
+describe('#198 R16: vacío de Inicio conservado', () => {
+  beforeEach(() => {
+    setupCanvasHome();
+    mockUseReducedMotion.mockReturnValue(true);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('#198 R16 conserva el vacío hero sin badge ni tono de error', async () => {
+    await renderHome();
+    await waitFor(() => expect(screen.getByTestId('home-empty-title')).toHaveTextContent('Aún no tienes mascotas'));
+    expect(screen.getByTestId('home-empty').props.className).toBe('w-full items-center gap-3.5');
+    expect(screen.getByTestId('home-empty-title').props.className).toBe('text-center text-26 font-black tracking-title text-foreground');
+    expect(screen.getByTestId('home-empty-body')).toHaveTextContent('Añade a tu mascota y te ayudo a saber dónde está y cómo está.');
+    expect(screen.getByTestId('home-empty-action')).toHaveTextContent('Añadir mascota');
+    expect(screen.getByTestId('home-empty-stage-disc', { includeHiddenElements: true }).props.className).toBe('absolute size-60 rounded-full bg-surface-secondary');
+    expect(screen.getByTestId('home-empty-pose').props.source).toEqual([expect.objectContaining({ testUri: expect.stringMatching(/pingo-talk\.webp$/) })]);
+    expect(screen.queryByTestId('home-empty-badge', { includeHiddenElements: true }) === null).toBe(true);
   });
 });

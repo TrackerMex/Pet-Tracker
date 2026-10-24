@@ -34,6 +34,7 @@ import {
   TABULAR_NUMS,
 } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
+import { useShadows } from '../../theme/shadows';
 import { fmtCount, fmtKm, fmtMinutes } from './format';
 
 // react-native-chart-kit 7.0.4 geometry contract (re-derive on upgrade):
@@ -95,12 +96,14 @@ const AnimatedView = Animated.createAnimatedComponent(View);
 function ActivityBar({
   bar,
   fill,
+  fillOpacity,
   average,
   averageColor,
   chartWidth,
   drawAverage,
 }: BarChartRenderBarProps<ChartDatum> & {
   average: number | null;
+  fillOpacity: number;
   averageColor: string;
   chartWidth: number;
   drawAverage: boolean;
@@ -151,7 +154,8 @@ function ActivityBar({
           y={bar.baselineY - height}
           width={bar.width}
           height={height}
-          rx={Math.min(bar.width, height) / 2}
+          rx={Math.min(6, height / 2)}
+          fillOpacity={fillOpacity}
           fill={fill}
         />
       ) : (
@@ -161,7 +165,8 @@ function ActivityBar({
           animatedProps={animatedProps}
           x={bar.x}
           width={bar.width}
-          rx={Math.min(bar.width, height) / 2}
+          rx={Math.min(6, height / 2)}
+          fillOpacity={fillOpacity}
           fill={fill}
         />
       )}
@@ -238,10 +243,10 @@ function DetailMetric({
 }): JSX.Element {
   return (
     <View className="flex-1 gap-1">
-      <Text className="text-2xs text-muted">{label}</Text>
+      <Text className="text-11 text-muted">{label}</Text>
       <Text
         testID={testID}
-        className="text-sm font-semibold text-foreground"
+        className="text-sm font-bold text-foreground"
         style={TABULAR_NUMS}
       >
         {value}
@@ -359,7 +364,7 @@ function MetricSelector({
               <Check
                 testID="weekly-activity-metric-selected"
                 accessible={false}
-                size={12}
+                size={13}
                 color={accentStrong}
               />
             ) : null}
@@ -367,8 +372,8 @@ function MetricSelector({
               testID={`weekly-activity-metric-label-${metric}`}
               className={
                 selected
-                  ? 'shrink text-xs font-semibold text-accent-strong'
-                  : 'shrink text-xs font-semibold text-foreground'
+                  ? 'shrink text-xs font-extrabold text-accent-strong'
+                  : 'shrink text-xs font-semibold text-muted'
               }
               numberOfLines={1}
               adjustsFontSizeToFit
@@ -399,6 +404,7 @@ export function weekdayLabel(
 export function WeeklyActivityChart(
   { days, weekComparison, onSelectDay }: WeeklyActivityChartProps,
 ): JSX.Element {
+  const shadows = useShadows();
   const locale = useLocale();
   const t = useTranslate();
   const [chartWidth, setChartWidth] = useState(0);
@@ -486,16 +492,16 @@ export function WeeklyActivityChart(
   };
 
   return (
-    <Card testID="weekly-activity-card" className="gap-2">
+    <Card testID="weekly-activity-card" className="gap-2 px-4 py-3.5 shadow-none" style={shadows.card}>
       <View
         testID="weekly-activity-header"
         className="flex-row items-start justify-between gap-3"
       >
         <View>
-          <Text className="text-base font-bold text-foreground">
+          <Text className="text-base font-extrabold text-foreground">
             {t('weeklyActivity.title')}
           </Text>
-          <Text className="text-2xs text-muted">
+          <Text className="text-11 text-muted">
             {t('weeklyActivity.lastSevenDays')}
           </Text>
         </View>
@@ -585,6 +591,7 @@ export function WeeklyActivityChart(
               <ActivityBar
                 key={barProps.bar.key}
                 {...barProps}
+                fillOpacity={selection === null || barProps.bar.dataIndex === selection.dataIndex ? 1 : 0.35}
                 average={average}
                 averageColor={muted}
                 chartWidth={chartWidth}
@@ -608,7 +615,7 @@ export function WeeklyActivityChart(
                   {weekdayLabel(selectedDay.date, locale, 'long')}
                 </Text>
                 <Text
-                  className="text-xs font-bold text-foreground"
+                  className="text-xs font-extrabold text-foreground"
                   style={TABULAR_NUMS}
                 >
                   {selectedDay.source === 'missing'
@@ -681,10 +688,10 @@ export function WeeklyActivityChart(
           {selectedDay ? (
             <View
               testID="weekly-activity-detail"
-              className="gap-3 rounded-xl border border-border bg-surface-secondary p-3"
+              className="gap-3 rounded-16 border border-border bg-default p-3"
               style={CONTINUOUS_CORNER}
             >
-              <Text className="font-bold text-foreground">
+              <Text className="text-15 font-extrabold text-foreground">
                 {weekdayLabel(selectedDay.date, locale, 'long')}
               </Text>
               {selectedDay.source === 'missing' ? (
