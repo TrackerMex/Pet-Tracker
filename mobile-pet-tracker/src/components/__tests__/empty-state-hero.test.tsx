@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
-import { StyleSheet } from 'react-native';
+import type { ReactElement, ReactNode } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { getAnimatedStyle } from 'react-native-reanimated';
 
 import { EmptyState } from '../empty-state';
@@ -31,6 +32,9 @@ jest.mock('reicon-react-native', () => {
 type ProbeOptions = {
   variant?: 'default' | 'hero';
   action?: { label: string; onPress: () => void };
+  badge?: ReactNode;
+  actionIcon?: ReactElement;
+  body?: string;
 };
 
 async function renderProbe(options: ProbeOptions = { variant: 'hero' }) {
@@ -201,4 +205,52 @@ it('#176 R14: hero ocupa el ancho útil con gap de 14 y los hijos en orden, con 
     if (!action) expect(screen.queryByTestId('home-empty-action-wrap')).toBeNull();
     await result.unmount();
   }
+});
+
+describe('#198 R18: API compartida del escenario', () => {
+  it('#198 R18 el badge es el último hijo del escenario', async () => {
+    const base = await renderProbe();
+    const count = screen.getByTestId('home-empty-stage', { includeHiddenElements: true }).children.length;
+    await base.unmount();
+    await renderProbe({ variant: 'hero', badge: <View testID="probe-badge" /> });
+    const children = screen.getByTestId('home-empty-stage', { includeHiddenElements: true }).children.filter(child => typeof child !== 'string');
+    expect(children.length).toBe(count + 1);
+    expect(children.at(-1)!.props.testID).toBe('probe-badge');
+  });
+
+  it('#198 R18 sin badge el escenario no cambia', async () => {
+    await renderProbe();
+    const stage = screen.getByTestId('home-empty-stage', { includeHiddenElements: true });
+    expect(stage.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['home-empty-stage-disc', 'home-empty-stage-paw', 'home-empty-float', 'home-empty-stage-shadow']);
+    expect(screen.queryByTestId('probe-badge', { includeHiddenElements: true }) === null).toBe(true);
+  });
+
+  it('#198 R18 actionIcon sustituye al «+» del hero', async () => {
+    await renderProbe({ variant: 'hero', action: { label: 'Acción', onPress: jest.fn() }, actionIcon: <View testID="home-empty-action-icon" accessibilityLabel="recarga de prueba" style={{ marginRight: 3 }} /> });
+    const action = screen.getByTestId('home-empty-action');
+    const icon = within(action).getByTestId('home-empty-action-icon', { includeHiddenElements: true });
+    expect(icon.props.accessibilityLabel).toBe('recarga de prueba');
+    expect(icon.props.style).toEqual({ marginRight: 3 });
+    expect(icon.props.size).toBeUndefined();
+    expect(within(action).queryAllByTestId('home-empty-action-icon', { includeHiddenElements: true }).length).toBe(1);
+  });
+
+  it('#198 R18 sin actionIcon el hero conserva el «+»', async () => {
+    await renderProbe({ variant: 'hero', action: { label: 'Acción', onPress: jest.fn() } });
+    const icon = screen.getByTestId('home-empty-action-icon', { includeHiddenElements: true });
+    expect(icon.props.size).toBe(20);
+    expect(icon.props.strokeWidth).toBeUndefined();
+  });
+
+  it('#198 R18 sin body el hero no monta cuerpo', async () => {
+    await renderProbe({ variant: 'hero', body: undefined });
+    expect(screen.queryByTestId('home-empty-body', { includeHiddenElements: true }) === null).toBe(true);
+    expect(screen.queryByTestId('home-empty-body-enter', { includeHiddenElements: true }) === null).toBe(true);
+  });
+
+  it('#198 R18 sin body la variante por defecto no monta cuerpo', async () => {
+    await renderProbe({ variant: 'default', body: undefined });
+    expect(screen.queryByTestId('home-empty-body', { includeHiddenElements: true }) === null).toBe(true);
+    expect(screen.queryByTestId('home-empty-body-enter', { includeHiddenElements: true }) === null).toBe(true);
+  });
 });

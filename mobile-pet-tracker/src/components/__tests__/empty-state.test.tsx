@@ -235,10 +235,10 @@ describe('#155 R11: los vacíos no traen movimiento ni dependencias', () => {
     }
   });
 
-  it('EmptyState importa exactamente lo de la flotación (enmendado por #177 R10) (enmendado por #176 R5)', () => {
+  it('EmptyState importa exactamente lo de la flotación (enmendado por #177 R10) (enmendado por #176 R5) (enmendado por #198 R18)', () => {
     const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
     expect(source.match(/^import\b.*$/gm)).toEqual([
-      "import { useEffect } from 'react';",
+      "import { useEffect, type ReactElement, type ReactNode } from 'react';", // (enmendado por #198 R18)
       "import { Image } from 'expo-image';",
       "import { Button } from 'heroui-native';",
       "import { Text, View } from 'react-native';",
