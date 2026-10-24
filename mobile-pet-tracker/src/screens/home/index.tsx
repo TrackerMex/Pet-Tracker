@@ -623,7 +623,7 @@ export function HomeScreen() {
                     className={detail.data.pet.device.batteryPct === null
                       ? 'font-normal text-muted'
                       : detail.data.pet.device.batteryPct > 60
-                        ? 'text-15 font-extrabold text-success'
+                        ? 'text-15 font-extrabold text-accent-strong'
                         : 'text-15 font-extrabold text-warning-strong'}
                   >
                     {detail.data.pet.device.batteryPct === null ? '—' : `${detail.data.pet.device.batteryPct}%`}
