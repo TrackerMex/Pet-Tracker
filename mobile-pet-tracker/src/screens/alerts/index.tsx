@@ -9,6 +9,7 @@ import type { Alert } from '../../api/types';
 import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
 import { PopIn } from '../../components/pop-in';
+import { ScreenHeader } from '../../components/screen-header';
 import { useAlertsList } from '../../hooks/use-alerts-list';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
@@ -161,7 +162,7 @@ export function AlertsScreen() {
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           paddingHorizontal: 20,
-          paddingTop: 24,
+          paddingTop: insets.top + 8,
           paddingBottom: insets.bottom + 24,
           gap: 12,
         }}
@@ -173,18 +174,18 @@ export function AlertsScreen() {
         }}
         ListHeaderComponent={(
           <View testID="alerts-header" className="gap-3">
-            <View testID="alerts-title-row" className="flex-row items-center gap-2">
-              <Text testID="alerts-title" accessibilityRole="header" className="flex-1 text-26 font-black tracking-title text-foreground">
-                {t('alerts.title')}
-              </Text>
-              {count > 0 ? (
+            <ScreenHeader
+              testID="alerts"
+              backFallback="/"
+              title={t('alerts.title')}
+              accessory={count > 0 ? (
                 <PopIn testID="alerts-new-count" className="rounded-full bg-danger px-2.5 py-1">
                   <Text testID="alerts-new-count-text" className="text-13 font-extrabold text-danger-foreground" style={TABULAR_NUMS}>
                     {count === 1 ? t('alerts.newOne') : t('alerts.newMany', { count })}
                   </Text>
                 </PopIn>
-              ) : null}
-            </View>
+              ) : undefined}
+            />
             {displayedActionError ? (
               <Text testID="alerts-action-error" className="text-danger">
                 {displayedActionError}
