@@ -1719,3 +1719,45 @@ describe('#203 R4: título y tarjeta de la vista con collar', () => {
     expect(value.props.className).toBe(`shrink text-right text-15 font-extrabold ${tone}`);
   });
 });
+
+describe('#203 R5: píldora de rastreo y entrada del plan', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseReducedMotion.mockReturnValue(false);
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ device: makeDevice() })] });
+    mockGetPetTracking.mockResolvedValue({ kind: 'ok', tracked: true });
+  });
+
+  it('#203 R5: la píldora de rastreo es 36 con punto y verde fuerte', async () => {
+    await renderPairing();
+    const pill = await screen.findByTestId('plan-tracked');
+    expect(pill.props.className).toBe('h-9 flex-row items-center gap-2 self-start rounded-full bg-tab-pill px-3.5');
+    expect(pill.children).toHaveLength(2);
+    const dot = pill.children[0];
+    expect(typeof dot === 'string' ? dot : dot.props.testID).toBe('plan-tracked-dot');
+    expect(typeof dot === 'string' ? dot : dot.props.className).toBe('size-2 rounded-full bg-accent');
+    const label = pill.children[1];
+    expect(typeof label === 'string' ? label : label.props.className).toBe('text-sm font-bold text-accent-strong');
+    expect(within(pill).getByText('Rastreo GPS activo')).toBeOnTheScreen();
+  });
+
+  it.each([
+    ['plan-skeleton', () => pending<PetTrackingState>()],
+    ['plan-tracked', () => Promise.resolve<PetTrackingState>({ kind: 'ok', tracked: true })],
+    ['plan-free', () => Promise.resolve<PetTrackingState>({ kind: 'ok', tracked: false })],
+    ['plan-unknown', () => Promise.resolve<PetTrackingState>({ kind: 'error' })],
+  ] as const)('#203 R5: %s entra con RiseIn 140', async (planId, load) => {
+    mockGetPetTracking.mockReturnValue(load());
+    await renderPairing();
+    await screen.findByTestId(planId);
+    expect(screen.getAllByTestId('device-plan-rise')).toHaveLength(1);
+    const rise = screen.getByTestId('device-plan-rise');
+    expect(rise.props.delayMs).toBe(140);
+    expect(within(rise).getByTestId(planId)).toBeOnTheScreen();
+    expect(rise.children).toHaveLength(1);
+  });
+});
