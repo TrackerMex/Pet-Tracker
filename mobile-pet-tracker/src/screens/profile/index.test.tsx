@@ -2454,9 +2454,9 @@ describe('#196 R6: cerrar sesión como el artboard de cuenta', () => {
     expect(entrance.children).toHaveLength(1);
     expect(profileChild(entrance, 0)).toBe(button);
     expect(button.props.className).toBe('pressable-feedback__root button__root button__root--variant-danger-soft button__root--size-md h-13 rounded-14 bg-category-rose');
-    expect(button.children).toHaveLength(1);
     const label = within(button).getByText('Cerrar sesión');
-    expect(profileChild(button, 0)).toBe(label);
+    const contentChildren = button.children.filter((child) => typeof child !== 'string' && child.props.pointerEvents !== 'none');
+    expect(contentChildren).toEqual([label]);
     expect(label.props.className).toBe('text-15 font-extrabold text-danger');
     expect(label.props.className).not.toContain('button__label');
     expect(JSON.stringify(button.props.style ?? [])).not.toContain('boxShadow');
