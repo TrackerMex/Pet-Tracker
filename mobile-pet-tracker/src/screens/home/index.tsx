@@ -492,7 +492,7 @@ export function HomeScreen() {
         ) : null}
 
         {selectedPetId ? (
-          <HomeEntrance index={1} testID="home-entrance-summary">
+          <HomeEntrance index={2} testID="home-entrance-summary">
             <Card testID="summary-card" className="gap-3 px-2 py-3.5 shadow-none" style={shadows.card}>
               <Text
                 testID="summary-card-title"
@@ -600,7 +600,7 @@ export function HomeScreen() {
         ) : null}
 
         {detail.data?.kind === 'ok' && connection ? (
-          <HomeEntrance index={2} testID="home-entrance-collar">
+          <HomeEntrance index={3} testID="home-entrance-collar">
             <Card
               testID="collar-card"
               className={detail.data.pet.device
@@ -666,7 +666,7 @@ export function HomeScreen() {
         ) : null}
 
         {selectedPetId ? (
-          <HomeEntrance index={3} testID="home-entrance-quick-actions">
+          <HomeEntrance index={4} testID="home-entrance-quick-actions">
             <View testID="quick-actions" className="gap-2.5">
               <Text
                 testID="quick-actions-title"
@@ -702,7 +702,7 @@ export function HomeScreen() {
         ) : null}
 
         {selectedPetId && (activity.data === undefined || activity.data.kind === 'ok') ? (
-          <HomeEntrance index={4} testID="home-entrance-weekly">
+          <HomeEntrance index={5} testID="home-entrance-weekly">
             {activity.data === undefined ? (
               <Skeleton
                 testID="weekly-activity-skeleton"
@@ -738,7 +738,7 @@ export function HomeScreen() {
         ) : null}
 
         {selectedPetId ? (
-          <HomeEntrance index={5} testID="home-entrance-reminders">
+          <HomeEntrance index={6} testID="home-entrance-reminders">
             <View testID="reminders-section" className="gap-3">
               <View className="flex-row items-center justify-between">
                 <Text
@@ -917,7 +917,7 @@ export function HomeScreen() {
         ) : null}
 
         {detail.data?.kind === 'ok' && detail.data.pet.device ? (
-          <HomeEntrance index={6} testID="home-entrance-last-position">
+          <HomeEntrance index={7} testID="home-entrance-last-position">
             <Card
               testID="last-position-card"
               className="gap-2 bg-default"
