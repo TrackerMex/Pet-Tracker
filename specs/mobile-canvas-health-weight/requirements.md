@@ -625,7 +625,7 @@ en `es` y en `en`:
 | `weightLog.history` | `'Historial'` | `'History'` | `screens/weight-log/index.tsx` | R9 |
 | `health.appliedOn` | `'Aplicada {{date}}'` | `'Given {{date}}'` | `screens/health/index.tsx` | R17 |
 | `health.nextOn` | `'Próxima {{date}}'` | `'Next {{date}}'` | `screens/health/index.tsx` | R17 |
-| `health.nextDoseToday` | `'hoy'` | `'today'` | `screens/health/index.tsx` | R14 |
+| `health.nextDoseToday` | `'hoy'` | `'due today'` | `screens/health/index.tsx` | R14 |
 | `health.nextDoseTomorrow` | `'mañana'` | `'tomorrow'` | `screens/health/index.tsx` | R14 |
 | `health.nextDoseInDays` | `'en {{days}} días'` | `'in {{days}} days'` | `screens/health/index.tsx` | R14 |
 | `weightChart.lastSixMonths` | `'Peso de los últimos 6 meses'` | `'Weight over the last 6 months'` | `components/weight-chart.tsx` | R5 |
@@ -790,6 +790,8 @@ feature en mergear conserva las dos entradas.
 Firmadas por delegación (mandato del humano del 2026-10-23, `progress/plan_canvas-parity-2026-10-23.md` §4).
 
 **Hook sin uso en `_layout.tsx` (parada de lint tras R1).** R1 saca el título de la cabecera nativa de `weight-log`, y con eso `const t = useTranslate();` de `RootStack` (`src/app/_layout.tsx`) se queda sin uso: lint da el warning de `t`. Se autoriza quitar esa línea. Si después `grep -c 'useTranslate' src/app/_layout.tsx` da 1 (solo el import), quita también el import. Va en un commit propio `refactor(#199): R1 drop the unused translator from the root stack`, antes de R2. Al comparar `_layout.tsx` con H0, el diff permitido queda en la entrada de `weight-log` más estas una o dos líneas.
+
+**Valor `en` de `health.nextDoseToday` (parada de R25 en UL #194 R5), firmada.** El `it` UL `#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas (enmendado por #199 R1)` compara por igualdad cada valor fijo del catálogo con los literales enteros de cada pantalla. `src/screens/alerts/index.tsx` ya tiene en H0 el literal `'today'`, que es el id interno de sección (`AlertSection` de `src/utils/alert-sections.ts`) y no copy pintado. Con el `en` `'today'` que R25 prescribía, ese `it` da `en:health.nextDoseToday = today`. No se añade excepción al escáner (design.md §4.1 lo quiere sin lista) ni se toca Alertas. El valor `en` de `health.nextDoseToday` pasa de `'today'` a `'due today'` en la tabla de R25 (ya corregida arriba), en `src/i18n/catalog.ts` y en la fila `['health.nextDoseToday', 'hoy', 'today']` de `src/__tests__/health-weight-canvas-fidelity.test.ts`, que queda `['health.nextDoseToday', 'hoy', 'due today']`. `es` no cambia, y el título del `it` UL tampoco, porque ese `it` no se edita. Va test primero: `test(#199): R25 move the English today copy off the alert section id` (solo la fila del test CF, rojo por aserción) y después `feat(#199): R25 add the health and weight copy to the usage table` (el valor del catálogo más las siete filas de `ui-copy-table.ts`, verde CF, UL y language-provider). Ningún otro valor de la tabla cambia. Si tras el cambio UL da otra coincidencia, es PARADA.
 
 **Regla de recuentos agregados.** Si al llegar a verde una R se pone rojo un `it` que no está en el inventario y ese `it` solo cuenta usos o ficheros de un literal o token, Codex lo enmienda sin parar. Son de este tipo los inventarios cerrados de radios, de `style={CONTINUOUS_CORNER}`, de `text-NN` o de `<Card`, las sumas de copy y los suelos del escáner HeroUI. La condición es que el delta medido sea exactamente el número de usos que el diff de esa R, tal como esta spec la prescribe, añade o retira. La enmienda:
 
