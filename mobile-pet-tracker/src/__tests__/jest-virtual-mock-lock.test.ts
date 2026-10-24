@@ -40,8 +40,8 @@ function escapeRegExp(value: string): string {
 function allTestFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const path = join(directory, entry.name);
-    if (entry.isDirectory()) return entry.name === '__tests__' ? [] : allTestFiles(path);
-    return /\.tests\.tsx?$/.test(entry.name) ? [path] : [];
+    if (entry.isDirectory()) return allTestFiles(path);
+    return /\.test\.tsx?$/.test(entry.name) ? [path] : [];
   });
 }
 
