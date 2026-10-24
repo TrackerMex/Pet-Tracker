@@ -38,6 +38,7 @@ import {
   CONTINUOUS_CORNER,
   TABULAR_NUMS,
 } from '../../theme/native-styles';
+import { useShadows } from '../../theme/shadows';
 import {
   deviceConnectionState,
   MAP_CONNECTION_LABEL_KEY,
@@ -105,6 +106,7 @@ export function MapScreen() {
   const { selectedPetId } = useSelectedPet();
   const insets = useSafeAreaInsets();
   const reducedMotion = useReducedMotion();
+  const shadows = useShadows();
   const { theme } = useUniwind();
   const pets = useQuery({
     queryKey: petKeys.list(),
@@ -363,33 +365,41 @@ export function MapScreen() {
                 testID="map-pet-pill"
                 accessible
                 accessibilityLabel={`${selectedPet.name}, ${gps}`}
-                className="flex-row items-center gap-2 self-start rounded-full border border-border bg-surface px-3 py-2 shadow-sm"
+                className="flex-row items-center gap-2 self-start rounded-full border border-border bg-glass-surface-strong py-1.5 pl-1.5 pr-3.5"
+                style={shadows.card}
               >
                 <PetAvatar
                   testID="map-pet-pill-avatar"
-                  size={24}
+                  size={28}
                   name={selectedPet.name}
                   photoUrl={selectedPet.photoUrl}
                   cacheKey={selectedPet.id}
                 />
                 <Text
                   testID="map-pet-pill-name"
-                  className="shrink text-xs font-bold text-foreground"
+                  className="shrink text-15 font-extrabold text-foreground"
                   numberOfLines={1}
                 >
                   {selectedPet.name}
                 </Text>
                 <View
-                  testID="map-pet-pill-dot"
-                  className={`size-2 rounded-full ${gpsTone.dot}`}
-                />
-                <Text
-                  testID="map-pet-pill-status"
-                  className={`text-2xs font-semibold ${gpsTone.text}`}
-                  numberOfLines={1}
+                  testID="map-pet-pill-gps"
+                  className="flex-row items-center gap-1.25"
                 >
-                  {gps}
-                </Text>
+                  <View
+                    testID="map-pet-pill-dot"
+                    className={`size-1.75 rounded-full ${
+                      connection === 'online' ? 'bg-accent' : gpsTone.dot
+                    }`}
+                  />
+                  <Text
+                    testID="map-pet-pill-status"
+                    className={`text-xs font-bold ${gpsTone.text}`}
+                    numberOfLines={1}
+                  >
+                    {gps}
+                  </Text>
+                </View>
               </View>
             ) : null}
             <Card className="p-3">
