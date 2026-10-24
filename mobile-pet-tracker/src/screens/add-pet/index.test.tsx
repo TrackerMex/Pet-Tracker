@@ -1216,4 +1216,3 @@ describe('#171 R5: variante sin collar', () => {
     expect(screen.getByTestId('add-pet-celebration-body').props.children).toBe('Te ayudo a cuidar de Kira. Vincula un collar y estaré pendiente de dónde está.');
   });
 });
-jest.mock('mutacion-c', () => ({}), { "virtual" : false });

@@ -96,4 +96,3 @@ describe('R6: profile permite cerrar sesión', () => {
     expect(mockSignOut).toHaveBeenCalledTimes(1);
   });
 });
-jest.mock('mutacion-a', () => ({}), { virtual: true });
