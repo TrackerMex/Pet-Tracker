@@ -438,6 +438,14 @@ delta por R en la fila.
 
 **E1. Casilla de la Enmienda #204 y formato de commits.** La casilla de R16 se escribe ya firmada por delegación, como la de #197: `- [X] Enmienda #204 aprobada por humano` seguida de la línea de firma delegada (mandato del humano del 2026-10-23); el test de R16 ya acepta `[ xX]`. Los commits llevan la forma `test(#204): R<n> …` / `feat(#204): R<n> …` en todos los R, también donde tasks.md escribe `test(#204 R13)` o `test(#204 R14): drop …`. El texto exacto está en el handoff (`progress/handoff_mobile-canvas-routine.md`).
 
+**E2 (cifras tras #200), firmada.** En H0 `aa96dd46` (merge de `origin/dev` 6bbd0485 con #200) cambian las cifras de partida que la spec cita:
+
+- `heroui-text-size-merge.test.ts` › `#187 R1`: universo 32 / 213 / 35 / 165 y suelos 28 / 197 / 35 / 163 (no 41 / 171 y suelo de card 41). Tras #204 queda en 32 / 211 / 35 / 163, con margen 0 en `cardElements` y en `classNameElements`. Sigue sin enmendarse: el suelo es `>=` y no se rompe. Si se pone rojo, PARA.
+- `design-drift.test.ts` › `#152 R9`: la razón pasa a «`home-entrance.tsx` se queda: Inicio lo sigue usando». Agenda e Historial importan `RiseIn` desde #200 R15. La conclusión y las dos listas de ese `it` no cambian.
+- `chunky-cta-canvas-fidelity.test.ts`: `text-17` parte de 28 (`… + 1 // #200 R5`) y cierra en 29; radios 16 parten de 33 (`26 + 1 + 1 + 1 + 2 + 2`) y cierran en 34. Esto sustituye el 28 y el 32 de tasks.md § Cuentas.
+- Los `it` que ya llevan un sufijo ` (enmendado por #200 …)` (I2, I12, I27, I28, I31 e I33) se localizan por su prefijo hasta el primer ` (enmendado por` y el sufijo de #204 va al final del título real.
+- I1 (`#197 R20`) ya no existe: no tiene efecto.
+
 **Regla de recuentos agregados.** Si al llegar a verde una R se pone rojo un `it` que no está en el inventario y ese `it` solo cuenta usos o ficheros de un literal o token, Codex lo enmienda sin parar. Son de este tipo los inventarios cerrados de radios, de `style={CONTINUOUS_CORNER}`, de `text-NN` o de `<Card`, las sumas de copy y los suelos del escáner HeroUI. La condición es que el delta medido sea exactamente el número de usos que el diff de esa R, tal como esta spec la prescribe, añade o retira. La enmienda:
 
 - da a la cifra o a la entrada su término (`// #204 Rn`, o `; #204 Rn: ±k` dentro de un comentario que ya exista);
