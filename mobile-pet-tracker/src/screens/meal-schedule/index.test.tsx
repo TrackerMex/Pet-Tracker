@@ -53,7 +53,7 @@ jest.mock('expo-router', () => {
   );
 
   return {
-    router: { push: jest.fn(), back: jest.fn() },
+    router: { push: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false), replace: jest.fn() },
       Redirect: ({ href }: { href: string }) => {
       const props = { testID: 'meal-schedule-redirect', href };
 
@@ -118,6 +118,7 @@ jest.mock('reicon-react-native', () => {
     };
 
   return {
+    ChevronLeft: icon('meal-schedule-icon-back'),
     Clock: icon('meal-schedule-icon-clock'),
     Sparkles: icon('meal-schedule-icon-sparkles'),
   };
@@ -253,7 +254,7 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
     expect(mockGetNutritionProfile).not.toHaveBeenCalled();
   });
 
-  it('shows loading and the metrics under the native header (#95 R6)', async () => {
+  it('shows loading and the metrics under the native header (#95 R6) (enmendado por #200 R12)', async () => {
     mockGetNutritionPlan.mockReturnValue(pending<NutritionPlanState>());
     mockGetNutritionProfile.mockReturnValue(pending<NutritionProfileState>());
 
@@ -281,7 +282,7 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
     );
     expect(
       screen.getByTestId('screen-meal-schedule').props.contentContainerStyle,
-    ).toEqual({ paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48 });
+    ).toEqual({ paddingHorizontal: 20, paddingTop: 48, gap: 14, paddingBottom: 56 });
 
   });
 
@@ -1073,13 +1074,13 @@ describe('#179 R4: marco y título en contenido', () => {
   });
 
   function expectHeading() {
-    const heading = screen.getByTestId('meal-schedule-heading');
+    const heading = screen.getByTestId('meal-schedule-header-title');
     expect(heading).toHaveTextContent('Horario de comidas');
     expect(heading).toHaveProp('accessibilityRole', 'header');
-    expect(heading).toHaveProp('className', 'text-2xl font-black tracking-title text-foreground');
+    expect(heading).toHaveProp('className', 'text-24 font-black tracking-title text-foreground');
   }
 
-  it('muestra el título antes del contenido mientras carga', async () => {
+  it('muestra el título antes del contenido mientras carga (enmendado por #200 R12)', async () => {
     mockGetNutritionPlan.mockReturnValue(pending<NutritionPlanState>());
     mockGetNutritionProfile.mockReturnValue(pending<NutritionProfileState>());
     await renderMealSchedule();
@@ -1087,18 +1088,18 @@ describe('#179 R4: marco y título en contenido', () => {
     expectHeading();
     expect(screen.getByTestId('meal-schedule-loading')).toHaveProp('className', 'gap-3.5');
     expect(screen.getByTestId('screen-meal-schedule')).toHaveProp('contentContainerStyle', {
-      paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48,
+      paddingHorizontal: 20, paddingTop: 48, gap: 14, paddingBottom: 56,
     });
   });
 
-  it('conserva el título cuando falla la carga', async () => {
+  it('conserva el título cuando falla la carga (enmendado por #200 R12)', async () => {
     mockGetNutritionPlan.mockResolvedValue({ kind: 'error' });
     await renderMealSchedule();
     await screen.findByTestId('meal-schedule-error');
     expectHeading();
   });
 
-  it('muestra un único título con el plan cargado', async () => {
+  it('muestra un único título con el plan cargado (enmendado por #200 R12)', async () => {
     mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
     mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
     await renderMealSchedule();
@@ -1107,7 +1108,7 @@ describe('#179 R4: marco y título en contenido', () => {
     expect(screen.getAllByText('Horario de comidas')).toHaveLength(1);
   });
 
-  it('conserva el título cuando no hay plan', async () => {
+  it('conserva el título cuando no hay plan (enmendado por #200 R12)', async () => {
     await renderMealSchedule();
     await screen.findByTestId('meal-schedule-empty');
     expectHeading();
@@ -1365,5 +1366,20 @@ describe('#179 R8: perfil en píldoras', () => {
       ['nutrition-profile-condition', 'Condition 5/9', 'Condition '],
       ['nutrition-profile-food', 'Food dry 350 kcal/100 g', 'Food '],
     ]);
+  });
+});
+
+
+it.each(['loading', 'loaded'])('#200 R12: Horario pinta su cabecera en contenido (%s)', async (state) => {
+  mockGetNutritionPlan.mockReturnValue(state === 'loading' ? pending<NutritionPlanState>() : Promise.resolve({ kind: 'ok', plan: makePlan() }));
+  mockGetNutritionProfile.mockReturnValue(state === 'loading' ? pending<NutritionProfileState>() : Promise.resolve({ kind: 'ok', profile: makeProfile() }));
+  await renderMealSchedule();
+  await screen.findByTestId(state === 'loading' ? 'meal-schedule-loading' : 'meal-schedule-summary');
+  const header = screen.getByTestId('meal-schedule-header');
+  expect(childTestIds(header.parent!)[0]).toBe('meal-schedule-header');
+  expect(screen.getByTestId('meal-schedule-header-title')).toHaveTextContent(es['mealSchedule.mealSchedule']);
+  expect(screen.queryByTestId('meal-schedule-heading')).toBeNull();
+  expect(screen.getByTestId('screen-meal-schedule').props.contentContainerStyle).toEqual({
+    paddingHorizontal: 20, paddingTop: 48, paddingBottom: 56, gap: 14,
   });
 });

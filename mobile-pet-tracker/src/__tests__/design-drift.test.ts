@@ -1214,12 +1214,12 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
     expect(schedule).not.toContain('tracking-widest');
   });
 
-  it('sitúa el título antes del resumen y los errores antes de las acciones', () => {
-    for (const anchor of ['testID="generate-plan-error"', 'testID="meal-schedule-actions"', 'testID="meal-schedule-heading"', 'testID="meal-schedule-summary"']) {
+  it('sitúa el título antes del resumen y los errores antes de las acciones (enmendado por #200 R12)', () => {
+    for (const anchor of ['testID="generate-plan-error"', 'testID="meal-schedule-actions"', 'testID="meal-schedule-header"', 'testID="meal-schedule-summary"']) {
       expect(schedule).toContain(anchor);
     }
     expect(schedule.indexOf('testID="generate-plan-error"')).toBeLessThan(schedule.indexOf('testID="meal-schedule-actions"'));
-    expect(schedule.indexOf('testID="meal-schedule-heading"')).toBeLessThan(schedule.indexOf('testID="meal-schedule-summary"'));
+    expect(schedule.indexOf('testID="meal-schedule-header"')).toBeLessThan(schedule.indexOf('testID="meal-schedule-summary"'));
   });
 
   it('limita text-22 a Horario y text-17 al inventario de E1.2 (enmendado por #177 R10) (enmendado por #200 R5)', () => {
