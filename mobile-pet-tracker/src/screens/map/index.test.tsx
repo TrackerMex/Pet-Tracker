@@ -6,6 +6,7 @@ import {
   waitFor,
   within,
 } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -2031,26 +2032,26 @@ describe('#155 R4: Mapa sin mascotas presenta a Pingo', () => {
 
 
 describe('#159 R2: Mapa sin seguimiento presenta a Pingo', () => {
-  it('pinta la pose del collar, el título y la frase de Pingo', async () => {
+  it('pinta la pose de Pingo, el título y la frase (enmendado por #201 R13)', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
     mockGetLastPosition.mockResolvedValue({ kind: 'no-tracking' });
     await renderMap();
     const pose = await screen.findByTestId('map-no-tracking-pose');
     expect(pose.props.source).toEqual([
-      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-collar\.webp$/) }),
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
     ]);
     expect(screen.getByTestId('map-no-tracking-title')).toHaveTextContent('Sin ubicación en vivo');
     expect(screen.getByTestId('map-no-tracking-body')).toHaveTextContent('Cuando tu mascota tenga un collar con plan activo, te muestro dónde está.');
   });
 
-  it('queda en el sitio del texto que sustituye y sin mapa debajo', async () => {
+  it('queda en el sitio del texto que sustituye y sin mapa debajo (enmendado por #201 R13)', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
     mockGetLastPosition.mockResolvedValue({ kind: 'no-tracking' });
     await renderMap();
     await screen.findByTestId('map-no-tracking-pose');
     const slot = screen.getByTestId('map-no-tracking');
-    expect(slot.props.className).toBe('items-center gap-3 py-8');
-    expect(slot.parent?.props.className).toBe('flex-1 items-center justify-center p-6 bg-background');
+    expect(slot.props.className).toBe('w-full items-center gap-3.5');
+    expect(slot.parent?.props.className).toBe('flex-1 items-center justify-center bg-background px-6 pt-15 pb-30');
     expect(slot.parent?.parent?.props.testID).toBe('screen-map');
     expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['map-no-tracking']);
     expect(screen.queryByTestId('map-view')).toBeNull();
@@ -2058,6 +2059,10 @@ describe('#159 R2: Mapa sin seguimiento presenta a Pingo', () => {
 });
 
 describe('#159 R3: el dueño sin collar puede ir a emparejar', () => {
+  beforeEach(() => {
+    mockUseReducedMotion.mockReturnValue(true); // #201 R12/R13: el héroe entra con opacidad 0
+  });
+
   it('pinta Vincular collar al dueño de una mascota sin collar', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
@@ -2683,6 +2688,58 @@ describe('#201 R12: Pingo sin mascotas', () => {
       size: 20,
       strokeWidth: 2.8,
     });
+  });
+});
+
+describe('#201 R13: Pingo sin rastreo', () => {
+  const arrangeNoTracking = () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+    mockGetLastPosition.mockResolvedValue({ kind: 'no-tracking' });
+  };
+
+  it('#201 R13: sin rastreo pinta a Pingo con el badge del collar', async () => {
+    arrangeNoTracking();
+
+    await renderMap();
+
+    const pose = await screen.findByTestId('map-no-tracking-pose');
+    expect(pose.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
+    ]);
+    const badge = screen.getByTestId('map-no-tracking-badge');
+    expect(badge.props.className).toBe(
+      'absolute bottom-10 right-7.5 size-13 items-center justify-center rounded-16 bg-accent',
+    );
+    expect(StyleSheet.flatten(badge.props.style).boxShadow).toEqual([
+      { offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: '#0E5E3C' },
+    ]);
+    const collar = within(badge).getByTestId('map-no-tracking-collar');
+    expect(collar.props.strokeWidth).toBe(2);
+    const shapes = elementChild(collar, 0).children.map((child) => (typeof child === 'string' ? child : child.type));
+    expect(shapes).toEqual(['RNSVGEllipse', 'RNSVGPath', 'RNSVGCircle']);
+  });
+
+  it('#201 R13: el dueño sin collar ve el icono de enlace', async () => {
+    arrangeNoTracking();
+
+    await renderMap();
+
+    const icon = await screen.findByTestId('map-no-tracking-action-icon');
+    expect(icon.props.strokeWidth).toBe(2.4);
+  });
+
+  it('#201 R13: sin botón no hay icono de enlace', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: 'family' })] });
+    const detailPromise = Promise.resolve<PetState>({ kind: 'ok', pet: makePet({ myRole: 'family' }) });
+    mockGetPet.mockReturnValue(detailPromise);
+    mockGetLastPosition.mockReturnValue(detailPromise.then((): LastPositionState => ({ kind: 'no-tracking' })));
+
+    await renderMap();
+
+    await screen.findByTestId('map-no-tracking-title');
+    expect(screen.queryByTestId('map-no-tracking-action')).toBeNull();
+    expect(screen.queryByTestId('map-no-tracking-action-icon')).toBeNull();
   });
 });
 

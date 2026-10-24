@@ -459,7 +459,7 @@ describe('#201 R11: Pingo en las dos ramas de error', () => {
       canvasCount: 1,
       file: 'screens/map/index.tsx',
       production: 'bg-background px-6 pt-15 pb-30',
-      productionCount: 3,
+      productionCount: 4,
     },
     {
       artboard: 'MapaError',
@@ -467,7 +467,7 @@ describe('#201 R11: Pingo en las dos ramas de error', () => {
       canvasCount: 1,
       file: 'screens/map/index.tsx',
       production: '<PopIn',
-      productionCount: 2,
+      productionCount: 3,
     },
   ])('#201 R11: $artboard › $canvas › $production', checkRow);
 });
@@ -483,4 +483,58 @@ describe('#201 R12: Pingo sin mascotas', () => {
       productionCount: 1,
     },
   ])('#201 R12: $artboard › $canvas › $production', checkRow);
+});
+
+describe('#201 R13: Pingo sin rastreo', () => {
+  it.each<Row>([
+    {
+      artboard: 'MapaSinRastreo',
+      canvas:
+        'right: 30px; bottom: 40px; width: 52px; height: 52px; border-radius: 16px; background: var(--accent)',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: 'absolute bottom-10 right-7.5 size-13 items-center justify-center rounded-16 bg-accent',
+      productionCount: 1,
+    },
+    {
+      artboard: 'MapaSinRastreo',
+      canvas: 'box-shadow: 0 4px 0 var(--lip)',
+      canvasCount: 2,
+      file: 'screens/map/index.tsx',
+      production: 'style={chunkyLip.primary}',
+      productionCount: 1,
+    },
+    {
+      artboard: 'MapaSinRastreo',
+      canvas: '<ellipse cx="12" cy="8.5" rx="8" ry="4"',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: '<Ellipse cx="12" cy="8.5" rx="8" ry="4"',
+      productionCount: 1,
+    },
+    {
+      artboard: 'MapaSinRastreo',
+      canvas: '<path d="M12 12.5v3"',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: '<Path d="M12 12.5v3"',
+      productionCount: 1,
+    },
+    {
+      artboard: 'MapaSinRastreo',
+      canvas: '<circle cx="12" cy="18.5" r="2.5"',
+      canvasCount: 1,
+      file: 'screens/map/index.tsx',
+      production: '<Circle cx="12" cy="18.5" r="2.5"',
+      productionCount: 1,
+    },
+    {
+      artboard: 'MapaSinRastreo',
+      canvas: 'stroke-width="2.4"',
+      canvasCount: 2,
+      file: 'screens/map/index.tsx',
+      production: 'strokeWidth={2.4}',
+      productionCount: 1,
+    },
+  ])('#201 R13: $artboard › $canvas › $production', checkRow);
 });
