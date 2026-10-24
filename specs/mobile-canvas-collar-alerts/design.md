@@ -115,7 +115,7 @@ Cada una queda cerrada; el humano puede cambiarla en el gate.
   porque la vista con collar también empuja su botón al fondo
   (`margin-top:auto` del artboard). Para que `device-unpair-spacer` (`flex-1`)
   empuje el botón, el `View` que lo contiene (el `gap-4` externo de la vista con
-  collar) pasa a `flex-1 gap-4` (R6); el `gap-4` de dentro de la tarjeta no cambia.
+  collar) gana `style={{ flexGrow: 1 }}` con `className="gap-4"` (R6), como la vista de vincular; el `gap-4` de dentro de la tarjeta no cambia.
   En carga, error y vacío no cambia nada visible.
 - **D7 — Celebración sin cambios.** Defecto: no se toca
   `components/celebration.tsx`; el interlineado del cuerpo (22 px frente a
@@ -166,11 +166,7 @@ Supuestos de entorno que los tests no ven; se comprueban en el smoke del humano
    solo se observa en el dispositivo).
 5. Sin cabecera nativa, el gesto de volver de Android y el botón `-back` hacen
    lo mismo en las tres pantallas.
-6. La vista con collar de pairing (`className="flex-1 gap-4"`, R6) empuja
-   `device-unpair` al fondo en un teléfono pequeño y con la píldora y la tarjeta
-   más altas de lo normal: un hijo con `flex: 1` dentro del contenido de un
-   `ScrollView` puede colapsar su alto (la vista de vincular usa
-   `style={{ flexGrow: 1 }}` por eso). El test solo ve el `className`; si el
-   smoke muestra el botón recortado o el contenido sin altura, se pasa el
-   contenedor a `style={{ flexGrow: 1 }}` como en la vista de vincular (el test
-   de R6 cambia su aserción de `flex-1 gap-4` a `gap-4` con `flexGrow: 1`).
+6. La vista con collar de pairing (`className="gap-4" style={{ flexGrow: 1 }}`, R6,
+   como la vista de vincular) empuja `device-unpair` al fondo en un teléfono pequeño
+   y con la píldora y la tarjeta más altas de lo normal. El test solo ve `className`
+   y `style`; lo confirma el smoke del humano.

@@ -71,7 +71,7 @@ la base se re-mide (tasks.md §Cuentas a re-medir).
 | B22 | `test ! -e src/screens/alerts/rise-delays.ts && echo ausente` | `ausente` | el fichero existe (R9) |
 | B23 | `grep -cF 'useContext' src/screens/pairing/index.tsx` | 2 | 0 (R2: el nombre sale del import de `react` y desaparece la lectura de `HeaderHeightContext`; era su único uso) |
 | B24 | `grep -cxF '  Alert,' src/screens/pairing/index.tsx` | 1 | 0 (R7: sale del import de `react-native`) |
-| B25 | `grep -cF 'className="flex-1 gap-4"' src/screens/pairing/index.tsx` | 0 | 1 (R6: el contenedor de la vista con collar) |
+| B25 | `grep -cF 'className="gap-4" style={{ flexGrow: 1 }}' src/screens/pairing/index.tsx` | 1 (la vista de vincular) | 2 (R6: más el contenedor de la vista con collar) |
 
 `components/celebration.tsx`, `theme/motion.ts`, `i18n/catalog.ts` y
 `src/__tests__/ui-copy-table.ts` no cambian (diff vacío al cerrar). Fichero nuevo
@@ -283,14 +283,14 @@ y `t('pairing.unpairCollar')` (literal de hoy, sin cambio). WHEN se pulsa,
 THE SYSTEM SHALL abrir la hoja de R7. Para que el espaciador empuje el botón al
 fondo, el contenedor directo de `device-unpair-spacer` (el `View` que hoy es
 `className="gap-4"` y envuelve el título, la tarjeta, el hueco del plan y el botón de
-la vista con collar) pasa a `className="flex-1 gap-4"`; el `View className="gap-4"`
+la vista con collar) gana `style={{ flexGrow: 1 }}` y conserva `className="gap-4"`, igual que la vista de vincular (decisión del leader: `flex-1` dentro del contenido de un `ScrollView` puede colapsar el alto); el `View className="gap-4"`
 interno de la tarjeta (las filas `DeviceRow`) no cambia. Canvas: `height: 54px`,
 `border-radius: 16px`, `box-shadow: 0 4px 0 #9F1F15`, `margin-top: auto`.
 
 - Test (pairing): `'#203 R6: desvincular es 54, radio 16, labio rojo y va al fondo'`:
   className exacto, `style` igual a `chunkyLip.danger` del hook de producción, el
-  hermano anterior es `device-unpair-spacer` y el `className` de su `parent` es
-  exactamente `flex-1 gap-4`.
+  hermano anterior es `device-unpair-spacer` y su `parent` tiene `className`
+  exactamente `gap-4` y `style` con `flexGrow: 1`.
 - Medido al enmendar (2026-10-24): ningún candado cuenta ni compara el `className`
   de ese contenedor (`consistency-classnames`, `design-drift`, los `*-canvas-fidelity`
   y `pairing/index.test.tsx` no lo leen), así que el cambio no añade fila al inventario.

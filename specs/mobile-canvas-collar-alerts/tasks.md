@@ -58,8 +58,8 @@ Recuentos agregados que se muevan: requirements §Erratas del leader.
 3. Refactor: ninguno.
 
 ### R6
-1. Rojo: `#203 R6` (incluye `device-unpair-spacer.parent` con `className` exacto `flex-1 gap-4`); F23 y F27 (pairing 1 → 2); F28.
-2. Verde: espaciador, contenedor de la vista con collar a `className="flex-1 gap-4"` (el `gap-4` de dentro de la tarjeta no cambia) y botón 54 con `chunkyLip.danger`; bloque Enmienda #203 en `docs/ui-guidelines.md`.
+1. Rojo: `#203 R6` (incluye `device-unpair-spacer.parent` con `className` exacto `gap-4` y `style` con `flexGrow: 1`); F23 y F27 (pairing 1 → 2); F28.
+2. Verde: espaciador, contenedor de la vista con collar con `className="gap-4" style={{ flexGrow: 1 }}` (el `gap-4` de dentro de la tarjeta no cambia) y botón 54 con `chunkyLip.danger`; bloque Enmienda #203 en `docs/ui-guidelines.md`.
 3. Refactor: ninguno.
 
 ### R7
@@ -112,7 +112,7 @@ si difiere (merge de una paralela en `dev`), esperado = base nueva + delta.
 | `grep -cF 'rounded-16' src/screens/pairing/index.tsx` | 1 | +3 | 4 |
 | `grep -cF 'rounded-22' src/screens/pairing/index.tsx` | 0 | +1 | 1 |
 | `grep -cF 'chunkyLip.danger' src/screens/pairing/index.tsx` | 0 | +2 | 2 |
-| `grep -cF 'className="flex-1 gap-4"' src/screens/pairing/index.tsx` | 0 | +1 | 1 |
+| `grep -cF 'className="gap-4" style={{ flexGrow: 1 }}' src/screens/pairing/index.tsx` | 1 | +1 | 2 |
 | `grep -cF "from '@expo/ui/community/bottom-sheet'" src/screens/pairing/index.tsx` | 0 | +1 | 1 |
 | `grep -cF 'HomeEntrance' src/screens/alerts/index.tsx` | 3 | −3 | 0 |
 | `grep -cF 'HomeEntrance' src/screens/alert-detail/index.tsx` | 3 | −3 | 0 |
