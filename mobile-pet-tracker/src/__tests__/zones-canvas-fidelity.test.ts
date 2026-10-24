@@ -83,3 +83,8 @@ it('#202 R14: el canvas pinta el nombre a 600 16px', () => {
   contains(artboard('EditorZona'), '600 16px');
   contains(source('screens/geofence-editor/index.tsx'), 'className="text-base font-semibold h-12.5 rounded-xl bg-default px-3.5"');
 });
+
+it('#202 R15: el canvas dibuja las acciones a 54', () => {
+  contains(artboard('EditorZona'), 'height: 54px', 2);
+  contains(source('screens/geofence-editor/index.tsx'), 'h-13.5 rounded-16', 3);
+});

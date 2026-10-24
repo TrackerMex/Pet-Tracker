@@ -328,9 +328,9 @@ describe('#146 R8: Guardar crea o actualiza la zona y vuelve a la lista', () => 
     expect(mockUpdate).toHaveBeenCalledWith(apiUrl, 'token-1', 'pet-1', 'geofence-1', { name: 'Casa nueva', centerLat: 19.41, centerLng: -99.11, radiusM: 150 });
     expect(mockCreate).not.toHaveBeenCalled();
   });
-  it('pinta Guardar con la receta primaria tras la nota de reinicio (enmendado por #189 R13)', async () => {
+  it('pinta Guardar con la receta primaria tras la nota de reinicio (enmendado por #189 R13) (enmendado por #202 R15)', async () => {
     await edit(); const save = screen.getByTestId('geofence-editor-save');
-    expect(save.props.className).toContain('h-14 rounded-16 bg-accent');
+    expect(save.props.className).toContain('h-13.5 rounded-16 bg-accent');
     expect(within(save).getByText('Guardar').props.className).toBe('text-17 font-extrabold text-accent-foreground');
     const ids = childTestIds(screen.getByTestId('geofence-editor-actions').parent!);
     expect(ids.slice(ids.indexOf('geofence-editor-reset-note'), ids.indexOf('geofence-editor-reset-note') + 2)).toEqual(['geofence-editor-reset-note', 'geofence-editor-actions']);
@@ -466,9 +466,9 @@ async function confirmEditorDelete() {
 
 describe('#146 R14: Eliminar en el editor borra la zona y vuelve a la lista', () => {
   afterEach(() => { jest.restoreAllMocks(); });
-  it('pinta Eliminar con la receta de peligro justo después de Guardar (enmendado por #189 R13)', async () => {
+  it('pinta Eliminar con la receta de peligro justo después de Guardar (enmendado por #189 R13) (enmendado por #202 R15)', async () => {
     await edit(); const button = screen.getByTestId('geofence-editor-delete');
-    expect(button.props.className).toBe('pressable-feedback__root button__root button__root--variant-outline button__root--size-md flex-1 h-14 rounded-16 border-2 border-lip-gray bg-surface');
+    expect(button.props.className).toBe('pressable-feedback__root button__root button__root--variant-outline button__root--size-md flex-1 h-13.5 rounded-16 border-2 border-lip-gray bg-surface');
     expect(within(button).getByText(catalog.es['geofences.delete']).props.className).toBe('text-base font-extrabold text-danger');
     expect(button.props.accessibilityState.disabled).toBe(false);
     const ids = childTestIds(button.parent!);
@@ -788,7 +788,7 @@ describe('#189 R13: acciones del Editor en fila y Guardar deshabilitado', () => 
   it.each([
     ['es', 'Casa'], ['es', ''], ['es', '   '], ['es', ' Casa '],
     ['en', 'Casa'], ['en', ''], ['en', '   '], ['en', ' Casa '],
-  ] as const)('#189 R13: recetas al editar en %s con nombre %p', async (language, name) => {
+  ] as const)('#189 R13: recetas al editar en %s con nombre %p (enmendado por #202 R15)', async (language, name) => {
     await edit(language);
     await fireEvent.changeText(screen.getByTestId('geofence-editor-name'), name);
     const actions = screen.getByTestId('geofence-editor-actions');
@@ -798,13 +798,13 @@ describe('#189 R13: acciones del Editor en fila y Guardar deshabilitado', () => 
     const ids = childTestIds(actions.parent!);
     expect(ids.slice(ids.indexOf('geofence-editor-reset-note'))).toEqual(['geofence-editor-reset-note', 'geofence-editor-actions']);
     const remove = screen.getByTestId('geofence-editor-delete');
-    expect(remove.props.className).toBe('pressable-feedback__root button__root button__root--variant-outline button__root--size-md flex-1 h-14 rounded-16 border-2 border-lip-gray bg-surface');
+    expect(remove.props.className).toBe('pressable-feedback__root button__root button__root--variant-outline button__root--size-md flex-1 h-13.5 rounded-16 border-2 border-lip-gray bg-surface');
     expect(remove.props.accessibilityState.disabled).toBe(false);
     expect(remove).toHaveStyle({ boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: 'lip-gray' }] });
     expect(within(remove).getByText(language === 'es' ? 'Eliminar' : 'Delete').props.className).toBe('text-base font-extrabold text-danger');
     const save = screen.getByTestId('geofence-editor-save');
     const disabled = name.trim() === '';
-    expect(save.props.className.endsWith(` flex-2 h-14 rounded-16 ${disabled ? 'bg-default' : 'bg-accent'}`)).toBe(true);
+    expect(save.props.className.endsWith(` flex-2 h-13.5 rounded-16 ${disabled ? 'bg-default' : 'bg-accent'}`)).toBe(true);
     expect(save.props.accessibilityState.disabled).toBe(disabled);
     expect(within(save).getByText(language === 'es' ? 'Guardar' : 'Save').props.className).toBe(`text-17 font-extrabold ${disabled ? 'text-muted' : 'text-accent-foreground'}`);
     if (disabled) {
@@ -822,17 +822,17 @@ describe('#189 R13: acciones del Editor en fila y Guardar deshabilitado', () => 
     expect(save.props.accessibilityState.disabled).toBe(true);
     expect(screen.queryByTestId('geofence-editor-delete')).toBeNull();
   });
-  it('#189 R13: busy bloquea ambos botones conservando las recetas', async () => {
+  it('#189 R13: busy bloquea ambos botones conservando las recetas (enmendado por #202 R15)', async () => {
     mockUpdate.mockReturnValue(new Promise(() => undefined));
     await edit();
     const save = screen.getByTestId('geofence-editor-save');
     await fireEvent.press(save);
     expect(save.props.accessibilityState.disabled).toBe(true);
-    expect(save.props.className.endsWith(' flex-2 h-14 rounded-16 bg-accent')).toBe(true);
+    expect(save.props.className.endsWith(' flex-2 h-13.5 rounded-16 bg-accent')).toBe(true);
     expect(save).toHaveStyle({ boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: 'lip' }] });
     const remove = screen.getByTestId('geofence-editor-delete');
     expect(remove.props.accessibilityState.disabled).toBe(true);
-    expect(remove.props.className.endsWith(' flex-1 h-14 rounded-16 border-2 border-lip-gray bg-surface')).toBe(true);
+    expect(remove.props.className.endsWith(' flex-1 h-13.5 rounded-16 border-2 border-lip-gray bg-surface')).toBe(true);
     expect(remove).toHaveStyle({ boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: 'lip-gray' }] });
     await fireEvent.press(save);
     expect(mockUpdate).toHaveBeenCalledTimes(1);
@@ -1037,4 +1037,14 @@ it.each(['crear', 'editar'])('#202 R14: el nombre usa 16/600 del canvas en %s', 
   expect(input.props.className).toContain('text-base');
   expect(input.props.className).toContain('font-semibold');
   expect(input.props.className.endsWith('h-12.5 rounded-xl bg-default px-3.5')).toBe(true);
+});
+
+it.each(['crear vacío', 'crear con nombre', 'editar'])('#202 R15: Eliminar y Guardar miden 54 en %s', async (kind) => {
+  await mount(kind === 'editar' ? casa.id : undefined);
+  const input = await screen.findByTestId('geofence-editor-name');
+  if (kind === 'crear con nombre') await fireEvent.changeText(input, 'Patio');
+  const save = screen.getByTestId('geofence-editor-save');
+  expect(save.props.className.endsWith(` flex-2 h-13.5 rounded-16 ${kind === 'crear vacío' ? 'bg-default' : 'bg-accent'}`)).toBe(true);
+  if (kind === 'editar') expect(screen.getByTestId('geofence-editor-delete').props.className.endsWith(' flex-1 h-13.5 rounded-16 border-2 border-lip-gray bg-surface')).toBe(true);
+  else expect(screen.queryByTestId('geofence-editor-delete')).toBeNull();
 });
