@@ -59,3 +59,21 @@ it('#200 R16: la carta da a «Generar plan» su labio violeta', () => {
   expect(charter()).toContain(GENERATE_PLAN_RULE);
   expect(charter()).not.toContain('sigue sin labio hasta #200');
 });
+
+
+const productionFiles = [FOOD, SCHEDULE, HISTORY];
+const screenFiles = productionFiles.flatMap(file => [file, file.replace('index.tsx', 'index.test.tsx')]);
+
+it.each(screenFiles)('#200 R17: %s no usa StyleSheet ni corchetes', file => {
+  const code = source(file);
+  expect(code).not.toContain('StyleSheet');
+  expect(code).not.toMatch(/\b[\w-]+-\[/);
+});
+
+it.each(productionFiles)('#200 R17: %s no usa hex salvo #NNN R<n>', file => {
+  expect(source(file)).not.toMatch(/#[0-9a-fA-F]{3,8}\b(?!\s+R\d)/);
+});
+
+it('#200 R17: Nutrición no importa Card', () => {
+  expect(source(FOOD)).not.toContain('components/card');
+});
