@@ -38,3 +38,9 @@ it('#202 R4: el canvas dibuja el interruptor 48x28', () => {
     expect(source(path)).not.toMatch(/import \{[^}]*\bSwitch\b[^}]*\} from 'heroui-native'/);
   }
 });
+
+it('#202 R5: el canvas pinta el aviso a 13/1.45', () => {
+  contains(artboard('Zonas'), 'font-size: 13px; line-height: 1.45');
+  contains(source('screens/geofences/index.tsx'), '<AlertTriangle size={20} color={warning}');
+  contains(source('screens/geofences/index.tsx'), 'flex-1 text-13 leading-note ${CATEGORY_SLOTS.amber.ink}');
+});

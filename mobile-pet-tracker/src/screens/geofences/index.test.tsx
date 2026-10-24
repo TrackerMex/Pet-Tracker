@@ -24,7 +24,7 @@ jest.mock('reicon-react-native', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
   const icon = (name: string) => function MockIcon(props: Record<string, unknown>) { return React.createElement(View, { ...props, testID: `geofences-icon-${name}` }); };
-  return { ...actual, __esModule: true, Trash: icon('trash'), AlertCircle: icon('alert') };
+  return { ...actual, __esModule: true, Trash: icon('trash'), AlertTriangle: icon('alert') };
 });
 jest.mock('react-native-svg', () => {
   const actual = jest.requireActual('react-native-svg');
@@ -840,7 +840,7 @@ describe('#189 R5: filas con tile pastel, textos y controles', () => {
 
 
 describe('#189 R6: aviso ámbar al alcanzar el límite', () => {
-  it.each(['es', 'en'] as const)('#189 R6: compone el aviso de %s tras las cinco filas', async (language) => {
+  it.each(['es', 'en'] as const)('#189 R6: compone el aviso de %s tras las cinco filas (enmendado por #202 R5)', async (language) => {
     mockList.mockResolvedValue({ kind: 'ok', geofences: Array.from({ length: 5 }, (_, i) => makeGeofence({ id: `zone-${i}` })) });
     await mount(language);
     const text = await screen.findByTestId('geofences-limit-text');
@@ -856,7 +856,7 @@ describe('#189 R6: aviso ámbar al alcanzar el límite', () => {
     const icon = within(notice).getByTestId('geofences-icon-alert');
     expect(icon.props.size).toBe(20);
     expect(icon.props.color).toBe('warning');
-    expect(text.props.className).toBe('flex-1 text-13 text-category-amber-strong');
+    expect(text.props.className).toBe('flex-1 text-13 leading-note text-category-amber-strong');
     expect(text).toHaveTextContent(language === 'es' ? 'Esta mascota ya tiene 5 zonas, el máximo. Elimina una para añadir otra.' : 'This pet already has 5 zones, the maximum. Delete one to add another.');
     expect(childTestIds(entry.parent!).slice(-3)).toEqual(['geofence-zone-4-entrance', 'geofences-limit-entrance', 'geofences-add']);
   });
@@ -987,4 +987,14 @@ it('#202 R4: el interruptor de cada fila es ToggleSwitch', async () => {
     expect(mockSetActive).toHaveBeenLastCalledWith(apiUrl, 'token-1', 'pet-1', zone.id, !zone.active);
   }
   expect(mockSetActive).toHaveBeenCalledTimes(2);
+});
+
+it('#202 R5: el aviso de límite usa AlertTriangle y 13/1.45', async () => {
+  mockList.mockResolvedValue({ kind: 'ok', geofences: Array.from({ length: 5 }, (_, i) => makeGeofence({ id: `limit-${i}` })) });
+  await mount();
+  const text = await screen.findByTestId('geofences-limit-text');
+  const notice = screen.getByTestId('geofences-limit');
+  expect(within(notice).queryByTestId('geofences-icon-alert')).not.toBeNull();
+  expect(within(notice).getByTestId('geofences-icon-alert').props).toMatchObject({ size: 20, color: 'warning' });
+  expect(text.props.className).toBe('flex-1 text-13 leading-note text-category-amber-strong');
 });
