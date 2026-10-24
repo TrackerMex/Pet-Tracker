@@ -3481,7 +3481,7 @@
   {
     "id": 200,
     "name": "mobile-canvas-nutrition",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P1",
     "description": "Registrada el 2026-10-23 por el plan progress/plan_canvas-parity-2026-10-23.md (ola 2). Nutrición igual al canvas versión 1792777983-cd94, artboards Nutricion, NutricionAvisos, HorarioComidas e HistorialComidas. Cubre C10 (mover app/(tabs)/food.tsx a src/screens/food/ con ruta delgada, sin cambio visual, primero) y C11 (visual) de progress/explore_canvas-parity-2026-10-21.md, más el horario y el historial de comidas. Ficheros probables: app/(tabs)/food.tsx, screens/food/ (nuevo), screens/meal-schedule, la pantalla de historial y tests. Depende de #197. Congelar los artboards en specs/mobile-canvas-nutrition/canvas/. Firma delegada al leader. Registrada sin spec."
   },

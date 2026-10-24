@@ -800,3 +800,4 @@ la feature; no bloquea la implementación.
 - [x] Enmienda #200 de `docs/ui-guidelines.md` (R16: entrada con `RiseIn`, anillo con `MOTION_RING_*`, `rounded-24` y `rounded-16`, superficies de Nutrición sin `Card`, y «Generar plan» con `chunkyLip.violet` en el punto 13) aprobada por humano
   Firma delegada, mismo mandato.
 - [ ] Smoke de R2, R3, R4, R6, R7, R10, R12, R13, R14 y R15 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
+  Va en el lote `progress/smoke_canvas-parity.md` (plan §6); el `done` no espera al smoke.

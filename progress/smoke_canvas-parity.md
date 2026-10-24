@@ -27,3 +27,22 @@ Pasos de R23, en dev build Android (no Expo Go), con tema claro y oscuro:
 `ToggleSwitch`, `ScreenHeader` y `useShadows()` no se ven en la app (R20): su smoke va con la ola 2.
 
 - [ ] Smoke de #197 R23 recorrido por el humano
+
+## #200 mobile-canvas-nutrition
+
+Spec: `specs/mobile-canvas-nutrition/requirements.md` (§ Cierre del humano). Reviewer APROBADO sobre
+`2baf7cdb` (`progress/review_mobile-canvas-nutrition.md`).
+
+Pasos de R2, R3, R4, R6, R7, R10 y R12 a R15, en dev build Android (no Expo Go), con tema claro y oscuro:
+
+1. Nutrición con plan: el héroe morado tiene labio inferior, el anillo se llena tras una pausa breve
+   y las piezas suben en cascada (plan, comidas, IA y enlaces).
+2. Una franja pendiente muestra «Marcar servido» con labio. Al pulsarla pasa a la píldora verde
+   «Servido» con tile verde y check, y el anillo avanza.
+3. Con avisos en el plan, las tarjetas de aviso aparecen entre las comidas y la IA.
+4. Los avatares están a la derecha del título, y cambiar de mascota recarga el plan.
+5. En Horario, «Generar plan» lleva labio violeta. En Horario y en Historial, la flecha de la
+   cabecera vuelve a Nutrición y no hay cabecera nativa duplicada.
+6. Con «Eliminar animaciones» activado en Android, todo aparece sin movimiento.
+
+- [ ] Smoke de #200 recorrido por el humano
