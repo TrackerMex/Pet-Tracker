@@ -99,6 +99,7 @@ jest.mock('reicon-react-native', () => {
   return {
     BatteryLow: icon('BatteryLow'),
     Bell: icon('Bell'),
+    ChevronLeft: icon('ChevronLeft'),
     LocationSlash: icon('LocationSlash'),
   };
 });
@@ -213,7 +214,7 @@ describe('#78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus fila
   });
 
   describe('#174 R3: el título vive en el contenido', () => {
-    it.each(['carga', 'error', 'vacía', 'filas'])('pinta el título en %s', async (state) => {
+    it.each(['carga', 'error', 'vacía', 'filas'])('pinta el título en %s (enmendado por #203 R8)', async (state) => {
       if (state === 'carga') mockListAlerts.mockReturnValue(pending<AlertsState>());
       else if (state === 'error') mockListAlerts.mockResolvedValue({ kind: 'error' });
       else mockListAlerts.mockResolvedValue({ kind: 'ok', items: state === 'vacía' ? [] : [makeAlert()], nextCursor: null });
@@ -222,11 +223,11 @@ describe('#78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus fila
       const title = await screen.findByTestId('alerts-title');
       expect(title).toHaveTextContent('Alertas', { exact: true });
       expect(title.props.accessibilityRole).toBe('header');
-      expect(title.props.className).toBe('flex-1 text-26 font-black tracking-title text-foreground');
-      expect(title.parent?.props.testID).toBe('alerts-title-row');
-      expect(title.parent?.props.className).toBe('flex-row items-center gap-2');
-      expect(title.parent?.parent?.props.testID).toBe('alerts-header');
-      expect(title.parent?.parent?.props.className).toBe('gap-3');
+      expect(title.props.className).toBe('text-26 font-black tracking-title text-foreground');
+      expect(title.parent?.props.className).toBe('flex-1');
+      expect(title.parent?.parent?.props.testID).toBe('alerts');
+      expect(title.parent?.parent?.parent?.props.testID).toBe('alerts-header');
+      expect(title.parent?.parent?.parent?.props.className).toBe('gap-3');
     });
 
     it('traduce el título en inglés', async () => {
@@ -331,7 +332,7 @@ describe('#78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus fila
     expect(screen.queryByTestId('alerts-empty')).toBeNull();
   });
 
-  it('respeta las dimensiones bajo cabecera nativa, el inset automático y los safe areas (#114 R6, enmendado por #174 R5)', async () => {
+  it('respeta las dimensiones bajo cabecera nativa, el inset automático y los safe areas (#114 R6, enmendado por #174 R5) (enmendado por #203 R8)', async () => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [], nextCursor: null });
 
     await renderAlerts();
@@ -342,7 +343,7 @@ describe('#78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus fila
     expect(list.props.contentInsetAdjustmentBehavior).toBe('automatic');
     expect(list.props.contentContainerStyle).toEqual({
       paddingHorizontal: 20,
-      paddingTop: 24,
+      paddingTop: 48,
       paddingBottom: 48,
       gap: 12,
     });
@@ -1423,14 +1424,14 @@ describe('#170 R4: cuenta las alertas nuevas', () => {
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
     mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
   });
-  it.each(['carga', 'error', 'vacía', 'todas leídas'])('no pinta el contador con 0 nuevas: %s', async (state) => {
+  it.each(['carga', 'error', 'vacía', 'todas leídas'])('no pinta el contador con 0 nuevas: %s (enmendado por #203 R8)', async (state) => {
     if (state === 'carga') mockListAlerts.mockReturnValue(pending<AlertsState>());
     else if (state === 'error') mockListAlerts.mockResolvedValue({ kind: 'error' });
     else mockListAlerts.mockResolvedValue({ kind: 'ok', items: state === 'vacía' ? [] : [makeAlert({ id: 'a', status: 'acked' }), makeAlert({ id: 'b', status: 'closed' })], nextCursor: null });
     await renderAlerts();
     await screen.findByTestId(state === 'carga' ? 'alerts-loading' : state === 'error' ? 'alerts-error' : state === 'vacía' ? 'alerts-empty' : 'alert-row-a');
     expect(screen.queryByTestId('alerts-new-count')).toBeNull();
-    expect(screen.getByTestId('alerts-title-row').children).toHaveLength(1);
+    expect(screen.getByTestId('alerts').children).toHaveLength(2);
     const root = screen.getByTestId('screen-alerts');
     expect(root.children).toHaveLength(1);
     expect(elementChild(root, 0).props.testID).toBe('alerts-list');
@@ -1471,14 +1472,14 @@ describe('#170 R4: cuenta las alertas nuevas', () => {
     await screen.findByTestId('alert-row-b-status');
     expect(screen.queryByTestId('alerts-new-count')).toBeNull();
   });
-  it('pinta el contador junto al título con su anatomía (enmendado por #174 R4)', async () => {
+  it('pinta el contador junto al título con su anatomía (enmendado por #174 R4) (enmendado por #203 R8)', async () => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ id: 'a' }), makeAlert({ id: 'b' })], nextCursor: null });
     await renderAlerts();
     const counter = await screen.findByTestId('alerts-new-count');
-    const titleRow = screen.getByTestId('alerts-title-row');
-    expect(titleRow.children).toHaveLength(2);
-    expect(elementChild(titleRow, 0).props.testID).toBe('alerts-title');
-    expect(elementChild(titleRow, 1).props.testID).toBe('alerts-new-count');
+    const titleRow = screen.getByTestId('alerts');
+    expect(titleRow.children).toHaveLength(3);
+    expect(within(titleRow).getByTestId('alerts-title')).toBeOnTheScreen();
+    expect(elementChild(titleRow, 2).props.testID).toBe('alerts-new-count');
     expect(mockPopIn).toHaveBeenCalledWith(expect.objectContaining({
       testID: 'alerts-new-count',
       className: 'rounded-full bg-danger px-2.5 py-1',
@@ -1574,5 +1575,69 @@ describe('#174 R10: entrada escalonada de las cinco primeras filas', () => {
     expect(screen.queryByTestId('alert-row-e5-entrance')).toBeNull();
     expect(screen.getByTestId('alert-row-e5')).toBeVisible();
     expect(screen.getByTestId('alert-row-e0-entrance').parent?.props.className).toBe('gap-3');
+  });
+});
+
+describe('#203 R8: cabecera de Alertas', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockListAlerts.mockReset();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+  });
+
+  it.each(['carga', 'error', 'vacía', 'filas'])('#203 R8: pinta la cabecera en %s', async (state) => {
+    if (state === 'carga') mockListAlerts.mockReturnValue(pending<AlertsState>());
+    else if (state === 'error') mockListAlerts.mockResolvedValue({ kind: 'error' });
+    else mockListAlerts.mockResolvedValue({ kind: 'ok', items: state === 'vacía' ? [] : [makeAlert()], nextCursor: null });
+    await renderAlerts();
+
+    const header = await screen.findByTestId('alerts-header');
+    expect(elementChild(header, 0).props.testID).toBe('alerts');
+    const row = screen.getByTestId('alerts');
+    expect(within(row).getByTestId('alerts-back')).toBeOnTheScreen();
+    expect(within(row).getByTestId('alerts-title')).toHaveTextContent('Alertas', { exact: true });
+    expect(screen.queryByTestId('alerts-title-row')).toBeNull();
+  });
+
+  it('#203 R8: la insignia de nuevas es el accesorio de la cabecera', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ id: 'a' }), makeAlert({ id: 'b' })], nextCursor: null });
+    await renderAlerts();
+
+    const counter = await screen.findByTestId('alerts-new-count');
+    const row = screen.getByTestId('alerts');
+    expect(row.children).toHaveLength(3);
+    expect(elementChild(row, row.children.length - 1).props.testID).toBe('alerts-new-count');
+    expect(within(row).getByTestId('alerts-new-count') === counter).toBe(true);
+    expect(counter.props.className).toBe('rounded-full bg-danger px-2.5 py-1');
+    expect(within(counter).getByTestId('alerts-new-count-text')).toHaveTextContent('2 nuevas', { exact: true });
+  });
+
+  it('#203 R8: sin nuevas la cabecera no lleva accesorio', async () => {
+    mockListAlerts.mockResolvedValue({
+      kind: 'ok',
+      items: [makeAlert({ id: 'a', status: 'acked' }), makeAlert({ id: 'b', status: 'closed' })],
+      nextCursor: null,
+    });
+    await renderAlerts();
+
+    await screen.findByTestId('alert-row-a');
+    const row = screen.getByTestId('alerts');
+    expect(row.children).toHaveLength(2);
+    expect(within(row).queryByTestId('alerts-new-count')).toBeNull();
+    expect(screen.queryByTestId('alerts-new-count')).toBeNull();
+  });
+
+  it('#203 R8: paddingTop es insets.top + 8', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [], nextCursor: null });
+    await renderAlerts();
+
+    await waitFor(() => expect(screen.getByTestId('alerts-list')).toBeVisible());
+    expect(screen.getByTestId('alerts-list').props.contentContainerStyle).toEqual({
+      paddingHorizontal: 20,
+      paddingTop: 48,
+      paddingBottom: 48,
+      gap: 12,
+    });
   });
 });

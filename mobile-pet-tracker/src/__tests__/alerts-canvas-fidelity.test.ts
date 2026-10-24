@@ -233,7 +233,6 @@ describe('#174 R12: inventarios', () => {
         'screens/add-pet/index.tsx', // #191 R11
         'screens/add-reminder/index.tsx', // #178 R10
         'screens/alert-detail/index.tsx', // #180 R1
-        'screens/alerts/index.tsx', // #174 R12: H0 sin consumidores
         'screens/docs/index.tsx', // #175 R5
         'screens/food/index.tsx',
         'screens/geofence-editor/index.tsx', // #189 R8
@@ -245,7 +244,7 @@ describe('#174 R12: inventarios', () => {
         'screens/reminders/index.tsx', // #178 R4
       ],
     },
-  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12) (enmendado por #197 R4) (enmendado por #197 R10) (enmendado por #197 R19) (enmendado por #200 R1 y #200 R3 y #200 R5 y #200 R12 y #200 R13) (enmendado por #199 R10) (enmendado por #199 R14) (enmendado por #199 R16) (enmendado por #198 R9, R15) (enmendado por #203 R4)', ({ pattern, files }) => {
+  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12) (enmendado por #197 R4) (enmendado por #197 R10) (enmendado por #197 R19) (enmendado por #200 R1 y #200 R3 y #200 R5 y #200 R12 y #200 R13) (enmendado por #199 R10) (enmendado por #199 R14) (enmendado por #199 R16) (enmendado por #198 R9, R15) (enmendado por #203 R4, R8)', ({ pattern, files }) => {
     expect(filesMatching(pattern)).toEqual(files);
   });
 
@@ -270,10 +269,10 @@ describe('#174 R12: grep-limpio', () => {
     expect(readSource('screens/alerts/index.tsx')).not.toMatch(/(?<![\w-])(?:min-h-20|text-2xs|shadow-sm)\b/);
   });
 
-  it('cada tracking-* va con su text-*', () => {
+  it('cada tracking-* va con su text-* (enmendado por #203 R8)', () => {
     const tracked = classNames(readSource('screens/alerts/index.tsx'))
       .filter((classes) => /(?<![\w-])tracking-/.test(classes));
-    expect(tracked).toHaveLength(2);
+    expect(tracked).toHaveLength(1);
     for (const classes of tracked) expect(classes).toMatch(/(?<![\w-])text-(?:13|15|26)\b/);
   });
 });
