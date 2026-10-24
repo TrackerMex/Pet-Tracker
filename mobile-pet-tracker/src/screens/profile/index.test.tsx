@@ -2411,11 +2411,11 @@ describe('#196 R5: aviso ámbar de notificaciones bloqueadas', () => {
   });
 
   it('#196 R5: el CTA del aviso lleva labio primario y abre la configuración', async () => {
+    const { result } = await renderHook(() => useChunkyLip());
     await renderProfile();
     const notice = await screen.findByTestId('notifications-blocked-notice');
     const action = within(notice).getByTestId('notifications-open-settings');
     expect(action.props.className).toBe('pressable-feedback__root button__root button__root--variant-primary button__root--size-md h-11 rounded-14 px-4.5');
-    const { result } = await renderHook(() => useChunkyLip());
     expect(action.props.style).toContainEqual(result.current.primary);
     expect(within(action).getByText('Abrir configuración').props.className).toBe('button__label button__label--variant-primary button__label--size-md text-sm font-extrabold text-accent-foreground');
     await fireEvent.press(action);
