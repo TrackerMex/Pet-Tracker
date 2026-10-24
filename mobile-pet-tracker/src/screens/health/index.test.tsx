@@ -1423,3 +1423,43 @@ describe('#199 R19: estados de vacunas', () => {
     expect(error).toHaveTextContent('No se pudieron cargar las vacunas', { exact: true });
   });
 });
+
+
+describe('#199 R20: peso vacío y con error', () => {
+  beforeEach(setupHealth168);
+  function expectNoWeightData199() {
+    expect(screen.queryByTestId('weight-current')).toBeNull();
+    expect(screen.queryByTestId('weight-variation')).toBeNull();
+    expect(screen.queryByTestId('weight-chart', { includeHiddenElements: true })).toBeNull();
+    expect(screen.queryByTestId('weight-chart-empty')).toBeNull();
+  }
+  it('#199 R20 sin registros conserva envoltorio, Peso, aviso y enlace', async () => {
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [] });
+    await renderHealth();
+    const empty = await screen.findByTestId('weight-card-empty');
+    const card = screen.getByTestId('weight-card');
+    expect(card.props.className).toBe('gap-3 rounded-24 bg-surface-secondary p-4');
+    expect(card.props.style).toEqual({ borderCurve: 'continuous' });
+    expect(riseDelayOf(card)).toBe(260);
+    expect(within(card).getByTestId('weight-card-title')).toHaveTextContent('Peso', { exact: true });
+    expect(empty.props.className).toBe('text-15 leading-body text-muted');
+    expect(empty).toHaveTextContent('Aún no hay registros de peso', { exact: true });
+    expect(within(card).getByTestId('weight-log-link')).toBeVisible();
+    expectNoWeightData199();
+  });
+  it('#199 R20 con error pinta el aviso en text-danger con role alert dentro de la tarjeta', async () => {
+    mockListWeights.mockResolvedValue({ kind: 'error' });
+    await renderHealth();
+    const error = await screen.findByTestId('weight-card-error');
+    const card = screen.getByTestId('weight-card');
+    expect(within(card).getByTestId('weight-card-error').props.testID).toBe('weight-card-error');
+    expect(card.props.className).toBe('gap-3 rounded-24 bg-surface-secondary p-4');
+    expect(card.props.style).toEqual({ borderCurve: 'continuous' });
+    expect(riseDelayOf(card)).toBe(260);
+    expect(error.props.className).toBe('text-15 leading-body text-danger');
+    expect(error.props.accessibilityRole).toBe('alert');
+    expect(error).toHaveTextContent('No se pudo cargar el peso', { exact: true });
+    expect(within(card).getByTestId('weight-log-link')).toBeVisible();
+    expectNoWeightData199();
+  });
+});
