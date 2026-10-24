@@ -73,7 +73,7 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
     });
   });
 
-  it('no exporta nada más (enmendado por #195 R13) (enmendado por #197 R11)', () => {
+  it('no exporta nada más (enmendado por #195 R13) (enmendado por #197 R11) (enmendado por #200 R4)', () => {
     expect(Object.keys(require('../motion')).sort()).toEqual([
       'MOTION_ALERT_PING_MS',
       'MOTION_BLINK_INTERVAL_MS',
@@ -106,6 +106,8 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
       'MOTION_PING_TO_SCALE',
       'MOTION_POP_SCALE',
       'MOTION_POP_SPRING',
+      'MOTION_RING_DELAY_MS',
+      'MOTION_RING_TIMING',
       'MOTION_RISE_OFFSET_Y',
       'MOTION_RISE_TIMING',
       'MOTION_SETTLE_SPRING',
@@ -265,5 +267,13 @@ describe('#197 R11: rise del canvas', () => {
   it('#197 R11: declara el rise del canvas: 14 px y 400 ms ease-out', () => {
     expect(require('../motion').MOTION_RISE_OFFSET_Y).toBe(14);
     expect(require('../motion').MOTION_RISE_TIMING).toEqual({ duration: 400, easing: { bezier: [0, 0, 0.58, 1] }, reduceMotion: ReduceMotion.System });
+  });
+});
+
+
+it('#200 R4: el anillo dura 1100 ms con ease-out y espera 200', () => {
+  expect(require('../motion').MOTION_RING_DELAY_MS).toBe(200);
+  expect(require('../motion').MOTION_RING_TIMING).toEqual({
+    duration: 1100, easing: { bezier: [0, 0, 0.58, 1] }, reduceMotion: ReduceMotion.System,
   });
 });
