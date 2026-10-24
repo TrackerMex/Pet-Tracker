@@ -31,7 +31,7 @@ Medidas sobre el árbol del worktree en `81cb6d6b` (`origin/dev` con #197).
 | P6 | El copy del canvas coincide con el catálogo | Cierto para todo lo que la pantalla pinta, salvo la previa de Agregar: el canvas dice «Te avisaremos el 5 oct a las 09:00» y el catálogo `addReminder.notifyPreview` = `'Te aviso el {{date}} a las {{time}}.'`. Manda la Voz B (Pingo en primera persona): se conserva el catálogo. **Ninguna clave i18n nueva.** |
 | P7 | Las píldoras de Recordatorios ya son las del canvas | Cierto: radio 16, `px-3 py-2.5`, cifra `text-2xl font-black`, etiqueta `text-xs font-bold`; `bg-surface-secondary` = `#F0FBF6` = `--surface2`. |
 | P8 | La hoja de borrado ya es la del canvas | Contenedor, icono, título, referencia y cuerpo sí. Los dos botones no: «Eliminar» no tiene alto ni labio (`w-full rounded-xl bg-danger`, etiqueta `font-bold`) y «Cancelar» mide 56 con etiqueta de 17 (canvas: 54 y 16). |
-| P9 | `node_modules` existe en el worktree | **No** (0 entradas). Nada de esta spec se ha ejecutado: las cifras son de `grep` sobre fuentes. |
+| P9 | `node_modules` existe en el worktree | Al escribir la spec, no; el leader lo instaló después con `bun install --frozen-lockfile`. Nada de esta spec se ha ejecutado: las cifras son de `grep` sobre fuentes. |
 
 ## Contraste con el artboard
 
@@ -86,7 +86,7 @@ tres ficheros contiene instrucciones dirigidas a un agente.
 ## Dependencias y precondiciones
 
 - **#197 en la base** (`81cb6d6b`): `ScreenHeader` y `BackButton` (`router.canGoBack() ? router.back() : router.replace(fallback)`), `RiseIn`, `useChunkyLip()` con la variante `danger` y `MOTION_RISE_TIMING` / `MOTION_RISE_OFFSET_Y`.
-- **Sin dependencias nuevas, sin coste, nada en AWS.** El worktree no tiene `node_modules`: antes del handoff, `cd mobile-pet-tracker && bun install --frozen-lockfile`.
+- **Sin dependencias nuevas, sin coste, nada en AWS.** `node_modules` ya está instalado en el worktree (`bun install --frozen-lockfile`).
 - **Features paralelas que no están en `dev`** y ficheros compartidos:
 
 | Fichero compartido | Otras features | Riesgo | Resolución |
