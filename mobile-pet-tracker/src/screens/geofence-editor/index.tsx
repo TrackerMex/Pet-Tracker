@@ -211,10 +211,10 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
       </View> : null}
       {zone ? <Text testID="geofence-editor-reset-note" className="text-sm font-normal text-muted">{t('geofenceEditor.resetNote')}</Text> : null}
       <View testID="geofence-editor-actions" className="flex-row gap-2.5">
-      {zone ? <Button testID="geofence-editor-delete" variant="outline" className="flex-1 h-14 rounded-16 border-2 border-lip-gray bg-surface" style={[chunkyLip.neutral, KEEP_OPACITY]} isDisabled={busy} onPress={() => setDeleteVisible(true)}>
+      {zone ? <Button testID="geofence-editor-delete" variant="outline" className="flex-1 h-13.5 rounded-16 border-2 border-lip-gray bg-surface" style={[chunkyLip.neutral, KEEP_OPACITY]} isDisabled={busy} onPress={() => setDeleteVisible(true)}>
         <Text className="text-base font-extrabold text-danger">{t('geofences.delete')}</Text>
       </Button> : null}
-      <Button testID="geofence-editor-save" className={name.trim() === '' ? 'flex-2 h-14 rounded-16 bg-default' : 'flex-2 h-14 rounded-16 bg-accent'} style={name.trim() === '' ? KEEP_OPACITY : [chunkyLip.primary, KEEP_OPACITY]} isDisabled={busy || name.trim() === ''} onPress={() => void save()}>
+      <Button testID="geofence-editor-save" className={name.trim() === '' ? 'flex-2 h-13.5 rounded-16 bg-default' : 'flex-2 h-13.5 rounded-16 bg-accent'} style={name.trim() === '' ? KEEP_OPACITY : [chunkyLip.primary, KEEP_OPACITY]} isDisabled={busy || name.trim() === ''} onPress={() => void save()}>
         <Text className={name.trim() === '' ? 'text-17 font-extrabold text-muted' : 'text-17 font-extrabold text-accent-foreground'}>{t('geofenceEditor.save')}</Text>
       </Button>
       </View>
