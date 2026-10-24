@@ -54,7 +54,10 @@ jest.mock('../../components/weight-chart', () => {
 jest.mock('../../components/rise-in', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
-  return { RiseIn: ({ delayMs, testID, className, children }: { delayMs: number; testID?: string; className?: string; children: ReactNode }) => React.createElement(View, { delayMs, testID, className }, children) };
+  return { RiseIn: ({ delayMs, testID, className, children }: { delayMs: number; testID?: string; className?: string; children: ReactNode }) => {
+    const props = { delayMs, testID, className };
+    return React.createElement(View, props, children);
+  } };
 });
 
 jest.mock('../../providers/auth-provider', () => ({
