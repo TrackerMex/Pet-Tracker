@@ -722,11 +722,27 @@ Alias: **CC** `src/__tests__/chunky-cta-canvas-fidelity.test.ts`, **CN**
 | 50 | LY › `#95 R4: cada pantalla de detalle declara su cabecera nativa` › `#194 R4: %s usa exactamente las opciones de cabecera acordadas` | incluye la fila `['meal-schedule', '']` | sin esa fila (item 27); #199 R1 quita en paralelo la suya y la segunda feature en mergear conserva las dos bajas y los dos sufijos | R12 |
 | 51 (P1 del handoff; errata del leader 2026-10-23) | CN › `#62 R14` › `fusiona la esquina una vez y la entrega a las dos ramas de Card (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9)`: suma `style={CONTINUOUS_CORNER}` sobre la misma constante `directUses` que [18] | `.toBe(…)` = 42 | en el commit rojo de cada R, el `.toBe(…)` gana un término: R5 `+ 1 // #200 R5` (43), R7 `+ 1 // #200 R7` (44), R8 `+ 1 // #200 R8` (45), R9 `+ 2 // #200 R9` (47); R6 no lo toca. Sufijo como el resto del inventario | R5, R7, R8, R9 |
 | 52 (errata del leader 2026-10-23, tras la parada de Codex en R3) | HT (`src/__tests__/heroui-text-size-merge.test.ts`) › `#187 R1: ningún componente que fusiona className lleva text-NN` › `#187 R1: el escáner cubre al menos el universo medido (enmendado por #177 R9) (enmendado por #189 R5, R10, R13)` | `cardElements` `toBeGreaterThanOrEqual(41)`; `heroElements` ≥ 197, `classNameElements` ≥ 163, ficheros con hero ≥ 28 | cada `<Card` de Food que sale baja el suelo de `cardElements`: R3 `41 → 40`, R5 `→ 39`, R7 `→ 38`, R8 `→ 37`, R9 `→ 35`, con su término al final del comentario de esa línea (`; #200 R3: -1`, `; #200 R5: -1`, …). Los otros tres suelos solo se tocan si se ponen rojos, y entonces bajan exactamente al valor recibido, con su término en el comentario. Sufijo ` (enmendado por #200 R3)` tras el de #189; cada R siguiente añade su id al mismo paréntesis (`#200 R3, R5`, …). El de R3 va en un commit propio `test(#200): R3 lower the Card floor of the HeroUI scanner` antes de R4, porque los commits de R3 ya existen; los demás, en el commit rojo de su R | R3, R5, R7, R8, R9 |
+| 53 (errata del leader 2026-10-24, tras la parada de Codex en R9) | DD (`src/__tests__/design-drift.test.ts`) › `#178 R13: Recordatorios sin deriva` › `reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10)` | `rounded16` sin Food | `rounded16` gana `'screens/food/index.tsx': 2, // #200 R9` entre `'screens/edit-profile/index.tsx'` y `'screens/forgot/index.tsx'`; sufijo ` (enmendado por #200 R9)`. Como los commits de R9 ya existen, va en un commit propio `test(#200): R9 amend the rounded-16 inventory of design drift` antes de R10. #198 (K42) y #196 (E1) tocan el mismo `it` en sus branches: quien mergee después conserva todas las entradas y todos los sufijos | R9 |
 
 Regla de parada: un rojo fuera de este inventario detiene la implementación y
 se reporta al leader.
 
 **Enmienda mecánica permitida**: si un `it` no inventariado se pone rojo solo porque compara contra el literal exacto que el R-id quita o sustituye (directo o vía constante/helper del test), el implementador lo enmienda en el commit rojo de ese R con el sufijo y lo apunta en la tabla «Enmiendas mecánicas» de su informe. Cualquier otro rojo no inventariado sigue siendo motivo de parada.
+
+## Erratas del leader (2026-10-24)
+
+Firmadas por delegación (mandato del humano del 2026-10-23, `progress/plan_canvas-parity-2026-10-23.md` §4).
+
+**Fila 53 (parada en R9).** Ver la fila 53 del inventario: DD `#178 R13` › `reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10)`.
+
+**Regla de recuentos agregados.** Si al llegar a verde una R se pone rojo un `it` que no está en el inventario y ese `it` solo cuenta usos o ficheros de un literal o token, Codex lo enmienda sin parar. Son de este tipo los inventarios cerrados de radios, de `style={CONTINUOUS_CORNER}`, de `text-NN` o de `<Card`, las sumas de copy y los suelos del escáner HeroUI. La condición es que el delta medido sea exactamente el número de usos que el diff de esa R, tal como esta spec la prescribe, añade o retira. La enmienda:
+
+- da a la cifra o a la entrada su término (`// #200 Rn`, o `; #200 Rn: ±k` dentro de un comentario que ya exista);
+- da al título el sufijo ` (enmendado por #200 Rn)`, o añade `Rn` al paréntesis de #200 si ya existe;
+- va en el commit rojo de esa R; si ese rojo ya está commiteado, en un commit propio `test(#200): Rn amend the <candado> inventory` antes del siguiente R;
+- se apunta en la tabla «Enmiendas mecánicas» del reporte con candado, antes, después y R.
+
+El fichero de test de ese candado entra en la lista cerrada solo para esa enmienda. Sigue siendo PARADA si el delta no coincide, si el `it` afirma comportamiento o estructura y no un recuento, o si la enmienda exigiría cambiar producción.
 
 ## Desviaciones del canvas
 
