@@ -169,3 +169,33 @@ describe('#199 R26: fidelidad de Salud y Peso al canvas', () => {
   ];
   it.each(rows)('#199 R26 %s', (_name, verify) => { verify(); });
 });
+
+
+describe('#199 R27: guardas', () => {
+  const nativeFactory = ['StyleSheet', 'create'].join('.');
+  it.each([
+    'screens/health/index.tsx',
+    'screens/weight-log/index.tsx',
+    'components/weight-chart.tsx',
+  ])(`#199 R27 %s no usa corchetes, ${nativeFactory} ni text-accent suelto`, file => {
+    const content = source(file);
+    expect(content).not.toMatch(/-\[/);
+    expect(content).not.toContain(nativeFactory);
+    expect(content).not.toMatch(/text-accent(?![-\w])/);
+  });
+  it.each([
+    'screens/health/index.test.tsx',
+    'screens/weight-log/index.test.tsx',
+    'components/__tests__/weight-chart.test.tsx',
+    'screens/home/__tests__/format-dates.test.ts',
+    '__tests__/health-weight-canvas-fidelity.test.ts',
+  ])(`#199 R27 %s no usa ${nativeFactory}`, file => {
+    expect(source(file)).not.toContain(nativeFactory);
+  });
+  it.each([
+    'screens/health/index.tsx',
+    'screens/weight-log/index.tsx',
+  ])('#199 R27 %s no pasa text-13, text-15 ni text-17 a Label', file => {
+    expect(source(file)).not.toMatch(/<Label[^>]*className="[^"]*text-1[357]/);
+  });
+});
