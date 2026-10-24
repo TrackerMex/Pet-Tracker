@@ -10030,3 +10030,39 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
 - **Estado final:** done. Notion: no aplica (las specs firmadas por el leader no se espejan, plan
   §1). El smoke de R23 queda en `progress/smoke_canvas-parity.md`. La PR a `dev` la mergea el leader
   y después se borra el worktree `Pet-Tracker-wt-197`.
+
+## Sesión 2026-10-24 — mobile-canvas-nutrition (id: 200)
+
+- **Feature:** Nutrición, Horario e Historial de comidas como sus artboards del canvas (versión
+  `1792777983-cd94`, ola 2 del plan de paridad). `src/app/(tabs)/food.tsx` pasa a
+  `src/screens/food/` con ruta delgada (R1). Héroe morado con labio y anillo con `MOTION_RING_*`
+  (R2–R4). Franjas con «Marcar servido» y píldora «Servido», avisos e IA (R5–R11). `ScreenHeader`,
+  `RiseIn` y `chunkyLip.violet` en Horario e Historial (R12–R15). Enmienda #200 de la carta y sus
+  guardas (R16–R17).
+- **Spec:** [[specs/mobile-canvas-nutrition/requirements|spec]], con firma delegada en el leader
+  por mandato del humano del 2026-10-23 (plan §4), firmada tras el merge de #197 en `dev`
+  (`81cb6d6b`). Erratas del leader: `0e6e3988` (R17 y el inventario de candados), `562051d2` (R3)
+  y `31837443` (R9).
+- **Acciones:** Codex implementó test-primero (rojo `test(#200)` y verde `feat(#200)` por
+  requisito; R11 va en el rojo de R9, como manda el handoff). Paró en R3, en R9 y en el cierre
+  global. Las dos primeras se resolvieron con erratas y reanudaciones. La tercera fue un rojo de
+  BackButton `#172 R2` en la suite completa (el mock por factoría de `use-theme-colors` no se aplica
+  y el hook devuelve el respaldo `#0D1117`), que en aislado pasa. El diff desde H0 en BackButton,
+  `use-theme-colors.ts`, la config de jest y `test/` está vacío. Reviewer APROBADO sobre `2baf7cdb`
+  (0 bloqueantes; `progress/review_mobile-canvas-nutrition.md`).
+- **Resultado:** `./init.sh` del leader sobre `2baf7cdb` exit 0: backend 187 suites / 1474 tests;
+  infra 2 suites / 14 tests; móvil 143 suites / 4758 tests / 1 snapshot (de 142 / 4683 en T0);
+  e2e 30 de 33 suites (3 omitidas) y 468 tests (8 omitidos); typecheck y lint sin errores. La
+  casilla de la enmienda #200 de la carta ya venía firmada por delegación.
+- **Notas no bloqueantes:** (1) Deuda: el flake del mock de `use-theme-colors` bajo carga afecta a
+  varias suites (BackButton, chunky-lip, geofence-editor, reminders, alert-detail, alerts y forgot)
+  y merece su propia investigación con `--runInBand` y orden fijo. (2) Deuda: la guarda de la
+  casilla en `nutrition-canvas-fidelity.test.ts` exige `[X]` mayúscula, no `[ xX]`. (3) Cosméticos:
+  líneas en blanco sobrantes, orden de imports en Horario e Historial y comentarios de
+  `consistency-classnames.test.ts` fuera de orden (la cifra es correcta).
+- **Lección:** un rojo de la suite completa que no se reproduce aislado ni en el `init.sh` del
+  leader, y cuyo diff desde H0 está vacío, no bloquea la feature. Se registra como deuda con su
+  síntoma exacto y las suites donde apareció.
+- **Estado final:** done. Notion: no aplica (las specs firmadas por el leader no se espejan, plan
+  §1). El smoke queda en `progress/smoke_canvas-parity.md`. La PR a `dev` la mergea el leader y
+  después se borra el worktree `Pet-Tracker-wt-200`.

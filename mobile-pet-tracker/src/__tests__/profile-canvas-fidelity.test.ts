@@ -35,14 +35,14 @@ function filesMatching(pattern: RegExp): string[] {
 }
 
 describe('#173 R4: avatars solo en Perfil', () => {
-  it('limita la variante nueva al consumidor Perfil', () => {
-    expect(filesMatching(/variant="avatars"/)).toEqual(['screens/profile/index.tsx']);
+  it('limita la variante nueva al consumidor Perfil (enmendado por #200 R2)', () => {
+    expect(filesMatching(/variant="avatars"/)).toEqual(['screens/food/index.tsx', 'screens/profile/index.tsx']);
   });
 });
 
 describe('#173 R2: inventario de radios nuevos', () => {
-  it('reserva rounded-hero al Card compartido y el skeleton de Perfil', () => {
-    expect(filesMatching(/\brounded-hero\b/)).toEqual(['components/card.tsx', 'screens/alert-detail/index.tsx', 'screens/profile/index.tsx']); // #180 R10
+  it('reserva rounded-hero al Card compartido y el skeleton de Perfil (enmendado por #200 R3)', () => {
+    expect(filesMatching(/\brounded-hero\b/)).toEqual(['components/card.tsx', 'screens/alert-detail/index.tsx', 'screens/food/index.tsx', 'screens/profile/index.tsx']); // #180 R10
   });
   it('reserva rounded-tile a sus consumidores aprobados (enmendado por #190 R13)', () => {
     expect(filesMatching(/\brounded-tile\b/)).toEqual([
@@ -71,7 +71,7 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/reminders/index.tsx', // #178 R4
     ]);
   });
-  it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8) (enmendado por #189 R6) (enmendado por #198 R5)', () => {
+  it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8) (enmendado por #189 R6) (enmendado por #200 R8) (enmendado por #198 R5)', () => {
     expect(filesMatching(/\btext-13\b/)).toEqual([
       'components/form-error.tsx',
       'screens/add-pet/index.tsx', // #191 R11
@@ -80,6 +80,7 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/alerts/index.tsx', // #174 R4, R6
       'screens/docs/index.tsx', // #175 R8
       'screens/edit-profile/index.tsx', // #194 R5
+      'screens/food/index.tsx',
       'screens/forgot/index.tsx',
       'screens/geofences/index.tsx', // #189 R6
       'screens/home/index.tsx', // #198 R5

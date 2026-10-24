@@ -195,27 +195,27 @@ describe('#155 R10: los vacíos que no se ilustran siguen en texto', () => {
   it.each([
     ['src/screens/home/index.tsx', 2], // #198 R15
     ['src/screens/health/index.tsx', 1],
-    ['src/app/(tabs)/food.tsx', 2],
+    ['src/screens/food/index.tsx', 2],
     ['src/screens/map/index.tsx', 2],
     ['src/screens/alerts/index.tsx', 1],
     ['src/screens/reminders/index.tsx', 2],
     ['src/screens/profile/index.tsx', 1],
     ['src/screens/docs/index.tsx', 1],
     ['src/screens/geofences/index.tsx', 2],
-  ] as const)('%s pinta %i EmptyState (enmendado por #198 R15)', (path, n) => {
+  ] as const)('%s pinta %i EmptyState (enmendado por #200 R1) (enmendado por #198 R15)', (path, n) => {
     const source = readFileSync(join(process.cwd(), path), 'utf8');
     expect(source.match(/<EmptyState\b/g) ?? []).toHaveLength(n);
   });
 
-  it('ningún otro fichero usa EmptyState', () => {
+  it('ningún otro fichero usa EmptyState (enmendado por #200 R1)', () => {
     const files = sourceFiles()
       .filter((path) => /<EmptyState\b/.test(readFileSync(path, 'utf8')))
       .map((path) => path.slice(process.cwd().length + 1))
       .sort();
     expect(files).toEqual([
-      'src/app/(tabs)/food.tsx',
       'src/screens/alerts/index.tsx',
       'src/screens/docs/index.tsx',
+      'src/screens/food/index.tsx',
       'src/screens/geofences/index.tsx',
       'src/screens/health/index.tsx',
       'src/screens/home/index.tsx',
