@@ -38,6 +38,22 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
 
+const mockUseReducedMotion = jest.fn<boolean, []>(() => true);
+
+jest.mock('react-native-reanimated', () => {
+  const actual = jest.requireActual<typeof import('react-native-reanimated')>('react-native-reanimated');
+  return {
+    ...actual,
+    __esModule: true,
+    useReducedMotion: () => mockUseReducedMotion(),
+    withTiming: jest.fn((value: number) => value),
+    withDelay: jest.fn((_ms: number, animation: unknown) => animation),
+    withSequence: jest.fn((...steps: unknown[]) => steps.at(-1)),
+    withRepeat: jest.fn((animation: unknown) => animation),
+    cancelAnimation: jest.fn(),
+  };
+});
+
 const mockUseAuth = jest.mocked(useAuth);
 const mockGetPet = jest.mocked(getPet);
 const mockListPets = jest.mocked(listPets);

@@ -567,7 +567,7 @@ de la enmienda está en su `requirements.md` §R11.
 
 - [X] Enmienda #168 aprobada por humano
 
-**Regla N1 (enmienda B4 de #168)**: Salud, Nutrición y Perfil abren con el título grande; Inicio es la única pestaña con PetHeroHeader. Devolver el hero a una de las tres es una enmienda a #168.
+**Regla N1 (enmienda #196)**: Inicio y Perfil abren con PetHeroHeader a sangre; Salud y Nutrición abren con el título grande. En Perfil el título «Perfil» y «Añadir mascota» van en el slot superior del hero y el nombre con los chips en su pie. Devolver el hero a Salud o a Nutrición, o quitárselo a Inicio o a Perfil, es una enmienda a #196.
 
 ## Enmienda #171 — confeti, ping y flotación de la celebración
 
