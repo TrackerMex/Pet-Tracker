@@ -40,14 +40,12 @@ const { readFileSync } = require('fs');
 const { join } = require('path');
 
 const mockPopIn = jest.fn<void, [import('react-native').ViewProps]>();
-const mockHomeEntrance = jest.fn<void, [import('react-native').ViewProps & { index: number }]>();
 
-jest.mock('../home/home-entrance', () => {
+jest.mock('../../components/rise-in', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
-    HomeEntrance(props: import('react-native').ViewProps & { index: number }) {
-      mockHomeEntrance(props);
+    RiseIn(props: import('react-native').ViewProps & { delayMs: number }) {
       return React.createElement(View, props);
     },
   };
@@ -1548,7 +1546,7 @@ describe('#170 R5: la fila abierta lleva el borde de su tipo', () => {
 });
 
 
-describe('#174 R10: entrada escalonada de las cinco primeras filas', () => {
+describe('#203 R9: entrada escalonada de las cinco primeras filas', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockListAlerts.mockReset().mockResolvedValue({
@@ -1560,17 +1558,16 @@ describe('#174 R10: entrada escalonada de las cinco primeras filas', () => {
     mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
   });
 
-  it('envuelve e0 a e4 con su índice y deja e5 sin envoltorio', async () => {
+  it('#203 R9: envuelve e0 a e4 con RiseIn y su retardo y deja e5 sin envoltorio', async () => {
     await renderAlerts();
     await screen.findByTestId('alert-row-e5');
+    const delays = [0, 70, 140, 200, 260];
     for (let index = 0; index < 5; index += 1) {
       const rowId = `alert-row-e${index}`;
-      const entranceId = `${rowId}-entrance`;
-      const entrance = screen.getByTestId(entranceId);
+      const entrance = screen.getByTestId(`${rowId}-entrance`);
       expect(entrance.children).toHaveLength(1);
-      expect(within(entrance).getByTestId(rowId)).toBe(screen.getByTestId(rowId));
-      const props = mockHomeEntrance.mock.calls.filter(([props]) => props.testID === entranceId).at(-1)?.[0];
-      expect(props?.index).toBe(index);
+      expect(within(entrance).getByTestId(rowId) === screen.getByTestId(rowId)).toBe(true);
+      expect(entrance.props.delayMs).toBe(delays[index]);
     }
     expect(screen.queryByTestId('alert-row-e5-entrance')).toBeNull();
     expect(screen.getByTestId('alert-row-e5')).toBeVisible();
