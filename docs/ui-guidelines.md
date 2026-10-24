@@ -230,7 +230,7 @@ Tres límites, no negociables:
     Enmienda #187; no se pasa `text-17` a `Button.Label`.
     El bloqueo (`isDisabled`) no atenúa: en #189 los `Switch` y `Button` de heroui cancelan el 50 % de `disabled:element-disabled` con `KEEP_OPACITY`, y la receta gris del límite no lleva opacidad.
     - **Chip seleccionado** (fidelidad al canvas, #178; labio por estilo, #197): cápsula `rounded-full bg-accent` con `style={chunkyLip.primaryCompact}`, un labio de 3 px que cuelga fuera del alto; el chip sin seleccionar no lleva labio.
-    - **Secundarios de Horario** (fidelidad al canvas, #179; labio por estilo, #197): «Editar» `h-9 rounded-10 border-2 border-lip-gray bg-surface` con `style={chunkyLip.neutralCompact}` y «Añadir comida» `h-12.5 rounded-14 border-2 border-lip-gray bg-surface` con `style={chunkyLip.neutral}`, con el labio colgando fuera del alto; el resumen verde lleva `chunkyLip.summary`; «Generar plan» es tonal de la categoría violeta y sigue sin labio hasta #200.
+    - **Secundarios de Horario** (fidelidad al canvas, #179; labio por estilo, #197): «Editar» `h-9 rounded-10 border-2 border-lip-gray bg-surface` con `style={chunkyLip.neutralCompact}` y «Añadir comida» `h-12.5 rounded-14 border-2 border-lip-gray bg-surface` con `style={chunkyLip.neutral}`, con el labio colgando fuera del alto; el resumen verde lleva `chunkyLip.summary`; «Generar plan» es tonal de la categoría violeta con `style={chunkyLip.violet}` (#200 R14).
     - **Secundario compacto de fila** (#174; labio por estilo, #197): el ack de cada fila abierta de Alertas lleva `h-8.5 rounded-10 border-2 border-lip-gray bg-surface px-3` con `style={chunkyLip.neutralCompact}`, etiqueta `text-xs font-extrabold text-foreground` y `hitSlop={TOUCH_SLOP}` (34 + 12 = 46 de diana). Es la única excepción a la receta del secundario neutro; el inventario de #166 R3 lo lista por su `testID`.
     - **Sin labio**: los tonales (`bg-accent-soft`, `bg-default`), los
       destructivos (`bg-danger`, `variant="danger-soft"`) y las primarias
@@ -897,3 +897,18 @@ Detalle y tests en `specs/mobile-canvas-foundations/requirements.md` (R1 a R23).
 
 - [X] Enmienda #197 aprobada por humano
   Firma delegada en el leader por mandato del humano del 2026-10-23 (`progress/plan_canvas-parity-2026-10-23.md` §4), igual que la de `specs/mobile-canvas-foundations/requirements.md` § Aprobación.
+
+
+## Enmienda #200 (mobile-canvas-nutrition)
+
+Fecha: 2026-10-24. Las tres pantallas de comidas consumen los cimientos del canvas de #197.
+
+1. **Entrada con RiseIn.** Nutrición, Horario e Historial usan `RiseIn` y el timing compartido de 400 ms ease-out de #197, sin entrada bajo reducir movimiento. Nutrición con plan cargado: héroe 0 ms, comidas 80 ms, aviso en posición index `110 + 30 * index` ms, IA 140 ms y enlaces 200 ms; sin plan los enlaces conservan su aparición sin RiseIn. Horario: resumen 0 ms y filas `80 + 60 * index` ms. Historial: calendario 0 ms y panel del día 100 ms.
+2. **Anillo de Nutrición.** El relleno usa `MOTION_RING_TIMING` (1100 ms ease-out, ReduceMotion.System) y `MOTION_RING_DELAY_MS` (200 ms), también al servir o deshacer. La pista conserva opacidad 0.22.
+3. **Radios de Nutrición.** Fuera de la escala por fidelidad a su canvas: `rounded-24` (24 px) en la tarjeta de comidas y `rounded-16` (16 px) en los enlaces a Horario e Historial. Cada esquina no cápsula usa `CONTINUOUS_CORNER`.
+4. **Superficies propias.** El héroe, las comidas, los avisos y la recomendación IA de Nutrición son `View`; sus enlaces son `Pressable`. Usan clases propias en lugar de `Card`, con los radios, colores e interlineados del artboard y las variantes de labio del hook compartido.
+
+Detalle y tests en `specs/mobile-canvas-nutrition/requirements.md` (R1 a R17).
+
+- [X] Enmienda #200 aprobada por humano
+  Firma delegada en el leader por mandato del humano del 2026-10-23 (`progress/plan_canvas-parity-2026-10-23.md` §4), reflejada desde `specs/mobile-canvas-nutrition/requirements.md` § Aprobación, ya firmada el 2026-10-23.

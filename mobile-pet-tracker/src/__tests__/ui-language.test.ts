@@ -86,8 +86,8 @@ describe('#65 R3: Home resuelve su copy por clave', () => {
   // 20 en `303fc19` + 1 de `home.walks` (#67 R7b, delta declarado en su R9b).
   // #68 añade el delta medido de weekly-activity-chart, sin recontar la base.
   // #73 añade `home.unknown` para distinguir espera inicial de desconexión.
-  it('#71 R11: registra el copy de accesos rápidos sobre los deltas heredados', () => {
-    expect(R3_HOME).toHaveLength(21 + 15 + 1 + 4 + 7 + 2 + 1 + 2 + 2 + 4); // +2 #155 R4; +4 #190 R9/R13 (enmendado por #190 R13)
+  it('#71 R11: registra el copy de accesos rápidos sobre los deltas heredados (enmendado por #198 R15)', () => {
+    expect(R3_HOME).toHaveLength(21 + 15 + 1 + 4 + 7 + 2 + 1 + 2 + 2 + 4 + 1); // +1 #198 R15 // +2 #155 R4; +4 #190 R9/R13 (enmendado por #190 R13)
     checkUses(R3_HOME);
   });
 });
@@ -494,7 +494,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
     checkUses(ALL_USES);
   });
 
-  it('#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas', () => {
+  it('#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas (enmendado por #200 R1)', () => {
     expect(SCREEN_FILES).toHaveLength(
       19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1 // #100 R10, #41 R10, #146 R10, #105 R5
         + 1 - 1 // #117 R10: sale app/(auth)/forgot.tsx, entra screens/forgot/index.tsx
@@ -507,6 +507,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
         + 1 // #186 R2: utils/form-rules.ts
         + 1 // #190 R13: screens/home/pingo-phrase.ts (enmendado por #190 R13)
         + 1 // #194 R5: screens/edit-profile/index.tsx
+        + 1 - 1 // #200 R1: sale app/(tabs)/food.tsx, entra screens/food/index.tsx
     );
 
     for (const file of SCREEN_FILES) {

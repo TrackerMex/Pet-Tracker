@@ -136,9 +136,9 @@ describe('#197 R3: tipografía del canvas', () => {
 });
 
 describe('#197 R4: tracking de títulos', () => {
-  it('#197 R4: ningún fichero de producción usa tracking-tight', () => {
+  it('#197 R4: ningún fichero de producción usa tracking-tight (enmendado por #200 R1)', () => {
     expect(filesMatching(/(?<![\w-])tracking-tight\b/)).toEqual([]);
-    for (const file of ['app/(tabs)/food.tsx', 'components/celebration.tsx', 'screens/health/index.tsx', 'screens/profile/index.tsx']) {
+    for (const file of ['screens/food/index.tsx', 'components/celebration.tsx', 'screens/health/index.tsx', 'screens/profile/index.tsx']) {
       expect(readSource(file)).toContain('text-3xl font-black tracking-title text-foreground');
     }
   });
@@ -260,7 +260,6 @@ describe('#197 R19: cabecera del canvas', () => {
   });
 });
 
-
 const charter = readFileSync(join(process.cwd(), '..', 'docs/ui-guidelines.md'), 'utf8');
 const design = readFileSync(join(process.cwd(), '..', 'specs/mobile-canvas-foundations/design.md'), 'utf8');
 function canonicalBlock(label: string): string {
@@ -275,8 +274,12 @@ describe('#197 R21: carta canónica', () => {
   it('#197 R21: la carta declara el interlineado', () => {
     expect(charter.split(canonicalBlock('Línea de interlineado'))).toHaveLength(2);
   });
-  it('#197 R21: el punto 13 describe los labios por estilo', () => {
-    expect(charter.split(canonicalBlock('Punto 13'))).toHaveLength(2);
+  it('#197 R21: el punto 13 describe los labios por estilo (enmendado por #200 R16)', () => {
+    const expected = canonicalBlock('Punto 13').replace(
+      '«Generar plan» es tonal de la categoría violeta y sigue sin labio hasta #200.',
+      '«Generar plan» es tonal de la categoría violeta con `style={chunkyLip.violet}` (#200 R14).',
+    );
+    expect(charter.split(expected)).toHaveLength(2);
   });
   it('#197 R21: la enmienda está una sola vez y con su casilla', () => {
     const normalized = charter.replace(/- \[[ xX]\] Enmienda #197 aprobada por humano/g, '- [ ] Enmienda #197 aprobada por humano');

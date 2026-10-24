@@ -10030,3 +10030,74 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
 - **Estado final:** done. Notion: no aplica (las specs firmadas por el leader no se espejan, plan
   §1). El smoke de R23 queda en `progress/smoke_canvas-parity.md`. La PR a `dev` la mergea el leader
   y después se borra el worktree `Pet-Tracker-wt-197`.
+
+## Sesión 2026-10-24 — mobile-canvas-nutrition (id: 200)
+
+- **Feature:** Nutrición, Horario e Historial de comidas como sus artboards del canvas (versión
+  `1792777983-cd94`, ola 2 del plan de paridad). `src/app/(tabs)/food.tsx` pasa a
+  `src/screens/food/` con ruta delgada (R1). Héroe morado con labio y anillo con `MOTION_RING_*`
+  (R2–R4). Franjas con «Marcar servido» y píldora «Servido», avisos e IA (R5–R11). `ScreenHeader`,
+  `RiseIn` y `chunkyLip.violet` en Horario e Historial (R12–R15). Enmienda #200 de la carta y sus
+  guardas (R16–R17).
+- **Spec:** [[specs/mobile-canvas-nutrition/requirements|spec]], con firma delegada en el leader
+  por mandato del humano del 2026-10-23 (plan §4), firmada tras el merge de #197 en `dev`
+  (`81cb6d6b`). Erratas del leader: `0e6e3988` (R17 y el inventario de candados), `562051d2` (R3)
+  y `31837443` (R9).
+- **Acciones:** Codex implementó test-primero (rojo `test(#200)` y verde `feat(#200)` por
+  requisito; R11 va en el rojo de R9, como manda el handoff). Paró en R3, en R9 y en el cierre
+  global. Las dos primeras se resolvieron con erratas y reanudaciones. La tercera fue un rojo de
+  BackButton `#172 R2` en la suite completa (el mock por factoría de `use-theme-colors` no se aplica
+  y el hook devuelve el respaldo `#0D1117`), que en aislado pasa. El diff desde H0 en BackButton,
+  `use-theme-colors.ts`, la config de jest y `test/` está vacío. Reviewer APROBADO sobre `2baf7cdb`
+  (0 bloqueantes; `progress/review_mobile-canvas-nutrition.md`).
+- **Resultado:** `./init.sh` del leader sobre `2baf7cdb` exit 0: backend 187 suites / 1474 tests;
+  infra 2 suites / 14 tests; móvil 143 suites / 4758 tests / 1 snapshot (de 142 / 4683 en T0);
+  e2e 30 de 33 suites (3 omitidas) y 468 tests (8 omitidos); typecheck y lint sin errores. La
+  casilla de la enmienda #200 de la carta ya venía firmada por delegación.
+- **Notas no bloqueantes:** (1) Deuda: el flake del mock de `use-theme-colors` bajo carga afecta a
+  varias suites (BackButton, chunky-lip, geofence-editor, reminders, alert-detail, alerts y forgot)
+  y merece su propia investigación con `--runInBand` y orden fijo. (2) Deuda: la guarda de la
+  casilla en `nutrition-canvas-fidelity.test.ts` exige `[X]` mayúscula, no `[ xX]`. (3) Cosméticos:
+  líneas en blanco sobrantes, orden de imports en Horario e Historial y comentarios de
+  `consistency-classnames.test.ts` fuera de orden (la cifra es correcta).
+- **Lección:** un rojo de la suite completa que no se reproduce aislado ni en el `init.sh` del
+  leader, y cuyo diff desde H0 está vacío, no bloquea la feature. Se registra como deuda con su
+  síntoma exacto y las suites donde apareció.
+- **Estado final:** done. Notion: no aplica (las specs firmadas por el leader no se espejan, plan
+  §1). El smoke queda en `progress/smoke_canvas-parity.md`. La PR a `dev` la mergea el leader y
+  después se borra el worktree `Pet-Tracker-wt-200`.
+
+## Sesión 2026-10-24 — mobile-canvas-home (id: 198)
+
+- **Feature:** Inicio con mascota como su artboard del canvas (ola 2 del plan de paridad, R1–R18).
+  Resumen con mosaicos de métricas y sombra `card` (R1–R2). Collar en columna con la barra de
+  batería teñida por umbral (R3–R4). Accesos rápidos de 92 px con labio interior (R5). Índices de
+  entrada del canvas (R6). Gráfica semanal con su superficie, la métrica elegida y la opacidad de
+  barras (R7–R9). Recordatorios y última posición (R10–R11). Sin collar, esqueleto y error con
+  `EmptyState` `tone="danger"` (R13–R15, R18). Candados de sombras y de 46 literales congelados
+  (R12, R16, R17).
+- **Spec:** [[specs/mobile-canvas-home/requirements|spec]], con firma delegada en el leader por
+  mandato del humano del 2026-10-23 (plan §4). Re-firma `fbd0cdc7` con la regla uniforme de #197
+  R20. Erratas del leader: `69539aaa` (icono de R3 y una cuenta de tasks.md) y `dc0c565d` (K48–K51,
+  esquinas de los mosaicos de R2 y regla de recuentos agregados).
+- **Acciones:** Codex implementó test-primero (rojo `test(#198)` y verde `feat(#198)` por requisito;
+  R12, R16 y R17 nacen verdes con mutación probada). Paró en R2 por K48–K51, resuelto con errata y
+  Reanudación. Paró en el cierre por rojos de tinte `#0D1117` en la suite completa (Recordatorios
+  #178 R4 y Editor de zonas #189 R13), con diff vacío contra la base de dev y verdes aislados con
+  `--runInBand` (189/189 en la corrida del leader). El leader mergeó `origin/dev` (#200) en
+  `249e3994`, con 13 conflictos resueltos como «dev + delta de #198». Reviewer APROBADO sobre
+  `158f4e91` (0 bloqueantes, 11 no bloqueantes; `progress/review_mobile-canvas-home.md`).
+- **Resultado:** `./init.sh` del leader sobre `158f4e91` exit 0: backend 187 suites / 1474 tests;
+  infra 2 suites / 14 tests; móvil 144 suites / 4875 tests / 1 snapshot (de 143 / 4758 en la base
+  de dev); e2e 30 de 33 suites (3 omitidas) y 468 tests (8 omitidos); typecheck y lint sin errores.
+  La spec no enmienda la carta de UI: no hay casilla de enmienda.
+- **Notas no bloqueantes:** (1) Deuda de spec: el candado de R16 solo busca `home-empty-badge` y
+  no ve un badge con otro testID (N9), y el de R12 no cubre la cláusula «únicos» (N10); la
+  producción es correcta en ambos. (2) La enmienda de inventario de R15 (`6d0264a5`) llegó tras R17
+  (N1). (3) R14 añade `CONTINUOUS_CORNER` a la sombra prescrita (N4). (4) La errata `69539aaa` no
+  cita la línea de firma delegada (N11). (5) Título de CK caducado, «veintisiete radios» con total
+  34 (N7). (6) Notion: no aplica (las specs firmadas por el leader no se espejan, plan §1).
+- **Lección:** cláusulas como «solo», «únicos» o «sin badge» necesitan un candado que mire el
+  conjunto completo, no un caso concreto. Coincide con [[clausulas-universales-candadas-en-un-caso]].
+- **Estado final:** done. El smoke queda en `progress/smoke_canvas-parity.md`. La PR a `dev` la
+  mergea el leader y después se borra el worktree `Pet-Tracker-wt-198`.
