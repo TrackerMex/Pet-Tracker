@@ -78,3 +78,8 @@ it('#202 R13: el canvas dibuja la hoja con sombra y rise', () => {
   contains(source('screens/geofence-editor/index.tsx'), '<RiseIn testID="geofence-editor-form-entrance" delayMs={0} className="-mt-6.5 shrink"');
   contains(source('screens/geofence-editor/index.tsx'), 'style={[CONTINUOUS_CORNER, { flexGrow: 0, flexShrink: 1 }, shadows.sheet]}');
 });
+
+it('#202 R14: el canvas pinta el nombre a 600 16px', () => {
+  contains(artboard('EditorZona'), '600 16px');
+  contains(source('screens/geofence-editor/index.tsx'), 'className="text-base font-semibold h-12.5 rounded-xl bg-default px-3.5"');
+});

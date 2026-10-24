@@ -1030,3 +1030,11 @@ it.each(['crear', 'editar', 'solo lectura'])('#202 R13: la hoja entra con rise y
   expect(form.props.className).toBe('rounded-t-hero bg-surface');
   expect(StyleSheet.flatten(form.props.style)).toEqual({ borderCurve: 'continuous', flexGrow: 0, flexShrink: 1, boxShadow: [{ offsetX: 0, offsetY: -8, blurRadius: 24, spreadDistance: 0, color: 'shadow-10' }] });
 });
+
+it.each(['crear', 'editar'])('#202 R14: el nombre usa 16/600 del canvas en %s', async (kind) => {
+  await mount(kind === 'crear' ? undefined : casa.id);
+  const input = await screen.findByTestId('geofence-editor-name');
+  expect(input.props.className).toContain('text-base');
+  expect(input.props.className).toContain('font-semibold');
+  expect(input.props.className.endsWith('h-12.5 rounded-xl bg-default px-3.5')).toBe(true);
+});
