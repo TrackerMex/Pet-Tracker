@@ -1105,3 +1105,22 @@ Verificación (desde `mobile-pet-tracker/`, sin init.sh):
 - `bunx jest --runInBand` sobre los 7 tests en conflicto y `ui-language.test.ts`: 8 suites, 427/427 verdes. Además, consistency-classnames, geofences-canvas-fidelity, zones-canvas-fidelity, home-canvas-fidelity, nutrition-canvas-fidelity y confirm-dialog: 6 suites, 204/204 verdes.
 - `bunx expo lint`: exit 0 y log vacío (0 bytes, sin `Failed to run`); repetido con `--no-cache`: igual.
 - No apareció el flake del tinte `#0D1117` ni el de Home #190 R5 (no se corrió la suite completa).
+
+## Merge de dev (#199) por subagente del leader (2026-10-24)
+
+Merge `d5399a07` (`Merge remote-tracking branch 'origin/dev' into feature/202-mobile-canvas-zones`), padres `a7eedec0` (errata #202 R7.4) y `8bd88522` (PR #246, #199). Merge-base `329c613c` (#198, PR #245). Regla dev + delta, con delta = #202 − merge-base medido con `git show`.
+
+Conflictos (4):
+- `mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts`: inventario `text-15` = 18 (dev; base 16, +health #199 R16, +weight-log #199 R10) + 2 (#202: confirm-dialog, geofences R11) = 20; quedan `screens/geofences/index.tsx` (#202 R11) y `screens/health/index.tsx` (#199 R16) en orden. Título con las etiquetas de dev (#199 R10, R14, R16) y las de #202 (R7, R1, R11, R17). `tracking-title` se automergeó: 17 (dev) − 2 (#202 da de baja geofence-editor y geofences) = 15.
+- `mobile-pet-tracker/src/__tests__/chunky-cta-canvas-fidelity.test.ts`: total `rounded-16` = 35 (dev, +1 #199 R14) + 1 (#202 R18) = 36, `26 + 1 + 1 + 1 + 2 + 2 + 1 + 1 + 1`. Mapa `radii` automergeado: geofence-editor 4 (#202 R18), health 1 (#199 R14). Título R7.3 con #199 R14 y #202 R18.
+- `mobile-pet-tracker/src/__tests__/design-drift.test.ts`: solo el título de «reserva los radios 14, 16 y 22», con #199 R14, #199 R18 y #202 R18. El mapa `rounded16` (geofence-editor 4, health 1) y la lista `rounded-14` (+health #199 R18) se automergearon.
+- `mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx`: claves por idioma = 452 (dev; +1 #199 R5, +1 R9, +3 R14, +2 R17) + 2 (#202 R10, R18) = 454. Medido en `catalog.ts`: base 445, #202 447, dev 452, fusión 454. Título con #199 R5, R9, R14, R17 y #202 R10, R18.
+
+Automergeados sin marcadores, revisados: `catalog.ts`, `ui-copy-table.ts` (R5_HEALTH +7 de dev; R14 y R15 +1 cada uno de #202), `ui-language.test.ts` (R5 con el +7 de #199 R25, R14/R15 con el +1 de #202, `SCREEN_FILES` con el −1 de #199 R1), `consistency-classnames.test.ts`, `profile-canvas-fidelity.test.ts`, `app/__tests__/layout.test.tsx`, `app/_layout.tsx`, `docs/ui-guidelines.md`, `feature_list.json`. #202 no tocó `canvas-foundations.test.ts`, `theme/motion.ts`, `STATUS.md`, `progress/history.md` ni `progress/smoke_canvas-parity.md`: entran tal cual de dev; `docs/conventions.md` es al revés (solo lo tocó #202) y queda como en la rama. `feature_list.json` deja #199 en `done` (dev) y #202 en el valor de esta rama, `spec_ready`; no se cambió a `in_progress`.
+
+Verificación (desde `mobile-pet-tracker/`, sin init.sh; ningún init.sh corriendo):
+- `test ! -e .expo/types/router.d.ts`: no existe.
+- `bunx tsc --noEmit`: exit 0.
+- `bunx expo lint --no-cache > ../progress/lint-202-merge.log 2>&1 && test ! -s ../progress/lint-202-merge.log`: exit 0, log de 0 bytes (`*.log` está en `.gitignore`).
+- `bunx jest --runTestsByPath <64 ficheros> --runInBand --testTimeout=30000`: los ficheros en conflicto, los que leen `catalog.ts`, `ui-copy-table.ts`, `_layout.tsx`, `theme/motion.ts`, `canvas-foundations`, `ui-guidelines.md` o `feature_list.json`, más geofences, geofence-editor, confirm-dialog, zones-canvas-fidelity, geofences-canvas-fidelity, legibility-classnames, health y weight-log. Resultado: 63/64 suites, 3244/3245 tests. El único rojo fue un timeout (`celebration.test.tsx` › #171 R6.6, «Exceeded timeout of 60000 ms») con load average ~290 en 4 núcleos por jest de otros worktrees.
+- Re-ejecución sola de `src/components/__tests__/celebration.test.tsx` (flake conocido de timeout): 1/1 suites, 66/66 tests verdes.
