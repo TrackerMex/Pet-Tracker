@@ -99,7 +99,7 @@ jest.mock('../../api/media', () => ({
 
 jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: jest.fn(),
-}), { virtual: true });
+}));
 
 jest.mock('../../api/users', () => ({
   getMe: jest.fn(),
