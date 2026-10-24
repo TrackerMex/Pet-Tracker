@@ -310,13 +310,13 @@ describe('#41 R7: el dueño borra una zona tras confirmar', () => {
   beforeEach(() => { jest.spyOn(Alert, 'alert').mockImplementation(() => undefined); });
   afterEach(() => { jest.restoreAllMocks(); });
 
-  it('pinta los dos borrados con sus recetas y como tercer hijo (enmendado por #189 R5)', async () => {
+  it('pinta los dos borrados con sus recetas y como tercer hijo (enmendado por #189 R5) (enmendado por #202 R6)', async () => {
     mockList.mockResolvedValue({ kind: 'ok', geofences: rows });
     await mount();
     await screen.findByTestId('geofence-geofence-1');
     for (const id of ['geofence-1', 'geofence-2']) {
       const button = screen.getByTestId(`geofence-${id}-delete`);
-      expect(button.props.className).toBe('size-11 items-center justify-center rounded-xl bg-danger-soft');
+      expect(button.props.className).toBe('size-11 items-center justify-center rounded-xl bg-category-rose');
       expect(button.props.accessibilityRole).toBe('button');
       expect(button.props.accessibilityState.disabled).toBe(false);
       expect(button).toHaveStyle({ borderCurve: 'continuous' });
@@ -733,7 +733,7 @@ describe('#189 R5: filas con tile pastel, textos y controles', () => {
     jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
   });
   afterEach(() => jest.restoreAllMocks());
-  it('#189 R5: cada fila conserva su dato, icono, tinta, tipografía, destino y acciones (enmendado por #202 R3)', async () => {
+  it('#189 R5: cada fila conserva su dato, icono, tinta, tipografía, destino y acciones (enmendado por #202 R3) (enmendado por #202 R6)', async () => {
     await mount();
     await screen.findByTestId('geofence-geofence-1');
     for (const [index, zone] of rows.entries()) {
@@ -785,7 +785,7 @@ describe('#189 R5: filas con tile pastel, textos y controles', () => {
       await waitFor(() => expect(screen.getByTestId(`${id}-active`).props.accessibilityState.disabled).toBe(false));
       expect(mockSetActive).toHaveBeenLastCalledWith(apiUrl, 'token-1', 'pet-1', zone.id, !zone.active);
       const trash = screen.getByTestId(`${id}-delete`);
-      expect(trash.props.className).toBe('size-11 items-center justify-center rounded-xl bg-danger-soft');
+      expect(trash.props.className).toBe('size-11 items-center justify-center rounded-xl bg-category-rose');
       expect(trash.props.accessibilityRole).toBe('button');
       expect(trash.props.accessibilityLabel).toBe(`Eliminar zona ${zone.name}`);
       expect(trash.props.hitSlop).toBeUndefined();
@@ -997,4 +997,19 @@ it('#202 R5: el aviso de límite usa AlertTriangle y 13/1.45', async () => {
   expect(within(notice).queryByTestId('geofences-icon-alert')).not.toBeNull();
   expect(within(notice).getByTestId('geofences-icon-alert').props).toMatchObject({ size: 20, color: 'warning' });
   expect(text.props.className).toBe('flex-1 text-13 leading-note text-category-amber-strong');
+});
+
+it('#202 R6: la papelera de cada fila usa el fondo rose', async () => {
+  const zones = Array.from({ length: 5 }, (_, i) => makeGeofence({ id: `trash-${i}` }));
+  mockList.mockResolvedValue({ kind: 'ok', geofences: zones });
+  await mount();
+  await screen.findByTestId('geofence-trash-0');
+  for (const zone of zones) {
+    const trash = screen.getByTestId(`geofence-${zone.id}-delete`);
+    expect(trash.props.className).toContain('bg-category-rose');
+    expect(trash.props.className).not.toContain('bg-danger-soft');
+    expect(trash.props.hitSlop).toBeUndefined();
+    expect(trash).toHaveStyle({ borderCurve: 'continuous' });
+    expect(within(trash).getByTestId('geofences-icon-trash').props).toMatchObject({ size: 20, color: 'danger' });
+  }
 });

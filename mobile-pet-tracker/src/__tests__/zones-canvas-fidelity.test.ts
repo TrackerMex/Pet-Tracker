@@ -44,3 +44,8 @@ it('#202 R5: el canvas pinta el aviso a 13/1.45', () => {
   contains(source('screens/geofences/index.tsx'), '<AlertTriangle size={20} color={warning}');
   contains(source('screens/geofences/index.tsx'), 'flex-1 text-13 leading-note ${CATEGORY_SLOTS.amber.ink}');
 });
+
+it('#202 R6: el canvas pinta la papelera sobre rose', () => {
+  contains(artboard('Zonas'), 'var(--rose)', 5);
+  contains(source('screens/geofences/index.tsx'), 'rounded-xl ${CATEGORY_SLOTS.rose.surface}');
+});
