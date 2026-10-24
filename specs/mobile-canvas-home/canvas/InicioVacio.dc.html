@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Inicio sin mascotas</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+<style>
+body{margin:0}
+a{color:#107148;text-decoration:none}a:hover{color:#0B5C3A}
+.pt{--bg:#FFFFFF;--fg:#0D1117;--surface:#FFFFFF;--surface2:#F0FBF6;--default:#F5F6F8;--muted:#667085;--border:rgba(13,17,23,0.08);--lip-gray:#E4E7EC;--accent:#178255;--accent-strong:#107148;--lip:#0E5E3C;--blue:#EFF6FF;--blue-s:#0768E0;--amber:#FFF7ED;--amber-s:#A55E07;--green:#F0FBF6;--green-s:#107148;--violet:#F5F3FF;--violet-s:#7549F7;--rose:#FFF0F3;--rose-s:#D80B34;--danger:#D92D20;--warning:#B54708;--glass:rgba(255,255,255,0.86);--pill:rgba(23,130,85,0.14);--shadow:0 1px 2px rgba(13,17,23,0.04),0 8px 24px rgba(13,17,23,0.06)}
+.pt.dark{--bg:#0D1117;--fg:#F7F8FA;--surface:#161B22;--surface2:#12231B;--default:#1F242B;--muted:#9CA3AF;--border:rgba(255,255,255,0.08);--lip-gray:#0A0D12;--accent-strong:#2AB87C;--lip:#0B4D31;--blue:#0B203A;--blue-s:#4A8DDF;--amber:#271E14;--amber-s:#C17B22;--green:#12231B;--green-s:#2AB87C;--violet:#221C33;--violet-s:#9579E7;--rose:#39131A;--rose-s:#E35E78;--danger:#F87171;--warning:#FBBF24;--glass:rgba(22,27,34,0.86);--pill:rgba(23,130,85,0.22);--shadow:0 1px 2px rgba(0,0,0,0.4)}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes ping{0%{transform:scale(.55);opacity:.55}100%{transform:scale(1.5);opacity:0}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fill{from{width:0}}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+@keyframes fall{0%{transform:translateY(-40px) rotate(0);opacity:0}10%{opacity:1}100%{transform:translateY(760px) rotate(540deg);opacity:0}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
+</helmet>
+<div class="pt {{theme}}" style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: var(--bg); color: var(--fg); font-family: Inter, 'Helvetica Neue', system-ui, sans-serif; padding: 60px 24px 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center">
+<div style="position: relative; width: 280px; height: 260px; display: flex; align-items: center; justify-content: center">
+<span style="position: absolute; width: 240px; height: 240px; border-radius: 50%; background: var(--surface2)"></span>
+<svg aria-hidden="true" width="280" height="260" viewBox="0 0 280 260" style="position: absolute; inset: 0"><g fill="var(--accent)" opacity=".18"><g transform="translate(30 40) rotate(-20)"><circle cx="0" cy="0" r="5"></circle><circle cx="10" cy="-6" r="5"></circle><circle cx="20" cy="0" r="5"></circle><ellipse cx="10" cy="12" rx="9" ry="7"></ellipse></g><g transform="translate(232 70) rotate(18)"><circle cx="0" cy="0" r="5"></circle><circle cx="10" cy="-6" r="5"></circle><circle cx="20" cy="0" r="5"></circle><ellipse cx="10" cy="12" rx="9" ry="7"></ellipse></g><g transform="translate(220 210) rotate(-8)"><circle cx="0" cy="0" r="4"></circle><circle cx="8" cy="-5" r="4"></circle><circle cx="16" cy="0" r="4"></circle><ellipse cx="8" cy="10" rx="7" ry="6"></ellipse></g></g></svg>
+<img src="/_blob/f4ec4ed756bad6b3aa2ee809a534ea88" alt="Mascota" style="position: relative; width: 190px; height: auto; animation: float 3s ease-in-out infinite">
+<span style="position: absolute; bottom: 18px; width: 120px; height: 14px; border-radius: 50%; background: rgba(13,17,23,0.10)"></span>
+</div>
+<h1 style="margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.02em; animation: rise 400ms ease-out 100ms both">Aún no tienes mascotas</h1>
+<p style="margin: 0; max-width: 290px; font-size: 15px; line-height: 1.5; color: var(--muted); animation: rise 400ms ease-out 160ms both">Añade a tu compañero para ver su ubicación, salud y comidas en un solo lugar.</p>
+<a href="NuevaMascota.dc.html" style="margin-top: 10px; width: 100%; height: 56px; border-radius: 16px; background: var(--accent); color: #FFFFFF; box-shadow: 0 4px 0 var(--lip); display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 17px; font-weight: 800; text-decoration: none; animation: rise 400ms ease-out 220ms both"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>Añadir mascota</a>
+<nav aria-label="Pestañas" style="position: absolute; left: 16px; right: 16px; bottom: 28px; height: 64px; box-sizing: border-box; padding: 6px; border-radius: 999px; background: var(--glass); border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(13,17,23,0.12); backdrop-filter: blur(20px); display: flex; gap: 4px"><a href="Inicio.dc.html" aria-label="Inicio" aria-current="page" style="flex: 1; height: 52px; background: var(--pill); border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--accent-strong)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg><span style="font-size: 10px; font-weight: 600">Inicio</span></a><a href="Mapa.dc.html" aria-label="Mapa" style="flex: 1; height: 52px; border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--muted)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 3 6v15l6-3 6 3 6-3V3l-6 3-6-3z"></path><path d="M9 3v15M15 6v15"></path></svg><span style="font-size: 10px; font-weight: 600">Mapa</span></a><a href="Salud.dc.html" aria-label="Salud" style="flex: 1; height: 52px; border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--muted)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.4 13.4 12 21l-8.4-7.6A5 5 0 0 1 12 6.6a5 5 0 0 1 8.4 6.8z"></path><path d="M3.5 12h4l2-3 3 6 2-3h5.5"></path></svg><span style="font-size: 10px; font-weight: 600">Salud</span></a><a href="Nutricion.dc.html" aria-label="Nutrición" style="flex: 1; height: 52px; border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--muted)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v18M4 3v5a3 3 0 0 0 6 0V3"></path><path d="M18 21V3c-2.5 1-4 3.5-4 7 0 2 1.5 3 4 3"></path></svg><span style="font-size: 10px; font-weight: 600">Nutrición</span></a><a href="Perfil.dc.html" aria-label="Perfil" style="flex: 1; height: 52px; border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--muted)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg><span style="font-size: 10px; font-weight: 600">Perfil</span></a></nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { theme: this.props.dark ? "dark" : "" };
+}
+}
+</script>
+</body>
+</html>
