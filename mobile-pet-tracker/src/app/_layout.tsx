@@ -91,14 +91,14 @@ function RootStack() {
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="reset-password" />
       <Stack.Protected guard={status === 'authenticated'}>
-        <Stack.Screen name="add-reminder" options={{ ...headerOptions, title: '' }} />
+        <Stack.Screen name="add-reminder" options={{ headerShown: false }} />
         <Stack.Screen name="pets/add" options={{ ...headerOptions, title: '' }} />
-        <Stack.Screen name="pets/[petId]/docs" options={{ ...headerOptions, title: '' }} />
+        <Stack.Screen name="pets/[petId]/docs" options={{ headerShown: false }} />
         <Stack.Screen name="pets/[petId]/docs-upload" options={{ ...headerOptions, title: '' }} />
         <Stack.Screen name="weight-log" options={{ headerShown: false }} />
             <Stack.Screen name="meal-schedule" options={{ headerShown: false }} />
         <Stack.Screen name="pairing" options={{ headerShown: false }} />
-        <Stack.Screen name="reminders" options={{ ...headerOptions, title: '' }} />
+        <Stack.Screen name="reminders" options={{ headerShown: false }} />
         <Stack.Screen name="alerts" dangerouslySingular options={{ headerShown: false }} />
         <Stack.Screen name="alerts/[alertId]" dangerouslySingular options={{ headerShown: false, contentStyle: { backgroundColor: background } }} />
         <Stack.Screen name="pets/[petId]/geofences" options={{ headerShown: false }} />

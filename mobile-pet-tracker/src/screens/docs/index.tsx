@@ -1,10 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import * as DocumentPicker from 'expo-document-picker';
 import { router } from 'expo-router';
-import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { openBrowserAsync } from 'expo-web-browser';
 import { Button, Skeleton } from 'heroui-native';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronRight, FileText, Upload } from 'reicon-react-native';
@@ -19,8 +18,11 @@ import { getPet } from '../../api/pets';
 import { mediaKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
+import { RiseIn } from '../../components/rise-in';
+import { ScreenHeader } from '../../components/screen-header';
 import { useAuth } from '../../providers/auth-provider';
 import { useLocale, useTranslate } from '../../providers/language-provider';
+import { MOTION_STAGGER_MS } from '../../theme/motion';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -30,7 +32,6 @@ import {
   type CategorySlot,
 } from '../../utils/category-palette';
 import { fmtDate } from '../home/format';
-import { HomeEntrance } from '../home/home-entrance';
 
 const FILTER_SLOTS = [
   { slot: 'blue', labelKey: 'docs.categoryVaccination' },
@@ -86,7 +87,6 @@ export function DocsScreen({ petId, uploaded }: { petId: string; uploaded?: stri
   const t = useTranslate();
   const [uploadColor] = useThemeColors(['accent-strong']);
   const insets = useSafeAreaInsets();
-  const headerHeight = useContext(HeaderHeightContext);
   const [actionError, setActionError] = useState<ActionError | null>(null);
   const [filter, setFilter] = useState<'all' | CategorySlot>('all');
   const pet = useQuery({
@@ -156,32 +156,27 @@ export function DocsScreen({ petId, uploaded }: { petId: string; uploaded?: stri
       testID="docs-keyboard-avoider"
       className="flex-1"
       behavior="padding"
-      keyboardVerticalOffset={headerHeight}
     >
       <ScrollView
         testID="screen-docs"
         className="flex-1 bg-background"
-        contentInsetAdjustmentBehavior="automatic"
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
           paddingHorizontal: 20,
-          paddingTop: 24,
+          paddingTop: insets.top + 12,
           gap: 14,
           paddingBottom: insets.bottom + 24,
         }}
       >
-        <View>
-          <Text className="text-11 font-extrabold uppercase tracking-eyebrow text-muted">
-            {t('docs.documentsOf')}
-          </Text>
-          {pet.data === undefined ? (
-            <Skeleton testID="docs-header-skeleton" className="h-8 w-36 rounded-xl" />
-          ) : (
-            <Text className="text-26 font-black tracking-title text-foreground">
-              {petName ?? t('docs.pet')}
-            </Text>
-          )}
-        </View>
+        <ScreenHeader
+          testID="docs-header"
+          backFallback="/profile"
+          eyebrow={t('docs.documentsOf')}
+          title={pet.data === undefined ? undefined : (petName ?? t('docs.pet'))}
+          titlePlaceholder={pet.data === undefined
+            ? <Skeleton testID="docs-header-skeleton" className="h-8 w-36 rounded-xl" />
+            : undefined}
+        />
 
         {docs.data === undefined ? (
           <View testID="docs-list-skeleton" className="gap-3.5">
@@ -226,9 +221,9 @@ export function DocsScreen({ petId, uploaded }: { petId: string; uploaded?: stri
               })}
             </View>
             {visibleDocs.map((document, index) => (
-              <HomeEntrance key={document.id} index={index} testID={`docs-entry-${document.id}`}>
+              <RiseIn key={document.id} delayMs={index * MOTION_STAGGER_MS} testID={`docs-entry-${document.id}`}>
                 <DocumentRow document={document} onPress={() => openDocument(document)} />
-              </HomeEntrance>
+              </RiseIn>
             ))}
           </>
         ) : null}

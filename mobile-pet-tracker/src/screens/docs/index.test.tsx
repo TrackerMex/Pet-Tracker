@@ -6,6 +6,7 @@ import {
   within,
 } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
+import { DeviceEventEmitter, Platform } from 'react-native';
 
 import { getDocumentAsync } from 'expo-document-picker';
 import { router } from 'expo-router';
@@ -25,14 +26,14 @@ import { LanguageProvider } from '../../providers/language-provider';
 import { DocsScreen } from '.';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
-const mockHomeEntrance = jest.fn<void, [import('react-native').ViewProps & { index: number }]>();
+const mockRiseIn = jest.fn<void, [import('react-native').ViewProps & { delayMs: number }]>();
 
-jest.mock('../home/home-entrance', () => {
+jest.mock('../../components/rise-in', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
-    HomeEntrance(props: import('react-native').ViewProps & { index: number }) {
-      mockHomeEntrance(props);
+    RiseIn(props: import('react-native').ViewProps & { delayMs: number }) {
+      mockRiseIn(props);
       return React.createElement(View, props);
     },
   };
@@ -62,7 +63,9 @@ jest.mock('../../api/media', () => ({
   ...jest.requireActual('../../api/media'),
   listPetDocs: jest.fn(),
 }));
-jest.mock('expo-router', () => ({ router: { push: jest.fn(), back: jest.fn(), dismissTo: jest.fn() } }));
+jest.mock('expo-router', () => ({
+  router: { push: jest.fn(), back: jest.fn(), dismissTo: jest.fn(), canGoBack: jest.fn(), replace: jest.fn() },
+}));
 jest.mock('expo-document-picker', () => ({ getDocumentAsync: jest.fn() }));
 jest.mock('expo-web-browser', () => ({ openBrowserAsync: jest.fn() }));
 jest.mock('../../api/pets', () => ({ getPet: jest.fn() }));
@@ -337,26 +340,25 @@ describe('#87 R9: DocsScreen lee por TanStack Query', () => {
 });
 
 describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
-  it('retira el botón y conserva Documentos de', async () => {
+  it('conserva Documentos de (enmendado por #204 R12)', async () => {
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
     mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
     mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [] });
     await renderDocs();
     await waitFor(() => expect(screen.getByText(es['docs.documentsOf'])).toBeVisible());
-    expect(screen.queryByTestId('docs-back')).toBeNull();
-  });
+      });
 });
 
 describe('#95 R6: métricas bajo cabecera nativa', () => {
-  it('usa solo el inset inferior del dispositivo', async () => {
+  it('usa solo el inset inferior del dispositivo (enmendado por #204 R12)', async () => {
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
     mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
     mockGetPet.mockReturnValue(pending<PetState>());
     mockListPetDocs.mockReturnValue(pending<PetDocsState>());
     await renderDocs();
     expect(screen.getByTestId('screen-docs').props.contentContainerStyle).toEqual({
-      paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48,
+      paddingHorizontal: 20, paddingTop: 52, gap: 14, paddingBottom: 48,
     });
   });
 });
@@ -380,7 +382,7 @@ describe('#175 R4: esqueleto del tamaño de la fila', () => {
 });
 
 describe('#175 R5: cabecera del artboard', () => {
-  it('pinta una columna sin gap con eyebrow y título exactos', async () => {
+  it('pinta una columna sin gap con eyebrow y título exactos (enmendado por #204 R12)', async () => {
     await renderDocs();
     await screen.findByText('Luna');
     const container = screen.getByTestId('screen-docs').children[0];
@@ -388,18 +390,10 @@ describe('#175 R5: cabecera del artboard', () => {
     const header = container.children[0];
     if (typeof header === 'string') throw new Error('Expected a header element');
 
-    expect(header.props.className).toBeUndefined();
-    expect(header.children).toHaveLength(2);
-    expect(header.children[0]).toHaveProperty('props.className', 'text-11 font-extrabold uppercase tracking-eyebrow text-muted');
-    expect(header.children[1]).toHaveProperty('props.className', 'text-26 font-black tracking-title text-foreground');
+    expect(screen.getByTestId('docs-header-eyebrow')).toHaveProperty('props.className', 'text-11 font-extrabold uppercase tracking-eyebrow text-muted');
+    expect(screen.getByTestId('docs-header-title')).toHaveProperty('props.className', 'text-26 font-black tracking-title text-foreground');
     expect(within(header).getByText('Documentos de')).toBeVisible();
     expect(within(header).getByText('Luna')).toBeVisible();
-  });
-
-  it('conserva una sola cabecera nativa de Documentos con título vacío', () => {
-    const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
-    const layout = readFileSync(`${process.cwd()}/src/app/_layout.tsx`, 'utf8');
-    expect(layout.split("name=\"pets/[petId]/docs\" options={{ ...headerOptions, title: '' }}")).toHaveLength(2);
   });
 });
 
@@ -415,14 +409,14 @@ describe('#155 R7: sin documentos, Pingo los guarda', () => {
     } satisfies AuthContextValue);
   });
 
-  it('queda en el sitio del vacío que sustituye', async () => {
+  it('queda en el sitio del vacío que sustituye (enmendado por #204 R12)', async () => {
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
     mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [] });
     await renderDocs();
     await screen.findByTestId('docs-empty-pose');
     const slot = screen.getByTestId('docs-empty');
     expect(slot.parent?.parent?.props.testID).toBe('screen-docs');
-    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['View', 'docs-empty']);
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['docs-header', 'docs-empty']);
   });
 
   it('pinta la pose, el título y la frase de Pingo', async () => {
@@ -474,13 +468,13 @@ function docsChildren() {
 }
 
 describe('#158 R3: el owner ve la acción de subir', () => {
-  it('con documentos pinta el botón, sus clases y el orden exacto', async () => {
+  it('con documentos pinta el botón, sus clases y el orden exacto (enmendado por #204 R12)', async () => {
     await renderDocs();
     await screen.findByText('Luna');
     await screen.findByTestId('doc-doc-1');
     const button = await screen.findByTestId('docs-upload');
     expect(within(button).getByText('Subir documento')).toBeVisible();
-    expect(docsChildren()).toEqual(['View', 'docs-filters', 'docs-entry-doc-1', 'docs-upload']);
+    expect(docsChildren()).toEqual(['docs-header', 'docs-filters', 'docs-entry-doc-1', 'docs-upload']);
     expect(button.props.className).not.toContain('bg-accent');
     const label = within(button).getByText('Subir documento');
     expect(label.props.className).toBe('text-15 font-extrabold text-foreground');
@@ -591,7 +585,7 @@ describe('#158 R10: cualquier miembro abre un documento', () => {
     expect(row.props.accessibilityRole).toBe('button');
   });
 
-  it.each(['owner', 'family', 'walker', 'vet'] as const)('mantiene la lista y sitúa el error del navegador para %s', async (myRole) => {
+  it.each(['owner', 'family', 'walker', 'vet'] as const)('mantiene la lista y sitúa el error del navegador para %s (enmendado por #204 R12)', async (myRole) => {
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: { ...makePet(), myRole } });
     mockOpenBrowserAsync.mockRejectedValue(new Error('browser failed'));
     await renderDocs();
@@ -600,8 +594,8 @@ describe('#158 R10: cualquier miembro abre un documento', () => {
     await screen.findByText('Algo salió mal');
     expect(screen.getByTestId('doc-doc-1')).toBeVisible();
     expect(docsChildren()).toEqual(myRole === 'owner'
-      ? ['View', 'docs-filters', 'docs-entry-doc-1', 'docs-upload', 'docs-action-error']
-      : ['View', 'docs-filters', 'docs-entry-doc-1', 'docs-action-error']);
+      ? ['docs-header', 'docs-filters', 'docs-entry-doc-1', 'docs-upload', 'docs-action-error']
+      : ['docs-header', 'docs-filters', 'docs-entry-doc-1', 'docs-action-error']);
   });
 
   it('family limpia el error antes de abrir otra vez el navegador', async () => {
@@ -693,7 +687,7 @@ describe('#175 R6: fila del artboard', () => {
     expect(screen.queryByText(/^2025-12-02$/)).toBeNull();
   });
 
-  it('envuelve cada fila con su índice y conserva el orden del backend', async () => {
+  it('envuelve cada fila con su índice y conserva el orden del backend (enmendado por #204 R14)', async () => {
     mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [
       { ...docOne, id: 'third' },
       { ...docOne, id: 'first' },
@@ -706,10 +700,10 @@ describe('#175 R6: fila del artboard', () => {
     ]);
     for (const [index, id] of ['third', 'first', 'second'].entries()) {
       const entry = screen.getByTestId(`docs-entry-${id}`);
-      expect(entry.props.index).toBe(index);
+      expect(entry.props.delayMs).toBe(index * 60);
       expect(entry.children).toHaveLength(1);
       expect(entry.children[0]).toHaveProperty('props.testID', `doc-${id}`);
-      expect(mockHomeEntrance).toHaveBeenCalledWith(expect.objectContaining({ index, testID: `docs-entry-${id}` }));
+      expect(mockRiseIn).toHaveBeenCalledWith(expect.objectContaining({ delayMs: index * 60, testID: `docs-entry-${id}` }));
     }
     expect(screen.getAllByTestId(/^doc-/).map(({ props }) => props.testID)).toEqual([
       'doc-third', 'doc-first', 'doc-second',
@@ -827,17 +821,17 @@ describe('#175 R9: filtrar por categoría', () => {
   it.each([
     ['blue', 'vaccine'], ['green', 'checkup'], ['amber', 'deworming'],
     ['violet', 'analysis'], ['neutral', 'unknown'],
-  ] as const)('filtra %s, conserva el orden y renumera las entradas', async (slot, id) => {
+  ] as const)('filtra %s, conserva el orden y renumera las entradas (enmendado por #204 R12) (enmendado por #204 R14)', async (slot, id) => {
     const original = filterDocs.find((document) => document.id === id)!;
     mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [{ ...original, id: 'extra' }, ...filterDocs] });
     await renderDocs();
     await screen.findByTestId('doc-unknown');
     await fireEvent.press(screen.getByTestId(`docs-filter-${slot}`));
     await waitFor(() => expect(docsChildren()).toEqual([
-      'View', 'docs-filters', 'docs-entry-extra', `docs-entry-${id}`, 'docs-upload',
+      'docs-header', 'docs-filters', 'docs-entry-extra', `docs-entry-${id}`, 'docs-upload',
     ]));
-    expect(screen.getByTestId('docs-entry-extra').props.index).toBe(0);
-    expect(screen.getByTestId(`docs-entry-${id}`).props.index).toBe(1);
+    expect(screen.getByTestId('docs-entry-extra').props.delayMs).toBe(0);
+    expect(screen.getByTestId(`docs-entry-${id}`).props.delayMs).toBe(60);
     for (const candidate of ['all', 'blue', 'green', 'amber', 'violet', 'neutral']) {
       expect(screen.getByTestId(`docs-filter-${candidate}`).props.accessibilityState).toEqual({ selected: candidate === slot });
     }
@@ -854,18 +848,18 @@ describe('#175 R9: filtrar por categoría', () => {
     ['  VACUNACIÓN  ', 'blue', 'vaccine'], ['vacunacion', 'blue', 'vaccine'],
     ['checkup', 'green', 'checkup'], ['Deworming', 'amber', 'deworming'],
     ['lab', 'violet', 'analysis'],
-  ] as const)('incluye el sinónimo %s en %s', async (type, slot, originalId) => {
+  ] as const)('incluye el sinónimo %s en %s (enmendado por #204 R12)', async (type, slot, originalId) => {
     mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [...filterDocs, { ...docOne, id: 'variant', type }] });
     await renderDocs();
     await screen.findByTestId('doc-variant');
     await fireEvent.press(screen.getByTestId(`docs-filter-${slot}`));
     await waitFor(() => expect(docsChildren()).toEqual([
-      'View', 'docs-filters', `docs-entry-${originalId}`, 'docs-entry-variant', 'docs-upload',
+      'docs-header', 'docs-filters', `docs-entry-${originalId}`, 'docs-entry-variant', 'docs-upload',
     ]));
     expect(within(screen.getByTestId('doc-variant')).getByText('Antirrábica')).toBeVisible();
   });
 
-  it('incluye Radiografía y Receta solo en Otros', async () => {
+  it('incluye Radiografía y Receta solo en Otros (enmendado por #204 R12)', async () => {
     mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [
       ...filterDocs.filter((document) => ['unknown', 'analysis', 'vaccine'].includes(document.id)),
       { ...docOne, id: 'prescription', type: 'Receta' },
@@ -874,21 +868,21 @@ describe('#175 R9: filtrar por categoría', () => {
     await screen.findByTestId('doc-prescription');
     await fireEvent.press(screen.getByTestId('docs-filter-neutral'));
     await waitFor(() => expect(docsChildren()).toEqual([
-      'View', 'docs-filters', 'docs-entry-unknown', 'docs-entry-prescription', 'docs-upload',
+      'docs-header', 'docs-filters', 'docs-entry-unknown', 'docs-entry-prescription', 'docs-upload',
     ]));
     expect(within(screen.getByTestId('doc-unknown')).getByText('Radiografía')).toBeVisible();
     expect(within(screen.getByTestId('doc-prescription')).getByText('Receta')).toBeVisible();
     for (const [slot, id] of [['blue', 'vaccine'], ['violet', 'analysis']]) {
       await fireEvent.press(screen.getByTestId(`docs-filter-${slot}`));
       await waitFor(() => expect(docsChildren()).toEqual([
-        'View', 'docs-filters', `docs-entry-${id}`, 'docs-upload',
+        'docs-header', 'docs-filters', `docs-entry-${id}`, 'docs-upload',
       ]));
       expect(screen.queryByTestId('doc-unknown')).toBeNull();
       expect(screen.queryByTestId('doc-prescription')).toBeNull();
     }
   });
 
-  it('restaura con Todos las entradas y el orden del backend', async () => {
+  it('restaura con Todos las entradas y el orden del backend (enmendado por #204 R12)', async () => {
     mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: filterDocs });
     await renderDocs();
     await screen.findByTestId('doc-unknown');
@@ -897,12 +891,12 @@ describe('#175 R9: filtrar por categoría', () => {
     await fireEvent.press(screen.getByTestId('docs-filter-all'));
     await waitFor(() => expect(screen.getByTestId('docs-filter-all').props.accessibilityState).toEqual({ selected: true }));
     expect(docsChildren()).toEqual([
-      'View', 'docs-filters', 'docs-entry-unknown', 'docs-entry-analysis', 'docs-entry-checkup',
+      'docs-header', 'docs-filters', 'docs-entry-unknown', 'docs-entry-analysis', 'docs-entry-checkup',
       'docs-entry-vaccine', 'docs-entry-deworming', 'docs-upload',
     ]);
   });
 
-  it('vuelve a Todos después de una subida correcta con Análisis seleccionado', async () => {
+  it('vuelve a Todos después de una subida correcta con Análisis seleccionado (enmendado por #204 R12)', async () => {
     const analysis = { ...docOne, id: 'analysis', type: 'Análisis' };
     mockListPetDocs.mockResolvedValueOnce({ kind: 'ok', docs: [analysis, docOne] });
     mockListPetDocs.mockResolvedValueOnce({ kind: 'ok', docs: [analysis, docOne, docTwo] });
@@ -915,7 +909,7 @@ describe('#175 R9: filtrar por categoría', () => {
     await waitFor(() => expect(screen.getByTestId('docs-filter-all').props.accessibilityState).toEqual({ selected: true }));
     expect(screen.getByTestId('docs-filter-violet').props.accessibilityState).toEqual({ selected: false });
     expect(docsChildren()).toEqual([
-      'View', 'docs-filters', 'docs-entry-analysis', 'docs-entry-doc-1', 'docs-entry-doc-2', 'docs-upload',
+      'docs-header', 'docs-filters', 'docs-entry-analysis', 'docs-entry-doc-1', 'docs-entry-doc-2', 'docs-upload',
     ]);
     expect(screen.queryByTestId('docs-upload-form')).toBeNull();
   });
@@ -998,5 +992,122 @@ describe('#185 R2.3: la lista refresca y vuelve a «Todos» al recibir uploaded'
     await view.rerender(docsView());
     expect(mockListPetDocs).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId('docs-filter-blue').props.accessibilityState).toEqual({ selected: true });
+  });
+});
+
+const originalPlatform = Platform.OS;
+
+function setPlatform(os: string): void {
+  Object.defineProperty(Platform, 'OS', { configurable: true, value: os });
+}
+
+describe('#204 R12: cabecera en contenido', () => {
+  it('#204 R12: pinta volver, eyebrow y nombre en la cabecera en contenido', async () => {
+    await renderDocs();
+    await screen.findByText('Luna');
+    expect(screen.getByTestId('docs-header-back')).toBeTruthy();
+    expect(screen.getByTestId('docs-header-eyebrow')).toHaveTextContent('Documentos de');
+    const title = screen.getByTestId('docs-header-title');
+    expect(title).toHaveTextContent('Luna');
+    expect(title.props.accessibilityRole).toBe('header');
+    expect(title.props.className).toBe('text-26 font-black tracking-title text-foreground');
+  });
+
+  it('#204 R12: mientras carga la mascota el esqueleto ocupa el título', async () => {
+    mockGetPet.mockReturnValue(pending<PetState>());
+    await renderDocs();
+    const header = await screen.findByTestId('docs-header');
+    expect(within(header).getByTestId('docs-header-skeleton')).toBeTruthy();
+    expect(screen.queryByTestId('docs-header-title')).toBeNull();
+  });
+
+  it('#204 R12: sin nombre la cabecera dice Mascota', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'error' });
+    await renderDocs();
+    const title = await screen.findByTestId('docs-header-title');
+    expect(title).toHaveTextContent(es['docs.pet']);
+    expect(screen.queryByTestId('docs-header-skeleton')).toBeNull();
+  });
+
+  it('#204 R12: volver sin historial lleva a Perfil', async () => {
+    jest.mocked(router.canGoBack).mockReturnValue(false);
+    await renderDocs();
+    await screen.findByText('Luna');
+    await fireEvent.press(screen.getByTestId('docs-header-back'));
+    expect(router.replace).toHaveBeenCalledTimes(1);
+    expect(router.replace).toHaveBeenCalledWith('/profile');
+    expect(router.back).not.toHaveBeenCalled();
+  });
+
+  it('#204 R12: usa el marco del canvas sin cabecera nativa', async () => {
+    setPlatform('android');
+    try {
+      await renderDocs();
+      await screen.findByText('Luna');
+      const scroll = screen.getByTestId('screen-docs');
+      expect(scroll.props.contentContainerStyle).toEqual({
+        paddingHorizontal: 20, paddingTop: 52, gap: 14, paddingBottom: 48,
+      });
+      expect(scroll.props.contentInsetAdjustmentBehavior).toBeUndefined();
+      // El teclado no descuenta una cabecera nativa que ya no existe (el fixture sigue dando 91).
+      const host = screen.getByTestId('docs-keyboard-avoider');
+      expect(host.props.keyboardVerticalOffset).toBeUndefined();
+      await fireEvent(host, 'layout', {
+        persist() {},
+        nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 700 } },
+      });
+      await act(async () => {
+        DeviceEventEmitter.emit('keyboardDidShow', {
+          startCoordinates: { screenX: 0, screenY: 800, width: 400, height: 0 },
+          endCoordinates: { screenX: 0, screenY: 500, width: 400, height: 300 },
+          duration: 0, easing: 'keyboard', isEventFromThisApp: true,
+        });
+      });
+      await waitFor(() => expect(screen.getByTestId('docs-keyboard-avoider')).toHaveStyle({ paddingBottom: 200 }));
+    } finally {
+      setPlatform(originalPlatform);
+    }
+  });
+});
+
+describe('#204 R13: estados de Documentos bajo la cabecera', () => {
+  it.each([
+    ['cargando', 'docs-list-skeleton'],
+    ['vacío', 'docs-empty'],
+    ['en error', 'docs-error'],
+    ['con filas', 'doc-doc-1'],
+  ] as const)('#204 R13: la cabecera encabeza el estado %s', async (state, node) => {
+    if (state === 'cargando') mockListPetDocs.mockReturnValue(pending<PetDocsState>());
+    else if (state === 'vacío') mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [] });
+    else if (state === 'en error') mockListPetDocs.mockResolvedValue({ kind: 'error' });
+    await renderDocs();
+    await screen.findByTestId(node);
+    const order = within(screen.getByTestId('screen-docs'))
+      .getAllByTestId(new RegExp(`^(docs-header|${node})$`))
+      .map(({ props }) => props.testID);
+    expect(order).toEqual(['docs-header', node]);
+  });
+});
+
+describe('#204 R14: entrada de las filas de Documentos', () => {
+  it('#204 R14: escalona las filas 0, 60 y 120 ms con RiseIn', async () => {
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [
+      { ...docOne, id: 'third' },
+      { ...docOne, id: 'first' },
+      { ...docOne, id: 'second' },
+    ] });
+    await renderDocs();
+    await screen.findByTestId('doc-third');
+    const delayById = new Map(
+      mockRiseIn.mock.calls
+        .map(([props]) => props)
+        .filter((props) => props.testID?.startsWith('docs-entry-'))
+        .map((props) => [props.testID, props.delayMs] as const),
+    );
+    expect([...delayById]).toEqual([
+      ['docs-entry-third', 0],
+      ['docs-entry-first', 60],
+      ['docs-entry-second', 120],
+    ]);
   });
 });

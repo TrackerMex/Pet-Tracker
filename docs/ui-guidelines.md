@@ -937,6 +937,20 @@ Detalle y tests en `specs/mobile-canvas-collar-alerts/requirements.md` (R6 y R7)
 - [X] Enmienda #203 aprobada por humano
   Firma delegada en el leader por mandato del humano del 2026-10-23 (`progress/plan_canvas-parity-2026-10-23.md` §4), igual que la de `specs/mobile-canvas-collar-alerts/requirements.md` § Aprobación.
 
+## Enmienda #204 — rutina en el canvas: Recordatorios, Agregar recordatorio y Documentos
+
+Fecha: 2026-10-23. Feature #204 `mobile-canvas-routine`. Lleva las tres pantallas a sus artboards del canvas.
+
+1. **Entrada `rise` fuera de Inicio.** Las filas de Recordatorios y de Documentos entran con `RiseIn` (`MOTION_RISE_TIMING`, `MOTION_RISE_OFFSET_Y`), escalonadas por índice: Recordatorios con `MOTION_REMINDERS_STAGGER_MS` (70 ms) y Documentos con `MOTION_STAGGER_MS` (60 ms). Bajo reduce motion no hay entrada.
+2. **«Eliminar» de la hoja de borrado de recordatorio.** Sale de «Sin labio» (regla 13): `h-14 w-full rounded-16 bg-danger` con `style={chunkyLip.danger}` y etiqueta `Text` 17/800 `text-danger-foreground`. Con «Cancelar» (56 px, 17/800, labio `neutral`) el par de la hoja queda simétrico: sustituye el «par asimétrico» de la Enmienda #177 para esta hoja. Los demás destructivos siguen sin labio.
+3. **«Eliminar» de fila de recordatorio.** Tonal y sin labio: `h-11 rounded-14 px-2.5` sobre `CATEGORY_SLOTS.rose.surface`, `variant="danger-soft"` y etiqueta `Text` 13/800 `text-danger`.
+4. **Ámbar de la fila próxima.** Borde `border-2 border-category-amber` y badge con `CATEGORY_SLOTS.amber.surface` y `CATEGORY_SLOTS.amber.ink`; Recordatorios deja `warning-soft` y `warning-strong` para este uso.
+
+Detalle y tests en `specs/mobile-canvas-routine/requirements.md` (R1 a R18).
+
+- [X] Enmienda #204 aprobada por humano
+  Firma delegada en el leader por mandato del humano del 2026-10-23 (`progress/plan_canvas-parity-2026-10-23.md` §4), igual que la de `specs/mobile-canvas-routine/requirements.md` § Aprobación.
+
 ## Enmienda #206 — barra de pestañas fiel al canvas
 
 Fecha: 2026-10-23. Feature #206 `mobile-canvas-tab-bar`. Excepción nombrada a D-I.
