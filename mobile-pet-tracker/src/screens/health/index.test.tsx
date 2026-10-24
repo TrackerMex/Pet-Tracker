@@ -1081,7 +1081,7 @@ describe('#168 R3: cada vacuna lleva su tile pastel', () => {
     { id: 'next', surface: 'size-10 items-center justify-center rounded-xl bg-category-amber', icon: 'health-icon-clock', color: 'category-amber-strong', texts: ['Próxima', '2026-01-02', '2026-03-31'], dateClass: 'font-normal text-muted' },
     { id: 'future', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Futura', '2026-01-03', '2026-04-02'], dateClass: 'font-normal text-muted' },
     { id: 'completed', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Sin próxima dosis', '2026-01-04'], dateClass: 'font-normal text-muted' },
-  ])('pinta el estado de $id con su icono y textos', async ({ id, surface, icon, color, texts, dateClass }) => {
+  ])('pinta el estado de $id con su icono y textos (enmendado por #199 R16)', async ({ id, surface, icon, color, texts, dateClass }) => {
     await renderHealth();
     const row = await screen.findByTestId(`vaccine-row-${id}`);
     const scope = within(row);
@@ -1105,7 +1105,7 @@ describe('#168 R3: cada vacuna lleva su tile pastel', () => {
     texts.forEach((text, index) => {
       const node = within(column).getByText(text);
       expect(elementChild(column, index)).toBe(node);
-      expect(node.props.className).toBe(index === 0 ? 'font-bold text-foreground' : index === 1 ? 'font-normal text-muted' : dateClass);
+      expect(node.props.className).toBe(index === 0 ? 'text-15 font-extrabold text-foreground' : index === 1 ? 'font-normal text-muted' : dateClass);
     });
   });
 });
@@ -1258,5 +1258,28 @@ describe('#199 R15: título de Vacunas', () => {
   it('#199 R15 vaccines-section separa sus hijos con gap-2.5', async () => {
     await renderHealth();
     expect((await screen.findByTestId('vaccines-section')).props.className).toBe('gap-2.5');
+  });
+});
+
+
+describe('#199 R16: filas de vacunas', () => {
+  beforeEach(() => {
+    setupHealth168();
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [0, 1, 2, 3].map(index => makeVaccine({ id: `vax-${index}`, name: `Vacuna ${index}`, nextDoseAt: null })) });
+  });
+  it('#199 R16 cada vacuna es un Card flat con py-3.5 y nombre text-15 font-extrabold', async () => {
+    await renderHealth();
+    const row = await screen.findByTestId('vaccine-row-vax-0');
+    expect(row.props.className).toBe('rounded-card border border-border bg-surface px-3.5 flex-row items-center gap-3 py-3.5');
+    const name = within(row).getByText('Vacuna 0');
+    expect(name.type).toBe('Text');
+    expect(name.props.className).toBe('text-15 font-extrabold text-foreground');
+    const tile = screen.getByTestId('vaccine-tile-vax-0', { includeHiddenElements: true });
+    expect(tile.props.className).toBe('size-10 items-center justify-center rounded-xl bg-category-green');
+    expect(within(tile).getByTestId('health-icon-check', { includeHiddenElements: true }).props.size).toBe(20);
+  });
+  it.each([[0, 80], [1, 140], [2, 200], [3, 200]])('#199 R16 la fila %i entra a los %i ms', async (index, delay) => {
+    await renderHealth();
+    expect(riseDelayOf(await screen.findByTestId(`vaccine-row-vax-${index}`))).toBe(delay);
   });
 });

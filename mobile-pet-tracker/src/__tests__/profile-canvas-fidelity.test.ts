@@ -100,8 +100,8 @@ describe('#173 R3: Card hero y flat solo en Perfil', () => {
     const profile = readFileSync(join(sourceRoot, 'screens/profile/index.tsx'), 'utf8');
     expect(profile.match(/variant="hero"/g)).toHaveLength(1);
   });
-  it('Perfil es el único consumidor de Card flat y lo usa dos veces (enmendado por #199 R7)', () => {
-    expect(filesMatching(/variant="flat"/)).toEqual(['screens/meal-schedule/index.tsx', 'screens/profile/index.tsx', 'screens/weight-log/index.tsx']); // #179 R6; #199 R7
+  it('Perfil es el único consumidor de Card flat y lo usa dos veces (enmendado por #199 R7) (enmendado por #199 R16)', () => {
+    expect(filesMatching(/variant="flat"/)).toEqual(['screens/health/index.tsx', 'screens/meal-schedule/index.tsx', 'screens/profile/index.tsx', 'screens/weight-log/index.tsx']); // #179 R6; #199 R7; #199 R16
     const profile = readFileSync(join(sourceRoot, 'screens/profile/index.tsx'), 'utf8');
     expect(profile.match(/variant="flat"/g)).toHaveLength(2);
   });
