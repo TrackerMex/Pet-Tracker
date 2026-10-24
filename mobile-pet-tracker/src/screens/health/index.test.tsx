@@ -854,7 +854,7 @@ describe('#115 R6: la próxima vacuna dice fecha y días restantes', () => {
     { row: 'd', language: 'es', tz: 'UTC', now: '2027-01-30 12:00', past: '2027-01-29', next: '2027-02-03', days: '4 d', label: 'Faltan 4 días', date: '3 de febrero · en 4 días' },
     { row: 'e', language: 'es', tz: 'UTC', now: '2026-12-31 12:00', past: undefined, next: '2027-12-31', days: '365 d', label: 'Faltan 365 días', date: '31 de diciembre · en 365 días' },
     { row: 'f', language: 'en', tz: 'UTC', now: '2026-12-31 12:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'In 2 days', date: 'January 2 · in 2 days' },
-    { row: 'g', language: 'en', tz: 'UTC', now: '2027-01-01 12:00', past: '2026-12-31', next: '2027-01-01', days: 'Today', label: undefined, date: 'January 1 · today' },
+    { row: 'g', language: 'en', tz: 'UTC', now: '2027-01-01 12:00', past: '2026-12-31', next: '2027-01-01', days: 'Today', label: undefined, date: 'January 1 · due today' },
     { row: 'h', language: 'es', tz: 'America/Mexico_City', now: '2026-12-31 20:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'Faltan 2 días', date: '2 de enero · en 2 días' },
     { row: 'i', language: 'es', tz: 'UTC', now: '2026-12-31 06:00', past: '2026-12-30', next: '2026-12-31', days: 'Hoy', label: undefined, date: '31 de diciembre · hoy' },
     { row: 'j', language: 'es', tz: 'UTC', now: '2026-12-31 06:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'Faltan 2 días', date: '2 de enero · en 2 días' },
@@ -862,7 +862,7 @@ describe('#115 R6: la próxima vacuna dice fecha y días restantes', () => {
     { row: 'l', language: 'es', tz: 'Pacific/Auckland', now: '2027-01-01 10:00', past: '2026-12-31', next: '2027-01-03', days: '2 d', label: 'Faltan 2 días', date: '3 de enero · en 2 días' },
     { row: 'm', language: 'es', tz: 'America/New_York', now: '2027-11-06 12:00', past: '2027-11-05', next: '2027-11-08', days: '2 d', label: 'Faltan 2 días', date: '8 de noviembre · en 2 días' },
     { row: 'n', language: 'es', tz: 'UTC', now: '2026-12-31 12:00', past: '2026-12-30', next: '2027-01-01', days: '1 d', label: 'Faltan 1 días', date: '1 de enero · mañana' },
-  ] as const)('fila $row: hoy $now, próxima $next (enmendado por #199 R14)', async ({ language, tz, now, past, next, days, label, date }) => {
+  ] as const)('fila $row: hoy $now, próxima $next (enmendado por #199 R14) (enmendado por #199 R25)', async ({ language, tz, now, past, next, days, label, date }) => {
     // Jest copies process.env; Node's environment makes Date observe TZ.
     const hostProcess = process.getBuiltinModule('process');
     const previousTZ = hostProcess.env.TZ;
