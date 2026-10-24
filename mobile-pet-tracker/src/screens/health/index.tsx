@@ -11,6 +11,7 @@ import { healthKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
 import { PetSwitcher } from '../../components/pet-switcher';
+import { RiseIn } from '../../components/rise-in';
 import { WeightChart } from '../../components/weight-chart';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
@@ -23,7 +24,7 @@ import {
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
-import { calendarDaysUntil, fmtDate } from '../home/format';
+import { calendarDaysUntil, fmtDate, fmtDayMonthLong } from '../home/format';
 
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -108,6 +109,27 @@ export function HealthScreen() {
       </View>
       {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
           <View testID="health-content" style={{ gap: 16 }}>
+            {nextVaccine ? (
+              <RiseIn delayMs={0}>
+                <View testID="next-vaccine-card" className={`flex-row items-center gap-3.5 rounded-24 p-4 ${CATEGORY_SLOTS.amber.surface}`} style={CONTINUOUS_CORNER}>
+                  <View className="size-13 items-center justify-center rounded-16 bg-surface" style={CONTINUOUS_CORNER}>
+                    <Syringe size={26} strokeWidth={2.2} color={warning} />
+                  </View>
+                  <View className="flex-1 gap-0.5">
+                    <Text className={`text-xs font-extrabold uppercase tracking-caps ${CATEGORY_SLOTS.amber.ink}`}>
+                      {t('health.nextDue')}
+                    </Text>
+                    <Text className="text-lg font-black text-foreground">{nextVaccine.name}</Text>
+                    <Text testID="next-vaccine-date" className={`text-13 font-semibold ${CATEGORY_SLOTS.amber.ink}`}>
+                      {`${fmtDayMonthLong(nextVaccine.nextDoseAt!, locale)} · ${days === 0 ? t('health.nextDoseToday') : days === 1 ? t('health.nextDoseTomorrow') : t('health.nextDoseInDays', { days })}`}
+                    </Text>
+                  </View>
+                  <Text testID="next-vaccine-days" className={`text-28 font-black ${CATEGORY_SLOTS.amber.ink}`} style={TABULAR_NUMS} accessibilityLabel={days > 0 ? t('home.nextVaccineDaysLeft', { days }) : undefined}>
+                    {days === 0 ? t('home.nextVaccineToday') : t('home.nextVaccineDays', { days })}
+                  </Text>
+                </View>
+              </RiseIn>
+            ) : null}
 
             {selectedPetId ? (
               <View testID="vaccines-section" className="gap-3">
@@ -123,43 +145,6 @@ export function HealthScreen() {
                     testID="vaccines-skeleton"
                     className="h-24 w-full rounded-card"
                   />
-                ) : null}
-
-                {nextVaccine ? (
-                  <Card
-                    testID="next-vaccine-card"
-                    className="flex-row items-center gap-3"
-                  >
-                    <View
-                      className="size-11 items-center justify-center rounded-xl bg-warning-soft"
-                      style={CONTINUOUS_CORNER}
-                    >
-                      <Syringe size={22} color={warning} />
-                    </View>
-                    <View className="flex-1 gap-1">
-                      <Text className="text-2xs font-semibold text-warning-strong">
-                        {t('health.nextDue')}
-                      </Text>
-                      <Text className="font-bold text-foreground">
-                        {nextVaccine.name}
-                      </Text>
-                      <Text testID="next-vaccine-date" className="font-normal text-muted">
-                        {fmtDate(nextVaccine.nextDoseAt!, locale)}
-                      </Text>
-                    </View>
-                    <Text
-                      testID="next-vaccine-days"
-                      className="text-lg font-black text-warning-strong"
-                      style={TABULAR_NUMS}
-                      accessibilityLabel={
-                        days > 0 ? t('home.nextVaccineDaysLeft', { days }) : undefined
-                      }
-                    >
-                      {days === 0
-                        ? t('home.nextVaccineToday')
-                        : t('home.nextVaccineDays', { days })}
-                    </Text>
-                  </Card>
                 ) : null}
 
                 {vaccines.data?.kind === 'ok' && vaccines.data.vaccines.length === 0 ? (
