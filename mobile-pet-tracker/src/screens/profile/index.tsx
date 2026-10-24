@@ -19,7 +19,7 @@ import type { PetProfile } from '../../api/types';
 import { getMe } from '../../api/users';
 import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
-import { PetAvatar } from '../../components/pet-avatar';
+import { PetHeroHeader } from '../../components/pet-hero-header';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useNotificationsBlocked } from '../../hooks/use-push-registration';
@@ -30,11 +30,13 @@ import {
   useTranslate,
 } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { useChunkyLip } from '../../theme/chunky-lip';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeTransition } from '../../theme/theme-transition';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS, type CategorySlot } from '../../utils/category-palette';
+import { BubblePop } from '../home/bubble-pop';
 import { HomeEntrance } from '../home/home-entrance';
 
 function formatLastSignal(
@@ -102,7 +104,7 @@ function PetPills({ pet }: { pet: PetProfile }) {
   ];
 
   return (
-    <View testID="profile-pet-chips" className="flex-row flex-wrap justify-center gap-1.5">
+    <View testID="profile-pet-chips" className="flex-row flex-wrap gap-1.5">
       {pills.filter(({ text }) => text !== null).map((pill) => (
         <View key={pill.testID} testID={pill.testID} className={`rounded-full px-2.5 py-1.25 ${CATEGORY_SLOTS[pill.slot].surface}`}>
           <Text className={`text-xs font-extrabold ${CATEGORY_SLOTS[pill.slot].ink}`}>{pill.text}</Text>
@@ -152,6 +154,7 @@ export function ProfileScreen() {
   const { theme } = useUniwind();
   const switchTheme = useThemeTransition();
   const insets = useSafeAreaInsets();
+  const chunkyLip = useChunkyLip();
   const [blue, green, amber, violet, accentStrong, accentForeground] = useThemeColors(['category-blue-strong', 'category-green-strong', 'category-amber-strong', 'category-violet-strong', 'accent-strong', 'accent-foreground']);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
@@ -187,6 +190,7 @@ export function ProfileScreen() {
   );
 
   const pet = detail.data?.kind === 'ok' ? detail.data.pet : null;
+  const showHero = pets.data === undefined || (pets.data.kind === 'ok' && pets.data.pets.length > 0);
   const petsEmpty = pets.data?.kind === 'ok' && pets.data.pets.length === 0;
   const petLoading = (pets.data === undefined || (selectedPetId !== null && detail.data === undefined)) && !petsEmpty;
   const initials = me.data?.kind === 'ok'
@@ -272,12 +276,45 @@ export function ProfileScreen() {
       className="flex-1 bg-background"
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{
-        padding: 20,
         gap: 14,
-        paddingTop: insets.top + 12,
         paddingBottom: insets.bottom + 96,
       }}
     >
+      {showHero ? (
+        <View testID="profile-hero" className="relative">
+          <PetHeroHeader
+            pet={pet}
+            variant="bleed"
+            caption={pet ? (
+              <View testID="profile-pet-card" className="min-w-0 flex-1 gap-2.5 px-1">
+                <Text testID="profile-pet-name" className="text-3xl font-black leading-8.5 tracking-display text-foreground">
+                  {pet.name}
+                </Text>
+                <PetPills pet={pet} />
+              </View>
+            ) : undefined}
+          >
+          </PetHeroHeader>
+          {pet ? (
+            <BubblePop testID="profile-change-photo-pop" className="absolute bottom-24 right-5">
+              <Pressable
+                testID="change-photo"
+                accessibilityRole="button"
+                accessibilityLabel={t('profile.changePhoto')}
+                accessibilityState={{ disabled: photoUploading }}
+                disabled={photoUploading}
+                hitSlop={TOUCH_SLOP}
+                className="size-11 items-center justify-center rounded-full border-3 border-background bg-accent"
+                style={chunkyLip.primary}
+                onPress={() => void handleChangePhoto()}
+              >
+                <Camera size={18} strokeWidth={2.4} color={accentForeground} />
+              </Pressable>
+            </BubblePop>
+          ) : null}
+        </View>
+      ) : null}
+      <View testID="profile-content" className="gap-3.5 px-5" style={showHero ? undefined : { paddingTop: insets.top + 12 }}>
       <View className="flex-row items-center justify-between gap-3">
         <Text testID="profile-title" className="text-3xl font-black tracking-title text-foreground">
           {t('profile.profile')}
@@ -343,7 +380,6 @@ export function ProfileScreen() {
 
       {petLoading ? (
         <>
-          <Skeleton testID="profile-hero-skeleton" className="h-52 w-full rounded-hero" />
           <Skeleton testID="pet-info-skeleton" className="h-52 w-full rounded-card" />
         </>
       ) : null}
@@ -362,27 +398,6 @@ export function ProfileScreen() {
 
       {pet ? (
         <>
-          <HomeEntrance index={0} testID="profile-entrance-hero"><Card variant="hero" testID="profile-pet-card" className="items-center gap-2.5">
-            <View testID="profile-pet-avatar-ring" className="relative rounded-full border-4 border-surface">
-              <PetAvatar name={pet.name} photoUrl={pet.photoUrl} cacheKey={pet.id} size={96} testID="profile-pet-avatar" />
-              <Pressable
-                testID="change-photo"
-                accessibilityRole="button"
-                accessibilityLabel={t('profile.changePhoto')}
-                accessibilityState={{ disabled: photoUploading }}
-                disabled={photoUploading}
-                hitSlop={TOUCH_SLOP}
-                className="absolute -bottom-0.5 -right-0.5 size-8.5 items-center justify-center rounded-full border-3 border-surface-secondary bg-accent"
-                onPress={() => void handleChangePhoto()}
-              >
-                <Camera size={16} color={accentForeground} />
-              </Pressable>
-            </View>
-            <Text testID="profile-pet-name" className="text-26 font-black text-foreground">
-              {pet.name}
-            </Text>
-            <PetPills pet={pet} />
-          </Card></HomeEntrance>
           {photoError ? (
             <Text testID="photo-upload-error" className="text-danger">
               {photoError}
@@ -518,6 +533,7 @@ export function ProfileScreen() {
           {t('profile.signOut')}
         </Button.Label>
       </Button>
+      </View>
     </ScrollView>
   );
 }
