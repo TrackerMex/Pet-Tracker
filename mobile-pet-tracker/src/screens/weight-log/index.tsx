@@ -57,30 +57,10 @@ function fmtVariation(variation: number | null): string {
 }
 
 function weightTone(variation: number | null) {
-  if (variation !== null && variation > 0) {
-    return {
-      tileClassName: 'bg-danger-soft',
-      rowClassName: 'text-xs font-semibold text-danger',
-      summaryClassName: 'text-sm font-semibold text-danger',
-      Icon: TrendUp,
-      color: 'danger' as const,
-    };
-  }
-  if (variation !== null && variation < 0) {
-    return {
-      tileClassName: 'bg-success-soft',
-      rowClassName: 'text-xs font-semibold text-success',
-      summaryClassName: 'text-sm font-semibold text-success',
-      Icon: TrendDown,
-      color: 'success' as const,
-    };
-  }
+  const direction = variation !== null && variation > 0 ? 'up' : variation !== null && variation < 0 ? 'down' : 'flat';
   return {
-    tileClassName: 'bg-default',
-    rowClassName: 'text-xs font-semibold text-muted',
-    summaryClassName: 'text-sm font-semibold text-muted',
-    Icon: Minus,
-    color: 'muted' as const,
+    ...DELTA_TONE[direction],
+    Icon: direction === 'up' ? TrendUp : direction === 'down' ? TrendDown : Minus,
   };
 }
 
@@ -90,10 +70,11 @@ function isWeightsError(state: WeightsState): boolean {
 
 function WeightLogContent({ petId }: { petId: string }) {
   const chunkyLip = useChunkyLip();
-  const [success, danger, muted] = useThemeColors([
+  const [success, danger, muted, accentStrong] = useThemeColors([
     'success',
     'danger',
     'muted',
+    'accent-strong',
   ]);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
@@ -123,8 +104,8 @@ function WeightLogContent({ petId }: { petId: string }) {
   });
   const entries = weights.data?.kind === 'ok' ? weights.data.weights : [];
   const monthDelta = monthlyWeightDelta(entries, civilTodayIso(profileTimeZone));
-  const monthTone = DELTA_TONE[monthDelta !== null && monthDelta > 0 ? 'up' : monthDelta !== null && monthDelta < 0 ? 'down' : 'flat'];
-  const toneColors = { success, danger, muted };
+  const monthTone = weightTone(monthDelta);
+  const toneColors = { danger, muted, 'accent-strong': accentStrong };
 
   async function handleSubmit() {
     setFormError(null);
@@ -334,7 +315,8 @@ function WeightLogContent({ petId }: { petId: string }) {
 
         {weights.data?.kind === 'ok'
           ? weights.data.weights.map((entry, index) => {
-              const { tileClassName, rowClassName, Icon, color } = weightTone(entry.variation);
+              const { tile: tileClassName, text, Icon, color } = weightTone(entry.variation);
+              const rowClassName = `text-13 ${text}`;
 
               return (
                 <RiseIn key={entry.id} delayMs={140 + 60 * Math.min(index, 2)}>
@@ -344,29 +326,20 @@ function WeightLogContent({ petId }: { petId: string }) {
                 >
                   <View
                     testID={`weight-row-${entry.id}-tone`}
-                    className={`size-8 shrink-0 items-center justify-center rounded-xl ${tileClassName}`}
+                    className={`size-9 shrink-0 items-center justify-center rounded-xl ${tileClassName}`}
                     style={CONTINUOUS_CORNER}
                   >
-                    <Icon size={15} color={toneColors[color]} />
+                    <Icon size={18} color={toneColors[color]} />
                   </View>
                   <View className="min-w-0 flex-1 gap-1">
-                    <View className="flex-row items-baseline gap-1.5">
-                      <Text
-                        className="font-bold text-foreground"
-                        style={TABULAR_NUMS}
-                      >
-                        {entry.weightKg} kg
-                      </Text>
-                      <Text
-                        testID={`weight-row-${entry.id}-delta`}
-                        className={rowClassName}
-                        style={TABULAR_NUMS}
-                      >
+                    <Text className="text-15 font-extrabold text-foreground" style={TABULAR_NUMS}>
+                      {`${entry.weightKg} kg `}
+                      <Text testID={`weight-row-${entry.id}-delta`} className={rowClassName} style={TABULAR_NUMS}>
                         {fmtVariation(entry.variation)}
                       </Text>
-                    </View>
+                    </Text>
                     {entry.bodyCondition !== null ? (
-                      <Text className="text-xs font-normal text-muted">
+                      <Text className="text-xs text-muted">
                         {t('weightLog.bodyConditionValue', {
                           value: entry.bodyCondition,
                         })}
