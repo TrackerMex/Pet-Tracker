@@ -1,7 +1,7 @@
 ---
 feature: mobile-canvas-collar-alerts
 id: 203
-status: spec_ready
+status: approved
 depends_on: [197]
 canvas: 1792777983-cd94
 ---
@@ -634,6 +634,9 @@ de implementación.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____)
-- [ ] Enmienda #203 a la carta (`docs/ui-guidelines.md`) aprobada por humano (fecha: ____)
+- [x] Aprobado por humano (fecha: 2026-10-23)
+  Firma delegada en el leader por mandato del humano del 2026-10-23
+  (`progress/plan_canvas-parity-2026-10-23.md` §4, checklist de firma pasada). Firmada el 2026-10-24 tras la auditoría de inventario (c3286269, 20c084ba).
+- [x] Enmienda #203 a la carta (`docs/ui-guidelines.md`) aprobada por humano (fecha: 2026-10-23)
+  Firma delegada, mismo mandato.
 - [ ] Smoke de R2, R3, R4, R5, R6, R7, R8, R9, R10, R11 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)

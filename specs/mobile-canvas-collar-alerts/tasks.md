@@ -1,7 +1,7 @@
 ---
 feature: mobile-canvas-collar-alerts
 id: 203
-status: spec_ready
+status: approved
 ---
 
 # #203 mobile-canvas-collar-alerts — Tareas (TDD)
