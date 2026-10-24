@@ -596,7 +596,7 @@ describe('R8: stats calculadas de positions y trips', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('uses the latest speed, trip total, fresh age, and live GPS', async () => {
+  it('uses the latest speed, trip total, fresh age, and live GPS (enmendado por #201 R1)', async () => {
     mockGetLastPosition.mockResolvedValue({
       kind: 'ok',
       position: makeLastPosition({ staleSeconds: 15 }),
@@ -623,14 +623,12 @@ describe('R8: stats calculadas de positions y trips', () => {
       expect(screen.getByTestId('stat-updated')).toHaveTextContent('Justo ahora');
       expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent('GPS activo');
     });
-    expect(screen.getByTestId('map-stats').props.style).toEqual(
-      expect.objectContaining({
-        position: 'absolute',
-        left: 16,
-        right: 16,
-        bottom: 120,
-      }),
-    );
+    expect(screen.getByTestId('map-stats')).toHaveStyle({
+      position: 'absolute',
+      left: 16,
+      right: 16,
+      bottom: 120,
+    });
   });
 
   it('#94 R2: la antigüedad de la posición ya no mueve el tile de conexión', async () => {
@@ -1210,7 +1208,7 @@ describe('#61 R11: el overlay de stats reparte los cuatro tiles en 2x2 sin envol
     ]);
   });
 
-  it('conserva los cuatro tiles, su orden de lectura y el overlay absoluto', async () => {
+  it('conserva los cuatro tiles, su orden de lectura y el overlay absoluto (enmendado por #201 R1)', async () => {
     mockGetLastPosition.mockResolvedValue({
       kind: 'ok',
       position: makeLastPosition({ staleSeconds: 15 }),
@@ -1227,14 +1225,12 @@ describe('#61 R11: el overlay de stats reparte los cuatro tiles en 2x2 sin envol
     expect(screen.getByText('Distancia')).toBeVisible();
     expect(screen.getByText('Actualizado')).toBeVisible();
     expect(screen.getByText('Batería')).toBeVisible();
-    expect(screen.getByTestId('map-stats').props.style).toEqual(
-      expect.objectContaining({
-        position: 'absolute',
-        left: 16,
-        right: 16,
-        bottom: 120,
-      }),
-    );
+    expect(screen.getByTestId('map-stats')).toHaveStyle({
+      position: 'absolute',
+      left: 16,
+      right: 16,
+      bottom: 120,
+    });
   });
 });
 
