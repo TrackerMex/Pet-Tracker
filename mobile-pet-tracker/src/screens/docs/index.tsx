@@ -18,9 +18,11 @@ import { getPet } from '../../api/pets';
 import { mediaKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
+import { RiseIn } from '../../components/rise-in';
 import { ScreenHeader } from '../../components/screen-header';
 import { useAuth } from '../../providers/auth-provider';
 import { useLocale, useTranslate } from '../../providers/language-provider';
+import { MOTION_STAGGER_MS } from '../../theme/motion';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -30,7 +32,6 @@ import {
   type CategorySlot,
 } from '../../utils/category-palette';
 import { fmtDate } from '../home/format';
-import { HomeEntrance } from '../home/home-entrance';
 
 const FILTER_SLOTS = [
   { slot: 'blue', labelKey: 'docs.categoryVaccination' },
@@ -220,9 +221,9 @@ export function DocsScreen({ petId, uploaded }: { petId: string; uploaded?: stri
               })}
             </View>
             {visibleDocs.map((document, index) => (
-              <HomeEntrance key={document.id} index={index} testID={`docs-entry-${document.id}`}>
+              <RiseIn key={document.id} delayMs={index * MOTION_STAGGER_MS} testID={`docs-entry-${document.id}`}>
                 <DocumentRow document={document} onPress={() => openDocument(document)} />
-              </HomeEntrance>
+              </RiseIn>
             ))}
           </>
         ) : null}
