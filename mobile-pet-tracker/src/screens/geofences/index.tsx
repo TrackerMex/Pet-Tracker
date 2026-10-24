@@ -4,7 +4,8 @@ import { router } from 'expo-router';
 import { Button, Skeleton, Switch } from 'heroui-native';
 import { useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
-import { AlertCircle, Map, Trash } from 'reicon-react-native';
+import { AlertCircle, Trash } from 'reicon-react-native';
+import Svg, { Circle } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { GEOFENCE_MAX_PER_PET, deleteGeofence, listGeofences, setGeofenceActive, type Geofence, type GeofenceWriteState } from '../../api/geofences';
@@ -114,7 +115,10 @@ export function GeofencesScreen({ petId }: { petId: string }) {
           const slot = zoneCategory(position);
           const tile = <View testID={`geofence-${geofence.id}-tile`} className={`size-11 items-center justify-center rounded-14 ${CATEGORY_SLOTS[slot].surface}`}
             style={CONTINUOUS_CORNER} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
-            <Map size={22} color={categoryColors[position % 5]} />
+            <Svg testID={`geofence-${geofence.id}-glyph`} width={22} height={22} viewBox="0 0 24 24" fill="none" stroke={categoryColors[position % 5]} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+              <Circle cx={12} cy={12} r={9} strokeDasharray="3 3" />
+              <Circle cx={12} cy={12} r={2.5} />
+            </Svg>
           </View>;
           const nameAndRadius = <View className="min-w-0 flex-1">
             <Text testID={`geofence-${geofence.id}-name`} selectable={!isOwner} className="text-base font-extrabold text-foreground">{geofence.name}</Text>
