@@ -1257,3 +1257,40 @@ Se completan los pasos autorizados de cierre. No queda ningún R de implementaci
 - **Límite de cierre:** el leader ejecuta init.sh y gestiona feature_list/STATUS/progress. El humano conserva los seis smokes Android en claro y oscuro listados arriba. No se marca ninguna de esas comprobaciones manuales como realizada.
 
 El commit final pedido es `docs(#199): record health and weight implementation and verification`, únicamente con este reporte y traceability.md. El handoff no entra. No se ejecutó init.sh, push, PR ni rebase. El único merge de la sesión fue el de origin/dev aceptado en Reanudación 2.
+
+## Merge de dev (#198) — 2026-10-24
+
+Merge de `origin/dev` (`329c613c`, recién recibido #198 mobile-canvas-home) sobre la feature (`d49e10da`). Base común: `6bbd0485`. Commit de merge: `d80357d0`. Regla aplicada: «dev + delta de #199». No se borró nada de ninguno de los dos lados y no se tocó código de producción.
+
+**Conflictos.** 15 hunks en 7 ficheros de test, que salen 17 al recrearlos con `git checkout --conflict=diff3` para ver la base. En los títulos `it(...)` se dejan las etiquetas `(enmendado por …)` de los dos lados: primero las de #199, luego las de #198. En las listas literales se unen las filas de los dos lados.
+
+| Fichero | Resolución |
+|---|---|
+| `alerts-canvas-fidelity.test.ts` | título: + `(enmendado por #198 R9, R15)` |
+| `chunky-cta-canvas-fidelity.test.ts` | título: + `(enmendado por #198 R9)`; cuenta de `rounded-16` (abajo) |
+| `consistency-classnames.test.ts` | 3 títulos: + `#198 R2` / `#198 R2, R3, R4, R11, R13`; 2 sumas de `style={CONTINUOUS_CORNER}` (abajo) |
+| `design-drift.test.ts` | título: + `(enmendado por #198 R9)` |
+| `legibility-classnames.test.ts` | `inkSites`: home `3` (#198 R4), health `0` (#199 R18); se mantiene el `?? []` de #199, necesario con 0 apariciones; se mantiene también la aserción extra que añadió dev en «suma las trece» (Σ real = Σ declarada); suma total (abajo) |
+| `profile-canvas-fidelity.test.ts` | título: + `(enmendado por #198 R5)`; inventario de `text-13`: entran `screens/health/index.tsx` (#199 R14) y `screens/home/index.tsx` (#198 R5), en orden alfabético (`he` < `ho`), como pide el `toEqual` sobre `filesMatching` |
+| `language-provider.test.tsx` | título: + `(enmendado por #198 R15)`; número de claves (abajo) |
+
+**Cifras agregadas** (base → dev → #199 → resultado = dev + (#199 − base)):
+
+- `chunky-cta` `count(/\brounded-16\b/g)`: 33 → 34 → 34 → **35** (34 + 1).
+- `consistency-classnames` `directUses.reduce(... , 2)`: 47 → 51 → 50 → **54** (51 + 3).
+- `consistency-classnames` `count(/style=\{CONTINUOUS_CORNER\}/g)`: 45 → 49 → 48 → **52** (49 + 3).
+- `legibility-classnames` suma de `text-accent-strong`: 21 → 22 → 21 → **22** (22 + 0; #199 suma +1 en R4 y resta −1 en R18).
+- `language-provider` `englishKeys`: 443 → 445 → 450 → **452** (445 + 7).
+
+**Ficheros que se fusionaron solos.** Se revisaron por si había duplicados o cifras que se desviaban:
+- `ui-copy-table.ts`: dev cambia en R3_HOME 1 fila por 2 (`common.somethingWentWrong` → `home.loadPetsErrorTitle`/`Body`, #198 R15). #199 mueve `weightLog.weightLog` de `src/app/_layout.tsx` a `screens/weight-log` y añade 7 filas en R5_HEALTH. Los dos lados tocan bloques distintos. No hay filas duplicadas.
+- `ui-language.test.ts`: `R3_HOME` +1 (dev) y `R5_HEALTH` +7 (#199) ya están, cada cifra en su propio `it`. `SCREEN_FILES` da 37 en la base, 37 en dev y 36 en #199, así que el resultado es **36** (37 + (36 − 37)): dev no añade fichero, porque `screens/home/index.tsx` ya estaba, y #199 saca `_layout.tsx`. El merge automático ya lo deja así. Ningún test comprueba la longitud de `ALL_USES`. De los otros consumidores de `ui-copy-table`, solo `no-pets-states` importa filas (R7/R8), y no las toca ninguno de los dos lados.
+- `i18n/catalog.ts`: dev añade 2 claves `home.loadPetsError*` en `en` y en `es`, #199 añade 7. No hay claves duplicadas en ninguno de los dos bloques. La cifra de 452 la confirma el test de `language-provider` en verde.
+
+**Verificación** (desde `mobile-pet-tracker/`, sin `init.sh`):
+1. `grep -rn '^<<<<<<<\|^>>>>>>>' src`: no imprime nada.
+2. `bun run typecheck`: exit 0.
+3. `bunx jest --runInBand` con los 7 ficheros en conflicto más `ui-language.test.ts`: 8/8 suites y 432/432 tests en verde, exit 0. No apareció el flake de tinte `#0D1117`.
+4. `bunx expo lint > …/scratchpad/lint199.log 2>&1`: exit 0 y log vacío, que es lo normal en este repo cuando lint sale limpio. Repetido con `/usr/bin/time`: 2.38 s, pico de 199 MB y status 0, así que no hubo OOM. Además, `bunx eslint --max-warnings=0` sobre los 7 ficheros resueltos: exit 0.
+
+`progress/handoff_mobile-canvas-health-weight.md` sigue sin seguimiento en git y fuera de los commits. No se hizo push. Queda para el leader: `init.sh` completo.
