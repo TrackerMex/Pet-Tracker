@@ -92,6 +92,16 @@ jest.mock('react-native-reanimated', () => ({
   useReducedMotion: () => mockUseReducedMotion(),
 }));
 
+jest.mock('../../components/rise-in', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    RiseIn(props: import('react-native').ViewProps & { delayMs: number }) {
+      return React.createElement(View, props);
+    },
+  };
+});
+
 function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
   return {
     id: 'pet-1',
@@ -1602,5 +1612,33 @@ describe('#203 R2: cabecera de pairing', () => {
       });
     });
     await waitFor(() => expect(screen.getByTestId('screen-pairing')).toHaveStyle({ paddingBottom: 200 }));
+  });
+});
+
+describe('#203 R3: entrada de la vista de vincular', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseReducedMotion.mockReturnValue(false);
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it.each([
+    ['pairing-hero-group', 0, 'pairing-hero-rise', 'items-center gap-2.5'],
+    ['pairing-plan-icon', 80, 'pairing-plan-rise', 'flex-row items-start gap-2.5 rounded-tile bg-default px-3.5 py-3'],
+    ['pairing-activation-code-label', 140, 'pairing-code-rise', 'gap-1.5'],
+  ] as const)('#203 R3: %s entra con RiseIn %i', async (anchorId, delayMs, riseId, wrappedClassName) => {
+    await renderPairing();
+    await screen.findByTestId(anchorId);
+    expect(screen.getAllByTestId(riseId)).toHaveLength(1);
+    const rise = screen.getByTestId(riseId);
+    expect(rise.props.delayMs).toBe(delayMs);
+    expect(within(rise).getByTestId(anchorId)).toBeOnTheScreen();
+    expect(rise.children).toHaveLength(1);
+    const wrapped = rise.children[0];
+    expect(typeof wrapped === 'string' ? wrapped : wrapped.props.className).toBe(wrappedClassName);
   });
 });
