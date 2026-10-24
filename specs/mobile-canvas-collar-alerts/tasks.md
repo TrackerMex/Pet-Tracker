@@ -96,11 +96,15 @@ Recuentos agregados que se muevan: requirements §Erratas del leader.
 
 Desde `mobile-pet-tracker/`. Antes del primer commit, re-medir la columna «base»;
 si difiere (merge de una paralela en `dev`), esperado = base nueva + delta.
+Re-medida entera en el H0 `435059b2` el 2026-10-24 (errata E5): respecto a
+`81cb6d6b` solo cambian `headerShown` (2 → 5, por #200 y #199) y F1 (1 → 0, E4);
+se añade la cuenta de enmiendas de la carta.
 
-| Comando | Base (`81cb6d6b`) | Delta | Esperado al cerrar |
+| Comando | Base (`435059b2`) | Delta | Esperado al cerrar |
 |---|---|---|---|
-| `grep -cF 'headerShown' src/app/_layout.tsx` | 2 | +3 | 5 |
-| `grep -cF "describe('#197 R20: cimientos sin cablear'" src/__tests__/canvas-foundations.test.ts` | 1 | −1 | 0 |
+| `grep -cF 'headerShown' src/app/_layout.tsx` | 5 | +3 | 8 |
+| `grep -cF "describe('#197 R20: cimientos sin cablear'" src/__tests__/canvas-foundations.test.ts` | 0 | 0 | 0 |
+| `grep -c '^## Enmienda' ../docs/ui-guidelines.md` | 26 | +1 | 27 |
 | `grep -cF 'Alert.alert' src/screens/pairing/index.tsx` | 1 | −1 | 0 |
 | `grep -cxF '  Alert,' src/screens/pairing/index.tsx` | 1 | −1 | 0 |
 | `grep -cF 'HeaderHeightContext' src/screens/pairing/index.tsx` | 2 | −2 | 0 |
@@ -134,9 +138,12 @@ si difiere (merge de una paralela en `dev`), esperado = base nueva + delta.
 | `grep -cF "'screens/alert-detail/index.tsx'" src/__tests__/profile-canvas-fidelity.test.ts` | 4 | −1 | 3 |
 | `grep -cF 'toBe(10 + 1)' src/__tests__/chunky-cta-canvas-fidelity.test.ts` | 1 | −1 | 0 |
 | `grep -cF 'toBe(10 + 1 + 1)' src/__tests__/chunky-cta-canvas-fidelity.test.ts` | 0 | +1 | 1 |
-| `git diff --stat origin/dev -- src/components/celebration.tsx src/theme/motion.ts src/i18n/catalog.ts src/__tests__/ui-copy-table.ts` | — | — | vacío |
+| `git diff --stat 435059b2 -- src/components/celebration.tsx src/theme/motion.ts src/i18n/catalog.ts src/__tests__/ui-copy-table.ts` (contra el H0, no contra `origin/dev`; E5) | vacío | — | vacío |
+
+Las sumas de F27 (radios 16, base 35, cierra en 38) y de F24/F25 (`bg-accent-soft`,
+base 4, cierra en 3) se re-miden con los comandos de la errata E5.
 
 Suelos de `src/__tests__/heroui-text-size-merge.test.ts` (`#187 R1`: `cardElements`
-≥ 41, `heroElements` ≥ 197, `classNameElements` ≥ 163, ficheros con hero ≥ 28): sin
+≥ `35 - 1 - 1 - 1 + 1` = 33 en `435059b2` (E3, E5), `heroElements` ≥ 197, `classNameElements` ≥ 163, ficheros con hero ≥ 28): sin
 delta en ningún R de #203 (ninguno quita un `<Card` ni un hero); no hay fila que
 re-medir.

@@ -47,7 +47,7 @@ la base se re-mide (tasks.md §Cuentas a re-medir).
 
 | # | Comando | Base | Tras #203 |
 |---|---|---|---|
-| B1 | `grep -cF 'headerShown' src/app/_layout.tsx` | 2 | 5 (R1: +3). Paralelas que también ocultan cabecera suman la suya (#199: 2 → 3 por `weight-log`; idem cualquier otra de #198–#206 que adopte `ScreenHeader`) |
+| B1 | `grep -cF 'headerShown' src/app/_layout.tsx` | 2 (en `435059b2`: 5, E5) | base + 3 (R1); 5 + 3 = 8 sobre `435059b2`. Paralelas que también ocultan cabecera suman la suya (#200 +2, #199 +1 por `weight-log`; idem cualquier otra de #198–#206 que adopte `ScreenHeader`) |
 | B2 | `grep -cF "describe('#197 R20: cimientos sin cablear'" src/__tests__/canvas-foundations.test.ts` | 1 | 0 (R1; si otra feature lo borró antes: ya 0, el paso no tiene efecto y se anota) |
 | B3 | `grep -cF 'Alert.alert' src/screens/pairing/index.tsx` | 1 | 0 (R7) |
 | B4 | `grep -cF 'HeaderHeightContext' src/screens/pairing/index.tsx` | 2 | 0 (R2) |
@@ -74,7 +74,8 @@ la base se re-mide (tasks.md §Cuentas a re-medir).
 | B25 | `grep -cF 'className="gap-4" style={{ flexGrow: 1 }}' src/screens/pairing/index.tsx` | 1 (la vista de vincular) | 2 (R6: más el contenedor de la vista con collar) |
 
 `components/celebration.tsx`, `theme/motion.ts`, `i18n/catalog.ts` y
-`src/__tests__/ui-copy-table.ts` no cambian (diff vacío al cerrar). Fichero nuevo
+`src/__tests__/ui-copy-table.ts` no cambian (diff vacío al cerrar, medido contra el H0
+`435059b2`: E5). Fichero nuevo
 de producción: `src/screens/alerts/rise-delays.ts` (R9; un módulo ligero para que
 el candado de R12 no cargue la pantalla).
 
@@ -545,13 +546,14 @@ implementador para y lo reporta.
 **Enmienda mecánica permitida**: si un `it` no inventariado se pone rojo solo porque compara contra el literal exacto que el R-id quita o sustituye (directo o vía constante/helper del test), el implementador lo enmienda en el commit rojo de ese R con el sufijo y lo apunta en la tabla «Enmiendas mecánicas» de su informe. Cualquier otro rojo no inventariado sigue siendo motivo de parada.
 
 **Título compartido (F34 y F35).** Las dos filas son el mismo `it.each`, con un único
-título. Cada R suma su parte al paréntesis de #203 en su commit rojo: tras R4
-`(enmendado por #197 R19) (enmendado por #203 R4)`; tras R8
+título. Cada R suma su parte al paréntesis de #203 en su commit rojo, detrás del
+último sufijo que el título tenga en el H0 (en `435059b2`, `(enmendado por #198 R9, R15)`;
+E2, E5): tras R4 `… (enmendado por #203 R4)`; tras R8
 `(enmendado por #203 R4, R8)`; tras R10 `(enmendado por #203 R4, R8, R10)`.
 
 ## Candados agregados
 
-Revisados uno a uno contra la base `81cb6d6b`:
+Revisados uno a uno contra la base `81cb6d6b`; las cifras que movieron #200, #198 y #199 están re-medidas en `435059b2` en E2 a E5:
 
 | Candado | ¿Se mueve? | Por qué |
 |---|---|---|
@@ -564,7 +566,7 @@ Revisados uno a uno contra la base `81cb6d6b`:
 | #177 R7.1 (`border-lip-gray`, `10 + 1`) | sí | F37 |
 | AC `limita $token…` (`tracking-title` y `text-15`) | sí | F34, F35 |
 | PC `reserva text-26…` | sí | F36 |
-| `heroui-text-size-merge` (`#187 R1`: `cardElements` ≥ 41, `heroElements` ≥ 197, `classNameElements` ≥ 163, ficheros con hero ≥ 28) | no | ningún R de #203 quita un `<Card` ni un hero: R4 y R7 solo añaden (`Card` de R4.2, `Button` y `BottomSheet` de R7) y el resto de R mueve nodos a `ScreenHeader` y `RiseIn`, que no cuentan. Son suelos (`≥`), no igualdades; ninguna fila con delta por R |
+| `heroui-text-size-merge` (`#187 R1`: `cardElements` ≥ `35 - 1 - 1 - 1 + 1` = 33 en `435059b2` (E3, E5; la base `81cb6d6b` decía 41), `heroElements` ≥ 197, `classNameElements` ≥ 163, ficheros con hero ≥ 28) | no | ningún R de #203 quita un `<Card` ni un hero: R4 y R7 solo añaden (`Card` de R4.2, `Button` y `BottomSheet` de R7) y el resto de R mueve nodos a `ScreenHeader` y `RiseIn`, que no cuentan. Son suelos (`≥`), no igualdades; ninguna fila con delta por R |
 | `account-screens-polish` | no | no mira pairing, alerts ni alert-detail |
 | #166 R2 (inventario de primarios) | no | ningún `Button` nuevo con `bg-accent` (el punto de R5 es `View`; F30 cerrada) |
 | legibilidad (`legibility-classnames`) | no | ninguna clase vetada; ningún `text-xs` nuevo |
@@ -593,13 +595,41 @@ en el commit verde de R6; su casilla está en §Aprobación:
 
 ## Erratas del leader (2026-10-24)
 
-**E1. Forma del bloque de la Enmienda #203 en la carta.** La cita de § «Enmienda #203 a la carta» va envuelta en la forma de las demás enmiendas (la de #197): encabezado `## Enmienda #203 — Labio rojo en los destructivos del canvas` (lo exige `#195 R20`, que cuenta los `## Enmienda #`), la línea `Fecha: 2026-10-23. Feature #203 `mobile-canvas-collar-alerts`.`, la cita literal sin cambios, la línea `Detalle y tests en `specs/mobile-canvas-collar-alerts/requirements.md` (R6 y R7).` y la casilla `- [X] Enmienda #203 aprobada por humano` con la nota de firma delegada. El texto exacto está en el handoff (`progress/handoff_mobile-canvas-collar-alerts.md` § Enmienda #203). `grep -c '^## Enmienda' ../docs/ui-guidelines.md` pasa de 24 a 25.
+**E1. Forma del bloque de la Enmienda #203 en la carta.** La cita de § «Enmienda #203 a la carta» va envuelta en la forma de las demás enmiendas (la de #197): encabezado `## Enmienda #203 — Labio rojo en los destructivos del canvas` (lo exige `#195 R20`, que cuenta los `## Enmienda #`), la línea `Fecha: 2026-10-23. Feature #203 `mobile-canvas-collar-alerts`.`, la cita literal sin cambios, la línea `Detalle y tests en `specs/mobile-canvas-collar-alerts/requirements.md` (R6 y R7).` y la casilla `- [X] Enmienda #203 aprobada por humano` con la nota de firma delegada. El texto exacto está en el handoff (`progress/handoff_mobile-canvas-collar-alerts.md` § Enmienda #203). `grep -c '^## Enmienda' ../docs/ui-guidelines.md` pasa de 24 a 25 (en el H0 `435059b2`, de 26 a 27: E5).
 
-**E2 (títulos con sufijo de #200), firmada.** En H0 `9b7642cd` (merge de `origin/dev` 6bbd0485 con #200) cinco candados del inventario llevan un sufijo ` (enmendado por #200 …)` que la spec no cita: F2 (`layout.test.tsx` › `#194 R4: %s usa exactamente las opciones de cabecera acordadas`), F23 (`design-drift.test.ts` › `reserva los radios 14, 16 y 22 a Recordatorios …`), F24 (`consistency-classnames.test.ts` › `deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban …`), F27 (`chunky-cta-canvas-fidelity.test.ts` › `#177 R7.3: inventario de los veintisiete radios de dieciséis …`, total de partida `26 + 1 + 1 + 1 + 2 + 2` = 33, 36 al cerrar) y F34/F35 (`alerts-canvas-fidelity.test.ts` › `#174 R12` › `limita $token a su inventario de producción …`). Cada `it` se localiza por su prefijo hasta el primer ` (enmendado por` y el sufijo de #203 va detrás del de #200; en F34/F35 el sufijo compartido evoluciona igual (`(enmendado por #203 R4)`, luego `R4, R8`, luego `R4, R8, R10`). Los deltas y las filas que #203 quita o añade no cambian.
+**E2 (títulos con sufijo de #200), firmada.** En H0 `9b7642cd` (merge de `origin/dev` 6bbd0485 con #200) cinco candados del inventario llevan un sufijo ` (enmendado por #200 …)` que la spec no cita: F2 (`layout.test.tsx` › `#194 R4: %s usa exactamente las opciones de cabecera acordadas`), F23 (`design-drift.test.ts` › `reserva los radios 14, 16 y 22 a Recordatorios …`), F24 (`consistency-classnames.test.ts` › `deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban …`), F27 (`chunky-cta-canvas-fidelity.test.ts` › `#177 R7.3: inventario de los veintisiete radios de dieciséis …`, total de partida `26 + 1 + 1 + 1 + 2 + 2` = 33, 36 al cerrar; en `435059b2`, 35 y 38: E5) y F34/F35 (`alerts-canvas-fidelity.test.ts` › `#174 R12` › `limita $token a su inventario de producción …`). Cada `it` se localiza por su prefijo hasta el primer ` (enmendado por` y el sufijo de #203 va detrás del de #200; en F34/F35 el sufijo compartido evoluciona igual (`(enmendado por #203 R4)`, luego `R4, R8`, luego `R4, R8, R10`). Los deltas y las filas que #203 quita o añade no cambian.
 
-**E3 (suelo HeroUI), firmada.** El suelo `cardElements` de `heroui-text-size-merge.test.ts` › `#187 R1` es `toBeGreaterThanOrEqual(35)` en H0, no 41 (#200 R3, R5, R7, R8 y R9). #203 solo añade `Card`, así que no lo enmienda; si se pone rojo, PARA.
+**E3 (suelo HeroUI), firmada.** El suelo `cardElements` de `heroui-text-size-merge.test.ts` › `#187 R1` es `toBeGreaterThanOrEqual(35)` en H0 (en `435059b2`, `toBeGreaterThanOrEqual(35 - 1 - 1 - 1 + 1)`: E5), no 41 (#200 R3, R5, R7, R8 y R9). #203 solo añade `Card`, así que no lo enmienda; si se pone rojo, PARA.
 
 **E4 (F1 ya borrado).** #200 borró el `describe('#197 R20: cimientos sin cablear')` de `canvas-foundations.test.ts`: F1 no tiene efecto, ese fichero sale del diff final y el reporte lo anota.
+
+**E5 (re-base tras #198 y #199), firmada.** El H0 pasa a `435059b2` (merge de `origin/dev` 8bd88522 en la branch; trae #198, PR #245, y #199, PR #246). Ninguna R cambia de comportamiento ni de producción. #198 y #199 no tocan pairing, alerts, alert-detail ni sus tests: `git diff --stat 9b7642cd 435059b2 -- src/screens/pairing src/screens/alerts src/screens/alert-detail src/app/__tests__/alert-detail.navigation.test.tsx` sale vacío, y en `src/app/_layout.tsx` solo cambian las `options` de `weight-log`. Cambian bases, títulos y el ancla del diff; ningún delta de #203 cambia (tabla B, inventario F y tasks.md).
+
+Desde aquí, cada cifra agregada se escribe «base medida en H0 + delta de #203», con el comando que mide la base. Si otro merge de `dev` mueve una base, el leader la re-mide en el handoff con ese comando y el esperado es base nueva + el mismo delta, sin errata nueva. Medido desde `mobile-pet-tracker/` en `435059b2`:
+
+| Cifra | Comando de la base | Base en `435059b2` | Al cerrar |
+|---|---|---|---|
+| B1 | `grep -cF 'headerShown' src/app/_layout.tsx` | 5 (#200: `meal-schedule` y `meals-history`; #199: `weight-log`) | 5 + 3 = 8 |
+| B2 / F1 (E4) | `grep -cF "describe('#197 R20: cimientos sin cablear'" src/__tests__/canvas-foundations.test.ts` | 0 | 0 + 0 = 0 |
+| Enmiendas de la carta (corrige el 24 → 25 de E1) | `grep -c '^## Enmienda' ../docs/ui-guidelines.md` | 26 (la última es `## Enmienda #199: Salud y Peso al canvas (2026-10-23)`) | 26 + 1 = 27; el bloque de #203 va al final, tras el de #199 |
+| F27, total de radios 16 (corrige el 33 → 36 de E2) | `grep -cF 'toBe(26 + 1 + 1 + 1 + 2 + 2 + 1 + 1);' src/__tests__/chunky-cta-canvas-fidelity.test.ts` = 1 | 35 (#198 R9 y #199 R14 suman 1 cada una) | 35 + 3 = 38 (R6 +1, R7 +2; pairing 1 → 2 → 4) |
+| F24 y F25, `bg-accent-soft` | `grep -cF 'toBe(16 + 2 + 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 2 - 1 - 1 - 1);' src/__tests__/consistency-classnames.test.ts` = 2 (la misma suma en el `it` de F24 y en el de F25) | 4 (#198 R3, R11 y R13 restan 1 cada una) | 4 − 1 = 3 en las dos sumas (R5 añade ` - 1` con su término `// #203 R5`) |
+| Suelo `cardElements` de `#187 R1` (corrige el 35 de E3) | `grep -cF 'toBeGreaterThanOrEqual(35 - 1 - 1 - 1 + 1)' src/__tests__/heroui-text-size-merge.test.ts` = 1 | `35 - 1 - 1 - 1 + 1` = 33 (#199 R3, R14 y R18 restan 1; #199 R19 suma 1) | sin cambio: #203 solo añade `Card`. Si se pone rojo, PARA. Los otros tres suelos (`heroElements` ≥ 197, `classNameElements` ≥ 163, ficheros con hero ≥ 28) siguen igual |
+
+**Ancla del diff.** El «diff vacío al cerrar» de `components/celebration.tsx`, `theme/motion.ts`, `i18n/catalog.ts` y `src/__tests__/ui-copy-table.ts` se mide contra el H0: `git diff --stat 435059b2 -- src/components/celebration.tsx src/theme/motion.ts src/i18n/catalog.ts src/__tests__/ui-copy-table.ts` sale vacío. El ancla contra `9b7642cd` caducó: #199 cambió `motion.ts`, `catalog.ts` y `ui-copy-table.ts` (3 ficheros, +41 −2); `celebration.tsx` sigue igual. Lo mismo vale para `package.json` y `bun.lock`: su diff se mide contra el H0 (contra `9b7642cd` también sale vacío).
+
+**Títulos.** La regla de E2 vale para todo el inventario. Cada `it` se localiza por su prefijo hasta el primer ` (enmendado por`. El sufijo de #203 va detrás del último sufijo que el título tenga en el H0, sea de la feature que sea. En `435059b2` los títulos que #198 y #199 movieron terminan así:
+
+- F2 (`layout.test.tsx` › `#194 R4: %s usa exactamente las opciones de cabecera acordadas`): `(enmendado por #200 R12) (enmendado por #199 R1)`. #199 quitó la fila `['weight-log', 't:weightLog.weightLog']`; la fila `['pairing', ''],` sigue.
+- F23 (`design-drift.test.ts` › `reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto`): `… (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9)`. En `rounded16`, pairing sigue en 1; `outsideReminders(/\brounded-22\b/)` sigue en `[]`.
+- F24 (`consistency-classnames.test.ts` › `deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban`): `… (enmendado por #199 R18) (enmendado por #198 R2, R3, R4, R11, R13)`.
+- F25 (`consistency-classnames.test.ts` › `conserva los usos de bg-accent-soft que sí son acento`): antes sin sufijo, ahora `(enmendado por #198 R3, R11, R13)`.
+- F27 (`chunky-cta-canvas-fidelity.test.ts` › `#177 R7.3: inventario de los veintisiete radios de dieciséis`): `… (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #198 R9)`.
+- F34 y F35 (`alerts-canvas-fidelity.test.ts` › `limita $token a su inventario de producción`): `… (enmendado por #199 R10) (enmendado por #199 R14) (enmendado por #199 R16) (enmendado por #198 R9, R15)`. El sufijo compartido de #203 se escribe detrás: R4 `(enmendado por #203 R4)`, R8 `(enmendado por #203 R4, R8)`, R10 `(enmendado por #203 R4, R8, R10)`. Las entradas que quitan R8 y R10 y el ancla de F35 siguen donde la spec las pone. La lista `tracking-title` gana `'screens/home/index.tsx', // #198 R15`, que #203 no toca.
+- F36 (`profile-canvas-fidelity.test.ts` › `reserva text-26 al nombre de la mascota en Perfil`): ahora termina en `(enmendado por #197 R19) (enmendado por #198 R15)`; E2 lo daba por intacto. El sufijo de #203 va detrás: tras R8 `(enmendado por #203 R8)`, tras R10 `(enmendado por #203 R8, R10)`. La lista gana `'screens/home/index.tsx', // #198 R15`; las entradas de alerts y alert-detail que #203 quita siguen.
+- `#187 R1` de `heroui-text-size-merge.test.ts` (no es fila del inventario y #203 no lo enmienda): `… (enmendado por #199 R18) (enmendado por #199 R19)`.
+
+Sin cambio en `435059b2`: F3, F4, F16, F22, F26, F28, F29 y F37, y todos los candados de los tests de pairing, alerts y alert-detail.
 
 **Regla de recuentos agregados.** Si al llegar a verde una R se pone rojo un `it` que no está en el inventario y ese `it` solo cuenta usos o ficheros de un literal o token, Codex lo enmienda sin parar. Son de este tipo los inventarios cerrados de radios, de `style={CONTINUOUS_CORNER}`, de `text-NN` o de `<Card`, las sumas de copy y los suelos del escáner HeroUI. La condición es que el delta medido sea exactamente el número de usos que el diff de esa R, tal como esta spec la prescribe, añade o retira. La enmienda:
 
@@ -645,6 +675,7 @@ de implementación.
 - [x] Aprobado por humano (fecha: 2026-10-23)
   Firma delegada en el leader por mandato del humano del 2026-10-23
   (`progress/plan_canvas-parity-2026-10-23.md` §4, checklist de firma pasada). Firmada el 2026-10-24 tras la auditoría de inventario (c3286269, 20c084ba).
+  Errata E5 (re-base tras #198 y #199: cifras, títulos y H0) firmada también por delegación el 2026-10-24 sobre `435059b2`.
 - [x] Enmienda #203 a la carta (`docs/ui-guidelines.md`) aprobada por humano (fecha: 2026-10-23)
   Firma delegada, mismo mandato.
 - [ ] Smoke de R2, R3, R4, R5, R6, R7, R8, R9, R10, R11 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
