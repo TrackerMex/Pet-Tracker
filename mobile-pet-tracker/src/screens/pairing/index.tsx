@@ -36,6 +36,7 @@ import {
 } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import { useShadows } from '../../theme/shadows';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { connectivityLabelKey } from '../../utils/device-connectivity';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
@@ -74,18 +75,20 @@ function isTrackingError(state: PetTrackingState): boolean {
 function DeviceRow({
   label,
   testID,
+  tone,
   value,
 }: {
   label: string;
   testID: string;
+  tone: string;
   value: string;
 }) {
   return (
-    <View className="flex-row items-start justify-between gap-4">
-      <Text className="font-normal text-muted">{label}</Text>
+    <View className="flex-row items-baseline justify-between gap-3">
+      <Text className="text-sm text-muted">{label}</Text>
       <Text
         testID={testID}
-        className="shrink text-right font-semibold text-foreground"
+        className={`shrink text-right text-15 font-extrabold ${tone}`}
         selectable
       >
         {value}
@@ -96,6 +99,7 @@ function DeviceRow({
 
 export function PairingScreen() {
   const chunkyLip = useChunkyLip();
+  const shadows = useShadows();
   const [muted] = useThemeColors(['muted']);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
@@ -445,49 +449,73 @@ export function PairingScreen() {
 
         {phase === 'idle' && selectedPet?.device ? (
           <View className="gap-4">
-            <Text className="text-2xl font-black text-foreground">
-              {t('pairing.gpsDevice')}
-            </Text>
+            <RiseIn delayMs={0} testID="device-title-rise">
+              <Text
+                testID="device-title"
+                className="mt-2 text-28 font-black tracking-title text-foreground"
+              >
+                {t('pairing.gpsDevice')}
+              </Text>
+            </RiseIn>
 
-            <Card testID="device-status-card">
-              <View className="gap-4">
-                <DeviceRow
-                  label={t('pairing.model')}
-                  testID="device-model"
-                  value={selectedPet.device.model ?? '—'}
-                />
-                <DeviceRow
-                  label={t('pairing.battery')}
-                  testID="device-battery"
-                  value={
-                    selectedPet.device.batteryPct === null
-                      ? '—'
-                      : `${selectedPet.device.batteryPct}%`
-                  }
-                />
-                <DeviceRow
-                  label={t('pairing.connection')}
-                  testID="device-connectivity"
-                  value={connectivityKey === null ? '—' : t(connectivityKey)}
-                />
-                <DeviceRow
-                  label={t('pairing.lastMessage')}
-                  testID="device-last-message"
-                  value={
-                    selectedPet.device.lastMessageAt
-                      ? new Date(
-                          selectedPet.device.lastMessageAt,
-                        ).toLocaleString(locale)
-                      : t('pairing.noMessagesYet')
-                  }
-                />
-                <DeviceRow
-                  label={t('pairing.esn')}
-                  testID="device-esn"
-                  value={selectedPet.device.esn ?? '—'}
-                />
-              </View>
-            </Card>
+            <RiseIn delayMs={80} testID="device-status-rise">
+              <Card
+                testID="device-status-card"
+                className="rounded-22 px-4 py-4.5 shadow-none"
+                style={shadows.card}
+              >
+                <View className="gap-4">
+                  <DeviceRow
+                    label={t('pairing.model')}
+                    testID="device-model"
+                    tone="text-foreground"
+                    value={selectedPet.device.model ?? '—'}
+                  />
+                  <DeviceRow
+                    label={t('pairing.battery')}
+                    testID="device-battery"
+                    tone={
+                      selectedPet.device.batteryPct === null
+                        ? 'text-foreground'
+                        : 'text-accent-strong'
+                    }
+                    value={
+                      selectedPet.device.batteryPct === null
+                        ? '—'
+                        : `${selectedPet.device.batteryPct}%`
+                    }
+                  />
+                  <DeviceRow
+                    label={t('pairing.connection')}
+                    testID="device-connectivity"
+                    tone={
+                      selectedPet.device.connectivity === 'online'
+                        ? 'text-accent-strong'
+                        : 'text-foreground'
+                    }
+                    value={connectivityKey === null ? '—' : t(connectivityKey)}
+                  />
+                  <DeviceRow
+                    label={t('pairing.lastMessage')}
+                    testID="device-last-message"
+                    tone="text-foreground"
+                    value={
+                      selectedPet.device.lastMessageAt
+                        ? new Date(
+                            selectedPet.device.lastMessageAt,
+                          ).toLocaleString(locale)
+                        : t('pairing.noMessagesYet')
+                    }
+                  />
+                  <DeviceRow
+                    label={t('pairing.esn')}
+                    testID="device-esn"
+                    tone="font-mono tracking-mono text-foreground"
+                    value={selectedPet.device.esn ?? '—'}
+                  />
+                </View>
+              </Card>
+            </RiseIn>
 
             {tracking.data === undefined ? (
               <Skeleton
