@@ -178,12 +178,12 @@ describe('#146 R6: el editor pinta el formulario sobre el mapa y sus estados', (
     expect(await screen.findByTestId('geofence-editor-no-tracking')).toHaveTextContent('Las zonas seguras necesitan un collar con plan activo.');
     expect(screen.queryByTestId('geofence-editor-retry')).toBeNull();
   });
-  it.each(['error', 'unreachable', 'missing-config'] as const)('pinta %s con Reintentar, que vuelve a pedir solo la lista', async (kind) => {
+  it.each(['error', 'unreachable', 'missing-config'] as const)('pinta %s con Reintentar, que vuelve a pedir solo la lista (enmendado por #202 R19)', async (kind) => {
     mockList.mockResolvedValueOnce(kind === 'unreachable' ? { kind, message: 'offline' } : { kind }).mockResolvedValue({ kind: 'ok', geofences: [casa] });
     await mount('geofence-1');
     const error = await screen.findByTestId('geofence-editor-load-error');
     expect(error.props.selectable).toBe(true);
-    expect(error.props.className).toBe('text-danger');
+    expect(error.props.className).toBe('text-15 leading-body text-danger');
     expect(error).toHaveTextContent(kind === 'unreachable' ? 'No se pudo conectar con el servidor' : 'Algo salió mal');
     const retry = screen.getByTestId('geofence-editor-retry');
     expect(retry).toHaveTextContent('Reintentar');
@@ -1063,4 +1063,14 @@ it('#202 R18: la carga se anuncia como «Cargando zona»', async () => {
   mockList.mockReturnValue(new Promise(() => undefined));
   await mount(casa.id);
   expect(screen.getByTestId('geofence-editor-loading').props).toMatchObject({ className: 'gap-2.5', accessibilityLabel: 'Cargando zona', accessibilityState: { busy: true } });
+});
+
+
+it.each(['unreachable', 'error'] as const)('#202 R19: el error de carga usa 15/1.4 en %s', async (kind) => {
+  mockList.mockResolvedValue(kind === 'unreachable' ? { kind, message: 'offline' } : { kind });
+  await mount('geofence-1');
+  const error = await screen.findByTestId('geofence-editor-load-error');
+  expect(error.props.className).toBe('text-15 leading-body text-danger');
+  expect(error).toHaveTextContent(kind === 'unreachable' ? 'No se pudo conectar con el servidor' : 'Algo salió mal');
+  expect(screen.getByTestId('geofence-editor-retry')).toHaveTextContent('Reintentar');
 });
