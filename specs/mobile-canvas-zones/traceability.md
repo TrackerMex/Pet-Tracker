@@ -13,13 +13,13 @@ borra. Abreviaturas en el Contexto de [[requirements]]; CF =
 
 | R | Test(s) | Commit rojo | Commit verde | Estado |
 |---|---|---|---|---|
-| R1 | GZ `#202 R1` ×2; enmienda GZ `#41 R5` métricas (`paddingTop: 52`, `toBe(40 + 12)`), GZ `#189 R1`, profile `#173 R2.4` `text-26`, alerts `#174 R12` `tracking-title` | — | — | pendiente |
+| R1 | GZ `#202 R1` ×2; enmienda GZ `#41 R5` métricas (`paddingTop: 52`, `toBe(40 + 12)`), GZ `#189 R1`, profile `#173 R2.4` `text-26`, alerts `#174 R12` `tracking-title` | c5a45651 | 2a352007 | verificado (3 suites verdes; cierre global pendiente por bloqueo R7) |
 | R2 | LY, ZF `#202 R2` (aguja `['theme', 'header-layout'].join('/')`); enmienda LY ×2; borra GF `#189 R23` | — | — | pendiente |
 | R3 | GZ, ZF `#202 R3`; enmienda GZ `#189 R5` (cada fila, las cinco posiciones, family: F1, F2), GF `#189 R18`; doble de reicon sin `Map` | — | — | pendiente |
 | R4 | GZ, GE, ZF `#202 R4`; enmienda GF `#189 R19.2` | — | — | pendiente |
 | R5 | GZ, ZF `#202 R5`; enmienda GZ `#189 R6`, GF `#189 R18`; doble de reicon con `AlertTriangle` | — | — | pendiente |
 | R6 | GZ, ZF `#202 R6`; enmienda GZ `#41 R7` (recetas), `#189 R5` (papelera; sin `hitSlop`, M3) | — | — | pendiente |
-| R7 | CD ×4, ZF `#202 R7`; borra CF `describe('#197 R20: cimientos sin cablear')` entero; enmienda profile `#173 R2` `rounded-hero`, alerts `#174 R12` `text-15` | — | — | pendiente |
+| R7 | CD ×4, ZF `#202 R7`; borra CF `describe('#197 R20: cimientos sin cablear')` entero; enmienda profile `#173 R2` `rounded-hero`, alerts `#174 R12` `text-15` | cd3aa980; ajuste 7f198849 | 2590c582 | tests verdes; bloqueado por discrepancia spec/canvas 24/28 px |
 | R8 | GZ `#202 R8` ×3; enmienda GZ `#41 R7` (Alert) | — | — | pendiente |
 | R9 | GE `#202 R9` ×4; enmienda GE `#146 R14` (incluidos F3, F4), `#189 R19.2`; borra el helper `alertButton` | — | — | pendiente |
 | R10 | GZ ×2, ZF `#202 R10`; enmienda GZ `#41 R5` esqueleto, UL `#41 R10` (`+ 1`), language-provider `#194 R1` (`+ 1 // #202 R10`) | — | — | pendiente |
