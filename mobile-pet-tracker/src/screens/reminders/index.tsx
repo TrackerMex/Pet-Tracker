@@ -22,6 +22,7 @@ import type { Reminder } from '../../api/types';
 import { EmptyState } from '../../components/empty-state';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { PopIn } from '../../components/pop-in';
+import { RiseIn } from '../../components/rise-in';
 import { ScreenHeader } from '../../components/screen-header';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
@@ -30,6 +31,7 @@ import {
   useTranslate,
 } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { MOTION_REMINDERS_STAGGER_MS } from '../../theme/motion';
 import {
   CONTINUOUS_CORNER,
   TABULAR_NUMS,
@@ -38,7 +40,6 @@ import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { daysUntil } from '../../utils/reminder-dates';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
-import { HomeEntrance } from '../home/home-entrance';
 
 function isRemindersError(state: RemindersState): boolean {
   return ['error', 'unreachable', 'missing-config', 'not-found'].includes(
@@ -335,7 +336,7 @@ export function RemindersScreen() {
               const time = due.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 
               return (
-                <HomeEntrance key={reminder.id} testID={`reminders-entry-${reminder.id}`} index={i}>
+                <RiseIn key={reminder.id} testID={`reminders-entry-${reminder.id}`} delayMs={i * MOTION_REMINDERS_STAGGER_MS}>
                   <View
                     testID={`reminder-row-${reminder.id}`}
                     className={`flex-row items-center gap-3 rounded-22 bg-surface p-3.5 ${upcoming ? 'border-2 border-warning-soft' : 'border border-border'}${inactive ? ' opacity-50' : ''}`}
@@ -400,7 +401,7 @@ export function RemindersScreen() {
                       </Button.Label>
                     </Button>
                   </View>
-                </HomeEntrance>
+                </RiseIn>
               );
             })}
           </View>
