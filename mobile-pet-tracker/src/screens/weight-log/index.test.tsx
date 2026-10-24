@@ -997,15 +997,15 @@ describe('#169 R7: tono del delta del mes', () => {
     ['> 0', [
       makeWeight({ id: 'weight-2', measuredAt: '2026-09-15', weightKg: 12.4 }),
       makeWeight({ id: 'weight-1', measuredAt: '2026-09-02', weightKg: 12.0 }),
-    ], '+0.4 kg este mes', 'text-sm font-extrabold text-danger', 'icon-trend-up', 'red', ['icon-trend-down', 'icon-minus']],
+    ], '+0.4 kg este mes', 'text-sm font-extrabold text-danger'],
     ['< 0', [
       makeWeight({ id: 'weight-2', measuredAt: '2026-09-15', weightKg: 11.7 }),
       makeWeight({ id: 'weight-1', measuredAt: '2026-08-30', weightKg: 12.0 }),
-    ], '-0.3 kg este mes', 'text-sm font-extrabold text-accent-strong', 'icon-trend-down', 'green', ['icon-trend-up', 'icon-minus']],
+    ], '-0.3 kg este mes', 'text-sm font-extrabold text-accent-strong'],
     ['= 0', [
       makeWeight({ id: 'weight-2', measuredAt: '2026-09-15', weightKg: 12.0 }),
       makeWeight({ id: 'weight-1', measuredAt: '2026-08-30', weightKg: 12.0 }),
-    ], '0 kg este mes', 'text-sm font-extrabold text-muted', 'icon-minus', 'gray', ['icon-trend-up', 'icon-trend-down']],
+    ], '0 kg este mes', 'text-sm font-extrabold text-muted'],
   ] as const)('rama %s: texto, clase e icono (enmendado por #199 R4)', async (_branch, entries, text, className) => {
     mockListWeights.mockResolvedValue({ kind: 'ok', weights: [...entries] });
     await renderWeightLog();
