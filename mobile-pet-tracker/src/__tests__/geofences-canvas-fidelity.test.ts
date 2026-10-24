@@ -1,5 +1,4 @@
 import * as ts from 'typescript';
-import { BACK_BUTTON_SIZE, EDITOR_PILL_LEFT, HEADER_BAR_HEIGHT, HEADER_ROW_TOP, TRANSPARENT_HEADER_OPTIONS, ZONES_TITLE_OFFSET } from '../theme/header-layout';
 
 declare function require(name: 'fs'): { readFileSync: (path: string, encoding: 'utf8') => string };
 declare function require(name: 'path'): { join: (...paths: string[]) => string };
@@ -35,31 +34,6 @@ const screens = ['geofences', 'geofence-editor'].map(name => {
   return { name, source, ast: ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX) };
 });
 
-describe('#189 R23: geometría compartida con ventana independiente', () => {
-  it('#189 R23.1: exporta las seis constantes y las opciones transparentes', () => {
-    const source = readFileSync(join(process.cwd(), 'src/theme/header-layout.ts'), 'utf8');
-    expect(source.match(/export const /g)).toHaveLength(6);
-    expect(HEADER_BAR_HEIGHT).toBe(56);
-    expect(BACK_BUTTON_SIZE).toBe(44);
-    expect(HEADER_ROW_TOP).toBe(6);
-    expect(TRANSPARENT_HEADER_OPTIONS).toEqual({ headerTransparent: true, headerStyle: { backgroundColor: 'transparent' } });
-  });
-  it('#189 R23.2: los offsets quedan en las ventanas propias del test', () => {
-    expect(ZONES_TITLE_OFFSET).toBeGreaterThanOrEqual(34);
-    expect(ZONES_TITLE_OFFSET).toBeLessThanOrEqual(50);
-    expect(EDITOR_PILL_LEFT).toBeGreaterThanOrEqual(62);
-    expect(EDITOR_PILL_LEFT).toBeLessThanOrEqual(78);
-  });
-  it.each(screens)('#189 R23.2: $name no repite los literales de geometría', ({ ast }) => {
-    const literals: string[] = [];
-    function visit(node: ts.Node) {
-      if (ts.isPropertyAssignment(node) && ts.isNumericLiteral(node.initializer) && ['42', '70', '56'].includes(node.initializer.text)) literals.push(node.getText(ast));
-      ts.forEachChild(node, visit);
-    }
-    visit(ast);
-    expect(literals).toEqual([]);
-  });
-});
 function namedImports(ast: ts.SourceFile) {
   return ast.statements.flatMap(statement => {
     if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) return [];

@@ -1,6 +1,6 @@
-declare function require(name: 'fs'): { readFileSync: (path: string, encoding: 'utf8') => string };
+declare function require(name: 'fs'): { readFileSync: (path: string, encoding: 'utf8') => string; existsSync: (path: string) => boolean; readdirSync: (path: string) => string[]; statSync: (path: string) => { isDirectory: () => boolean } };
 declare function require(name: 'path'): { join: (...paths: string[]) => string };
-const { readFileSync } = require('fs');
+const { readFileSync, existsSync, readdirSync, statSync } = require('fs');
 const { join } = require('path');
 
 function artboard(name: string): string {
@@ -124,4 +124,19 @@ it('#202 R18: el canvas dibuja las tres barras', () => {
   const production = source('screens/geofence-editor/index.tsx');
   expect(production.split('<Skeleton').length - 1).toBe(3);
   for (const [i, classes] of ['h-12 w-full rounded-xl', 'h-2 w-full rounded-full', 'h-12 w-full rounded-16'].entries()) contains(openingTag('screens/geofence-editor/index.tsx', `geofence-editor-loading-bar-${i}`), `className="${classes}"`);
+});
+
+
+it('#202 R2: header-layout.ts no existe ni se importa', () => {
+  expect(existsSync(join(process.cwd(), 'src', 'theme', 'header-layout.ts'))).toBe(false);
+  const needle = ['theme', 'header-layout'].join('/');
+  function filesUnder(directory: string): string[] {
+    return readdirSync(directory).flatMap(name => {
+      const path = join(directory, name);
+      return statSync(path).isDirectory() ? filesUnder(path) : [path];
+    });
+  }
+  const references = filesUnder(join(process.cwd(), 'src'))
+    .filter(path => /\.tsx?$/.test(path) && readFileSync(path, 'utf8').includes(needle));
+  expect(references).toEqual([]);
 });
