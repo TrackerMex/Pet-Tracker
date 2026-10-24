@@ -921,3 +921,18 @@ Detalle y tests en `specs/mobile-canvas-nutrition/requirements.md` (R1 a R17).
 - **`rise` en Salud y Peso (#199).** `RiseIn` (`components/rise-in.tsx`) aplica `MOTION_RISE_TIMING` y `MOTION_RISE_OFFSET_Y` a tarjetas y filas con los retrasos del canvas: Salud 0 (próxima dosis), `80 + 60 · min(i, 2)` (vacunas) y 260 (peso); Peso 0 (gráfica), 80 (formulario), `140 + 60 · min(i, 2)` (historial) y `60 · i` (esqueletos). Con reduce motion no hay entrada.
 - **`draw` y `pop` de la gráfica de peso (#199).** La línea se dibuja con `MOTION_DRAW_TIMING` (1200 ms, `Easing.bezier(0, 0, 0.58, 1)`) tras `MOTION_DRAW_DELAY_FULL_MS` (200) en Peso o `MOTION_DRAW_DELAY_MINI_MS` (300) en Salud; el último punto de Peso hace `pop` (0.6 → 1.08 → 1 en `MOTION_POINT_POP_MS`, 400) a los `MOTION_POINT_POP_DELAY_MS` (1300). Con reduce motion salen completos.
 - **Fundido del toast de Peso (#199).** `FadeIn` de `MOTION_TOAST_FADE_MS` (300) tras `MOTION_TOAST_DELAY_MS` (400), con la sombra `useShadows().toast`.
+
+## Enmienda #205 — el flujo de cuenta como el canvas
+
+Fecha: 2026-10-24. Feature #205 `mobile-canvas-account-flow`. Bienvenida, inicio de sesión, registro, recuperar y nueva contraseña, y nueva mascota pasan a ser fieles a su artboard del canvas.
+
+1. **Entrada con `RiseIn`.** Las pantallas de cuenta y nueva mascota entran con `RiseIn` y los retardos de cada artboard. Se retiran el fundido y el muelle de contenido de bienvenida y `HomeEntrance` en inicio de sesión, registro y nueva contraseña. El muelle de escala de Pingo en bienvenida se conserva.
+2. **Flotación de Pingo.** `PingoFloat` vive en bienvenida y registro y sale de recuperar y nueva contraseña. La flotación de 4 puntos de bienvenida se retira (enmienda de #172 y de #153 R10).
+3. **Cabecera de nueva mascota.** Nueva mascota usa `ScreenHeader` con `headerShown: false` en su ruta y la CTA de cada paso va en un pie fijo fuera del scroll (enmienda de #191).
+4. **Escala.** `--radius-32` y `--radius-40` quedan fuera de la escala de radios por fidelidad al canvas. `--text-34` es el tamaño de la marca de bienvenida, además de la cifra de Peso que declaró #199.
+5. **Pops.** Los pops conservan el retardo fijo de `PopIn`: el canvas pide otros retardos y es una desviación consciente.
+
+Detalle y tests en `specs/mobile-canvas-account-flow/requirements.md` (R1 a R20).
+
+- [X] Enmienda #205 aprobada por humano
+  Firma delegada en el leader por mandato del humano del 2026-10-23, reflejada desde `specs/mobile-canvas-account-flow/requirements.md` § Aprobación, ya firmada.
