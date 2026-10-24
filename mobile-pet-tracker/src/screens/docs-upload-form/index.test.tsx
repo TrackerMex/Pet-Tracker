@@ -256,7 +256,7 @@ describe('#185 R9 (antes #158 R5): selector y formulario de subida', () => {
     }
   });
 
-  it.each([{ docs: [] }, { docs: [docOne] }])('ordena el error del selector con lista %j', async ({ docs }) => {
+  it.each([{ docs: [] }, { docs: [docOne] }])('ordena el error del selector con lista %j (enmendado por #204 R12)', async ({ docs }) => {
     mockListPetDocs.mockResolvedValue({ kind: 'ok', docs });
     mockGetDocumentAsync.mockResolvedValue({ canceled: false, assets: [{ ...documentAsset, mimeType: 'image/heic' }] });
     await renderDocs();
@@ -264,8 +264,8 @@ describe('#185 R9 (antes #158 R5): selector y formulario de subida', () => {
     await fireEvent.press(await screen.findByTestId(docs.length ? 'docs-upload' : 'docs-empty-action'));
     await screen.findByText('Elige un archivo PDF, JPEG o PNG');
     expect(listChildren()).toEqual(docs.length
-      ? ['View', 'docs-filters', 'docs-entry-doc-1', 'docs-upload', 'docs-action-error']
-      : ['View', 'docs-empty', 'docs-action-error']);
+      ? ['docs-header', 'docs-filters', 'docs-entry-doc-1', 'docs-upload', 'docs-action-error']
+      : ['docs-header', 'docs-empty', 'docs-action-error']);
     const error = screen.getByTestId('docs-action-error');
     expect(error.props.selectable).toBe(true);
     expect(error.props.className).toBe('text-danger');
