@@ -360,7 +360,7 @@ function MetricSelector({
               <Check
                 testID="weekly-activity-metric-selected"
                 accessible={false}
-                size={12}
+                size={13}
                 color={accentStrong}
               />
             ) : null}
@@ -368,8 +368,8 @@ function MetricSelector({
               testID={`weekly-activity-metric-label-${metric}`}
               className={
                 selected
-                  ? 'shrink text-xs font-semibold text-accent-strong'
-                  : 'shrink text-xs font-semibold text-foreground'
+                  ? 'shrink text-xs font-extrabold text-accent-strong'
+                  : 'shrink text-xs font-semibold text-muted'
               }
               numberOfLines={1}
               adjustsFontSizeToFit
@@ -610,7 +610,7 @@ export function WeeklyActivityChart(
                   {weekdayLabel(selectedDay.date, locale, 'long')}
                 </Text>
                 <Text
-                  className="text-xs font-bold text-foreground"
+                  className="text-xs font-extrabold text-foreground"
                   style={TABULAR_NUMS}
                 >
                   {selectedDay.source === 'missing'
