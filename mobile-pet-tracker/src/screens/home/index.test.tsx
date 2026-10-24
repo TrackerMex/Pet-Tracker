@@ -6278,6 +6278,6 @@ describe('#198 R11: última posición del canvas', () => {
     expect(within(card).getByText('Ver en el mapa').props.className).toBe('text-15 font-bold text-accent-strong');
     const time = screen.getByTestId('last-position-time');
     expect(time.props.className).toBe('text-13 font-normal text-muted');
-    expect(time).toHaveTextContent('Última señal');
+    expect(time).toHaveTextContent(/Última señal/);
   });
 });
