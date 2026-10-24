@@ -40,7 +40,7 @@ describe('#199 R25: copy nuevo', () => {
     ['weightLog.history', 'Historial', 'History'],
     ['health.appliedOn', 'Aplicada {{date}}', 'Given {{date}}'],
     ['health.nextOn', 'Próxima {{date}}', 'Next {{date}}'],
-    ['health.nextDoseToday', 'hoy', 'today'],
+    ['health.nextDoseToday', 'hoy', 'due today'],
     ['health.nextDoseTomorrow', 'mañana', 'tomorrow'],
     ['health.nextDoseInDays', 'en {{days}} días', 'in {{days}} days'],
     ['weightChart.lastSixMonths', 'Peso de los últimos 6 meses', 'Weight over the last 6 months'],
