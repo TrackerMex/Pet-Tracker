@@ -1069,3 +1069,22 @@ describe('#204 R12: cabecera en contenido', () => {
     }
   });
 });
+
+describe('#204 R13: estados de Documentos bajo la cabecera', () => {
+  it.each([
+    ['cargando', 'docs-list-skeleton'],
+    ['vacío', 'docs-empty'],
+    ['en error', 'docs-error'],
+    ['con filas', 'doc-doc-1'],
+  ] as const)('#204 R13: la cabecera encabeza el estado %s', async (state, node) => {
+    if (state === 'cargando') mockListPetDocs.mockReturnValue(pending<PetDocsState>());
+    else if (state === 'vacío') mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [] });
+    else if (state === 'en error') mockListPetDocs.mockResolvedValue({ kind: 'error' });
+    await renderDocs();
+    await screen.findByTestId(node);
+    const order = within(screen.getByTestId('screen-docs'))
+      .getAllByTestId(new RegExp(`^(docs-header|${node})$`))
+      .map(({ props }) => props.testID);
+    expect(order).toEqual(['docs-header', node]);
+  });
+});
