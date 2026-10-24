@@ -1895,6 +1895,7 @@ describe('#204 R8: Eliminar de la fila', () => {
     await screen.findByTestId('reminder-row-a');
     const button = screen.getByTestId('reminder-delete-a');
     expect(button.props.className).toContain('button__root--variant-danger-soft');
+    expect(button.props.className).toContain('button__root--size-md');
     expect(button.props.className).toContain('h-11 rounded-14 px-2.5 bg-category-rose');
     expect(within(button).getByText('Eliminar').props.className).toBe('text-13 font-extrabold text-danger');
   });
