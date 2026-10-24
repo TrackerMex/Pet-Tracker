@@ -31,7 +31,8 @@ tags: [mobile, test-infra, spec]
   jest vacía): `src/screens/meal-schedule/index.test.tsx` seguido de
   `src/components/__tests__/back-button.test.tsx` da `1 failed, 87 passed, 88 total`
   (falla `#172 R2: pinta ChevronLeft de 24 en foreground`). Los cinco ficheros del
-  criterio CC1, en el orden de CC1, dan `1 failed, 440 passed, 441 total`.
+  criterio CC1, en el orden de CC1, dan `1 failed, 440 passed, 441 total`. Re-medido en
+  `bc5a26e7` (dev con #199): `1 failed, 476 passed, 477 total` (errata E1).
 
 ## Definiciones
 
@@ -100,9 +101,10 @@ que ya se cumple en cuanto existe el candado y se cierra por mutación.
     "$PWD/src/components/__tests__/back-button.test.tsx"; echo exit=$?
   ```
 
-  En el commit A (candado sin corrección): `exit=1` y `Tests: 1 failed, 440 passed, 441 total`,
-  con `#172 R2: pinta ChevronLeft de 24 en foreground` en rojo. En el commit B y en adelante:
-  `exit=0`, `Test Suites: 5 passed, 5 total` y `Tests: 441 passed, 441 total`. La caché vacía
+  En el commit A (candado sin corrección): `exit=1`, `Test Suites: 1 failed, 4 passed, 5 total` y
+  `Tests: 1 failed, 476 passed, 477 total`, con `#172 R2: pinta ChevronLeft de 24 en foreground`
+  como único rojo. En el commit B y en adelante: `exit=0`, `Test Suites: 5 passed, 5 total` y
+  `Tests: 477 passed, 477 total` (cifras de la errata E1). La caché vacía
   fija el orden por tamaño de fichero (mayor primero), que deja `back-button` el último; una
   caché de jest previa lo reordena y vuelve el resultado engañoso. El `exit` se mide sin pipe.
 - **CC2** (la corrección es mínima): `git diff --numstat <A>..<B> -- <los cuatro tests>`
@@ -115,12 +117,22 @@ que ya se cumple en cuanto existe el candado y se cierra por mutación.
   sin errores; `bunx expo lint` con código de salida 0 medido sin pipe.
 - **CC4**: la suite móvil completa (`./init.sh`, que corre el leader) sin ningún rojo,
   con T0 + 1 suite y T0 + 3 tests, donde T0 es el recuento que el leader mide en la
-  base al lanzar el handoff.
+  base al lanzar el handoff. T0 en `bc5a26e7`: 146 suites / 5015 tests / 1 snapshot,
+  así que el cierre da 147 / 5018 / 1 (errata E1).
 - **CC5** (sin producción): `git diff --name-only <H0>..HEAD -- mobile-pet-tracker` lista
   exactamente cinco rutas tras B (el candado y los cuatro tests) y todas terminan en
   `.test.ts` o `.test.tsx`. La grep-clean de `docs/ui-guidelines.md` (§Decisiones fijas, punto 3) no cambia porque no
   se toca JSX, estilos ni `src/theme/`, y `design-drift` no recorre `__tests__/`.
 - **CC6**: `traceability.md` sin filas «pendiente» y commits según `tasks.md` (C5).
+
+**Errata E1 (2026-10-24).** Tras el merge de `origin/dev` con #199 (`bc5a26e7`) los cinco
+ficheros de CC1 suman 477 tests, no 441: las cifras de CC1, de CC4 y de `tasks.md` (B) son
+las de esa base (`progress/explore_207-cc1.md`, tres corridas en A y tres en B). CC1 se mide
+sin `./init.sh` corriendo en la máquina. Otro jest concurrente es carga: con ella, `profile`
+llegó a tardar 1062 s y dio rojos de tiempo (`#168 R4`, timeout de 5000 ms; `#173 R5`, `findByTestId` que
+agota su 1 s) que no salen a solas. Si aparece un rojo distinto de `#172 R2`, se repite la
+corrida una vez a solas; si persiste, es un rojo real y se para. `--testTimeout=30000` no lo
+fija (no alarga el `findBy`), así que el comando de CC1 no cambia.
 
 ## Preguntas abiertas
 

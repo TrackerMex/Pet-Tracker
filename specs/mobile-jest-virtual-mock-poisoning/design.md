@@ -57,7 +57,8 @@ tags: [mobile, test-infra, spec]
   secuenciador de jest ordena sin caché de rendimiento por tamaño de fichero, mayor
   primero. Con `--cacheDirectory` vacío, el orden de los cinco ficheros de CC1 es
   `profile` (95 832 B), `food` (73 760 B), `meal-schedule` (69 611 B), `health` (44 430 B) y
-  `back-button` (3 670 B). Resultado en la base: `exit=1`, `1 failed, 440 passed, 441 total`.
+  `back-button` (3 670 B). Resultado en la base: `exit=1`, `1 failed, 440 passed, 441 total` (en `bc5a26e7`, 477 tests:
+  errata E1 de [[requirements]]).
   El par `meal-schedule` + `back-button`: `1 failed, 87 passed, 88 total`. La simulación del
   arreglo (quitar la opción al transformar los cuatro ficheros) dejó los mismos ficheros en
   verde en 2 de 2 corridas.

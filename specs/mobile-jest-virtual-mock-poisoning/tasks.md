@@ -31,7 +31,7 @@ handoff; si el leader lo avanza, todos los `<H0>` de abajo se leen contra ese ha
   símbolo que falte, así que el rojo no es un `ReferenceError`. CC1 aquí da `exit=1`.
 - **B** `test(mobile): quita la opción virtual de los cuatro tests (R1,R2)`. Borra
   `  { virtual: true },` en `food`, `health` y `meal-schedule`, y cambia `}), { virtual: true });`
-  por `}));` en `profile` (D1, D2). Verde en todo. CC1 aquí da `exit=0` y 441 verdes.
+  por `}));` en `profile` (D1, D2). Verde en todo. CC1 aquí da `exit=0` y 477 verdes (errata E1).
 - **C** `test(mobile): mutaciones de datos del candado (R1,R2)`. Aplica a la vez M-R1a,
   M-R2a, M-R2b, M-R2c y M-R2d (tabla de abajo). Rojo por aserción: `#207 R1` y el primer
   `it` de `#207 R2`.
@@ -158,7 +158,8 @@ Desde `/home/claude/sites/Pet-Tracker-wt-207/mobile-pet-tracker` (rutas relativa
   (los dos puntos evitan que `R1` coincida con otro prefijo). Sin `-t` corre los tres `it`.
 - Síntoma real (CC1): el bloque de [[requirements]] §Criterios de cierre. Caché de jest vacía
   (`--cacheDirectory` nuevo) y `--runInBand`, porque una caché previa reordena la corrida. El
-  `exit` se lee de `echo exit=$?`, sin pipe.
+  `exit` se lee de `echo exit=$?`, sin pipe. Con `pgrep -af '[i]nit.sh'` vacío antes de medir; un
+  rojo distinto de `#172 R2` se repite una vez a solas (errata E1).
 - Regresión de CC3: `bunx jest --runInBand --runTestsByPath src/__tests__/jest-virtual-mock-lock.test.ts src/screens/food/index.test.tsx src/screens/health/index.test.tsx src/screens/meal-schedule/index.test.tsx src/screens/profile/index.test.tsx src/components/__tests__/back-button.test.tsx src/__tests__/design-drift.test.ts`.
   `--runTestsByPath` y no posicional: un posicional es una regex y las rutas con `(tabs)` se
   saltan en silencio. El número de suites impreso debe coincidir con el de ficheros pedidos (siete).
