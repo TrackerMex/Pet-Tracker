@@ -37,9 +37,9 @@ Cada decisión está cerrada con su defecto; el humano puede cambiarla al firmar
 
 | # | Decisión | Defecto | Riesgo de choque |
 |---|---|---|---|
-| D1 | Saludo de bienvenida. El canvas pinta el marcador `¡Guau! Soy [NOMBRE]`, que no es copy | `welcome.pingoGreeting` pasa a es `Hola, soy Pingo.` / en `Hi, I'm Pingo.` (Voz B: sin exclamación, punto final, cabe en el bocadillo absoluto del canvas). Se acorta el copy actual | Ninguno: misma clave, misma fila de `ui-copy-table.ts` |
+| D1 | Saludo de bienvenida. El canvas pinta el marcador `¡Guau! Soy [NOMBRE]`, que no es copy | `welcome.pingoGreeting` pasa a es `Hola, soy Pingo.` / en `Hi, I'm Pingo.` (Voz B: sin exclamación, punto final, cabe en el bocadillo absoluto del canvas). Se acorta el copy actual: queda una sola frase por idioma, sin segunda frase ni salto de línea (se borran `Te ayudo a saber dónde está y cómo está tu mascota.` y `I'll help you know where your pet is and how they're doing.`) | Ninguno: misma clave, misma fila de `ui-copy-table.ts` |
 | D2 | Entradas | `RiseIn` (de #197, `MOTION_RISE_TIMING`) con los retardos de cada artboard. Se retiran el fundido y muelle de contenido de welcome (`entranceStyle`) y `HomeEntrance` en login, registro y nueva contraseña. El muelle de escala de Pingo en welcome (#153 R9) se conserva: el canvas no lo dibuja | Ninguno |
-| D3 | Flotación de Pingo | `PingoFloat` en Main (nuevo) y Registro (se queda). Se retira de recuperar y nueva contraseña (el canvas no las hace flotar). Se retira la flotación de 4 puntos de welcome (#153 R10): la sustituye `PingoFloat` | Enmienda la carta #172 (D11) |
+| D3 | Flotación de Pingo | `PingoFloat` en Main (nuevo) y Registro (se queda). Se retira de recuperar y nueva contraseña (el canvas no las hace flotar). Se retira la flotación de 4 puntos de welcome (#153 R10) en el mismo R3 que monta `PingoFloat`, que la sustituye (`pingoFloatY` y su `translateY` salen en R3; R7 solo retira `entranceStyle`) | Enmienda la carta #172 (D11) |
 | D4 | Bocadillos de welcome y login | Dejan de ser `Card` y pasan a `View` con esquinas asimétricas (pico de 4) y `CONTINUOUS_CORNER`. Sin componente nuevo: dos usos con el pico en lados distintos | Ninguno |
 | D5 | Retardo de los pops | `PopIn` no cambia (retardo fijo 250 ms). El canvas pide 600 (Main), 300 (Recuperar) y 500 (NuevaContrasena): desviación consciente | #201 usa `PopIn` sin cambios; añadirle una prop chocaría |
 | D6 | Tokens | `--text-34: 34px;`, `--radius-32: 32px;` y `--radius-40: 40px;` en `src/theme/global.css`. 32 y 40 quedan fuera de la escala de radios por fidelidad al canvas (enmienda de carta) | #199 añade la misma línea `--text-34: 34px;`: quien mergee segundo deja una sola |
@@ -70,6 +70,9 @@ coincide, para y lo apunta en su informe.
 | `grep -cF -- '--tracking-display: -0.5px;' src/theme/global.css` | 1 |
 | `grep -cF '<Card' src/screens/welcome/index.tsx` | 2 |
 | `grep -cF 'entranceStyle' src/screens/welcome/index.tsx` | 2 |
+| `grep -cF 'withRepeat' src/screens/welcome/index.tsx` | 3 |
+| `grep -cF 'pingoFloatY' src/screens/welcome/index.tsx` | 4 |
+| `grep -cF 'translateY' src/screens/welcome/index.tsx` | 5 |
 | `grep -cF "justifyContent: 'center'" src/screens/welcome/index.tsx` | 1 |
 | `grep -cF 'width: 200' src/screens/welcome/index.tsx` | 3 |
 | `grep -cF 'PingoFloat' src/screens/welcome/index.tsx` | 0 |
@@ -93,6 +96,7 @@ coincide, para y lo apunta en su informe.
 | `grep -cF 'bg-accent-soft' src/screens/add-pet/index.tsx` | 2 |
 | `grep -cF 'className="text-lg font-bold text-foreground"' src/screens/add-pet/index.tsx` | 2 |
 | `grep -cF 'keyboardVerticalOffset={headerHeight}' src/screens/add-pet/index.tsx` | 1 |
+| `grep -cF 'keyboardVerticalOffset={0}' src/screens/add-pet/index.tsx` | 0 |
 | `grep -cF 'ScreenHeader' src/screens/add-pet/index.tsx` | 0 |
 | `grep -cF 'RiseIn' src/screens/add-pet/index.tsx` | 0 |
 | `grep -cF 'shadow-sm' src/components/segmented-control.tsx` | 1 |
@@ -103,6 +107,7 @@ coincide, para y lo apunta en su informe.
 | `grep -cF '#197 R20: cimientos sin cablear' src/__tests__/canvas-foundations.test.ts` | 1 |
 | `grep -cF "'welcome.pingoGreeting'" src/i18n/catalog.ts` | 2 |
 | `grep -cF '## Enmienda #205' ../docs/ui-guidelines.md` | 0 |
+| suma de `cardElements` del escáner de `heroui-text-size-merge.test.ts` (script de `tasks.md` §Cuentas a re-medir) | 41 |
 | `test ! -e src/__tests__/account-flow-canvas-fidelity.test.ts` | sale 0 |
 
 `RiseIn` (`src/components/rise-in.tsx`), `PopIn` (`src/components/pop-in.tsx`),
@@ -203,6 +208,15 @@ WHEN se pinta `/welcome` THE SYSTEM SHALL:
    `<RiseIn testID="welcome-rise-actions" delayMs={280} className="gap-3.5">` a
    `welcome-get-started` y `welcome-have-account` (literales sin cambios).
 
+`entranceStyle` hoy se usa una sola vez (`style={entranceStyle}` en
+`welcome-content`) y se declara una vez. En R2 desaparece el uso (cuenta 2 → 1);
+la declaración queda sin uso hasta R7 (`no-unused-vars` de eslint-config-expo es
+`warn`, no rompe). Con eso, los tres `it` de `#153 R8` que miden el estilo
+animado de `welcome-content` (`arranca invisible y desplazado 12 puntos sin
+reduce motion`, `termina visible y en su sitio sin reduce motion`, `con reduce
+motion aparece sin desplazarse`) pierden su sujeto y se borran en el commit rojo
+de R2 (ver inventario).
+
 - `src/screens/welcome/index.test.tsx` › `describe('#205 R2: Main apila sus bloques con RiseIn')` ›
   `it('#205 R2: el contenido apila escena, chips, marca, espaciador, CTAs y legal')` y
   `it('#205 R2: el scroll usa márgenes 16 y los insets sin centrar')`.
@@ -223,11 +237,34 @@ antes de `welcome-stage`; dentro de `welcome-stage`, los anillos sin cambios y
 mide `{ width: 220, height: 220 }` igual que `welcome-pingo-wave` y
 `welcome-pingo-blink-image`.
 
+La flotación de 4 puntos de #153 R10 sale en este mismo R3, porque `PingoFloat`
+la sustituye (D3). Se borran de `welcome/index.tsx`: `pingoFloatY` (el
+`useSharedValue`, el `pingoFloatY.set(withRepeat(withTiming(-MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING), -1, true))`
+del efecto y su dependencia) y el `translateY: pingoFloatY.get()` de
+`pingoStyle`, que queda `transform: [{ scale: pingoScale.get() }]`; los imports
+`MOTION_FLOAT_*` dejan de usarse y se quitan. `welcome-pingo` no lleva
+`translateY` propio. Los anillos (`welcome-ring-0..2`) se conservan: Main los
+dibuja. Cuentas en `welcome/index.tsx`: `pingoFloatY` 4 → 0, `withRepeat` 3 → 2
+(quedan los anillos y el parpadeo), `translateY` 5 → 4 (R7 lo deja en 0).
+
+Hijos exactos que dejan R3 y R4, por `testID` y en orden (los `it` de `#167 R12`
+y `#167 R13` de welcome los comparan y se enmiendan en el commit rojo de R3):
+
+- `welcome-scene` al cerrar R3: `welcome-bubble` (el de hoy, sigue como `Card`
+  hasta R4), `welcome-ground`, `welcome-stage`. Al cerrar R4: `welcome-ground`,
+  `welcome-stage`, `welcome-bubble-pop`.
+- `welcome-stage` con movimiento: `welcome-ring-0`, `welcome-ring-1`,
+  `welcome-ring-2`, `welcome-pingo-float`.
+- `welcome-stage` con reduce motion (sin anillos): `welcome-pingo-float`.
+- `welcome-pingo-float`: `welcome-pingo`. `welcome-pingo`: `welcome-pingo-wave`,
+  `welcome-pingo-blink`.
+
 - `src/screens/welcome/index.test.tsx` › `describe('#205 R3: la escena de Main')` ›
   `it('#205 R3: la escena es una vista de 380 con radio 32 y esquina continua')` y
   `it('#205 R3: Pingo mide 220, flota y pisa la sombra del suelo')` (asierta que
   el índice de `welcome-ground` es menor que el de `welcome-stage`, no la lista
-  exacta de hijos: R4 añade uno).
+  exacta de hijos de la escena: R4 añade uno; además aserta que `welcome-pingo`
+  no lleva `translateY` propio y que la fuente no contiene `pingoFloatY`).
 - `F` › `describe('#205 R3: escena de Main')` ›
   `it('#205 R3: la escena y Pingo miden lo que el artboard')`. Canvas `Main`:
   `height: 380px`, `border-radius: 32px`, `width: 220px`, `width: 120px`,
@@ -255,15 +292,17 @@ y `welcome-bubble-text` con `className="text-sm font-bold text-foreground"`.
 ### R5 — Main: saludo (copy)
 
 THE SYSTEM SHALL pintar en `welcome-bubble-text` la clave `welcome.pingoGreeting`
-con los literales es `Hola, soy Pingo.` y en `Hi, I'm Pingo.` en
-`src/i18n/catalog.ts`.
+con los literales exactos es `Hola, soy Pingo.` y en `Hi, I'm Pingo.` en
+`src/i18n/catalog.ts`: una sola frase por idioma, sin segunda frase ni salto de
+línea (hoy cada idioma lleva dos frases; la segunda se borra).
 
 - Fila de `src/__tests__/ui-copy-table.ts`: sin cambio
   (`{ file: 'src/screens/welcome/index.tsx', key: 'welcome.pingoGreeting' }` sigue).
   `SCREEN_FILES`: sin cambio. Longitud del catálogo: sin cambio (misma clave).
 - `src/screens/welcome/index.test.tsx` › `describe('#205 R5: saludo de Main')` ›
   `it('#205 R5: el saludo dice «Hola, soy Pingo.» y «Hi, I\'m Pingo.»')` (lee
-  ambos idiomas del catálogo y pinta el de español).
+  ambos idiomas del catálogo, aserta que cada valor es exactamente ese literal,
+  sin segunda frase ni salto de línea, y pinta el de español).
 
 ### R6 — Main: marca, CTAs y legal
 
@@ -282,15 +321,17 @@ literales de `welcome-get-started` ni `welcome-have-account`.
 
 ### R7 — Main: entradas retiradas
 
-WHEN se pinta `/welcome` THE SYSTEM SHALL no animar `welcome-content` (sin
-`entranceStyle`, ni fundido ni desplazamiento de entrada) y no aplicar a
-`welcome-pingo` la flotación de 4 puntos; el muelle de escala de Pingo (#153 R9)
-se conserva.
+WHEN se pinta `/welcome` THE SYSTEM SHALL no declarar el fundido ni el
+desplazamiento de entrada del contenido: se retiran la declaración de
+`entranceStyle` (la otra aparición, `style={entranceStyle}` en `welcome-content`,
+salió en R2), los valores compartidos `opacity` y `translateY` de entrada y sus
+`.set` del efecto. La flotación de 4 puntos de Pingo ya salió en R3 (D3); el
+muelle de escala de Pingo (#153 R9) se conserva. Cuentas en `welcome/index.tsx`:
+`entranceStyle` 1 → 0 y `translateY` 4 → 0.
 
 - `src/screens/welcome/index.test.tsx` › `describe('#205 R7: Main sin entradas antiguas')` ›
-  `it('#205 R7: el contenido no lleva fundido ni Pingo la flotación de 4 puntos')`
-  (fuente sin `entranceStyle`; tras avanzar 1500 ms sin reduce motion,
-  `welcome-pingo` no tiene `translateY` distinto de 0).
+  `it('#205 R7: el contenido no lleva fundido ni muelle de entrada')` (la fuente
+  no contiene `entranceStyle` ni `translateY`).
 
 ### R8 — Login
 
@@ -481,6 +522,10 @@ WHEN se pinta `/pets/add` en el paso 1 THE SYSTEM SHALL:
    `<RiseIn testID="add-pet-intro" delayMs={0} className="flex-row items-center gap-3.5">`;
 3. dar al título `Datos básicos` `className="text-base font-black text-foreground"`.
 
+El `contentContainerStyle` del scroll `add-pet-form` no cambia en R16
+(`{ paddingHorizontal: 20, paddingTop: 12, gap: 12, paddingBottom: insets.bottom + 24 }`):
+el `insets.top` lo lleva el bloque fijo de la cabecera, no el scroll.
+
 - `src/screens/add-pet/index.test.tsx` › `describe('#205 R16: NuevaMascota con ScreenHeader')` ›
   `it('#205 R16: la cabecera es ScreenHeader con título, paso y volver')`,
   `it('#205 R16: la barra de paso queda fuera del scroll')` y
@@ -538,7 +583,17 @@ WHILE `/pets/add` pinta el formulario THE SYSTEM SHALL pintar, dentro del KAV y
 después del scroll, `<View testID="add-pet-footer" className="bg-background px-5 pt-4" style={{ paddingBottom: Math.max(insets.bottom, 16) }}>`
 con `add-pet-continue` en el paso 1 o `add-pet-submit` en el paso 2 (literales
 sin cambios, fuera del scroll). WHILE pinta la celebración THE SYSTEM SHALL no
-pintar `add-pet-footer`. El KAV pasa a `keyboardVerticalOffset={0}`.
+pintar `add-pet-footer`. El KAV pasa a `keyboardVerticalOffset={0}` y se retiran
+`headerHeight` y `HeaderHeightContext` del fuente (la cabecera nativa ya no
+existe, R15). El scroll `add-pet-form` conserva el `contentContainerStyle` de
+R16 y R18 (`{ paddingHorizontal: 20, paddingTop: 12, gap, paddingBottom: insets.bottom + 24 }`
+con `gap` 12 en el paso 1 y 16 en el paso 2; el 12 es el hueco del canvas entre
+la barra de paso y el primer bloque), así que `#191 R6` no cambia por R19; el pie
+lleva su propio `Math.max(insets.bottom, 16)`. El pie sube con el teclado porque
+está dentro del KAV con `behavior="padding"`; con offset 0 el `paddingBottom` del
+host pasa de 291 a 200 (`#148 R4`, ver inventario). Cuentas en
+`add-pet/index.tsx`: `keyboardVerticalOffset={headerHeight}` 1 → 0 y
+`keyboardVerticalOffset={0}` 0 → 1.
 
 - `src/screens/add-pet/index.test.tsx` › `describe('#205 R19: pie fijo de NuevaMascota')` ›
   `it('#205 R19: el paso 1 lleva Continuar en el pie, fuera del scroll')`,
@@ -578,7 +633,10 @@ el valor nuevo (o se borra la aserción que el R deja sin sujeto). «Seguro» = 
 pone rojo; «condicional» = puede ponerse rojo según cómo quede el árbol; si no
 se pone rojo, no se toca. Los títulos están copiados literalmente; donde el
 describe padre no se midió por nombre, se da el más cercano por posición y el
-implementador lo confirma con `grep -n`.
+implementador lo confirma con `grep -n`. Las filas con «antes → después» dan
+el literal exacto que el `it` cambia. Las filas «se queda verde, no se toca»
+existen para que nadie enmiende un `it` que no falla: la auditoría las midió
+una por una.
 
 Rutas bajo `src/`. `W` = `screens/welcome/index.test.tsx`,
 `L` = `screens/login/index.test.tsx`, `G` = `screens/register/index.test.tsx`,
@@ -591,35 +649,43 @@ Rutas bajo `src/`. `W` = `screens/welcome/index.test.tsx`,
 | `W` › `R5` › `aplica las dimensiones del grupo sin tab bar` | R2 | seguro |
 | `W` › `R5` › `apila los siete bloques en orden` | R2 | seguro |
 | `W` › `#153 R5: la escena de Pingo sustituye al logo` › `apila la escena y los seis bloques de #118 en orden` | R2 | seguro |
-| `W` › `#153 R5: la escena de Pingo sustituye al logo` › `pinta la escena como card secundaria con el bocadillo y Pingo` | R3 | seguro |
-| `W` › `#153 R9: Pingo entra con un muelle de escala` › `arranca al 90 % sin reduce motion` | R3 | condicional (ancho 200) |
-| `W` › `#153 R9: Pingo entra con un muelle de escala` › `termina a tamaño completo sin reduce motion` | R3 | condicional (ancho 200) |
-| `W` › `#153 R9: Pingo entra con un muelle de escala` › `con reduce motion nace a tamaño completo y no escala` | R3 | condicional (ancho 200) |
-| `W` › `#153 R6: Pingo se pinta con su pose y su capa de parpadeo` › `#167 R12: el anillo %i es un círculo de borde acento` | R3 | condicional |
-| `W` › (describe por confirmar) › `ya no pinta el logo` | R3 | condicional |
-| `W` › (describe por confirmar) › `exporta solo la pantalla` | R3 | condicional |
+| `W` › `R5` › `pinta marca, tagline y legal con sus clases` | R2, R6 | seguro dos veces, un solo sufijo con las dos R (` (enmendado por #205 R2, R6)`). R2: el `StyleSheet.flatten(welcome-content.props.style)` con `toMatchObject({ alignItems: 'center', gap: 16 })` queda sin sujeto (R2 quita ese estilo) y se sustituye por la clase `mt-4.5 items-center gap-2` de `welcome-rise-heading`. R6: las clases de marca, tagline y legal |
+| `W` › `#153 R8: el contenido entra con las constantes de motion.ts` › `arranca invisible y desplazado 12 puntos sin reduce motion` | R2 | seguro: **se borra** sin sufijo (su sujeto, el estilo animado de `welcome-content`, desaparece en R2) |
+| `W` › `#153 R8: el contenido entra con las constantes de motion.ts` › `termina visible y en su sitio sin reduce motion` | R2 | seguro: **se borra** sin sufijo |
+| `W` › `#153 R8: el contenido entra con las constantes de motion.ts` › `con reduce motion aparece sin desplazarse` | R2 | seguro: **se borra** sin sufijo |
+| `W` › `#153 R8: el contenido entra con las constantes de motion.ts` › `exporta solo la pantalla` | — | se queda verde, no se toca |
+| `W` › `#153 R5: la escena de Pingo sustituye al logo` › `ya no pinta el logo` | — | se queda verde, no se toca |
+| `W` › `#153 R5: la escena de Pingo sustituye al logo` › `pinta la escena como card secundaria con el bocadillo y Pingo` | R3, R4 | seguro dos veces, un solo sufijo con las dos R (` (enmendado por #205 R3, R4)`): R3 porque la escena deja de ser `Card`; R4 porque el bocadillo deja de serlo |
+| `W` › `#153 R9: Pingo entra con un muelle de escala` › `arranca al 90 % sin reduce motion` | R3 | seguro: antes `width: 200` y `translateY` en `transform`; después `{ width: 220, height: 220, transform: [{ scale: 0.9 }] }`, sin `translateY` (no vuelve a romperse en R7) |
+| `W` › `#153 R9: Pingo entra con un muelle de escala` › `termina a tamaño completo sin reduce motion` | R3 | seguro: después `{ width: 220, height: 220, transform: [{ scale: 1 }] }`, sin `translateY` |
+| `W` › `#153 R9: Pingo entra con un muelle de escala` › `con reduce motion nace a tamaño completo y no escala` | R3 | seguro: después `{ width: 220, height: 220, transform: [{ scale: 1 }] }`; sigue sin llamar al muelle |
+| `W` › `#153 R6: Pingo se pinta con su pose y su capa de parpadeo` › `%s pinta su pose a 200×200, sin etiqueta de accesibilidad` (`it.each` de `welcome-pingo-wave` y `welcome-pingo-blink-image`) | R3 | seguro (F7): el título pasa a `220×220` y el estilo de `{ width: 200, height: 200 }` a `{ width: 220, height: 220 }` |
+| `W` › `#167 R12: anillos de ping` › `#167 R12: el escenario apila tres anillos bajo Pingo` | R3 | seguro (F8): antes `['welcome-ring-0', 'welcome-ring-1', 'welcome-ring-2', 'welcome-pingo']`; después `['welcome-ring-0', 'welcome-ring-1', 'welcome-ring-2', 'welcome-pingo-float']` |
+| `W` › `#167 R13: sin anillos con reduce motion` › `#167 R13: con reduce motion el escenario solo lleva a Pingo` | R3 | seguro (F8): antes `['welcome-pingo']`; después `['welcome-pingo-float']` |
+| `W` › `#167 R12: anillos de ping` › `#167 R12: el anillo %i es un círculo de borde acento` | — | se queda verde, no se toca: este `it.each` vive en `#167 R12` (no en `#153 R6`) y los anillos se conservan |
+| `W` › `#153 R10: Pingo flota en bucle` › `usa la flotación de motion.ts` | R3 | seguro: **se borra** sin sufijo (su sujeto, el regex de `MOTION_FLOAT_*` sobre la fuente, pasa de 1 a 0) |
+| `W` › `#153 R10: Pingo flota en bucle` › `sube 4 puntos en medio ciclo sin reduce motion` | R3 | seguro: **se borra** sin sufijo (la flotación de 4 puntos sale en R3) |
+| `W` › `#153 R10: Pingo flota en bucle` › `con reduce motion no flota` | R3 | seguro: se enmienda; conserva `expect(mockWithRepeat).not.toHaveBeenCalled()` y su estilo pasa a `{ width: 220, height: 220, transform: [{ scale: 1 }] }`, sin `translateY` |
+| `W` › `#153 R10: Pingo flota en bucle` › `repite la flotación sin fin y en vaivén` | — | se queda verde, no se toca: tras R3 el único `withRepeat(…, -1, true)` es el de `PingoFloat` (el parpadeo repite solo con `(-1)`); el implementador lo confirma al medir |
+| `__tests__/heroui-text-size-merge.test.ts` › `#187 R1: ningún componente que fusiona className lleva text-NN` › `#187 R1: el escáner cubre al menos el universo medido (enmendado por #177 R9) (enmendado por #189 R5, R10, R13)` | R3, R4, R8, R13 | seguro por recuento (F1; §Erratas, Regla de recuentos agregados): el piso de `cardElements` es `toBeGreaterThanOrEqual(41)` con 41 `Card` medidos (script de réplica en `tasks.md` §Cuentas a re-medir). Cada uno de los cuatro R retira una `Card` (R3 `welcome-scene`, R4 `welcome-bubble`, R8 la burbuja de login, R13 la tarjeta de éxito de reset-password). El commit rojo de cada R añade ` - 1` a la expresión y su R al comentario: `41 - 1 - 1 - 1 - 1` al final, y el comentario cierra con `; #205 R3, R4, R8, R13: -1, -1, -1, -1` (añadido tras el `// #188 R18: 42 - 1 (…)` de hoy). El sufijo ` (enmendado por #205 R3, R4, R8, R13)` va una sola vez, en R3. Los demás pisos no se rompen (`heroElements` 197, 28 ficheros; `classNameElements` 171 → 167 frente a 163). #199 y #200 también tocan este piso: quien mergee después re-mide con el script y recompone la expresión |
 | `W` › `#153 R5: la escena de Pingo sustituye al logo` › `pinta el bocadillo como card de superficie con el saludo` | R4 | seguro |
-| `W` › `#153 R1: el saludo de Pingo existe en los dos idiomas` › `declara el saludo en inglés y en español` | R5 | seguro |
-| `W` › `#153 R1: el saludo de Pingo existe en los dos idiomas` › `pinta el saludo en el bocadillo en español` | R5 | seguro |
-| `W` › `R5` › `pinta marca, tagline y legal con sus clases` | R6 | seguro |
-| `W` › `#153 R8: el contenido entra con las constantes de motion.ts` › `usa el fundido y el muelle de motion.ts` | R7 | seguro |
-| `W` › `#153 R8: el contenido entra con las constantes de motion.ts` › `arranca invisible y desplazado 12 puntos sin reduce motion` | R7 | seguro |
-| `W` › `#153 R8: el contenido entra con las constantes de motion.ts` › `termina visible y en su sitio sin reduce motion` | R7 | seguro |
-| `W` › `#153 R8: el contenido entra con las constantes de motion.ts` › `con reduce motion aparece sin desplazarse` | R7 | seguro |
-| `W` › `#153 R10: Pingo flota en bucle` › `usa la flotación de motion.ts` | R7 | seguro |
-| `W` › `#153 R10: Pingo flota en bucle` › `sube 4 puntos en medio ciclo sin reduce motion` | R7 | seguro |
-| `W` › `#153 R10: Pingo flota en bucle` › `con reduce motion no flota` | R7 | seguro |
+| `W` › `#153 R1: el saludo de Pingo existe en los dos idiomas` › `declara el saludo en inglés y en español` | R5 | seguro: los literales esperados pasan de las dos frases de hoy a `Hola, soy Pingo.` y `Hi, I'm Pingo.` (D1) |
+| `W` › `#153 R1: el saludo de Pingo existe en los dos idiomas` › `pinta el saludo en el bocadillo en español` | R5 | seguro: el texto de `welcome-bubble-text` pasa a `Hola, soy Pingo.` |
+| `W` › `#153 R1: el saludo de Pingo existe en los dos idiomas` › `pinta el saludo en el bocadillo en inglés` | R5 | seguro (F6): el texto de `welcome-bubble-text` pasa a `Hi, I'm Pingo.` |
+| `W` › `#153 R8: el contenido entra con las constantes de motion.ts` › `usa el fundido y el muelle de motion.ts` | R7 | seguro: **se borra** sin sufijo (con la declaración de `entranceStyle` desaparece el fundido de contenido que mide; el muelle de escala de Pingo es el de #153 R9, que se queda) |
 | `L` › `#61 R8: login tiene contenedor de scroll con safe areas` › `#172 R19: ancla el contenido al pie dentro de un ScrollView con los insets aplicados` | R8 | seguro |
 | `L` › `#61 R8: login tiene contenedor de scroll con safe areas` › `no centra horizontalmente, que no lo hacía el View de hoy` | R8 | condicional |
 | `L` › `#167 R6: Pingo saluda en login y la pantalla entra en dos tiempos` › `#167 R6: entra en dos tiempos, cabecera y cuerpo` | R8 | seguro |
 | `L` › ídem › `#172 R3: la cabecera lleva Volver, el saludo y el título` | R8 | seguro |
 | `L` › ídem › `#172 R7: el cuerpo lleva correo, contraseña, olvido, envío y registro` | R8 | seguro |
 | `L` › ídem › `#172 R7: con error, el error va entre el olvido y el envío` | R8 | seguro |
+| `L` › ídem › `#172 R7: sin error, el cuerpo no lleva el error` | R8 | seguro (F10): antes `['login-email', 'login-password', 'link-forgot', 'login-submit', 'link-register']`; después `['login-email', 'login-password', 'link-forgot']` (el envío y el registro pasan a `login-actions`) |
 | `L` › ídem › `#172 R19: el espaciador empuja el envío al pie` | R8 | seguro |
 | `L` › ídem › `#172 R6: el título de la cabecera pesa 30/900 al inicio` | R8 | seguro |
 | `L` › ídem › `#167 R6: el saludo pone a Pingo junto a su burbuja` | R8 | seguro |
 | `L` › ídem › `#167 R6: la burbuja es una card secondary que ocupa el resto` | R8 | seguro |
-| `L` › ídem › `#167 R6: la cabecera va antes que el cuerpo en el scroll` | R8 | condicional |
+| `L` › ídem › `#167 R6: la cabecera va antes que el cuerpo en el scroll` | R8 | seguro (M8): el orden de hijos del scroll cambia en R8 (`login-title` sale de la cabecera y aparece `login-actions`) |
+| `L` › ídem › `#167 R6: la cabecera y el cuerpo no se mezclan` | R8 | seguro (F11): `within(header).getByText('Iniciar sesión')` se sustituye por `screen.getByTestId('login-title')`, que ya no cuelga de la cabecera ni del cuerpo |
 | `L` › ídem › `#172 R15: el error cuelga del scroll y no del contenedor del teclado` | R8 | condicional |
 | `L` › ídem › `#167 R6: la burbuja dice el saludo en español` | R8 | condicional |
 | `L` › ídem › `#167 R6: la burbuja dice el saludo en inglés` | R8 | condicional |
@@ -628,38 +694,51 @@ Rutas bajo `src/`. `W` = `screens/welcome/index.test.tsx`,
 | `G` › ídem › `#172 R3: la cabecera lleva la fila Volver-Pingo y después el título` | R9 | seguro |
 | `G` › ídem › `#172 R6: el título de la cabecera pesa 30/900 al inicio` | R9 | seguro |
 | `G` › ídem › `#172 R11: cabecera, rejilla, términos, error y envío cuelgan del scroll` | R9 | seguro |
-| `G` › ídem › `#172 R19: el espaciador empuja el envío al pie` | R9 | condicional |
+| `G` › ídem › `#172 R19: el espaciador empuja el envío al pie` | R9 | seguro (M9): se rompe por la rama con error, donde la fila del error pasa a `register-body` y mueve el índice del espaciador; no por su contenedor |
+| `P` › helper `lockTile()` (función del test, no es un `it`: sin sufijo de título) | R10 | seguro: se reescribe una sola vez, en el commit rojo de R10, a `screen.getByTestId('forgot-lock-tile')` con el comentario `// #205 R10`. Esa edición cubre sus 17 llamadores (7 en `expectFormState`, 10 en `expectSentState`) y `expectPingoBeforeLock` (F12) |
 | `P` › `#61 R8: forgot tiene contenedor de scroll con safe areas` › `#172 R19: centra en horizontal pero no en vertical dentro de un ScrollView con insets` | R10 | seguro |
 | `P` › `#172 R5: flotación de recuperar` › `#172 R5: Pingo de recuperar flota` | R10 | seguro |
 | `P` › `#172 R3: Volver en recuperar` › `#172 R3: la fila Volver encabeza el scroll en los dos estados` | R10 | seguro |
-| `P` › `#172 R9: error de recuperar` › `#172 R14: el candado es un tile acento con labio y Lock de 26` | R10 | seguro |
-| `P` › `#172 R9: error de recuperar` › `#172 R19: el espaciador empuja la CTA al pie en los dos estados` | R10 | seguro |
-| `P` › `#117 R5: enviar pasa la pantalla a «Revisa tu correo»` › `el tile Lock sigue en pie en los dos estados` | R10 | condicional |
-| `P` › `#117 R4: el formulario pide el correo` › `sin enviar no existen forgot-resend ni forgot-error` | R10 | condicional |
-| `P` › `#117 R9: las métricas del stub sobreviven al cambio de estado` › `«Revisa tu correo» conserva el mismo contentContainerStyle y keyboardShouldPersistTaps` | R10 | condicional |
-| `P` › `#117 R11: la pantalla de éxito es la misma para cualquier correo` › `dos correos distintos reciben «Revisa tu correo» con el mismo cuerpo salvo el correo citado` | R11 | seguro |
-| `N` › `#61 R8: las tres ramas de reset tienen contenedor de scroll` › `#172 R19: la rama del formulario ancla el envío al pie y no centra` | R12 | seguro |
+| `P` › (`it` de nivel superior, fuera de todo describe) › `#172 R14: el candado es un tile acento con labio y Lock de 26` | R10 | seguro (M11) |
+| `P` › (`it` de nivel superior, fuera de todo describe) › `#172 R19: el espaciador empuja la CTA al pie en los dos estados` | R10 | seguro (M11) |
+| `P` › `#167 R9: Pingo y pop del candado en recuperar` › `#167 R9: Pingo precede al tile del candado en el formulario` | R10 | seguro (F13): la comparación de orden de `expectPingoBeforeLock` pierde `forgot-pingo-float` y queda `forgot-scene-backdrop`, `forgot-pingo`, `forgot-lock-tile` |
+| `P` › ídem › `#167 R9: Pingo precede al tile del candado tras enviar` | R10 | seguro (F13): igual que la fila anterior |
+| `P` › ídem › `#167 R9: el tile entra con pop en el formulario` | R10 | seguro (F13): el `className` esperado de `forgot-lock-tile` pasa a `absolute bottom-1.5 right-0 size-13 items-center justify-center bg-accent rounded-16`; el estilo no cambia |
+| `P` › ídem › `#167 R9: el tile entra con pop tras enviar` | R10 | seguro (F13): igual que la fila anterior |
+| `P` › `#117 R5: enviar pasa la pantalla a «Revisa tu correo»` › `el tile Lock sigue en pie en los dos estados` | R10 | seguro (M10): se arregla con la reescritura del helper `lockTile()` de arriba; el `it` no se toca |
+| `P` › `#117 R4: el formulario pide el correo` › `sin enviar no existen forgot-resend ni forgot-error` | — | se queda verde, no se toca (M12) |
+| `P` › `#117 R9: las métricas del stub sobreviven al cambio de estado` › `«Revisa tu correo» conserva el mismo contentContainerStyle y keyboardShouldPersistTaps` | — | se queda verde, no se toca (M12) |
+| `P` › `#117 R11: la pantalla de éxito es la misma para cualquier correo` › `dos correos distintos reciben «Revisa tu correo» con el mismo cuerpo salvo el correo citado` | — | se queda verde, no se toca (M12: la fila decía R11 seguro y no se rompe) |
+| `src/__tests__/chunky-cta-canvas-fidelity.test.ts` › `#177 R5.2: el tile conserva la esquina y recibe el labio con el orden exacto` | R10 | seguro (F5): `className="size-13 items-center justify-center bg-accent rounded-16"` pasa a `className="absolute bottom-1.5 right-0 size-13 items-center justify-center bg-accent rounded-16"`; sufijo ` (enmendado por #205 R10)` |
+| `N` › `#61 R8: las tres ramas de reset tienen contenedor de scroll` › `#172 R19: la rama del formulario ancla el envío al pie y no centra` | R12 | seguro: el `contentContainerStyle` esperado pasa a una constante propia de esta rama con los valores de R12; la constante `metrics` compartida (la usan el `it` de la rama sin token y la rama de éxito) no se muta |
 | `N` › `#167 R10: Pingo y tarjeta de estado en nueva contraseña` › `#172 R5: Pingo de nueva contraseña flota en el formulario y en el éxito` | R12 | seguro |
 | `N` › ídem › `#167 R10: el formulario entra en dos tiempos` | R12 | seguro |
 | `N` › ídem › `#167 R10: la cabecera lleva a Pingo y después el título` | R12 | seguro |
-| `N` › `R8: el submit completa el reset y mapea los errores` › `deshabilita el boton mientras la peticion esta en vuelo` | R12 | condicional |
+| `N` › `R8: el submit completa el reset y mapea los errores` › `deshabilita el boton mientras la peticion esta en vuelo` | — | se queda verde, no se toca (M13) |
 | `N` › `#61 R8: las tres ramas de reset tienen contenedor de scroll` › `#172 R19: la rama de éxito ancla el enlace al pie y no centra` | R13 | seguro |
 | `N` › `#167 R10: Pingo y tarjeta de estado en nueva contraseña` › `#167 R10: el éxito conserva la cabecera del formulario` | R13 | seguro |
 | `N` › ídem › `#167 R10: la tarjeta de estado es secondary con check y texto` | R13 | seguro |
-| `N` › ídem › `#167 R10: la tarjeta de estado entra con pop` | R13 | condicional |
-| `N` › ídem › `#167 R10: el disco del check es acento con Check de 18` | R13 | condicional |
+| `N` › ídem › `#167 R10: la tarjeta de estado entra con pop` | R13 | seguro |
+| `N` › ídem › `#167 R10: el disco del check es acento con Check de 18` | — | se queda verde, no se toca (M13) |
+| `src/__tests__/chunky-cta-canvas-fidelity.test.ts` › `#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por #191 R11) (enmendado por #189 R7) (enmendado por #189 R13)` | R13 | seguro por recuento (F4): en el mapa `radii`, `'screens/reset-password/index.tsx': 1` pasa a `2`; y `26 + 1 + 1 + 1 + 2` pasa a `26 + 1 + 1 + 1 + 2 + 1` con `// #205 R13`; sufijo ` (enmendado por #205 R13)` |
 | `app/__tests__/layout.test.tsx` › `#95 R4: cada pantalla de detalle declara su cabecera nativa` › `#194 R4: %s usa exactamente las opciones de cabecera acordadas` | R15 | seguro: se borra la fila `['pets/add', '']` |
-| `A` › `R6: alta de mascota` › `#191 R4: el paso 1 pinta foto, burbuja y datos básicos` | R16 | seguro |
+| `A` › `R6: alta de mascota` › `#191 R4: el paso 1 pinta foto, burbuja y datos básicos` | R16, R19 | seguro dos veces, un solo sufijo con las dos R (M15): R16 por la cabecera y la foto; R19 porque `add-pet-continue` sale de `add-pet-form` |
 | `A` › `#191 R2: el título vive en el contenido` › `pinta el título antes de la foto y conserva el botón atrás nativo` | R16 | seguro |
-| `A` › `#191 R6: métricas y receta de campos` › `aplica las métricas, etiquetas y controles exactos en ambos pasos` | R16 (y R18 si vuelve a romper: segundo sufijo) | seguro |
+| `A` › `#191 R6: métricas y receta de campos` › `aplica las métricas, etiquetas y controles exactos en ambos pasos` | R18 | seguro solo en R18 (M16, O4): el helper pasa a `const metrics = (gap = 12) => expect(screen.getByTestId('add-pet-form').props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 12, gap, paddingBottom: 48 });` con `// #205 R18` y el paso 2 llama a `metrics(16)`. El paso 1 sigue verde en R16 y en R19 porque el scroll conserva su `contentContainerStyle` |
 | `A` › `R6: alta de mascota` (por confirmar) › `#191 R5: Tipo, Sexo y Tamaño usan el selector` | R16 | condicional |
 | `A` › `R6: alta de mascota` (por confirmar) › `#191 R3: el indicador de paso muestra el primero con un segmento lleno` | R16 | condicional |
 | `A` › `R6: alta de mascota` (por confirmar) › `#191 R3: el indicador de paso llena ambos segmentos en el segundo` | R16 | condicional |
-| `A` › `#62 R11: los selectores de especie usan la receta segmentada (enmendado por #191 R5)` › `%s coincide con los demás chips del formulario` | R18 | seguro |
-| `A` › `#148 R4: add-pet se aparta del teclado en Android` › `el host screen-add-pet añade paddingBottom 291 al abrir el teclado` | R19 | condicional (el offset pasa a 0; se aserta la cifra que da el propio montaje del test) |
+| `src/__tests__/alerts-canvas-fidelity.test.ts` › `#174 R12: inventarios` › `limita $token a su inventario de producción (…)` (`it.each`, fila `tracking-title`) | R16 | seguro (F2): se quita de su `files` la entrada `'screens/add-pet/index.tsx', // #191 R11` (la cabecera pasa a `ScreenHeader`), con el comentario `// #205 R16` en la línea `files: [` de esa fila; sufijo ` (enmendado por #205 R16)` en el título |
+| `src/components/__tests__/segmented-control.test.tsx` › `#191 R5: SegmentedControl` › `aplica las recetas, esquinas y estados accesibles a cada opción` | R17 | seguro (F3): el `className` esperado pasa a `… + (selected ? ' bg-surface' : '')`, sin `shadow-sm`; el estilo se lee con `StyleSheet.flatten(segment.props.style)` y se aserta con `toMatchObject(CONTINUOUS_CORNER)` en las dos ramas (seleccionada y no) y, si está seleccionada, también con `toMatchObject(shadows.segment)`, con `shadows` de `const { result } = await renderHook(() => useShadows());`; sufijo ` (enmendado por #205 R17)` |
+| `A` › `#62 R11: los selectores de especie usan la receta segmentada (enmendado por #191 R5)` › `%s coincide con los demás chips del formulario` | R17 | seguro (M14): solo la fila `species-dog` cambia, de `' bg-surface shadow-sm'` a `' bg-surface'`; no es R18 |
+| `A` › `#148 R4: add-pet se aparta del teclado en Android` › `el host screen-add-pet añade paddingBottom 291 al abrir el teclado` | R19 | seguro (O4): `paddingBottom 291` pasa a `200`; el proveedor del test sigue con `value={91}`, de modo que 200 prueba que el offset del KAV es 0 |
 | `L`, `G`, `N`: `jest.mock` de `../home/home-entrance` | R8, R9, R12 | opcional: si el mock queda sin consumidor, se puede borrar en el mismo commit; no es un `it` |
 
-Los agregados se enmiendan según «Candados agregados revisados».
+Los agregados se enmiendan según «Candados agregados revisados». El piso de
+`cardElements` del escáner HeroUI es también un agregado: su fila está arriba
+(R3, R4, R8, R13) y su cuenta en `tasks.md` §Cuentas a re-medir. Las cuentas de
+`<Card`, `style={CONTINUOUS_CORNER}` y `rounded-16` de otras ramas (#199, #200)
+se re-miden al mergear.
 
 **Regla de parada**: si un `it` que no está en esta tabla ni en «Candados
 agregados revisados» se pone rojo, el implementador para, no lo toca y lo apunta
@@ -696,7 +775,8 @@ Revisados y **sin cambio** (con las decisiones de arriba):
   `FieldErrorMessage` 4 y `usePreventRemove` 1 en add-pet.
 - `chunky-cta-canvas-fidelity.test.ts`: literales y cuentas de CTA por fichero
   (welcome 2, forgot 3, login 1, add-pet 2) no cambian; las CTA solo cambian de
-  padre.
+  padre. Cambian solo `#177 R5.2` (R10) y `#177 R7.3` (R13), que tienen su fila
+  en el inventario.
 - `legibility` `#61 R4` (`inkSites`: login 2, forgot 1, reset 4, add-pet 1,
   welcome 2).
 - `design-drift.test.ts` `#118 R11: la bienvenida no mete drift de estilo`

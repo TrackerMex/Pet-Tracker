@@ -63,7 +63,11 @@ base es la de `origin/dev` 81cb6d6b.
 | `<RiseIn` | `src/screens/welcome/index.tsx` | 0 | +4 | 4 | R2 |
 | `<PingoFloat` | `src/screens/welcome/index.tsx` | 0 | +1 | 1 | R3 |
 | `<Card` | `src/screens/welcome/index.tsx` | 2 | −2 | 0 | R3, R4 |
-| `entranceStyle` | `src/screens/welcome/index.tsx` | 2 | −2 | 0 | R7 |
+| `entranceStyle` | `src/screens/welcome/index.tsx` | 2 | −2 | 0 | R2 (−1: el uso en `welcome-content`), R7 (−1: la declaración) |
+| `withRepeat` | `src/screens/welcome/index.tsx` | 3 | −1 | 2 | R3 |
+| `pingoFloatY` | `src/screens/welcome/index.tsx` | 4 | −4 | 0 | R3 |
+| `translateY` | `src/screens/welcome/index.tsx` | 5 | −5 | 0 | R3 (−1: `pingoStyle`), R7 (−4) |
+| suma de `cardElements` (script de abajo) | `src/**/*.tsx` | 41 | −4 | 37 | R3, R4, R8, R13 |
 | `HomeEntrance` | `src/screens/login/index.tsx` | 5 | −5 | 0 | R8 |
 | `<RiseIn` | `src/screens/login/index.tsx` | 0 | +3 | 3 | R8 |
 | `<PingoFloat` | `src/screens/register/index.tsx` | 1 | 0 | 1 | R9 |
@@ -74,11 +78,45 @@ base es la de `origin/dev` 81cb6d6b.
 | `shadow-sm` | `src/components/segmented-control.tsx` | 1 | −1 | 0 | R17 |
 | `style={CONTINUOUS_CORNER}` | `src/components/segmented-control.tsx` | 2 | −1 | 1 | R17 |
 | `bg-accent-soft` | `src/screens/add-pet/index.tsx` | 2 | −2 | 0 | R18 |
+| `keyboardVerticalOffset={headerHeight}` | `src/screens/add-pet/index.tsx` | 1 | −1 | 0 | R19 |
+| `keyboardVerticalOffset={0}` | `src/screens/add-pet/index.tsx` | 0 | +1 | 1 | R19 |
 | `## Enmienda #205` | `../docs/ui-guidelines.md` | 0 | +1 | 1 | R20 |
 
 Los agregados de `consistency-classnames.test.ts` tienen sus cifras en
 requirements.md §Candados agregados revisados. CONTINUOUS_CORNER cierra con un
 neto de +3.
+
+Réplica del piso de `cardElements` (mismo recorrido que el escáner de
+`heroui-text-size-merge.test.ts`: `.tsx` de `src/` sin `__tests__`, `__mocks__`
+ni `.test.tsx`; cuenta cada elemento JSX cuya etiqueta viene de
+`components/card` o `./card`). Guárdalo fuera del repo, por ejemplo en
+`$TMPDIR/card-count.js`, y córrelo desde `mobile-pet-tracker/` con
+`NODE_PATH="$PWD/node_modules" node "$TMPDIR/card-count.js"`. Base medida: 41.
+Esperado al cerrar: 37 (R3, R4, R8, R13). #199 y #200 también tocan este piso:
+quien mergee después lo vuelve a medir y recompone la expresión
+`41 - 1 - 1 - 1 - 1` con lo que midió.
+
+```js
+const ts = require('typescript'), fs = require('fs'), path = require('path');
+const walk = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => {
+  const p = path.join(d, e.name);
+  if (e.isDirectory()) return ['__tests__', '__mocks__'].includes(e.name) ? [] : walk(p);
+  return /\.tsx$/.test(e.name) && !/\.test\.tsx$/.test(e.name) ? [p] : [];
+});
+let card = 0;
+for (const f of walk('src')) {
+  const s = ts.createSourceFile(f, fs.readFileSync(f, 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const names = new Set();
+  for (const st of s.statements) {
+    if (!ts.isImportDeclaration(st) || !ts.isStringLiteral(st.moduleSpecifier)) continue;
+    const m = st.moduleSpecifier.text, b = st.importClause && st.importClause.namedBindings;
+    if (!b || !(m.endsWith('components/card') || m === './card')) continue;
+    if (ts.isNamedImports(b)) b.elements.forEach((x) => names.add(x.name.text)); else if (ts.isNamespaceImport(b)) names.add(b.name.text);
+  }
+  (function v(n) { if ((ts.isJsxOpeningElement(n) || ts.isJsxSelfClosingElement(n)) && names.has(n.tagName.getText(s).split('.')[0])) card++; ts.forEachChild(n, v); })(s);
+}
+console.log(card);
+```
 
 ## Bloques por requisito
 
@@ -97,57 +135,57 @@ Cada bloque sigue la misma pauta:
 - [ ] (3) Refactor.
 
 ### R2 — Main: bloques y entradas
-- [ ] (1) Rojo en el test de welcome y en F. En este mismo commit borra el describe `#197 R20` de `canvas-foundations.test.ts`.
-- [ ] (2) Cuatro `RiseIn` (0/120/200/280), márgenes 16 y espaciador en `welcome/index.tsx`.
+- [ ] (1) Rojo en el test de welcome y en F. En este mismo commit borra el describe `#197 R20` de `canvas-foundations.test.ts`. Borra además los tres `it` de `#153 R8` que miden el estilo animado de `welcome-content` y enmienda `R5 › pinta marca, tagline y legal con sus clases` (` (enmendado por #205 R2, R6)`), según el inventario.
+- [ ] (2) Cuatro `RiseIn` (0/120/200/280), márgenes 16 y espaciador en `welcome/index.tsx`. `welcome-content` pasa a `View` plano: sale su uso de `entranceStyle` (la declaración se queda hasta R7).
 - [ ] (3) Refactor.
 
 ### R3 — Main: escena
-- [ ] (1) Rojo en welcome y F. El orden se asierta por índices relativos.
-- [ ] (2) La escena pasa a `View` de 380 con radio 32 y `CONTINUOUS_CORNER`. Pingo mide 220 dentro de `PingoFloat` y lleva el suelo `bg-border`.
+- [ ] (1) Rojo en welcome y F. El orden se asierta por índices relativos. Incluye las enmiendas de inventario de R3: muelle de #153 R9 a 220, pose 220×220, listas de hijos de `welcome-stage` de #167 R12 y R13, borrado de dos `it` de #153 R10 y enmienda del tercero, y el piso `cardElements` de `heroui-text-size-merge.test.ts` (`41 - 1`, con el sufijo ` (enmendado por #205 R3, R4, R8, R13)` y el comentario `; #205 R3: -1`).
+- [ ] (2) La escena pasa a `View` de 380 con radio 32 y `CONTINUOUS_CORNER`. Pingo mide 220 dentro de `PingoFloat` y lleva el suelo `bg-border`. Borra la flotación de 4 puntos: `pingoFloatY`, su `withRepeat` y el `translateY` de `pingoStyle`, y quita los imports `MOTION_FLOAT_*`.
 - [ ] (3) Refactor.
 
 ### R4 — Main: bocadillo
-- [ ] (1) Rojo en welcome y F.
+- [ ] (1) Rojo en welcome y F, con la enmienda de `#153 R5 › pinta el bocadillo…` y el `- 1` en el piso de `cardElements` (comentario `; #205 R3, R4: -1, -1`).
 - [ ] (2) Bocadillo `View` absoluto con `PopIn` y `shadows.card`.
 - [ ] (3) Refactor.
 
 ### R5 — Main: saludo
-- [ ] (1) Rojo según requirements.md §R5.
+- [ ] (1) Rojo según requirements.md §R5. Enmienda en el mismo commit los tres `it` de `#153 R1` (declara el saludo y lo pinta en español y en inglés).
 - [ ] (2) Cambia `welcome.pingoGreeting` en `src/i18n/catalog.ts` (es y en).
 - [ ] (3) Refactor.
 
 ### R6 — Main: marca, CTAs y legal
-- [ ] (1) Rojo en welcome y F.
+- [ ] (1) Rojo en welcome y F. `R5 › pinta marca, tagline y legal con sus clases` ya lleva su sufijo desde R2: aquí se enmiendan sus clases de marca, tagline y legal.
 - [ ] (2) Marca a 34/900, subtítulo con ancho 300 y legal con margen 16.
 - [ ] (3) Refactor.
 
 ### R7 — Main: entradas retiradas
-- [ ] (1) Rojo en welcome.
-- [ ] (2) Retira `entranceStyle` y la flotación de 4 puntos. El muelle de escala de #153 R9 se queda.
+- [ ] (1) Rojo en welcome, con el borrado de `#153 R8 › usa el fundido y el muelle de motion.ts`.
+- [ ] (2) Retira la declaración de `entranceStyle`, los valores compartidos `opacity` y `translateY` de entrada y sus `.set`. La flotación de 4 puntos salió en R3. El muelle de escala de #153 R9 se queda.
 - [ ] (3) Refactor.
 
 ### R8 — Login
-- [ ] (1) Rojo en login y F.
+- [ ] (1) Rojo en login y F, con las enmiendas del inventario (incluidas las dos filas nuevas de F10 y F11) y el `- 1` en el piso de `cardElements` (comentario `; #205 R3, R4, R8: -1, -1, -1`).
 - [ ] (2) `RiseIn` 0/100/200, burbuja `View`, `login-title`, `login-actions` y márgenes 20.
 - [ ] (3) Refactor.
 
 ### R9 — Registro
-- [ ] (1) Rojo en register y F.
+- [ ] (1) Rojo en register y F, con las enmiendas del inventario (el espaciador de `#172 R19` se rompe por la fila de error dentro de `register-body`).
 - [ ] (2) La cabecera queda fija y el formulario sube con `RiseIn` 0, con márgenes 20 y colchón de 96.
 - [ ] (3) Refactor.
 
 ### R10 + R11 — Recuperar y RecuperarEnviado
-- [ ] (1) Un solo commit rojo con los `it` de R10 y R11 en forgot y F.
+- [ ] (1) Un solo commit rojo con los `it` de R10 y R11 en forgot y F. Reescribe `lockTile()` una sola vez a `screen.getByTestId('forgot-lock-tile')` (`// #205 R10`), enmienda los cuatro `it` de `#167 R9` y `#177 R5.2` de `chunky-cta-canvas-fidelity.test.ts`.
 - [ ] (2) Un solo commit verde: escena 168x150, Pingo quieto girado, tile absoluto, `forgot-actions` y Reenviar.
 - [ ] (3) Refactor.
 
 ### R12 — NuevaContrasena (formulario)
-- [ ] (1) Rojo en reset-password y F.
+- [ ] (1) Rojo en reset-password y F. En `#172 R19: la rama del formulario…` declara una constante propia; no mutes `metrics`, que usan la rama sin token y la de éxito.
 - [ ] (2) `RiseIn` 0/100 y Pingo 72 sin `PingoFloat`.
 - [ ] (3) Refactor.
 
 ### R13 — NuevaContrasena (éxito)
-- [ ] (1) Rojo en reset-password y F.
+- [ ] (1) Rojo en reset-password y F. Enmienda `#177 R7.3` de `chunky-cta-canvas-fidelity.test.ts` (`reset-password` 1 → 2 y `+ 1`) y añade el último `- 1` al piso de `cardElements` (la expresión cierra en `41 - 1 - 1 - 1 - 1` y el comentario en `; #205 R3, R4, R8, R13: -1, -1, -1, -1`).
 - [ ] (2) La tarjeta de éxito pasa a `View` `rounded-16` con `CONTINUOUS_CORNER`.
 - [ ] (3) Refactor.
 
@@ -162,23 +200,23 @@ Cada bloque sigue la misma pauta:
 - [ ] (3) Refactor.
 
 ### R16 — NuevaMascota (paso 1)
-- [ ] (1) Rojo en add-pet y F.
+- [ ] (1) Rojo en add-pet y F, con las enmiendas del inventario y la fila `tracking-title` de `alerts-canvas-fidelity.test.ts` sin `add-pet` (` (enmendado por #205 R16)`).
 - [ ] (2) Monta `ScreenHeader` (`backFallback="/"`) con el paso como accesorio, saca la barra del scroll y pon `RiseIn` en la intro.
 - [ ] (3) Refactor.
 
 ### R17 — Sombra del selector segmentado
-- [ ] (1) Rojo en F, con la enmienda de `add-pet-two-steps`.
+- [ ] (1) Rojo en F, con la enmienda de `add-pet-two-steps`, la de `segmented-control.test.tsx` (clase sin `shadow-sm`, `CONTINUOUS_CORNER` en las dos ramas y `shadows.segment` en la seleccionada) y la fila `species-dog` de `#62 R11`.
 - [ ] (2) `segmented-control.tsx` usa `shadows.segment` y quita `shadow-sm`.
 - [ ] (3) Refactor.
 
 ### R18 — NuevaMascota2 (paso 2)
-- [ ] (1) Rojo en add-pet y F, sin volver a asertar la cabecera.
+- [ ] (1) Rojo en add-pet y F, sin volver a asertar la cabecera. Enmienda `#191 R6` con `metrics(16)` en el paso 2.
 - [ ] (2) Cuatro `RiseIn` (0/60/120/180) y chips de 44 con `bg-tab-pill`.
 - [ ] (3) Refactor.
 
 ### R19 — Pie fijo de nueva mascota
-- [ ] (1) Rojo en add-pet y F, con la enmienda de `#148 R4`.
-- [ ] (2) La CTA pasa a un pie fuera del scroll, y la celebración no lo pinta.
+- [ ] (1) Rojo en add-pet y F, con la enmienda de `#148 R4` (`paddingBottom 291` → `200`) y el segundo sufijo de `#191 R4`.
+- [ ] (2) La CTA pasa a un pie fuera del scroll, y la celebración no lo pinta. El KAV usa `keyboardVerticalOffset={0}` y se retiran `headerHeight` y `HeaderHeightContext`; el scroll conserva su `contentContainerStyle`.
 - [ ] (3) Refactor.
 
 ### R20 — Enmienda de carta

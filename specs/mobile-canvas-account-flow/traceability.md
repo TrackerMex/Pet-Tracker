@@ -17,7 +17,7 @@ El fichero de cada test es el que fija requirements.md en su R. F es
 | R4 | `#205 R4: el bocadillo flota arriba a la derecha con el pico abajo a la derecha`; `#205 R4: el bocadillo copia posición, radios y sombra del artboard` | — | — | pendiente |
 | R5 | `#205 R5: el saludo dice «Hola, soy Pingo.» y «Hi, I'm Pingo.»` | — | — | pendiente |
 | R6 | `#205 R6: la marca pesa 34/900, el subtítulo se limita a 300 y el legal baja 16`; `#205 R6: la marca copia tamaño, ancho y margen del artboard` | — | — | pendiente |
-| R7 | `#205 R7: el contenido no lleva fundido ni Pingo la flotación de 4 puntos` | — | — | pendiente |
+| R7 | `#205 R7: el contenido no lleva fundido ni muelle de entrada` | — | — | pendiente |
 | R8 | `#205 R8: el scroll apila cabecera, título, cuerpo, espaciador y acciones`; `#205 R8: la burbuja es una vista con el pico abajo a la izquierda`; `#205 R8: Pingo mide 88 y gira -8 grados`; `#205 R8: Login sube a 0, 100 y 200 ms y copia radios y márgenes` | — | — | pendiente |
 | R9 | `#205 R9: la cabecera no entra animada y el formulario sube con RiseIn`; `#205 R9: el scroll usa márgenes 20 y conserva el colchón inferior de 96`; `#205 R9: Registro flota, sube a 0 ms y copia márgenes y términos` | — | — | pendiente |
 | R10 | `#205 R10: la escena apila fondo, Pingo y candado en 168x150`; `#205 R10: Pingo no flota y mide 120 girado 6 grados`; `#205 R10: título, cuerpo, campo y acciones siguen las medidas del artboard`; `#205 R10: Recuperar copia escena, tile y márgenes` | — | — | pendiente |

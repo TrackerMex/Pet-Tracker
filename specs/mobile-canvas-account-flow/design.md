@@ -193,8 +193,16 @@ los seis `src/screens/<pantalla>/index.test.tsx` y
 - **Agregados de `consistency-classnames.test.ts`**: las paralelas suman sus
   términos en las mismas expresiones; un conflicto se resuelve conservando los
   términos de las dos ramas.
-- **Teclado en add-pet**: el pie fijo cambia la cifra de `#148 R4`; el smoke
-  confirma que el pie sube con el teclado.
+- **Teclado en add-pet**: el pie fijo y `keyboardVerticalOffset={0}` cambian la
+  cifra de `#148 R4` (`paddingBottom` 291 → 200; el test sigue montando
+  `HeaderHeightContext` con 91, de modo que 200 prueba que el offset es 0).
+  Para no tocar `#191 R6`, el scroll `add-pet-form` conserva su
+  `contentContainerStyle` (`paddingTop: 12`, `gap` 12 en el paso 1 y 16 en el
+  paso 2, `paddingBottom: insets.bottom + 24`): `insets.top` lo lleva el bloque
+  fijo de cabecera (R16) e `insets.bottom` el pie, con su
+  `Math.max(insets.bottom, 16)`. Se retiran `headerHeight` y
+  `HeaderHeightContext` del fuente. El smoke confirma que el pie sube con el
+  teclado.
 - **`usePreventRemove` con volver propio**: si no intercepta `router.back()`, el
   diálogo de descartar se perdería; lo cubren los tests de hoy y el smoke.
 - **`bg-border` en la sombra del suelo**: en oscuro puede leerse más clara que
