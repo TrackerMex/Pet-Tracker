@@ -1068,3 +1068,40 @@ R26 sigue pendiente del humano, con la checklist de ocho puntos conservada arrib
 - No se marca done, no se crea progress/impl_mobile-canvas-zones.done. No se ejecutan init.sh, push ni PR. R26 queda al humano tras reviewer.
 
 Para reanudar: comprobar este HEAD y la resolución del leader de Home #190 R5; cerrar una suite móvil completa verde, actualizar el resultado global de esta trazabilidad y crear el marcador .done como última acción solo si el handoff queda cumplido. Los pasos R1–R25 y sus sondas no requieren rehacerse por esta parada.
+
+## Merge de dev (#200, #198) — 2026-10-24
+
+Estado: cerrado — merge de origin/dev (329c613c) sobre 9c19a9c2 en el commit d3c2b000; merge-base 81cb6d6b; regla «dev + delta de #202».
+
+Ficheros en conflicto:
+- mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts
+- mobile-pet-tracker/src/__tests__/canvas-foundations.test.ts
+- mobile-pet-tracker/src/__tests__/chunky-cta-canvas-fidelity.test.ts
+- mobile-pet-tracker/src/__tests__/design-drift.test.ts
+- mobile-pet-tracker/src/__tests__/profile-canvas-fidelity.test.ts
+- mobile-pet-tracker/src/app/__tests__/layout.test.tsx
+- mobile-pet-tracker/src/app/_layout.tsx (producción)
+- mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+
+Resolución:
+- `src/app/_layout.tsx` (producción): unión pura de líneas independientes — geofences y geofence-editor con `{ headerShown: false }` (#202 R2), meals-history con `{ headerShown: false }` (#200 R13). El orden del grupo protegido no cambia (índices 10–11 que mira #202 R2 intactos); el import de `TRANSPARENT_HEADER_OPTIONS` ya lo había quitado #202 y dev no lo usa en otro sitio.
+- `src/app/__tests__/layout.test.tsx`: se conservan el it de #202 R2 y los describe de #200 R12 y R13.
+- `src/providers/__tests__/language-provider.test.tsx`: título con las cuatro enmiendas (#189 R15, #198 R15, #202 R10, #202 R18). Recuento de claves: base 443 → dev 445 (+2 #198 R15; el renombre `food.pending`→`food.markServedAction` de #200 es neto 0) → #202 445 (+1 R10, +1 R18) → resultado 445 + 2 = 447. `catalog.ts` automergeado como unión (2 claves home de dev + 2 claves loadingLabel de #202 por idioma).
+- `canvas-foundations.test.ts`: ambos lados borraron el describe #197 R20; se toma el lado sin línea en blanco extra (dev).
+- `chunky-cta-canvas-fidelity.test.ts`: título R7.3 con las enmiendas de #200 R9, #198 R9 y #202 R18. Recuento `rounded-16`: base 31 → dev 34 (+2 #200 R9, +1 #198 R9) → #202 32 (+1 R18) → resultado 34 + 1 = 35; el mapa `radii` automergeado suma 35 (food 2, weekly-activity-chart 1, geofence-editor 4).
+- `alerts-canvas-fidelity.test.ts`: inventario del it.each — se queda `screens/food/index.tsx` de dev y se aplica la baja de geofence-editor y geofences de #202; título con las enmiendas de #200, #198 y #202.
+- `profile-canvas-fidelity.test.ts`: `rounded-hero` = unión ordenada (card, confirm-dialog de #202, alert-detail, food de #200, profile); `text-26` con título unido y `screens/home/index.tsx` de #198 R15, sin las dos filas de geofences que #202 dio de baja.
+- `design-drift.test.ts`: título de «reserva los radios 14, 16 y 22» con las enmiendas de #200 R9, #198 R9 y #202 R18; el mapa automergeado conserva food 2, weekly-activity-chart 1 y geofence-editor 4.
+
+Automergeados revisados:
+- `ui-copy-table.ts`: unión limpia — dev mueve R6_FOOD a `src/screens/food/index.tsx` y cambia R3_HOME (−1 `common.somethingWentWrong`, +2 `home.loadPetsError*`); #202 añade una fila a R14_GEOFENCES y otra a R15_GEOFENCE_EDITOR. `ALL_USES` se cuadra contra la suma de bloques (sin cifra literal) y las dos filas de #202 caen en ficheros que ya estaban, así que `SCREEN_FILES` no cambia por #202 (sigue el recuento de dev, con el `+ 1 - 1` de #200 R1).
+- `ui-language.test.ts`: R3_HOME en el valor de dev (+1 #198 R15); R14 y R15 con el +1 de #202 R10 y R18; sin solape.
+- `catalog.ts`: ver arriba (447 claves por idioma).
+- `consistency-classnames.test.ts`, `docs/ui-guidelines.md`, `feature_list.json`: automergeados sin marcadores.
+
+Verificación (desde `mobile-pet-tracker/`, sin init.sh):
+- Marcadores: `grep -rn '^<<<<<<<\|^>>>>>>>' src` sin salida. `app/` no existe en `mobile-pet-tracker/` (las rutas viven en `src/app`), por lo que esa parte del grep da «No such file».
+- `bun run typecheck`: exit 0.
+- `bunx jest --runInBand` sobre los 7 tests en conflicto y `ui-language.test.ts`: 8 suites, 427/427 verdes. Además, consistency-classnames, geofences-canvas-fidelity, zones-canvas-fidelity, home-canvas-fidelity, nutrition-canvas-fidelity y confirm-dialog: 6 suites, 204/204 verdes.
+- `bunx expo lint`: exit 0 y log vacío (0 bytes, sin `Failed to run`); repetido con `--no-cache`: igual.
+- No apareció el flake del tinte `#0D1117` ni el de Home #190 R5 (no se corrió la suite completa).
