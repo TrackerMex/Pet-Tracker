@@ -67,3 +67,20 @@ describe('#205 R3: escena de Main', () => {
     expect(welcome).toContain('<PingoFloat testID="welcome-pingo-float">');
   });
 });
+
+describe('#205 R4: bocadillo de Main', () => {
+  it('#205 R4: el bocadillo copia posición, radios y sombra del artboard', () => {
+    const main = canvas('Main');
+    expect(main).toContain('top: 28px; right: 22px');
+    expect(main).toContain('padding: 10px 14px');
+    expect(main).toContain('border-radius: 16px 16px 4px 16px');
+    expect(main).toContain('box-shadow: var(--shadow)');
+    expect(main).toContain('animation: pop 400ms ease-out 600ms both');
+
+    const welcome = source('screens/welcome/index.tsx');
+    expect(welcome).toContain('className="absolute top-7 right-5.5"');
+    expect(welcome).toContain('px-3.5 py-2.5');
+    expect(welcome).toContain('rounded-br-4');
+    expect(welcome).toContain('shadows.card');
+  });
+});

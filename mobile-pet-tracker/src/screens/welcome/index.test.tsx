@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, renderHook, screen } from '@testing-library/react-native';
 import { Redirect, router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
@@ -9,6 +9,7 @@ import type { TestInstance } from 'test-renderer';
 import { en, es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
+import { useShadows } from '../../theme/shadows';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { WelcomeScreen } from './index';
 
@@ -223,6 +224,32 @@ describe('#205 R3: la escena de Main', () => {
     expect(pingo).toMatchObject({ width: 220, height: 220 });
     expect(JSON.stringify(pingo)).not.toContain('translateY');
     expect(readSource('screens/welcome/index.tsx')).not.toContain('pingoFloatY');
+  });
+});
+
+describe('#205 R4: bocadillo de Main', () => {
+  it('#205 R4: el bocadillo flota arriba a la derecha con el pico abajo a la derecha', async () => {
+    const { result } = await renderHook(() => useShadows());
+    await renderWelcome();
+    const scene = screen.getByTestId('welcome-scene');
+    const sceneIds = (scene.children as TestInstance[]).map((child) => child.props.testID);
+    expect(sceneIds[sceneIds.length - 1]).toBe('welcome-bubble-pop');
+    const pop = screen.getByTestId('welcome-bubble-pop');
+    expect(pop.props.className).toBe('absolute top-7 right-5.5');
+    expect((pop.children as TestInstance[]).map((child) => child.props.testID)).toEqual(['welcome-bubble']);
+    const bubble = screen.getByTestId('welcome-bubble');
+    expect(bubble.props.className).toBe('rounded-tl-16 rounded-tr-16 rounded-bl-16 rounded-br-4 bg-surface px-3.5 py-2.5');
+    const style = StyleSheet.flatten(bubble.props.style);
+    expect(style.borderCurve).toBe('continuous');
+    expect(style.boxShadow).toHaveLength(2);
+    expect(style.boxShadow).toEqual(result.current.card.boxShadow);
+    expect(screen.getByTestId('welcome-bubble-text').props.className).toBe('text-sm font-bold text-foreground');
+    const source = readSource('screens/welcome/index.tsx');
+    expect(source).toContain('<PopIn testID="welcome-bubble-pop" className="absolute top-7 right-5.5">');
+    expect(source).toMatch(/<View\s+testID="welcome-bubble"/);
+    expect(source).not.toMatch(/<Card\b/);
+    expect(source).toContain('const shadows = useShadows();');
+    expect(source).toContain('style={[CONTINUOUS_CORNER, shadows.card]}');
   });
 });
 
@@ -487,18 +514,20 @@ describe('#153 R5: la escena de Pingo sustituye al logo', () => {
       'rounded-32', 'bg-surface-secondary', 'w-full', 'items-center', 'justify-center', 'overflow-hidden', 'h-95', // #205 R3
     ]));
     expect(scene.props.className.split(' ')).not.toContain('rounded-card'); // #205 R3
-    expect((scene.children as TestInstance[]).map((child) => child.props.testID)).toEqual(['welcome-bubble', 'welcome-ground', 'welcome-stage']); // #205 R3
+    expect((scene.children as TestInstance[]).map((child) => child.props.testID)).toEqual(['welcome-ground', 'welcome-stage', 'welcome-bubble-pop']); // #205 R3, R4
   });
 
-  it('pinta el bocadillo como card de superficie con el saludo', async () => {
+  it('pinta el bocadillo como card de superficie con el saludo (enmendado por #205 R4)', async () => {
     await renderWelcome();
     const bubble = screen.getByTestId('welcome-bubble');
     expect(bubble.props.className.split(' ')).toEqual(expect.arrayContaining([
-      'rounded-card', 'bg-surface', 'shadow-sm', 'px-4', 'py-3',
+      'rounded-tl-16', 'rounded-tr-16', 'rounded-bl-16', 'rounded-br-4', 'bg-surface', 'px-3.5', 'py-2.5', // #205 R4
     ]));
+    expect(bubble.props.className.split(' ')).not.toContain('rounded-card'); // #205 R4
+    expect(bubble.props.className.split(' ')).not.toContain('shadow-sm'); // #205 R4
     expect(bubble.children).toHaveLength(1);
     expect((bubble.children[0] as TestInstance).props.testID).toBe('welcome-bubble-text');
-    expect(screen.getByTestId('welcome-bubble-text').props.className).toBe('text-center text-sm font-semibold text-foreground');
+    expect(screen.getByTestId('welcome-bubble-text').props.className).toBe('text-sm font-bold text-foreground'); // #205 R4
   });
 });
 
