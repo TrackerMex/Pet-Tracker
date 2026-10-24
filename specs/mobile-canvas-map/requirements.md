@@ -201,6 +201,7 @@ Abreviaturas de test:
 - LG `src/__tests__/legibility-classnames.test.ts`
 - DD `src/__tests__/design-drift.test.ts`
 - AF `src/__tests__/alerts-canvas-fidelity.test.ts`
+- HM `src/__tests__/heroui-text-size-merge.test.ts` (solo fila 28, errata E1)
 - CO `src/__tests__/consistency-classnames.test.ts` (no cambia: D22)
 
 Los `it` nuevos empiezan por `#201 R<n>`. Los `it` existentes que cambian
@@ -406,6 +407,7 @@ y `style={shadows.floating}`, cuyos hijos son, en orden: la rejilla
   ×1 / `gap-2.5 rounded-24 bg-surface p-3` ×2 y `shadows.floating` ×2 (tarjeta
   y esqueleto); `grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px` ×1 /
   `className="gap-2"` ×2 (rejilla y rejilla del esqueleto).
+- HM: fila 28 del inventario (la cota de `cardElements` baja 1; errata E1).
 
 ### R5 — Tiles con rótulo arriba (`Mapa`)
 
@@ -818,6 +820,9 @@ rótulos con `getByText` y no depende del orden.
 | 25 | LG › `#61 R4: el acento como tinta usa accent-strong` | `inkSites` `[join('screens', 'map', 'index.tsx'), 2]` y el total de `suma las trece ocurrencias que enumera la spec` | `2 - 1 // #201 R5` y el total `- 1 // #201 R5` | R5 |
 | 26 | DD › `reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #198 R9)` (sufijo: `(enmendado por #201 R5, R13)`) | lista de `rounded-14` sin el mapa; objeto `rounded16` sin el mapa | la lista gana `join('screens', 'map', 'index.tsx'), // #201 R5` entre `join('screens', 'geofences', 'index.tsx'), // #189 R5` y `join('screens', 'meal-schedule', 'index.tsx'), …` (orden de `readdirSync`, alfabético); `rounded16` gana `'screens/map/index.tsx': 1, // #201 R13` entre `'screens/login/index.tsx': 1,` y `'screens/pairing/index.tsx': 1,` | R5, R13 |
 | 27 | AF › `#174 R12: inventarios` › `it.each` `'limita $token a su inventario de producción (…) (enmendado por #198 R9, R15)'` (la plantilla gana ` (enmendado por #201 R2)`), fila `token: 'text-15'` | 16 ficheros, sin el mapa | 17: `'screens/map/index.tsx', // #201 R2` entre `'screens/login/index.tsx',` y `'screens/meal-schedule/index.tsx', // #179 R7` | R2 |
+| 28 | HM › `#187 R1: ningún componente que fusiona className lleva text-NN` › `#187 R1: el escáner cubre al menos el universo medido (…) (enmendado por #199 R19)` (el título gana ` (enmendado por #201 R4)`), tercera aserción (`cardElements`) | `toBeGreaterThanOrEqual(35 - 1 - 1 - 1 + 1)` (33; en H0 el árbol cuenta 33, 2 en el mapa) | `toBeGreaterThanOrEqual(35 - 1 - 1 - 1 + 1 - 1)` y el comentario gana `; #201 R4: -1` al final; las otras tres aserciones no cambian | R4 |
+
+**Errata E1 (2026-10-24, fila 28).** La auditoría no vio la cota de `cardElements` de HM porque no compara contra un literal del mapa: es un mínimo agregado. En H0 (`b834a317`) la cota y el recuento valen 33, así que el verde de R4 (`Card` → `View`, `<Card` del mapa 2 → 1) la deja en 32 y la pone roja. Se enmienda en el commit rojo de R4. Medido con una réplica del escáner (`heroElements` 223 ≥ 197, ficheros 32 ≥ 28, `classNameElements` 174 ≥ 163): ninguna otra cota de HM queda al límite.
 
 Se comprobó que siguen verdes sin cambios: `#116 R2 › pinta la píldora como
 hijo 0 de map-stats y la tarjeta como hijo 1` (busca `stat-speed` dentro del
@@ -903,6 +908,7 @@ la carta.
   quedan cerrados en `de2b1370` (§ Respuesta a la auditoría). Ningún doble de
   módulo usa `{ virtual: true }` (causa del flake de tinte `#0D1117`, ver #207).
   Si otra feature de la ola 2 entra antes en `dev`, el handoff re-mide las cifras.
+  Errata E1 (fila 28, HM) firmada también por delegación el 2026-10-24 sobre `b834a317`.
 
 Cierre (no gate de implementación), una casilla por smoke:
 

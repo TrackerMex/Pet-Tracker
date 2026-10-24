@@ -53,7 +53,7 @@ su § Candados que esta feature revierte.
   línea, `text-15`. (3) Nada.
 - **R3**: (1) MT `#201 R3` ×3. (2) Ninguna: debe nacer verde; si nace rojo,
   parar e informar. (3) Nada.
-- **R4**: (1) MT `#201 R4` ×2, CF R4. (2) `Card` → `View map-stats-card`. (3)
+- **R4**: (1) MT `#201 R4` ×2, CF R4, fila 28 (HM, errata E1). (2) `Card` → `View map-stats-card`. (3)
   Nada.
 - **R5**: (1) MT `#201 R5`, filas 12–13, 25 y 26, CF R5. En la fila 26 la
   lista de DD gana `join('screens', 'map', 'index.tsx'), // #201 R5` y el
