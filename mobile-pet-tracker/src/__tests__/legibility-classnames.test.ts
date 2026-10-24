@@ -157,7 +157,7 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     [join('screens', 'login', 'index.tsx'), 2],
     [join('screens', 'forgot', 'index.tsx'), 1], // #117 R10
     [join('screens', 'reset-password', 'index.tsx'), 4], // #172 R19: link-login del formulario
-    [join('screens', 'home', 'index.tsx'), 2],
+    [join('screens', 'home', 'index.tsx'), 3], // #198 R4
     [join('screens', 'health', 'index.tsx'), 1],
     [join('app', '(tabs)', 'food.tsx'), 1],
     [join('screens', 'map', 'index.tsx'), 2],
@@ -167,15 +167,18 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     [join('screens', 'welcome', 'index.tsx'), 2],
   ];
 
-  it.each(inkSites)('%s pinta con text-accent-strong (%i)', (path, sites) => {
+  it.each(inkSites)('%s pinta con text-accent-strong (%i) (enmendado por #198 R4)', (path, sites) => {
     expect(readSource(path).match(/text-accent-strong\b/g)).toHaveLength(sites);
   });
 
-  it('suma las trece ocurrencias que enumera la spec', () => {
+  it('suma las trece ocurrencias que enumera la spec (enmendado por #198 R4)', () => {
+    expect(inkSites.reduce((total, [path]) => total + (readSource(path).match(/text-accent-strong\b/g) ?? []).length, 0)).toBe(
+      inkSites.reduce((total, [, sites]) => total + sites, 0),
+    );
     expect(
       inkSites.reduce((total, [, sites]) => total + sites, 0),
     ).toBe(
-      13 + 1 + 1
+      14 + 1 + 1 // #198 R4: +1 Inicio
         + 2 // #118 R11
         + 1 // #167 R10
         + 1 // #172 R19

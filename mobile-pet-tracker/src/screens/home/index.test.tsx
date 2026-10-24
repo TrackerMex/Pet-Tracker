@@ -5114,16 +5114,16 @@ describe('#152 R8: la batería del collar se dibuja como barra', () => {
   beforeEach(setupHomeMotion);
 
   it.each([
-    [82, 'bg-success'],
-    [61, 'bg-success'],
+    [82, 'bg-accent'],
+    [61, 'bg-accent'],
     [60, 'bg-warning-strong'],
     [12, 'bg-warning-strong'],
-  ] as const)('pinta %i% con %s', async (pct, color) => {
+  ] as const)('pinta %i% con %s (enmendado por #198 R4)', async (pct, color) => {
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(pct) });
     await renderMotionHome();
     const track = screen.getByTestId('collar-battery-track');
     const fill = screen.getByTestId('collar-battery-fill');
-    expect(track.props.className).toBe('h-1.5 flex-1 overflow-hidden rounded-full bg-surface');
+    expect(track.props.className).toBe('h-2 w-full overflow-hidden rounded-full bg-background');
     expect(fill.props.className).toBe(`h-full rounded-full ${color}`);
     expect(track.children.filter((child) => typeof child !== 'string')).toEqual([fill]);
     expect(fill).toHaveAnimatedStyle({ width: `${pct}%` }, { shouldMatchAllProps: true });
@@ -6068,5 +6068,40 @@ describe('#198 R3: collar con dispositivo', () => {
     await screen.findByTestId('collar-battery');
     expect(screen.queryByTestId('icon-battery') === null).toBe(true);
     expect(readFileSync(join(process.cwd(), 'src/screens/home/index.tsx'), 'utf8')).not.toMatch(/\bBattery\b/);
+  });
+});
+
+describe('#198 R4: batería del canvas', () => {
+  beforeEach(() => {
+    setupCanvasHome();
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet() });
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('#198 R4 pinta la barra de 8 sobre el fondo de la app', async () => {
+    const view = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
+    const track = await screen.findByTestId('collar-battery-track');
+    expect(track.props.className).toBe('h-2 w-full overflow-hidden rounded-full bg-background');
+    await view.unmount();
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(null) });
+    await renderHome();
+    const battery = await screen.findByTestId('collar-battery');
+    expect(battery).toHaveTextContent('—');
+    expect(battery.props.className).toBe('font-normal text-muted');
+    expect(screen.queryByTestId('collar-battery-track') === null).toBe(true);
+  });
+
+  it.each([
+    { pct: 72, fill: 'bg-accent', ink: 'text-accent-strong' },
+    { pct: 61, fill: 'bg-accent', ink: 'text-accent-strong' },
+    { pct: 60, fill: 'bg-warning-strong', ink: 'text-warning-strong' },
+    { pct: 12, fill: 'bg-warning-strong', ink: 'text-warning-strong' },
+  ])('#198 R4 tiñe barra y cifra por umbral ($pct)', async ({ pct, fill, ink }) => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(pct) });
+    await renderHome();
+    const track = await screen.findByTestId('collar-battery-track');
+    expect(track.props.className).toBe('h-2 w-full overflow-hidden rounded-full bg-background');
+    expect(screen.getByTestId('collar-battery-fill').props.className).toBe(`h-full rounded-full ${fill}`);
+    expect(screen.getByTestId('collar-battery').props.className).toBe(`text-15 font-extrabold ${ink}`);
   });
 });

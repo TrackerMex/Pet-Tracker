@@ -389,7 +389,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
 });
 
 describe('#98 R10: los candados que esta feature no mueve', () => {
-  it('deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9) (enmendado por #198 R2, R3)', () => {
+  it('deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9) (enmendado por #198 R2, R3, R4)', () => {
     const home = readSource(join('screens', 'home', 'index.tsx'));
     const food = readSource(join('app', '(tabs)', 'food.tsx'));
     const count = (pattern: RegExp) =>
@@ -407,7 +407,7 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
     expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 4 + 1 - 1 - 7 + 1 + 1 + 2 + 2 - 1 + 1 + 3 + 2 + 1 - 1 + 4); // #189 R6; #189 R5 (enmendado por #190 R13) // #191 R11 // #177 R5 // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168; #170 R8: alert-detail-map; #171 R3: ready-done; #173 R10: ProfileTile // #198 R2
     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(1); // #177 R10
     expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 2 - 1); // #191 R11 // #179 R6, R7, R11; #178 R5, R10, R12; #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6 // #198 R3
-    expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);
+    expect(home.match(/text-accent-strong\b/g)).toHaveLength(3); // #198 R4
     expect(food.match(/text-accent-strong\b/g)).toHaveLength(1);
     expect(filesMatching(/\brounded-(?:2xl|lg|md|sm)\b/)).toEqual([]);
   });
