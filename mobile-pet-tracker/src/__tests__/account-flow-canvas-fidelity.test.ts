@@ -188,3 +188,22 @@ describe('#205 R11: RecuperarEnviado', () => {
     expect(source('screens/forgot/index.tsx')).toContain('testID="forgot-actions" className="w-full gap-3.5"');
   });
 });
+
+describe('#205 R12: NuevaContrasena', () => {
+  it('#205 R12: NuevaContrasena sube a 0 y 100 ms con Pingo de 72', () => {
+    const nueva = canvas('NuevaContrasena');
+    expect(nueva).toContain('padding: 100px 20px 34px');
+    expect(nueva).toContain('width: 72px');
+    expect(nueva).toContain('margin-top: 32px');
+    expect(nueva).toContain('font-size: 28px; line-height: 32px');
+    expect(nueva).toContain('animation: rise 400ms ease-out both');
+    expect(nueva).toContain('animation: rise 400ms ease-out 100ms both');
+
+    const screen = source('screens/reset-password/index.tsx');
+    expect(screen).toContain('<RiseIn testID="reset-header" delayMs={0} className="flex-row items-center gap-3.5">');
+    expect(screen).toContain('<RiseIn testID="reset-body" delayMs={100} className="mt-8 flex-1 gap-4">');
+    expect(screen).toContain('paddingTop: insets.top + 56');
+    expect(screen).toContain('width: 72');
+    expect(screen).toContain('text-28 leading-8');
+  });
+});

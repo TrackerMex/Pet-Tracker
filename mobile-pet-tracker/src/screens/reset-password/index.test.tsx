@@ -9,6 +9,7 @@ import {
 } from '@testing-library/react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
+import type { TestInstance } from 'test-renderer';
 
 import { resetPassword, type ResetPasswordState } from '../../api/auth';
 import ResetPasswordRoute from '../../app/reset-password';
@@ -307,6 +308,12 @@ describe('#61 R8: las tres ramas de reset tienen contenedor de scroll', () => {
     paddingTop: 52,
     paddingBottom: 48,
   };
+  const formMetrics = {
+    flexGrow: 1,
+    paddingHorizontal: 20, // #205 R12
+    paddingTop: 96, // #205 R12
+    paddingBottom: 48,
+  };
 
   it('la rama sin token centra también en horizontal', async () => {
     await renderRoute();
@@ -333,12 +340,12 @@ describe('#61 R8: las tres ramas de reset tienen contenedor de scroll', () => {
     ).toEqual(metrics);
   });
 
-  it('#172 R19: la rama del formulario ancla el envío al pie y no centra', async () => {
+  it('#172 R19: la rama del formulario ancla el envío al pie y no centra (enmendado por #205 R12)', async () => {
     await renderRoute('token-123');
 
     const screenRoot = screen.getByTestId('reset-password-form');
 
-    expect(screenRoot.props.contentContainerStyle).toEqual(metrics);
+    expect(screenRoot.props.contentContainerStyle).toEqual(formMetrics); // #205 R12
     expect(screenRoot.props.keyboardShouldPersistTaps).toBe('handled');
   });
 });
@@ -407,31 +414,32 @@ describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
     expect(screen.getByTestId(other).props.secureTextEntry).toBe(true);
   });
 
-  it('#172 R5: Pingo de nueva contraseña flota en el formulario y en el éxito', async () => {
+  it('#172 R5: Pingo de nueva contraseña flota en el formulario y en el éxito (enmendado por #205 R12)', async () => {
     await renderRoute('reset-token-172');
+    expect(screen.queryByTestId('reset-pingo-float')).toBeNull(); // #205 R12
     expect(screen.getByTestId('reset-pingo').parent)
-      .toHaveProperty('props.testID', 'reset-pingo-float');
+      .toHaveProperty('props.testID', 'reset-header'); // #205 R12
     await submitReset();
     expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
     expect(screen.getByTestId('reset-pingo').parent)
       .toHaveProperty('props.testID', 'reset-pingo-float');
   });
 
-  it('#167 R10: el formulario entra en dos tiempos', async () => {
+  it('#167 R10: el formulario entra en dos tiempos (enmendado por #205 R12)', async () => {
     await renderRoute('reset-token-167');
-    expect(Object.fromEntries(mockHomeEntrance.mock.calls.map(([p]) => [
-      p.testID, { index: p.index, className: p.className },
-    ]))).toEqual({
-      'reset-header': { index: 0, className: 'flex-row items-center gap-3' },
-      'reset-body': { index: 1, className: 'flex-1 gap-4' },
-    });
+    expect(mockHomeEntrance).not.toHaveBeenCalled(); // #205 R12
+    for (const testID of ['reset-header', 'reset-body']) { // #205 R12
+      expect(typeof screen.getByTestId(testID).props.entering).toBe('function');
+    }
+    expect(screen.getByTestId('reset-header').props.className).toBe('flex-row items-center gap-3.5'); // #205 R12
+    expect(screen.getByTestId('reset-body').props.className).toBe('mt-8 flex-1 gap-4'); // #205 R12
   });
 
-  it('#167 R10: la cabecera lleva a Pingo y después el título', async () => {
+  it('#167 R10: la cabecera lleva a Pingo y después el título (enmendado por #205 R12)', async () => {
     await renderRoute('reset-token-167');
     const header = screen.getByTestId('reset-header');
     expect(header.children).toHaveLength(2);
-    expect(header.children[0]).toHaveProperty('props.testID', 'reset-pingo-float');
+    expect(header.children[0]).toHaveProperty('props.testID', 'reset-pingo'); // #205 R12
     expect(header.children[1]).toBe(within(header).getByText('Restablecer contraseña'));
   });
 
@@ -626,6 +634,49 @@ describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
     expect(Object.fromEntries(mockPopIn.mock.calls.map(([p]) => [
       p.testID, { className: p.className, style: p.style },
     ]))).toEqual({ 'reset-success-pop': { className: 'w-full', style: undefined } });
+  });
+});
+
+describe('#205 R12: NuevaContrasena, formulario', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockResetPassword.mockResolvedValue({ kind: 'invalid-token' });
+  });
+
+  it('#205 R12: el formulario apila cabecera sin flotación y cuerpo con RiseIn', async () => {
+    await renderRoute('reset-token-205');
+    await submitReset();
+    expect(await screen.findByTestId('reset-error')).toBeOnTheScreen();
+
+    expect(screen.queryByTestId('reset-pingo-float')).toBeNull();
+    const header = screen.getByTestId('reset-header');
+    expect(typeof header.props.entering).toBe('function');
+    expect(header.props.className).toBe('flex-row items-center gap-3.5');
+    expect((header.children as TestInstance[]).map((child) => child.props.testID))
+      .toEqual(['reset-pingo', undefined]);
+    expect(screen.getByTestId('reset-pingo').props.style).toEqual({ width: 72, height: 72 });
+    expect(within(header).getByText('Restablecer contraseña').props.className)
+      .toBe('flex-1 text-28 leading-8 font-black tracking-display text-foreground');
+
+    const body = screen.getByTestId('reset-body');
+    expect(typeof body.props.entering).toBe('function');
+    expect(body.props.className).toBe('mt-8 flex-1 gap-4');
+    expect(header.parent?.children).toEqual([header, body]);
+    expect(within(body).getAllByTestId(/^(reset-password|reset-password-confirm|reset-error|reset-spacer|reset-submit|link-login)$/)
+      .map((node) => node.props.testID)).toEqual([
+      'reset-password', 'reset-password-confirm', 'reset-error', 'reset-spacer', 'reset-submit', 'link-login',
+    ]);
+  });
+
+  it('#205 R12: el scroll arranca 56 por debajo del inset y usa márgenes 20', async () => {
+    await renderRoute('reset-token-205');
+    const style = screen.getByTestId('reset-password-form').props.contentContainerStyle;
+    expect(style.paddingTop).toBe(40 + 56);
+    expect(style.paddingBottom).toBe(24 + 24);
+    expect(style.paddingHorizontal).toBe(20);
+    expect(style.padding).toBeUndefined();
+    expect(style.gap).toBeUndefined();
   });
 });
 
