@@ -1,4 +1,3 @@
-import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { router } from 'expo-router';
 import { DeviceEventEmitter, Platform } from 'react-native';
 import {
@@ -174,9 +173,7 @@ async function renderWeightLog(selected = true, language: 'en' | 'es' = 'es') {
       <LanguageProvider initial={language}>
         <SelectedPetProvider>
           {selected ? <SelectionProbe /> : null}
-          <HeaderHeightContext.Provider value={91}>
-            <WeightLogScreen />
-          </HeaderHeightContext.Provider>
+          <WeightLogScreen />
         </SelectedPetProvider>
       </LanguageProvider>
     </HeroUINativeProvider>,
@@ -206,7 +203,7 @@ describe('R7: weight log lista el historial', () => {
     expect(mockListWeights).not.toHaveBeenCalled();
   });
 
-  it('shows loading and the metrics under the native header (#95 R6)', async () => {
+  it('shows loading and the metrics under the native header (#95 R6) (enmendado por #199 R2)', async () => {
     mockListWeights.mockReturnValue(pending<WeightsState>());
 
     await renderWeightLog();
@@ -217,11 +214,11 @@ describe('R7: weight log lista el historial', () => {
     expect(screen.getByTestId('weight-log-loading')).toBeVisible();
     expect(
       screen.getByTestId('weight-log-form').props.contentContainerStyle,
-    ).toEqual({ padding: 24, gap: 16, paddingBottom: 48 });
+    ).toEqual({ paddingHorizontal: 24, paddingTop: 48, paddingBottom: 56, gap: 14 });
 
   });
 
-  it('R5 (mobile-design-drift, enmendado por #95 R6): el inset superior lo consume la cabecera nativa', async () => {
+  it('R5 (mobile-design-drift, enmendado por #95 R6): el inset superior lo consume la cabecera nativa (enmendado por #199 R2)', async () => {
     mockListWeights.mockReturnValue(pending<WeightsState>());
 
     await renderWeightLog();
@@ -231,7 +228,7 @@ describe('R7: weight log lista el historial', () => {
     );
     expect(
       screen.getByTestId('weight-log-form').props.contentContainerStyle,
-    ).not.toHaveProperty('paddingTop');
+    ).toHaveProperty('paddingTop', 48);
   });
 
   it('R8 (mobile-design-drift): reserva la altura del loading con Skeleton', async () => {
@@ -818,7 +815,7 @@ describe('#148 R7: weight-log se aparta del teclado en Android', () => {
     (Platform as { OS: string }).OS = originalOS;
   });
 
-  it('el host screen-weight-log añade paddingBottom 291 al abrir el teclado', async () => {
+  it('el host screen-weight-log añade paddingBottom 291 al abrir el teclado (enmendado por #199 R2)', async () => {
     (Platform as { OS: string }).OS = 'android';
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
     mockUseAuth.mockReturnValue({
@@ -845,7 +842,7 @@ describe('#148 R7: weight-log se aparta del teclado en Android', () => {
         duration: 0, easing: 'keyboard', isEventFromThisApp: true,
       });
     });
-    await waitFor(() => expect(screen.getByTestId('screen-weight-log')).toHaveStyle({ paddingBottom: 291 }));
+    await waitFor(() => expect(screen.getByTestId('screen-weight-log')).toHaveStyle({ paddingBottom: 200 }));
   });
 });
 
@@ -1207,5 +1204,18 @@ describe('#199 R1: Peso dibuja su propia cabecera', () => {
     expect(screen.queryByTestId('weight-log-header-back')).not.toBeNull();
     await fireEvent.press(screen.getByTestId('weight-log-header-back'));
     expect(router.replace).toHaveBeenCalledWith('/health');
+  });
+});
+
+describe('#199 R2: métricas del scroll de Peso', () => {
+  it('#199 R2 el scroll usa margen 24, inset superior + 8, inferior + 32 y gap 14', async () => {
+    prepareWeightLogTests();
+    mockListWeights.mockReturnValue(pending<WeightsState>());
+    await renderWeightLog();
+    await screen.findByTestId('weight-log-loading');
+    expect(screen.getByTestId('weight-log-form').props.contentContainerStyle).toEqual({ paddingHorizontal: 24, paddingTop: 48, paddingBottom: 56, gap: 14 });
+    const source = readFileSync(join(process.cwd(), 'src/screens/weight-log/index.tsx'), 'utf8');
+    expect(source).toContain('keyboardVerticalOffset={0}');
+    expect(source).not.toContain('HeaderHeightContext');
   });
 });
