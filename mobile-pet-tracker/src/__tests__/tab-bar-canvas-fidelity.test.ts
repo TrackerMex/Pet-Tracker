@@ -111,3 +111,26 @@ it('#206 R8: el nombre de la fila es el aria-label del canvas', () => {
   expect(source).toContain('accessibilityRole="tablist"');
   expect(source).toContain("t('tabs.bar')");
 });
+
+const BLOQUE = [
+  '## Enmienda #206 — barra de pestañas fiel al canvas',
+  '',
+  'Fecha: 2026-10-23. Feature #206 `mobile-canvas-tab-bar`. Excepción nombrada a D-I.',
+  '',
+  '1. **Iconos de la barra.** Los cinco iconos de `FloatingTabBar` se dibujan con `react-native-svg` copiando los trazados del `<nav aria-label="Pestañas">` del canvas (24 x 24, `fill="none"`, trazo redondeado de 2,4 en la pestaña activa y de 2 en las demás) y se colorean con `accent-strong` o `muted` vía `useThemeColors`. Excepción a D-I limitada a los iconos de esta barra: ningún otro icono de navegación o de acción cambia, y siguen siendo de `reicon-react-native`.',
+  '2. **Barra.** Cápsula de 64 con relleno de 6 y hueco de 4, celdas de 52, velo `bg-glass-surface-strong` y sombra `useShadows().tabBar`. Flota a 16 de cada lado y a 12 por encima del inset inferior.',
+  '',
+  'Detalle y tests en `specs/mobile-canvas-tab-bar/requirements.md` (R1 a R10).',
+  '',
+  '- [ ] Enmienda #206 aprobada por humano',
+].join('\n');
+
+it('#206 R9: la carta nombra la excepción de iconos de la barra una sola vez y con su casilla', () => {
+  const charter = readFileSync(join(process.cwd(), '..', 'docs/ui-guidelines.md'), 'utf8');
+  expect(charter.match(/## Enmienda #206/g)).toHaveLength(1);
+  expect(charter).toMatch(/- \[[ xX]\] Enmienda #206 aprobada por humano/);
+  const normalized = charter.replace(/- \[[ xX]\] Enmienda #206 aprobada por humano/, '- [ ] Enmienda #206 aprobada por humano');
+  expect(normalized.split(BLOQUE)).toHaveLength(2);
+  expect(normalized.endsWith(`${BLOQUE}\n`)).toBe(true);
+  expect(charter.split('- **Iconos reicon (D-I).**')).toHaveLength(2);
+});
