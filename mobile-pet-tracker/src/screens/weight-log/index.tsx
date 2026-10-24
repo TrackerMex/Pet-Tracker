@@ -239,15 +239,16 @@ function WeightLogContent({ petId }: { petId: string }) {
           </RiseIn>
         ) : null}
 
-        {weights.data?.kind === 'ok' ? (
-          <Card className="gap-4">
-            <TextField isInvalid={Boolean(fieldErrors.weight)}>
-              <Label className="text-2xs font-semibold text-foreground">
+        <RiseIn delayMs={80}>
+          <Card testID="weight-form" variant="flat" className="gap-2.5 py-3.5">
+            <View className="flex-row gap-2.5">
+              <TextField className="flex-1 gap-1.5" isInvalid={Boolean(fieldErrors.weight)}>
+              <Label><Text className="text-13 font-extrabold text-foreground">
                 {t('weightLog.weight')}
-              </Label>
+              </Text></Label>
               <Input
                 testID="weight-input"
-                className="rounded-xl bg-default"
+                className="h-12 rounded-xl bg-default"
                 keyboardType="decimal-pad"
                 placeholder={t('weightLog.weightKg')}
                 value={weightText}
@@ -255,26 +256,27 @@ function WeightLogContent({ petId }: { petId: string }) {
               />
               <FieldErrorMessage testID="weight-input" issue={fieldErrors.weight} />
             </TextField>
-            <TextField isInvalid={Boolean(fieldErrors.measuredAt)}>
-              <Label className="text-2xs font-semibold text-foreground">
+              <TextField className="flex-1 gap-1.5" isInvalid={Boolean(fieldErrors.measuredAt)}>
+              <Label><Text className="text-13 font-extrabold text-foreground">
                 {t('weightLog.measuredAt')}
-              </Label>
+              </Text></Label>
               <Input
                 testID="weight-date-input"
-                className="rounded-xl bg-default"
+                className="h-12 rounded-xl bg-default"
                 placeholder={t('weightLog.yyyyMmDd')}
                 value={measuredAt}
                 onChangeText={setMeasuredAtDraft}
               />
               <FieldErrorMessage testID="weight-date-input" issue={fieldErrors.measuredAt} />
             </TextField>
-            <TextField isInvalid={Boolean(fieldErrors.bodyCondition)}>
-              <Label className="text-2xs font-semibold text-foreground">
+            </View>
+            <TextField className="gap-1.5" isInvalid={Boolean(fieldErrors.bodyCondition)}>
+              <Label><Text className="text-13 font-extrabold text-foreground">
                 {t('weightLog.bodyCondition')}
-              </Label>
+              </Text></Label>
               <Input
                 testID="weight-bc-input"
-                className="rounded-xl bg-default"
+                className="h-12 rounded-xl bg-default"
                 keyboardType="number-pad"
                 placeholder={t('weightLog.bodyConditionPlaceholder')}
                 value={bodyConditionText}
@@ -300,7 +302,7 @@ function WeightLogContent({ petId }: { petId: string }) {
               </Text>
             </Button>
           </Card>
-        ) : null}
+        </RiseIn>
 
         {weights.data === undefined ? (
           <Skeleton
