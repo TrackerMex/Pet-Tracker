@@ -665,3 +665,24 @@ R1–R10 completos. BAR+CF 49/49; guardas 321/321; tipos y lint verdes. ALL en s
 Se dejaron R11/S1–S8 y la casilla de la carta para el humano. No se ejecutó init.sh, no se regeneraron dependencias, no se hizo push, PR, merge ni rebase. No hay enmiendas mecánicas adicionales ni cambios de código fuera de los ocho archivos previstos. Se retiraron los scripts auxiliares temporales; los logs y el grafo AST quedan como evidencia ignorada por Git.
 
 Este informe y traceability.md se cierran juntos en `docs(#206): record implementation evidence and traceability`. El marcador impl_mobile-canvas-tab-bar.done se crea después del commit y de comprobar el árbol acotado limpio, con la ruta absoluta de este informe.
+
+## Merge de `origin/dev` (#199) — 2026-10-24
+
+Merge `736fcf3e` de `origin/dev` (`8bd88522`, trae #198 y #199) sobre `4afb80b3`; merge-base `6bbd0485`. Sin cambios de dependencias (ni `package.json` ni `bun.lock`), no hizo falta `bun install`.
+
+Ficheros en conflicto:
+
+- `docs/ui-guidelines.md`: se conservan las dos enmiendas; la Enmienda #199 de dev va primero y la Enmienda #206 queda al final, porque #206 R9 exige que la carta termine con su bloque.
+- `mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx`: dev + delta. El título lleva los sufijos de dev (#199 R5, R9, R14, R17, #198 R15) más `(enmendado por #206 R8)`, y la suma lleva las filas de dev más `+ 1, // #206 R8`.
+
+Mezcla automática sin conflicto: `feature_list.json`, `catalog.ts`, `ui-copy-table.ts` (`ALL_USES` se calcula por bloques) y `ui-language.test.ts` (`SCREEN_FILES` no cambia: `floating-tab-bar.tsx` ya estaba).
+
+Verificación desde `mobile-pet-tracker/`:
+
+- `bunx jest --runTestsByPath src/providers/__tests__/language-provider.test.tsx src/__tests__/health-weight-canvas-fidelity.test.ts src/components/__tests__/floating-tab-bar.test.tsx src/__tests__/tab-bar-canvas-fidelity.test.ts src/__tests__/ui-language.test.ts --runInBand --testTimeout=30000` → `Tests:       172 passed, 172 total`
+- Guardas globales que tocó dev: `bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/heroui-text-size-merge.test.ts src/__tests__/chunky-cta-canvas-fidelity.test.ts src/__tests__/home-canvas-fidelity.test.ts src/__tests__/alerts-canvas-fidelity.test.ts src/__tests__/profile-canvas-fidelity.test.ts src/__tests__/home-photo-hero-canvas.test.ts src/theme/__tests__/motion.test.ts --runInBand --testTimeout=30000` → `Tests:       475 passed, 475 total`
+- `bunx tsc --noEmit` → exit 0
+- `bunx expo lint --no-cache > /tmp/lint206.log 2>&1 && test ! -s /tmp/lint206.log` → exit 0
+- `test ! -e .expo/types/router.d.ts` → exit 0
+
+Sin rojos, sin timeouts y sin tinte `#0D1117`. No se ejecutó `init.sh` ni se hizo push.
