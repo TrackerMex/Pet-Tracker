@@ -98,7 +98,17 @@ export function GeofencesScreen({ petId }: { petId: string }) {
           className={index < zoneCount ? 'h-1.5 flex-1 rounded-full bg-accent' : 'h-1.5 flex-1 rounded-full bg-default'} />)}
       </View> : null}
       {geofences.data === undefined || pet.data === undefined ? (
-        <Skeleton testID="geofences-loading" className="h-24 w-full rounded-card" />
+        <View testID="geofences-loading" className="gap-3" accessibilityLabel={t('geofences.loadingLabel')} accessibilityState={{ busy: true }}>
+          {[0, 1].map((i) => <Card key={i} testID={`geofences-loading-row-${i}`} className="flex-row items-center gap-3 px-3.5 py-3 shadow-none">
+            <Skeleton className="size-11 rounded-14" />
+            <View className="flex-1 gap-1.5">
+              <Skeleton className="h-3.5 rounded-full" style={{ width: '55%' }} />
+              <Skeleton className="h-2.5 rounded-full" style={{ width: '35%' }} />
+            </View>
+            <Skeleton className="h-7 w-12 rounded-full" />
+            <Skeleton className="size-11 rounded-xl" />
+          </Card>)}
+        </View>
       ) : geofences.data.kind === 'ok' ? (
         geofences.data.geofences.length === 0 ? (
           <EmptyState
