@@ -71,3 +71,10 @@ it('#202 R12: el canvas dibuja la fila flotante', () => {
   contains(production, '<BackButton testID="geofence-editor-back" strokeWidth={2.4}');
   contains(production, 'style={shadows.card}', 2);
 });
+
+it('#202 R13: el canvas dibuja la hoja con sombra y rise', () => {
+  contains(artboard('EditorZona'), '0 -8px 24px rgba(13,17,23,0.10)');
+  contains(artboard('EditorZona'), '@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}');
+  contains(source('screens/geofence-editor/index.tsx'), '<RiseIn testID="geofence-editor-form-entrance" delayMs={0} className="-mt-6.5 shrink"');
+  contains(source('screens/geofence-editor/index.tsx'), 'style={[CONTINUOUS_CORNER, { flexGrow: 0, flexShrink: 1 }, shadows.sheet]}');
+});

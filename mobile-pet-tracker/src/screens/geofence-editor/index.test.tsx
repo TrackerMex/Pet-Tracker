@@ -200,14 +200,14 @@ describe('#146 R6: el editor pinta el formulario sobre el mapa y sus estados', (
     expect(screen.queryByTestId('geofence-editor-load-error')).toBeNull();
     expect(screen.queryByTestId('geofence-editor-name')).toBeNull();
   });
-  it('compone mapa y formulario sin fondo sobre el mapa y con las métricas A11 en el formulario (enmendado por #189 R9) (enmendado por E4 R22)', async () => {
+  it('compone mapa y formulario sin fondo sobre el mapa y con las métricas A11 en el formulario (enmendado por #189 R9) (enmendado por E4 R22) (enmendado por #202 R13)', async () => {
     await edit();
     const root = screen.getByTestId('screen-geofence-editor');
     expect(root.props.className).toBe('flex-1');
-    expect(childTestIds(root)).toEqual(['geofence-editor-map', 'geofence-editor-form']);
+    expect(childTestIds(root)).toEqual(['geofence-editor-map', 'geofence-editor-form-entrance']);
     expect(screen.getByTestId('geofence-editor-map').props.className).toBe('flex-1');
     const form = screen.getByTestId('geofence-editor-form');
-    expect(form.props.className).toBe('-mt-6.5 rounded-t-hero bg-surface');
+    expect(form.props.className).toBe('rounded-t-hero bg-surface');
     expect(form).toHaveStyle({ borderCurve: 'continuous' });
     expect(form).toHaveStyle({ flexGrow: 0, flexShrink: 1 });
     expect(form.props.contentInsetAdjustmentBehavior).toBeUndefined();
@@ -653,19 +653,19 @@ describe('#189 R8: título en contenido y píldora de cristal sobre el mapa', ()
 
 
 describe('#189 R9: hoja estática solapada y capas del mapa', () => {
-  it.each(['editar', 'crear', 'lectura'] as const)('#189 R9: compone la hoja al %s sin fondo que tape el mapa (enmendado por E4 R22)', async (kind) => {
+  it.each(['editar', 'crear', 'lectura'] as const)('#189 R9: compone la hoja al %s sin fondo que tape el mapa (enmendado por E4 R22) (enmendado por #202 R13)', async (kind) => {
     if (kind === 'lectura') mockGetPet.mockResolvedValue(petState('family'));
     await mount(kind === 'crear' ? undefined : casa.id);
     const form = await screen.findByTestId('geofence-editor-form');
     const root = screen.getByTestId('screen-geofence-editor');
     expect(root.props.className).toBe('flex-1');
-    expect(childTestIds(root)).toEqual(['geofence-editor-map', 'geofence-editor-form']);
+    expect(childTestIds(root)).toEqual(['geofence-editor-map', 'geofence-editor-form-entrance']);
     const map = screen.getByTestId('map-view');
     const mapContainer = screen.getByTestId('geofence-editor-map');
     expect(map.parent).toBe(mapContainer);
     expect(mapContainer.parent).toBe(root);
     for (const ancestor of [mapContainer, root]) expect(ancestor.props.className).not.toMatch(/(?:^|\s)bg-/);
-    expect(form.props.className).toBe('-mt-6.5 rounded-t-hero bg-surface');
+    expect(form.props.className).toBe('rounded-t-hero bg-surface');
     expect(form).toHaveStyle({ flexGrow: 0, flexShrink: 1, borderCurve: 'continuous' });
     expect(form.props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 12, gap: 14, paddingBottom: 60 });
     expect(form.props.keyboardShouldPersistTaps).toBe('handled');
@@ -901,12 +901,12 @@ describe('#189 R22: opciones estables por rama de la cabecera', () => {
   const opaque = { headerTransparent: false, headerStyle: { backgroundColor: 'background' } };
   const lastOptions = () => mockStackScreen.mock.calls.at(-1)?.[0].options;
 
-  it.each(['editar', 'crear', 'lectura'] as const)('#189 R22.1: cabecera transparente al %s', async (kind) => {
+  it.each(['editar', 'crear', 'lectura'] as const)('#189 R22.1: cabecera transparente al %s (enmendado por #202 R13)', async (kind) => {
     if (kind === 'lectura') mockGetPet.mockResolvedValue(petState('family'));
     await mount(kind === 'crear' ? undefined : casa.id);
     await screen.findByTestId('geofence-editor-form');
     expect(lastOptions()).toEqual(transparent);
-    expect(childTestIds(screen.getByTestId('screen-geofence-editor'))).toEqual(['geofence-editor-map', 'geofence-editor-form']);
+    expect(childTestIds(screen.getByTestId('screen-geofence-editor'))).toEqual(['geofence-editor-map', 'geofence-editor-form-entrance']);
   });
 
   it.each(['carga', 'no-tracking', 'error', 'no-encontrada', 'solo-dueño'] as const)('#189 R22.2: cabecera opaca en %s', async (kind) => {
@@ -1016,4 +1016,17 @@ it.each(['crear', 'editar', 'solo lectura'])('#202 R12: la fila flotante pinta v
   await fireEvent.press(back);
   expect(router.replace).toHaveBeenCalledTimes(1);
   expect(router.replace).toHaveBeenCalledWith({ pathname: '/pets/[petId]/geofences', params: { petId: 'pet-1' } });
+});
+
+it.each(['crear', 'editar', 'solo lectura'])('#202 R13: la hoja entra con rise y lleva la sombra de hoja en %s', async (kind) => {
+  if (kind === 'solo lectura') mockGetPet.mockResolvedValue(petState('family'));
+  await mount(kind === 'crear' ? undefined : casa.id);
+  const form = await screen.findByTestId('geofence-editor-form');
+  expect(screen.queryByTestId('geofence-editor-form-entrance')).not.toBeNull();
+  const entrance = screen.getByTestId('geofence-editor-form-entrance');
+  expect(form.parent).toBe(entrance);
+  expect(entrance.props.className).toBe('-mt-6.5 shrink');
+  expect(entrance.props.entering({}).initialValues).toEqual({ opacity: 0, transform: [{ translateY: 14 }] });
+  expect(form.props.className).toBe('rounded-t-hero bg-surface');
+  expect(StyleSheet.flatten(form.props.style)).toEqual({ borderCurve: 'continuous', flexGrow: 0, flexShrink: 1, boxShadow: [{ offsetX: 0, offsetY: -8, blurRadius: 24, spreadDistance: 0, color: 'shadow-10' }] });
 });
