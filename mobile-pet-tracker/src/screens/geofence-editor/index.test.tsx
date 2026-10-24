@@ -27,8 +27,7 @@ const mockSignOut = jest.fn().mockResolvedValue(undefined);
 jest.mock('../../providers/auth-provider', () => ({
   useAuth: () => ({ status: 'authenticated', token: 'token-1', signOut: mockSignOut }),
 }));
-const mockStackScreen = jest.fn<null, [{ options: object }]>(() => null);
-jest.mock('expo-router', () => ({ router: { back: jest.fn(), canGoBack: jest.fn(() => false), replace: jest.fn() }, Stack: { Screen: (props: { options: object }) => mockStackScreen(props) } }));
+jest.mock('expo-router', () => ({ router: { back: jest.fn(), canGoBack: jest.fn(() => false), replace: jest.fn() } }));
 jest.mock('expo-maps', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
