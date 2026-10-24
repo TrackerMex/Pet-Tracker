@@ -34,7 +34,7 @@ it('#202 R7: monta velo, tarjeta y acciones con las recetas del canvas', async (
   expect(scrim.props.className).toBe('absolute inset-0');
   expect(scrim.props.accessibilityLabel).toBe('Cancelar');
   expect(scrim.parent?.props.className).toBe('absolute inset-0');
-  expect(scrim.parent?.props.style).toEqual({ backgroundColor: 'rgba(13,17,23,0.4)' });
+  expect(scrim.parent).toHaveStyle({ backgroundColor: 'rgba(13,17,23,0.4)' });
   expect(scrim.parent?.props.entering).toBeDefined();
   const card = screen.getByTestId('dialog-card');
   expect(card.props.role).toBe('alertdialog');
