@@ -346,12 +346,11 @@ describe('#95 R4: cada pantalla de detalle declara su cabecera nativa', () => {
 
   it.each([
     ['add-reminder', ''],
-    ['pets/add', ''],
     ['pets/[petId]/docs', ''],
     ['pets/[petId]/docs-upload', ''], // #185 R10
     ['pairing', ''],
     ['edit-profile', ''], // #194 R4
-  ])('#194 R4: %s usa exactamente las opciones de cabecera acordadas (enmendado por #200 R12) (enmendado por #199 R1)', async (name, title) => {
+  ])('#194 R4: %s usa exactamente las opciones de cabecera acordadas (enmendado por #200 R12) (enmendado por #199 R1) (enmendado por #205 R15)', async (name, title) => {
     await render(<RootLayout />);
     await waitFor(() => expect(screen.getByTestId('root-stack')).toBeVisible());
     const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
@@ -675,6 +674,21 @@ describe('#199 R1: Peso apaga la cabecera nativa', () => {
     expect(isValidElement(group)).toBe(true);
     const children = isValidElement<{ children: ReactNode }>(group) ? Children.toArray(group.props.children) : [];
     const detail = children.find(child => isValidElement<{ name: string }>(child) && child.props.name === 'weight-log');
+    expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined).toEqual({ headerShown: false });
+  });
+});
+
+describe('#205 R15: nueva mascota sin cabecera nativa', () => {
+  it('#205 R15: pets/add declara solo headerShown false', async () => {
+    mockGetStoredTheme.mockResolvedValue(undefined);
+    mockGetStoredLanguage.mockResolvedValue(undefined);
+    await render(<RootLayout />);
+    await waitFor(() => expect(screen.getByTestId('root-stack')).toBeVisible());
+    const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
+    const group = Children.toArray(stack?.children)[4];
+    expect(isValidElement(group)).toBe(true);
+    const children = isValidElement<{ children: ReactNode }>(group) ? Children.toArray(group.props.children) : [];
+    const detail = children.find(child => isValidElement<{ name: string }>(child) && child.props.name === 'pets/add');
     expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined).toEqual({ headerShown: false });
   });
 });
