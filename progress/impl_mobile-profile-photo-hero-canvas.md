@@ -1,6 +1,6 @@
 # Implementación #196: Perfil con hero fotográfico
 
-Estado: PARADA en el intento de verde de R1+R4. R3 completada; R11 aplicada con su test de consumidor pendiente de R1. Sin init.sh, push, PR, merge ni rebase.
+Estado actual: SEGUNDA PARADA en el verde de R2+R5. R1+R4, R3 y R11 completadas; R2+R5 conservan su rojo y el parche tentativo. E6–E10 resolvieron la primera parada. El historial y sus logs se conservan debajo. Sin init.sh, push, PR, merge ni rebase.
 
 Comprobación de entrada (salida):
 ```text
@@ -768,3 +768,230 @@ mobile-pet-tracker/src/screens/profile/index.test.tsx
 ```
 
 Antes del commit documental, `git status --short -- mobile-pet-tracker/ specs/ docs/` solo muestra traceability.md pendiente de ese commit; código móvil y docs limpios. El handoff de entrada permanece sin seguimiento, tal como estaba al inicio. El reporte y traceability se cierran en un commit documental; el marcador .done no se commitea.
+
+## Reanudación autorizada (2026-10-24, b05ba78a)
+
+Ruta, branch y HEAD coinciden con el handoff. Árbol inicial limpio salvo handoff sin seguimiento. E6–E10 leídas completas; K38 conserva false. Sin init.sh ni cambios en feature_list/STATUS/progress/current. Se mantienen las cinco skills ya cargadas en la primera sesión.
+
+### Espera de guardas en la reanudación
+
+E6–E8 aplicadas solo a T; anclas 0 / 5 / 1 / 0 verificadas. El rojo espera a que pgrep de Jest e init esté vacío; se detectaron el init de wt-202 y lotes de Jest en el checkout principal. No se omitió la guarda ni se inició otro bloque. El parche guardado pasa git apply --check. Un diagnóstico opcional de ancestros se detuvo al intentar leer /proc/1/cwd (permiso del sistema); no se reintentó esa lectura ni afectó al código, tests o guardas.
+
+### E6–E8 y verde recuperado de R1+R4
+
+- `53d557f4 test(#196): R1 R4 apply errata E6-E8 to the profile test`
+  Tests: 25 failed, 141 passed, 166 total (`test-196-resume-e6e8-red.log`); rojo por estructura/contenido con P restaurada. Anclas tras aplicar las erratas: 0 visible, 5 on-screen, 1 scrollContent, 0 camera.props.disabled.
+- Parche de §Conservación del trabajo reaplicado con git apply, sin rehacerlo.
+  Tests: 166 passed, 166 total (`test-196-resume-r1r4-green.log`, runInBand). El disabled de producción sigue presente, junto a accessibilityState.disabled.
+
+Los 21 ficheros relacionados, uno a uno con runInBand, pasan (957 tests; snapshot de pet-avatar verde).
+
+| Fichero | Tests | Log |
+|---|---|---|
+| `src/components/__tests__/pet-hero-header.test.tsx` | Tests:       65 passed, 65 total | `test-196-resume-r1r4-related-01.log` |
+| `src/components/__tests__/pet-hero-header-motion.test.tsx` | Tests:       2 passed, 2 total | `test-196-resume-r1r4-related-02.log` |
+| `src/components/__tests__/pet-switcher.test.tsx` | Tests:       15 passed, 15 total | `test-196-resume-r1r4-related-03.log` |
+| `src/components/__tests__/pet-avatar.test.tsx` | Tests:       9 passed, 9 total | `test-196-resume-r1r4-related-04.log` |
+| `src/app/(tabs)/__tests__/profile.test.tsx` | Tests:       1 passed, 1 total | `test-196-resume-r1r4-related-05.log` |
+| `src/app/(tabs)/__tests__/screens.test.tsx` | Tests:       2 passed, 2 total | `test-196-resume-r1r4-related-06.log` |
+| `src/screens/health/index.test.tsx` | Tests:       76 passed, 76 total | `test-196-resume-r1r4-related-07.log` |
+| `src/screens/home/index.test.tsx` | Tests:       270 passed, 270 total | `test-196-resume-r1r4-related-08.log` |
+| `src/__tests__/design-drift.test.ts` | Tests:       114 passed, 114 total | `test-196-resume-r1r4-related-09.log` |
+| `src/__tests__/consistency-classnames.test.ts` | Tests:       75 passed, 75 total | `test-196-resume-r1r4-related-10.log` |
+| `src/__tests__/legibility-classnames.test.ts` | Tests:       27 passed, 27 total | `test-196-resume-r1r4-related-11.log` |
+| `src/__tests__/chunky-cta-canvas-fidelity.test.ts` | Tests:       78 passed, 78 total | `test-196-resume-r1r4-related-12.log` |
+| `src/__tests__/alerts-canvas-fidelity.test.ts` | Tests:       27 passed, 27 total | `test-196-resume-r1r4-related-13.log` |
+| `src/__tests__/tab-headers-canvas.test.ts` | Tests:       8 passed, 8 total | `test-196-resume-r1r4-related-14.log` |
+| `src/__tests__/profile-canvas-fidelity.test.ts` | Tests:       26 passed, 26 total | `test-196-resume-r1r4-related-15.log` |
+| `src/__tests__/hero-header-amendments.test.ts` | Tests:       6 passed, 6 total | `test-196-resume-r1r4-related-16.log` |
+| `src/__tests__/heroui-text-size-merge.test.ts` | Tests:       25 passed, 25 total | `test-196-resume-r1r4-related-17.log` |
+| `src/__tests__/home-photo-hero-canvas.test.ts` | Tests:       28 passed, 28 total | `test-196-resume-r1r4-related-18.log` |
+| `src/__tests__/canvas-foundations.test.ts` | Tests:       65 passed, 65 total | `test-196-resume-r1r4-related-19.log` |
+| `src/__tests__/no-pets-states.test.ts` | Tests:       7 passed, 7 total | `test-196-resume-r1r4-related-20.log` |
+| `src/__tests__/ui-language.test.ts` | Tests:       31 passed, 31 total | `test-196-resume-r1r4-related-21.log` |
+
+### Sondas R1/R4 y R11 recuperadas
+
+La primera sonda de detalle pendiente pasó indebidamente (165 skipped, 1 passed, 166 total; `test-196-resume-r1-probe-detalle-pendiente-first-green.log`): el skeleton podía pertenecer a la lista inicial. Se reforzó solo ese test nuevo para esperar el selector resuelto y después el skeleton del detalle.
+
+- `8296caef test(#196): R1 wait for the resolved list in the pending detail branch`
+  Tests: 1 failed, 165 skipped, 166 total en la sonda corregida; falló por el hero retirado en esa rama, y la mutación se revirtió.
+
+Todas las sondas siguientes vistas en rojo y revertidas; archivos de producción sin mutaciones al terminar.
+
+| Sonda | Tests | Log |
+|---|---|---|
+| resume-r1-probe-lista-pendiente | Tests:       1 failed, 165 skipped, 166 total | `test-196-resume-r1-probe-lista-pendiente.log` |
+| resume-r1-probe-lista-vacia | Tests:       1 failed, 165 skipped, 166 total | `test-196-resume-r1-probe-lista-vacia.log` |
+| resume-r1-probe-lista-error | Tests:       1 failed, 165 skipped, 166 total | `test-196-resume-r1-probe-lista-error.log` |
+| resume-r1-probe-detalle-pendiente | Tests:       1 failed, 165 skipped, 166 total | `test-196-resume-r1-probe-detalle-pendiente.log` |
+| resume-r1-probe-detalle-error | Tests:       1 failed, 165 skipped, 166 total | `test-196-resume-r1-probe-detalle-error.log` |
+| resume-r1-probe-detalle-cargado | Tests:       1 failed, 165 skipped, 166 total | `test-196-resume-r1-probe-detalle-cargado.log` |
+| resume-r1r4-probe-base | Tests:       21 failed, 244 skipped, 13 passed, 278 total | `test-196-resume-r1r4-probe-base.log` |
+| resume-r4-probe-no-detail | Tests:       2 failed, 164 skipped, 166 total | `test-196-resume-r4-probe-no-detail.log` |
+| resume-r1-probe-empty-guards | Tests:       5 failed, 161 skipped, 166 total | `test-196-resume-r1-probe-empty-guards.log` |
+| resume-r1-probe-card-floor | Tests:       1 failed, 24 skipped, 25 total | `test-196-resume-r1-probe-card-floor.log` |
+| resume-r4-probe-stroke | Tests:       2 failed, 164 skipped, 166 total | `test-196-resume-r4-probe-stroke.log` |
+| resume-r4-probe-action | Tests:       5 failed, 161 skipped, 166 total | `test-196-resume-r4-probe-action.log` |
+| resume-r4-probe-error-parent | Tests:       2 failed, 164 skipped, 166 total | `test-196-resume-r4-probe-error-parent.log` |
+
+La sonda base reintroduce el P de H0 y pone rojos K5–K9, K12–K20, K27–K31 y el consumidor de R11; las de vacío cubren K22/K23 y la del piso cubre K40. La cámara sin detalle cubre las dos filas R4.2 nacidas verdes; el trazo y la acción cubren K15 y los matchers enmendados por E6; la paternidad del error cubre K16. Los tipos/cabeceras K10/K37/K38 se ejercitan con esas mismas ramas e iconos.
+
+- `b646864e feat(#196): R1 R4 render the bleed hero footer and floating camera`
+  Tests: 166 passed, 166 total (`test-196-resume-r1r4-final-green.log`), después de revertir todas las sondas; los 21 relacionados también verdes. R11 queda verde por consumidor y por carta.
+
+## Segunda parada: selector en el slot (R2+R5)
+
+- `225a291e test(#196): R2 R5 lock photo overlay controls and amber notification notice`
+  Tests: 18 failed, 378 passed, 396 total; 4 failed suites / 1 passed (`progress/test-196-r2r5-red.log`, runInBand). Todos los rojos del paso de test corresponden al inventario de R2+R5 y a sus tests nuevos, sin error de importación. E1 se comprobó antes del bloque: FIRMADA y ancla en requirements = 1. K39 con true según E9 y las dos aserciones del título según E10 se incluyeron en ese commit.
+- Intento de verde de R2+R5, sin commit de producción:
+  Tests: 3 failed, 466 passed, 469 total; 1 failed suite / 6 passed (`progress/test-196-r2r5-green.log`, runInBand). Pasan profile-canvas-fidelity, design-drift, chunky-cta-canvas-fidelity, tab-headers-canvas, canvas-foundations y app/(tabs)/__tests__/screens.test.tsx. No se presenta como verde.
+
+### Motivo de parada
+
+La última sección del handoff manda:
+> Cualquier otro rojo que cause el doble, fuera de los it que nombran E6 a E10, sigue siendo PARADA.
+
+Al pasar PetSwitcher al pet-hero-slot, sus chips quedan bajo el host de opacidad inicial 0 descrito por E6. Fallan dos aserciones previas que E6–E10 no permiten enmendar:
+
+1. K6 (`renders the active pet hero, switcher, pills and information rows`, ya enmendado por R1/R4) falla en `expect(screen.getByTestId('pet-chip-pet-1')).toBeVisible()` (T:505). E6 dice expresamente que **pet-chip-pet-1 sigue con toBeVisible()**. Las cuatro píldoras y la cámara sí usan los matchers autorizados.
+2. `R2: estructura Figma` › `changes the active pet through the shared PetSwitcher` falla en `await waitFor(() => expect(screen.getByTestId('pet-chip-pet-2')).toBeVisible())` (T:540). Ese it no está en K1–K41 ni en E6–E10; no se tocó. Su `fireEvent.press` posterior ya estaba sin await en origen; no se alcanzó ni se enmendó.
+
+No cabe en la enmienda mecánica de literales/recuentos: se movió un nodo a un padre animado, no se quitó un literal que compare ese it. No se cambió K38 a true, ni se alteró el componente compartido para eludir la guarda.
+
+El tercer fallo es del test **nuevo** de R5: `expect(action.props.style).toEqual(result.current.primary)` (T:2419). HeroUI añade sus estilos al host y entrega `[continuousCorner, scale, continuousCorner, chunkyLip.primary]`, no solo el objeto del hook. El valor esperado del labio está presente en el array. Al continuar debe comprobarse ese labio respetando la composición del componente (sin importar StyleSheet: la guarda de T lo prohíbe). Tampoco se corrigió después de la parada.
+
+La excepción del usuario para rojos ajenos de la suite completa no aplica: esto es una corrida dirigida de los ficheros tocados con runInBand, la producción de Perfil tiene diff y los tests fallan en ella. No se corrió la suite completa.
+
+### Diff medido y conservación
+
+```text
+ .../src/screens/profile/index.test.tsx             | 441 ++++++++++++++++-----
+ mobile-pet-tracker/src/screens/profile/index.tsx   | 146 ++++---
+ 2 files changed, 432 insertions(+), 155 deletions(-)
+```
+
+El cuerpo completo de `changes the active pet through the shared PetSwitcher` es idéntico a origin/dev: True; SHA-256 `b20523a698d0426d9e53594aaf3a1f6ce51204dfd23a80388da49c3430a7d52a`.
+La aserción concreta de K6 sobre pet-chip-pet-1 tampoco se modificó.
+
+Se conserva íntegro el parche tentativo de R2+R5 debajo y se restaura P a HEAD (b646864e, verde de R1+R4). Así queda limpio el árbol acotado; el rojo de R2+R5 se conserva en 225a291e. No se inventa un commit verde. Este segundo parche usa contexto cero para evitar espacios finales en el reporte; al recuperarlo se aplica con `git apply --unidiff-zero`.
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/profile/index.tsx b/mobile-pet-tracker/src/screens/profile/index.tsx
+index e1c11bf6..6bf9f58f 100644
+--- a/mobile-pet-tracker/src/screens/profile/index.tsx
++++ b/mobile-pet-tracker/src/screens/profile/index.tsx
+@@ -272,0 +273,26 @@
++  const titleRow = (
++  <View className="flex-row items-center justify-between gap-3">
++    <Text testID="profile-title" className={showHero ? 'text-3xl font-black tracking-title text-accent-foreground' : 'text-3xl font-black tracking-title text-foreground'}>
++      {t('profile.profile')}
++    </Text>
++    <Pressable
++      testID="profile-add-pet"
++      accessibilityRole="button"
++      hitSlop={TOUCH_SLOP}
++      className={showHero ? 'h-11 flex-row items-center gap-1.5 rounded-full bg-glass-surface-strong px-4' : 'h-9 flex-row items-center gap-1.5 rounded-full bg-tab-pill px-3.5'}
++      onPress={() => router.push('/pets/add' as Href)}
++    >
++      <View
++        testID="profile-add-pet-icon"
++        accessibilityElementsHidden
++        importantForAccessibility="no-hide-descendants"
++      >
++        <Plus size={16} strokeWidth={2.6} color={accentStrong} />
++      </View>
++      <Text className="text-sm font-extrabold text-accent-strong">
++        {t('profile.addPet')}
++      </Text>
++    </Pressable>
++  </View>
++  );
++
+@@ -296,0 +323,11 @@
++            <View testID="profile-hero-top" className="gap-3 px-1">
++              {titleRow}
++              {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
++                <PetSwitcher
++                  variant="glass"
++                  pets={pets.data.pets}
++                  selectedPetId={selectedPetId}
++                  onSelect={selectPet}
++                />
++              ) : null}
++            </View>
+@@ -318,23 +355,1 @@
+-      <View className="flex-row items-center justify-between gap-3">
+-        <Text testID="profile-title" className="text-3xl font-black tracking-title text-foreground">
+-          {t('profile.profile')}
+-        </Text>
+-        <Pressable
+-          testID="profile-add-pet"
+-          accessibilityRole="button"
+-          hitSlop={TOUCH_SLOP}
+-          className="h-9 flex-row items-center gap-1.5 rounded-full bg-tab-pill px-3.5"
+-          onPress={() => router.push('/pets/add' as Href)}
+-        >
+-          <View
+-            testID="profile-add-pet-icon"
+-            accessibilityElementsHidden
+-            importantForAccessibility="no-hide-descendants"
+-          >
+-            <Plus size={16} color={accentStrong} />
+-          </View>
+-          <Text className="text-sm font-extrabold text-accent-strong">
+-            {t('profile.addPet')}
+-          </Text>
+-        </Pressable>
+-      </View>
++      {!showHero ? titleRow : null}
+@@ -343,2 +358,2 @@
+-        <Card testID="notifications-blocked-notice" className="items-start gap-3">
+-          <Text className="font-normal text-foreground">
++        <HomeEntrance index={0} testID="profile-entrance-notice"><View testID="notifications-blocked-notice" className={`items-start gap-3 rounded-card p-3.5 ${CATEGORY_SLOTS.amber.surface}`}>
++          <Text className="text-sm leading-note font-normal text-foreground">
+@@ -348,0 +364,2 @@
++            className="h-11 rounded-14 px-4.5"
++            style={chunkyLip.primary}
+@@ -351,1 +368,1 @@
+-            <Button.Label>{t('profile.openSettings')}</Button.Label>
++            <Button.Label className="text-sm font-extrabold text-accent-foreground">{t('profile.openSettings')}</Button.Label>
+@@ -353,1 +370,1 @@
+-        </Card>
++        </View></HomeEntrance>
+@@ -356,8 +373,1 @@
+-      {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
+-        <PetSwitcher
+-          variant="avatars"
+-          pets={pets.data.pets}
+-          selectedPetId={selectedPetId}
+-          onSelect={selectPet}
+-        />
+-      ) : null}
++
+```
+
+### Candados y filas nacidas verdes de R2+R5
+
+| Candado | Antes | Después en el commit rojo | R |
+|---|---|---|---|
+| K1/K36 | unión default/avatars, sin trailing | unión con glass y trailing?: ReactNode en dos declaraciones | R2 |
+| K2/K4 | cápsula 36/tab-pill y selector avatars | cápsula 44/vidrio, icono 2.6, selector glass sin trailing | R2 |
+| K9 paso 2 | header seguido de Card | profile-entrance-notice abre contenido, View ámbar y texto leading-note | R5 |
+| K11 | título claro en seis filas | blanco con hero, claro sin hero; detalle pendiente espera lista resuelta | R2 |
+| K26 | food y profile consumen avatars | solo food (E3) | R2 |
+| K31 paso 2 | primary de Perfil una vez | dos usos (cámara y aviso) | R5 |
+| K32 | primaryIds | añade notifications-open-settings | R5 |
+| K39 | sin doble Reanimated en tabs/screens | doble prescrito con reduce motion true (E9) | R2 |
+| E1 | rounded-14 fuera de Recordatorios en cinco ficheros | añade screens/profile/index.tsx | R5 |
+| E1.2/E10 | Perfil/Profile con toBeVisible | ambos con toBeOnTheScreen y sufijo de R2 | R2 |
+
+Las dos filas sin hero de R2 y R5.4 (permiso concedido) nacieron verdes porque conservan la fila clara y la ausencia del aviso. No se ejecutaron sondas del bloque R2+R5 por la parada antes de su verde. R6–R10 no se iniciaron; no se alteraron sus candados.
+
+### Cierre de la reanudación
+
+- R1+R4: verde b646864e, 166/166; sondas de las seis ramas, vacíos, piso de Cards, consumidores, cámara y error vistas en rojo y revertidas. R11: consumidor y carta verdes; la sonda del consumidor se completó con resume-r1r4-probe-base.
+- R3 conserva su verde 9fac05f1 y sus tres sondas de la primera sesión.
+- Enmiendas mecánicas adicionales: ninguna; la mejora de espera toca solo un test nuevo de R1, en 8296caef. K35 sigue sin efecto y el fichero no se tocó.
+- Typecheck, lint, suite completa y graphify update no se ejecutaron: se activó una nueva parada antes de la verificación final. El guard de router.d.ts sigue comprobado ausente; graphify está disponible. No hay cifras finales completas que declarar mientras R6–R10 no se implementen.
+- Sin init.sh, push, PR, merge, rebase, instalación o AWS. Feature_list.json, STATUS.md, progress/current.md y progress/history.md permanecen intactos. El smoke Android sigue pendiente del humano; su lista ya figura en este reporte.
