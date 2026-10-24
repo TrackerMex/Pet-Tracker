@@ -119,7 +119,7 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
   return (
     <View
       testID="floating-tab-bar"
-      className="absolute overflow-hidden rounded-full border border-border shadow-lg"
+      className="absolute h-16 overflow-hidden rounded-full border border-border shadow-lg"
       style={{ bottom: insets.bottom + 12, left: 16, right: 16 }}
       onLayout={handleLayout}
     >
@@ -160,7 +160,7 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
           ]}
         />
       ) : null}
-      <View className="flex-row items-center justify-around px-2 py-3">
+      <View testID="tab-bar-row" className="flex-row gap-1 p-1.5">
         {TABS.map(({ name, labelKey, Icon }) => {
           const route = state.routes.find(
             (candidate) => candidate.name === name,
