@@ -98,10 +98,10 @@ function RootStack() {
         <Stack.Screen name="pets/[petId]/docs-upload" options={{ ...headerOptions, title: '' }} />
         <Stack.Screen name="weight-log" options={{ headerShown: false }} />
             <Stack.Screen name="meal-schedule" options={{ headerShown: false }} />
-        <Stack.Screen name="pairing" options={{ ...headerOptions, title: '' }} />
+        <Stack.Screen name="pairing" options={{ headerShown: false }} />
         <Stack.Screen name="reminders" options={{ ...headerOptions, title: '' }} />
-        <Stack.Screen name="alerts" dangerouslySingular options={{ ...headerOptions, title: '' }} />
-        <Stack.Screen name="alerts/[alertId]" dangerouslySingular options={{ ...headerOptions, title: '', contentStyle: { backgroundColor: background } }} />
+        <Stack.Screen name="alerts" dangerouslySingular options={{ headerShown: false }} />
+        <Stack.Screen name="alerts/[alertId]" dangerouslySingular options={{ headerShown: false, contentStyle: { backgroundColor: background } }} />
         <Stack.Screen name="pets/[petId]/geofences" options={{ ...headerOptions, title: '', ...TRANSPARENT_HEADER_OPTIONS }} />
         <Stack.Screen name="pets/[petId]/geofence-editor" options={{ ...headerOptions, title: '' }} />
         <Stack.Screen name="meals-history" options={{ headerShown: false }} />
