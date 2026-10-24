@@ -287,15 +287,25 @@ function WeightLogContent({ petId }: { petId: string }) {
         </RiseIn>
 
         {weights.data === undefined ? (
-          <Skeleton
-            testID="weight-log-loading"
-            className="h-40 w-full rounded-card"
-          />
+          <View testID="weight-log-loading">
+            {[0, 1, 2].map(index => (
+              <RiseIn key={index} delayMs={60 * index}>
+                <View testID={`weight-log-skeleton-row-${index}`} className="flex-row items-center gap-3 border-t border-border py-2.5">
+                  <Skeleton className="size-9 rounded-xl" />
+                  <View className="flex-1 gap-1.5">
+                    <Skeleton className="h-3.5 w-2/5 rounded-full" />
+                    <Skeleton className="h-2.5 w-1/5 rounded-full" />
+                  </View>
+                  <Skeleton className="h-3 w-9.5 rounded-full" />
+                </View>
+              </RiseIn>
+            ))}
+          </View>
         ) : null}
 
         {weights.data && isWeightsError(weights.data) ? (
           <View className="items-start gap-3">
-            <Text testID="weight-log-error" className="text-danger">
+            <Text testID="weight-log-error" className="text-15 leading-body text-danger" accessibilityRole="alert">
               {t('common.somethingWentWrong')}
             </Text>
             <Button
@@ -308,7 +318,7 @@ function WeightLogContent({ petId }: { petId: string }) {
         ) : null}
 
         {weights.data?.kind === 'ok' && weights.data.weights.length === 0 ? (
-          <Text testID="weight-log-empty" className="text-muted">
+          <Text testID="weight-log-empty" className="text-15 leading-body text-muted">
             {t('weightLog.noWeightEntriesYet')}
           </Text>
         ) : null}
