@@ -6,6 +6,8 @@ import { getAnimatedStyle } from 'react-native-reanimated';
 
 import { EmptyState } from '../empty-state';
 
+let mockSemanticColors = false;
+
 const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
 
 jest.mock('react-native-reanimated', () => ({
@@ -16,12 +18,20 @@ jest.mock('react-native-reanimated', () => ({
 
 jest.mock('../../theme/use-theme-colors', () => ({
   useThemeColors: (tokens: string[]) => {
+    if (mockSemanticColors) return tokens.map(token => `--color-${token}`);
     const colors: Record<string, string> = {
       accent: '#178255', 'accent-foreground': '#FFFFFF', lip: '#0E5E3C', 'lip-gray': '#E4E7EC',
     };
     return tokens.map((token) => colors[token] ?? '#0D1117');
   },
 }));
+
+jest.mock('react-native-svg', () => {
+  const actual = jest.requireActual<typeof import('react-native-svg')>('react-native-svg');
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return { ...actual, __esModule: true, G: (props: Record<string, unknown>) => React.createElement(View, { ...props, testID: props.fill ? 'probe-paw-fill' : undefined }) };
+});
 
 jest.mock('reicon-react-native', () => {
   const React = jest.requireActual<typeof import('react')>('react');
@@ -31,6 +41,7 @@ jest.mock('reicon-react-native', () => {
 
 type ProbeOptions = {
   variant?: 'default' | 'hero';
+  tone?: 'default' | 'danger';
   action?: { label: string; onPress: () => void };
   badge?: ReactNode;
   actionIcon?: ReactElement;
@@ -46,6 +57,7 @@ async function renderProbe(options: ProbeOptions = { variant: 'hero' }) {
 }
 
 beforeEach(() => {
+  mockSemanticColors = false;
   jest.useFakeTimers();
   mockUseReducedMotion.mockReturnValue(false);
 });
@@ -252,5 +264,28 @@ describe('#198 R18: API compartida del escenario', () => {
     await renderProbe({ variant: 'default', body: undefined });
     expect(screen.queryByTestId('home-empty-body', { includeHiddenElements: true }) === null).toBe(true);
     expect(screen.queryByTestId('home-empty-body-enter', { includeHiddenElements: true }) === null).toBe(true);
+  });
+});
+
+
+describe('#198 R15: tono del escenario compartido', () => {
+  beforeEach(() => { mockSemanticColors = true; mockUseReducedMotion.mockReturnValue(true); });
+
+  it('#198 R15 tone danger pinta disco rosa, huellas danger y título de 22', async () => {
+    await renderProbe({ variant: 'hero', tone: 'danger' });
+    expect(screen.getByTestId('home-empty-stage-disc', { includeHiddenElements: true }).props.className).toBe('absolute size-60 rounded-full bg-category-rose');
+    const paw = screen.getByTestId('home-empty-stage-paw', { includeHiddenElements: true });
+    expect(within(paw).getByTestId('probe-paw-fill', { includeHiddenElements: true }).props.fill).toBe('--color-danger');
+    expect(screen.getByTestId('home-empty-title').props.className).toBe('text-center text-22 font-black tracking-title text-foreground');
+    expect(screen.queryByTestId('home-empty-badge', { includeHiddenElements: true }) === null).toBe(true);
+  });
+
+  it.each([undefined, 'default'] as const)('#198 R15 sin tone conserva el escenario de hoy', async tone => {
+    await renderProbe({ variant: 'hero', ...(tone === undefined ? {} : { tone }) });
+    expect(screen.getByTestId('home-empty-stage-disc', { includeHiddenElements: true }).props.className).toBe('absolute size-60 rounded-full bg-surface-secondary');
+    const paw = screen.getByTestId('home-empty-stage-paw', { includeHiddenElements: true });
+    expect(within(paw).getByTestId('probe-paw-fill', { includeHiddenElements: true }).props.fill).toBe('--color-accent');
+    expect(screen.getByTestId('home-empty-title').props.className).toBe('text-center text-26 font-black tracking-title text-foreground');
+    expect(screen.queryByTestId('home-empty-badge', { includeHiddenElements: true }) === null).toBe(true);
   });
 });

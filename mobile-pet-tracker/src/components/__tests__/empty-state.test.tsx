@@ -193,7 +193,7 @@ describe('#155 R10: los vacíos que no se ilustran siguen en texto', () => {
   });
 
   it.each([
-    ['src/screens/home/index.tsx', 1],
+    ['src/screens/home/index.tsx', 2], // #198 R15
     ['src/screens/health/index.tsx', 1],
     ['src/app/(tabs)/food.tsx', 2],
     ['src/screens/map/index.tsx', 2],
@@ -202,7 +202,7 @@ describe('#155 R10: los vacíos que no se ilustran siguen en texto', () => {
     ['src/screens/profile/index.tsx', 1],
     ['src/screens/docs/index.tsx', 1],
     ['src/screens/geofences/index.tsx', 2],
-  ] as const)('%s pinta %i EmptyState', (path, n) => {
+  ] as const)('%s pinta %i EmptyState (enmendado por #198 R15)', (path, n) => {
     const source = readFileSync(join(process.cwd(), path), 'utf8');
     expect(source.match(/<EmptyState\b/g) ?? []).toHaveLength(n);
   });
@@ -228,14 +228,14 @@ describe('#155 R10: los vacíos que no se ilustran siguen en texto', () => {
 
 
 describe('#155 R11: los vacíos no traen movimiento ni dependencias', () => {
-  it('EmptyState solo importa de react, react-native, expo-image, heroui-native, Reanimated y el tema de movimiento (enmendado por #177 R10) (enmendado por #176 R5)', () => {
+  it('EmptyState solo importa de react, react-native, expo-image, heroui-native, Reanimated y el tema de movimiento (enmendado por #177 R10) (enmendado por #176 R5) (enmendado por #198 R15)', () => {
     const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
     for (const [, specifier] of source.matchAll(/from '([^']+)'/g)) {
-      expect(['react', 'react-native', 'expo-image', 'heroui-native', 'react-native-reanimated', '../theme/chunky-lip', '../theme/motion', 'react-native-svg', '../theme/pingo-stage', '../theme/use-theme-colors', './pingo-float', 'reicon-react-native']).toContain(specifier);
+      expect(['react', 'react-native', 'expo-image', 'heroui-native', 'react-native-reanimated', '../theme/chunky-lip', '../theme/motion', 'react-native-svg', '../theme/pingo-stage', '../theme/use-theme-colors', './pingo-float', 'reicon-react-native', '../utils/category-palette' /* #198 R15 */]).toContain(specifier);
     }
   });
 
-  it('EmptyState importa exactamente lo de la flotación (enmendado por #177 R10) (enmendado por #176 R5) (enmendado por #198 R18)', () => {
+  it('EmptyState importa exactamente lo de la flotación (enmendado por #177 R10) (enmendado por #176 R5) (enmendado por #198 R18, R15)', () => {
     const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
     expect(source.match(/^import\b.*$/gm)).toEqual([
       "import { useEffect, type ReactElement, type ReactNode } from 'react';", // (enmendado por #198 R18)
@@ -250,6 +250,7 @@ describe('#155 R11: los vacíos no traen movimiento ni dependencias', () => {
       "import { PINGO_STAGE_PAW_OPACITY, PINGO_STAGE_SHADOW_COLOR } from '../theme/pingo-stage';", // (enmendado por #176 R5)
       "import { useThemeColors } from '../theme/use-theme-colors';", // (enmendado por #176 R5)
       "import { PingoFloat } from './pingo-float';", // (enmendado por #176 R6)
+      "import { CATEGORY_SLOTS } from '../utils/category-palette';", // #198 R15
     ]);
     expect(source.match(/\brequire\(/g)).toHaveLength(6);
   });

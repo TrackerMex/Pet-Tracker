@@ -156,6 +156,8 @@ jest.mock('reicon-react-native', () => {
 
   return {
     ...actual,
+    Alert: mockIcon('icon-alert'),
+    Refresh: mockIcon('icon-refresh'),
     Battery: mockIcon('icon-battery'),
     Wifi: mockIcon('icon-wifi'),
     WifiOff: mockIcon('icon-wifi-off'),
@@ -510,15 +512,16 @@ describe('R6: home carga pets y selecciona', () => {
     });
   });
 
-  it('shows an error and retries the pet list', async () => {
+  it('shows an error and retries the pet list (enmendado por #198 R15)', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
     mockListPets
       .mockResolvedValueOnce({ kind: 'unreachable', message: 'network down' })
       .mockResolvedValueOnce({ kind: 'ok', pets: [] });
 
     await renderHome();
-    await waitFor(() => expect(screen.getByTestId('home-error')).toBeVisible());
+    await waitFor(() => expect(screen.getByTestId('home-error-title')).toHaveTextContent('No pude cargar a tus mascotas'));
 
-    await fireEvent.press(screen.getByTestId('home-retry'));
+    await fireEvent.press(screen.getByTestId('home-error-action'));
 
     await waitFor(() => expect(screen.getByTestId('home-empty')).toBeVisible());
     expect(mockListPets).toHaveBeenCalledTimes(2);
@@ -5923,11 +5926,12 @@ describe('#195 R18: estados conservados de Inicio', () => {
     expect(within(screen.getByTestId('home-states')).queryByText('Inicio') === null).toBe(true);
   });
 
-  it('conserva el error de mascotas y su reintento', async () => {
+  it('conserva el error de mascotas y su reintento (enmendado por #198 R15)', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
     mockListPets.mockResolvedValue({ kind: 'unreachable', message: 'down' });
     await renderHome();
-    expect(await screen.findByTestId('home-error')).toBeVisible();
-    expect(screen.getByTestId('home-retry')).toBeVisible();
+    expect(await screen.findByTestId('home-error-title')).toHaveTextContent('No pude cargar a tus mascotas');
+    expect(screen.getByTestId('home-error-action')).toBeVisible();
     expect(screen.queryByTestId('pet-hero')).toBeNull();
   });
 
@@ -6398,5 +6402,63 @@ describe('#198 R14: esqueleto de carga del canvas', () => {
     const skeletons = descendants(screen.getByTestId('home-loading')).filter(node => node.props.className?.split(' ').includes('skeleton__root'));
     expect(skeletons.length).toBe(19);
     for (const id of ['home-loading-collar', 'home-loading-weekly']) expect(screen.getByTestId(id, { includeHiddenElements: true }).props.className).toContain('skeleton__root');
+  });
+});
+
+
+describe('#198 R15: error hero de Inicio', () => {
+  beforeEach(() => {
+    setupCanvasHome();
+    mockUseReducedMotion.mockReturnValue(true);
+    mockListPets.mockResolvedValue({ kind: 'unreachable', message: 'down' });
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('#198 R15 pinta el título de Inicio y el escenario de error', async () => {
+    await renderHome();
+    await waitFor(() => expect(screen.getByTestId('home-error-title')).toHaveTextContent('No pude cargar a tus mascotas'));
+    expect(within(screen.getByTestId('home-states')).getByText('Inicio').props.className).toBe('text-26 font-black tracking-title text-foreground');
+    expect(screen.getByTestId('home-error').props.className).toBe('w-full items-center gap-3.5');
+    expect(screen.getByTestId('home-error-title').props.className).toBe('text-center text-22 font-black tracking-title text-foreground');
+    expect(screen.getByTestId('home-error-pose').props.source).toEqual([expect.objectContaining({ testUri: expect.stringMatching(/pingo-talk\.webp$/) })]);
+  });
+
+  it('#198 R15 reintenta desde home-error-action', async () => {
+    mockListPets.mockReset().mockResolvedValueOnce({ kind: 'unreachable', message: 'down' }).mockResolvedValueOnce({ kind: 'ok', pets: [makePet()] });
+    await renderHome();
+    await waitFor(() => expect(screen.getByTestId('home-error-action')).toBeVisible());
+    await fireEvent.press(screen.getByTestId('home-error-action'));
+    await waitFor(() => expect(screen.getByTestId('summary-card')).toBeVisible());
+    expect(screen.queryByTestId('home-error') === null).toBe(true);
+  });
+
+  it.each([
+    { language: 'es', title: 'No pude cargar a tus mascotas', body: 'Revisa tu conexión y vuelve a intentarlo.', action: 'Reintentar' },
+    { language: 'en', title: "I couldn't load your pets", body: 'Check your connection and try again.', action: 'Retry' },
+  ] as const)('#198 R15 pinta el copy del error en los dos idiomas', async ({ language, title, body, action }) => {
+    await renderWithProviders(<HomeScreen />, { wrapper: language === 'es' ? HomeWrapper : HomeWrapperEn });
+    await waitFor(() => expect(screen.getByTestId('home-error-title')).toHaveTextContent(title));
+    expect(screen.getByTestId('home-error-body')).toHaveTextContent(body);
+    expect(screen.getByTestId('home-error-action')).toHaveTextContent(action);
+  });
+
+  it('#198 R15 pasa el badge de peligro y el icono de recarga', async () => {
+    await renderHome();
+    await waitFor(() => expect(screen.getByTestId('home-error-action')).toBeVisible());
+    const stage = screen.getByTestId('home-error-stage', { includeHiddenElements: true });
+    const badge = screen.getByTestId('home-error-badge', { includeHiddenElements: true });
+    expect(stage.children.at(-1) === badge).toBe(true);
+    expect(badge.props.className).toBe('absolute right-10.5 top-6.5 size-11 items-center justify-center rounded-full border-3 border-background bg-danger');
+    expect(badge.children.length).toBe(1);
+    const alert = within(badge).getByTestId('icon-alert', { includeHiddenElements: true });
+    expect(alert.props.size).toBe(24);
+    expect(alert.props.color).toBe('--color-danger-foreground');
+    const refresh = within(screen.getByTestId('home-error-action')).getByTestId('home-error-action-icon', { includeHiddenElements: true });
+    expect(refresh.props.size).toBe(20);
+    expect(refresh.props.color).toBe('--color-accent-foreground');
+    expect(refresh.props.style).toEqual({ marginRight: 8 });
+    const source = readFileSync(join(process.cwd(), 'src/screens/home/index.tsx'), 'utf8');
+    expect(source.match(/<Refresh size=\{20\} color=\{accentForeground\}/g)).toHaveLength(1);
+    expect(source).not.toContain('home-retry');
   });
 });

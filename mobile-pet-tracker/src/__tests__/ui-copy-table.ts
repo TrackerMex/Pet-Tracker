@@ -73,7 +73,8 @@ export const R3_HOME: UseRow[] = [
   { file: 'src/screens/home/index.tsx', key: 'home.noLocationDataYet' },
   { file: 'src/screens/home/index.tsx', key: 'home.lastSeen' },
   { file: 'src/screens/home/index.tsx', key: 'home.home' },
-  { file: 'src/screens/home/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/home/index.tsx', key: 'home.loadPetsErrorTitle' }, // #198 R15
+  { file: 'src/screens/home/index.tsx', key: 'home.loadPetsErrorBody' }, // #198 R15
   { file: 'src/screens/home/index.tsx', key: 'common.retry' },
   { file: 'src/screens/home/index.tsx', key: 'common.noPetsYet' },
   { file: 'src/screens/home/index.tsx', key: 'common.noPetsBody' }, // #155 R4
