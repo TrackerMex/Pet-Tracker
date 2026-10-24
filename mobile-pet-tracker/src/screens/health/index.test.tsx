@@ -736,7 +736,7 @@ describe('#127 R2: el skeleton de vacunas lleva su receta en el árbol', () => {
     mockListWeights.mockReturnValue(pending<WeightsState>());
   });
 
-  it('pinta vaccines-skeleton con la clase exacta, rounded-card incluido, la vea o no el recorte de fuente', async () => {
+  it('pinta vaccines-skeleton con la clase exacta, rounded-card incluido, la vea o no el recorte de fuente (enmendado por #199 R19)', async () => {
     mockListVaccines.mockReturnValue(pending<VaccinesState>());
 
     await renderHealth();
@@ -745,7 +745,7 @@ describe('#127 R2: el skeleton de vacunas lleva su receta en el árbol', () => {
       expect(screen.getByTestId('vaccines-skeleton')).toBeVisible(),
     );
     expect(screen.getByTestId('vaccines-skeleton').props.className).toBe(
-      'skeleton__root h-24 w-full rounded-card',
+      'rounded-card border border-border bg-surface px-3.5 flex-row items-center gap-3 py-3.5',
     );
   });
 });
@@ -1390,5 +1390,36 @@ describe('#199 R18: tarjeta de peso', () => {
   it('#199 R18 entra con RiseIn a los 260 ms', async () => {
     await renderHealth();
     expect(riseDelayOf(await screen.findByTestId('weight-card'))).toBe(260);
+  });
+});
+
+
+describe('#199 R19: estados de vacunas', () => {
+  beforeEach(setupHealth168);
+  it('#199 R19 la carga pinta una fila flat con tile y dos barras', async () => {
+    mockListVaccines.mockReturnValue(pending<VaccinesState>());
+    await renderHealth();
+    const row = await screen.findByTestId('vaccines-skeleton');
+    expect(row.props.className).toBe('rounded-card border border-border bg-surface px-3.5 flex-row items-center gap-3 py-3.5');
+    expect(within(row).getByTestId('vaccines-skeleton-tile', { includeHiddenElements: true }).props.className).toBe('skeleton__root size-10 rounded-xl');
+    const column = elementChild(row, 1);
+    expect(column.props.className).toBe('flex-1 gap-1.5');
+    expect(column.children.filter((child): child is TestInstance => typeof child !== 'string').map(child => child.props.className)).toEqual(['skeleton__root h-3.5 w-1/3 rounded-full', 'skeleton__root h-2.5 w-2/3 rounded-full']);
+  });
+  it('#199 R19 sin vacunas pinta el aviso en text-15 leading-body text-muted', async () => {
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [] });
+    await renderHealth();
+    const empty = await screen.findByTestId('vaccines-empty');
+    expect(empty.props.className).toBe('text-15 leading-body text-muted');
+    expect(empty).toHaveTextContent('Aún no hay vacunas', { exact: true });
+  });
+  it('#199 R19 con error pinta el aviso en text-danger con role alert y conserva Reintentar', async () => {
+    mockListVaccines.mockResolvedValue({ kind: 'error' });
+    await renderHealth();
+    const error = await screen.findByTestId('vaccines-error');
+    expect(error.props.className).toBe('text-15 leading-body text-danger');
+    expect(error.props.accessibilityRole).toBe('alert');
+    expect(screen.getByTestId('vaccines-retry')).toHaveTextContent('Reintentar');
+    expect(error).toHaveTextContent('No se pudieron cargar las vacunas', { exact: true });
   });
 });

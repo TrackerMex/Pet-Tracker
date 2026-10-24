@@ -110,9 +110,9 @@ describe('#62 R2: cada skeleton tiene la forma del contenido que sustituye', () 
     [
       join('screens', 'health', 'index.tsx'),
       'vaccines-skeleton',
-      'h-24 w-full rounded-card',
+      'flex-row items-center gap-3 py-3.5', // #199 R19
     ],
-  ])('%s conserva dimensión y usa el radio de Card en su tag de apertura (#120 R1)', (path, testId, classes) => {
+  ])('%s conserva dimensión y usa el radio de Card en su tag de apertura (#120 R1) (enmendado por #199 R19)', (path, testId, classes) => {
     const skeleton = openingTagWithTestId(readSource(path), testId);
 
     expect(skeleton).toContain(`className="${classes}"`);
