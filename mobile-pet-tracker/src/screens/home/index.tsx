@@ -18,7 +18,6 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Bacteria,
-  Battery,
   Bell,
   Bone,
   CalendarPlus,
@@ -203,11 +202,9 @@ export function HomeScreen() {
     petId: string;
   } | null>(null);
   const insets = useSafeAreaInsets();
-  const [accent, success, warning, muted, vaccineInk, mealsInk, foreground] =
+  const [accent, muted, vaccineInk, mealsInk, foreground] =
     useThemeColors([
       'accent-strong',
-      'success',
-      'warning',
       'muted',
       'category-blue-strong',
       'category-rose-strong',
@@ -603,60 +600,47 @@ export function HomeScreen() {
           <HomeEntrance index={2} testID="home-entrance-collar">
             <Card
               testID="collar-card"
-              className="gap-3 bg-default"
+              className={detail.data.pet.device
+                ? 'flex-row items-center gap-3 border-0 bg-default px-3.5 py-3 shadow-none'
+                : 'gap-3 bg-default'}
             >
-              <View className="flex-row items-center gap-3">
-                <View className="size-9 items-center justify-center rounded-full bg-accent-soft">
-                  {connection === 'none' ? (
-                    <Moon size={20} color={accent} />
-                  ) : connection === 'online' ? (
-                    <Wifi size={20} color={accent} />
-                  ) : (
-                    <WifiOff size={20} color={accent} />
-                  )}
-                </View>
-                <Text
-                  testID="collar-status"
-                  className="text-base font-bold text-foreground"
-                >
-                  {t(HOME_CONNECTION[connection].labelKey)}
-                </Text>
-              </View>
               {detail.data.pet.device ? (
-                <View className="flex-row items-center gap-2">
-                  <Battery
-                    size={18}
-                    color={
-                      detail.data.pet.device.batteryPct === null
-                        ? muted
-                        : detail.data.pet.device.batteryPct > 60
-                          ? success
-                          : warning
-                    }
-                  />
+                <>
+                  <View testID="collar-icon" className="size-10 items-center justify-center rounded-full bg-tab-pill">
+                    {connection === 'online' ? <Wifi size={20} color={accent} /> : <WifiOff size={20} color={accent} />}
+                  </View>
+                  <View className="flex-1 gap-1.5">
+                    <Text testID="collar-status" className="text-15 font-bold text-foreground">
+                      {t(HOME_CONNECTION[connection].labelKey)}
+                    </Text>
+                    {detail.data.pet.device.batteryPct !== null ? (
+                      <CollarBatteryBar pct={detail.data.pet.device.batteryPct} />
+                    ) : null}
+                  </View>
                   <Text
                     testID="collar-battery"
                     style={TABULAR_NUMS}
-                    className={
-                      detail.data.pet.device.batteryPct === null
-                        ? 'font-normal text-muted'
-                        : detail.data.pet.device.batteryPct > 60
-                          ? 'font-semibold text-success'
-                          : 'font-semibold text-warning-strong'
-                    }
+                    className={detail.data.pet.device.batteryPct === null
+                      ? 'font-normal text-muted'
+                      : detail.data.pet.device.batteryPct > 60
+                        ? 'text-15 font-extrabold text-success'
+                        : 'text-15 font-extrabold text-warning-strong'}
                   >
-                    {detail.data.pet.device.batteryPct === null
-                      ? '—'
-                      : `${detail.data.pet.device.batteryPct}%`}
+                    {detail.data.pet.device.batteryPct === null ? '—' : `${detail.data.pet.device.batteryPct}%`}
                   </Text>
-                  {detail.data.pet.device.batteryPct !== null ? (
-                    <CollarBatteryBar pct={detail.data.pet.device.batteryPct} />
-                  ) : null}
-                </View>
+                </>
               ) : (
-                <Text className="font-normal text-muted">
-                  {t('home.noCollar')}
-                </Text>
+                <>
+                  <View className="flex-row items-center gap-3">
+                    <View testID="collar-icon" className="size-9 items-center justify-center rounded-full bg-tab-pill">
+                      <Moon size={20} color={accent} />
+                    </View>
+                    <Text testID="collar-status" className="text-base font-bold text-foreground">
+                      {t(HOME_CONNECTION[connection].labelKey)}
+                    </Text>
+                  </View>
+                  <Text className="font-normal text-muted">{t('home.noCollar')}</Text>
+                </>
               )}
               {detail.data.pet.device === null ? (
                     <Pressable
