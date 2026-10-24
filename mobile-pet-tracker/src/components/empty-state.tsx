@@ -10,6 +10,7 @@ import { MOTION_ENTRANCE_OFFSET_Y, MOTION_FADE_TIMING, MOTION_FLOAT_OFFSET_Y, MO
 import { PINGO_STAGE_PAW_OPACITY, PINGO_STAGE_SHADOW_COLOR } from '../theme/pingo-stage';
 import { useThemeColors } from '../theme/use-theme-colors';
 import { PingoFloat } from './pingo-float';
+import { CATEGORY_SLOTS } from '../utils/category-palette';
 
 export type EmptyStatePose = 'talk' | 'sleep' | 'clipboard' | 'health' | 'collar' | 'food';
 
@@ -24,6 +25,7 @@ const POSES = {
 
 type EmptyStateProps = {
   variant?: 'default' | 'hero';
+  tone?: 'default' | 'danger';
   testID: string;
   pose: EmptyStatePose;
   title: string;
@@ -49,9 +51,9 @@ function useHeroEntrance(index: number, active: boolean) {
   }));
 }
 
-export function EmptyState({ testID, pose, title, body, action, badge, actionIcon, variant = 'default' }: EmptyStateProps) {
+export function EmptyState({ testID, pose, title, body, action, badge, actionIcon, variant = 'default', tone = 'default' }: EmptyStateProps) {
   const chunkyLip = useChunkyLip();
-  const [accent, accentForeground] = useThemeColors(['accent', 'accent-foreground']);
+  const [accent, accentForeground, danger] = useThemeColors(['accent', 'accent-foreground', 'danger']);
   const reduceMotion = useReducedMotion();
   const animateHero = variant === 'hero' && !reduceMotion;
   const stageStyle = useHeroEntrance(0, animateHero);
@@ -84,7 +86,7 @@ export function EmptyState({ testID, pose, title, body, action, badge, actionIco
     <Animated.View testID={`${testID}-float`} style={floatStyle}>{poseImage}</Animated.View>
   );
   const titleText = (
-    <Text testID={`${testID}-title`} className={variant === 'hero' ? 'text-center text-26 font-black tracking-title text-foreground' : 'text-center text-lg font-bold text-foreground'}>
+    <Text testID={`${testID}-title`} className={variant === 'hero' ? (tone === 'default' ? 'text-center text-26 font-black tracking-title text-foreground' : 'text-center text-22 font-black tracking-title text-foreground') : 'text-center text-lg font-bold text-foreground'}>
       {title}
     </Text>
   );
@@ -104,9 +106,9 @@ export function EmptyState({ testID, pose, title, body, action, badge, actionIco
     <View testID={testID} className={variant === 'hero' ? 'w-full items-center gap-3.5' : 'items-center gap-3 py-8'}>
       {variant === 'hero' ? (
         <Animated.View testID={`${testID}-stage`} className="h-65 w-70 items-center justify-center" style={stageStyle}>
-          <View testID={`${testID}-stage-disc`} className="absolute size-60 rounded-full bg-surface-secondary" />
+          <View testID={`${testID}-stage-disc`} className={tone === 'default' ? 'absolute size-60 rounded-full bg-surface-secondary' : `absolute size-60 rounded-full ${CATEGORY_SLOTS.rose.surface}`} />
           <Svg testID={`${testID}-stage-paw`} width={280} height={260} viewBox="0 0 280 260" style={{ position: 'absolute', opacity: PINGO_STAGE_PAW_OPACITY }}>
-            <G fill={accent}>
+            <G fill={tone === 'default' ? accent : danger}>
               <G transform="translate(30 40) rotate(-20)">
                 <Circle cx={0} cy={0} r={5} /><Circle cx={10} cy={-6} r={5} /><Circle cx={20} cy={0} r={5} />
                 <Ellipse cx={10} cy={12} rx={9} ry={7} />

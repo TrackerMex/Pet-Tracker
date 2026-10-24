@@ -17,6 +17,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
+  Alert,
   Bacteria,
   Bell,
   Bone,
@@ -28,6 +29,7 @@ import {
   Moon,
   Pill,
   Plus,
+  Refresh,
   Stethoscope,
   Syringe,
   Walk,
@@ -205,13 +207,15 @@ export function HomeScreen() {
     petId: string;
   } | null>(null);
   const insets = useSafeAreaInsets();
-  const [accent, muted, vaccineInk, mealsInk, foreground] =
+  const [accent, muted, vaccineInk, mealsInk, foreground, dangerForeground, accentForeground] =
     useThemeColors([
       'accent-strong',
       'muted',
       'category-blue-strong',
       'category-rose-strong',
       'foreground',
+      'danger-foreground',
+      'accent-foreground',
     ]);
   const summaryInks = useThemeColors(
     SUMMARY_TILES.map(({ slot }) => `category-${slot}-strong`),
@@ -427,7 +431,7 @@ export function HomeScreen() {
           }}
         >
           {pets.data !== undefined ? (
-            <Text className="text-2xl font-black text-foreground">
+            <Text className="text-26 font-black tracking-title text-foreground">
               {t('home.home')}
             </Text>
           ) : null}
@@ -464,17 +468,17 @@ export function HomeScreen() {
           ) : null}
 
           {pets.data && isPetsError(pets.data) ? (
-            <View className="items-start gap-3">
-              <Text testID="home-error" className="text-danger">
-                {t('common.somethingWentWrong')}
-              </Text>
-              <Button
-                testID="home-retry"
-                onPress={() => void pets.refetch()}
-              >
-                {t('common.retry')}
-              </Button>
-            </View>
+            <EmptyState
+              testID="home-error"
+              variant="hero"
+              tone="danger"
+              pose="talk"
+              title={t('home.loadPetsErrorTitle')}
+              body={t('home.loadPetsErrorBody')}
+              action={{ label: t('common.retry'), onPress: () => void pets.refetch() }}
+              badge={<View testID="home-error-badge" className="absolute right-10.5 top-6.5 size-11 items-center justify-center rounded-full border-3 border-background bg-danger"><Alert size={24} color={dangerForeground} /></View>}
+              actionIcon={<Refresh size={20} color={accentForeground} style={{ marginRight: 8 }} testID="home-error-action-icon" />}
+            />
           ) : null}
         </View>
       )}
