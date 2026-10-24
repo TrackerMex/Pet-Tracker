@@ -259,15 +259,14 @@ describe('R8: register llama a la api y navega', () => {
 });
 
 describe('#61 R7: register usa las métricas de pantalla uniformes', () => {
-  it('aplica el padding del contentContainerStyle con los safe-area insets', async () => {
+  it('aplica el padding del contentContainerStyle con los safe-area insets (enmendado por #205 R9)', async () => {
     await renderRegister();
 
     expect(
       screen.getByTestId('register-form').props.contentContainerStyle,
     ).toEqual({
       flexGrow: 1,
-      padding: 24,
-      gap: 16,
+      paddingHorizontal: 20, // #205 R9
       paddingTop: 52,
       paddingBottom: 120,
     });
@@ -345,16 +344,15 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
     } satisfies AuthContextValue);
   });
 
-  it('#167 R7: la cabecera entra con rise', async () => {
+  it('#167 R7: la cabecera entra con rise (enmendado por #205 R9)', async () => {
     await renderRegister();
-    expect(Object.fromEntries(mockHomeEntrance.mock.calls.map(([p]) => [
-      p.testID, { index: p.index, className: p.className },
-    ]))).toEqual({
-      'register-header': { index: 0, className: 'gap-2' },
-    });
+    expect(mockHomeEntrance).not.toHaveBeenCalled(); // #205 R9
+    expect(screen.getByTestId('register-header').props.entering).toBeUndefined(); // #205 R9
+    expect(screen.getByTestId('register-header').props.className).toBe('gap-2'); // #205 R9
+    expect(typeof screen.getByTestId('register-body').props.entering).toBe('function'); // #205 R9
   });
 
-  it('#172 R3: la cabecera lleva la fila Volver-Pingo y después el título', async () => {
+  it('#172 R3: la cabecera lleva la fila Volver-Pingo y después el título (enmendado por #205 R9)', async () => {
     await renderRegister();
     const header = screen.getByTestId('register-header');
     expect(header.children[0]).toHaveProperty('props.testID', 'register-top');
@@ -364,7 +362,7 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
     expect(top.children).toEqual([
       screen.getByTestId('register-back'), screen.getByTestId('register-pingo-float'),
     ]);
-    expect(top.props.className).toBe('flex-row items-center justify-between');
+    expect(top.props.className).toBe('-ml-2.5 flex-row items-center justify-between'); // #205 R9
     expect(header.props.className).toBe('gap-2');
   });
 
@@ -408,10 +406,10 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
     expect(pingo.props.accessibilityLabel).toBeUndefined();
   });
 
-  it('#172 R6: el título de la cabecera pesa 30/900 al inicio', async () => {
+  it('#172 R6: el título de la cabecera pesa 30/900 al inicio (enmendado por #205 R9)', async () => {
     await renderRegister();
     expect(within(screen.getByTestId('register-header')).getByText('Crear cuenta').props.className)
-      .toBe('text-3xl font-black text-foreground');
+      .toBe('text-3xl font-black tracking-display text-foreground'); // #205 R9
   });
 
   it('#172 R10: cada campo con error lleva icono y texto seleccionable', async () => {
@@ -494,7 +492,7 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
     expect(mockRegister).not.toHaveBeenCalled();
   });
 
-  it('#172 R11: cabecera, rejilla, términos, error y envío cuelgan del scroll', async () => {
+  it('#172 R11: cabecera, rejilla, términos, error y envío cuelgan del scroll (enmendado por #205 R9)', async () => {
     mockRegister.mockResolvedValue({
       kind: 'validation',
       errors: [
@@ -506,21 +504,26 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
     await submit();
     const names = screen.getByTestId('register-names-row');
     const content = screen.getByTestId('register-header').parent;
+    const body = screen.getByTestId('register-body'); // #205 R9
     expect(content?.parent).toHaveProperty('props.testID', 'register-form');
-    expect(content?.children).toHaveLength(10);
-    expect(content?.children).toEqual([
-      screen.getByTestId('register-header'), names,
+    expect(content?.children).toHaveLength(4); // #205 R9
+    expect(content?.children).toEqual([ // #205 R9
+      screen.getByTestId('register-header'), body,
+      screen.getByTestId('register-spacer'), screen.getByTestId('register-submit'),
+    ]);
+    expect(body.children).toHaveLength(7); // #205 R9
+    expect(body.children).toEqual([ // #205 R9
+      names,
       screen.getByTestId('register-email').parent,
       screen.getByTestId('register-contact-row'),
       screen.getByTestId('register-password-group').parent,
       screen.getByTestId('register-password-confirmation-group').parent,
       screen.getByTestId('register-terms').parent,
-      screen.getByTestId('register-error-row'), screen.getByTestId('register-spacer'),
-      screen.getByTestId('register-submit'),
+      screen.getByTestId('register-error-row'),
     ]);
   });
 
-  it('#172 R19: el espaciador empuja el envío al pie', async () => {
+  it('#172 R19: el espaciador empuja el envío al pie (enmendado por #205 R9)', async () => {
     mockRegister.mockResolvedValue({ kind: 'email-taken' });
     await renderRegister();
     function expectSpacer(withError = false) {
@@ -534,7 +537,9 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
       expect(spacer.props.className).toBe('flex-1');
       expect(spacer.children).toHaveLength(0);
       if (withError) {
-        expect(children.indexOf(screen.getByTestId('register-error-row'))).toBe(index - 1);
+        const body = screen.getByTestId('register-body'); // #205 R9
+        expect(children.indexOf(body)).toBe(index - 1); // #205 R9
+        expect(body.children[body.children.length - 1]).toBe(screen.getByTestId('register-error-row')); // #205 R9
       }
     }
     expectSpacer();
@@ -576,6 +581,46 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
   });
 });
 
+
+describe('#205 R9: Registro como el artboard', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseAuth.mockReturnValue({
+      status: 'unauthenticated', token: null, signIn: mockSignIn, signOut: jest.fn(),
+    } satisfies AuthContextValue);
+  });
+
+  it('#205 R9: la cabecera no entra animada y el formulario sube con RiseIn', async () => {
+    await renderRegister();
+    expect(mockHomeEntrance).not.toHaveBeenCalled();
+    const header = screen.getByTestId('register-header');
+    expect(header.props.entering).toBeUndefined();
+    expect(header.props.className).toBe('gap-2');
+    expect(screen.getByTestId('register-top').props.className)
+      .toBe('-ml-2.5 flex-row items-center justify-between');
+    expect(screen.getByTestId('register-top').children)
+      .toEqual([screen.getByTestId('register-back'), screen.getByTestId('register-pingo-float')]);
+    expect(screen.getByTestId('register-pingo').props.style).toEqual({ width: 56, height: 56 });
+    expect(within(header).getByText('Crear cuenta').props.className)
+      .toBe('text-3xl font-black tracking-display text-foreground');
+    const body = screen.getByTestId('register-body');
+    expect(typeof body.props.entering).toBe('function');
+    expect(body.props.className).toBe('mt-4.5 gap-3');
+    expect(body.parent).toBe(header.parent);
+    expect(within(body).queryByTestId('register-spacer')).toBeNull();
+    expect(within(body).queryByTestId('register-submit')).toBeNull();
+    expect(screen.getByTestId('register-terms').parent?.props.className)
+      .toBe('min-h-11 flex-row items-center gap-3');
+  });
+
+  it('#205 R9: el scroll usa márgenes 20 y conserva el colchón inferior de 96', async () => {
+    await renderRegister();
+    const style = screen.getByTestId('register-form').props.contentContainerStyle;
+    expect(style).toEqual({ flexGrow: 1, paddingHorizontal: 20, paddingTop: 52, paddingBottom: 120 });
+    expect(style).not.toHaveProperty('padding');
+    expect(style).not.toHaveProperty('gap');
+  });
+});
 
 describe('#167 R8: el error del registro lleva icono', () => {
   beforeEach(() => {

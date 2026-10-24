@@ -132,3 +132,20 @@ describe('#205 R8: Login', () => {
     expect(screen).toContain('className="mt-5 text-3xl font-black tracking-display text-foreground"');
   });
 });
+
+describe('#205 R9: Registro', () => {
+  it('#205 R9: Registro flota, sube a 0 ms y copia márgenes y términos', () => {
+    const registro = canvas('Registro');
+    expect(registro).toContain('animation: float 3s ease-in-out infinite');
+    expect(registro).toContain('animation: rise 400ms ease-out both');
+    expect(registro).toContain('margin-top: 18px');
+    expect(registro).toContain('min-height: 44px');
+    expect(registro).toContain('width: 56px');
+    expect(registro).toContain('padding: 56px 20px 34px');
+
+    const screen = source('screens/register/index.tsx');
+    expect(screen).toContain('<RiseIn testID="register-body" delayMs={0} className="mt-4.5 gap-3">');
+    expect(screen).toContain('min-h-11');
+    expect(screen).toContain('<PingoFloat');
+  });
+});
