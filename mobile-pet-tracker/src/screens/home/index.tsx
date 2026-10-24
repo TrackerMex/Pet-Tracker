@@ -426,15 +426,41 @@ export function HomeScreen() {
             gap: 16,
           }}
         >
-          <Text className="text-2xl font-black text-foreground">
-            {t('home.home')}
-          </Text>
+          {pets.data !== undefined ? (
+            <Text className="text-2xl font-black text-foreground">
+              {t('home.home')}
+            </Text>
+          ) : null}
 
           {pets.data === undefined ? (
-            <Skeleton
-              testID="home-loading"
-              className="h-12 w-full rounded-card"
-            />
+            <View testID="home-loading" className="gap-3.5">
+              <View
+                testID="home-loading-summary"
+                className="gap-4 rounded-card border border-border bg-surface px-4 py-3.5"
+                style={{ ...CONTINUOUS_CORNER, ...shadows.card }}
+              >
+                <Skeleton className="h-4 w-30 rounded-full" />
+                <View className="flex-row gap-2">
+                  {Array.from({ length: 4 }, (_, index) => (
+                    <View key={index} className="flex-1 items-center gap-2">
+                      <Skeleton className="size-9 rounded-xl" />
+                      <Skeleton className="h-3.5 w-13 rounded-full" />
+                      <Skeleton className="h-2.5 w-9 rounded-full" />
+                    </View>
+                  ))}
+                </View>
+              </View>
+              <Skeleton testID="home-loading-collar" className="h-16 w-full rounded-card" />
+              <View testID="home-loading-quick-actions" className="gap-2.5">
+                <Skeleton className="h-3 w-27.5 rounded-full" />
+                <View className="flex-row gap-2.5">
+                  {Array.from({ length: 3 }, (_, index) => (
+                    <Skeleton key={index} className="h-23 flex-1 rounded-card" />
+                  ))}
+                </View>
+              </View>
+              <Skeleton testID="home-loading-weekly" className="h-102 w-full rounded-card" />
+            </View>
           ) : null}
 
           {pets.data && isPetsError(pets.data) ? (
