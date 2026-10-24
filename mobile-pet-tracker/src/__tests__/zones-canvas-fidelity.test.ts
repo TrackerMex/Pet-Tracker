@@ -107,3 +107,13 @@ it('#202 R16: el canvas pinta las notas a 14/1.4', () => {
   contains(openingTag('screens/geofence-editor/index.tsx', 'geofence-editor-error'), 'className="text-sm leading-body text-danger"');
   contains(openingTag('screens/geofence-editor/index.tsx', 'geofence-editor-radius-value'), "'text-15 font-bold text-foreground'");
 });
+
+it('#202 R17: el canvas dibuja las tarjetas de estado', () => {
+  contains(artboard('EditorZonaEstados'), 'padding: 24px 16px', 3);
+  contains(artboard('EditorZonaEstados'), 'font-size: 15px; line-height: 1.4', 4);
+  const production = source('screens/geofence-editor/index.tsx');
+  contains(production, 'className="items-center px-4 py-6"', 3);
+  contains(production, "STATE_TEXT = 'text-center text-15 leading-body text-muted'");
+  contains(production, '<ScreenHeader testID="geofence-editor-header"');
+  expect(production).not.toContain('Stack.Screen');
+});

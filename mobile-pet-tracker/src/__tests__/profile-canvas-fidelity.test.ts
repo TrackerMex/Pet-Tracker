@@ -57,14 +57,13 @@ describe('#173 R2: inventario de radios nuevos', () => {
 });
 
 describe('#173 R2.4: inventario de tamaños nuevos', () => {
-  it('reserva text-26 al nombre de la mascota en Perfil (enmendado por #176 R8) (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #197 R19) (enmendado por #202 R1)', () => {
+  it('reserva text-26 al nombre de la mascota en Perfil (enmendado por #176 R8) (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #197 R19) (enmendado por #202 R1) (enmendado por #202 R17)', () => {
     expect(filesMatching(/\btext-26\b/)).toEqual([
       'components/empty-state.tsx', // (enmendado por #176 R8)
       'components/screen-header.tsx',
       'screens/alert-detail/index.tsx', // #180 R1
       'screens/alerts/index.tsx', // #174 R3
       'screens/docs/index.tsx', // #175 R5
-      'screens/geofence-editor/index.tsx', // #189 R8
       'screens/profile/index.tsx',
       'screens/reminders/index.tsx', // #178 R4
     ]);
