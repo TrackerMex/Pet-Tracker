@@ -24,6 +24,7 @@ import { Card } from '../../components/card';
 import { Celebration } from '../../components/celebration';
 import { PetAvatar } from '../../components/pet-avatar';
 import { PetSwitcher } from '../../components/pet-switcher';
+import { RiseIn } from '../../components/rise-in';
 import { ScreenHeader } from '../../components/screen-header';
 import { PingRing } from '@/components/ping-ring';
 import { PingoFloat } from '@/components/pingo-float';
@@ -303,18 +304,20 @@ export function PairingScreen() {
         ) : null}
 
         {phase === 'idle' && selectedPet?.device === null ? (
-          <View testID="pairing-hero-group" className="items-center gap-2.5">
-            <View testID="pairing-hero" className="h-37.5 w-50 items-center justify-center" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-              <PingRing testID="pairing-ring-0" delay={0} className={PAIRING_RING_CLASS_NAME} />
-              <PingRing testID="pairing-ring-1" delay={PAIRING_ARTBOARD_RING_DELAY_MS} className={PAIRING_RING_CLASS_NAME} />
-              <PingoFloat testID="pairing-pingo-float">
-                <Image testID="pairing-pingo" source={PAIRING_PINGO_SOURCE} style={{ width: 120, aspectRatio: 1 }} contentFit="contain" />
-              </PingoFloat>
+          <RiseIn delayMs={0} testID="pairing-hero-rise">
+            <View testID="pairing-hero-group" className="items-center gap-2.5">
+              <View testID="pairing-hero" className="h-37.5 w-50 items-center justify-center" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+                <PingRing testID="pairing-ring-0" delay={0} className={PAIRING_RING_CLASS_NAME} />
+                <PingRing testID="pairing-ring-1" delay={PAIRING_ARTBOARD_RING_DELAY_MS} className={PAIRING_RING_CLASS_NAME} />
+                <PingoFloat testID="pairing-pingo-float">
+                  <Image testID="pairing-pingo" source={PAIRING_PINGO_SOURCE} style={{ width: 120, aspectRatio: 1 }} contentFit="contain" />
+                </PingoFloat>
+              </View>
+              <Text testID="pairing-title" className="text-center text-28 font-black tracking-title text-foreground">
+                {t('pairing.pairCollar')}
+              </Text>
             </View>
-            <Text testID="pairing-title" className="text-center text-28 font-black tracking-title text-foreground">
-              {t('pairing.pairCollar')}
-            </Text>
-          </View>
+          </RiseIn>
         ) : null}
 
         {pets.data === undefined ? (
@@ -384,42 +387,46 @@ export function PairingScreen() {
 
         {phase === 'idle' && selectedPet?.device === null ? (
           <View className="gap-4" style={{ flexGrow: 1 }}>
-            <View className="flex-row items-start gap-2.5 rounded-tile bg-default px-3.5 py-3">
-              <View testID="pairing-plan-icon" className="mt-px">
-                <InfoCircle size={20} color={muted} />
-              </View>
-              <Text
-                testID="pairing-plan-free"
-                className="flex-1 text-13 font-normal leading-4.75 text-muted"
-                selectable
-              >
-                <Text className="font-bold text-foreground">{t('pairing.freePlanPairLead')}</Text>
-                {' '}
-                {t('pairing.freePlanPairBody')}
-              </Text>
-            </View>
-
-            <View className="gap-1.5">
-              <Text testID="pairing-activation-code-label" className="text-sm font-extrabold text-foreground">
-                {t('pairing.activationCode')}
-              </Text>
-              <TextInput
-                testID="activation-code-input"
-                className="h-15 rounded-14 border-2 border-accent bg-default px-4 font-mono text-24 tracking-code text-foreground"
-                style={CONTINUOUS_CORNER}
-                autoCapitalize="characters"
-                autoCorrect={false}
-                maxLength={64}
-                value={code}
-                onChangeText={setCode}
-              />
-              <View testID="pairing-code-hint" className="flex-row items-center gap-1.5">
-                <Package size={14} color={muted} />
-                <Text className="text-xs font-semibold text-muted">
-                  {t('pairing.printedOnCollarBox')}
+            <RiseIn delayMs={80} testID="pairing-plan-rise">
+              <View className="flex-row items-start gap-2.5 rounded-tile bg-default px-3.5 py-3">
+                <View testID="pairing-plan-icon" className="mt-px">
+                  <InfoCircle size={20} color={muted} />
+                </View>
+                <Text
+                  testID="pairing-plan-free"
+                  className="flex-1 text-13 font-normal leading-4.75 text-muted"
+                  selectable
+                >
+                  <Text className="font-bold text-foreground">{t('pairing.freePlanPairLead')}</Text>
+                  {' '}
+                  {t('pairing.freePlanPairBody')}
                 </Text>
               </View>
-            </View>
+            </RiseIn>
+
+            <RiseIn delayMs={140} testID="pairing-code-rise">
+              <View className="gap-1.5">
+                <Text testID="pairing-activation-code-label" className="text-sm font-extrabold text-foreground">
+                  {t('pairing.activationCode')}
+                </Text>
+                <TextInput
+                  testID="activation-code-input"
+                  className="h-15 rounded-14 border-2 border-accent bg-default px-4 font-mono text-24 tracking-code text-foreground"
+                  style={CONTINUOUS_CORNER}
+                  autoCapitalize="characters"
+                  autoCorrect={false}
+                  maxLength={64}
+                  value={code}
+                  onChangeText={setCode}
+                />
+                <View testID="pairing-code-hint" className="flex-row items-center gap-1.5">
+                  <Package size={14} color={muted} />
+                  <Text className="text-xs font-semibold text-muted">
+                    {t('pairing.printedOnCollarBox')}
+                  </Text>
+                </View>
+              </View>
+            </RiseIn>
 
             <View testID="pairing-submit-spacer" style={{ flexGrow: 1 }} />
 
