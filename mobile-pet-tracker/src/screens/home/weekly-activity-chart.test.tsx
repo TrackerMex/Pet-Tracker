@@ -949,7 +949,7 @@ describe('R6: el selector cambia de métrica sin volver a pedir nada', () => {
 });
 
 describe('R9: el selector sigue el tema de la app', () => {
-  it('adapta píldora, texto e icono con los tokens de tabs en ambos temas', async () => {
+  it('adapta píldora, texto e icono con los tokens de tabs en ambos temas (enmendado por #198 R8)', async () => {
     const days = makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]);
     mockTheme = 'dark';
     const dark = await renderChart(days);
@@ -977,7 +977,7 @@ describe('R9: el selector sigue el tema de la app', () => {
     expect(
       dark.getByTestId('weekly-activity-metric-label-distanceM').props
         .className,
-    ).toContain('text-foreground');
+    ).toContain('text-muted');
 
     await dark.unmount();
     mockTheme = 'light';
@@ -1006,7 +1006,7 @@ describe('R9: el selector sigue el tema de la app', () => {
     expect(
       light.getByTestId('weekly-activity-metric-label-distanceM').props
         .className,
-    ).toContain('text-foreground');
+    ).toContain('text-muted');
     expect(
       readFileSync(chartSourcePath, 'utf8'),
     ).not.toContain('appearance=');
