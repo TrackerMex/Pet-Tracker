@@ -14,10 +14,10 @@ R18, R19, R20.
 Por qué este orden:
 
 - R1 va primero porque los demás usan sus tokens (`text-34`, `rounded-32`,
-  `rounded-40`).
-- El commit rojo de R2 borra el describe `#197 R20` de
-  `src/__tests__/canvas-foundations.test.ts`. Ese describe exige que nadie monte
-  los cimientos, y R2 es el primer R que monta uno.
+  `rounded-40`). `--text-34` ya lo declaró #199 en la base `ee40d93d` (E5): R1
+  añade solo los dos radios.
+- El describe `#197 R20` de `src/__tests__/canvas-foundations.test.ts` ya no
+  existe: lo borró #200 (E4). R2 no toca ese fichero.
 - El test de R3 asierta el **orden relativo** de los hijos de la escena, no la
   lista exacta, porque R4 añade el bocadillo después.
 - R10 y R11 comparten un commit rojo y uno verde. Su JSX es el mismo, así que
@@ -52,14 +52,14 @@ Por qué este orden:
 ## Cuentas a re-medir al terminar (base + delta)
 
 Mídelas desde `mobile-pet-tracker/` con `grep -cF -- '<patrón>' <fichero>`. La
-base es la de `origin/dev` 81cb6d6b.
+base es la de `ee40d93d` (E5: merge de `origin/dev` 8bd88522 con #198 y #199).
 
 | Patrón | Fichero | Base | Delta | Esperado | R |
 |---|---|---|---|---|---|
-| `--text-34:` | `src/theme/global.css` | 0 | +1 | 1 | R1 |
+| `--text-34:` | `src/theme/global.css` | 1 | 0 | 1 | R1 (ya lo declaró #199 R27) |
 | `--radius-32:` | `src/theme/global.css` | 0 | +1 | 1 | R1 |
 | `--radius-40:` | `src/theme/global.css` | 0 | +1 | 1 | R1 |
-| `#197 R20` | `src/__tests__/canvas-foundations.test.ts` | 3 | −3 | 0 | R2 |
+| `#197 R20` | `src/__tests__/canvas-foundations.test.ts` | 0 | 0 | 0 | ninguno (E4: lo borró #200) |
 | `<RiseIn` | `src/screens/welcome/index.tsx` | 0 | +4 | 4 | R2 |
 | `<PingoFloat` | `src/screens/welcome/index.tsx` | 0 | +1 | 1 | R3 |
 | `<Card` | `src/screens/welcome/index.tsx` | 2 | −2 | 0 | R3, R4 |
@@ -67,7 +67,7 @@ base es la de `origin/dev` 81cb6d6b.
 | `withRepeat` | `src/screens/welcome/index.tsx` | 3 | −1 | 2 | R3 |
 | `pingoFloatY` | `src/screens/welcome/index.tsx` | 4 | −4 | 0 | R3 |
 | `translateY` | `src/screens/welcome/index.tsx` | 5 | −5 | 0 | R3 (−1: `pingoStyle`), R7 (−4) |
-| suma de `cardElements` (script de abajo) | `src/**/*.tsx` | 41 | −4 | 37 | R3, R4, R8, R13 |
+| suma de `cardElements` (script de abajo) | `src/**/*.tsx` | 33 | −4 | 29 | R3, R4, R8, R13 |
 | `HomeEntrance` | `src/screens/login/index.tsx` | 5 | −5 | 0 | R8 |
 | `<RiseIn` | `src/screens/login/index.tsx` | 0 | +3 | 3 | R8 |
 | `<PingoFloat` | `src/screens/register/index.tsx` | 1 | 0 | 1 | R9 |
@@ -83,18 +83,20 @@ base es la de `origin/dev` 81cb6d6b.
 | `## Enmienda #205` | `../docs/ui-guidelines.md` | 0 | +1 | 1 | R20 |
 
 Los agregados de `consistency-classnames.test.ts` tienen sus cifras en
-requirements.md §Candados agregados revisados. CONTINUOUS_CORNER cierra con un
-neto de +3.
+requirements.md §Candados agregados revisados y su base en E5: `classNames` 54
+→ 57, `style={CONTINUOUS_CORNER}` 52 → 55 (neto +3) y `bg-accent-soft` 4 → 2.
 
 Réplica del piso de `cardElements` (mismo recorrido que el escáner de
 `heroui-text-size-merge.test.ts`: `.tsx` de `src/` sin `__tests__`, `__mocks__`
 ni `.test.tsx`; cuenta cada elemento JSX cuya etiqueta viene de
 `components/card` o `./card`). Guárdalo fuera del repo, por ejemplo en
 `$TMPDIR/card-count.js`, y córrelo desde `mobile-pet-tracker/` con
-`NODE_PATH="$PWD/node_modules" node "$TMPDIR/card-count.js"`. Base medida: 41.
-Esperado al cerrar: 37 (R3, R4, R8, R13). #199 y #200 también tocan este piso:
-quien mergee después lo vuelve a medir y recompone la expresión
-`41 - 1 - 1 - 1 - 1` con lo que midió.
+`NODE_PATH="$PWD/node_modules" node "$TMPDIR/card-count.js"`. Base medida en
+`ee40d93d`: 33, la expresión de hoy `35 - 1 - 1 - 1 + 1`. Esperado al cerrar:
+29 (R3, R4, R8, R13), con la expresión `35 - 1 - 1 - 1 + 1 - 1 - 1 - 1 - 1`
+(margen 0). El suelo `classNameElements` (`163`) no se toca: cierra en 170,
+margen 7 (E5, P1 retirada). Si otra rama mergea antes del cierre, se vuelve a
+medir y se recompone la expresión con lo medido.
 
 ```js
 const ts = require('typescript'), fs = require('fs'), path = require('path');
@@ -131,21 +133,21 @@ Cada bloque sigue la misma pauta:
 
 ### R1 — Tokens del canvas
 - [ ] (1) Rojo en `account-flow-canvas-fidelity.test.ts`: crea el fichero.
-- [ ] (2) Añade `--text-34`, `--radius-32` y `--radius-40` a `src/theme/global.css`.
+- [ ] (2) Añade `--radius-32` y `--radius-40` a `src/theme/global.css`, tras `--radius-22: 22px;`. `--text-34` ya existe tras `--text-28: 28px;` (#199, E5): no lo dupliques. El test de R1 asierta las tres líneas, una vez cada una.
 - [ ] (3) Refactor.
 
 ### R2 — Main: bloques y entradas
-- [ ] (1) Rojo en el test de welcome y en F. En este mismo commit borra el describe `#197 R20` de `canvas-foundations.test.ts`. Borra además los tres `it` de `#153 R8` que miden el estilo animado de `welcome-content` y enmienda `R5 › pinta marca, tagline y legal con sus clases` (` (enmendado por #205 R2, R6)`), según el inventario.
+- [ ] (1) Rojo en el test de welcome y en F. No toques `canvas-foundations.test.ts`: el describe `#197 R20` ya no existe (E4). Borra los tres `it` de `#153 R8` que miden el estilo animado de `welcome-content` y enmienda `R5 › pinta marca, tagline y legal con sus clases` (` (enmendado por #205 R2, R6)`), según el inventario.
 - [ ] (2) Cuatro `RiseIn` (0/120/200/280), márgenes 16 y espaciador en `welcome/index.tsx`. `welcome-content` pasa a `View` plano: sale su uso de `entranceStyle` (la declaración se queda hasta R7).
 - [ ] (3) Refactor.
 
 ### R3 — Main: escena
-- [ ] (1) Rojo en welcome y F. El orden se asierta por índices relativos. Incluye las enmiendas de inventario de R3: muelle de #153 R9 a 220, pose 220×220, listas de hijos de `welcome-stage` de #167 R12 y R13, borrado de dos `it` de #153 R10 y enmienda del tercero, y el piso `cardElements` de `heroui-text-size-merge.test.ts` (`41 - 1`, con el sufijo ` (enmendado por #205 R3, R4, R8, R13)` y el comentario `; #205 R3: -1`).
+- [ ] (1) Rojo en welcome y F. El orden se asierta por índices relativos. Incluye las enmiendas de inventario de R3: muelle de #153 R9 a 220, pose 220×220, listas de hijos de `welcome-stage` de #167 R12 y R13, borrado de dos `it` de #153 R10 y enmienda del tercero, y el piso `cardElements` de `heroui-text-size-merge.test.ts` (`35 - 1 - 1 - 1 + 1 - 1`, con el sufijo ` (enmendado por #205 R3, R4, R8, R13)` al final del título, tras `(enmendado por #199 R19)`, y el comentario `; #205 R3: -1` tras `; #199 R19: +1`). En el mismo commit, el sufijo de R3 en los tres `it` de `consistency-classnames.test.ts` (colas en requirements.md E5).
 - [ ] (2) La escena pasa a `View` de 380 con radio 32 y `CONTINUOUS_CORNER`. Pingo mide 220 dentro de `PingoFloat` y lleva el suelo `bg-border`. Borra la flotación de 4 puntos: `pingoFloatY`, su `withRepeat` y el `translateY` de `pingoStyle`, y quita los imports `MOTION_FLOAT_*`.
 - [ ] (3) Refactor.
 
 ### R4 — Main: bocadillo
-- [ ] (1) Rojo en welcome y F, con la enmienda de `#153 R5 › pinta el bocadillo…` y el `- 1` en el piso de `cardElements` (comentario `; #205 R3, R4: -1, -1`).
+- [ ] (1) Rojo en welcome y F, con la enmienda de `#153 R5 › pinta el bocadillo…` y el `- 1` en el piso de `cardElements` (`35 - 1 - 1 - 1 + 1 - 1 - 1`, comentario `; #205 R3, R4: -1, -1`).
 - [ ] (2) Bocadillo `View` absoluto con `PopIn` y `shadows.card`.
 - [ ] (3) Refactor.
 
@@ -165,7 +167,7 @@ Cada bloque sigue la misma pauta:
 - [ ] (3) Refactor.
 
 ### R8 — Login
-- [ ] (1) Rojo en login y F, con las enmiendas del inventario (incluidas las dos filas nuevas de F10 y F11) y el `- 1` en el piso de `cardElements` (comentario `; #205 R3, R4, R8: -1, -1, -1`).
+- [ ] (1) Rojo en login y F, con las enmiendas del inventario (incluidas las dos filas nuevas de F10 y F11) y el `- 1` en el piso de `cardElements` (`35 - 1 - 1 - 1 + 1 - 1 - 1 - 1`, comentario `; #205 R3, R4, R8: -1, -1, -1`).
 - [ ] (2) `RiseIn` 0/100/200, burbuja `View`, `login-title`, `login-actions` y márgenes 20.
 - [ ] (3) Refactor.
 
@@ -185,7 +187,7 @@ Cada bloque sigue la misma pauta:
 - [ ] (3) Refactor.
 
 ### R13 — NuevaContrasena (éxito)
-- [ ] (1) Rojo en reset-password y F. Enmienda `#177 R7.3` de `chunky-cta-canvas-fidelity.test.ts` (`reset-password` 1 → 2 y `+ 1`) y añade el último `- 1` al piso de `cardElements` (la expresión cierra en `41 - 1 - 1 - 1 - 1` y el comentario en `; #205 R3, R4, R8, R13: -1, -1, -1, -1`).
+- [ ] (1) Rojo en reset-password y F. Enmienda `#177 R7.3` de `chunky-cta-canvas-fidelity.test.ts` (`reset-password` 1 → 2 y `26 + 1 + 1 + 1 + 2 + 2 + 1 + 1` → `26 + 1 + 1 + 1 + 2 + 2 + 1 + 1 + 1`, 36) y añade el último `- 1` al piso de `cardElements` (la expresión cierra en `35 - 1 - 1 - 1 + 1 - 1 - 1 - 1 - 1`, 29, y el comentario en `; #205 R3, R4, R8, R13: -1, -1, -1, -1`).
 - [ ] (2) La tarjeta de éxito pasa a `View` `rounded-16` con `CONTINUOUS_CORNER`.
 - [ ] (3) Refactor.
 

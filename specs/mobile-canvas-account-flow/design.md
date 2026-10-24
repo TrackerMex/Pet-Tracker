@@ -8,19 +8,22 @@ tags: [mobile, ui, design, canvas-parity]
 
 ## Premisas contrastadas
 
-Verificadas contra el árbol de `origin/dev` 81cb6d6b y la copia congelada:
+Verificadas contra el árbol de `origin/dev` 81cb6d6b y la copia congelada, y
+re-verificadas en `ee40d93d` tras #200, #198 y #199 (requirements.md E2 a E5):
 
 - Los cimientos de #197 existen con estas firmas: `RiseIn({ delayMs, testID?, className?, children })`
   (no anima con reduce motion), `PopIn({ testID, className, style, children })`,
   `PingoFloat({ testID, children })`, `useShadows()` (`card`, `segment`),
   `ScreenHeader({ testID, backFallback, title?, eyebrow?, size?: 24 | 26, accessory? })`.
-  Ninguno se monta todavía: lo candea `#197 R20`, que esta feature borra.
+  En `ee40d93d` ya los montan pantallas de #200, #198 y #199, y #200 borró el
+  candado `#197 R20` (E4): esta feature no lo toca.
 - `SegmentedControl` tiene un solo consumidor: add-pet.
 - `welcome.pingoGreeting` dice hoy una frase larga (es `Hola, soy Pingo. Te
   ayudo a saber dónde está y cómo está tu mascota.`), que no cabe en el
   bocadillo absoluto del canvas: de ahí D1.
 - `global.css` declara `--radius-4`, `--text-24`, `--text-28`,
-  `--tracking-display` y `--color-tab-pill`; no declara `--text-34`,
+  `--tracking-display`, `--color-tab-pill` y, desde #199, `--text-34` (tras
+  `--text-28`, E5); no declara
   `--radius-32`, `--radius-40` ni `--color-separator` (por eso D14 usa
   `bg-border`, que el repo ya usa como `border-border`).
 - Las guardas de design-drift que vetan `shadow` y radios fuera de escala
@@ -163,7 +166,6 @@ Solo presentación, bajo `mobile-pet-tracker/` salvo `docs/`:
 Tests: nuevo `src/__tests__/account-flow-canvas-fidelity.test.ts`; se amplían
 los seis `src/screens/<pantalla>/index.test.tsx` y
 `src/app/__tests__/layout.test.tsx`; se enmiendan
-`src/__tests__/canvas-foundations.test.ts`,
 `src/__tests__/consistency-classnames.test.ts`,
 `src/__tests__/design-drift.test.ts`,
 `src/__tests__/add-pet-two-steps.test.ts` y
@@ -186,10 +188,10 @@ los seis `src/screens/<pantalla>/index.test.tsx` y
 
 ## Riesgos
 
-- **Choque con #199 en `global.css`**: ambas añaden `--text-34: 34px;`. Quien
-  mergee segundo deja una sola línea; el candado de R1 exige exactamente una.
-- **Choque en `#197 R20`**: otras paralelas que monten cimientos también borran
-  el describe. Al mergear, se resuelve quedándose sin él.
+- **Choque con #199 en `global.css`**: resuelto (E5). #199 ya declaró
+  `--text-34: 34px;` en la base; R1 añade solo los radios y el candado de R1
+  sigue exigiendo exactamente una línea de cada.
+- **Choque en `#197 R20`**: resuelto (E4). #200 ya borró el describe.
 - **Agregados de `consistency-classnames.test.ts`**: las paralelas suman sus
   términos en las mismas expresiones; un conflicto se resuelve conservando los
   términos de las dos ramas.

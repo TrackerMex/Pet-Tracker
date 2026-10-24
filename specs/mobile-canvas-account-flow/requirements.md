@@ -26,10 +26,11 @@ dependencias nuevas (veto vigente a `expo-linear-gradient`), sin coste, sin AWS.
 Deuda que toca: ninguna.
 
 Dependencias: #197 (mergeada en `dev`, base de esta rama). Features paralelas
-aún fuera de `dev` (#196, #198, #199, #200, #201, #202, #203, #204, #206): esta
-feature no toca sus pantallas; los únicos puntos de contacto son la línea
-`--text-34: 34px;` que también añade #199, `PopIn` (que #201 usa sin cambios y
-aquí tampoco cambia) y la supresión del describe `#197 R20` (ver D12).
+aún fuera de `dev` (#196, #201, #202, #203, #204, #206; #200, #198 y #199 ya
+están en la base `ee40d93d`, ver E2 a E5): esta feature no toca sus pantallas;
+los únicos puntos de contacto eran la línea `--text-34: 34px;`, que #199 ya
+declaró (E5), `PopIn` (que #201 usa sin cambios y aquí tampoco cambia) y la
+supresión del describe `#197 R20`, que #200 ya borró (D12, E4).
 
 ## Decisiones con defecto (cerradas)
 
@@ -42,7 +43,7 @@ Cada decisión está cerrada con su defecto; el humano puede cambiarla al firmar
 | D3 | Flotación de Pingo | `PingoFloat` en Main (nuevo) y Registro (se queda). Se retira de recuperar y nueva contraseña (el canvas no las hace flotar). Se retira la flotación de 4 puntos de welcome (#153 R10) en el mismo R3 que monta `PingoFloat`, que la sustituye (`pingoFloatY` y su `translateY` salen en R3; R7 solo retira `entranceStyle`) | Enmienda la carta #172 (D11) |
 | D4 | Bocadillos de welcome y login | Dejan de ser `Card` y pasan a `View` con esquinas asimétricas (pico de 4) y `CONTINUOUS_CORNER`. Sin componente nuevo: dos usos con el pico en lados distintos | Ninguno |
 | D5 | Retardo de los pops | `PopIn` no cambia (retardo fijo 250 ms). El canvas pide 600 (Main), 300 (Recuperar) y 500 (NuevaContrasena): desviación consciente | #201 usa `PopIn` sin cambios; añadirle una prop chocaría |
-| D6 | Tokens | `--text-34: 34px;`, `--radius-32: 32px;` y `--radius-40: 40px;` en `src/theme/global.css`. 32 y 40 quedan fuera de la escala de radios por fidelidad al canvas (enmienda de carta) | #199 añade la misma línea `--text-34: 34px;`: quien mergee segundo deja una sola |
+| D6 | Tokens | `--text-34: 34px;`, `--radius-32: 32px;` y `--radius-40: 40px;` en `src/theme/global.css`. 32 y 40 quedan fuera de la escala de radios por fidelidad al canvas (enmienda de carta) | Resuelto (E5): #199 ya declaró `--text-34: 34px;` en la base; R1 añade solo los dos radios |
 | D7 | `SegmentedControl` (componente compartido) | La opción seleccionada pierde `shadow-sm` y toma `useShadows().segment` (la sombra exacta del canvas). Único consumidor medido: add-pet | Una feature paralela que lo monte hereda la sombra nueva |
 | D8 | Cabecera de nueva mascota | `pets/add` pasa a `{ headerShown: false }`; cabecera `ScreenHeader testID="add-pet" size={24}` con el paso como `accessory`; barra de progreso fija bajo la cabecera; CTA en pie fijo | Ninguno: `_layout.tsx` solo cambia la línea de `pets/add` |
 | D9 | Chips del paso 2 | Seleccionado `bg-tab-pill` (el `--pill` del canvas), resto `bg-default`; alto 44 (`h-11`), padding 16 (`px-4`). `bg-accent-soft` pierde sus 2 usos en add-pet | Agregados de `bg-accent-soft` (ver inventario) |
@@ -56,13 +57,14 @@ Cada decisión está cerrada con su defecto; el humano puede cambiarla al firmar
 ## Base medida
 
 Medida en `feature/205-mobile-canvas-account-flow` sobre `origin/dev` 81cb6d6b,
-desde `mobile-pet-tracker/`. Anclas por contenido, nunca por línea. Antes del
+desde `mobile-pet-tracker/`, y re-medida en `ee40d93d` (E5): solo cambian las
+filas de `--text-34`, `#197 R20` y `cardElements`, ya corregidas aquí. Anclas por contenido, nunca por línea. Antes del
 primer commit, el implementador repite cada comando y compara: si una cifra no
 coincide, para y lo apunta en su informe.
 
 | Comando | Base |
 |---|---|
-| `grep -cF -- '--text-34' src/theme/global.css` | 0 (#199: 0 → 1) |
+| `grep -cF -- '--text-34' src/theme/global.css` | 1 (#199 R27; E5) |
 | `grep -cF -- '--radius-32' src/theme/global.css` | 0 |
 | `grep -cF -- '--radius-40' src/theme/global.css` | 0 |
 | `grep -cF -- '--radius-4:' src/theme/global.css` | 1 |
@@ -104,10 +106,10 @@ coincide, para y lo apunta en su informe.
 | `grep -rlF 'SegmentedControl' src --include=*.tsx \| grep -v test` | `segmented-control.tsx`, `add-pet/index.tsx` |
 | `grep -cF '<Stack.Screen name="pets/add" options={{ ...headerOptions, title: '"''"' }} />' src/app/_layout.tsx` | 1 |
 | `grep -cF "['pets/add', '']" src/app/__tests__/layout.test.tsx` | 1 |
-| `grep -cF '#197 R20: cimientos sin cablear' src/__tests__/canvas-foundations.test.ts` | 1 |
+| `grep -cF '#197 R20: cimientos sin cablear' src/__tests__/canvas-foundations.test.ts` | 0 (E4) |
 | `grep -cF "'welcome.pingoGreeting'" src/i18n/catalog.ts` | 2 |
 | `grep -cF '## Enmienda #205' ../docs/ui-guidelines.md` | 0 |
-| suma de `cardElements` del escáner de `heroui-text-size-merge.test.ts` (script de `tasks.md` §Cuentas a re-medir) | 41 |
+| suma de `cardElements` del escáner de `heroui-text-size-merge.test.ts` (script de `tasks.md` §Cuentas a re-medir) | 33 (E5) |
 | `test ! -e src/__tests__/account-flow-canvas-fidelity.test.ts` | sale 0 |
 
 `RiseIn` (`src/components/rise-in.tsx`), `PopIn` (`src/components/pop-in.tsx`),
@@ -667,7 +669,7 @@ Rutas bajo `src/`. `W` = `screens/welcome/index.test.tsx`,
 | `W` › `#153 R10: Pingo flota en bucle` › `sube 4 puntos en medio ciclo sin reduce motion` | R3 | seguro: **se borra** sin sufijo (la flotación de 4 puntos sale en R3) |
 | `W` › `#153 R10: Pingo flota en bucle` › `con reduce motion no flota` | R3 | seguro: se enmienda; conserva `expect(mockWithRepeat).not.toHaveBeenCalled()` y su estilo pasa a `{ width: 220, height: 220, transform: [{ scale: 1 }] }`, sin `translateY` |
 | `W` › `#153 R10: Pingo flota en bucle` › `repite la flotación sin fin y en vaivén` | — | se queda verde, no se toca: tras R3 el único `withRepeat(…, -1, true)` es el de `PingoFloat` (el parpadeo repite solo con `(-1)`); el implementador lo confirma al medir |
-| `__tests__/heroui-text-size-merge.test.ts` › `#187 R1: ningún componente que fusiona className lleva text-NN` › `#187 R1: el escáner cubre al menos el universo medido (enmendado por #177 R9) (enmendado por #189 R5, R10, R13)` | R3, R4, R8, R13 | seguro por recuento (F1; §Erratas, Regla de recuentos agregados): el piso de `cardElements` es `toBeGreaterThanOrEqual(41)` con 41 `Card` medidos (script de réplica en `tasks.md` §Cuentas a re-medir). Cada uno de los cuatro R retira una `Card` (R3 `welcome-scene`, R4 `welcome-bubble`, R8 la burbuja de login, R13 la tarjeta de éxito de reset-password). El commit rojo de cada R añade ` - 1` a la expresión y su R al comentario: `41 - 1 - 1 - 1 - 1` al final, y el comentario cierra con `; #205 R3, R4, R8, R13: -1, -1, -1, -1` (añadido tras el `// #188 R18: 42 - 1 (…)` de hoy). El sufijo ` (enmendado por #205 R3, R4, R8, R13)` va una sola vez, en R3. Los demás pisos no se rompen (`heroElements` 197, 28 ficheros; `classNameElements` 171 → 167 frente a 163). #199 y #200 también tocan este piso: quien mergee después re-mide con el script y recompone la expresión |
+| `__tests__/heroui-text-size-merge.test.ts` › `#187 R1: ningún componente que fusiona className lleva text-NN` › `#187 R1: el escáner cubre al menos el universo medido (enmendado por #177 R9) (enmendado por #189 R5, R10, R13)` (título real con las colas de #200 y #199: E3, E5) | R3, R4, R8, R13 | seguro por recuento (F1; §Erratas, Regla de recuentos agregados; E5): el piso de `cardElements` es `toBeGreaterThanOrEqual(35 - 1 - 1 - 1 + 1)` con 33 `Card` medidos en `ee40d93d` (script de réplica en `tasks.md` §Cuentas a re-medir). Cada uno de los cuatro R retira una `Card` (R3 `welcome-scene`, R4 `welcome-bubble`, R8 la burbuja de login, R13 la tarjeta de éxito de reset-password). El commit rojo de cada R añade ` - 1` a la expresión y su R al comentario: `35 - 1 - 1 - 1 + 1 - 1 - 1 - 1 - 1` (29) al final, y el comentario cierra con `; #205 R3, R4, R8, R13: -1, -1, -1, -1` (añadido tras el `; #199 R19: +1` de hoy). El sufijo ` (enmendado por #205 R3, R4, R8, R13)` va una sola vez, en R3, al final del título. Los demás pisos no se rompen (`heroElements` 223, 32 ficheros; `classNameElements` 174 → 170 frente a 163, margen 7: P1 retirada en E5) |
 | `W` › `#153 R5: la escena de Pingo sustituye al logo` › `pinta el bocadillo como card de superficie con el saludo` | R4 | seguro |
 | `W` › `#153 R1: el saludo de Pingo existe en los dos idiomas` › `declara el saludo en inglés y en español` | R5 | seguro: los literales esperados pasan de las dos frases de hoy a `Hola, soy Pingo.` y `Hi, I'm Pingo.` (D1) |
 | `W` › `#153 R1: el saludo de Pingo existe en los dos idiomas` › `pinta el saludo en el bocadillo en español` | R5 | seguro: el texto de `welcome-bubble-text` pasa a `Hola, soy Pingo.` |
@@ -720,7 +722,7 @@ Rutas bajo `src/`. `W` = `screens/welcome/index.test.tsx`,
 | `N` › ídem › `#167 R10: la tarjeta de estado es secondary con check y texto` | R13 | seguro |
 | `N` › ídem › `#167 R10: la tarjeta de estado entra con pop` | R13 | seguro |
 | `N` › ídem › `#167 R10: el disco del check es acento con Check de 18` | — | se queda verde, no se toca (M13) |
-| `src/__tests__/chunky-cta-canvas-fidelity.test.ts` › `#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por #191 R11) (enmendado por #189 R7) (enmendado por #189 R13)` | R13 | seguro por recuento (F4): en el mapa `radii`, `'screens/reset-password/index.tsx': 1` pasa a `2`; y `26 + 1 + 1 + 1 + 2` pasa a `26 + 1 + 1 + 1 + 2 + 1` con `// #205 R13`; sufijo ` (enmendado por #205 R13)` |
+| `src/__tests__/chunky-cta-canvas-fidelity.test.ts` › `#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por #191 R11) (enmendado por #189 R7) (enmendado por #189 R13)` | R13 | seguro por recuento (F4): en el mapa `radii`, `'screens/reset-password/index.tsx': 1` pasa a `2`; y `26 + 1 + 1 + 1 + 2 + 2 + 1 + 1` (35 en `ee40d93d`, E5) pasa a `26 + 1 + 1 + 1 + 2 + 2 + 1 + 1 + 1` (36) con `; #205 R13 (+1)` en el comentario; sufijo ` (enmendado por #205 R13)` al final del título real (E3, E5) |
 | `app/__tests__/layout.test.tsx` › `#95 R4: cada pantalla de detalle declara su cabecera nativa` › `#194 R4: %s usa exactamente las opciones de cabecera acordadas` | R15 | seguro: se borra la fila `['pets/add', '']` |
 | `A` › `R6: alta de mascota` › `#191 R4: el paso 1 pinta foto, burbuja y datos básicos` | R16, R19 | seguro dos veces, un solo sufijo con las dos R (M15): R16 por la cabecera y la foto; R19 porque `add-pet-continue` sale de `add-pet-form` |
 | `A` › `#191 R2: el título vive en el contenido` › `pinta el título antes de la foto y conserva el botón atrás nativo` | R16 | seguro |
@@ -737,8 +739,9 @@ Rutas bajo `src/`. `W` = `screens/welcome/index.test.tsx`,
 Los agregados se enmiendan según «Candados agregados revisados». El piso de
 `cardElements` del escáner HeroUI es también un agregado: su fila está arriba
 (R3, R4, R8, R13) y su cuenta en `tasks.md` §Cuentas a re-medir. Las cuentas de
-`<Card`, `style={CONTINUOUS_CORNER}` y `rounded-16` de otras ramas (#199, #200)
-se re-miden al mergear.
+`<Card`, `style={CONTINUOUS_CORNER}` y `rounded-16` de #200, #198 y #199 ya están
+re-medidas en `ee40d93d` (E2, E5); las de ramas que mergeen después se re-miden
+al mergear.
 
 **Regla de parada**: si un `it` que no está en esta tabla ni en «Candados
 agregados revisados» se pone rojo, el implementador para, no lo toca y lo apunta
@@ -757,7 +760,7 @@ toca):
 | `__tests__/consistency-classnames.test.ts` › `#62 R14: toda esquina no-cápsula que dibuja el repo es continua` › `%s importa y aplica sus %i esquinas (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9)` | filas nuevas `[join('screens', 'welcome', 'index.tsx'), 1]` (R3), `[join('screens', 'login', 'index.tsx'), 1]` (R8), `[join('screens', 'reset-password', 'index.tsx'), 1]` (R13); `forgot` 0 → `0 + 1` (R10); `segmented-control` 2 → `2 - 1` (R17). Sufijo en R3 | R3, R8, R10, R13, R17 |
 | ídem › `fusiona la esquina una vez y la entrega a las dos ramas de Card (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9)` | a la expresión de `toBe(…)` se añaden `+ 1` (R3), `+ 1` (R8), `+ 1` (R10), `+ 1` (R13) y `- 1` (R17): neto `+ 3`. Sufijo en R3 | R3, R8, R10, R13, R17 |
 | ídem › `#98 R10: los candados que esta feature no mueve` › `deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9)` | `count(/style=\{CONTINUOUS_CORNER\}/g)`: los mismos cinco términos (neto `+ 3`); `count(/bg-accent-soft/g)`: `- 2` (R18). Sufijo en R3 | R3, R8, R10, R13, R17, R18 |
-| ídem › `#64 R9: el color categórico solo se nombra en el módulo de paleta` (describe por posición, confirmar) › `conserva los usos de bg-accent-soft que sí son acento` | `accentSoftCount`: `- 2` | R18 |
+| ídem › `#64 R9: el color categórico solo se nombra en el módulo de paleta` (describe confirmado en `ee40d93d`, E5) › `conserva los usos de bg-accent-soft que sí son acento (enmendado por #198 R3, R11, R13)` | `accentSoftCount`: `- 2` | R18 |
 | `__tests__/design-drift.test.ts` › `#178 R13: Recordatorios sin deriva` › `reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10)` | `rounded16['screens/reset-password/index.tsx']` 1 → `1 + 1`. Condicional: si su regex también cuenta `rounded-tl-16`/`rounded-tr-16`/`rounded-br-16`/`rounded-bl-16`, se suman en las filas de welcome (R4) y login (R8) | R13 (R4, R8) |
 | `__tests__/add-pet-two-steps.test.ts` › (describe padre) › `#191 R11: add-pet y el selector cumplen los inventarios` | `selector.match(/style=\{CONTINUOUS_CORNER\}/g)` 2 → `2 - 1` | R17 |
 | `__tests__/account-screens-polish.test.ts` › `#172 R6: recetas de texto de cuenta` › `#172 R6: %s pinta títulos, etiquetas, cuerpos y CTA con su receta` | vectores: login `[1,0,0,…]` → índice 0 a 0 (R8); register índice 0 a 0 (R9); forgot índices 1 y 8 a 0 (R10); reset índice 2: 2 → 1 (R12) y 1 → 0 (R13). Vectores finales: login `[0,0,0,2,2,0,1,0,0,0,1,0,0,0,0]`, register `[0,0,0,7,7,0,0,1,0,0,1,0,0,0,0]`, forgot `[0,0,0,1,1,0,0,0,0,0,1,1,0,0,0]`, reset `[0,0,0,2,2,0,0,0,0,1,1,0,0,1,0]`. Sufijo en R8 | R8, R9, R10, R12, R13 |
@@ -811,6 +814,43 @@ Firmadas por delegación (mandato del humano del 2026-10-23, `progress/plan_canv
 **E3 (títulos con sufijo de #200).** Ocho `it` del inventario ya llevan un sufijo ` (enmendado por #200 …)` que la tabla no cita (`layout.test.tsx` `#194 R4`, `heroui-text-size-merge` `#187 R1`, `chunky-cta-canvas-fidelity` `#177 R7.3`, `alerts-canvas-fidelity` `#174 R12`, los tres de `consistency-classnames` y `design-drift` `#178 R13`). Cada `it` se localiza por su prefijo hasta el primer ` (enmendado por` y el sufijo de #205 va una vez al final del título real. Las expresiones de partida son las re-medidas en el handoff (chunky `26 + 1 + 1 + 1 + 2 + 2` = 33; sumas de `consistency-classnames` 47 y 45). El contenido de cada fila no cambia.
 
 **E4 (`#197 R20` ya borrado).** #200 borró el `describe('#197 R20: cimientos sin cablear')` de `canvas-foundations.test.ts`: R2 no lo toca y el reporte lo anota.
+
+**E5 (re-base sobre `ee40d93d` tras #198 y #199; P1 retirada), firmada.** H0 pasa a `ee40d93d`: el merge de `origin/dev` 8bd88522 sobre `4687e172`, que trae #198 (329c613c, PR #245) y #199 (8bd88522, PR #246). E5 no cambia ningún requisito de comportamiento ni ninguna línea de producción que la spec prescribe. Solo re-basa cifras, colas de títulos y anclas. Cada cifra es «base medida en `ee40d93d` + delta de #205», medida desde `mobile-pet-tracker/`:
+
+| Cifra | Comando de la base | Base en `ee40d93d` | Delta de #205 | Al cerrar |
+|---|---|---|---|---|
+| `--text-34` | `grep -cF -- '--text-34' src/theme/global.css` | 1 (#199 R27) | 0 | 1 |
+| `headerShown` | `grep -cF 'headerShown' src/app/_layout.tsx` | 5 (#199 R1, `weight-log`) | +1 (R15) | 6 |
+| `^## Enmienda` | `grep -c '^## Enmienda' ../docs/ui-guidelines.md` | 26 (`## Enmienda #199`) | +1 (R20) | 27 |
+| `#197 R20` | `grep -cF -- '#197 R20' src/__tests__/canvas-foundations.test.ts` | 0 (E4) | 0 | 0 |
+| `cardElements` | script de `tasks.md` §Cuentas a re-medir | 33 | −4 (R3, R4, R8, R13) | 29 |
+| `classNameElements` | réplica de `scan()` de `#187 R1` (mismo recorrido y bindings) | 174 | −4 (R3, R4, R8, R13) | 170 |
+| `heroElements` / `heroFiles` | ídem | 223 / 32 | 0 | 223 / 32 |
+| `rounded-16` de `#177 R7.3` | `grep -cF 'toBe(26 + 1 + 1 + 1 + 2 + 2 + 1 + 1)' src/__tests__/chunky-cta-canvas-fidelity.test.ts` (1), evaluada | 35 | +1 (R13) | 36 |
+| suma de `classNames` de `#62 R14` | `grep -cF '+ 4 // #198 R2' src/__tests__/consistency-classnames.test.ts` (2), evaluada | 54 | +3 (R3, R8, R10, R13, R17) | 57 |
+| suma de `style={CONTINUOUS_CORNER}` de `#98 R10` | ídem | 52 | +3 | 55 |
+| `bg-accent-soft` de `#98 R10` y `#64 R9` | `grep -cF -- '- 2 - 1 - 1 - 1); // #191 R11' src/__tests__/consistency-classnames.test.ts` (2), evaluada | 4 | −2 (R18) | 2 |
+
+- **R1.** #199 ya declaró `--text-34: 34px;` en el bloque `@theme`, justo después de `--text-28: 28px;`. El verde de R1 añade solo `--radius-32: 32px;` y `--radius-40: 40px;` tras `--radius-22: 22px;`. El `it` de R1 no cambia: cada una de las tres líneas aparece una vez. Su rojo sigue siéndolo por los dos radios. D6 queda resuelto: no hay una segunda línea que quitar.
+- **F1, suelo `cardElements`.** La expresión de partida es `35 - 1 - 1 - 1 + 1`, que vale 33. Su ancla es `toBeGreaterThanOrEqual(35 - 1 - 1 - 1 + 1); // #188 R18: 42 - 1`. Cada rojo de R3, R4, R8 y R13 añade ` - 1`, y al cerrar queda `35 - 1 - 1 - 1 + 1 - 1 - 1 - 1 - 1`, que vale 29 con margen 0. El comentario cierra con `; #205 R3, R4, R8, R13: -1, -1, -1, -1` tras el `; #199 R19: +1` de hoy. Esto sustituye al «tras el `; #200 R9: -2`» de E2.
+- **P1 retirada.** La parte de E2 sobre `classNameElements` queda sin efecto. El suelo `toBeGreaterThanOrEqual(163)` y su comentario `// #191 R11: controles nativos, -1; #189 R5, R10, R13: -2, 0, -1` no se tocan. Motivo: la réplica mide 174 en `ee40d93d`, porque #199 añadió elementos HeroUI con `className`. Las cuatro `Card` que #205 retira llevan `className` y ningún R añade o quita otro elemento escaneado, así que al cerrar el escáner mide 170 frente a 163: margen 7. Si ese suelo se pone rojo, es PARADA.
+- **Colas de título (amplía E3).** Cada `it` se sigue localizando por su prefijo hasta el primer ` (enmendado por`. El sufijo de #205 que fija esta spec va una vez, al final del título real:
+  - `heroui-text-size-merge` `#187 R1`, tras `(enmendado por #199 R18) (enmendado por #199 R19)` (R3);
+  - `chunky-cta-canvas-fidelity` `#177 R7.3`, tras `(enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #198 R9)` (R13);
+  - `chunky-cta-canvas-fidelity` `#177 R5.2`, que sigue sin sufijo previo (R10);
+  - `design-drift` `#178 R13`, tras `(enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9)` (R13);
+  - `alerts-canvas-fidelity` `#174 R12`, tras `(enmendado por #199 R16) (enmendado por #198 R9, R15)` (R16);
+  - `layout.test.tsx` `#194 R4`, tras `(enmendado por #200 R12) (enmendado por #199 R1)` (R15);
+  - en `consistency-classnames`, tras `(enmendado por #199 R18) (enmendado por #198 R2)` para `%s importa y aplica sus %i esquinas` y `fusiona la esquina una vez y la entrega a las dos ramas de Card`, y tras `(enmendado por #198 R2, R3, R4, R11, R13)` para `deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban` (R3 en los tres);
+  - `#64 R9` › `conserva los usos de bg-accent-soft que sí son acento (enmendado por #198 R3, R11, R13)`, cuyo describe queda confirmado (R18).
+- **Términos de las sumas.**
+  - Las dos sumas de `consistency-classnames` cierran hoy con `+ 4 // #198 R2` seguido de `)`. Las líneas `// #205 Rn` van entre ambos.
+  - Las dos expresiones de `bg-accent-soft` acaban en `- 2 - 1 - 1 - 1);` y su comentario termina en `// #198 R13`. R18 añade ` - 2` antes del `)` y ` // #205 R18` al final del comentario.
+  - En chunky `#177 R7.3`, R13 deja `toBe(26 + 1 + 1 + 1 + 2 + 2 + 1 + 1 + 1)` y añade `; #205 R13 (+1)` tras el `#199 R14 (+1)` del comentario.
+  - La fila `tracking-title` de alerts sigue llevando `'screens/add-pet/index.tsx', // #191 R11`, que R16 quita. #198 R15 añadió a esa fila `screens/home/index.tsx`, que no se toca. La otra línea idéntica del fichero es de la fila `text-15` y tampoco se toca.
+- **Anclas de `git diff`.** Las guardas del handoff se miden contra `ee40d93d`: tanto `git diff <H0> -- …` como `git diff --name-only <H0>..HEAD`. Contra `f8909d7b` arrastrarían cambios que no son de #205: los de #199 en `motion.ts` (+13) y `_layout.tsx` (`weight-log` y el import de `useTranslate`), los de #198 y #199 en `ui-copy-table.ts` (+10/−2) y los ficheros de las dos features.
+- **R20.** En `ee40d93d` la última enmienda de la carta es `## Enmienda #199: Salud y Peso al canvas (2026-10-23)`, que acaba el fichero sin casilla. `## Enmienda #205` va al final, tras ella, y el corte del test de R20 llega hasta el final del fichero. No se editan las líneas `(#199)` de las reglas 2 y 12, porque `health-weight-canvas-fidelity.test.ts` `#199 R24` las asierta literales. En el punto (d), `--text-34` ya no «entra»: lo declaró #199 para la cifra de Peso y la marca de Main también lo usa. La sección sigue nombrando `--text-34`.
+- **Base de tests.** La cifra de suites y tests de partida se re-mide en `ee40d93d` con `init.sh`, que lo corre el leader. La de 6bbd0485 caducó.
 
 **Regla de recuentos agregados.** Si al llegar a verde una R se pone rojo un `it` que no está en el inventario y ese `it` solo cuenta usos o ficheros de un literal o token, Codex lo enmienda sin parar. Son de este tipo los inventarios cerrados de radios, de `style={CONTINUOUS_CORNER}`, de `text-NN` o de `<Card`, las sumas de copy y los suelos del escáner HeroUI. La condición es que el delta medido sea exactamente el número de usos que el diff de esa R, tal como esta spec la prescribe, añade o retira. La enmienda:
 
@@ -879,6 +919,7 @@ Spec (R1–R20, decisiones D1–D15):
 - [x] Aprobado por humano (fecha: 2026-10-23)
   Firma delegada en el leader por mandato del humano del 2026-10-23
   (`progress/plan_canvas-parity-2026-10-23.md` §4, checklist de firma pasada). Firmada el 2026-10-24 tras la auditoría del inventario y su enmienda (8e7c8e0f, 228e4caf).
+  Errata E5 (re-base sobre `ee40d93d` tras #198 y #199; P1 retirada) firmada también por delegación el 2026-10-24 sobre `ee40d93d`.
 
 Enmienda de carta `## Enmienda #205` (R20, D11):
 
