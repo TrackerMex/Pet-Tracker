@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, type ReactElement, type ReactNode } from 'react';
 import { Image } from 'expo-image';
 import { Button } from 'heroui-native';
 import { Text, View } from 'react-native';
@@ -27,8 +27,10 @@ type EmptyStateProps = {
   testID: string;
   pose: EmptyStatePose;
   title: string;
-  body: string;
+  body?: string;
   action?: { label: string; onPress: () => void };
+  badge?: ReactNode;
+  actionIcon?: ReactElement;
 };
 
 function useHeroEntrance(index: number, active: boolean) {
@@ -47,7 +49,7 @@ function useHeroEntrance(index: number, active: boolean) {
   }));
 }
 
-export function EmptyState({ testID, pose, title, body, action, variant = 'default' }: EmptyStateProps) {
+export function EmptyState({ testID, pose, title, body, action, badge, actionIcon, variant = 'default' }: EmptyStateProps) {
   const chunkyLip = useChunkyLip();
   const [accent, accentForeground] = useThemeColors(['accent', 'accent-foreground']);
   const reduceMotion = useReducedMotion();
@@ -86,14 +88,14 @@ export function EmptyState({ testID, pose, title, body, action, variant = 'defau
       {title}
     </Text>
   );
-  const bodyText = (
+  const bodyText = body === undefined ? null : (
     <Text testID={`${testID}-body`} className={variant === 'hero' ? 'text-center text-15 text-muted' : 'text-center font-normal text-muted'} style={variant === 'hero' ? { maxWidth: 290 } : undefined}>
       {body}
     </Text>
   );
   const actionButton = action ? (
     <Button testID={`${testID}-action`} className="h-14 rounded-16 bg-accent" style={chunkyLip.primary} onPress={action.onPress}>
-      {variant === 'hero' ? <Plus size={20} color={accentForeground} style={{ marginRight: 8 }} testID={`${testID}-action-icon`} /> : null}
+      {variant === 'hero' ? (actionIcon ?? <Plus size={20} color={accentForeground} style={{ marginRight: 8 }} testID={`${testID}-action-icon`} />) : null}
       <Text className="text-17 font-extrabold text-accent-foreground">{action.label}</Text>
     </Button>
   ) : null;
@@ -121,10 +123,11 @@ export function EmptyState({ testID, pose, title, body, action, variant = 'defau
           </Svg>
           {floatingPose}
           <View testID={`${testID}-stage-shadow`} className="absolute bottom-4.5 h-3.5 w-30 rounded-full" style={{ backgroundColor: PINGO_STAGE_SHADOW_COLOR }} />
+          {badge}
         </Animated.View>
       ) : floatingPose}
       {variant === 'hero' ? <Animated.View testID={`${testID}-title-enter`} style={titleStyle}>{titleText}</Animated.View> : titleText}
-      {variant === 'hero' ? <Animated.View testID={`${testID}-body-enter`} style={bodyStyle}>{bodyText}</Animated.View> : bodyText}
+      {body === undefined ? null : variant === 'hero' ? <Animated.View testID={`${testID}-body-enter`} style={bodyStyle}>{bodyText}</Animated.View> : bodyText}
       {variant === 'hero' && action ? (
         <Animated.View testID={`${testID}-action-wrap`} className="w-full mt-2.5" style={actionStyle}>{actionButton}</Animated.View>
       ) : actionButton}
