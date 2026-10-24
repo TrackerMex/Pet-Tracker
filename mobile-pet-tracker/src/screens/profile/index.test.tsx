@@ -2510,3 +2510,35 @@ describe('#196 R8: trazo de los accesos de Perfil', () => {
     expect(glyph.props.size).toBe(22);
   });
 });
+
+
+describe('#196 R9: índices de entrada fijos por rama', () => {
+  beforeEach(setupProfile168);
+  afterEach(() => mockUseNotificationsBlocked.mockReturnValue(false));
+
+  it.each(PROFILE_BRANCHES_168)('#196 R9: en la rama $name los índices de entrada son fijos', async ({ name, pets, detail, branch }) => {
+    mockListPets.mockImplementation(async () => pets);
+    mockGetPet.mockImplementation(async () => detail);
+    await renderProfile();
+    if (name === 'detalle pendiente') await screen.findByTestId('pet-chip-pet-1');
+    await screen.findByTestId(branch);
+    const expected: Record<string, number> = {
+      'profile-entrance-links': 2,
+      'profile-entrance-account': 3,
+      'profile-entrance-sign-out': 4,
+    };
+    if (branch === 'pet-info-card') expected['profile-entrance-info'] = 1;
+    expect(Object.fromEntries(mockHomeEntrance.mock.calls.map(([props]) => [props.testID, props.index]))).toEqual(expected);
+    for (const [id, index] of Object.entries(expected)) expect(screen.getByTestId(id).props.index).toBe(index);
+    expect(screen.queryByTestId('profile-entrance-hero')).toBeNull();
+  });
+
+  it('#196 R9: con el permiso bloqueado el aviso entra con índice 0', async () => {
+    mockUseNotificationsBlocked.mockReturnValue(true);
+    await renderProfile();
+    const entrance = await screen.findByTestId('profile-entrance-notice');
+    expect(entrance.props.index).toBe(0);
+    expect(mockHomeEntrance.mock.calls.filter(([props]) => props.testID === 'profile-entrance-notice').map(([props]) => props.index)).toEqual(expect.arrayContaining([0]));
+    expect(screen.queryByTestId('profile-entrance-hero')).toBeNull();
+  });
+});
