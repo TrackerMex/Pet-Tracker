@@ -70,7 +70,7 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/reminders/index.tsx', // #178 R4
     ]);
   });
-  it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8) (enmendado por #189 R6)', () => {
+  it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8) (enmendado por #189 R6) (enmendado por #198 R5)', () => {
     expect(filesMatching(/\btext-13\b/)).toEqual([
       'components/form-error.tsx',
       'screens/add-pet/index.tsx', // #191 R11
@@ -81,6 +81,7 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/edit-profile/index.tsx', // #194 R5
       'screens/forgot/index.tsx',
       'screens/geofences/index.tsx', // #189 R6
+      'screens/home/index.tsx', // #198 R5
       'screens/login/index.tsx',
       'screens/meal-schedule/index.tsx', // #179 R6
       'screens/pairing/index.tsx', // #188 R18

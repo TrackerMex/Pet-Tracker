@@ -2384,7 +2384,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
     jest.restoreAllMocks();
   });
 
-  it('dibuja el rótulo y los tres tiles en orden', async () => {
+  it('dibuja el rótulo y los tres tiles en orden (enmendado por #198 R5)', async () => {
     await renderHome();
 
     const quickActions = await screen.findByTestId('quick-actions');
@@ -2396,7 +2396,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
 
     expect(title).toHaveTextContent('Accesos rápidos');
     expect(title.props.className).toBe(
-      'text-xs font-semibold uppercase tracking-widest text-muted',
+      'text-xs font-bold uppercase tracking-section text-muted',
     );
     expect(tileTestIds).toEqual([
       'quick-action-weight',
@@ -2474,7 +2474,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
     }
   });
 
-  it('liga icono, etiqueta, fondo, destino, tinta y color de etiqueta de cada tile y de ninguno más', async () => {
+  it('liga icono, etiqueta, fondo, destino, tinta y color de etiqueta de cada tile y de ninguno más (enmendado por #198 R5)', async () => {
     jest
       .spyOn(Uniwind, 'getCSSVariable')
       .mockImplementation((token) => token);
@@ -2488,7 +2488,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
         'Peso',
         'bg-category-violet',
         '--color-category-violet-strong',
-        'text-foreground',
+        'text-category-violet-strong',
         '/weight-log',
       ],
       [
@@ -2497,7 +2497,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
         'Recordatorio',
         'bg-category-amber',
         '--color-category-amber-strong',
-        'text-foreground',
+        'text-category-amber-strong',
         '/add-reminder',
       ],
       [
@@ -2506,7 +2506,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
         'Documentos',
         'bg-category-blue',
         '--color-category-blue-strong',
-        'text-foreground',
+        'text-category-blue-strong',
         '/pets/pet-1/docs',
       ],
     ] as const;
@@ -2548,7 +2548,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
     expect(source).not.toMatch(/(?:bg|text)-category-/);
   });
 
-  it('da a cada tile 44 pt de objetivo táctil', async () => {
+  it('da a cada tile 44 pt de objetivo táctil (enmendado por #198 R5)', async () => {
     await renderHome();
 
     const quickActions = await screen.findByTestId('quick-actions');
@@ -2559,13 +2559,13 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
     ]) {
       const tile = within(quickActions).getByTestId(testID);
 
-      expect(tile.props.className).toContain('min-h-11');
+      expect(tile.props.className).toContain('h-23');
       expect(tile.props.className).toContain('flex-1');
       expect(tile.props.hitSlop).toBeUndefined();
     }
   });
 
-  it('usa iconos de reicon y ningún emoji', async () => {
+  it('usa iconos de reicon y ningún emoji (enmendado por #198 R5)', async () => {
     const source = readFileSync(
       join(process.cwd(), 'src/screens/home/index.tsx'),
       'utf8',
@@ -2581,7 +2581,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
     for (const iconName of ['Weight', 'CalendarPlus', 'FileText']) {
       expect(reiconImport).toMatch(new RegExp(`\\b${iconName}\\b`));
     }
-    expect(source.match(/<Icon size=\{24\}/g)).toHaveLength(1);
+    expect(source.match(/<Icon size=\{26\}/g)).toHaveLength(1);
     expect(quickActions).not.toMatch(/\b(?:HeartPulse|ForkKnife)\b/);
     for (const emoji of ['🗺️', '🏃', '💉', '🍽️']) {
       expect(source).not.toContain(emoji);
@@ -2595,7 +2595,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
       ['quick-action-documents', 'icon-file-text'],
     ] as const) {
       const tile = screen.getByTestId(testID);
-      expect(within(tile).getByTestId(iconTestID).props.size).toBe(24);
+      expect(within(tile).getByTestId(iconTestID).props.size).toBe(26);
     }
   });
 
@@ -2687,6 +2687,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
 describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin candado', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(Uniwind, 'getCSSVariable').mockImplementation(token => token);
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
     mockUseAuth.mockReturnValue({
       status: 'authenticated',
@@ -2708,21 +2709,21 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
     jest.restoreAllMocks();
   });
 
-  it('#81 R1: cada etiqueta lleva la receta entera y ningún estilo en línea', async () => {
+  it('#81 R1: cada etiqueta lleva la receta entera y ningún estilo en línea (enmendado por #198 R5)', async () => {
     await renderHome();
     await screen.findByTestId('quick-action-weight');
 
-    for (const [testID, label] of [
-      ['quick-action-weight', 'Peso'],
-      ['quick-action-reminder', 'Recordatorio'],
-      ['quick-action-documents', 'Documentos'],
+    for (const [testID, label, ink] of [
+      ['quick-action-weight', 'Peso', 'text-category-violet-strong'],
+      ['quick-action-reminder', 'Recordatorio', 'text-category-amber-strong'],
+      ['quick-action-documents', 'Documentos', 'text-category-blue-strong'],
     ] as const) {
       const labelNode = within(screen.getByTestId(testID)).getByText(label);
 
       // #81 R1: the whole class list with toBe, because toContain lets a
       // contradicting token such as font-bold through.
       expect(labelNode.props.className).toBe(
-        'text-2xs font-semibold text-foreground',
+        `text-13 font-bold ${ink}`,
       );
       expect(labelNode.props.style).toBeUndefined();
     }
@@ -2749,7 +2750,7 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
     }
   });
 
-  it('#81 R3: cada tile lleva rounded-xl como único radio y la esquina continua', async () => {
+  it('#81 R3: cada tile lleva rounded-xl como único radio y la esquina continua (enmendado por #198 R5)', async () => {
     await renderHome();
     await screen.findByTestId('quick-action-weight');
 
@@ -2764,17 +2765,18 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
         tile.props.className
           .split(' ')
           .filter((token: string) => /^rounded(?:-|$)/.test(token)),
-      ).toEqual(['rounded-xl']);
+      ).toEqual(['rounded-card']);
       // #136 R2: at rest the corner travels with the opacity of the pressed
       // recipe; #136 R1 locks the pressed and released values.
       expect(tile.props.style).toEqual({
         borderCurve: 'continuous',
+        boxShadow: CANVAS_TILE_SHADOWS.get(testID),
         opacity: 1,
       });
     }
   });
 
-  it('#136 R1: cada tile baja a opacidad 0.8 mientras se pulsa y vuelve a 1 al soltarlo, con la esquina continua', async () => {
+  it('#136 R1: cada tile baja a opacidad 0.8 mientras se pulsa y vuelve a 1 al soltarlo, con la esquina continua (enmendado por #198 R5)', async () => {
     await renderHome();
     await screen.findByTestId('quick-action-weight');
     const testIDs = [
@@ -2790,6 +2792,7 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
       // matches a subset and would let a stray key or a lost corner through.
       expect(tile.props.style).toEqual({
         borderCurve: 'continuous',
+        boxShadow: CANVAS_TILE_SHADOWS.get(testID),
         opacity: 1,
       });
 
@@ -2802,6 +2805,7 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
 
       expect(tile.props.style).toEqual({
         borderCurve: 'continuous',
+        boxShadow: CANVAS_TILE_SHADOWS.get(testID),
         opacity: 0.8,
       });
       // #136 R1: only the pressed tile dims. A pressed state shared by the row
@@ -2809,6 +2813,7 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
       for (const otherID of testIDs.filter((id) => id !== testID)) {
         expect(screen.getByTestId(otherID).props.style).toEqual({
           borderCurve: 'continuous',
+          boxShadow: CANVAS_TILE_SHADOWS.get(otherID),
           opacity: 1,
         });
       }
@@ -2825,13 +2830,14 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
       await waitFor(() =>
         expect(tile.props.style).toEqual({
           borderCurve: 'continuous',
+          boxShadow: CANVAS_TILE_SHADOWS.get(testID),
           opacity: 1,
         }),
       );
     }
   });
 
-  it('#81 R4: la sección pone el rótulo encima de la fila, y la fila, los tres tiles sin envoltorio', async () => {
+  it('#81 R4: la sección pone el rótulo encima de la fila, y la fila, los tres tiles sin envoltorio (enmendado por #198 R5)', async () => {
     await renderHome();
     const quickActions = await screen.findByTestId('quick-actions');
     const title = within(quickActions).getByTestId('quick-actions-title');
@@ -2846,7 +2852,7 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
       'props.testID',
       'quick-actions-row',
     );
-    expect(quickActions.props.className).toBe('gap-3');
+    expect(quickActions.props.className).toBe('gap-2.5');
     expect(quickActions.props.style).toBeUndefined();
     expect(title.props.style).toBeUndefined();
     // #81 R4: the tiles by children, so a wrapper around a tile turns red.
@@ -2859,7 +2865,7 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
       'quick-action-reminder',
       'quick-action-documents',
     ]);
-    expect(tileRow.props.className).toBe('flex-row gap-3');
+    expect(tileRow.props.className).toBe('flex-row gap-2.5');
     expect(tileRow.props.style).toBeUndefined();
   });
 
@@ -6103,5 +6109,46 @@ describe('#198 R4: batería del canvas', () => {
     expect(track.props.className).toBe('h-2 w-full overflow-hidden rounded-full bg-background');
     expect(screen.getByTestId('collar-battery-fill').props.className).toBe(`h-full rounded-full ${fill}`);
     expect(screen.getByTestId('collar-battery').props.className).toBe(`text-15 font-extrabold ${ink}`);
+  });
+});
+
+const CANVAS_TILE_SHADOWS = new Map([
+  ['quick-action-weight', [{ offsetX: 0, offsetY: -4, blurRadius: 0, spreadDistance: 0, color: '--color-lip-tile-violet', inset: true }]],
+  ['quick-action-reminder', [{ offsetX: 0, offsetY: -4, blurRadius: 0, spreadDistance: 0, color: '--color-lip-tile-amber', inset: true }]],
+  ['quick-action-documents', [{ offsetX: 0, offsetY: -4, blurRadius: 0, spreadDistance: 0, color: '--color-lip-tile-blue', inset: true }]],
+]);
+
+describe('#198 R5: accesos rápidos del canvas', () => {
+  beforeEach(setupCanvasHome);
+  afterEach(() => jest.restoreAllMocks());
+  const tiles = [
+    { id: 'quick-action-weight', surface: 'bg-category-violet', ink: 'text-category-violet-strong', iconInk: '--color-category-violet-strong', iconID: 'icon-weight', label: 'Peso' },
+    { id: 'quick-action-reminder', surface: 'bg-category-amber', ink: 'text-category-amber-strong', iconInk: '--color-category-amber-strong', iconID: 'icon-calendar-plus', label: 'Recordatorio' },
+    { id: 'quick-action-documents', surface: 'bg-category-blue', ink: 'text-category-blue-strong', iconInk: '--color-category-blue-strong', iconID: 'icon-file-text', label: 'Documentos' },
+  ];
+
+  it('#198 R5 pinta el rótulo con 12/700, tracking de sección y mayúsculas', async () => {
+    await renderHome();
+    const title = await screen.findByTestId('quick-actions-title');
+    expect(title.props.className).toBe('text-xs font-bold uppercase tracking-section text-muted');
+    expect(title).toHaveTextContent('Accesos rápidos');
+    expect(screen.getByTestId('quick-actions').props.className).toBe('gap-2.5');
+    expect(screen.getByTestId('quick-actions-row').props.className).toBe('flex-row gap-2.5');
+  });
+
+  it.each(tiles)('#198 R5 viste cada tile con 92 de alto, radio 20 y su labio interior ($id)', async ({ id, surface }) => {
+    await renderHome();
+    const tile = await screen.findByTestId(id);
+    expect(tile.props.className).toBe(`h-23 flex-1 items-center justify-center gap-2 rounded-card ${surface}`);
+    expect(tile.props.style).toEqual({ borderCurve: 'continuous', boxShadow: CANVAS_TILE_SHADOWS.get(id), opacity: 1 });
+  });
+
+  it.each(tiles)('#198 R5 pinta icono de 26 y etiqueta 13/700 en la tinta del hueco ($id)', async ({ id, ink, iconInk, iconID, label }) => {
+    await renderHome();
+    const tile = await screen.findByTestId(id);
+    const icon = within(tile).getByTestId(iconID);
+    expect(icon.props.size).toBe(26);
+    expect(icon.props.color).toBe(iconInk);
+    expect(within(tile).getByText(label).props.className).toBe(`text-13 font-bold ${ink}`);
   });
 });
