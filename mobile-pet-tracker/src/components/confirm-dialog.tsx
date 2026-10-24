@@ -32,7 +32,7 @@ export function ConfirmDialog({ testID, visible, title, body, cancelLabel, confi
         </Animated.View>
         <RiseIn delayMs={0}>
           <Card testID={`${testID}-card`} role="alertdialog" className="gap-3 rounded-hero px-6 pt-6 pb-3 shadow-none" style={shadows.dialog}>
-            <Text testID={`${testID}-title`} role="header" className="text-xl font-black tracking-dialog text-foreground">{title}</Text>
+            <Text testID={`${testID}-title`} accessibilityRole="header" className="text-xl font-black tracking-dialog text-foreground">{title}</Text>
             <Text testID={`${testID}-body`} className="text-sm leading-normal text-muted">{body}</Text>
             <View className="mt-1 flex-row justify-end gap-1">
               <Pressable testID={`${testID}-cancel`} role="button" className="min-h-12 justify-center px-4" onPress={onCancel}>
