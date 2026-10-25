@@ -407,8 +407,8 @@ WHEN se pinta `/forgot` sin haber enviado THE SYSTEM SHALL:
 2. dar a `forgot-top` `className="-ml-2.5 w-full"`;
 3. pintar `<RiseIn testID="forgot-scene" delayMs={0} className="mt-4 h-37.5 w-42">`
    con, en orden: `<View testID="forgot-scene-backdrop" className="absolute inset-x-2.5 top-3.5 bottom-0 rounded-40 bg-surface-secondary" style={CONTINUOUS_CORNER} />`;
-   `forgot-pingo` sin `PingoFloat`, absoluto (`className="absolute left-6 top-0"`)
-   y con `{ width: 120, height: 120, transform: [{ rotate: '6deg' }] }`; y
+   `forgot-pingo` sin `PingoFloat` ni `className`, absoluto por `style` (E6):
+   `{ position: 'absolute', left: 24, top: 0, width: 120, height: 120, transform: [{ rotate: '6deg' }] }`; y
    `forgot-lock-tile` con `absolute bottom-1.5 right-0 ` antepuesto a su
    `className` de hoy (estilo, icono y `PopIn` sin cambios);
 4. dar a `forgot-title` `className="mt-7 text-center text-28 leading-8.5 font-black tracking-display text-foreground"`,
@@ -426,10 +426,11 @@ WHEN se pinta `/forgot` sin haber enviado THE SYSTEM SHALL:
   `it('#205 R10: Recuperar copia escena, tile y márgenes')`. Canvas `Recuperar`:
   `width: 168px; height: 150px`, `inset: 14px 10px 0`, `border-radius: 40px`,
   `right: 0; bottom: 6px; width: 52px; height: 52px; border-radius: 16px`,
-  `rotate(6deg)`, `width: 120px`, `font-size: 28px`, `max-width: 320px`,
+  `rotate(6deg)`, `width: 120px`, `position: absolute; left: 24px; top: 0; width: 120px` (E6), `font-size: 28px`, `max-width: 320px`,
   `margin-top: 28px`, `animation: pop 400ms ease-out 300ms both`. Producción:
   `h-37.5 w-42`, `inset-x-2.5 top-3.5 bottom-0 rounded-40`,
-  `absolute bottom-1.5 right-0`, `text-28 leading-8.5`, `max-w-80`.
+  `absolute bottom-1.5 right-0`, `text-28 leading-8.5`, `max-w-80`,
+  `position: 'absolute', left: 24, top: 0, width: 120, height: 120` (E6).
 
 ### R11 — RecuperarEnviado
 
@@ -852,6 +853,13 @@ Firmadas por delegación (mandato del humano del 2026-10-23, `progress/plan_canv
 - **R20.** En `ee40d93d` la última enmienda de la carta es `## Enmienda #199: Salud y Peso al canvas (2026-10-23)`, que acaba el fichero sin casilla. `## Enmienda #205` va al final, tras ella, y el corte del test de R20 llega hasta el final del fichero. No se editan las líneas `(#199)` de las reglas 2 y 12, porque `health-weight-canvas-fidelity.test.ts` `#199 R24` las asierta literales. En el punto (d), `--text-34` ya no «entra»: lo declaró #199 para la cifra de Peso y la marca de Main también lo usa. La sección sigue nombrando `--text-34`.
 - **Base de tests.** La cifra de suites y tests de partida se re-mide en `ee40d93d` con `init.sh`, que lo corre el leader. La de 6bbd0485 caducó.
 
+**E6 (R10.3: posición de `forgot-pingo` por `style`; B1 del reviewer), firmada.** `forgot-pingo` es el `Image` de `expo-image`. uniwind 1.11.0 solo convierte `className` en los componentes de `react-native` de su lista `SUPPORTED_COMPONENTS`, y `expo-image` no está en ella. Así, `className="absolute left-6 top-0"` llega como prop pero no posiciona en runtime: Pingo queda en el flujo y el candado se descoloca 24 pt. Los tests solo miraban la prop. R10.3 pasa a posicionar por `style` y retira el `className`. El literal es `style={{ position: 'absolute', left: 24, top: 0, width: 120, height: 120, transform: [{ rotate: '6deg' }] }}`, que copia el canvas `Recuperar` (`position: absolute; left: 24px; top: 0; width: 120px`). Hay precedente en `celebration.tsx`. Cambian tres candados:
+- `it('#205 R10: Pingo no flota y mide 120 girado 6 grados')` aserta `pingo.props.className` `toBeUndefined()` y el `style` completo con `toEqual`.
+- La función `expectPingoBeforeLock` (`#167 R9`, los dos estados) aserta el mismo `style`.
+- `F` › `it('#205 R10: Recuperar copia escena, tile y márgenes')` añade el literal del canvas y, en producción, `position: 'absolute', left: 24, top: 0, width: 120, height: 120`.
+
+Los títulos no cambian. Ningún recuento agregado mira el `className` de un `Image` de `expo-image`. Si alguno se pone rojo, aplica la regla de recuentos de abajo.
+
 **Regla de recuentos agregados.** Si al llegar a verde una R se pone rojo un `it` que no está en el inventario y ese `it` solo cuenta usos o ficheros de un literal o token, Codex lo enmienda sin parar. Son de este tipo los inventarios cerrados de radios, de `style={CONTINUOUS_CORNER}`, de `text-NN` o de `<Card`, las sumas de copy y los suelos del escáner HeroUI. La condición es que el delta medido sea exactamente el número de usos que el diff de esa R, tal como esta spec la prescribe, añade o retira. La enmienda:
 
 - da a la cifra o a la entrada su término (`// #205 Rn`, o `; #205 Rn: ±k` dentro de un comentario que ya exista);
@@ -920,6 +928,7 @@ Spec (R1–R20, decisiones D1–D15):
   Firma delegada en el leader por mandato del humano del 2026-10-23
   (`progress/plan_canvas-parity-2026-10-23.md` §4, checklist de firma pasada). Firmada el 2026-10-24 tras la auditoría del inventario y su enmienda (8e7c8e0f, 228e4caf).
   Errata E5 (re-base sobre `ee40d93d` tras #198 y #199; P1 retirada) firmada también por delegación el 2026-10-24 sobre `ee40d93d`.
+  Errata E6 (R10.3: posición de `forgot-pingo` por `style`, B1 de `progress/review_mobile-canvas-account-flow.md`) firmada por delegación el 2026-10-25 sobre `6401fed7`.
 
 Enmienda de carta `## Enmienda #205` (R20, D11):
 
