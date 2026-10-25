@@ -274,3 +274,43 @@ Los seis puntos de requirements.md § «Cierre del humano», más lo que los tes
 4. Recuperar y «Revisa tu correo»: escena con fondo redondeado, Pingo quieto y girado, candado con pop; tras enviar, Reenviar y volver. Mirar también que `forgot-error` no pegue con el campo (sin margen superior tras quitar `gap: 16`) y que Pingo caiga en `left-6 top-0` (`className` sobre `expo-image` sin `withUniwind`).
 5. Nueva contraseña (deep link con token): cabecera sin flotación; éxito con la tarjeta de radio 16 y el espacio entre cabecera y tarjeta sin el `gap` del scroll. Sin token: la pantalla de hoy.
 6. Nueva mascota: cabecera propia con volver, `1 de 2` y barra; Continuar fijo abajo; con el teclado abierto el pie sube sobre él (el KAV ya no suma la altura de cabecera: `keyboardVerticalOffset={0}`); en el paso 2 los bloques suben escalonados y los chips miden 44; volver con datos pide confirmación como hoy (el botón atrás de `ScreenHeader` y su `backFallback="/"` no se pulsan en jest); la celebración no lleva pie; el pie respeta la zona segura inferior con y sin botones de navegación (`Math.max(insets.bottom, 16)`).
+
+## Corrección B1 (E6) — 2026-10-25
+
+Bloqueante B1 de `progress/review_mobile-canvas-account-flow.md`: `forgot-pingo` es un `Image` de `expo-image` y uniwind no convierte su `className`, así que no era absoluto en runtime. Errata E6 de `specs/mobile-canvas-account-flow/requirements.md` (R10.3), firmada. Partida: `f890d06a`, rama `feature/205-mobile-canvas-account-flow`.
+
+### Commits
+
+- Rojo (tests): `1045673f` `test(#205): R10 lock forgot-pingo absolute position through style (E6)`.
+- Verde (producción): `fee961d6` `fix(#205): R10 position forgot-pingo through style, expo-image ignores className (E6)`.
+
+### Rojos del commit 1
+
+Corrida de `forgot/index.test.tsx` y `account-flow-canvas-fidelity.test.ts` con el comando prescrito: 4 rojos, 68 verdes, 72 en total. Son exactamente los esperados y ninguno más:
+
+| `it` | Mensaje corto |
+|---|---|
+| `#205 R10: Pingo no flota y mide 120 girado 6 grados` | `expect(received).toBeUndefined()`, recibido `"absolute left-6 top-0"` (`pingo.props.className`) |
+| `#167 R9: Pingo precede al tile del candado en el formulario (enmendado por #205 R10)` | `toEqual` de `style` en `expectPingoBeforeLock`: faltan `position`, `left` y `top` (Expected -3, Received +0) |
+| `#167 R9: Pingo precede al tile del candado tras enviar (enmendado por #205 R10)` | el mismo `toEqual` de `expectPingoBeforeLock` (Expected -3, Received +0) |
+| `#205 R10: Recuperar copia escena, tile y márgenes` (F) | `toContain` de `"position: 'absolute', left: 24, top: 0, width: 120, height: 120"` sobre `screens/forgot/index.tsx` |
+
+La aserción del canvas de F (`position: absolute; left: 24px; top: 0; width: 120px`) nació verde, como se anticipó: el canvas ya llevaba el literal. La que puso F en rojo fue la de producción. El `● Console` del log es el `console.warn` de `react-native-svg` («"color:foreground" is not a valid color or brush»), previo y ajeno.
+
+### Verde del commit 2
+
+- `test ! -e .expo/types/router.d.ts && bunx tsc --noEmit`: sale 0.
+- `bunx expo lint > /tmp/lint205.log 2>&1 && test ! -s /tmp/lint205.log`: sale 0, log de 0 bytes (el log vacío es el resultado esperado de un lint limpio; no hubo SIGKILL).
+- jest dirigido (los 8 ficheros prescritos, `--runInBand --testTimeout=30000`): 8 de 8 suites verdes, 407 de 407 tests, exit 0. Sin timeouts ni repeticiones.
+
+### Enmiendas mecánicas
+
+Ninguna. No hizo falta aplicar la «Regla de recuentos agregados»: ningún recuento agregado cambió, y ningún `it` de estructura se puso rojo.
+
+### Alcance
+
+Solo `forgot-pingo` en `mobile-pet-tracker/src/screens/forgot/index.tsx` (sin `className`, `position: 'absolute'`, `left: 24` y `top: 0` en `style`). Los tests tocan únicamente `forgot/index.test.tsx` y `account-flow-canvas-fidelity.test.ts`; no cambió ningún título de `it` ni de `describe`. No ejecuté `./init.sh`, no hice rebase, merge ni push.
+
+### Para el leader
+
+- La nota 4 de «Prueba de humo del humano» más arriba aún cita «Pingo caiga en `left-6 top-0` (`className` sobre `expo-image` sin `withUniwind`)». Tras E6 la posición va por `style`; el punto de la prueba de humo sigue siendo válido (mirar que Pingo caiga en `left: 24, top: 0` y que el candado no se descoloque), pero el texto entre paréntesis ya describe el estado anterior. No lo toqué porque no entraba en el encargo.
