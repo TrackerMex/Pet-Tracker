@@ -103,9 +103,8 @@ export function ForgotScreen() {
           />
           <Image
             testID="forgot-pingo"
-            className="absolute left-6 top-0"
             source={require('../../../assets/images/pingo-talk.webp')}
-            style={{ width: 120, height: 120, transform: [{ rotate: '6deg' }] }}
+            style={{ position: 'absolute', left: 24, top: 0, width: 120, height: 120, transform: [{ rotate: '6deg' }] }}
           />
           <PopIn
             testID="forgot-lock-tile"
