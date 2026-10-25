@@ -16,9 +16,10 @@ type ScreenHeaderProps = {
   eyebrow?: string;
   size?: 24 | 26;
   accessory?: ReactNode;
+  titlePlaceholder?: ReactNode;
 };
 
-export function ScreenHeader({ testID, backFallback, title, eyebrow, size = 26, accessory }: ScreenHeaderProps) {
+export function ScreenHeader({ testID, backFallback, title, eyebrow, size = 26, accessory, titlePlaceholder }: ScreenHeaderProps) {
   return (
     <View testID={testID} className="flex-row items-center gap-2">
       <View className="-ml-2.5">
@@ -26,7 +27,7 @@ export function ScreenHeader({ testID, backFallback, title, eyebrow, size = 26, 
       </View>
       <View className="flex-1">
         {eyebrow ? <Text testID={`${testID}-eyebrow`} className="text-11 font-extrabold uppercase tracking-eyebrow text-muted">{eyebrow}</Text> : null}
-        {title ? <Text testID={`${testID}-title`} accessibilityRole="header" className={TITLE_CLASSES[size]}>{title}</Text> : null}
+        {title ? <Text testID={`${testID}-title`} accessibilityRole="header" className={TITLE_CLASSES[size]}>{title}</Text> : titlePlaceholder}
       </View>
       {accessory}
     </View>

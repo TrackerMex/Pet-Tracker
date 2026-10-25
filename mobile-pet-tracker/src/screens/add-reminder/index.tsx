@@ -1,10 +1,9 @@
 import { useChunkyLip } from '../../theme/chunky-lip';
-import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { Host } from '@expo/ui';
 import ExpoDateTimePicker from '@expo/ui/community/datetime-picker';
 import { router, type Href } from 'expo-router';
 import { Button } from 'heroui-native';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Bell, Calendar, Clock } from 'reicon-react-native';
@@ -12,6 +11,7 @@ import { Bell, Calendar, Clock } from 'reicon-react-native';
 import { createReminder } from '../../api/reminders';
 import type { ReminderType } from '../../api/types';
 import { FieldErrorMessage } from '../../components/field-error-message';
+import { ScreenHeader } from '../../components/screen-header';
 import type { FieldIssues } from '../../utils/account-rules';
 import { validateReminder } from '../../utils/form-rules';
 import { useAuth } from '../../providers/auth-provider';
@@ -60,7 +60,6 @@ function initialTime(): Date {
 
 function AddReminderContent({ petId }: { petId: string }) {
   const chunkyLip = useChunkyLip();
-  const headerHeight = useContext(HeaderHeightContext);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const locale = useLocale();
@@ -134,23 +133,25 @@ function AddReminderContent({ petId }: { petId: string }) {
       testID="screen-add-reminder"
       className="flex-1"
       behavior="padding"
-      keyboardVerticalOffset={headerHeight}
     >
       <ScrollView
         testID="add-reminder-form"
         className="flex-1 bg-background"
         keyboardShouldPersistTaps="handled"
-        contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           paddingHorizontal: 20,
-          paddingTop: 24,
+          paddingTop: insets.top + 12,
           gap: 16,
           paddingBottom: insets.bottom + 24,
+          flexGrow: 1,
         }}
       >
-        <Text testID="add-reminder-title" accessibilityRole="header" className="text-2xl font-black tracking-title text-foreground">
-          {t('addReminder.addReminder')}
-        </Text>
+        <ScreenHeader
+          testID="add-reminder"
+          size={24}
+          backFallback="/reminders"
+          title={t('addReminder.addReminder')}
+        />
         <View className="gap-2">
           <Text className="text-sm font-extrabold text-foreground">
             {t('addReminder.type')}
@@ -330,7 +331,7 @@ function AddReminderContent({ petId }: { petId: string }) {
 
         <Button
           testID="add-reminder-submit"
-          className="h-14 rounded-16 bg-accent" style={chunkyLip.primary}
+          className="mt-auto h-14 rounded-16 bg-accent" style={chunkyLip.primary}
           isDisabled={submitting}
           onPress={() => void handleSubmit()}
         >

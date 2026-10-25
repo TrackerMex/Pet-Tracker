@@ -10255,3 +10255,36 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   cierre devuelve la plantilla.
 - **Estado final:** done. El smoke queda en `progress/smoke_canvas-parity.md`. El leader mergea la
   PR a `dev` y después se borra el worktree `Pet-Tracker-wt-196`.
+
+## Sesión 2026-10-24 — mobile-canvas-routine (id: 204)
+
+- **Feature:** Recordatorios, Agregar recordatorio y Documentos como el canvas (ola 2 del plan de
+  paridad, R1–R18). `ScreenHeader` en lugar de la cabecera nativa, con `titlePlaceholder` nuevo
+  para el esqueleto de Documentos. Las filas entran con `RiseIn` escalonado
+  (`MOTION_REMINDERS_STAGGER_MS = 70` y 60 ms en Documentos), la fila próxima va en ámbar,
+  «Eliminar» de fila es rosa de 44 y el de la hoja lleva labio rojo. «Guardar recordatorio» queda
+  al pie. R15 fija los literales de tres artboards y R16 añade la Enmienda #204 a la carta.
+- **Spec:** [[specs/mobile-canvas-routine/requirements|spec]], con firma delegada en el leader por
+  mandato del humano del 2026-10-23 (plan §4), auditoría de inventario y erratas hasta E4 (cuenta
+  final N + 44).
+- **Acciones:** implementó el subagente `implementer` en Sonnet, como fallback de CLAUDE.md
+  §Excepciones (Codex sin cuota), test-primero de `da27f678` a `9bb99892`. Se mergeó `origin/dev`
+  tres veces: con #202 y #207 (`5be7a85b`), con #206 (`2b50c0fe`) y con #196 (`15c72f83`). En los
+  merges, subagentes Sonnet resolvieron por unión los conflictos de los candados agregados
+  (`alerts-canvas-fidelity`, `chunky-cta-canvas-fidelity`, `design-drift` y
+  `profile-canvas-fidelity`).
+- **Resultado:** el reviewer aprobó `2b50c0fe` (0 bloqueantes, 6 no bloqueantes). El primer gate
+  del leader sobre ese HEAD salió rojo por el flake de Salud `#168 R2` y el segundo, verde. Tras el
+  merge de #196, `./init.sh` del leader sobre `15c72f83` salió con exit 0: backend 187 suites /
+  1474 tests; móvil 152 suites / 5228 tests / 1 snapshot; e2e 30 suites y 468 tests (8
+  omitidos).
+- **Notas no bloqueantes:** (1) Tres cláusulas de R5.2 no tienen candado: `backFallback="/profile"`,
+  «sin `eyebrow`» y «sin `accessory`» (O1). La spec solo prescribía el orden de los hijos, y
+  requirements.md:201 anuncia un `it` de volver sin historial que R5.2 no pide. (2) Las dimensiones
+  del esqueleto de Documentos no tienen candado (O2, hueco anterior). (3) Los `it` de R6 y R14
+  usan tres filas, así que un tope en el índice 2 solo lo caza R15 por literal de fuente (O3).
+  (4) El título de `#177 R7.3` dice «veintisiete radios», pero el recuento vale 37 (O5, anterior a
+  #204). La prosa de `chunky-cta-canvas-fidelity` («diecisiete consumidores», hoy 22) y la de
+  Perfil en `profile-canvas-fidelity` también quedaron desfasadas tras los merges. Este cierre corrige además en `STATUS.md` las entradas #196, #198, #200 y #197, que seguían diciendo «pendiente de merge» aunque ya estaban en `dev`.
+- **Estado final:** done. El smoke queda en `progress/smoke_canvas-parity.md`. El leader mergea la
+  PR a `dev` y después se borra el worktree `Pet-Tracker-wt-204`.
