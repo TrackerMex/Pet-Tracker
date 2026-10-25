@@ -570,7 +570,7 @@ function expectPingoBeforeLock() {
   expect(pingo.props.source).toEqual([
     expect.objectContaining({ testUri: expect.stringMatching(/pingo-talk\.webp$/) }),
   ]);
-  expect(pingo.props.style).toEqual({ width: 120, height: 120, transform: [{ rotate: '6deg' }] });
+  expect(pingo.props.style).toEqual({ position: 'absolute', left: 24, top: 0, width: 120, height: 120, transform: [{ rotate: '6deg' }] }); // #205 R10 (E6)
   expect(pingo.props.accessibilityLabel).toBeUndefined();
   expect(screen.queryByTestId('forgot-pingo-float')).toBeNull(); // #205 R10
   const scene = screen.getByTestId('forgot-scene'); // #205 R10
@@ -748,8 +748,8 @@ describe('#205 R10: Recuperar como el artboard', () => {
     const pingo = screen.getByTestId('forgot-pingo');
     expect(screen.queryByTestId('forgot-pingo-float')).toBeNull();
     expect(pingo.parent).toBe(screen.getByTestId('forgot-scene'));
-    expect(pingo.props.className).toBe('absolute left-6 top-0');
-    expect(pingo.props.style).toEqual({ width: 120, height: 120, transform: [{ rotate: '6deg' }] });
+    expect(pingo.props.className).toBeUndefined();
+    expect(pingo.props.style).toEqual({ position: 'absolute', left: 24, top: 0, width: 120, height: 120, transform: [{ rotate: '6deg' }] });
   });
 
   it('#205 R10: título, cuerpo, campo y acciones siguen las medidas del artboard', async () => {

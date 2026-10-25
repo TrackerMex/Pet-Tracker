@@ -159,6 +159,7 @@ describe('#205 R10: Recuperar', () => {
     expect(recuperar).toContain('right: 0; bottom: 6px; width: 52px; height: 52px; border-radius: 16px');
     expect(recuperar).toContain('rotate(6deg)');
     expect(recuperar).toContain('width: 120px');
+    expect(recuperar).toContain('position: absolute; left: 24px; top: 0; width: 120px'); // E6
     expect(recuperar).toContain('font-size: 28px');
     expect(recuperar).toContain('max-width: 320px');
     expect(recuperar).toContain('margin-top: 28px');
@@ -172,6 +173,7 @@ describe('#205 R10: Recuperar', () => {
     expect(screen).toContain('absolute bottom-1.5 right-0');
     expect(screen).toContain('text-28 leading-8.5');
     expect(screen).toContain('max-w-80');
+    expect(screen).toContain("position: 'absolute', left: 24, top: 0, width: 120, height: 120"); // E6
   });
 });
 
