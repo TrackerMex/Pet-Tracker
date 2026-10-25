@@ -933,6 +933,7 @@ Cierre (no gate de implementación), una casilla por smoke:
 - [ ] Smoke de R11 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
 - [ ] Smoke de R12 y R13 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
 - [ ] Smoke de R15 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
+  Va en el lote `progress/smoke_canvas-parity.md` (plan §6); el `done` no espera al smoke.
 
 ## Respuesta a la auditoría (2026-10-24)
 
