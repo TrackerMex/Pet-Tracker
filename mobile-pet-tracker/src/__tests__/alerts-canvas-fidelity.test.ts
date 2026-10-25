@@ -218,6 +218,7 @@ describe('#174 R12: inventarios', () => {
         'screens/login/index.tsx',
         'screens/meal-schedule/index.tsx', // #179 R7
         'screens/meals-history/index.tsx', // #179 R11
+        'screens/pairing/index.tsx', // #203 R4
         'screens/profile/index.tsx', // #196 R6
         'screens/register/index.tsx',
         'screens/reset-password/index.tsx',
@@ -233,8 +234,6 @@ describe('#174 R12: inventarios', () => {
         'components/pet-hero-header.tsx', // #195 R6
         'components/screen-header.tsx',
         'screens/add-pet/index.tsx', // #191 R11
-        'screens/alert-detail/index.tsx', // #180 R1
-        'screens/alerts/index.tsx', // #174 R12: H0 sin consumidores
         'screens/food/index.tsx',
         'screens/health/index.tsx',
         'screens/home/index.tsx', // #198 R15
@@ -242,7 +241,7 @@ describe('#174 R12: inventarios', () => {
         'screens/profile/index.tsx',
       ],
     },
-  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12) (enmendado por #197 R4) (enmendado por #197 R10) (enmendado por #197 R19) (enmendado por #200 R1 y #200 R3 y #200 R5 y #200 R12 y #200 R13) (enmendado por #199 R10) (enmendado por #199 R14) (enmendado por #199 R16) (enmendado por #198 R9, R15) (enmendado por #204 R4) (enmendado por #204 R10) (enmendado por #204 R12) (enmendado por #202 R7) (enmendado por #202 R1) (enmendado por #202 R11) (enmendado por #202 R17) (enmendado por #196 R6)', ({ pattern, files }) => {
+  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12) (enmendado por #197 R4) (enmendado por #197 R10) (enmendado por #197 R19) (enmendado por #200 R1 y #200 R3 y #200 R5 y #200 R12 y #200 R13) (enmendado por #199 R10) (enmendado por #199 R14) (enmendado por #199 R16) (enmendado por #198 R9, R15) (enmendado por #203 R4, R8, R10) (enmendado por #204 R4) (enmendado por #204 R10) (enmendado por #204 R12) (enmendado por #202 R7) (enmendado por #202 R1) (enmendado por #202 R11) (enmendado por #202 R17) (enmendado por #196 R6)', ({ pattern, files }) => {
     expect(filesMatching(pattern)).toEqual(files);
   });
 
@@ -267,10 +266,10 @@ describe('#174 R12: grep-limpio', () => {
     expect(readSource('screens/alerts/index.tsx')).not.toMatch(/(?<![\w-])(?:min-h-20|text-2xs|shadow-sm)\b/);
   });
 
-  it('cada tracking-* va con su text-*', () => {
+  it('cada tracking-* va con su text-* (enmendado por #203 R8)', () => {
     const tracked = classNames(readSource('screens/alerts/index.tsx'))
       .filter((classes) => /(?<![\w-])tracking-/.test(classes));
-    expect(tracked).toHaveLength(2);
+    expect(tracked).toHaveLength(1);
     for (const classes of tracked) expect(classes).toMatch(/(?<![\w-])text-(?:13|15|26)\b/);
   });
 });
