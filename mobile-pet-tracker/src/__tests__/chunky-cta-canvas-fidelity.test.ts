@@ -101,7 +101,7 @@ const radii = {
   'screens/pairing/index.tsx': 4, // #203 R6; #203 R7
   'screens/register/index.tsx': 1,
   'screens/reminders/index.tsx': 5, // #204 R9
-  'screens/reset-password/index.tsx': 1,
+  'screens/reset-password/index.tsx': 2,
   'screens/weight-log/index.tsx': 1,
   'screens/welcome/index.tsx': 2,
 };
@@ -156,9 +156,9 @@ it('#177 R5.1: el compacto conserva talla, etiqueta e icono con labio de tres', 
   expect(element).toContain('<Button.Label className="text-sm font-extrabold text-accent-foreground">');
   expect(element).toContain('<Plus size={16} color={accentForeground} />');
 });
-it('#177 R5.2: el tile conserva la esquina y recibe el labio con el orden exacto', () => {
+it('#177 R5.2: el tile conserva la esquina y recibe el labio con el orden exacto (enmendado por #205 R10)', () => {
   const tag = openingTagWithTestId(readSource('screens/forgot/index.tsx'), literalId('forgot-lock-tile'));
-  expect(tag).toContain('className="size-13 items-center justify-center bg-accent rounded-16"');
+  expect(tag).toContain('className="absolute bottom-1.5 right-0 size-13 items-center justify-center bg-accent rounded-16"'); // #205 R10
   expect(tag).toContain('style={[CONTINUOUS_CORNER, chunkyLip.primary]}');
   expect(tag).not.toMatch(/border-b-4|border-black\/25/);
 });
@@ -181,9 +181,9 @@ it('#177 R7.2: inventarios de las dos recetas de primario (enmendado por #201 R1
   expect(inventory(/rounded-16 bg-accent(?=[\s'"`])/g)).toEqual({ ...Object.fromEntries(ctaFiles.map(path => [path, path === 'screens/add-pet/index.tsx' ? 2 : 1])), 'screens/map/index.tsx': 1 }); // #201 R13
   expect(inventory(/rounded-xl bg-accent(?=[\s'"`])/g)).toEqual({ 'screens/reminders/index.tsx': 1 });
 });
-it('#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por #191 R11) (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #198 R9) (enmendado por #203 R6) (enmendado por #203 R7) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #201 R13)', () => {
+it('#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por #191 R11) (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #198 R9) (enmendado por #203 R6) (enmendado por #203 R7) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #201 R13) (enmendado por #205 R13)', () => {
   expect(inventory(/\brounded-16\b/g)).toEqual(radii);
-  expect(count(/\brounded-16\b/g)).toBe(26 + 1 + 1 + 1 + 2 + 2 + 1 + 1 + 1 + 2 + 1 + 1 + 1); // #204 R9 (+1) // #202 R18 (+1) // #200 R9 (+2); #198 R9 (+1); #199 R14 (+1); #203 R6 (+1); #203 R7 (+2); #201 R13 (+1) // #194 R6 // #191 R11 // #189 R7; #189 R13
+  expect(count(/\brounded-16\b/g)).toBe(26 + 1 + 1 + 1 + 2 + 2 + 1 + 1 + 1 + 2 + 1 + 1 + 1 + 1); // #204 R9 (+1) // #202 R18 (+1) // #200 R9 (+2); #198 R9 (+1); #199 R14 (+1); #203 R6 (+1); #203 R7 (+2); #201 R13 (+1); #205 R13 (+1) // #194 R6 // #191 R11 // #189 R7; #189 R13
 });
 it('#177 R7.4: solo la definición y los dieciocho consumidores usan el hook (enmendado por #197 R10) (enmendado por #200 R3) (enmendado por #196 R4) (enmendado por #201 R13)', () => {
   expect(Object.keys(inventory(/useChunkyLip/g)).sort()).toEqual([...consumers, 'theme/chunky-lip.ts'].sort());

@@ -10348,3 +10348,25 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   `ba13cc36` no lleva trailers (O7, O8). Este cierre corrige además en `STATUS.md` la entrada #203, que seguía diciendo «pendiente de merge» aunque ya estaba en `dev`.
 - **Estado final:** done, con #151. El smoke queda en `progress/smoke_canvas-parity.md`. El leader
   mergea la PR a `dev` y después se borra el worktree `Pet-Tracker-wt-201`.
+
+## Sesión 2026-10-25 — mobile-canvas-account-flow (id: 205)
+
+- **Feature:** el flujo de cuenta como el canvas (ola 2 del plan de paridad, R1–R20): bienvenida,
+  login, registro, recuperar, nueva contraseña y nueva mascota en sus dos pasos. Es la primera
+  feature que monta los cimientos de #197 (`RiseIn`, `useShadows`, `ScreenHeader`). Añade
+  `--radius-32` y `--radius-40`, y la Enmienda #205 de la carta.
+- **Spec:** [[specs/mobile-canvas-account-flow/requirements|spec]], con firma delegada en el leader
+  por mandato del humano del 2026-10-23 (plan §4), auditoría de inventario y erratas hasta E6 (E5:
+  re-base sobre `ee40d93d` tras #198 y #199; E6: posición de Pingo en recuperar por `style`).
+- **Acciones:** implementó el subagente `implementer` en Sonnet, como fallback de CLAUDE.md
+  §Excepciones (Codex sin cuota), test-primero de `481c1f35` a `21325c33`. Se mergeó `origin/dev`
+  antes de la revisión con #207, #202, #206 y #196 (`6401fed7`) y después con #204 y #203 (`82fbd8d2`) y con #201
+  (`204be5db`). En los merges, subagentes Sonnet resolvieron por unión los conflictos de los
+  candados agregados.
+- **Resultado:** primero el reviewer rechazó `6401fed7` por B1: el `className` de posición de Pingo en recuperar no posiciona en runtime, porque uniwind no convierte `className` en `expo-image`. La errata E6 (`f890d06a`) lo pasa al `style` y el fallback Sonnet lo corrigió test-primero (`1045673f` y `fee961d6`). Después el reviewer aprobó `02fa4921` (0 bloqueantes, 15 no bloqueantes). Tras el último
+  merge, el primer `./init.sh` del leader sobre `204be5db` salió rojo por el flake de Nutrición
+  `#200 R10` (`food-links`, `Received: undefined`) y el segundo, con exit 0: backend 187 suites / 1474 tests;
+  móvil 155 suites / 5450 tests / 1 snapshot; e2e 30 suites y 468 tests (8 omitidos).
+- **Notas no bloqueantes:** (1) Ningún candado fija que `forgot-error` vaya antes de `forgot-spacer` (O1). (2) `forgot-error` no lleva margen superior, y el smoke lo mira (O2). (3) Falta en `requirements.md` la errata del literal del chip de R18 (O3). (4) `tsc` sale rojo en `be76458c`, `348d6def` y `ce6da7ac` (O4). (5) El suelo `Math.max(…, 16)`, el `backFallback="/"` y el `PingoFloat` de registro solo los mira F (O5, O6, O7). (6) Algunas cifras del informe del implementador derivan (O8). (7) Los mensajes de commit están en español (O9). (8) La rama seguía en `spec_ready` hasta el cierre (O10). (9) Derivas heredadas: el título de `#177 R7.3`, el margen de 2 de `cardElements`, las anclas de prosa `headerShown` (5→6, hoy 8) y `^## Enmienda` (26→27, hoy 28), y la rama `next === -1` de R20, ya inalcanzable (O11). (10) Tras la re-revisión de B1: `GlassView` de `expo-glass-effect` recibe `className="absolute inset-0"` en `floating-tab-bar.tsx`, que en iOS 26+ no posiciona (mismo tipo que B1, anterior a #205, de `de264387c`; deuda propia con `StyleSheet.absoluteFill`) (O12). (11) El párrafo E6 cita `celebration.tsx` como precedente, pero ahí el `style` solo da tamaño (O13). (12) La fila R10 de `traceability.md` no cita los commits de E6; el párrafo de cierre los nombra (O14). (13) La nota 4 del humo del informe de implementación describe el estado anterior a E6; el lote de humo ya va corregido (O15). Este cierre corrige además en `STATUS.md` la entrada #201, que seguía diciendo «pendiente de merge» aunque ya estaba en `dev`.
+- **Estado final:** done. El smoke queda en `progress/smoke_canvas-parity.md`. El leader mergea la
+  PR a `dev` y después se borra el worktree `Pet-Tracker-wt-205`.

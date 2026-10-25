@@ -1116,7 +1116,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     expect(addReminder).not.toMatch(/uppercase|tracking-widest/);
   });
 
-  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #203 R4) (enmendado por #203 R6) (enmendado por #203 R7) (enmendado por #204 R8) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #196 R5) (enmendado por #201 R5, R13)', () => {
+  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #203 R4) (enmendado por #203 R6) (enmendado por #203 R7) (enmendado por #204 R8) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #196 R5) (enmendado por #201 R5, R13) (enmendado por #205 R13)', () => {
     for (const [pattern, count] of [
       [/\brounded-14\b/g, 2], [/\brounded-16\b/g, 5], [/\brounded-22\b/g, 1],
     ] as const) {
@@ -1151,7 +1151,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       'screens/map/index.tsx': 1, // #201 R13
       'screens/pairing/index.tsx': 4, // #203 R6; #203 R7
       'screens/register/index.tsx': 1,
-      'screens/reset-password/index.tsx': 1,
+      'screens/reset-password/index.tsx': 1 + 1, // #205 R13
       'screens/weight-log/index.tsx': 1,
       'screens/welcome/index.tsx': 2,
     });

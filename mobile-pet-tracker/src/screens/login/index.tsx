@@ -8,14 +8,14 @@ import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { login } from '../../api/auth';
-import { Card } from '../../components/card';
 import { BackButton } from '../../components/back-button';
 import { useAuth } from '../../providers/auth-provider';
 import { PasswordInput } from '../../components/password-input';
 import { FormError } from '../../components/form-error';
 import { FieldErrorMessage } from '../../components/field-error-message';
 import { useTranslate } from '../../providers/language-provider';
-import { HomeEntrance } from '../home/home-entrance';
+import { RiseIn } from '@/components/rise-in';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { validateLogin, type FieldIssues } from '../../utils/account-rules';
 
 export function LoginScreen() {
@@ -83,32 +83,38 @@ export function LoginScreen() {
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           flexGrow: 1,
-          padding: 24,
-          gap: 16,
+          paddingHorizontal: 20,
           paddingTop: insets.top + 12,
           paddingBottom: insets.bottom + 24,
         }}
       >
-        <HomeEntrance testID="login-header" index={0} className="gap-4">
-          <BackButton testID="login-back" fallback="/welcome" />
-          <View testID="login-greeting" className="flex-row items-center gap-3">
+        <RiseIn testID="login-header" delayMs={0}>
+          <View testID="login-top" className="-ml-2.5 flex-row">
+            <BackButton testID="login-back" fallback="/welcome" />
+          </View>
+          <View testID="login-greeting" className="mt-2 flex-row items-end gap-3">
             <Image
               testID="login-pingo"
               source={require('../../../assets/images/pingo-wave.webp')}
               style={{ width: 88, height: 88, transform: [{ rotate: '-8deg' }] }}
             />
-            <Card testID="login-bubble" variant="secondary" className="flex-1 px-4 py-3">
+            <View
+              testID="login-bubble"
+              className="mb-4.5 flex-1 rounded-tl-16 rounded-tr-16 rounded-br-16 rounded-bl-4 bg-surface-secondary px-3.5 py-2.5"
+              style={CONTINUOUS_CORNER}
+            >
               <Text testID="login-bubble-text" className="text-15 font-semibold text-foreground">
                 {t('login.pingoGreeting')}
               </Text>
-            </Card>
+            </View>
           </View>
-          <Text className="text-3xl font-black text-foreground">
-            {t('login.signIn')}
-          </Text>
-        </HomeEntrance>
+        </RiseIn>
 
-        <HomeEntrance testID="login-body" index={1} className="flex-1 gap-4">
+        <Text testID="login-title" className="mt-5 text-3xl font-black tracking-display text-foreground">
+          {t('login.signIn')}
+        </Text>
+
+        <RiseIn testID="login-body" delayMs={100} className="mt-6 gap-4">
           <TextField isInvalid={Boolean(fieldErrors.email)}>
             <Label>
               <Text className="text-13 font-semibold text-muted">
@@ -153,9 +159,11 @@ export function LoginScreen() {
           {error ? (
             <FormError testID="login-error" message={error} />
           ) : null}
+        </RiseIn>
 
-          <View testID="login-spacer" className="flex-1" />
+        <View testID="login-spacer" className="flex-1" />
 
+        <RiseIn testID="login-actions" delayMs={200} className="gap-3.5">
           <Button
             testID="login-submit"
             className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary}
@@ -176,7 +184,7 @@ export function LoginScreen() {
               {t('login.createAccount')}
             </LinkButton.Label>
           </LinkButton>
-        </HomeEntrance>
+        </RiseIn>
       </ScrollView>
     </KeyboardAvoidingView>
   );

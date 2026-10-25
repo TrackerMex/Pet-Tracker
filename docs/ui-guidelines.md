@@ -951,6 +951,21 @@ Detalle y tests en `specs/mobile-canvas-routine/requirements.md` (R1 a R18).
 - [X] Enmienda #204 aprobada por humano
   Firma delegada en el leader por mandato del humano del 2026-10-23 (`progress/plan_canvas-parity-2026-10-23.md` §4), igual que la de `specs/mobile-canvas-routine/requirements.md` § Aprobación.
 
+## Enmienda #205 — el flujo de cuenta como el canvas
+
+Fecha: 2026-10-24. Feature #205 `mobile-canvas-account-flow`. Bienvenida, inicio de sesión, registro, recuperar y nueva contraseña, y nueva mascota pasan a ser fieles a su artboard del canvas.
+
+1. **Entrada con `RiseIn`.** Las pantallas de cuenta y nueva mascota entran con `RiseIn` y los retardos de cada artboard. Se retiran el fundido y el muelle de contenido de bienvenida y `HomeEntrance` en inicio de sesión, registro y nueva contraseña. El muelle de escala de Pingo en bienvenida se conserva.
+2. **Flotación de Pingo.** `PingoFloat` vive en bienvenida y registro y sale de recuperar y nueva contraseña. La flotación de 4 puntos de bienvenida se retira (enmienda de #172 y de #153 R10).
+3. **Cabecera de nueva mascota.** Nueva mascota usa `ScreenHeader` con `headerShown: false` en su ruta y la CTA de cada paso va en un pie fijo fuera del scroll (enmienda de #191).
+4. **Escala.** `--radius-32` y `--radius-40` quedan fuera de la escala de radios por fidelidad al canvas. `--text-34` es el tamaño de la marca de bienvenida, además de la cifra de Peso que declaró #199.
+5. **Pops.** Los pops conservan el retardo fijo de `PopIn`: el canvas pide otros retardos y es una desviación consciente.
+
+Detalle y tests en `specs/mobile-canvas-account-flow/requirements.md` (R1 a R20).
+
+- [X] Enmienda #205 aprobada por humano
+  Firma delegada en el leader por mandato del humano del 2026-10-23, reflejada desde `specs/mobile-canvas-account-flow/requirements.md` § Aprobación, ya firmada.
+
 ## Enmienda #206 — barra de pestañas fiel al canvas
 
 Fecha: 2026-10-23. Feature #206 `mobile-canvas-tab-bar`. Excepción nombrada a D-I.

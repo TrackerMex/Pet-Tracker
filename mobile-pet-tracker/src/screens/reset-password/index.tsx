@@ -9,15 +9,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Check } from 'reicon-react-native';
 
 import { resetPassword } from '../../api/auth';
-import { Card } from '../../components/card';
 import { PopIn } from '../../components/pop-in';
-import { PingoFloat } from '../../components/pingo-float';
+import { RiseIn } from '../../components/rise-in';
 import { PasswordInput } from '../../components/password-input';
 import { FormError } from '../../components/form-error';
 import { FieldErrorMessage } from '../../components/field-error-message';
 import { useTranslate } from '../../providers/language-provider';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
-import { HomeEntrance } from '../home/home-entrance';
 import { validateResetPassword, type FieldIssues } from '../../utils/account-rules';
 
 export function ResetPasswordScreen() {
@@ -124,33 +123,35 @@ export function ResetPasswordScreen() {
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           flexGrow: 1,
-          padding: 24,
-          gap: 16,
-          paddingTop: insets.top + 12,
+          paddingHorizontal: 20,
+          paddingTop: insets.top + 56,
           paddingBottom: insets.bottom + 24,
         }}
       >
-        <HomeEntrance testID="reset-header" index={0} className="flex-row items-center gap-3">
-          <PingoFloat testID="reset-pingo-float">
-            <Image
-              testID="reset-pingo"
-              source={require('../../../assets/images/pingo-clipboard.webp')}
-              style={{ width: 72, height: 72 }}
-            />
-          </PingoFloat>
-          <Text className="flex-1 text-3xl font-black text-foreground">
+        <RiseIn testID="reset-header" delayMs={0} className="flex-row items-center gap-3.5">
+          <Image
+            testID="reset-pingo"
+            source={require('../../../assets/images/pingo-clipboard.webp')}
+            style={{ width: 72, height: 72 }}
+          />
+          <Text className="flex-1 text-28 leading-8 font-black tracking-display text-foreground">
             {t('resetPassword.resetPassword')}
           </Text>
-        </HomeEntrance>
-        <PopIn testID="reset-success-pop" className="w-full">
-          <Card testID="reset-success-card" accessibilityLiveRegion="polite" variant="secondary" className="flex-row items-center gap-3 px-4 py-3.5">
+        </RiseIn>
+        <PopIn testID="reset-success-pop" className="mt-6 w-full">
+          <View
+            testID="reset-success-card"
+            accessibilityLiveRegion="polite"
+            className="flex-row items-center gap-3 rounded-16 bg-surface-secondary px-4 py-3.5"
+            style={CONTINUOUS_CORNER}
+          >
             <View testID="reset-success-check" className="size-8 items-center justify-center rounded-full bg-accent">
               <Check size={18} color={accentForeground} />
             </View>
             <Text testID="reset-success" className="flex-1 text-15 font-bold text-accent-strong" selectable>
               {t('resetPassword.passwordUpdated')}
             </Text>
-          </Card>
+          </View>
         </PopIn>
         <View testID="reset-spacer" className="flex-1" />
         <LinkButton
@@ -180,26 +181,23 @@ export function ResetPasswordScreen() {
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           flexGrow: 1,
-          padding: 24,
-          gap: 16,
-          paddingTop: insets.top + 12,
+          paddingHorizontal: 20,
+          paddingTop: insets.top + 56,
           paddingBottom: insets.bottom + 24,
         }}
       >
-        <HomeEntrance testID="reset-header" index={0} className="flex-row items-center gap-3">
-          <PingoFloat testID="reset-pingo-float">
-            <Image
-              testID="reset-pingo"
-              source={require('../../../assets/images/pingo-clipboard.webp')}
-              style={{ width: 72, height: 72 }}
-            />
-          </PingoFloat>
-          <Text className="flex-1 text-3xl font-black text-foreground">
+        <RiseIn testID="reset-header" delayMs={0} className="flex-row items-center gap-3.5">
+          <Image
+            testID="reset-pingo"
+            source={require('../../../assets/images/pingo-clipboard.webp')}
+            style={{ width: 72, height: 72 }}
+          />
+          <Text className="flex-1 text-28 leading-8 font-black tracking-display text-foreground">
             {t('resetPassword.resetPassword')}
           </Text>
-        </HomeEntrance>
+        </RiseIn>
 
-        <HomeEntrance testID="reset-body" index={1} className="flex-1 gap-4">
+        <RiseIn testID="reset-body" delayMs={100} className="mt-8 flex-1 gap-4">
           <TextField isInvalid={Boolean(fieldErrors.password)}>
             <Label>
               <Text className="text-13 font-semibold text-muted">
@@ -253,7 +251,7 @@ export function ResetPasswordScreen() {
               {t('resetPassword.backToSignIn')}
             </LinkButton.Label>
           </LinkButton>
-        </HomeEntrance>
+        </RiseIn>
       </ScrollView>
     </KeyboardAvoidingView>
   );

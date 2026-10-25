@@ -238,3 +238,29 @@ Pasos en dev build Android (no Expo Go), en tema claro y repetidos en oscuro:
 10. (S10, R15) La ruta del día se ve más gruesa que antes (5 px).
 
 - [ ] Smoke de #201 recorrido por el humano
+
+## #205 mobile-canvas-account-flow
+
+Spec: `specs/mobile-canvas-account-flow/requirements.md` (§ Cierre del humano, R2–R19). Reviewer
+APROBADO sobre `02fa4921` (`progress/review_mobile-canvas-account-flow.md`).
+
+Pasos en dev build Android (no Expo Go), con sesión cerrada y en tema claro y oscuro:
+
+1. Bienvenida: escena redonda de 32 con anillos, Pingo de 220 flotando sobre la sombra del suelo y
+   bocadillo arriba a la derecha con «Hola, soy Pingo.». Los bloques suben escalonados. Con
+   «Quitar animaciones» activado, nada sube ni flota.
+2. Login: Pingo girado con su burbuja. Título, cuerpo y acciones suben en tres tiempos. El teclado
+   no tapa el campo ni el envío.
+3. Registro: Pingo flota y el formulario sube. El envío queda al pie con el teclado cerrado y
+   accesible con él abierto.
+4. Recuperar y «Revisa tu correo»: escena con fondo redondeado, Pingo quieto, girado y pegado arriba
+   a la izquierda de la escena (B1, E6), y candado con pop abajo a la derecha. Tras enviar, se ven
+   Reenviar y volver.
+5. Nueva contraseña (enlace profundo con token): cabecera sin flotación, y el éxito con la tarjeta
+   de radio 16. Sin token, la pantalla se ve como antes.
+6. Nueva mascota: cabecera propia con volver, «1 de 2» y barra, y Continuar fijo abajo. Con el
+   teclado abierto, el pie sube sobre él. En el paso 2 los bloques suben escalonados y los chips
+   miden 44. Volver con datos pide confirmación como antes. La celebración no lleva pie, y el pie
+   respeta la zona segura inferior con y sin botones de navegación.
+
+- [ ] Smoke de #205 recorrido por el humano

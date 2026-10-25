@@ -3516,7 +3516,7 @@
   {
     "id": 205,
     "name": "mobile-canvas-account-flow",
-    "status": "pending",
+    "status": "done",
     "priority": "P1",
     "description": "Registrada el 2026-10-23 por el plan progress/plan_canvas-parity-2026-10-23.md (ola 2). Bienvenida, cuenta y alta de mascota iguales al canvas versión 1792777983-cd94, artboards Main, Login, Registro, Recuperar, RecuperarEnviado, NuevaContrasena, NuevaMascota y NuevaMascota2. Cubre C17 de progress/explore_canvas-parity-2026-10-21.md. Ficheros probables: screens/welcome, login, register, forgot, reset-password, add-pet y tests. Depende de #197. Congelar los artboards en specs/mobile-canvas-account-flow/canvas/. Firma delegada al leader. Registrada sin spec."
   },
