@@ -10288,3 +10288,34 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   Perfil en `profile-canvas-fidelity` también quedaron desfasadas tras los merges. Este cierre corrige además en `STATUS.md` las entradas #196, #198, #200 y #197, que seguían diciendo «pendiente de merge» aunque ya estaban en `dev`.
 - **Estado final:** done. El smoke queda en `progress/smoke_canvas-parity.md`. El leader mergea la
   PR a `dev` y después se borra el worktree `Pet-Tracker-wt-204`.
+
+## Sesión 2026-10-24 — mobile-canvas-collar-alerts (id: 203)
+
+- **Feature:** Vincular, Alertas y Detalle de alerta como el canvas (ola 2 del plan de paridad,
+  R1–R12). Cabeceras propias en lugar de la nativa, entradas escalonadas con `RiseIn`, la vista con
+  collar con tarjeta de radio 22, píldora de rastreo y botón rojo de labio. Desvincular abre una
+  hoja propia en vez de `Alert.alert`. R12 fija los literales de los artboards congelados y la
+  Enmienda #203 añade el labio rojo a la carta.
+- **Spec:** [[specs/mobile-canvas-collar-alerts/requirements|spec]], con firma delegada en el leader
+  por mandato del humano del 2026-10-23 (plan §4), auditoría de inventario y erratas hasta E5.
+- **Acciones:** implementó el subagente `implementer` en Sonnet, como fallback de CLAUDE.md
+  §Excepciones (a Codex le quedaba el 8 % de la cuota semanal), test-primero de `01167214` a
+  `d580239e`. La primera revisión, sobre `0677e469`, salió RECHAZADA por B1: las clases de R4.2, R6
+  y R7.2 se asertaban con `arrayContaining`, que no ve clases añadidas. Un Sonnet lo corrigió solo
+  en tests (`26843a00`, cadenas exactas con `toBe`, tres mutaciones rojas por aserción). Después se
+  mergeó `origin/dev` dos veces: con #206 y #196 (`515719ed`) y con #204 (`d7421657`). En ambos,
+  subagentes Sonnet resolvieron por unión los conflictos de `alerts-canvas-fidelity`,
+  `chunky-cta-canvas-fidelity`, `design-drift` y `profile-canvas-fidelity`; en el segundo, también
+  los de `_layout.tsx` y `layout.test` (cada feature quita la cabecera nativa de sus rutas).
+- **Resultado:** la segunda revisión aprobó `515719ed` (0 bloqueantes, 5 no bloqueantes) con el
+  gate del leader en verde. Tras el merge de #204, `./init.sh` del leader sobre `d7421657` salió con
+  exit 0: backend 187 suites / 1474 tests; móvil 153 suites / 5295 tests / 1 snapshot; e2e 30
+  suites y 468 tests (8 omitidos).
+- **Notas no bloqueantes:** (1) El `backFallback` de las cabeceras de R2, R8 y R10 no tiene
+  candado (O1). (2) `rounded-card` y `rounded-22` conviven en la tarjeta de estado: el radio
+  efectivo depende del orden en la CSS (O2), y se mira en el smoke. (3) R12 nace verde, sin commit
+  verde propio (O4). (4) La prosa de `chunky-cta-canvas-fidelity` («nueve secundarios»,
+  «veintisiete radios», «diecisiete consumidores») ya no cuadra con las listas reales tras los
+  merges. Este cierre corrige además en `STATUS.md` la entrada #204, que seguía diciendo «pendiente de merge» aunque ya estaba en `dev`.
+- **Estado final:** done. El smoke queda en `progress/smoke_canvas-parity.md`. El leader mergea la
+  PR a `dev` y después se borra el worktree `Pet-Tracker-wt-203`.

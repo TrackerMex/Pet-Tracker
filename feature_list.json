@@ -3502,7 +3502,7 @@
   {
     "id": 203,
     "name": "mobile-canvas-collar-alerts",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P1",
     "description": "Registrada el 2026-10-23 por el plan progress/plan_canvas-parity-2026-10-23.md (ola 2). Collar y alertas iguales al canvas versión 1792777983-cd94, artboards Vincular, VincularVinculado, VincularDesvincular, Celebracion, Alertas y DetalleAlerta. Cubre la parte de Celebración de C18 de progress/explore_canvas-parity-2026-10-21.md. Ficheros probables: la pantalla de vincular collar, components/celebration.tsx, screens/alerts, el detalle de alerta y tests. Roza #165: el spec_author decide si la absorbe. Depende de #197. Congelar los artboards en specs/mobile-canvas-collar-alerts/canvas/. Firma delegada al leader. Registrada sin spec."
   },

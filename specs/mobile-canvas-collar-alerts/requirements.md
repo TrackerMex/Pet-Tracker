@@ -679,3 +679,4 @@ de implementación.
 - [x] Enmienda #203 a la carta (`docs/ui-guidelines.md`) aprobada por humano (fecha: 2026-10-23)
   Firma delegada, mismo mandato.
 - [ ] Smoke de R2, R3, R4, R5, R6, R7, R8, R9, R10, R11 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
+  Va en el lote `progress/smoke_canvas-parity.md` (plan §6); el `done` no espera al smoke.

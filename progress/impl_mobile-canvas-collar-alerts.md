@@ -145,3 +145,35 @@ Medido en `d580239e` desde `mobile-pet-tracker/`, sin pipe.
 - [ ] 6. Detalle: tarjeta y mapa suben con 80 ms de diferencia (R11).
 - [ ] 7. Celebración: igual que antes (D7).
 - [ ] 8. Con «reducir movimiento» activado, nada sube (R3, R9, R11).
+
+## Corrección B1 (2026-10-24)
+Endurecimiento solo de tests del bloqueante B1 del reviewer (`progress/review_mobile-canvas-collar-alerts.md`). Implementa el subagente Sonnet (fallback, Codex sin cuota). Producción intacta: `git diff --stat -- mobile-pet-tracker/src/screens/pairing/index.tsx` sale vacío tras cada mutación revertida y al final.
+
+### Cadenas literales (en `mobile-pet-tracker/src/screens/pairing/index.test.tsx`)
+Sondeo: sustituí cada aserción por `toBe('PROBE')`, corrí `-t '#203 R4.2|#203 R6:|#203 R7.2'` y leí el `Received` del fallo (sin `console.log`; no queda rastro de la sonda). La cadena de la tarjeta coincide con la que sondeó el reviewer.
+
+| it | testID | `className` exacto asertado con `toBe` |
+|---|---|---|
+| `#203 R4.2` | `device-status-card` | `rounded-card border border-border bg-surface p-4 rounded-22 px-4 py-4.5 shadow-none` |
+| `#203 R6` | `device-unpair` | `pressable-feedback__root button__root button__root--variant-primary button__root--size-md h-13.5 w-full rounded-16 bg-danger` |
+| `#203 R7.2` | `pairing-unpair-confirm` | `pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full h-13.5 rounded-16 bg-danger` |
+
+Las líneas `not.toContain('shadow-sm' / 'min-h-11' / 'rounded-xl')` y la variable `classes` quedaron subsumidas por la igualdad exacta y se eliminaron; no se tocó el resto de cada `it` (`style`, hermanos, orden de hijos, textos).
+
+### Mutaciones (jest dirigido, `--runInBand --testTimeout=30000`, cada una revertida con `git checkout HEAD --`)
+| Mut. | Cambio en `src/screens/pairing/index.tsx` | `it` en rojo (único) | Línea decisiva del fallo | Resultado |
+|---|---|---|---|---|
+| M5 | `bg-default` al final del `className` de `device-status-card` | `#203 R4.2: la tarjeta de estado lleva radio 22, sombra card y entra en 80` | `Received: "rounded-card border border-border p-4 rounded-22 px-4 py-4.5 shadow-none bg-default"` (twMerge expulsó `bg-surface`); `> 1541 expect(card.props.className).toBe(...)` | 1 failed, 136 passed, 137 total |
+| M10 | `opacity-80 ` antepuesto al `className` de `device-unpair` | `#203 R6: desvincular es 54, radio 16, labio rojo y va al fondo` | `Received: "... button__root--size-md opacity-80 h-13.5 w-full rounded-16 bg-danger"`; `> 1644 expect(button.props.className).toBe(...)` | 1 failed, 136 passed, 137 total |
+| M14 | `opacity-80 ` antepuesto al `className` de `pairing-unpair-confirm` | `#203 R7: hoja de desvincular › #203 R7.2: desvincular abre la hoja con su anatomía y sin diálogo nativo` | `Received: "... button__root--size-md opacity-80 w-full h-13.5 rounded-16 bg-danger"`; `> 1743 expect(confirm.props.className).toBe(...)` | 1 failed, 136 passed, 137 total |
+
+Los tres fallos son de aserción (`expect(received).toBe(expected)`), no de excepción. Tras cada `git checkout HEAD -- mobile-pet-tracker/src/screens/pairing/index.tsx`, `git diff --stat` de ese fichero salió vacío.
+
+### Commits
+- `26843a00` `test(#203 R4 R6 R7): asierta el className exacto de la tarjeta, desvincular y confirmar (B1)` (solo `mobile-pet-tracker/src/screens/pairing/index.test.tsx`).
+- `49732f36` `docs(#203): reapunta la trazabilidad de R4.2, R6 y R7.2 tras B1` (solo `specs/mobile-canvas-collar-alerts/traceability.md`; filas R4, R6 y R7 con `26843a00` añadido a «Commit verde»).
+
+### Verificación (desde `mobile-pet-tracker/`)
+- `bunx tsc --noEmit`: exit 0, sin salida.
+- `bunx eslint src/screens/pairing/index.test.tsx`: exit 0, sin salida (0 bytes).
+- `bunx jest --runTestsByPath src/screens/pairing/index.test.tsx --runInBand --testTimeout=30000`: exit 0, `Tests: 137 passed, 137 total`. Antes del cambio también `137 passed, 137 total`: endurecimiento, sin tests nuevos.
