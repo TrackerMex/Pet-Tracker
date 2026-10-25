@@ -406,7 +406,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
 });
 
 describe('#98 R10: los candados que esta feature no mueve', () => {
-  it('deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9) (enmendado por #200 R1 y #200 R5 y #200 R6 y #200 R7 y #200 R8 y #200 R9) (enmendado por #199 R3) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R2, R3, R4, R11, R13) (enmendado por #205 R3)', () => {
+  it('deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9) (enmendado por #200 R1 y #200 R5 y #200 R6 y #200 R7 y #200 R8 y #200 R9) (enmendado por #199 R3) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R2, R3, R4, R11, R13) (enmendado por #203 R5) (enmendado por #205 R3)', () => {
     const home = readSource(join('screens', 'home', 'index.tsx'));
     const food = readSource(join('screens', 'food', 'index.tsx'));
     const count = (pattern: RegExp) =>
@@ -437,7 +437,7 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
       - 1 // #205 R17
     ); // #189 R6; #189 R5 (enmendado por #190 R13) // #191 R11 // #177 R5 // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168; #170 R8: alert-detail-map; #171 R3: ready-done; #173 R10: ProfileTile
     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(1); // #177 R10
-    expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 2 - 1 - 1 - 1 - 2); // #191 R11 // #179 R6, R7, R11; #178 R5, R10, R12; #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6 // #198 R3 // #198 R11 // #198 R13 // #205 R18
+    expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 2 - 1 - 1 - 1 - 1 - 2); // #191 R11 // #179 R6, R7, R11; #178 R5, R10, R12; #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6 // #198 R3 // #198 R11 // #198 R13 // #203 R5 // #205 R18
     expect(home.match(/text-accent-strong\b/g)).toHaveLength(3); // #198 R4
     expect(food.match(/text-accent-strong\b/g)).toHaveLength(1 + 1 - 1); // #200 R5; #200 R6
     expect(filesMatching(/\brounded-(?:2xl|lg|md|sm)\b/)).toEqual([]);
@@ -494,7 +494,7 @@ describe('#64 R9: el color categórico solo se nombra en el módulo de paleta', 
 
   // 17 en `303fc19` − 1 el que vivía en el `PetHero` local de Profile (#67 R6).
   // + 2 de #147 R4: meal-time-edit y add-meal-time-button.
-  it('conserva los usos de bg-accent-soft que sí son acento (enmendado por #198 R3, R11, R13) (enmendado por #205 R18)', () => {
+  it('conserva los usos de bg-accent-soft que sí son acento (enmendado por #198 R3, R11, R13) (enmendado por #203 R5) (enmendado por #205 R18)', () => {
     const accentSoftCount = sourceFiles().reduce(
       (total, path) =>
         total + (readFileSync(path, 'utf8').match(/bg-accent-soft/g) ?? []).length,
@@ -503,7 +503,7 @@ describe('#64 R9: el color categórico solo se nombra en el módulo de paleta', 
     const reminders = readSource(join('screens', 'reminders', 'index.tsx'));
     const docs = readSource(join('screens', 'docs', 'index.tsx'));
 
-    expect(accentSoftCount).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 2 - 1 - 1 - 1 - 2); // #191 R11 // #179 R6, R7, R11; #178 R5, R10, R12; #147 R4, #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6 // #198 R3 // #198 R11 // #198 R13 // #205 R18
+    expect(accentSoftCount).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 2 - 1 - 1 - 1 - 1 - 2); // #191 R11 // #179 R6, R7, R11; #178 R5, R10, R12; #147 R4, #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6 // #198 R3 // #198 R11 // #198 R13 // #203 R5 // #205 R18
     expect(reminders.match(/bg-accent-soft/g)).toBeNull(); // #178 R5, R10
     expect(docs.match(/bg-accent-soft/g)).toBeNull();
   });
@@ -641,7 +641,7 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
     }
   });
 
-  it('inventaría los cinco secundarios neutros de toda la app (enmendado por #177 R10) (enmendado por #189 R13) (enmendado por #197 R10)', () => {
+  it('inventaría los cinco secundarios neutros de toda la app (enmendado por #177 R10) (enmendado por #189 R13) (enmendado por #197 R10) (enmendado por #203 R7)', () => {
     const testIds = sourceFiles().filter((path) => path.endsWith('.tsx')).flatMap((path) =>
       readFileSync(path, 'utf8').split(/<Button(?=[\s>])/).slice(1).flatMap((part) => {
         const tag = part.split('<')[0];
@@ -662,6 +662,7 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
       'forgot-resend',
       'geofence-editor-delete', // #189 R13
       'meal-time-edit-${index}', // #179 R6
+      'pairing-unpair-cancel', // #203 R7
       'reminders-delete-cancel',
       'secondary.testID', // #171 R14
       'welcome-have-account',
@@ -670,7 +671,7 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
       (total, path) => total + (readFileSync(path, 'utf8').match(pattern) ?? []).length,
       0,
     );
-    expect(count(/border-lip-gray/g)).toBe(4 + 1 + 1 + 1 + 1 + 1 + 1 + 1); // #189 R13; #179 R6, R7; #170 R16; #171 R14; #174 R8; #175 R7: borde de la zona de subida
+    expect(count(/border-lip-gray/g)).toBe(4 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1); // #189 R13; #179 R6, R7; #170 R16; #171 R14; #174 R8; #175 R7: borde de la zona de subida; #203 R7
     expect(count(/\bborder-b-6\b/g)).toBe(0); // #177 R10
   });
 

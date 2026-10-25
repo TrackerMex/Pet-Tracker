@@ -337,10 +337,10 @@ describe('R11 (mobile-device-pairing): pairing usa el Card compartido y las dime
 
   it.each([
     'paddingHorizontal: 20',
-    'paddingVertical: 24',
+    'insets.top + 8',
     'gap: 16',
     'insets.bottom + 24',
-  ])('keeps the uniform screen metric %s', (metric) => {
+  ])('keeps the uniform screen metric %s (enmendado por #203 R2)', (metric) => {
     expect(pairingSource).toContain(metric);
   });
 
@@ -1091,8 +1091,9 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     })).toEqual([]);
   });
 
-  it('reutiliza HomeEntrance y PopIn sin Card en Recordatorios', () => {
-    expect(reminders).toContain("from '../home/home-entrance'");
+  it('reutiliza HomeEntrance y PopIn sin Card en Recordatorios (enmendado por #204 R6)', () => {
+    expect(reminders).toContain("from '../../components/rise-in'");
+    expect(reminders).not.toContain('home-entrance');
     expect(reminders).toContain("from '../../components/pop-in'");
     expect(reminders).not.toContain('<Card');
     expect(reminders).not.toContain('components/card');
@@ -1115,9 +1116,9 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     expect(addReminder).not.toMatch(/uppercase|tracking-widest/);
   });
 
-  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #202 R18) (enmendado por #196 R5) (enmendado por #205 R13)', () => {
+  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #203 R4) (enmendado por #203 R6) (enmendado por #203 R7) (enmendado por #204 R8) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #196 R5) (enmendado por #205 R13)', () => {
     for (const [pattern, count] of [
-      [/\brounded-14\b/g, 1], [/\brounded-16\b/g, 4], [/\brounded-22\b/g, 1],
+      [/\brounded-14\b/g, 2], [/\brounded-16\b/g, 5], [/\brounded-22\b/g, 1],
     ] as const) {
       expect(reminders.match(pattern) ?? []).toHaveLength(count);
     }
@@ -1126,7 +1127,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       && !/\.test\.tsx?$/.test(file)
       && pattern.test(readFileSync(file, 'utf8')),
     ).map((file) => file.slice(sourceRoot.length + 1));
-    expect(outsideReminders(/\brounded-22\b/)).toEqual([]);
+    expect(outsideReminders(/\brounded-22\b/)).toEqual(['screens/pairing/index.tsx']); // #203 R4
     const rounded16 = Object.fromEntries(sourceFiles(sourceRoot).filter(file => file !== join(sourceRoot, featureFiles[0]) && !/\.test\.tsx?$/.test(file)).flatMap(file => {
       const count = (readFileSync(file, 'utf8').match(/\brounded-16\b/g) ?? []).length;
       return count ? [[file.slice(sourceRoot.length + 1), count]] : [];
@@ -1147,7 +1148,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       'screens/home/index.tsx': 1,
       'screens/home/weekly-activity-chart.tsx': 1, // #198 R9
       'screens/login/index.tsx': 1,
-      'screens/pairing/index.tsx': 1,
+      'screens/pairing/index.tsx': 4, // #203 R6; #203 R7
       'screens/register/index.tsx': 1,
       'screens/reset-password/index.tsx': 1 + 1, // #205 R13
       'screens/weight-log/index.tsx': 1,

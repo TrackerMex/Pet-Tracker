@@ -30,14 +30,14 @@ import { renderWithProviders } from '../../../test/render-with-providers';
 const flat = (s: unknown) => Object.assign({}, ...[s].flat(Infinity).filter(Boolean));
 
 
-const mockHomeEntrance = jest.fn<void, [import('react-native').ViewProps & { index: number }]>();
+const mockRiseIn = jest.fn<void, [import('react-native').ViewProps & { delayMs: number }]>();
 
-jest.mock('../home/home-entrance', () => {
+jest.mock('../../components/rise-in', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
-    HomeEntrance(props: import('react-native').ViewProps & { index: number }) {
-      mockHomeEntrance(props);
+    RiseIn(props: import('react-native').ViewProps & { delayMs: number }) {
+      mockRiseIn(props);
       return React.createElement(View, props);
     },
   };
@@ -117,7 +117,7 @@ jest.mock('@expo/ui/community/bottom-sheet', () => {
 });
 
 jest.mock('expo-router', () => ({
-  router: { push: jest.fn(), back: jest.fn() },
+  router: { push: jest.fn(), back: jest.fn(), canGoBack: jest.fn(), replace: jest.fn() },
   useFocusEffect: jest.fn(),
   useIsFocused: () => true,
 }));
@@ -268,14 +268,14 @@ describe('R5: reminders monta con métricas y estados', () => {
   });
 
   describe('#114 R5 (revertido por #178 R4): el título vive en el contenido', () => {
-    it('deja Nuevo junto al título en carga y con filas', async () => {
+    it('deja Nuevo junto al título en carga y con filas (enmendado por #204 R4)', async () => {
       let resolveReminders!: (state: RemindersState) => void;
       mockListReminders.mockReturnValue(new Promise((resolve) => { resolveReminders = resolve; }));
       await renderReminders();
 
       await screen.findByTestId('reminders-loading');
       expect(screen.getByTestId('reminders-title')).toHaveTextContent(es['reminders.reminders']);
-      const actions = screen.getByTestId('reminders-actions');
+      const actions = screen.getByTestId('reminders');
       expect(actions.props.className).toBe('flex-row items-center gap-2'); // #178 R4
       expect(within(actions).getByTestId('reminders-add-link')).toBeVisible();
 
@@ -286,7 +286,7 @@ describe('R5: reminders monta con métricas y estados', () => {
     });
   });
 
-  it('uses the metrics under the native header, selects the first pet, and shows row skeletons (#114 R6)', async () => {
+  it('uses the metrics under the native header, selects the first pet, and shows row skeletons (#114 R6) (enmendado por #204 R4)', async () => {
     mockListReminders.mockReturnValue(pending<RemindersState>());
 
     await renderReminders();
@@ -296,7 +296,7 @@ describe('R5: reminders monta con métricas y estados', () => {
       screen.getByTestId('screen-reminders').props.contentContainerStyle,
     ).toEqual({
       paddingHorizontal: 20,
-      paddingTop: 24,
+      paddingTop: 52,
       gap: 14, // #178 R4
       paddingBottom: 48,
     });
@@ -393,35 +393,39 @@ describe('#178 R4: marco y título en contenido', () => {
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [makeReminder()] });
   });
 
-  it('usa el marco 20/24/14 bajo la cabecera nativa', async () => {
+  it('usa el marco 20/24/14 bajo la cabecera nativa (enmendado por #204 R4)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-reminder-1');
     expect(screen.getByTestId('screen-reminders').props.contentContainerStyle).toEqual({
       paddingHorizontal: 20,
-      paddingTop: 24,
+      paddingTop: 52,
       gap: 14,
       paddingBottom: 48,
     });
   });
 
-  it('coloca título y Nuevo en ese orden dentro de la fila de acciones', async () => {
+  it('coloca título y Nuevo en ese orden dentro de la fila de acciones (enmendado por #204 R4)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-reminder-1');
-    const actions = screen.getByTestId('reminders-actions');
-    expect(actions.props.className).toBe('flex-row items-center gap-2');
-    expect(actions.children).toHaveLength(2);
-    expect(within(actions).getAllByTestId(/^reminders-(title|add-link)$/).map((node) => node.props.testID)).toEqual([
-      'reminders-title', 'reminders-add-link',
-    ]);
+    const header = screen.getByTestId('reminders');
+    expect(header.props.className).toBe('flex-row items-center gap-2');
+    expect(header.children).toHaveLength(3);
+    const [backSlot, column, add] = header.children;
+    if (typeof backSlot === 'string' || typeof column === 'string' || typeof add === 'string') throw new Error('Expected element children');
+    expect(backSlot.props.className).toBe('-ml-2.5');
+    expect(within(backSlot).getByTestId('reminders-back')).toBeTruthy();
+    expect(column.props.className).toBe('flex-1');
+    expect(within(column).getByTestId('reminders-title')).toBeTruthy();
+    expect(add.props.testID).toBe('reminders-add-link');
   });
 
-  it('pinta Recordatorios como título accesible con la receta del canvas', async () => {
+  it('pinta Recordatorios como título accesible con la receta del canvas (enmendado por #204 R4)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-reminder-1');
     const title = screen.getByTestId('reminders-title');
     expect(title).toHaveTextContent('Recordatorios');
     expect(title.props.accessibilityRole).toBe('header');
-    expect(title.props.className).toBe('flex-1 text-26 font-black tracking-title text-foreground');
+    expect(title.props.className).toBe('text-26 font-black tracking-title text-foreground');
   });
 
   it('pinta Nuevo compacto con Plus de 16 y tinta accent-foreground', async () => {
@@ -515,11 +519,11 @@ describe('#178 R6: fila del canvas', () => {
     jest.useRealTimers();
   });
 
-  it('distingue las recetas de fila próxima, lejana e inactiva', async () => {
+  it('distingue las recetas de fila próxima, lejana e inactiva (enmendado por #204 R7)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     for (const [id, className] of [
-      ['a', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border-2 border-warning-soft'],
+      ['a', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border-2 border-category-amber'],
       ['b', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border'],
       ['c', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border opacity-50'],
     ]) {
@@ -1262,7 +1266,7 @@ describe('#128 R4: el botón destructivo del sheet y su etiqueta llevan su recet
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('pinta reminders-delete-confirm con la variante danger y bg-danger, y su única etiqueta Eliminar con text-danger-foreground, haya o no un señuelo en la fuente', async () => {
+  it('pinta reminders-delete-confirm con la variante danger y bg-danger, y su única etiqueta Eliminar con text-danger-foreground, haya o no un señuelo en la fuente (enmendado por #204 R9)', async () => {
     mockListReminders.mockResolvedValue({
       kind: 'ok',
       reminders: [makeReminder()],
@@ -1277,10 +1281,10 @@ describe('#128 R4: el botón destructivo del sheet y su etiqueta llevan su recet
     const confirm = screen.getByTestId('reminders-delete-confirm');
 
     expect(confirm.props.className).toBe(
-      'pressable-feedback__root button__root button__root--variant-danger button__root--size-md w-full rounded-xl bg-danger',
+      'pressable-feedback__root button__root button__root--variant-danger button__root--size-md h-14 w-full rounded-16 bg-danger',
     );
     expect(within(confirm).getByText('Eliminar').props.className).toBe(
-      'button__label button__label--variant-danger button__label--size-md font-bold text-danger-foreground',
+      'text-17 font-extrabold text-danger-foreground',
     );
   });
 });
@@ -1306,12 +1310,12 @@ describe('#178 R7: entrada escalonada y badge', () => {
     jest.useRealTimers();
   });
 
-  it('asigna a cada entrada su índice en el orden del fixture', async () => {
+  it('asigna a cada entrada su índice en el orden del fixture (enmendado por #204 R6)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     for (const [index, id] of ['a', 'b', 'c'].entries()) {
-      expect(mockHomeEntrance).toHaveBeenCalledWith(
-        expect.objectContaining({ testID: `reminders-entry-${id}`, index }),
+      expect(mockRiseIn).toHaveBeenCalledWith(
+        expect.objectContaining({ testID: `reminders-entry-${id}`, delayMs: index * 70 }),
       );
     }
   });
@@ -1324,12 +1328,12 @@ describe('#178 R7: entrada escalonada y badge', () => {
     }
   });
 
-  it('envuelve el badge próximo con PopIn y la receta del canvas', async () => {
+  it('envuelve el badge próximo con PopIn y la receta del canvas (enmendado por #204 R7)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     const badge = within(screen.getByTestId('reminder-upcoming-pop-a')).getByTestId('reminder-upcoming-a');
     expect(badge).toHaveTextContent('¡Próximo!');
-    expect(badge.props.className).toBe('rounded-full bg-warning-soft px-2 py-0.75 text-11 font-extrabold text-warning-strong');
+    expect(badge.props.className).toBe('rounded-full px-2 py-0.75 text-11 font-extrabold bg-category-amber text-category-amber-strong');
   });
 
   it('reserva el pop para la fila próxima y lo omite en la lejana', async () => {
@@ -1434,7 +1438,7 @@ describe('#155 R6: sin recordatorios, Pingo sostiene su lista', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('queda en el sitio del vacío que sustituye', async () => {
+  it('queda en el sitio del vacío que sustituye (enmendado por #204 R4)', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo' })] });
     mockListReminders.mockImplementation((_url, _token, petId) => Promise.resolve<RemindersState>({ kind: 'ok', reminders: petId === 'pet-2' ? [makeReminder({ petId: 'pet-2' })] : [] }));
     mockDeleteReminder.mockResolvedValue({ kind: 'forbidden' });
@@ -1442,7 +1446,7 @@ describe('#155 R6: sin recordatorios, Pingo sostiene su lista', () => {
     await screen.findByTestId('reminders-empty-pose');
     const slot = screen.getByTestId('reminders-empty');
     expect(slot.parent?.parent?.props.testID).toBe('screen-reminders');
-    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['reminders-actions', 'RCTScrollView', 'reminders-empty', 'reminders-delete-host']);
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['reminders', 'RCTScrollView', 'reminders-empty', 'reminders-delete-host']);
     await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
     await waitFor(() => expect(screen.getByTestId('reminder-delete-reminder-1')).toBeVisible());
     await confirmDelete('reminder-1');
@@ -1450,7 +1454,7 @@ describe('#155 R6: sin recordatorios, Pingo sostiene su lista', () => {
     await fireEvent.press(screen.getByTestId('pet-chip-pet-1'));
     await screen.findByTestId('reminders-empty-pose');
     const slotWithError = screen.getByTestId('reminders-empty');
-    expect(slotWithError.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['reminders-actions', 'RCTScrollView', 'reminders-empty', 'reminders-action-error', 'reminders-delete-host']);
+    expect(slotWithError.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['reminders', 'RCTScrollView', 'reminders-empty', 'reminders-action-error', 'reminders-delete-host']);
   });
 
   it('pinta la pose, el título y la frase de Pingo', async () => {
@@ -1693,5 +1697,233 @@ describe('#181 R4: Recordatorios distingue una cuenta sin mascotas', () => {
     await waitFor(() => expect(queryClient.isFetching()).toBe(0));
     expect(screen.getByTestId('screen-reminders')).toBeVisible();
     expect(screen.queryByTestId('reminders-no-pets-screen')).toBeNull();
+  });
+});
+
+describe('#204 R4: cabecera en contenido', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [makeReminder()] });
+  });
+
+  it('#204 R4: pinta volver, Recordatorios y Nuevo en la cabecera en contenido', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-reminder-1');
+    const header = screen.getByTestId('reminders');
+    expect(within(header).getByTestId('reminders-back')).toBeTruthy();
+    const title = within(header).getByTestId('reminders-title');
+    expect(title).toHaveTextContent('Recordatorios');
+    expect(title.props.accessibilityRole).toBe('header');
+    expect(title.props.className).toBe('text-26 font-black tracking-title text-foreground');
+    const last = header.children.at(-1);
+    expect(typeof last === 'string' ? last : last?.props.testID).toBe('reminders-add-link');
+  });
+
+  it('#204 R4: volver sin historial lleva a Perfil', async () => {
+    mockRouter.canGoBack.mockReturnValue(false);
+    await renderReminders();
+    await screen.findByTestId('reminder-row-reminder-1');
+    await fireEvent.press(screen.getByTestId('reminders-back'));
+    expect(mockRouter.replace).toHaveBeenCalledTimes(1);
+    expect(mockRouter.replace).toHaveBeenCalledWith('/profile');
+    expect(mockRouter.back).not.toHaveBeenCalled();
+  });
+
+  it('#204 R4: usa el marco del canvas sin cabecera nativa', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-reminder-1');
+    const scroll = screen.getByTestId('screen-reminders');
+    expect(scroll.props.contentContainerStyle).toEqual({
+      paddingHorizontal: 20,
+      paddingTop: 52,
+      gap: 14,
+      paddingBottom: 48,
+    });
+    expect(scroll.props.contentInsetAdjustmentBehavior).toBeUndefined();
+  });
+});
+
+describe('#204 R5: estados bajo la cabecera', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it.each([
+    ['reminders-loading'],
+    ['reminders-error'],
+    ['reminders-empty'],
+    ['reminders-action-error'],
+  ])('#204 R5: la cabecera encabeza el estado %s', async (stateId) => {
+    if (stateId === 'reminders-loading') {
+      mockListReminders.mockReturnValue(pending<RemindersState>());
+    } else if (stateId === 'reminders-error') {
+      mockListReminders.mockResolvedValue({ kind: 'error' });
+    } else if (stateId === 'reminders-empty') {
+      mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+    } else {
+      mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [makeReminder()] });
+      mockDeleteReminder.mockResolvedValue({ kind: 'forbidden' });
+    }
+    await renderReminders();
+    if (stateId === 'reminders-action-error') {
+      await screen.findByTestId('reminder-delete-reminder-1');
+      await confirmDelete('reminder-1');
+    }
+    await screen.findByTestId(stateId);
+    const ids = within(screen.getByTestId('screen-reminders'))
+      .getAllByTestId(/^(reminders|reminders-loading|reminders-error|reminders-empty|reminders-action-error)$/)
+      .map((node) => node.props.testID);
+    expect(ids.indexOf('reminders')).toBeGreaterThanOrEqual(0);
+    expect(ids.indexOf('reminders')).toBeLessThan(ids.indexOf(stateId));
+  });
+
+  it('#204 R5: sin mascotas conserva volver encima del vacío', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+    await renderReminders();
+    const frame = await screen.findByTestId('reminders-no-pets-frame');
+    expect(frame.props.className).toBe('flex-1 bg-background');
+    expect(flat(frame.props.style)).toMatchObject({ paddingTop: 52, paddingHorizontal: 20 });
+    expect(frame.children.map((child) => (typeof child === 'string' ? child : child.props.testID))).toEqual([
+      'reminders-no-pets-header',
+      'reminders-no-pets-screen',
+    ]);
+    expect(screen.getByTestId('reminders-no-pets-header-back')).toBeTruthy();
+    expect(screen.queryByTestId('reminders-no-pets-header-title')).toBeNull();
+  });
+});
+
+describe('#204 R6: entrada de las filas', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: canvasReminders });
+  });
+
+  it('#204 R6: escalona las filas 0, 70 y 140 ms con RiseIn', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-a');
+    const delayById = new Map(
+      mockRiseIn.mock.calls
+        .map(([props]) => props)
+        .filter((props) => props.testID?.startsWith('reminders-entry-'))
+        .map((props) => [props.testID, props.delayMs] as const),
+    );
+    expect([...delayById]).toEqual([
+      ['reminders-entry-a', 0],
+      ['reminders-entry-b', 70],
+      ['reminders-entry-c', 140],
+    ]);
+  });
+});
+
+describe('#204 R7: ámbar de la fila próxima', () => {
+  beforeAll(() => { hostProcess.env.TZ = 'America/Mexico_City'; });
+  afterAll(() => {
+    if (originalTimezone === undefined) delete hostProcess.env.TZ;
+    else hostProcess.env.TZ = originalTimezone;
+  });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers({ now: new Date('2026-12-30T15:00:00.000Z') });
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: canvasReminders });
+  });
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+
+  it('#204 R7: la fila próxima y su badge usan el ámbar del canvas', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-a');
+    expect(screen.getByTestId('reminder-row-a').props.className).toBe(
+      'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border-2 border-category-amber',
+    );
+    expect(screen.getByTestId('reminder-upcoming-a').props.className).toBe(
+      'rounded-full px-2 py-0.75 text-11 font-extrabold bg-category-amber text-category-amber-strong',
+    );
+  });
+});
+
+describe('#204 R8: Eliminar de la fila', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: canvasReminders });
+  });
+
+  it('#204 R8: Eliminar de fila usa la receta rosa del canvas', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-a');
+    const button = screen.getByTestId('reminder-delete-a');
+    expect(button.props.className).toContain('button__root--variant-danger-soft');
+    expect(button.props.className).toContain('button__root--size-md');
+    expect(button.props.className).toContain('h-11 rounded-14 px-2.5 bg-category-rose');
+    expect(within(button).getByText('Eliminar').props.className).toBe('text-13 font-extrabold text-danger');
+  });
+});
+
+describe('#204 R9: Eliminar de la hoja', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: canvasReminders });
+  });
+
+  it('#204 R9: Eliminar de la hoja lleva cuerpo de 56 y labio danger', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-a');
+    await fireEvent.press(screen.getByTestId('reminder-delete-a'));
+    const confirm = screen.getByTestId('reminders-delete-confirm');
+    expect(confirm.props.className).toContain('button__root--variant-danger button__root--size-md');
+    expect(confirm.props.className).toContain('h-14 w-full rounded-16 bg-danger');
+    expect(within(confirm).getByText('Eliminar').props.className).toBe(
+      'text-17 font-extrabold text-danger-foreground',
+    );
   });
 });

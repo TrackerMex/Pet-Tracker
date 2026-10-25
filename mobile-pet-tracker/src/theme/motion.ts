@@ -111,3 +111,6 @@ export const MOTION_POINT_POP_MS = 400;
 export const MOTION_POINT_POP_DELAY_MS = 1300;
 export const MOTION_TOAST_FADE_MS = 300;
 export const MOTION_TOAST_DELAY_MS = 400;
+
+// #204 R3: paso de entrada de las filas de Recordatorios.
+export const MOTION_REMINDERS_STAGGER_MS = 70;

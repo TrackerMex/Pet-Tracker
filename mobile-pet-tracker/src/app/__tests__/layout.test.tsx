@@ -345,12 +345,9 @@ describe('#95 R4: cada pantalla de detalle declara su cabecera nativa', () => {
   });
 
   it.each([
-    ['add-reminder', ''],
-    ['pets/[petId]/docs', ''],
     ['pets/[petId]/docs-upload', ''], // #185 R10
-    ['pairing', ''],
     ['edit-profile', ''], // #194 R4
-  ])('#194 R4: %s usa exactamente las opciones de cabecera acordadas (enmendado por #200 R12) (enmendado por #199 R1) (enmendado por #205 R15)', async (name, title) => {
+  ])('#194 R4: %s usa exactamente las opciones de cabecera acordadas (enmendado por #200 R12) (enmendado por #199 R1) (enmendado por #203 R1) (enmendado por #204 R1) (enmendado por #205 R15)', async (name, title) => {
     await render(<RootLayout />);
     await waitFor(() => expect(screen.getByTestId('root-stack')).toBeVisible());
     const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
@@ -417,7 +414,7 @@ describe('#100 R2: la guarda de RootStack declara el detalle de alerta tras aler
       : null).toEqual([Stack.Screen, 'alerts/[alertId]', true]);
   });
 
-  it('le da la cabecera nativa de #95 R4 con título vacío (enmendado por #180 R1)', async () => {
+  it('le da la cabecera nativa de #95 R4 con título vacío (enmendado por #180 R1) (enmendado por #203 R1)', async () => {
     await render(<RootLayout />);
     await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
     const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
@@ -425,12 +422,7 @@ describe('#100 R2: la guarda de RootStack declara el detalle de alerta tras aler
     if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
     const detail = Children.toArray(group.props.children)[9];
     expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined).toEqual({
-      headerShown: true,
-      title: '', // #180 R1
-      headerStyle: { backgroundColor: 'token:background' },
-      headerTintColor: 'token:foreground',
-      headerTitleStyle: { fontFamily: 'Inter-Bold' },
-      headerShadowVisible: false,
+      headerShown: false,
       contentStyle: { backgroundColor: 'token:background' },
     });
   });
@@ -509,37 +501,6 @@ describe('#146 R5: la guarda de RootStack declara el editor de zonas tras la lis
     expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined).toEqual({ headerShown: false });
   });
 });
-
-describe('#114 R4: reminders y alerts declaran su cabecera nativa', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockGetStoredTheme.mockResolvedValue(undefined);
-    mockGetStoredLanguage.mockResolvedValue(undefined);
-  });
-
-  it.each([
-    ['reminders', ''],
-    ['alerts', ''], // #174 R3
-  ])('%s usa exactamente las opciones de cabecera acordadas', async (name, title) => {
-    await render(<RootLayout />);
-    await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
-    const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
-    const group = Children.toArray(stack?.children)[4];
-    if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
-    const detail = Children.toArray(group.props.children).find((child) =>
-      isValidElement<{ name: string }>(child) && child.props.name === name,
-    );
-    expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined).toEqual({
-      headerShown: true,
-      title,
-      headerStyle: { backgroundColor: 'token:background' },
-      headerTintColor: 'token:foreground',
-      headerTitleStyle: { fontFamily: 'Inter-Bold' },
-      headerShadowVisible: false,
-    });
-  });
-});
-
 
 describe('#105 R8: meals history is the last protected detail', () => {
   beforeEach(() => {
@@ -674,6 +635,57 @@ describe('#199 R1: Peso apaga la cabecera nativa', () => {
     const children = isValidElement<{ children: ReactNode }>(group) ? Children.toArray(group.props.children) : [];
     const detail = children.find(child => isValidElement<{ name: string }>(child) && child.props.name === 'weight-log');
     expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined).toEqual({ headerShown: false });
+  });
+});
+
+describe('#203 R1: cabeceras nativas fuera', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetStoredTheme.mockResolvedValue(undefined);
+    mockGetStoredLanguage.mockResolvedValue(undefined);
+  });
+
+  it.each([
+    ['pairing', { headerShown: false }],
+    ['alerts', { headerShown: false }],
+    [
+      'alerts/[alertId]',
+      { headerShown: false, contentStyle: { backgroundColor: 'token:background' } },
+    ],
+  ])('#203 R1: %s oculta la cabecera nativa', async (name, options) => {
+    await render(<RootLayout />);
+    await waitFor(() => expect(screen.getByTestId('root-stack')).toBeVisible());
+    const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
+    const group = Children.toArray(stack?.children)[4];
+    if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
+    const detail = Children.toArray(group.props.children).find((child) =>
+      isValidElement<{ name: string }>(child) && child.props.name === name,
+    );
+    expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined).toEqual(options);
+  });
+});
+
+describe('#204 R1: Rutina sin cabecera nativa', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetStoredTheme.mockResolvedValue(undefined);
+    mockGetStoredLanguage.mockResolvedValue(undefined);
+  });
+
+  it.each([
+    ['reminders'],
+    ['add-reminder'],
+    ['pets/[petId]/docs'],
+  ])('#204 R1: %s oculta la cabecera nativa', async (name) => {
+    await render(<RootLayout />);
+    await screen.findByTestId('root-stack');
+    const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
+    const group = Children.toArray(stack?.children)[4];
+    if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
+    const detail = Children.toArray(group.props.children).find(child =>
+      isValidElement<{ name: string }>(child) && child.props.name === name);
+    expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined)
+      .toEqual({ headerShown: false });
   });
 });
 
