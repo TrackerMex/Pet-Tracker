@@ -938,3 +938,4 @@ Enmienda de carta `## Enmienda #205` (R20, D11):
 Smoke de cierre (§Cierre del humano):
 
 - [ ] Smoke de R2–R19 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
+  Va en el lote `progress/smoke_canvas-parity.md` (plan §6); el `done` no espera al smoke.
