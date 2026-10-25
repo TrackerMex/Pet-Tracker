@@ -3,7 +3,10 @@ import { Button, Skeleton } from 'heroui-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Text, View } from 'react-native';
+import Animated, { useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Svg, { Circle, Ellipse, Path } from 'react-native-svg';
+import { AlertCircle, AlertTriangle, Link, Location, Plus, Refresh } from 'reicon-react-native';
 import { useUniwind } from 'uniwind';
 
 import { listGeofences } from '../../api/geofences';
@@ -28,19 +31,26 @@ import {
   type PetHeroStatusTone,
 } from '../../components/pet-hero-header';
 import { DEFAULT_CENTER, PetMap } from '../../components/pet-map';
+import { PopIn } from '../../components/pop-in';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { useChunkyLip } from '../../theme/chunky-lip';
+import { MOTION_RISE_OFFSET_Y } from '../../theme/motion';
 import {
   CONTINUOUS_CORNER,
   TABULAR_NUMS,
 } from '../../theme/native-styles';
+import { useShadows } from '../../theme/shadows';
+import { useThemeColors } from '../../theme/use-theme-colors';
+import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import {
   deviceConnectionState,
   MAP_CONNECTION_LABEL_KEY,
   type DeviceConnectionState,
 } from '../../utils/device-connectivity';
+import { homeEntering } from '../home/home-entrance';
 
 function isPetsError(state: PetsState): boolean {
   switch (state.kind) {
@@ -88,6 +98,9 @@ function fmtAgo(
 
 const POLL_MS = 15000;
 
+// #201 R6
+const STAT_DASH = 'text-xl font-black text-muted';
+
 const MAP_CONNECTION_TONE: Record<DeviceConnectionState, PetHeroStatusTone> = {
   none: 'muted',
   unknown: 'muted',
@@ -101,6 +114,11 @@ export function MapScreen() {
   const t = useTranslate();
   const { selectedPetId } = useSelectedPet();
   const insets = useSafeAreaInsets();
+  const reducedMotion = useReducedMotion();
+  const shadows = useShadows();
+  const chunkyLip = useChunkyLip(); // #201 R13
+  // #201 R7
+  const [accentForeground, categoryRoseStrong, danger, muted] = useThemeColors(['accent-foreground', 'category-rose-strong', 'danger', 'muted']);
   const { theme } = useUniwind();
   const pets = useQuery({
     queryKey: petKeys.list(),
@@ -251,26 +269,80 @@ export function MapScreen() {
   return (
     <View testID="screen-map" className="flex-1">
       {isLoading ? (
-        <Skeleton testID="map-loading" className="flex-1 bg-background" />
+        <View
+          testID="map-loading"
+          className="flex-1 bg-default"
+          accessibilityState={{ busy: true }}
+        >
+          <View
+            testID="map-loading-stats"
+            style={{
+              position: 'absolute',
+              left: 16,
+              right: 16,
+              bottom: insets.bottom + 96,
+            }}
+            className="gap-2.5"
+          >
+            <View
+              testID="map-loading-pill"
+              className="flex-row items-center gap-2 self-start rounded-full border border-border bg-surface py-1.5 pl-1.5 pr-3.5"
+              style={shadows.card}
+            >
+              <Skeleton variant="pulse" className="size-7 rounded-full bg-lip-gray" />
+              <Skeleton variant="pulse" className="h-3 w-37.5 rounded-full bg-lip-gray" />
+            </View>
+            <View
+              testID="map-loading-card"
+              className="gap-2.5 rounded-24 bg-surface p-3"
+              style={shadows.floating}
+            >
+              <View className="gap-2">
+                <View className="flex-row gap-2">
+                  <View className="flex-1 gap-1.5 rounded-14 bg-default px-3 py-2.5">
+                    <Skeleton variant="pulse" className="h-2.5 w-12 rounded-full bg-lip-gray" />
+                    <Skeleton variant="pulse" className="h-5.5 w-18 rounded-4 bg-lip-gray" />
+                  </View>
+                  <View className="flex-1 gap-1.5 rounded-14 bg-default px-3 py-2.5">
+                    <Skeleton variant="pulse" className="h-2.5 w-12 rounded-full bg-lip-gray" />
+                    <Skeleton variant="pulse" className="h-5.5 w-18 rounded-4 bg-lip-gray" />
+                  </View>
+                </View>
+                <View className="flex-row gap-2">
+                  <View className="flex-1 gap-1.5 rounded-14 bg-default px-3 py-2.5">
+                    <Skeleton variant="pulse" className="h-2.5 w-12 rounded-full bg-lip-gray" />
+                    <Skeleton variant="pulse" className="h-5.5 w-18 rounded-4 bg-lip-gray" />
+                  </View>
+                  <View className="flex-1 gap-1.5 rounded-14 bg-default px-3 py-2.5">
+                    <Skeleton variant="pulse" className="h-2.5 w-12 rounded-full bg-lip-gray" />
+                    <Skeleton variant="pulse" className="h-5.5 w-18 rounded-4 bg-lip-gray" />
+                  </View>
+                </View>
+              </View>
+              <Skeleton variant="pulse" className="h-12.5 rounded-14 bg-default" />
+            </View>
+          </View>
+        </View>
       ) : null}
 
       {pets.data && isPetsError(pets.data) ? (
-        <View className="flex-1 items-center justify-center gap-3 p-6 bg-background">
-          <Text testID="map-error" className="text-danger">
-            {t('common.somethingWentWrong')}
-          </Text>
-          <Button
-            testID="map-retry"
-            onPress={() => void pets.refetch()}
-          >
-            {t('common.retry')}
-          </Button>
+        <View className="flex-1 items-center justify-center bg-background px-6 pt-15 pb-30">
+          <EmptyState
+            variant="hero"
+            testID="map-error"
+            pose="talk"
+            title={t('common.somethingWentWrong')}
+            action={{ label: t('common.retry'), onPress: () => void pets.refetch() }}
+            actionIcon={<Refresh size={20} strokeWidth={2.6} color={accentForeground} style={{ marginRight: 8 }} testID="map-error-action-icon" />}
+            badge={<PopIn testID="map-error-badge" className={`absolute bottom-8.5 right-9 size-14 items-center justify-center rounded-full border-4 border-background ${CATEGORY_SLOTS.rose.surface}`}><AlertCircle size={26} strokeWidth={2.2} color={danger} /></PopIn>}
+          />
         </View>
       ) : null}
 
       {pets.data?.kind === 'ok' && pets.data.pets.length === 0 ? (
-        <View className="flex-1 items-center justify-center p-6 bg-background">
+        <View className="flex-1 items-center justify-center bg-background px-6 pt-15 pb-30">
           <EmptyState
+            variant="hero"
             testID="map-no-pets"
             pose="talk"
             title={t('common.noPetsYet')}
@@ -279,18 +351,30 @@ export function MapScreen() {
               label: t('profile.addPet'),
               onPress: () => router.push('/pets/add'),
             }}
+            actionIcon={<Plus size={20} strokeWidth={2.8} color={accentForeground} style={{ marginRight: 8 }} testID="map-no-pets-action-icon" />}
           />
         </View>
       ) : null}
 
       {petsReady && last.data?.kind === 'no-tracking' ? (
-        <View className="flex-1 items-center justify-center p-6 bg-background">
+        <View className="flex-1 items-center justify-center bg-background px-6 pt-15 pb-30">
           <EmptyState
+            variant="hero"
             testID="map-no-tracking"
-            pose="collar"
+            pose="talk"
             title={t('map.noTrackingTitle')}
             body={t('map.noTrackingBody')}
             action={canPairCollar ? { label: t('home.pairCollar'), onPress: () => router.push('/pairing') } : undefined}
+            actionIcon={canPairCollar ? <Link size={20} strokeWidth={2.4} color={accentForeground} style={{ marginRight: 8 }} testID="map-no-tracking-action-icon" /> : undefined}
+            badge={
+              <PopIn testID="map-no-tracking-badge" className="absolute bottom-10 right-7.5 size-13 items-center justify-center rounded-16 bg-accent" style={chunkyLip.primary}>
+                <Svg testID="map-no-tracking-collar" width={26} height={26} viewBox="0 0 24 24" fill="none" stroke={accentForeground} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <Ellipse cx="12" cy="8.5" rx="8" ry="4" />
+                  <Path d="M12 12.5v3" />
+                  <Circle cx="12" cy="18.5" r="2.5" />
+                </Svg>
+              </PopIn>
+            }
           />
         </View>
       ) : null}
@@ -298,17 +382,17 @@ export function MapScreen() {
       {petsReady && last.data && isLastError(last.data) ? (
         <View
           testID="map-last-error-state"
-          className="flex-1 items-center justify-center gap-3 p-6 bg-background"
+          className="flex-1 items-center justify-center bg-background px-6 pt-15 pb-30"
         >
-          <Text selectable testID="map-last-error" className="text-danger">
-            {t('common.somethingWentWrong')}
-          </Text>
-          <Button
-            testID="map-last-retry"
-            onPress={() => void refetchLast()}
-          >
-            {t('common.retry')}
-          </Button>
+          <EmptyState
+            variant="hero"
+            testID="map-last-error"
+            pose="talk"
+            title={t('common.somethingWentWrong')}
+            action={{ label: t('common.retry'), onPress: () => void refetchLast() }}
+            actionIcon={<Refresh size={20} strokeWidth={2.6} color={accentForeground} style={{ marginRight: 8 }} testID="map-last-error-action-icon" />}
+            badge={<PopIn testID="map-last-error-badge" className={`absolute bottom-8.5 right-9 size-14 items-center justify-center rounded-full border-4 border-background ${CATEGORY_SLOTS.rose.surface}`}><AlertCircle size={26} strokeWidth={2.2} color={danger} /></PopIn>}
+          />
         </View>
       ) : null}
 
@@ -319,6 +403,7 @@ export function MapScreen() {
             center={center}
             marker={marker}
             polylines={polylines}
+            polylineWidth={5}
             circles={circles}
             colorScheme={theme === 'dark' ? 'dark' : 'light'}
           />
@@ -331,14 +416,20 @@ export function MapScreen() {
                 left: 16,
                 right: 16,
               }}
-              className="items-center p-3"
+              className="flex-row items-center justify-center gap-2 px-4 py-3.5"
             >
-              <Text testID="map-empty" className="text-muted">
+              <Location
+                size={18}
+                strokeWidth={2.2}
+                color={muted}
+                testID="map-empty-icon"
+              />
+              <Text testID="map-empty" className="text-sm font-semibold text-muted">
                 {t('map.noLocationDataYet')}
               </Text>
             </Card>
           ) : null}
-          <View
+          <Animated.View
             testID="map-stats"
             style={{
               position: 'absolute',
@@ -346,140 +437,166 @@ export function MapScreen() {
               right: 16,
               bottom: insets.bottom + 96,
             }}
-            className="gap-2"
+            className="gap-2.5"
+            entering={
+              reducedMotion
+                ? undefined
+                : homeEntering(0, MOTION_RISE_OFFSET_Y)
+            }
           >
             {selectedPet ? (
               <View
                 testID="map-pet-pill"
                 accessible
                 accessibilityLabel={`${selectedPet.name}, ${gps}`}
-                className="flex-row items-center gap-2 self-start rounded-full border border-border bg-surface px-3 py-2 shadow-sm"
+                className="flex-row items-center gap-2 self-start rounded-full border border-border bg-glass-surface-strong py-1.5 pl-1.5 pr-3.5"
+                style={shadows.card}
               >
                 <PetAvatar
                   testID="map-pet-pill-avatar"
-                  size={24}
+                  size={28}
                   name={selectedPet.name}
                   photoUrl={selectedPet.photoUrl}
                   cacheKey={selectedPet.id}
                 />
                 <Text
                   testID="map-pet-pill-name"
-                  className="shrink text-xs font-bold text-foreground"
+                  className="shrink text-15 font-extrabold text-foreground"
                   numberOfLines={1}
                 >
                   {selectedPet.name}
                 </Text>
                 <View
-                  testID="map-pet-pill-dot"
-                  className={`size-2 rounded-full ${gpsTone.dot}`}
-                />
-                <Text
-                  testID="map-pet-pill-status"
-                  className={`text-2xs font-semibold ${gpsTone.text}`}
-                  numberOfLines={1}
+                  testID="map-pet-pill-gps"
+                  className="flex-row items-center gap-1.25"
                 >
-                  {gps}
-                </Text>
+                  <View
+                    testID="map-pet-pill-dot"
+                    className={`size-1.75 rounded-full ${
+                      connection === 'online' ? 'bg-accent' : gpsTone.dot
+                    }`}
+                  />
+                  <Text
+                    testID="map-pet-pill-status"
+                    className={`text-xs font-bold ${gpsTone.text}`}
+                    numberOfLines={1}
+                  >
+                    {gps}
+                  </Text>
+                </View>
               </View>
             ) : null}
-            <Card className="p-3">
+            <View
+              testID="map-stats-card"
+              className="gap-2.5 rounded-24 bg-surface p-3"
+              style={shadows.floating}
+            >
               <View className="gap-2">
                 <View className="flex-row gap-2">
                   <View
-                    className="flex-1 items-center rounded-xl bg-default p-3"
+                    className="flex-1 gap-0.5 rounded-14 bg-default px-3 py-2.5"
                     style={CONTINUOUS_CORNER}
                   >
+                    <Text className="text-11 font-semibold text-muted">
+                      {t('map.speed')}
+                    </Text>
                     <Text
                       testID="stat-speed"
-                      className="text-base font-black text-accent-strong"
+                      className={latestSpeed == null ? STAT_DASH : 'text-xl font-black text-accent-strong'}
                       numberOfLines={1}
                       style={TABULAR_NUMS}
                     >
                       {fmtSpeed(latestSpeed)}
                     </Text>
-                    <Text className="mt-1 text-2xs font-normal text-muted">
-                      {t('map.speed')}
-                    </Text>
                   </View>
                   <View
-                    className="flex-1 items-center rounded-xl bg-default p-3"
+                    className="flex-1 gap-0.5 rounded-14 bg-default px-3 py-2.5"
                     style={CONTINUOUS_CORNER}
                   >
+                    <Text className="text-11 font-semibold text-muted">
+                      {t('map.distance')}
+                    </Text>
                     <Text
                       testID="stat-distance"
-                      className="text-base font-black text-accent-strong"
+                      className={distanceM === null ? STAT_DASH : 'text-xl font-black text-foreground'}
                       numberOfLines={1}
                       style={TABULAR_NUMS}
                     >
                       {fmtKm(distanceM)}
                     </Text>
-                    <Text className="mt-1 text-2xs font-normal text-muted">
-                      {t('map.distance')}
-                    </Text>
                   </View>
                 </View>
                 <View className="flex-row gap-2">
                   <View
-                    className="flex-1 items-center rounded-xl bg-default p-3"
+                    className="flex-1 gap-0.5 rounded-14 bg-default px-3 py-2.5"
                     style={CONTINUOUS_CORNER}
                   >
+                    <Text className="text-11 font-semibold text-muted">
+                      {t('map.updated')}
+                    </Text>
                     <Text
                       testID="stat-updated"
-                      className="text-base font-black text-muted"
+                      className={position ? 'text-base font-bold text-muted' : STAT_DASH}
                       numberOfLines={1}
                       style={TABULAR_NUMS}
                     >
                       {updated}
                     </Text>
-                    <Text className="mt-1 text-2xs font-normal text-muted">
-                      {t('map.updated')}
-                    </Text>
                   </View>
                   <View
-                    className="flex-1 items-center rounded-xl bg-default p-3"
+                    className="flex-1 gap-0.5 rounded-14 bg-default px-3 py-2.5"
                     style={CONTINUOUS_CORNER}
                   >
+                    <Text className="text-11 font-semibold text-muted">
+                      {t('pairing.battery')}
+                    </Text>
                     <Text
                       testID="stat-battery"
-                      className={`text-base font-black ${batteryTone.text}`}
+                      className={`text-xl font-black ${batteryTone.text}`}
                       numberOfLines={1}
                       style={TABULAR_NUMS}
                     >
                       {battery}
                     </Text>
-                    <Text className="mt-1 text-2xs font-normal text-muted">
-                      {t('pairing.battery')}
-                    </Text>
                   </View>
                 </View>
               </View>
-            </Card>
-            <Button
-              testID="lost-mode-button"
-              isDisabled={!canSetLostMode || lostModeBusy}
-              onPress={handleLostMode}
-              variant="danger-soft"
-              accessibilityState={{
-                disabled: !canSetLostMode || lostModeBusy,
-              }}
-              className="rounded-xl border border-danger/20 bg-danger-soft"
-            >
-              <Button.Label className="font-bold text-danger">
-                {selectedPet?.lostMode
-                  ? t('map.deactivateLostMode')
-                  : t('map.activateLostMode')}
-              </Button.Label>
-            </Button>
-            {lostModeFailed ? (
-              <Text
-                selectable
-                testID="lost-mode-error"
-                className="text-center text-xs font-normal text-danger"
+              <Button
+                testID="lost-mode-button"
+                isDisabled={!canSetLostMode || lostModeBusy}
+                onPress={handleLostMode}
+                variant="danger-soft"
+                accessibilityState={{
+                  disabled: !canSetLostMode || lostModeBusy,
+                }}
+                className={`h-12.5 gap-2 rounded-14 ${CATEGORY_SLOTS.rose.surface}`}
               >
-                {t('map.couldNotUpdateLostMode')}
-              </Text>
-            ) : null}
-          </View>
+                <AlertTriangle
+                  testID="lost-mode-icon"
+                  size={18}
+                  strokeWidth={2.2}
+                  color={categoryRoseStrong}
+                />
+                <Button.Label
+                  className={`text-base font-extrabold ${CATEGORY_SLOTS.rose.ink}`}
+                >
+                  {selectedPet?.lostMode
+                    ? t('map.deactivateLostMode')
+                    : t('map.activateLostMode')}
+                </Button.Label>
+              </Button>
+              {lostModeFailed ? (
+                <Text
+                  selectable
+                  testID="lost-mode-error"
+                  accessibilityRole="alert"
+                  className="text-center text-xs font-normal text-danger"
+                >
+                  {t('map.couldNotUpdateLostMode')}
+                </Text>
+              ) : null}
+            </View>
+          </Animated.View>
         </>
       ) : null}
     </View>

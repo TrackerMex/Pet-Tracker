@@ -10319,3 +10319,32 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   merges. Este cierre corrige además en `STATUS.md` la entrada #204, que seguía diciendo «pendiente de merge» aunque ya estaba en `dev`.
 - **Estado final:** done. El smoke queda en `progress/smoke_canvas-parity.md`. El leader mergea la
   PR a `dev` y después se borra el worktree `Pet-Tracker-wt-203`.
+
+## Sesión 2026-10-25 — mobile-canvas-map (id: 201)
+
+- **Feature:** la pestaña Mapa como el canvas (ola 2 del plan de paridad, R1–R16): píldora de
+  cristal, tarjeta de stats 2x2, botón de modo perdido rosa y sus estados (error en la tarjeta, sin
+  ubicación, carga, error, sin mascotas y sin rastreo con Pingo), más la ruta del día a 5 px. R3
+  absorbe #151, que se cierra con ella (D15).
+- **Spec:** [[specs/mobile-canvas-map/requirements|spec]], con firma delegada en el leader por
+  mandato del humano del 2026-10-23 (plan §4), auditoría de inventario (17 hallazgos cerrados en
+  `de2b1370`) y erratas hasta E4.
+- **Acciones:** implementó el subagente `implementer` en Sonnet, como fallback de CLAUDE.md
+  §Excepciones (Codex sin cuota), test-primero de `08cbc116` a `48caa133`. Se mergeó `origin/dev`
+  antes de la revisión con #199 (`b834a317`) y con #207, #202, #206 y #196 (`ba13cc36`), y después con #204 y #203
+  (`4a95a892`). En los merges, subagentes Sonnet resolvieron por unión los conflictos de los
+  candados agregados.
+- **Resultado:** el reviewer aprobó `ba13cc36` (0 bloqueantes, 8 no bloqueantes). Tras el último
+  merge, `./init.sh` del leader sobre `4a95a892` salió con exit 0: backend 187 suites / 1474 tests;
+  móvil 154 suites / 5406 tests / 1 snapshot; e2e 30 suites y 468 tests (8 omitidos).
+- **Notas no bloqueantes:** (1) El sufijo del título `#177 R7.2` de CC llegó en `48caa133`, después
+  del verde de R13, cuando debía ir en su rojo (O1). (2) Los títulos de CC dicen «dieciocho
+  consumidores» y «diecinueve ficheros», pero hoy hay 23; la spec ancla esos literales, así que
+  arreglarlo exige enmendarla (O2). (3) Ningún candado mira el color de trazo del badge del collar
+  (O3). (4) `CONTINUOUS_CORNER` en los tiles y `variant="danger-soft"` del botón de modo perdido no
+  tenían candado ya antes de #201 (O4). (5) El informe del implementador detalla unos 20 de los 24
+  rojos de `5b5e3724` (O5). (6) `3a39f70a` añadió movimiento reducido a cuatro bloques de MT fuera
+  del inventario, validado después por E3 (O6). (7) Conviven dos formatos de commit y el merge
+  `ba13cc36` no lleva trailers (O7, O8). Este cierre corrige además en `STATUS.md` la entrada #203, que seguía diciendo «pendiente de merge» aunque ya estaba en `dev`.
+- **Estado final:** done, con #151. El smoke queda en `progress/smoke_canvas-parity.md`. El leader
+  mergea la PR a `dev` y después se borra el worktree `Pet-Tracker-wt-201`.

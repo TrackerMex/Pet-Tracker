@@ -6,6 +6,7 @@ import {
   waitFor,
   within,
 } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -42,6 +43,7 @@ import type {
   StoredPosition,
   TripDetail,
 } from '../../api/types';
+import { PetAvatar } from '../../components/pet-avatar';
 import { en, es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
@@ -55,6 +57,7 @@ import { renderWithProviders } from '../../../test/render-with-providers';
 let mockFocusCleanup: (() => void) | undefined;
 let mockTheme: 'light' | 'dark' = 'light';
 let mockIsFocused = true;
+const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
 
 jest.mock('../../api/geofences', () => ({ listGeofences: jest.fn() }));
 
@@ -118,6 +121,51 @@ jest.mock('react-native-safe-area-context', () => ({
 jest.mock('uniwind', () => ({
   ...jest.requireActual('uniwind'),
   useUniwind: () => ({ theme: mockTheme, hasAdaptiveThemes: false }),
+}));
+
+jest.mock('react-native-reanimated', () => ({
+  ...jest.requireActual<typeof import('react-native-reanimated')>('react-native-reanimated'),
+  __esModule: true,
+  useReducedMotion: () => mockUseReducedMotion(),
+}));
+
+jest.mock('reicon-react-native', () => {
+  const actual = jest.requireActual<typeof import('reicon-react-native')>(
+    'reicon-react-native',
+  );
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
+  const mockIcon = (testID: string) =>
+    function MockIcon(props: Record<string, unknown>) {
+      return React.createElement(View, { testID, ...props });
+    };
+
+  return {
+    ...actual,
+    __esModule: true,
+    AlertCircle: mockIcon('icon-alert-circle'),
+    AlertTriangle: mockIcon('icon-alert-triangle'),
+    Link: mockIcon('icon-link'),
+    Location: mockIcon('icon-location'),
+    Plus: mockIcon('icon-plus'),
+    Refresh: mockIcon('icon-refresh'),
+  };
+});
+
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: (tokens: string[]) => {
+    const colors: Record<string, string> = {
+      'accent-foreground': '#FFFFFF',
+      'category-rose-strong': '#D80B34',
+      danger: '#D92D20',
+      muted: '#667085',
+      lip: '#0E5E3C',
+      'lip-gray': '#E4E7EC',
+    };
+    return tokens.map((token) => colors[token] ?? '#0D1117');
+  },
 }));
 
 const mockListGeofences = jest.mocked(listGeofences);
@@ -266,6 +314,7 @@ beforeEach(() => {
   mockTheme = 'light';
   initialSelectedPetId = null;
   mockIsFocused = true;
+  mockUseReducedMotion.mockReturnValue(false);
   process.env.EXPO_PUBLIC_API_URL = apiUrl;
   mockUseAuth.mockReturnValue({
     status: 'authenticated',
@@ -351,7 +400,7 @@ describe('R4: map resuelve la mascota seleccionada', () => {
     { kind: 'error' } as PetsState,
     { kind: 'unreachable', message: 'network down' } as PetsState,
     { kind: 'missing-config' } as PetsState,
-  ])('shows and retries pet-list state $kind', async (firstState) => {
+  ])('shows and retries pet-list state $kind (enmendado por #201 R11)', async (firstState) => {
     mockListPets
       .mockResolvedValueOnce(firstState)
       .mockResolvedValueOnce({ kind: 'ok', pets: [] });
@@ -359,7 +408,7 @@ describe('R4: map resuelve la mascota seleccionada', () => {
     await renderMap();
     await waitFor(() => expect(screen.getByTestId('map-error')).toBeVisible());
 
-    await fireEvent.press(screen.getByTestId('map-retry'));
+    await fireEvent.press(screen.getByTestId('map-error-action'));
 
     await waitFor(() => expect(screen.getByTestId('map-no-pets')).toBeVisible());
     expect(mockListPets).toHaveBeenCalledTimes(2);
@@ -500,7 +549,7 @@ describe('R7: ruta del día como polylines', () => {
     });
   });
 
-  it('R3 (android-map-never-ready): pasa una polyline mapeada por cada viaje', async () => {
+  it('R3 (android-map-never-ready): pasa una polyline mapeada por cada viaje (enmendado por #201 R15)', async () => {
     const first = makeTrip();
     const second = makeTrip({
       index: 1,
@@ -527,6 +576,7 @@ describe('R7: ruta del día como polylines', () => {
             { latitude: 19.433, longitude: -99.1328 },
           ],
           color: expect.any(String),
+          width: 5,
         },
         {
           id: 'trip-1',
@@ -535,6 +585,7 @@ describe('R7: ruta del día como polylines', () => {
             { latitude: 19.45, longitude: -99.11 },
           ],
           color: expect.any(String),
+          width: 5,
         },
       ]);
     });
@@ -586,7 +637,7 @@ describe('R8: stats calculadas de positions y trips', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('uses the latest speed, trip total, fresh age, and live GPS', async () => {
+  it('uses the latest speed, trip total, fresh age, and live GPS (enmendado por #201 R1)', async () => {
     mockGetLastPosition.mockResolvedValue({
       kind: 'ok',
       position: makeLastPosition({ staleSeconds: 15 }),
@@ -613,14 +664,12 @@ describe('R8: stats calculadas de positions y trips', () => {
       expect(screen.getByTestId('stat-updated')).toHaveTextContent('Justo ahora');
       expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent('GPS activo');
     });
-    expect(screen.getByTestId('map-stats').props.style).toEqual(
-      expect.objectContaining({
-        position: 'absolute',
-        left: 16,
-        right: 16,
-        bottom: 120,
-      }),
-    );
+    expect(screen.getByTestId('map-stats')).toHaveStyle({
+      position: 'absolute',
+      left: 16,
+      right: 16,
+      bottom: 120,
+    });
   });
 
   it('#94 R2: la antigüedad de la posición ya no mueve el tile de conexión', async () => {
@@ -981,23 +1030,23 @@ describe('R1 (mobile-map-last-position-error-state): rama de error de last', () 
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('muestra mensaje y Reintentar cuando last devuelve error', async () => {
+  it('muestra mensaje y Reintentar cuando last devuelve error (enmendado por #201 R11)', async () => {
     mockGetLastPosition.mockResolvedValue({ kind: 'error' });
 
     await renderMap();
 
     await waitFor(() => {
-      expect(screen.getByTestId('map-last-error')).toHaveTextContent(
+      expect(screen.getByTestId('map-last-error-title')).toHaveTextContent(
         'Algo salió mal',
       );
     });
-    expect(screen.getByTestId('map-last-error').props.selectable).toBe(true);
-    expect(screen.getByTestId('map-last-retry')).toHaveTextContent('Reintentar');
+    expect(screen.getByTestId('map-last-error-action')).toHaveTextContent('Reintentar');
     expect(screen.queryByTestId('map-view')).toBeNull();
     expect(screen.queryByTestId('map-error')).toBeNull();
   });
 
-  it('Reintentar llama al refetch de last y recupera el mapa', async () => {
+  it('Reintentar llama al refetch de last y recupera el mapa (enmendado por #201 R11)', async () => {
+    mockUseReducedMotion.mockReturnValue(true); // #201 R11: el héroe entra con opacidad 0
     mockGetLastPosition
       .mockResolvedValueOnce({ kind: 'error' })
       .mockResolvedValue({
@@ -1007,10 +1056,10 @@ describe('R1 (mobile-map-last-position-error-state): rama de error de last', () 
 
     await renderMap();
     await waitFor(() => {
-      expect(screen.getByTestId('map-last-retry')).toBeVisible();
+      expect(screen.getByTestId('map-last-error-action')).toBeVisible();
     });
 
-    fireEvent.press(screen.getByTestId('map-last-retry'));
+    fireEvent.press(screen.getByTestId('map-last-error-action'));
 
     await waitFor(() => expect(screen.getByTestId('map-view')).toBeVisible());
     expect(mockGetLastPosition.mock.calls.length).toBeGreaterThanOrEqual(2);
@@ -1063,8 +1112,9 @@ describe('R3 (mobile-map-last-position-error-state): cobertura total y exclusió
     { kind: 'unreachable', message: 'network down' },
     { kind: 'missing-config' },
   ])(
-    'muestra la rama de error y reintenta con $kind',
+    'muestra la rama de error y reintenta con $kind (enmendado por #201 R11)',
     async (firstState) => {
+      mockUseReducedMotion.mockReturnValue(true); // #201 R11: el héroe entra con opacidad 0
       mockGetLastPosition.mockResolvedValueOnce(firstState).mockResolvedValue({
         kind: 'ok',
         position: makeLastPosition(),
@@ -1072,10 +1122,10 @@ describe('R3 (mobile-map-last-position-error-state): cobertura total y exclusió
 
       await renderMap();
       await waitFor(() => {
-        expect(screen.getByTestId('map-last-retry')).toBeVisible();
+        expect(screen.getByTestId('map-last-error-action')).toBeVisible();
       });
 
-      fireEvent.press(screen.getByTestId('map-last-retry'));
+      fireEvent.press(screen.getByTestId('map-last-error-action'));
 
       await waitFor(() =>
         expect(screen.getByTestId('map-view')).toBeVisible(),
@@ -1109,7 +1159,8 @@ describe('R3 (mobile-map-last-position-error-state): cobertura total y exclusió
 });
 
 describe('R4 (mobile-map-last-position-error-state): unauthorized de pets', () => {
-  it('renderiza la rama de error de pets y dispara signOut', async () => {
+  it('renderiza la rama de error de pets y dispara signOut (enmendado por #201 R11)', async () => {
+    mockUseReducedMotion.mockReturnValue(true); // #201 R11: el héroe entra con opacidad 0
     const signOut = jest.fn();
     mockUseAuth.mockReturnValue({
       status: 'authenticated',
@@ -1122,7 +1173,7 @@ describe('R4 (mobile-map-last-position-error-state): unauthorized de pets', () =
     await renderMap();
 
     await waitFor(() => expect(screen.getByTestId('map-error')).toBeVisible());
-    expect(screen.getByTestId('map-retry')).toBeVisible();
+    expect(screen.getByTestId('map-error-action')).toBeVisible();
     expect(signOut).toHaveBeenCalled();
     expect(mockGetLastPosition).not.toHaveBeenCalled();
   });
@@ -1200,7 +1251,7 @@ describe('#61 R11: el overlay de stats reparte los cuatro tiles en 2x2 sin envol
     ]);
   });
 
-  it('conserva los cuatro tiles, su orden de lectura y el overlay absoluto', async () => {
+  it('conserva los cuatro tiles, su orden de lectura y el overlay absoluto (enmendado por #201 R1)', async () => {
     mockGetLastPosition.mockResolvedValue({
       kind: 'ok',
       position: makeLastPosition({ staleSeconds: 15 }),
@@ -1217,14 +1268,12 @@ describe('#61 R11: el overlay de stats reparte los cuatro tiles en 2x2 sin envol
     expect(screen.getByText('Distancia')).toBeVisible();
     expect(screen.getByText('Actualizado')).toBeVisible();
     expect(screen.getByText('Batería')).toBeVisible();
-    expect(screen.getByTestId('map-stats').props.style).toEqual(
-      expect.objectContaining({
-        position: 'absolute',
-        left: 16,
-        right: 16,
-        bottom: 120,
-      }),
-    );
+    expect(screen.getByTestId('map-stats')).toHaveStyle({
+      position: 'absolute',
+      left: 16,
+      right: 16,
+      bottom: 120,
+    });
   });
 });
 
@@ -1627,15 +1676,15 @@ describe('#116 R2: la píldora existe encima de la tarjeta de stats', () => {
     expect(within(elementChild(stats, 1)).getByTestId('stat-speed')).toBeVisible();
   });
 
-  it('compone la cápsula con la receta exacta y sin esquina continua', async () => {
+  it('compone la cápsula con la receta exacta y sin esquina continua (enmendado por #201 R2)', async () => {
     await renderMap();
     await waitFor(() => expect(screen.getByTestId('map-pet-pill')).toBeVisible());
 
     const pill = screen.getByTestId('map-pet-pill');
     expect(pill.props.className).toBe(
-      'flex-row items-center gap-2 self-start rounded-full border border-border bg-surface px-3 py-2 shadow-sm',
+      'flex-row items-center gap-2 self-start rounded-full border border-border bg-glass-surface-strong py-1.5 pl-1.5 pr-3.5',
     );
-    expect(pill.props.style).toBeUndefined();
+    expect(pill.props.style?.boxShadow).toHaveLength(2);
   });
 
   it('no pinta la píldora mientras la selección no está en la lista', async () => {
@@ -1655,17 +1704,17 @@ describe('#116 R3: la píldora muestra avatar y nombre', () => {
     mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
   });
 
-  it('pinta el avatar de 24 sin foto', async () => {
+  it('pinta el avatar de 28 sin foto (enmendado por #201 R2)', async () => {
     await renderMap();
     await waitFor(() => expect(screen.getByTestId('map-pet-pill')).toBeVisible());
 
     const avatar = elementChild(screen.getByTestId('map-pet-pill'), 0);
     expect(avatar.props.testID).toBe('map-pet-pill-avatar');
-    expect(avatar.props.width).toBe(24);
-    expect(avatar.props.height).toBe(24);
+    expect(avatar.props.width).toBe(28);
+    expect(avatar.props.height).toBe(28);
   });
 
-  it('pinta la foto de la lista con su cacheKey', async () => {
+  it('pinta la foto de la lista con su cacheKey (enmendado por #201 R2)', async () => {
     mockListPets.mockResolvedValue({
       kind: 'ok',
       pets: [makePet({ photoUrl: 'https://cdn.example/luna.jpg' })],
@@ -1680,10 +1729,10 @@ describe('#116 R3: la píldora muestra avatar y nombre', () => {
 
     const avatar = elementChild(screen.getByTestId('map-pet-pill'), 0);
     expect(avatar.props.source).toEqual([{ uri: 'https://cdn.example/luna.jpg', cacheKey: 'pet-1' }]);
-    expect(avatar.props.style).toEqual({ width: 24, height: 24, borderRadius: 12 });
+    expect(avatar.props.style).toEqual({ width: 28, height: 28, borderRadius: 14 });
   });
 
-  it('rotula el nombre de la lista en una línea', async () => {
+  it('rotula el nombre de la lista en una línea (enmendado por #201 R2)', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ name: 'Luna' })] });
     mockGetPet.mockResolvedValue({
       kind: 'ok',
@@ -1698,7 +1747,7 @@ describe('#116 R3: la píldora muestra avatar y nombre', () => {
     const name = elementChild(screen.getByTestId('map-pet-pill'), 1);
     expect(name.props.testID).toBe('map-pet-pill-name');
     expect(name).toHaveTextContent('Luna');
-    expect(name.props.className).toBe('shrink text-xs font-bold text-foreground');
+    expect(name.props.className).toBe('shrink text-15 font-extrabold text-foreground');
     expect(name.props.numberOfLines).toBe(1);
   });
 
@@ -1712,13 +1761,13 @@ describe('#116 R4: la píldora muestra el estado del GPS', () => {
   });
 
   it.each([
-    ['online', makeDevice('online'), 'GPS activo', 'bg-success', 'text-accent-strong'],
+    ['online', makeDevice('online'), 'GPS activo', 'bg-accent', 'text-accent-strong'],
     ['offline', makeDevice('offline'), 'Desactualizado', 'bg-warning-strong', 'text-warning-strong'],
     ['unknown', makeDevice('mystery'), 'Sin señal', 'bg-muted', 'text-muted'],
     ['sin collar', null, 'Sin señal', 'bg-muted', 'text-muted'],
     ['detalle pendiente', null, '—', 'bg-muted', 'text-muted'],
     ['detalle con error', null, '—', 'bg-muted', 'text-muted'],
-  ] as const)('%s: rotula su estado con su punto y su tinta', async (scenario, device, label, dotClass, textClass) => {
+  ] as const)('%s: rotula su estado con su punto y su tinta (enmendado por #201 R2)', async (scenario, device, label, dotClass, textClass) => {
     if (scenario === 'detalle pendiente') {
       mockGetPet.mockReturnValue(pending<PetState>());
     } else if (scenario === 'detalle con error') {
@@ -1739,21 +1788,21 @@ describe('#116 R4: la píldora muestra el estado del GPS', () => {
 
     const status = screen.getByTestId('map-pet-pill-status');
     expect(status).toHaveTextContent(label);
-    expect(screen.getByTestId('map-pet-pill-dot').props.className).toBe(`size-2 rounded-full ${dotClass}`);
-    expect(status.props.className).toBe(`text-2xs font-semibold ${textClass}`);
+    expect(screen.getByTestId('map-pet-pill-dot').props.className).toBe(`size-1.75 rounded-full ${dotClass}`);
+    expect(status.props.className).toBe(`text-xs font-bold ${textClass}`);
     expect(screen.getByTestId('map-pet-pill').props.accessibilityLabel).toBe(`Luna, ${label}`);
   });
 
-  it('fija cuatro hijos en orden: avatar, nombre, punto, estado', async () => {
+  it('fija tres hijos en orden: avatar, nombre, grupo del GPS (enmendado por #201 R2)', async () => {
     await renderMap();
     await waitFor(() =>
       expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent('GPS activo'),
     );
 
     const pill = screen.getByTestId('map-pet-pill');
-    expect(pill.children).toHaveLength(4);
-    expect([0, 1, 2, 3].map((index) => elementChild(pill, index).props.testID)).toEqual([
-      'map-pet-pill-avatar', 'map-pet-pill-name', 'map-pet-pill-dot', 'map-pet-pill-status',
+    expect(pill.children).toHaveLength(3);
+    expect([0, 1, 2].map((index) => elementChild(pill, index).props.testID)).toEqual([
+      'map-pet-pill-avatar', 'map-pet-pill-name', 'map-pet-pill-gps',
     ]);
   });
 
@@ -1777,20 +1826,20 @@ describe('#116 R5: la batería sustituye al tile de conexión', () => {
     mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
   });
 
-  it('monta el tile de batería con valor y rótulo en ese orden', async () => {
+  it('monta el tile de batería con rótulo y valor en ese orden (enmendado por #201 R5)', async () => {
     await renderMap();
     await waitFor(() => expect(screen.getByTestId('stat-battery')).toBeVisible());
 
     let tile: TestInstance | null = screen.getByTestId('stat-battery');
-    while (tile && tile.props.className !== 'flex-1 items-center rounded-xl bg-default p-3') {
+    while (tile && tile.props.className !== 'flex-1 gap-0.5 rounded-14 bg-default px-3 py-2.5') {
       tile = tile.parent;
     }
     if (!tile) throw new Error('La batería no cuelga de su tile');
 
     expect(tile.children.length).toBe(2);
-    expect(elementChild(tile, 0).props.testID).toBe('stat-battery');
-    expect(elementChild(tile, 1)).toHaveTextContent('Batería');
-    expect(elementChild(tile, 1).props.className).toBe('mt-1 text-2xs font-normal text-muted');
+    expect(elementChild(tile, 0)).toHaveTextContent('Batería');
+    expect(elementChild(tile, 0).props.className).toBe('text-11 font-semibold text-muted');
+    expect(elementChild(tile, 1).props.testID).toBe('stat-battery');
   });
 
   it('retira stat-gps del mapa', async () => {
@@ -1808,13 +1857,13 @@ describe('#116 R6: la batería se lee con formato entero y tinta por umbral', ()
   });
 
   it.each([
-    [100, '100%', 'text-base font-black text-accent-strong'],
-    [82, '82%', 'text-base font-black text-accent-strong'],
-    [61, '61%', 'text-base font-black text-accent-strong'],
-    [60, '60%', 'text-base font-black text-warning-strong'],
-    [15, '15%', 'text-base font-black text-warning-strong'],
-    [0, '0%', 'text-base font-black text-warning-strong'],
-  ] as const)('%i se lee %s con %s', async (batteryPct, value, className) => {
+    [100, '100%', 'text-xl font-black text-accent-strong'],
+    [82, '82%', 'text-xl font-black text-accent-strong'],
+    [61, '61%', 'text-xl font-black text-accent-strong'],
+    [60, '60%', 'text-xl font-black text-warning-strong'],
+    [15, '15%', 'text-xl font-black text-warning-strong'],
+    [0, '0%', 'text-xl font-black text-warning-strong'],
+  ] as const)('%i se lee %s con %s (enmendado por #201 R5)', async (batteryPct, value, className) => {
     mockGetPet.mockResolvedValue({
       kind: 'ok',
       pet: makePet({ device: { ...makeDevice('online'), batteryPct } }),
@@ -1833,7 +1882,7 @@ describe('#116 R7: la batería cae al guion y solo la lee el detalle', () => {
     mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
   });
 
-  it('muestra el guion mientras el detalle está pendiente', async () => {
+  it('muestra el guion mientras el detalle está pendiente (enmendado por #201 R6)', async () => {
     mockGetPet.mockReturnValue(pending<PetState>());
 
     await renderMap();
@@ -1841,20 +1890,20 @@ describe('#116 R7: la batería cae al guion y solo la lee el detalle', () => {
 
     const battery = screen.getByTestId('stat-battery');
     expect(battery).toHaveTextContent('—');
-    expect(battery.props.className).toBe('text-base font-black text-muted');
+    expect(battery.props.className).toBe('text-xl font-black text-muted');
   });
 
-  it('muestra el guion cuando el detalle falla', async () => {
+  it('muestra el guion cuando el detalle falla (enmendado por #201 R6)', async () => {
     mockGetPet.mockResolvedValue({ kind: 'error' });
 
     await renderMap();
     await waitFor(() => expect(screen.getByTestId('stat-speed')).toBeVisible());
     await waitFor(() => expect(screen.getByTestId('stat-battery')).toHaveTextContent('—'));
 
-    expect(screen.getByTestId('stat-battery').props.className).toBe('text-base font-black text-muted');
+    expect(screen.getByTestId('stat-battery').props.className).toBe('text-xl font-black text-muted');
   });
 
-  it('muestra el guion sin collar', async () => {
+  it('muestra el guion sin collar (enmendado por #201 R6)', async () => {
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ device: null }) });
 
     await renderMap();
@@ -1862,10 +1911,10 @@ describe('#116 R7: la batería cae al guion y solo la lee el detalle', () => {
 
     const battery = screen.getByTestId('stat-battery');
     expect(battery).toHaveTextContent('—');
-    expect(battery.props.className).toBe('text-base font-black text-muted');
+    expect(battery.props.className).toBe('text-xl font-black text-muted');
   });
 
-  it('ignora la batería de la última posición cuando el collar no la trae', async () => {
+  it('ignora la batería de la última posición cuando el collar no la trae (enmendado por #201 R6)', async () => {
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ device: makeDevice('online') }) });
     mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition({ battery: 82 }) });
 
@@ -1874,10 +1923,10 @@ describe('#116 R7: la batería cae al guion y solo la lee el detalle', () => {
 
     const battery = screen.getByTestId('stat-battery');
     expect(battery).toHaveTextContent('—');
-    expect(battery.props.className).toBe('text-base font-black text-muted');
+    expect(battery.props.className).toBe('text-xl font-black text-muted');
   });
 
-  it('lee la batería del detalle y no de la lista', async () => {
+  it('lee la batería del detalle y no de la lista (enmendado por #201 R5)', async () => {
     mockListPets.mockResolvedValue({
       kind: 'ok',
       pets: [makePet({ device: { ...makeDevice('online'), batteryPct: 10 } })],
@@ -1890,10 +1939,10 @@ describe('#116 R7: la batería cae al guion y solo la lee el detalle', () => {
     await renderMap();
     await waitFor(() => expect(screen.getByTestId('stat-battery')).toHaveTextContent('82%'));
 
-    expect(screen.getByTestId('stat-battery').props.className).toBe('text-base font-black text-accent-strong');
+    expect(screen.getByTestId('stat-battery').props.className).toBe('text-xl font-black text-accent-strong');
   });
 
-  it('repinta la batería con el poll de 15 segundos', async () => {
+  it('repinta la batería con el poll de 15 segundos (enmendado por #201 R5)', async () => {
     jest.useFakeTimers({ doNotFake: ['requestAnimationFrame'] });
     mockGetPet
       .mockResolvedValueOnce({
@@ -1921,7 +1970,7 @@ describe('#116 R7: la batería cae al guion y solo la lee el detalle', () => {
       });
       await waitFor(() => expect(screen.getByTestId('stat-battery')).toHaveTextContent('40%'));
 
-      expect(screen.getByTestId('stat-battery').props.className).toBe('text-base font-black text-warning-strong');
+      expect(screen.getByTestId('stat-battery').props.className).toBe('text-xl font-black text-warning-strong');
     } finally {
       mockFocusCleanup?.();
       jest.useRealTimers();
@@ -1930,19 +1979,24 @@ describe('#116 R7: la batería cae al guion y solo la lee el detalle', () => {
 });
 
 describe('#116 R8: el mapa no estrena animación', () => {
-  it('no importa Reanimated ni anima el punto', () => {
-    const source = readFileSync(
-      join(process.cwd(), 'src', 'screens', 'map', 'index.tsx'),
-      'utf8',
-    );
-    expect(source).not.toContain('react-native-reanimated');
-    expect(source).not.toMatch(/\bAnimated\b/);
+  it('el punto del GPS no anima (enmendado por #201 R1)', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+
+    await renderMap();
+
+    const dot = await screen.findByTestId('map-pet-pill-dot');
+    expect(dot.type).toBe('View');
+    expect(dot.props.entering).toBeUndefined();
   });
 });
 
 const mockRouter = jest.mocked(router);
 
 describe('#155 R4: Mapa sin mascotas presenta a Pingo', () => {
+  beforeEach(() => {
+    mockUseReducedMotion.mockReturnValue(true); // #201 R12/R13: el héroe entra con opacidad 0
+  });
 
   it('pinta la pose, el título y la frase de Pingo', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
@@ -1956,12 +2010,12 @@ describe('#155 R4: Mapa sin mascotas presenta a Pingo', () => {
     expect(within(screen.getByTestId('map-no-pets-action')).getByText('Añadir mascota')).toBeVisible();
   });
 
-  it('queda en el sitio del vacío que sustituye', async () => {
+  it('queda en el sitio del vacío que sustituye (enmendado por #201 R12)', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
     await renderMap();
     await screen.findByTestId('map-no-pets-pose');
     const slot = screen.getByTestId('map-no-pets');
-    expect(slot.parent?.props.className).toBe('flex-1 items-center justify-center p-6 bg-background');
+    expect(slot.parent?.props.className).toBe('flex-1 items-center justify-center bg-background px-6 pt-15 pb-30');
     expect(slot.parent?.parent?.props.testID).toBe('screen-map');
     expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['map-no-pets']);
   });
@@ -1978,26 +2032,26 @@ describe('#155 R4: Mapa sin mascotas presenta a Pingo', () => {
 
 
 describe('#159 R2: Mapa sin seguimiento presenta a Pingo', () => {
-  it('pinta la pose del collar, el título y la frase de Pingo', async () => {
+  it('pinta la pose de Pingo, el título y la frase (enmendado por #201 R13)', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
     mockGetLastPosition.mockResolvedValue({ kind: 'no-tracking' });
     await renderMap();
     const pose = await screen.findByTestId('map-no-tracking-pose');
     expect(pose.props.source).toEqual([
-      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-collar\.webp$/) }),
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
     ]);
     expect(screen.getByTestId('map-no-tracking-title')).toHaveTextContent('Sin ubicación en vivo');
     expect(screen.getByTestId('map-no-tracking-body')).toHaveTextContent('Cuando tu mascota tenga un collar con plan activo, te muestro dónde está.');
   });
 
-  it('queda en el sitio del texto que sustituye y sin mapa debajo', async () => {
+  it('queda en el sitio del texto que sustituye y sin mapa debajo (enmendado por #201 R13)', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
     mockGetLastPosition.mockResolvedValue({ kind: 'no-tracking' });
     await renderMap();
     await screen.findByTestId('map-no-tracking-pose');
     const slot = screen.getByTestId('map-no-tracking');
-    expect(slot.props.className).toBe('items-center gap-3 py-8');
-    expect(slot.parent?.props.className).toBe('flex-1 items-center justify-center p-6 bg-background');
+    expect(slot.props.className).toBe('w-full items-center gap-3.5');
+    expect(slot.parent?.props.className).toBe('flex-1 items-center justify-center bg-background px-6 pt-15 pb-30');
     expect(slot.parent?.parent?.props.testID).toBe('screen-map');
     expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['map-no-tracking']);
     expect(screen.queryByTestId('map-view')).toBeNull();
@@ -2005,6 +2059,10 @@ describe('#159 R2: Mapa sin seguimiento presenta a Pingo', () => {
 });
 
 describe('#159 R3: el dueño sin collar puede ir a emparejar', () => {
+  beforeEach(() => {
+    mockUseReducedMotion.mockReturnValue(true); // #201 R12/R13: el héroe entra con opacidad 0
+  });
+
   it('pinta Vincular collar al dueño de una mascota sin collar', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
@@ -2158,4 +2216,554 @@ describe('#159 R4: nadie más ve el botón de emparejar', () => {
       expect(screen.queryByTestId('map-no-tracking-action')).toBeNull();
     },
   );
+});
+
+describe('#201 R1: la pila de stats sube al entrar', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+  });
+
+  it('#201 R1: map-stats sube 14 desde transparente', async () => {
+    await renderMap();
+
+    const stats = await screen.findByTestId('map-stats');
+    expect(stats.props.className).toBe('gap-2.5');
+    expect(typeof stats.props.entering).toBe('function');
+    expect(stats.props.entering({}).initialValues).toEqual({
+      opacity: 0,
+      transform: [{ translateY: 14 }],
+    });
+  });
+
+  it('#201 R1: con movimiento reducido map-stats no anima la entrada', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+
+    await renderMap();
+
+    const stats = await screen.findByTestId('map-stats');
+    expect(stats.props.entering).toBeUndefined();
+  });
+});
+
+describe('#201 R2: la píldora es de cristal', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+  });
+
+  it('#201 R2: la píldora lleva la sombra de tarjeta de dos capas', async () => {
+    await renderMap();
+
+    const pill = await screen.findByTestId('map-pet-pill');
+    expect(pill.props.style?.boxShadow).toHaveLength(2);
+    expect(pill.props.style?.boxShadow).toMatchObject([
+      { offsetY: 1, blurRadius: 2 },
+      { offsetY: 8, blurRadius: 24 },
+    ]);
+  });
+
+  it('#201 R2: el punto y el estado van juntos en map-pet-pill-gps', async () => {
+    await renderMap();
+
+    const gps = await screen.findByTestId('map-pet-pill-gps');
+    expect(gps.props.className).toBe('flex-row items-center gap-1.25');
+    expect(gps.children).toHaveLength(2);
+    expect([0, 1].map((index) => elementChild(gps, index).props.testID)).toEqual([
+      'map-pet-pill-dot', 'map-pet-pill-status',
+    ]);
+  });
+});
+
+describe('#201 R3 (#151): la píldora nombra y pinta la mascota de la lista', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({
+      kind: 'ok',
+      pets: [makePet({ name: 'Luna' })],
+    });
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ name: 'Rocky', device: makeDevice('online') }),
+    });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+  });
+
+  const withoutTestId = (node: TestInstance) =>
+    JSON.stringify(node.toJSON(), (key, value: unknown) =>
+      key === 'testID' ? undefined : value,
+    );
+
+  it('#201 R3 (#151): la píldora sigue el nombre de la lista aunque el detalle diga otro', async () => {
+    await renderMap();
+    await waitFor(() =>
+      expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent('GPS activo'),
+    );
+
+    expect(screen.getByTestId('map-pet-pill-name')).toHaveTextContent('Luna');
+    expect(screen.getByTestId('map-pet-pill').props.accessibilityLabel).toBe('Luna, GPS activo');
+  });
+
+  it('#201 R3 (#151): la cara de la píldora es la de la lista', async () => {
+    await renderMap();
+    await waitFor(() =>
+      expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent('GPS activo'),
+    );
+    const pillFace = withoutTestId(screen.getByTestId('map-pet-pill-avatar'));
+
+    const luna = await renderWithProviders(<PetAvatar size={28} name="Luna" photoUrl={null} />);
+    const lunaFace = withoutTestId(luna.getByTestId('pet-avatar'));
+    const rocky = await renderWithProviders(<PetAvatar size={28} name="Rocky" photoUrl={null} />);
+    const rockyFace = withoutTestId(rocky.getByTestId('pet-avatar'));
+
+    expect(pillFace).toBe(lunaFace);
+    expect(pillFace).not.toBe(rockyFace);
+  });
+
+  it('#201 R3 (#151): la sonda distingue las dos caras', async () => {
+    const luna = await renderWithProviders(<PetAvatar size={28} name="Luna" photoUrl={null} />);
+    const lunaFace = withoutTestId(luna.getByTestId('pet-avatar'));
+    const rocky = await renderWithProviders(<PetAvatar size={28} name="Rocky" photoUrl={null} />);
+    const rockyFace = withoutTestId(rocky.getByTestId('pet-avatar'));
+
+    expect(lunaFace).not.toBe(rockyFace);
+  });
+});
+
+describe('#201 R4: la tarjeta de stats flota sin borde', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+  });
+
+  it('#201 R4: la tarjeta de stats es un View sin borde con sombra flotante', async () => {
+    await renderMap();
+
+    const card = await screen.findByTestId('map-stats-card');
+    expect(card.props.className).toBe('gap-2.5 rounded-24 bg-surface p-3');
+    expect(card.props.className).not.toContain('border');
+    expect(card.props.style?.boxShadow).toHaveLength(1);
+    expect(card.props.style?.boxShadow).toMatchObject([{ offsetY: 12, blurRadius: 32 }]);
+  });
+
+  it('#201 R4: map-stats tiene dos hijos y la tarjeta agrupa rejilla y botón', async () => {
+    await renderMap();
+
+    const stats = await screen.findByTestId('map-stats');
+    expect(stats.children).toHaveLength(2);
+    const card = elementChild(stats, 1);
+    expect(card.props.testID).toBe('map-stats-card');
+    expect(card.children).toHaveLength(2);
+    expect(elementChild(card, 0).props.className).toBe('gap-2');
+    expect(elementChild(card, 1).props.testID).toBe('lost-mode-button');
+  });
+});
+
+describe('#201 R5: los tiles llevan el rótulo arriba y la tinta del canvas', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition({ staleSeconds: 15 }),
+    });
+    mockListPositions.mockResolvedValue({
+      kind: 'ok',
+      items: [makeStoredPosition({ speedKmh: 12.34 })],
+      nextCursor: null,
+    });
+    mockGetDayRoute.mockResolvedValue({
+      kind: 'ok',
+      date: '2026-08-21',
+      trips: [makeTrip({ distanceM: 2000 })],
+    });
+  });
+
+  it.each([
+    ['stat-speed', 'Velocidad', 'text-xl font-black text-accent-strong'],
+    ['stat-distance', 'Distancia', 'text-xl font-black text-foreground'],
+    ['stat-updated', 'Actualizado', 'text-base font-bold text-muted'],
+  ] as const)('#201 R5: cada valor con dato lleva la tinta del canvas: %s', async (testID, label, className) => {
+    await renderMap();
+
+    const value = await screen.findByTestId(testID);
+    await waitFor(() => expect(screen.getByTestId(testID)).not.toHaveTextContent('—'));
+
+    expect(value.props.className).toBe(className);
+    const tile = value.parent;
+    if (!tile) throw new Error('El valor no cuelga de su tile');
+    expect(tile.props.className).toBe('flex-1 gap-0.5 rounded-14 bg-default px-3 py-2.5');
+    expect(tile.children).toHaveLength(2);
+    expect(elementChild(tile, 0)).toHaveTextContent(label);
+    expect(elementChild(tile, 0).props.className).toBe('text-11 font-semibold text-muted');
+    expect(elementChild(tile, 1).props.testID).toBe(testID);
+    expect(elementChild(tile, 1).props.numberOfLines).toBe(1);
+  });
+});
+
+describe('#201 R6: el guion se lee apagado', () => {
+  const DASH_INK = 'text-xl font-black text-muted';
+
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+    mockListPositions.mockResolvedValue({
+      kind: 'ok',
+      items: [makeStoredPosition({ speedKmh: 12.34 })],
+      nextCursor: null,
+    });
+    mockGetDayRoute.mockResolvedValue({
+      kind: 'ok',
+      date: '2026-08-21',
+      trips: [makeTrip({ distanceM: 2000 })],
+    });
+  });
+
+  it('#201 R6: velocidad sin posición se apaga', async () => {
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: null });
+    mockListPositions.mockResolvedValue({ kind: 'ok', items: [], nextCursor: null });
+
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByTestId('stat-speed')).toHaveTextContent('—'));
+    expect(screen.getByTestId('stat-speed').props.className).toBe(DASH_INK);
+  });
+
+  it('#201 R6: velocidad sin dato se apaga', async () => {
+    mockListPositions.mockResolvedValue({
+      kind: 'ok',
+      items: [makeStoredPosition({ speedKmh: 8 }), makeStoredPosition({ speedKmh: null })],
+      nextCursor: null,
+    });
+
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByTestId('stat-updated')).toHaveTextContent('Justo ahora'));
+    expect(screen.getByTestId('stat-speed')).toHaveTextContent('—');
+    expect(screen.getByTestId('stat-speed').props.className).toBe(DASH_INK);
+  });
+
+  it('#201 R6: distancia sin ruta se apaga', async () => {
+    mockGetDayRoute.mockResolvedValue({ kind: 'error' });
+
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByTestId('stat-distance')).toHaveTextContent('—'));
+    expect(screen.getByTestId('stat-distance').props.className).toBe(DASH_INK);
+  });
+
+  it('#201 R6: actualizado sin posición se apaga', async () => {
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: null });
+
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByTestId('stat-updated')).toHaveTextContent('—'));
+    expect(screen.getByTestId('stat-updated').props.className).toBe(DASH_INK);
+  });
+});
+
+describe('#201 R7: el botón de modo perdido es rosa con icono', () => {
+  const ROSE_LABEL = / text-base font-extrabold text-category-rose-strong$/;
+
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+  });
+
+  it('#201 R7: el botón es rosa, sin labio y con el triángulo delante', async () => {
+    await renderMap();
+
+    const button = await screen.findByTestId('lost-mode-button');
+    expect(button.props.className).toMatch(/ h-12\.5 gap-2 rounded-14 bg-category-rose$/);
+    expect(JSON.stringify(button.props.style ?? null)).not.toContain('boxShadow');
+    const icon = within(button).getByTestId('lost-mode-icon');
+    expect(icon.props).toMatchObject({ size: 18, strokeWidth: 2.2, color: '#D80B34' });
+    const tree = JSON.stringify(screen.toJSON());
+    expect(tree.indexOf('"lost-mode-button"')).toBeLessThan(tree.indexOf('"lost-mode-icon"'));
+    expect(tree.indexOf('"lost-mode-icon"')).toBeLessThan(tree.indexOf('Activar modo perdido'));
+    expect(screen.getByText('Activar modo perdido').props.className).toMatch(ROSE_LABEL);
+  });
+
+  it('#201 R7: el rótulo de desactivar lleva la misma tinta', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ lostMode: true })] });
+
+    await renderMap();
+
+    const label = await screen.findByText('Desactivar modo perdido');
+    expect(label.props.className).toMatch(ROSE_LABEL);
+  });
+});
+
+describe('#201 R8: el error de modo perdido vive en la tarjeta', () => {
+  it('#201 R8: el error de modo perdido es el último hijo de la tarjeta y se anuncia', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+    mockSetLostMode.mockResolvedValueOnce({ kind: 'forbidden' });
+
+    await renderMap();
+    await fireEvent.press(await screen.findByTestId('lost-mode-button'));
+
+    const error = await screen.findByTestId('lost-mode-error');
+    const card = screen.getByTestId('map-stats-card');
+    expect(card.children).toHaveLength(3);
+    expect(elementChild(card, 0).props.className).toBe('gap-2');
+    expect(elementChild(card, 1).props.testID).toBe('lost-mode-button');
+    expect(elementChild(card, 2).props.testID).toBe('lost-mode-error');
+    expect(error.props.accessibilityRole).toBe('alert');
+    expect(error.props.className).toBe('text-center text-xs font-normal text-danger');
+  });
+});
+
+describe('#201 R9: el aviso sin ubicación lleva icono', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: null });
+  });
+
+  it('#201 R9: el aviso lleva el icono de ubicación delante del texto', async () => {
+    await renderMap();
+
+    const overlay = await screen.findByTestId('map-empty-overlay');
+    expect(overlay.props.className).toMatch(
+      / flex-row items-center justify-center gap-2 px-4 py-3\.5$/,
+    );
+    expect(overlay.props.className).not.toMatch(/(^| )p-3( |$)/);
+    expect(overlay.props.style).toEqual(
+      expect.objectContaining({ position: 'absolute', top: 52, left: 16, right: 16 }),
+    );
+    expect(overlay.children).toHaveLength(2);
+    const icon = elementChild(overlay, 0);
+    const text = elementChild(overlay, 1);
+    expect(icon.props.testID).toBe('map-empty-icon');
+    expect(icon.props).toMatchObject({ size: 18, strokeWidth: 2.2, color: '#667085' });
+    expect(text.props.testID).toBe('map-empty');
+    expect(text.props.className).toBe('text-sm font-semibold text-muted');
+    expect(text).toHaveTextContent('Sin datos de ubicación todavía');
+  });
+});
+
+describe('#201 R10: la carga dibuja el esqueleto de la pila', () => {
+  beforeEach(() => {
+    mockListPets.mockReturnValue(pending<PetsState>());
+  });
+
+  function descendants(node: TestInstance): TestInstance[] {
+    return [
+      node,
+      ...node.children.flatMap((child) => (typeof child === 'string' ? [] : descendants(child))),
+    ];
+  }
+
+  it('#201 R10: la carga se anuncia ocupada sobre bg-default', async () => {
+    await renderMap();
+
+    const loading = screen.getByTestId('map-loading');
+    expect(loading.props.className).toBe('flex-1 bg-default');
+    expect(loading.props.accessibilityState).toEqual({ busy: true });
+    expect(loading.children).toHaveLength(1);
+    expect(elementChild(loading, 0).props.testID).toBe('map-loading-stats');
+  });
+
+  it('#201 R10: la carga dibuja píldora y tarjeta con sus recetas', async () => {
+    await renderMap();
+
+    const stats = screen.getByTestId('map-loading-stats');
+    expect(stats.props.className).toBe('gap-2.5');
+    expect(stats.props.style).toMatchObject({
+      position: 'absolute',
+      left: 16,
+      right: 16,
+      bottom: 120,
+    });
+    expect(stats.children).toHaveLength(2);
+    expect(elementChild(stats, 0).props.testID).toBe('map-loading-pill');
+    expect(elementChild(stats, 1).props.testID).toBe('map-loading-card');
+
+    const pill = screen.getByTestId('map-loading-pill');
+    expect(pill.props.className).toBe(
+      'flex-row items-center gap-2 self-start rounded-full border border-border bg-surface py-1.5 pl-1.5 pr-3.5',
+    );
+    expect(pill.props.style?.boxShadow).toHaveLength(2);
+    expect(pill.children).toHaveLength(2);
+
+    const card = screen.getByTestId('map-loading-card');
+    expect(card.props.className).toBe('gap-2.5 rounded-24 bg-surface p-3');
+    expect(card.props.style?.boxShadow).toHaveLength(1);
+    expect(card.children).toHaveLength(2);
+    const grid = elementChild(card, 0);
+    expect(grid.props.className).toBe('gap-2');
+    expect(grid.children).toHaveLength(2);
+    for (const row of grid.children) {
+      if (typeof row === 'string') throw new Error('Expected an element child');
+      expect(row.props.className).toBe('flex-row gap-2');
+      expect(row.children).toHaveLength(2);
+      for (const tile of row.children) {
+        if (typeof tile === 'string') throw new Error('Expected an element child');
+        expect(tile.props.className).toBe('flex-1 gap-1.5 rounded-14 bg-default px-3 py-2.5');
+        expect(tile.children).toHaveLength(2);
+      }
+    }
+    const actionBlock = elementChild(elementChild(card, 1), 0);
+    expect(actionBlock.props.className).toMatch(/ h-12\.5 rounded-14 bg-default$/);
+  });
+
+  it('#201 R10: los once bloques laten con pulse', async () => {
+    await renderMap();
+
+    const skeletons = descendants(screen.getByTestId('map-loading')).filter((node) =>
+      String(node.props.className ?? '').startsWith('skeleton__root '),
+    );
+    expect(skeletons).toHaveLength(11);
+    for (const node of skeletons) {
+      expect(node.parent?.props.className).toBeUndefined();
+    }
+  });
+});
+
+describe('#201 R11: Pingo en las dos ramas de error', () => {
+  const ERROR_IDS = ['map-error', 'map-last-error'];
+
+  beforeEach(() => {
+    mockUseReducedMotion.mockReturnValue(true); // #201 R11: el héroe entra con opacidad 0
+  });
+
+  const arrange = (id: string) => {
+    if (id === 'map-error') {
+      mockListPets.mockResolvedValue({ kind: 'error' });
+      return;
+    }
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'error' });
+  };
+
+  it.each(ERROR_IDS)('#201 R11: %s pinta a Pingo con badge rosa y Reintentar', async (id) => {
+    arrange(id);
+
+    await renderMap();
+
+    const pose = await screen.findByTestId(`${id}-pose`);
+    expect(pose.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
+    ]);
+    expect(screen.getByTestId(`${id}-title`)).toHaveTextContent('Algo salió mal');
+    expect(screen.queryByTestId(`${id}-body`)).toBeNull();
+    expect(within(screen.getByTestId(`${id}-action`)).getByText('Reintentar')).toBeVisible();
+    expect(screen.getByTestId(`${id}-action-icon`).props).toMatchObject({
+      size: 20,
+      strokeWidth: 2.6,
+      color: '#FFFFFF',
+    });
+    const badge = screen.getByTestId(`${id}-badge`);
+    expect(badge.props.className).toBe(
+      'absolute bottom-8.5 right-9 size-14 items-center justify-center rounded-full border-4 border-background bg-category-rose',
+    );
+    expect(within(badge).getByTestId('icon-alert-circle').props).toMatchObject({
+      size: 26,
+      strokeWidth: 2.2,
+      color: '#D92D20',
+    });
+  });
+
+  it.each(ERROR_IDS)('#201 R11: %s centra por encima de la barra', async (id) => {
+    arrange(id);
+
+    await renderMap();
+
+    const root = await screen.findByTestId(id);
+    expect(root.parent?.props.className).toBe(
+      'flex-1 items-center justify-center bg-background px-6 pt-15 pb-30',
+    );
+    expect(
+      root.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type))),
+    ).toEqual([id]);
+  });
+});
+
+describe('#201 R12: Pingo sin mascotas', () => {
+  it('#201 R12: sin mascotas usa el escenario hero con el «+» de trazo 2.8', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+
+    await renderMap();
+
+    await screen.findByTestId('map-no-pets-stage');
+    expect(screen.getByTestId('map-no-pets-action-icon').props).toMatchObject({
+      size: 20,
+      strokeWidth: 2.8,
+    });
+  });
+});
+
+describe('#201 R13: Pingo sin rastreo', () => {
+  const arrangeNoTracking = () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+    mockGetLastPosition.mockResolvedValue({ kind: 'no-tracking' });
+  };
+
+  it('#201 R13: sin rastreo pinta a Pingo con el badge del collar', async () => {
+    arrangeNoTracking();
+
+    await renderMap();
+
+    const pose = await screen.findByTestId('map-no-tracking-pose');
+    expect(pose.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
+    ]);
+    const badge = screen.getByTestId('map-no-tracking-badge');
+    expect(badge.props.className).toBe(
+      'absolute bottom-10 right-7.5 size-13 items-center justify-center rounded-16 bg-accent',
+    );
+    expect(StyleSheet.flatten(badge.props.style).boxShadow).toEqual([
+      { offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: '#0E5E3C' },
+    ]);
+    const collar = within(badge).getByTestId('map-no-tracking-collar');
+    expect(collar.props.strokeWidth).toBe(2);
+    const shapes = elementChild(collar, 0).children.map((child) => (typeof child === 'string' ? child : child.type));
+    expect(shapes).toEqual(['RNSVGEllipse', 'RNSVGPath', 'RNSVGCircle']);
+  });
+
+  it('#201 R13: el dueño sin collar ve el icono de enlace', async () => {
+    arrangeNoTracking();
+
+    await renderMap();
+
+    const icon = await screen.findByTestId('map-no-tracking-action-icon');
+    expect(icon.props.strokeWidth).toBe(2.4);
+  });
+
+  it('#201 R13: sin botón no hay icono de enlace', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: 'family' })] });
+    const detailPromise = Promise.resolve<PetState>({ kind: 'ok', pet: makePet({ myRole: 'family' }) });
+    mockGetPet.mockReturnValue(detailPromise);
+    mockGetLastPosition.mockReturnValue(detailPromise.then((): LastPositionState => ({ kind: 'no-tracking' })));
+
+    await renderMap();
+
+    await screen.findByTestId('map-no-tracking-title');
+    expect(screen.queryByTestId('map-no-tracking-action')).toBeNull();
+    expect(screen.queryByTestId('map-no-tracking-action-icon')).toBeNull();
+  });
+});
+
+describe('#201 R15: la ruta del día se dibuja con trazo 5', () => {
+  it('#201 R15: Mapa pide la ruta de 5', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition(),
+    });
+    mockGetDayRoute.mockResolvedValue({
+      kind: 'ok',
+      date: '2026-08-21',
+      trips: [makeTrip()],
+    });
+
+    await renderMap();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('map-view').props.polylines).toHaveLength(1),
+    );
+    for (const polyline of screen.getByTestId('map-view').props
+      .polylines as { width?: number }[]) {
+      expect(polyline.width).toBe(5);
+    }
+  });
 });

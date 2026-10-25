@@ -238,3 +238,43 @@ describe('#146 R3: PetMap pinta círculos, acepta zoom y emite el toque', () => 
     expect(onPress).not.toHaveBeenCalled();
   });
 });
+
+describe('#201 R15: PetMap acepta el ancho del trazo de la ruta', () => {
+  const center = { latitude: 19.4, longitude: -99.1 };
+  const polylines = [
+    {
+      id: 'trip-0',
+      coordinates: [
+        { latitude: 19.4326, longitude: -99.1332 },
+        { latitude: 19.433, longitude: -99.1328 },
+      ],
+    },
+    {
+      id: 'trip-1',
+      coordinates: [
+        { latitude: 19.44, longitude: -99.12 },
+        { latitude: 19.45, longitude: -99.11 },
+      ],
+    },
+  ];
+  const mount = async (extra: Partial<PetMapProps> = {}) => {
+    await render(<PetMap center={center} marker={null} polylines={polylines} colorScheme="light" {...extra} />);
+    return screen.getByTestId('map-view').props;
+  };
+
+  it('#201 R15: con polylineWidth cada polilínea lleva ese ancho', async () => {
+    const props = await mount({ polylineWidth: 5 });
+    expect(props.polylines).toHaveLength(2);
+    for (const polyline of props.polylines as { width?: number }[]) {
+      expect(polyline.width).toBe(5);
+    }
+  });
+
+  it('#201 R15: sin polylineWidth las polilíneas no llevan ancho', async () => {
+    const props = await mount();
+    expect(props.polylines).toHaveLength(2);
+    for (const polyline of props.polylines as object[]) {
+      expect(polyline).not.toHaveProperty('width');
+    }
+  });
+});
