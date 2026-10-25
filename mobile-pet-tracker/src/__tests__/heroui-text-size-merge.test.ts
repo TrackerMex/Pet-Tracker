@@ -120,10 +120,10 @@ describe('#187 R1: ningún componente que fusiona className lleva text-NN', () =
     expect(findings).toEqual([]);
   });
 
-  it('#187 R1: el escáner cubre al menos el universo medido (enmendado por #177 R9) (enmendado por #189 R5, R10, R13) (enmendado por #200 R3, R5, R7, R8, R9) (enmendado por #199 R3) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #199 R19) (enmendado por #196 R1, R5) (enmendado por #205 R3, R4, R8, R13)', () => {
+  it('#187 R1: el escáner cubre al menos el universo medido (enmendado por #177 R9) (enmendado por #189 R5, R10, R13) (enmendado por #200 R3, R5, R7, R8, R9) (enmendado por #199 R3) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #199 R19) (enmendado por #196 R1, R5) (enmendado por #201 R4) (enmendado por #205 R3, R4, R8, R13)', () => {
     expect(tree.filter((file) => file.heroElements > 0).length).toBeGreaterThanOrEqual(28);
     expect(tree.reduce((sum, file) => sum + file.heroElements, 0)).toBeGreaterThanOrEqual(197); // #186 R8: 211 - 12 + 1; #191 R11: controles nativos, -1; #189 R5, R10, R13: -2, +1, -1
-    expect(tree.reduce((sum, file) => sum + file.cardElements, 0)).toBeGreaterThanOrEqual(35 - 1 - 1 - 1 + 1 - 2 - 1 - 1 - 1 - 1); // #188 R18: 42 - 1 (el banner de vinculación deja de ser Card); #200 R3: -1; #200 R5: -1; #200 R7: -1; #200 R8: -1; #200 R9: -2; #199 R3: -1; #199 R14: -1; #199 R18: -1; #199 R19: +1; #196 R1, R5: -2 (la tarjeta hero y el aviso de Perfil dejan de ser Card); #205 R3, R4, R8, R13: -1, -1, -1, -1
+    expect(tree.reduce((sum, file) => sum + file.cardElements, 0)).toBeGreaterThanOrEqual(35 - 1 - 1 - 1 + 1 - 2 - 1 - 1 - 1 - 1 - 1); // #188 R18: 42 - 1 (el banner de vinculación deja de ser Card); #200 R3: -1; #200 R5: -1; #200 R7: -1; #200 R8: -1; #200 R9: -2; #199 R3: -1; #199 R14: -1; #199 R18: -1; #199 R19: +1; #196 R1, R5: -2 (la tarjeta hero y el aviso de Perfil dejan de ser Card); #201 R4: -1; #205 R3, R4, R8, R13: -1, -1, -1, -1
     expect(tree.reduce((sum, file) => sum + file.classNameElements, 0)).toBeGreaterThanOrEqual(163); // #191 R11: controles nativos, -1; #189 R5, R10, R13: -2, 0, -1
   });
 

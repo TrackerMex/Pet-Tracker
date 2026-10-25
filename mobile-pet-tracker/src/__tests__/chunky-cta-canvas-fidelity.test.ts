@@ -79,7 +79,7 @@ const NEUTRAL_ROWS = [
 const primaryIds = CTA_ROWS.map(([, anchor]) => idOf(anchor)).sort();
 const neutralIds = NEUTRAL_ROWS.map(([, anchor]) => idOf(anchor)).sort();
 const ctaFiles = [...new Set(CTA_ROWS.map(([path]) => path))].sort(); // #191 R11
-const consumers = [...ctaFiles, 'screens/reminders/index.tsx', 'screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx', 'screens/food/index.tsx', 'screens/profile/index.tsx'].sort();
+const consumers = [...ctaFiles, 'screens/reminders/index.tsx', 'screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx', 'screens/food/index.tsx', 'screens/profile/index.tsx', 'screens/map/index.tsx'].sort(); // #201 R13
 const neutralInventory = ['${rowId}-ack', 'add-meal-time-button', 'alert-detail-view-map', 'docs-upload-cancel', 'forgot-resend', 'geofence-editor-delete', 'meal-time-edit-${index}', 'pairing-unpair-cancel', 'reminders-delete-cancel', 'secondary.testID', 'welcome-have-account'];
 const radii = {
   'screens/edit-profile/index.tsx': 1, // #194 R6
@@ -97,6 +97,7 @@ const radii = {
   'screens/home/index.tsx': 1,
   'screens/home/weekly-activity-chart.tsx': 1, // #198 R9
   'screens/login/index.tsx': 1,
+  'screens/map/index.tsx': 1, // #201 R13
   'screens/pairing/index.tsx': 4, // #203 R6; #203 R7
   'screens/register/index.tsx': 1,
   'screens/reminders/index.tsx': 5, // #204 R9
@@ -176,23 +177,23 @@ it('#177 R7.1: inventarios de los labios de borde restantes (enmendado por #189 
   expect(inventory(/\bborder-b-6\b/g)).toEqual({});
   expect(count(/border-lip-gray/g)).toBe(10 + 1 + 1); // #189 R13; #203 R7: +1
 });
-it('#177 R7.2: inventarios de las dos recetas de primario', () => {
-  expect(inventory(/rounded-16 bg-accent(?=[\s'"`])/g)).toEqual(Object.fromEntries(ctaFiles.map(path => [path, path === 'screens/add-pet/index.tsx' ? 2 : 1])));
+it('#177 R7.2: inventarios de las dos recetas de primario (enmendado por #201 R13)', () => {
+  expect(inventory(/rounded-16 bg-accent(?=[\s'"`])/g)).toEqual({ ...Object.fromEntries(ctaFiles.map(path => [path, path === 'screens/add-pet/index.tsx' ? 2 : 1])), 'screens/map/index.tsx': 1 }); // #201 R13
   expect(inventory(/rounded-xl bg-accent(?=[\s'"`])/g)).toEqual({ 'screens/reminders/index.tsx': 1 });
 });
-it('#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por #191 R11) (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #198 R9) (enmendado por #203 R6) (enmendado por #203 R7) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #205 R13)', () => {
+it('#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por #191 R11) (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #198 R9) (enmendado por #203 R6) (enmendado por #203 R7) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #201 R13) (enmendado por #205 R13)', () => {
   expect(inventory(/\brounded-16\b/g)).toEqual(radii);
-  expect(count(/\brounded-16\b/g)).toBe(26 + 1 + 1 + 1 + 2 + 2 + 1 + 1 + 1 + 2 + 1 + 1 + 1); // #204 R9 (+1) // #202 R18 (+1) // #200 R9 (+2); #198 R9 (+1); #199 R14 (+1); #203 R6 (+1); #203 R7 (+2); #205 R13 (+1) // #194 R6 // #191 R11 // #189 R7; #189 R13
+  expect(count(/\brounded-16\b/g)).toBe(26 + 1 + 1 + 1 + 2 + 2 + 1 + 1 + 1 + 2 + 1 + 1 + 1 + 1); // #204 R9 (+1) // #202 R18 (+1) // #200 R9 (+2); #198 R9 (+1); #199 R14 (+1); #203 R6 (+1); #203 R7 (+2); #201 R13 (+1); #205 R13 (+1) // #194 R6 // #191 R11 // #189 R7; #189 R13
 });
-it('#177 R7.4: solo la definición y los diecisiete consumidores usan el hook (enmendado por #197 R10) (enmendado por #200 R3) (enmendado por #196 R4)', () => {
+it('#177 R7.4: solo la definición y los dieciocho consumidores usan el hook (enmendado por #197 R10) (enmendado por #200 R3) (enmendado por #196 R4) (enmendado por #201 R13)', () => {
   expect(Object.keys(inventory(/useChunkyLip/g)).sort()).toEqual([...consumers, 'theme/chunky-lip.ts'].sort());
   for (const path of consumers) expect((readSource(path).match(/const chunkyLip = useChunkyLip\(\);/g) ?? []).length).toBe(1);
 });
-it('#177 R7.5: inventario de los tres estilos y el tile (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20) (enmendado por #197 R10) (enmendado por #200 R6) (enmendado por #196 R4, R5)', () => {
-  expect(inventory(/style=\{(?:chunkyLip\.primary|(?:atLimit|name\.trim\(\) === '') \? KEEP_OPACITY : \[chunkyLip\.primary, KEEP_OPACITY\])\}/g)).toEqual(Object.fromEntries([...ctaFiles.map(path => [path, path === 'screens/add-pet/index.tsx' ? 2 : 1]), ['screens/profile/index.tsx', 2]].sort()));
+it('#177 R7.5: inventario de los tres estilos y el tile (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20) (enmendado por #197 R10) (enmendado por #200 R6) (enmendado por #196 R4, R5) (enmendado por #201 R13)', () => {
+  expect(inventory(/style=\{(?:chunkyLip\.primary|(?:atLimit|name\.trim\(\) === '') \? KEEP_OPACITY : \[chunkyLip\.primary, KEEP_OPACITY\])\}/g)).toEqual(Object.fromEntries([...ctaFiles.map(path => [path, path === 'screens/add-pet/index.tsx' ? 2 : 1]), ['screens/profile/index.tsx', 2], ['screens/map/index.tsx', 1]].sort())); // #201 R13
   expect(inventory(/style=\{(?:chunkyLip\.neutral|\[chunkyLip\.neutral, KEEP_OPACITY\])\}/g)).toEqual(Object.fromEntries([...NEUTRAL_ROWS.map(([path]) => [path, 1]), ['screens/meal-schedule/index.tsx', 1]].sort()));
   expect(inventory(/style=\{chunkyLip\.primaryCompact\}/g)).toEqual({ 'screens/food/index.tsx': 1, 'screens/reminders/index.tsx': 1 });
-  expect(inventory(/chunkyLip\.primary\b/g)).toEqual(Object.fromEntries([...ctaFiles.map(path => [path, path === 'screens/forgot/index.tsx' || path === 'screens/add-pet/index.tsx' ? 2 : 1]), ['screens/profile/index.tsx', 2]].sort()));
+  expect(inventory(/chunkyLip\.primary\b/g)).toEqual(Object.fromEntries([...ctaFiles.map(path => [path, path === 'screens/forgot/index.tsx' || path === 'screens/add-pet/index.tsx' ? 2 : 1]), ['screens/profile/index.tsx', 2], ['screens/map/index.tsx', 1]].sort())); // #201 R13
   expect(inventory(/style=\{chunkyLip\.neutralCompact\}/g)).toEqual({ 'screens/alerts/index.tsx': 1, 'screens/meal-schedule/index.tsx': 1 });
   expect(inventory(/chunkyLip\.summary/g)).toEqual({ 'screens/meal-schedule/index.tsx': 1 });
 });
@@ -273,7 +274,7 @@ it('#177 R11.5: la spec de #166 añade el bloque de sustitución', () => {
   for (const literal of ['R2', 'R3', 'reemplaza', 'consistency-classnames.test.ts', 'en su sitio', 'mobile-chunky-cta-canvas-fidelity']) expect(section).toContain(literal);
   expect(section).toMatch(/^- \[[ xX]\] Enmienda #177 aprobada por humano/m);
 });
-it('#177 R12.1/R12.2: los dieciocho ficheros respetan los guards de la carta (enmendado por #197 R10) (enmendado por #200 R3)', () => {
+it('#177 R12.1/R12.2: los diecinueve ficheros respetan los guards de la carta (enmendado por #197 R10) (enmendado por #200 R3) (enmendado por #201 R13)', () => {
   for (const path of [...consumers, 'theme/chunky-lip.ts']) {
     const source = readSource(path);
     expect(source).not.toMatch(/(?:bg|text|border|rounded|h|w|size|p|m|gap)-\[[^\]]+\]/);
@@ -282,7 +283,7 @@ it('#177 R12.1/R12.2: los dieciocho ficheros respetan los guards de la carta (en
   }
   expect('chunky-lip.ts useChunkyLip').not.toContain('shadow');
 });
-it('#177 R12.3: cada comentario de la feature nombra su requisito (enmendado por #197 R10) (enmendado por #200 R3)', () => {
+it('#177 R12.3: cada comentario de la feature nombra su requisito (enmendado por #197 R10) (enmendado por #200 R3) (enmendado por #201 R13)', () => {
   for (const path of [...consumers, 'theme/chunky-lip.ts']) expect(readSource(path)).not.toMatch(/#177(?! R\d)/);
   expect((readSource('screens/welcome/index.tsx').match(/text-accent-strong/g) ?? []).length).toBe(2);
 });

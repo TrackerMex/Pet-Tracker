@@ -2988,7 +2988,7 @@
   {
     "id": 151,
     "name": "mobile-map-pill-name-locks",
-    "status": "pending",
+    "status": "done",
     "priority": "P3",
     "description": "Registrada el 2026-10-05 por decision del humano al cerrar #116. Son las observaciones 2 y 3 del reviewer de #116 (progress/review_mobile-map-gps-pill-battery.md §Sondas de mutacion y §Observaciones), dos zonas ciegas de la pildora del mapa en src/screens/map/index.test.tsx; la produccion es correcta en las dos. (Z1) R3 dice que el PetAvatar de la pildora recibe name, photoUrl y cacheKey de selectedPet, pero la tabla de tests de R3 solo asevera testID, width/height, source y style: con name=\"zz\" la suite queda 94/94 en verde. Si regresa, el blobatar de la pildora deja de coincidir con el del heroe para la misma mascota. (Z2) Las 6 filas de R4 usan Luna en la lista y en el detalle, asi que si el accessibilityLabel de la pildora toma el nombre del detalle en vez de selectedPet.name la suite sigue en verde; el unico it de R3 que separa los nombres (Luna en la lista, Nala en el detalle) no mira la etiqueta. Limites: solo estas dos mutaciones estan medidas; el reviewer no barrio otras props del avatar. Los esperados deben ser literales del test o el xml del avatar del heroe renderizado, nunca blobatar() importado de produccion (candado tautologico). Cero cambio en produccion. Toca el mismo test que #116; cualquier it nuevo mueve el recuento y la spec lo declara.",
     "acceptance_criteria": [
@@ -3488,7 +3488,7 @@
   {
     "id": 201,
     "name": "mobile-canvas-map",
-    "status": "pending",
+    "status": "done",
     "priority": "P1",
     "description": "Registrada el 2026-10-23 por el plan progress/plan_canvas-parity-2026-10-23.md (ola 2). Mapa igual al canvas versión 1792777983-cd94, artboards Mapa, MapaCarga, MapaError, MapaSinMascotas, MapaSinRastreo, MapaSinUbicacion y MapaModoPerdidoError. Cubre C15 de progress/explore_canvas-parity-2026-10-21.md, con props por pantalla en PetMap. NO cubre el ping ni el marcador personalizado, que siguen en #192 (spike en dispositivo). Ficheros probables: screens/map/index.tsx, components/pet-map.tsx y tests. Roza #151: el spec_author decide si la absorbe. Depende de #197. Congelar los artboards en specs/mobile-canvas-map/canvas/. Firma delegada al leader. Registrada sin spec."
   },

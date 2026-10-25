@@ -94,13 +94,13 @@ describe('#62 R1: la escala de radios está declarada y el botón primario tiene
     expect(button).not.toContain('rounded-2xl');
   });
 
-  it('deja todos los botones primarios sólidos en un único radio (enmendado por #177 R10)', () => {
+  it('deja todos los botones primarios sólidos en un único radio (enmendado por #177 R10) (enmendado por #201 R13)', () => {
     const primaryRadius = sourceFiles().flatMap((path) =>
       readFileSync(path, 'utf8').match(/rounded-xl bg-accent(?=[\s'"`])/g) ?? [],
     );
 
     expect(primaryRadius).toHaveLength(1); // #177 R10
-    expect(sourceFiles().flatMap(path => readFileSync(path, 'utf8').match(/rounded-16 bg-accent(?=[\s'"`])/g) ?? [])).toHaveLength(16 + 1 + 1); // #194 R6 // #191 R11
+    expect(sourceFiles().flatMap(path => readFileSync(path, 'utf8').match(/rounded-16 bg-accent(?=[\s'"`])/g) ?? [])).toHaveLength(16 + 1 + 1 + 1); // #194 R6 // #191 R11 // #201 R13
     expect(filesMatching(/rounded-2xl bg-accent(?=[\s'"`])/)).toEqual([]);
   });
 });
@@ -588,6 +588,7 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
       'screens/geofences/index.tsx': 1,
       'screens/home/index.tsx': 1,
       'screens/login/index.tsx': 1,
+      'screens/map/index.tsx': 1, // #201 R13
       'screens/pairing/index.tsx': 1,
       'screens/register/index.tsx': 1,
       'screens/reset-password/index.tsx': 1,
@@ -595,7 +596,7 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
       'screens/welcome/index.tsx': 1,
     };
 
-  it('inventaría los diecisiete primarios con labio, fichero a fichero (enmendado por #177 R10)', () => {
+  it('inventaría los diecisiete primarios con labio, fichero a fichero (enmendado por #177 R10) (enmendado por #201 R13)', () => {
     const inventory = (pattern: RegExp) => Object.fromEntries(
       sourceFiles().flatMap((path) => {
         const count = (readFileSync(path, 'utf8').match(pattern) ?? []).length;

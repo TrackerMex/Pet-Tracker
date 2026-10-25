@@ -160,7 +160,7 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     [join('screens', 'home', 'index.tsx'), 3], // #198 R4
     [join('screens', 'health', 'index.tsx'), 0], // #199 R18
     [join('screens', 'food', 'index.tsx'), 1 + 1 - 1], // #200 R5; #200 R6
-    [join('screens', 'map', 'index.tsx'), 2],
+    [join('screens', 'map', 'index.tsx'), 2 - 1], // #201 R5
     [join('screens', 'profile', 'index.tsx'), 1 + 1 - 1 + 1 + 1], // #173 R5; #173 R6; #173 R8; #173 R11
     [join('screens', 'add-pet', 'index.tsx'), 1],
     [join('components', 'pet-hero-header.tsx'), 1],
@@ -168,11 +168,11 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     [join('screens', 'welcome', 'index.tsx'), 2],
   ];
 
-  it.each(inkSites)('%s pinta con text-accent-strong (%i) (enmendado por #200 R1 y #200 R5 y #200 R6) (enmendado por #199 R4) (enmendado por #199 R18) (enmendado por #198 R4)', (path, sites) => {
+  it.each(inkSites)('%s pinta con text-accent-strong (%i) (enmendado por #200 R1 y #200 R5 y #200 R6) (enmendado por #199 R4) (enmendado por #199 R18) (enmendado por #198 R4) (enmendado por #201 R5)', (path, sites) => {
     expect(readSource(path).match(/text-accent-strong\b/g) ?? []).toHaveLength(sites);
   });
 
-  it('suma las trece ocurrencias que enumera la spec (enmendado por #200 R5 y #200 R6) (enmendado por #199 R4) (enmendado por #199 R18) (enmendado por #198 R4)', () => {
+  it('suma las trece ocurrencias que enumera la spec (enmendado por #200 R5 y #200 R6) (enmendado por #199 R4) (enmendado por #199 R18) (enmendado por #198 R4) (enmendado por #201 R5)', () => {
     expect(inkSites.reduce((total, [path]) => total + (readSource(path).match(/text-accent-strong\b/g) ?? []).length, 0)).toBe(
       inkSites.reduce((total, [, sites]) => total + sites, 0),
     );
@@ -191,6 +191,7 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
         - 1 // #200 R6
         + 1 // #199 R4
         - 1 // #199 R18
+        - 1 // #201 R5
         + 1, // #198 R4: +1 Inicio
     );
   });

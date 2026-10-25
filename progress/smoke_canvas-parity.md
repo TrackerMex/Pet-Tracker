@@ -209,3 +209,32 @@ Pasos en dev build Android (no Expo Go), con tema claro y oscuro:
 8. Con «Quitar animaciones» activado en Android, nada sube (R3, R9, R11).
 
 - [ ] Smoke de #203 recorrido por el humano
+
+## #201 mobile-canvas-map
+
+Spec: `specs/mobile-canvas-map/requirements.md` (§ Cierre del humano, S1–S10). Reviewer APROBADO
+sobre `ba13cc36` (`progress/review_mobile-canvas-map.md`).
+
+Pasos en dev build Android (no Expo Go), en tema claro y repetidos en oscuro:
+
+1. (S1, R1) Al entrar en Mapa, la píldora y la tarjeta suben juntas desde 14 px con fundido. Con
+   «Quitar animaciones» activado, aparecen quietas.
+2. (S2, R2) La píldora se lee sobre el mapa de Google (calles y zona debajo), con sombra, sin
+   rectángulo negro ni transparente. Si no se lee, D1 se reabre.
+3. (S3, R4–R6) La tarjeta no tiene borde y lleva sombra flotante sobre el mapa, con el rótulo arriba
+   y el valor abajo. Los guiones se ven grises.
+4. (S4, R7) El botón de modo perdido es rosa (`#FFF0F3`, en oscuro `#39131A`), con triángulo y
+   texto rosa fuerte, esquinas de 14, sin labio y 50 de alto.
+5. (S5, R8) Sin red, cambiar el modo perdido saca el error dentro de la tarjeta, y TalkBack lo
+   anuncia.
+6. (S6, R9) Con una mascota con collar y sin posiciones, el aviso sale arriba con icono de
+   ubicación.
+7. (S7, R10) Con red lenta, el esqueleto late con el mapa en gris claro. El bloque de valor tiene
+   esquinas de 4.
+8. (S8, R11) Con el backend parado, sale Pingo con el badge rosa, que aparece con pop, y
+   «Reintentar» con icono de recarga. Al pulsarlo con el backend arriba, vuelve el mapa.
+9. (S9, R12, R13) En una cuenta sin mascotas y con una mascota sin collar, Pingo sale centrado por
+   encima de la barra. El badge verde del collar lleva labio.
+10. (S10, R15) La ruta del día se ve más gruesa que antes (5 px).
+
+- [ ] Smoke de #201 recorrido por el humano
