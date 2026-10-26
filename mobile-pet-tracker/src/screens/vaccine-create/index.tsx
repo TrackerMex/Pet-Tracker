@@ -40,6 +40,9 @@ export function VaccineCreateScreen({ petId }: { petId: string }) {
   const [selectedDraft, setSelectedDraft] = useState<string | null>(null);
   const selectedId = selectedDraft ?? entries[0]?.id ?? 'other';
   const [name, setName] = useState('');
+  const [vetName, setVetName] = useState('');
+  const [clinic, setClinic] = useState('');
+  const [notes, setNotes] = useState('');
   const [nameFocused, setNameFocused] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldIssues<'name' | 'appliedAt'>>({});
   const me = useQuery({ queryKey: userKeys.me(), queryFn: () => getMe(baseUrl, token ?? '') });
@@ -124,6 +127,23 @@ export function VaccineCreateScreen({ petId }: { petId: string }) {
           </View>
           <Checkbox testID="vaccine-create-reminder-checkbox" isSelected={remind} onSelectedChange={setRemind} />
         </Pressable>
+        <View className="flex-row gap-2.5">
+          <View className="flex-1 gap-1.5">
+            <Text className="text-sm font-extrabold text-foreground">{t('vaccineCreate.vet')}</Text>
+            <TextInput testID="vaccine-create-vet" value={vetName} onChangeText={setVetName} maxLength={120} placeholder={t('vaccineCreate.optional')} placeholderTextColor={muted}
+              className="h-13 rounded-xl bg-default px-3.5 text-15 font-semibold text-foreground border-2 border-transparent" style={CONTINUOUS_CORNER} />
+          </View>
+          <View className="flex-1 gap-1.5">
+            <Text className="text-sm font-extrabold text-foreground">{t('vaccineCreate.clinic')}</Text>
+            <TextInput testID="vaccine-create-clinic" value={clinic} onChangeText={setClinic} maxLength={120} placeholder={t('vaccineCreate.optional')} placeholderTextColor={muted}
+              className="h-13 rounded-xl bg-default px-3.5 text-15 font-semibold text-foreground border-2 border-transparent" style={CONTINUOUS_CORNER} />
+          </View>
+        </View>
+        <View className="gap-1.5">
+          <Text className="text-sm font-extrabold text-foreground">{t('vaccineCreate.notes')}</Text>
+          <TextInput testID="vaccine-create-notes" value={notes} onChangeText={setNotes} maxLength={2000} multiline textAlignVertical="top" placeholder={t('vaccineCreate.notesPlaceholder')} placeholderTextColor={muted}
+            className="h-16 rounded-xl bg-default px-3.5 text-15 font-semibold text-foreground border-2 border-transparent py-3" style={CONTINUOUS_CORNER} />
+        </View>
       </ScrollView>
       <View testID="vaccine-create-bar" style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: Math.max(insets.bottom, 16), gap: 12 }}>
         <Button testID="vaccine-create-submit" />
