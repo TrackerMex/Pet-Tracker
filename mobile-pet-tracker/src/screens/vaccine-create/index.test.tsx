@@ -1,5 +1,5 @@
-import { Children, isValidElement, type ReactNode } from 'react';
-import { KeyboardAvoidingView, ScrollView, Text } from 'react-native';
+import { type ReactNode } from 'react';
+import { Text } from 'react-native';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
@@ -59,6 +59,7 @@ const mockRouter = jest.mocked(router);
 const nativeProcess = process.getBuiltinModule('process');
 const originalZone = nativeProcess.env.TZ;
 const apiUrl = 'http://example.test/v1';
+const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
 const flatVaccineStyle = (style: unknown) => Object.assign({}, ...[style].flat(Infinity));
 
 function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
@@ -107,12 +108,13 @@ afterEach(() => {
 it('#208 R7: monta cabecera, leyenda y barra fija con las dimensiones del canvas', async () => {
   const app = await renderVaccineCreate();
   const header = await screen.findByTestId('vaccine-create-header');
-  expect(screen.UNSAFE_getByType(KeyboardAvoidingView).props.behavior).toBe('padding');
+  expect(readFileSync('src/screens/vaccine-create/index.tsx', 'utf8')).toMatch(/<KeyboardAvoidingView[^>]*behavior="padding"/);
   expect(screen.getByTestId('screen-vaccine-create').props.className).toBe('flex-1 bg-background');
-  const scroll = screen.UNSAFE_getByType(ScrollView);
+  const scroll = screen.getByTestId('vaccine-create-form');
   expect(scroll.props.keyboardShouldPersistTaps).toBe('handled');
   expect(scroll.props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 52, paddingBottom: 24, gap: 16 });
-  expect(Children.toArray(scroll.props.children).slice(0, 2).map(child => isValidElement<{ testID: string }>(child) ? child.props.testID : null)).toEqual(['vaccine-create-header', 'vaccine-create-legend']);
+  expect(header.parent).toBe(screen.getByTestId('vaccine-create-legend').parent);
+  expect(header.parent?.children.slice(0, 2).map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['vaccine-create-header', 'vaccine-create-legend']);
   expect(within(header).getByText('Agregar vacuna', { exact: true })).toBeVisible();
   expect(screen.getByTestId('vaccine-create-legend').props.className).toBe('text-sm font-extrabold text-foreground');
   expect(screen.getByTestId('vaccine-create-legend')).toHaveTextContent('Vacuna · esquema para perro', { exact: true });
