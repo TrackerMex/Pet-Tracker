@@ -671,4 +671,131 @@ describe('#211 R16: pet members API', () => {
     const familyResponse = await memberList(accepter, pet.id).expect(200);
     expect(familyResponse.body).toEqual(body);
   });
+  function removeMember(actor: TestUser, petId: string, userId: string) {
+    return api()
+      .delete(`/v1/pets/${petId}/members/${userId}`)
+      .set('Authorization', `Bearer ${actor.token}`);
+  }
+  it('#211 R12: el owner quita a un family con 204 y su fila desaparece', async () => {
+    const { owner, pet, accepter, invite } = await inviteFixture();
+    await accept(accepter, invite.code).expect(201);
+    const response = await removeMember(owner, pet.id, accepter.id).expect(204);
+    expect(response.text).toBe('');
+    expect(await memberships(pet.id, accepter.id)).toEqual([]);
+  });
+  it('#211 R12: un family se quita a sí mismo con 204 y su fila desaparece', async () => {
+    const { pet, accepter, invite } = await inviteFixture();
+    await accept(accepter, invite.code).expect(201);
+    const response = await removeMember(accepter, pet.id, accepter.id).expect(
+      204,
+    );
+    expect(response.text).toBe('');
+    expect(await memberships(pet.id, accepter.id)).toEqual([]);
+  });
+  it('#211 R12: el usuario quitado puede volver con una invitación nueva', async () => {
+    const { owner, pet, accepter, invite } = await inviteFixture();
+    await accept(accepter, invite.code).expect(201);
+    await removeMember(owner, pet.id, accepter.id).expect(204);
+    const next = await createInviteViaApi(owner, pet.id);
+    await accept(accepter, next.code).expect(201);
+    const rows = await memberships(pet.id, accepter.id);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].role).toBe('family');
+    expect(rows[0].status).toBe('active');
+  });
+  it.each(['otro family', 'el owner', 'un UUID sin usuario'])(
+    '#211 R13: un family recibe el mismo 403 si el objetivo es %s',
+    async (kind) => {
+      const { owner, pet, accepter, invite, label } = await inviteFixture();
+      await accept(accepter, invite.code).expect(201);
+      let target: string = randomUUID();
+      if (kind === 'el owner') target = owner.id;
+      if (kind === 'otro family') {
+        const other = await seedUser(`other-family-${label}`);
+        await seedMembership(pet.id, other.id, 'family');
+        target = other.id;
+      }
+      const before = await db
+        .select()
+        .from(petUsers)
+        .where(eq(petUsers.petId, pet.id));
+      const response = await removeMember(accepter, pet.id, target);
+      expect(response.status).toBe(403);
+      expect(response.body).toEqual({ statusCode: 403, message: 'Forbidden' });
+      expect(
+        await db.select().from(petUsers).where(eq(petUsers.petId, pet.id)),
+      ).toEqual(before);
+    },
+  );
+  it.each([
+    'no es UUID (owner)',
+    'no es UUID (family)',
+    'es un UUID sin usuario',
+    'es un usuario sin membresía',
+  ])('#211 R14: responde el mismo 404 si el objetivo %s', async (kind) => {
+    const { owner, pet, accepter, invite, label } = await inviteFixture();
+    await accept(accepter, invite.code).expect(201);
+    let actor = owner;
+    let target: string = randomUUID();
+    if (kind.startsWith('no es UUID')) target = 'not-a-uuid';
+    if (kind === 'no es UUID (family)') actor = accepter;
+    if (kind === 'es un usuario sin membresía')
+      target = (await seedUser(`nonmember-${label}`)).id;
+    const response = await removeMember(actor, pet.id, target);
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({ statusCode: 404, message: 'Not Found' });
+  });
+  const ownerNotRemovableBody = {
+    statusCode: 409,
+    code: 'OWNER_NOT_REMOVABLE',
+    message: 'An owner cannot be removed',
+  };
+  it('#211 R15: el owner no puede quitarse a sí mismo', async () => {
+    const { owner, pet } = await fixture();
+    const before = await memberships(pet.id, owner.id);
+    const response = await removeMember(owner, pet.id, owner.id);
+    expect(response.status).toBe(409);
+    expect(response.body).toEqual(ownerNotRemovableBody);
+    expect(await memberships(pet.id, owner.id)).toEqual(before);
+  });
+  it('#211 R15: el owner no puede quitar a otro owner', async () => {
+    const { owner, pet, label } = await fixture();
+    const other = await seedUser(`second-owner-${label}`);
+    await seedMembership(pet.id, other.id, 'owner');
+    const before = await memberships(pet.id, other.id);
+    const response = await removeMember(owner, pet.id, other.id);
+    expect(response.status).toBe(409);
+    expect(response.body).toEqual(ownerNotRemovableBody);
+    expect(await memberships(pet.id, other.id)).toEqual(before);
+  });
+  it('#211 R21: el miembro quitado pierde la mascota, el push y la lista', async () => {
+    const { owner, pet, accepter, invite } = await inviteFixture();
+    await accept(accepter, invite.code).expect(201);
+    const expoToken = `ExponentPushToken[pet-members-removed-${RUN_ID}]`;
+    await api()
+      .post('/v1/me/push-tokens')
+      .set('Authorization', `Bearer ${accepter.token}`)
+      .send({ expoToken, platform: 'android' })
+      .expect(200);
+    const push = app.get<PushTokenRepository>(PUSH_TOKEN_REPOSITORY);
+    expect(await push.findActiveMembersTokens(pet.id)).toContain(expoToken);
+    await removeMember(owner, pet.id, accepter.id).expect(204);
+    const detail = await api()
+      .get(`/v1/pets/${pet.id}`)
+      .set('Authorization', `Bearer ${accepter.token}`)
+      .expect(404);
+    expect(detail.body).toEqual({ statusCode: 404, message: 'Not Found' });
+    const list = await api()
+      .get('/v1/pets')
+      .set('Authorization', `Bearer ${accepter.token}`)
+      .expect(200);
+    expect((list.body as PetProfileBody[]).map((p) => p.id)).not.toContain(
+      pet.id,
+    );
+    expect(await push.findActiveMembersTokens(pet.id)).not.toContain(expoToken);
+    const members = await memberList(owner, pet.id).expect(200);
+    expect(
+      (members.body as MemberBody[]).map((member) => member.userId),
+    ).not.toContain(accepter.id);
+  });
 });
