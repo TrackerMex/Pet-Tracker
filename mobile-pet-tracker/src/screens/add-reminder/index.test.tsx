@@ -38,6 +38,9 @@ jest.mock('reicon-react-native', () => {
   return {
     ...actual,
     Bell: mockIcon('add-reminder-icon-bell'),
+    Repeat: mockIcon('add-reminder-icon-repeat'),
+    Minus: mockIcon('add-reminder-icon-minus'),
+    Plus: mockIcon('add-reminder-icon-plus'),
     Calendar: mockIcon('add-reminder-icon-calendar'),
     Clock: mockIcon('add-reminder-icon-clock'),
   };
@@ -1250,5 +1253,61 @@ describe('#220 R15: Recordatorio usa DateField para fecha y hora', () => {
     await fireEvent.press(screen.getByTestId('add-reminder-submit'));
     await waitFor(() => expect(screen.getByTestId('add-reminder-submit')).toBeDisabled());
     expect(mockCreateReminder).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token', 'pet-1', { type: 'vaccine', title: 'Rabies', dueAt: '2026-09-25T09:05:00.000Z', advanceMinutes: 0 });
+  });
+});
+
+
+describe('#213 R4: controles de repetición', () => {
+  const hostProcess = process.getBuiltinModule('process');
+  const originalTimezone = hostProcess.env.TZ;
+
+  beforeEach(async () => {
+    hostProcess.env.TZ = 'America/Mexico_City';
+    jest.useFakeTimers({ now: new Date(2026, 11, 20, 10, 0) });
+    jest.clearAllMocks();
+    setPlatform('android');
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() } satisfies AuthContextValue);
+    mockCreateReminder.mockReturnValue(pending());
+    await renderAddReminder();
+    await screen.findByTestId('title-input');
+  });
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+    setPlatform(originalPlatform);
+    jest.restoreAllMocks();
+    if (originalTimezone === undefined) delete hostProcess.env.TZ;
+    else hostProcess.env.TZ = originalTimezone;
+  });
+
+  it('#213 R4: Repetición ofrece seis chips con Una vez seleccionado', () => {
+    const options = [['once', 'Una vez'], ['day', 'Diario'], ['week', 'Semanal'], ['month', 'Mensual'], ['year', 'Anual'], ['hour', 'Cada N horas']];
+    expect(screen.getAllByTestId(/^repeat-chip-/)).toHaveLength(6);
+    for (const [key, label] of options) {
+      const chip = screen.getByTestId(`repeat-chip-${key}`);
+      expect(chip).toHaveTextContent(label);
+      expect(chip.props.accessibilityState).toEqual({ selected: key === 'once' });
+      expect(chip.props.className).toBe(key === 'once'
+        ? 'h-9.5 items-center justify-center rounded-full px-3.5 bg-accent'
+        : 'h-9.5 items-center justify-center rounded-full px-3.5 bg-default');
+      if (key === 'once') expect(chip.props.style).toEqual(mockChunkyLip.primaryCompact);
+      else expect(chip.props.style).toBeUndefined();
+    }
+    const row = screen.getByTestId('repeat-chip-once').parent!;
+    expect(row.props.className).toBe('flex-row flex-wrap gap-2');
+    expect(row.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(options.map(([key]) => `repeat-chip-${key}`));
+  });
+
+  it('#213 R4: pulsar un chip de repetición mueve la selección', async () => {
+    await fireEvent.press(screen.getByTestId('repeat-chip-week'));
+    expect(screen.getByTestId('repeat-chip-week').props.accessibilityState).toEqual({ selected: true });
+    expect(screen.getByTestId('repeat-chip-once').props.accessibilityState).toEqual({ selected: false });
+  });
+
+  it('#213 R4: Repetición va después de Hora y antes de Aviso', () => {
+    const tree = JSON.stringify(screen.toJSON());
+    expect(tree.indexOf('Repetición')).toBeGreaterThan(tree.indexOf('Hora'));
+    expect(tree.indexOf('Repetición')).toBeLessThan(tree.indexOf('Aviso'));
   });
 });
