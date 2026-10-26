@@ -357,4 +357,66 @@ describe('#211 R16: pet members API', () => {
     expect(JSON.stringify(body)).not.toContain('codeHash');
     expect(JSON.stringify(body)).not.toContain('code_hash');
   });
+  it('#211 R6: revocar responde 204 y fija revoked_at', async () => {
+    const { owner, pet } = await fixture();
+    const invite = await createInviteViaApi(owner, pet.id);
+    const response = await api()
+      .delete(`/v1/pets/${pet.id}/invites/${invite.id}`)
+      .set('Authorization', `Bearer ${owner.token}`)
+      .expect(204);
+    expect(response.text).toBe('');
+    const [row] = await db
+      .select()
+      .from(petInvites)
+      .where(eq(petInvites.id, invite.id));
+    expect(row.revokedAt).toBeInstanceOf(Date);
+  });
+  it.each([
+    'no es UUID',
+    'no existe',
+    'es de otra mascota',
+    'está aceptada',
+    'está revocada',
+    'está expirada',
+  ])('#211 R6: responde el mismo 404 si la invitación %s', async (state) => {
+    const { owner, pet, label } = await fixture();
+    let invite = await createInviteViaApi(owner, pet.id);
+    let targetId = invite.id;
+    if (state === 'no es UUID') targetId = 'not-a-uuid';
+    if (state === 'no existe') targetId = randomUUID();
+    if (state === 'es de otra mascota') {
+      const other = await createPetViaApi(owner);
+      invite = await createInviteViaApi(owner, other.id);
+      targetId = invite.id;
+    }
+    if (state === 'está aceptada') {
+      const user = await seedUser(`revoked-accepted-${label}`);
+      await db
+        .update(petInvites)
+        .set({ acceptedBy: user.id, acceptedAt: new Date() })
+        .where(eq(petInvites.id, invite.id));
+    }
+    if (state === 'está revocada')
+      await db
+        .update(petInvites)
+        .set({ revokedAt: new Date() })
+        .where(eq(petInvites.id, invite.id));
+    if (state === 'está expirada')
+      await db
+        .update(petInvites)
+        .set({ expiresAt: new Date(Date.now() - 60000) })
+        .where(eq(petInvites.id, invite.id));
+    const before = await db
+      .select()
+      .from(petInvites)
+      .where(eq(petInvites.id, invite.id));
+    const response = await api()
+      .delete(`/v1/pets/${pet.id}/invites/${targetId}`)
+      .set('Authorization', `Bearer ${owner.token}`);
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({ statusCode: 404, message: 'Not Found' });
+    expect(
+      await db.select().from(petInvites).where(eq(petInvites.id, invite.id)),
+    ).toEqual(before);
+  });
 });
