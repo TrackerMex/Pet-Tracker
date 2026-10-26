@@ -293,3 +293,33 @@ it('#208 R11: con «Otra vacuna» la nota dice que no propone fecha', async () =
   await fireEvent.press(screen.getByTestId('vaccine-chip-other'));
   expect(await screen.findByTestId('vaccine-create-note-text')).toHaveTextContent('Esta vacuna no está en mi esquema, así que no propongo fecha. Pregúntale al veterinario de Rocky cuándo toca la siguiente.', { exact: true });
 });
+
+it('#208 R12: el recordatorio empieza marcado y avisa del 6 oct 2027 a las 09:00', async () => {
+  await readyVaccineForm();
+  const reminder = await screen.findByTestId('vaccine-create-reminder');
+  expect(reminder.props.accessibilityRole).toBe('checkbox');
+  expect(reminder.props.accessibilityState).toEqual({ checked: true });
+  expect(reminder.props.className).toBe('flex-row items-center gap-3 rounded-tile bg-surface-secondary px-3.5 py-3');
+  expect(reminder.props.style).toEqual({ borderCurve: 'continuous' });
+  expect(screen.getByText('Recordarme la próxima dosis', { exact: true }).props.className).toBe('text-sm font-extrabold text-foreground');
+  expect(screen.getByTestId('vaccine-create-reminder-hint').props.className).toBe('text-xs font-semibold text-muted');
+  expect(screen.getByTestId('vaccine-create-reminder-hint')).toHaveTextContent('Te aviso el 6 oct 2027 a las 09:00.', { exact: true });
+  expect(screen.getByTestId('vaccine-create-reminder-checkbox').props.accessibilityState).toMatchObject({ checked: true });
+  const bell = within(reminder).getByTestId('vaccine-create-bell-icon', { includeHiddenElements: true });
+  expect([bell.props.size, bell.props.color]).toEqual([20, 'token:accent-strong']);
+});
+it('#208 R12: sin próxima dosis el subtexto espera a la fecha', async () => {
+  await readyVaccineForm();
+  await fireEvent.press(screen.getByTestId('vaccine-chip-other'));
+  expect(await screen.findByTestId('vaccine-create-reminder-hint')).toHaveTextContent('Cuando elijas la fecha, te aviso ese día a las 09:00.', { exact: true });
+});
+it('#208 R12: pulsar la tarjeta desmarca y vuelve a marcar', async () => {
+  await readyVaccineForm();
+  const reminder = await screen.findByTestId('vaccine-create-reminder');
+  await fireEvent.press(reminder);
+  expect(screen.getByTestId('vaccine-create-reminder').props.accessibilityState).toEqual({ checked: false });
+  await fireEvent.press(reminder);
+  expect(screen.getByTestId('vaccine-create-reminder').props.accessibilityState).toEqual({ checked: true });
+  await fireEvent.press(screen.getByTestId('vaccine-create-reminder-checkbox'));
+  expect(screen.getByTestId('vaccine-create-reminder').props.accessibilityState).toEqual({ checked: false });
+});
