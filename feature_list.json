@@ -3596,5 +3596,68 @@
     "status": "pending",
     "priority": "P2",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 3). Ocultar a family las acciones de owner que hoy se muestran y acaban en 403: registro de peso, alta de recordatorio, borrado en Recordatorios, vincular collar y subir documentos, con el patrón de solo lectura existente; el 403 del backend queda como red. Depende de #214. Evidencia en progress/explore_roles-sharing-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 217,
+    "name": "mobile-theme-flash-statusbar",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 1). Fondo de escena de navegación por tokens para el flash al cambiar de pestaña, retirar react-native-nitro-theme-transition y react-native-nitro-modules (cambio de tema instantáneo; rebuild del dev build lo hace el humano) y StatusBar auto con iconos claros en las pantallas con hero. Evidencia en progress/explore_ui-tema-barra-drawer-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 218,
+    "name": "mobile-sheet-surface-background",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 1). backgroundStyle con el token surface en los BottomSheet de Recordatorios y Vinculación para quitar la franja rosa del cajón de borrar. Evidencia en progress/explore_ui-tema-barra-drawer-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 219,
+    "name": "mobile-weekly-average-format",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 1). Media de Actividad semanal sin decimales sobrantes: minutos enteros, paseos y km a un decimal, punto decimal en todo (la tendencia deja la coma). Evidencia en progress/explore_ui-alertas-actividad-ia-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 220,
+    "name": "mobile-date-field",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 1). Componente DateField propio sobre piezas de heroui-native y el selector nativo de @expo/ui, modo fecha u hora, valor ISO, mínimo, máximo y borrable; migra Registro de peso, Documentos, Alta de mascota y Nuevo recordatorio. Va antes de #208 y #213. Evidencia en progress/explore_ui-heroui-fechas-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 221,
+    "name": "mobile-orbit-rename-copy",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 1). La mascota pasa de Pingo a Orbit en el texto visible (welcome.pingoGreeting, ES y EN) y en la carta docs/ui-guidelines.md punto 7; los identificadores y assets los renombra #225. Evidencia en progress/explore_ui-mascota-orbit-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 222,
+    "name": "mobile-tab-avatar-header",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 2, gate G1). Quitar los títulos de Salud, Nutrición y Perfil a favor del selector de mascotas, con cabecera fija en Salud y Nutrición y encabezado oculto para lectores de pantalla. Enmienda N1 de #168. Evidencia en progress/explore_ui-titulos-scroll-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 223,
+    "name": "mobile-alerts-attended-section",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 2, gate G1). Alertas: abiertas arriba y sección colapsable «Atendidas» con Ver más para el listado enorme, contador exacto de abiertas, sin backend. Evidencia en progress/explore_ui-alertas-actividad-ia-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 224,
+    "name": "mobile-nutrition-ai-format",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 2, gate G1). Formato de la recomendación de IA en Nutrición: markdown mínimo propio, Ver más y aviso fijo; sin tocar el prompt (es de #212). Evidencia en progress/explore_ui-alertas-actividad-ia-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 225,
+    "name": "mobile-orbit-activity-pose",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 3, gates G1 y G6). Pose nueva de Orbit caminando para la burbuja de Inicio, que genera el humano, y renombre interno de assets, ids y testIDs de pingo a orbit. Evidencia en progress/explore_ui-mascota-orbit-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   }
 ]
