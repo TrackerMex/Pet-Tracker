@@ -42,3 +42,18 @@ export class Reminder implements ReminderProps {
     Object.assign(this, props);
   }
 }
+
+export const RECURRENCE_UNITS = [
+  'hour',
+  'day',
+  'week',
+  'month',
+  'year',
+] as const;
+export type RecurrenceUnit = (typeof RECURRENCE_UNITS)[number];
+export interface ReminderRecurrence {
+  unit: RecurrenceUnit;
+  every: number;
+  anchorAt: Date;
+  until: string | null;
+}
