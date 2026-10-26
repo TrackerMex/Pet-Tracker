@@ -375,8 +375,8 @@ pueden pasarla.
   - Test: `components/__tests__/date-field.test.tsx`,
     `it('#220 R17: date-field.tsx es grep-limpio')` (lectura de fuente con
     `readFileSync`; cada patrón se prueba contra una mutación plantada en una
-    cadena de prueba, no solo contra el fichero real) y las ocho enmiendas del
-    inventario, verificadas con `bun run test` completo.
+    cadena de prueba, no solo contra el fichero real) y las nueve enmiendas del
+    inventario (la novena, `legibility-classnames`, entra por la Enmienda 1), verificadas con `bun run test` completo.
 
 - **R18**: THE SYSTEM SHALL dejar sin cambio `screens/meal-schedule/index.tsx`
   (sigue importando `ExpoDateTimePicker` directamente, dos apariciones del símbolo, y

@@ -125,7 +125,7 @@ Capa de presentación y utilidades (todo bajo `mobile-pet-tracker/src/`):
 - Candados a enmendar (ver siguiente sección): `__tests__/add-pet-two-steps.test.ts`,
   `__tests__/consistency-classnames.test.ts`, `__tests__/design-drift.test.ts`,
   `__tests__/ui-copy-table.ts`, `__tests__/ui-language.test.ts`,
-  `providers/__tests__/language-provider.test.tsx`.
+  `providers/__tests__/language-provider.test.tsx`, `__tests__/legibility-classnames.test.ts` (Enmienda 1).
 
 Sin cambio (verificado por medida): `screens/meal-schedule/index.tsx`, `global.css`,
 `utils/form-rules.ts`, `utils/date-picker-value.ts`, `utils/reminder-dates.ts`,
@@ -239,6 +239,23 @@ equivalente para el nuevo fichero. Los inventarios de radios (línea ~1139,
 Cada reescritura conserva el nombre original del `it` y le añade
 `(enmendado por #220 R<n>)`; no se borra ninguna aserción sin sustituto o sin una
 fila en `traceability.md`.
+
+### 8. `__tests__/legibility-classnames.test.ts` (Enmienda 1, 2026-10-26)
+
+Omitido por el spec_author y detectado por Codex en C6 (suite completa roja,
+persistente aislada). En `describe('#61 R4: ...')`,
+`it('reserva las peticiones de accent a las huellas de EmptyState ...')`: la lista
+esperada `['components/empty-state.tsx', 'components/toggle-switch.tsx', 'theme/shadows.ts']`
+pasa a `['components/date-field.tsx', 'components/empty-state.tsx', 'components/toggle-switch.tsx', 'theme/shadows.ts']`
+(orden alfabético), con comentario `// (enmendado por #220 R6)` y el sufijo
+` (enmendado por #220 R6)` en el título del `it`. Razón: R6 exige `accentColor`
+igual al token `accent` de `useThemeColors`, y `date-field.tsx` lo pide con
+`useThemeColors(['muted', 'accent'])`; es la tinta del diálogo nativo, no texto
+(`text-accent`), así que el espíritu del candado se conserva. El `it` hermano
+`no deja ningún text-accent suelto` no cambia. Va en un commit `test(#220)` propio
+antes del `feat` de C6 (el rojo existe desde C4; ver la Reanudación 2 del handoff).
+Mutación: quitar `'accent'` de la petición en `date-field.tsx` debe poner en rojo
+el `it` enmendado.
 
 ## Anclas de medición para el handoff (con salida esperada)
 
