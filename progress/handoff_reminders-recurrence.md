@@ -239,3 +239,19 @@ Retoma así, desde `cd /home/claude/sites/Pet-Tracker-wt-210/backend-pet-tracker
   5. En el reporte, añade una sección `## Reanudación 1` con lo que hiciste; no borres las secciones anteriores.
 
 El marcador `progress/impl_reminders-recurrence.done` lo ha borrado el leader. Créalo otra vez solo al final de la cadena entera, como dice «Cierre».
+
+## Reanudación 2 (2026-10-26, leader, tras la parada en C15)
+
+Tu parada es correcta y el fallo es del handoff: las guardas E2 de «Tras C13» (las cinco anclas literales nuevas de reminders-dispatch.service.spec.ts) asumían una sola línea, y Prettier reparte tres de esas llamadas en varias. El contenido es el esperado. El leader lo midió sin espacios sobre tu árbol, después de C14. No toques ese fichero.
+
+1. Las guardas E2 de «Tras C13» quedan sustituidas por estas, desde backend-pet-tracker/ (las 5 bases → 0, las 5 nuevas → 1):
+
+       d=src/modules/reminders/infrastructure/reminders-dispatch.service.spec.ts
+       s() { tr -d ' \n' < "$d" | grep -oF "$1" | wc -l; }
+       s '[first.id,NOW],'; s '[second.id,NOW],'; s 'toHaveBeenCalledWith(sent.id,NOW'; s 'not.toHaveBeenCalledWith(failed.id,NOW'; s 'toEqual([[sent.id,NOW]'   # -> 0 0 0 0 0
+       s '[first.id,first.scheduleName,NOW],'; s '[second.id,second.scheduleName,NOW],'; s 'toHaveBeenCalledWith(sent.id,sent.scheduleName,NOW,)'; s 'not.toHaveBeenCalledWith(failed.id,failed.scheduleName,NOW,)'; s 'toEqual([[sent.id,sent.scheduleName,NOW],])'   # -> 1 1 1 1 1
+
+   Regístralas en el reporte junto a la medición literal que ya tienes.
+2. C15: tus cambios sin commitear (notifier-consumer.service.spec.ts y pet-reminders.e2e-spec.ts) se conservan tal cual. El leader midió las guardas «Tras C15» sobre ellos: E1 base 1, E1 nuevo 1, E5 base 0, E5 nuevo 1, como pide el handoff. Commitea C15 con su cadena y su rojo observado, y sigue con C16–C20, M4, M9 y el cierre, sin cambiar las cifras de cierre (189 suites / 1573 tests; pet-reminders 69; alerts-center-notifier 20).
+3. Regla estrecha para lo que queda de cadena: si un ancla `grep -cF` da una cifra distinta de la esperada solo porque Prettier repartió la llamada en varias líneas (espacios, saltos de línea o la coma final que añade antes de `)` o `]`), mide el mismo literal sin espacios con la función `s` de arriba, adaptada a su fichero, sumando la coma final si Prettier la puso. Si así da la cifra esperada, registra las dos mediciones y sigue. Cualquier otra discrepancia (contenido, cuenta de tests, rojo distinto) sigue siendo PARA y reporta.
+4. NO ejecutes ./init.sh aunque AGENTS.md lo pida: lo corre el leader. La última acción sigue siendo crear progress/impl_reminders-recurrence.done.
