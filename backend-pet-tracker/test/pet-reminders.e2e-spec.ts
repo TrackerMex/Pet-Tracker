@@ -504,7 +504,7 @@ describe('Pet reminders (e2e)', () => {
       expect(sendPush).toHaveBeenCalledTimes(1);
       expect(sendPush).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: { petId: pet.id, reminderId },
+          data: { petId: pet.id, reminderId, kind: 'reminder' },
         }),
       );
       const [row] = await db

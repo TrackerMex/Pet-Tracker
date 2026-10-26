@@ -417,7 +417,7 @@ describe('R7 (pet-reminders #16): notifier procesa reminder idempotentemente', (
     expect(sender.send).toHaveBeenCalledWith(
       expect.objectContaining({
         tokens: [TOKEN_A],
-        data: { petId: PET_ID, reminderId: REMINDER_ID },
+        data: { petId: PET_ID, reminderId: REMINDER_ID, kind: 'reminder' },
       }),
     );
     expect(reminders.markSent).toHaveBeenCalledWith(REMINDER_ID);
@@ -505,5 +505,32 @@ describe('R7 (pet-reminders #16): notifier procesa reminder idempotentemente', (
     expect(sender.send).not.toHaveBeenCalled();
     expect(reminders.markSent).toHaveBeenCalledWith(REMINDER_ID);
     expect(sqs.deleted).toEqual(['receipt-1']);
+  });
+});
+
+describe('#210 R12: data del push de reminder', () => {
+  beforeEach(() => {
+    jest.spyOn(Logger.prototype, 'log').mockImplementation();
+    jest.spyOn(Logger.prototype, 'error').mockImplementation();
+  });
+  afterEach(() => jest.restoreAllMocks());
+  it('#210 R12: el push de reminder lleva kind en data', async () => {
+    const sqs = sqsStub([[message(reminderBody())]]);
+    const sender = senderStub();
+    const reminders = reminderRepositoryStub();
+    reminders.findById.mockResolvedValue(reminderRow());
+    await reminderService(
+      sqs,
+      tokensStub([TOKEN_A]),
+      sender,
+      reminders.client,
+    ).drainOnce();
+    expect(sender.send).toHaveBeenCalledTimes(1);
+    const push = (sender.send.mock.calls[0] as [{ data: unknown }])[0];
+    expect(push.data).toEqual({
+      petId: PET_ID,
+      reminderId: REMINDER_ID,
+      kind: 'reminder',
+    });
   });
 });
