@@ -1,3 +1,4 @@
+import { InviteAcceptRateLimitGuard } from './infrastructure/guards/invite-accept-rate-limit.guard';
 import { Module } from '@nestjs/common';
 import { PetsModule } from '@/modules/pets/pets.module';
 import { PET_MEMBER_REPOSITORY } from './domain/repositories/pet-member.repository';
@@ -18,6 +19,7 @@ import { RemovePetMemberUseCase } from './application/use-cases/remove-pet-membe
   imports: [PetsModule],
   controllers: [PetInvitesController, InvitesController, PetMembersController],
   providers: [
+    InviteAcceptRateLimitGuard,
     CreatePetInviteUseCase,
     ListPetInvitesUseCase,
     RevokePetInviteUseCase,

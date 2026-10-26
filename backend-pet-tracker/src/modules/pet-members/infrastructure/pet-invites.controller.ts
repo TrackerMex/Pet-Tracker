@@ -1,3 +1,4 @@
+import { InviteAcceptRateLimitGuard } from './guards/invite-accept-rate-limit.guard';
 import { AcceptInviteSchema } from '@/modules/pet-members/application/dto/accept-invite.dto';
 import { z, ZodType } from 'zod';
 import { mapPetMemberError } from './mappers/pet-member-error.mapper';
@@ -97,6 +98,7 @@ export class PetInvitesController {
 export class InvitesController {
   constructor(private readonly acceptInvite: AcceptPetInviteUseCase) {}
   @Post('accept')
+  @UseGuards(InviteAcceptRateLimitGuard)
   async accept(@Body() body: unknown, @CurrentUser() user: CurrentUserPayload) {
     const dto = parseBody(AcceptInviteSchema, body);
     try {
