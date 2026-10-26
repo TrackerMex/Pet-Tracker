@@ -1,6 +1,6 @@
 ---
 feature: "mobile-sheet-surface-background"
-status: draft
+status: approved
 tags: [harness, spec]
 ---
 

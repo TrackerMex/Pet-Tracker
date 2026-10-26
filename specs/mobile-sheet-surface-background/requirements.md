@@ -1,6 +1,6 @@
 ---
 feature: "mobile-sheet-surface-background"
-status: draft
+status: approved
 tags: [harness, spec]
 ---
 
@@ -167,7 +167,7 @@ tags: [harness, spec]
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (firma delegada del leader, mandato 2026-10-23 ampliado 2026-10-26; fecha: 2026-10-26) ← gate obligatorio antes de implementar
   (se firma por delegación del leader, mandato del 2026-10-23 ampliado el 2026-10-26,
   con la checklist de `progress/plan_canvas-parity-2026-10-23.md` §4 y los tres puntos
   de `progress/plan_ui-2026-10-26.md` §4).
