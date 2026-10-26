@@ -4,7 +4,7 @@ import { Button } from 'heroui-native';
 import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Bell } from 'reicon-react-native';
+import { Bell, Minus, Plus, Repeat } from 'reicon-react-native';
 
 import { createReminder } from '../../api/reminders';
 import type { ReminderType } from '../../api/types';
@@ -28,6 +28,15 @@ import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
 const SELECTED_CHIP = 'h-9.5 items-center justify-center rounded-full px-3.5 bg-accent';
+
+const REPEAT_OPTIONS = [
+  { key: 'once', labelKey: 'addReminder.repeatOnce' },
+  { key: 'day', labelKey: 'addReminder.repeatDaily' },
+  { key: 'week', labelKey: 'addReminder.repeatWeekly' },
+  { key: 'month', labelKey: 'addReminder.repeatMonthly' },
+  { key: 'year', labelKey: 'addReminder.repeatYearly' },
+  { key: 'hour', labelKey: 'addReminder.repeatHourly' },
+] as const;
 
 const ADVANCE_OPTIONS = [
   { minutes: 0, labelKey: 'addReminder.advanceSameDay' },
@@ -65,6 +74,7 @@ function AddReminderContent({ petId }: { petId: string }) {
   const t = useTranslate();
   const insets = useSafeAreaInsets();
   const [muted, accentStrong] = useThemeColors(['muted', 'accent-strong']);
+  const [repeat, setRepeat] = useState<(typeof REPEAT_OPTIONS)[number]['key']>('once');
   const [type, setType] = useState<ReminderType>('vaccine');
   const [title, setTitle] = useState('');
   const [titleFocused, setTitleFocused] = useState(false);
@@ -233,6 +243,29 @@ function AddReminderContent({ petId }: { petId: string }) {
                 setNow(Date.now());
               }}
             />
+          </View>
+        </View>
+
+        <View className="gap-2">
+          <Text className="text-sm font-extrabold text-foreground">{t('addReminder.repeat')}</Text>
+          <View className="flex-row flex-wrap gap-2">
+            {REPEAT_OPTIONS.map((option) => {
+              const selected = repeat === option.key;
+              return (
+                <Pressable
+                  key={option.key}
+                  testID={`repeat-chip-${option.key}`}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  hitSlop={TOUCH_SLOP}
+                  className={selected ? SELECTED_CHIP : 'h-9.5 items-center justify-center rounded-full px-3.5 bg-default'}
+                  style={selected ? chunkyLip.primaryCompact : undefined}
+                  onPress={() => setRepeat(option.key)}
+                >
+                  <Text className={`text-sm font-extrabold ${selected ? 'text-accent-foreground' : 'text-foreground'}`}>{t(option.labelKey)}</Text>
+                </Pressable>
+              );
+            })}
           </View>
         </View>
 
