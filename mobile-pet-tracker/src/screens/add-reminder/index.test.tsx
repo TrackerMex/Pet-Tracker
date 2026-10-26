@@ -1310,4 +1310,20 @@ describe('#213 R4: controles de repetición', () => {
     expect(tree.indexOf('Repetición')).toBeGreaterThan(tree.indexOf('Hora'));
     expect(tree.indexOf('Repetición')).toBeLessThan(tree.indexOf('Aviso'));
   });
+
+  it('#213 R5: Tipo y Aviso son filas horizontales sin salto de línea', () => {
+    for (const [id, pattern, count] of [
+      ['type-chips-row', /^type-chip-/, 7],
+      ['advance-chips-row', /^advance-chip-/, 4],
+    ] as const) {
+      const row = screen.getByTestId(id);
+      expect(row.props.horizontal).toBe(true);
+      expect(row.props.showsHorizontalScrollIndicator).toBe(false);
+      expect(row.props.className).toBe('-mr-5');
+      expect(row.props.className).not.toContain('flex-wrap');
+      expect(row.props.contentContainerStyle).toEqual({ gap: 8, paddingRight: 20 });
+      expect(within(row).getAllByTestId(pattern)).toHaveLength(count);
+    }
+  });
+
 });
