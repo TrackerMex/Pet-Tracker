@@ -277,3 +277,19 @@ it.each([['catálogo', 'la propuesta'], ['«Otra vacuna»', 'vacía']])('#208 R1
   await pickVaccineDate('applied', new Date(2026, 9, 1, 12));
   expect(screen.getByTestId('vaccine-create-next-value')).toHaveProp('value', mode === 'catálogo' ? '1 oct 2027' : '');
 });
+
+it('#208 R11: con catálogo la nota habla del esquema orientativo', async () => {
+  await readyVaccineForm();
+  const note = await screen.findByTestId('vaccine-create-note');
+  expect(note.props.className).toBe('flex-row gap-2.5 rounded-tile bg-default px-3.5 py-3');
+  expect(note.props.style).toEqual({ borderCurve: 'continuous' });
+  const icon = within(note).getByTestId('vaccine-create-info-icon', { includeHiddenElements: true });
+  expect([icon.props.size, icon.props.color]).toEqual([20, 'token:muted']);
+  expect(screen.getByTestId('vaccine-create-note-text').props.className).toBe('flex-1 text-13 font-semibold text-muted');
+  expect(screen.getByText('Propuse la próxima dosis con un esquema orientativo. Confírmala con el veterinario de Rocky.', { exact: true })).toBeVisible();
+});
+it('#208 R11: con «Otra vacuna» la nota dice que no propone fecha', async () => {
+  await readyVaccineForm();
+  await fireEvent.press(screen.getByTestId('vaccine-chip-other'));
+  expect(await screen.findByTestId('vaccine-create-note-text')).toHaveTextContent('Esta vacuna no está en mi esquema, así que no propongo fecha. Pregúntale al veterinario de Rocky cuándo toca la siguiente.', { exact: true });
+});
