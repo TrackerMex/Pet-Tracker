@@ -1,6 +1,6 @@
 ---
 feature: "mobile-vaccine-create"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [mobile, ui, spec]
 ---
 
@@ -899,6 +899,6 @@ E2E_SETUP_CMD="pnpm -C backend-pet-tracker run db:migrate && pnpm -C backend-pet
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-26) ← gate obligatorio antes de implementar
 - [ ] Smoke de #208 en dev build por el humano (fecha: ____): picker nativo de las dos fechas, teclado con
       KAV en notas, recordatorio a las 09:00 locales. No bloquea tareas; bloquea `done`.
