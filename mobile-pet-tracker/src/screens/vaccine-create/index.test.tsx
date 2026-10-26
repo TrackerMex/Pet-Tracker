@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { useSyncExternalStore, type ReactNode } from 'react';
 import { Text } from 'react-native';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
@@ -82,14 +82,29 @@ function makeVaccine(overrides: Partial<Vaccine> = {}): Vaccine {
     notes: null, documentKey: null, ...overrides };
 }
 function pending<T>(): Promise<T> { return new Promise(() => undefined); }
+let mockReturned = false;
+const returnedListeners = new Set<() => void>();
+function subscribeReturned(listener: () => void) {
+  returnedListeners.add(listener);
+  return () => { returnedListeners.delete(listener); };
+}
+function VaccineFlow() {
+  const returned = useSyncExternalStore(subscribeReturned, () => mockReturned);
+  return returned ? <Text testID="vaccine-create-returned">Salud</Text> : <VaccineCreateScreen petId="pet-1" />;
+}
 async function renderVaccineCreate() {
-  return renderWithProviders(<VaccineCreateScreen petId="pet-1" />, {
+  return renderWithProviders(<VaccineFlow />, {
     wrapper: ({ children }) => <HeroUINativeProvider><LanguageProvider initial="es">{children}</LanguageProvider></HeroUINativeProvider>,
   });
 }
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockReturned = false;
+  mockRouter.back.mockImplementation(() => {
+    mockReturned = true;
+    for (const listener of returnedListeners) listener();
+  });
   jest.useFakeTimers({ now: new Date('2026-10-06T18:00:00.000Z') });
   mockInsets = { top: 40, bottom: 34, left: 0, right: 0 };
   process.env.EXPO_PUBLIC_API_URL = apiUrl;
@@ -381,4 +396,41 @@ it('#208 R14: el CTA se bloquea mientras envía', async () => {
   await readyVaccineForm();
   await fireEvent.press(screen.getByTestId('vaccine-create-submit'));
   await waitFor(() => expect(screen.getByTestId('vaccine-create-submit')).toBeDisabled());
+});
+
+it('#208 R15: con próxima dosis futura crea el recordatorio vaccine a las 09:00 locales sin antelación', async () => {
+  mockCreateVaccine.mockResolvedValue({ kind: 'ok', vaccine: makeVaccine({ name: 'Rabia' }) });
+  await readyVaccineForm();
+  await pickVaccineDate('next', new Date(2028, 0, 12, 12));
+  await fireEvent.press(screen.getByTestId('vaccine-create-submit'));
+  await screen.findByTestId('vaccine-create-returned');
+  expect(mockCreateReminder).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1', { type: 'vaccine', title: 'Rabia', dueAt: new Date(2027, 9, 6, 9, 0, 0, 0).toISOString(), advanceMinutes: 0 });
+});
+it('#208 R15: el dueAt sigue la hora local del dispositivo', async () => {
+  nativeProcess.env.TZ = 'America/Mexico_City';
+  mockCreateVaccine.mockResolvedValue({ kind: 'ok', vaccine: makeVaccine() });
+  await readyVaccineForm();
+  await pickVaccineDate('next', new Date(2028, 0, 12, 12));
+  await fireEvent.press(screen.getByTestId('vaccine-create-submit'));
+  await screen.findByTestId('vaccine-create-returned');
+  expect(mockCreateReminder).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1', { type: 'vaccine', title: 'Leptospirosis', dueAt: '2027-10-06T15:00:00.000Z', advanceMinutes: 0 });
+});
+it.each(['está desmarcado', 'la respuesta no trae próxima dosis', 'la próxima dosis es hoy'])('#208 R15: no crea recordatorio cuando %s', async reason => {
+  mockCreateVaccine.mockResolvedValue({ kind: 'ok', vaccine: makeVaccine({ nextDoseAt: reason === 'la respuesta no trae próxima dosis' ? null : reason === 'la próxima dosis es hoy' ? '2026-10-06' : '2027-10-06' }) });
+  await readyVaccineForm();
+  if (reason === 'está desmarcado') await fireEvent.press(screen.getByTestId('vaccine-create-reminder'));
+  await fireEvent.press(screen.getByTestId('vaccine-create-submit'));
+  await screen.findByTestId('vaccine-create-returned');
+  expect(mockCreateReminder).not.toHaveBeenCalled();
+});
+it('#208 R15: tras el 201 invalida vacunas, recordatorios y mascotas y vuelve', async () => {
+  mockCreateVaccine.mockResolvedValue({ kind: 'ok', vaccine: makeVaccine() });
+  const app = await readyVaccineForm();
+  const invalidate = jest.spyOn(app.queryClient, 'invalidateQueries');
+  await fireEvent.press(screen.getByTestId('vaccine-create-submit'));
+  await screen.findByTestId('vaccine-create-returned');
+  expect(invalidate).toHaveBeenCalledWith({ queryKey: ['health', 'vaccines', 'pet-1'] });
+  expect(invalidate).toHaveBeenCalledWith({ queryKey: ['reminders', 'list', 'pet-1'] });
+  expect(invalidate).toHaveBeenCalledWith({ queryKey: ['pets', 'list'] });
+  expect(mockRouter.back).toHaveBeenCalledTimes(1);
 });
