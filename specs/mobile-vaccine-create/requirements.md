@@ -1060,4 +1060,4 @@ cifras base, anclas `grep -cF` y la corrida de sondas en
     - `design.md` §Archivos afectados
     - `tasks.md` §R21
 
-- [ ] Enmienda M3 aprobada (fecha: ____)
+- [x] Enmienda M3 aprobada (fecha: 2026-10-26)
