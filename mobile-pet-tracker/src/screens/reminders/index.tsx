@@ -60,6 +60,7 @@ export function RemindersScreen() {
     'category-blue-strong', 'category-amber-strong', 'category-green-strong',
     'category-violet-strong', 'category-rose-strong', 'muted', 'accent-foreground', 'danger',
   ]);
+  const [surface] = useThemeColors(['surface']);
   const categoryInk = {
     blue: blueInk, amber: amberInk, green: greenInk,
     violet: violetInk, rose: roseInk, neutral: muted,
@@ -413,6 +414,7 @@ export function RemindersScreen() {
           enablePanDownToClose
           onClose={dismissDeleteSheet}
           snapPoints={['50%', '100%']}
+          backgroundStyle={{ backgroundColor: surface }}
         >
           <BottomSheetView>
             <View
