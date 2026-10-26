@@ -29,6 +29,20 @@ tags: [harness, spec, backend, pets]
      el stub falla por aserción.
    - El test de R1 aserta `expect(column).toBeDefined()` antes de leer
      propiedades de una columna.
+   - **Forma del stub (E4).** Ningún stub es `async` ni deja parámetros sin
+     usar, porque eslint marcaría `require-await` y `no-unused-vars`. Cada
+     método stub nombra sus parámetros con `void` y devuelve
+     `Promise.reject(new Error('Not implemented'))`. Las funciones síncronas
+     y el `canActivate` del guard devuelven su valor stub. Por ejemplo:
+     ```ts
+     execute(petId: string, now: Date): Promise<PetInvite[]> {
+       void petId;
+       void now;
+       return Promise.reject(new Error('Not implemented'));
+     }
+     ```
+     El leader probó esta forma con prettier y eslint el 2026-10-26: los dos
+     salen limpios. El commit verde que implementa un método borra sus `void`.
 3. **Candados contra literales.** Ningún test usa un símbolo de producción
    como **valor esperado**, sea `MAX_*`, `INVITE_TTL_MS`, `INVITE_ACCEPT_*` o
    `hashInviteCode` para calcular el hash esperado. En su lugar usa el
@@ -67,9 +81,13 @@ tags: [harness, spec, backend, pets]
     Nunca uses `psql` crudo.
 13. **Migración**: solo con drizzle-kit, y si choca con #210/#212 se sigue
     [[design]] D17 (merge, nunca rebase).
-14. **Trazabilidad**: tras cada commit verde, rellena su fila en
-    [[traceability]] con el hash y el mensaje. No rebasees después, porque
-    los hashes caducan.
+14. **Trazabilidad (E5)**: rellena [[traceability]] con los hashes y los
+    mensajes en **un solo** commit final, el 28:
+    `docs(pet-members): traceability of #211`. Va después del 27 y no mezcla
+    ficheros de código. No rebasees después, porque los hashes caducan.
+    Los mensajes de la tabla de abajo van **en inglés**
+    (`docs/conventions.md` §Commits), con el mismo prefijo y los mismos
+    R-ids. La lista literal está en `progress/handoff_pet-members-api.md`.
 
 ## Cadena de commits
 
@@ -373,7 +391,9 @@ Al terminar, `progress/impl_pet-members-api.md` lleva tres cosas:
   Las dos filas nuevas fallan por aserción, porque hay una fila con
   `userId` = aceptante. Los its de (1a) siguen verdes, porque filtran por
   `entity_id` = id de la invitación.
-- [ ] (2b) Commit 26. Revierte exactamente esa línea. En
+- [ ] (2b) Commit 26. Revierte exactamente esa mutación, aunque prettier la
+  haya partido en varias líneas: el fichero queda igual que en el commit 24
+  (`git diff <commit 24> -- <fichero>` vacío). En
   `progress/impl_pet-members-api.md`, registra el rojo de (1b) y el verde de
   (2b).
 - [ ] (3) Refactor (si aplica)

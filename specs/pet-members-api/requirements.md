@@ -444,3 +444,9 @@ desde que acepta.
   de R19 filtra por `action` + `entity_id`. Migración: D17. Ningún endpoint
   revela si existe un usuario o un código: R8, R13, R14 y R16, con la
   excepción acotada de D9.
+  Errata del leader tras firmar y antes del handoff (2026-10-26), solo en
+  [[tasks]] y sin cambiar ningún R: E4, la forma de los stubs, para que
+  pasen eslint (`require-await` y `no-unused-vars`), comprobada en seco; E5,
+  la trazabilidad va en un único commit final, el 28, como manda la
+  plantilla del handoff; y en el (2b) de R19, revertir la mutación deja el
+  fichero igual que en el commit 24.
