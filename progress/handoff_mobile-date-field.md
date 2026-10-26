@@ -109,3 +109,16 @@ Cierre (tasks.md; lo que el reporte debe traer):
   - Lista de ficheros tocados desde H0, desde la raíz del worktree: `git diff --name-only c584ba3c..HEAD -- mobile-pet-tracker/`. Debe coincidir con la lista cerrada de arriba.
   - Reporte en progress/impl_mobile-date-field.md: comprobación del primer comando, salida de las anclas T0 y la base de tests, commits (hash y mensaje), línea `Tests:` tras cada commit, resultado de las sondas y mutaciones, `it` que nacieron verdes, skills cargadas y no encontradas, lint y typecheck, qué candados enmendaste (candado, antes/después, R), desviaciones, tabla R1-R18 a test a commit, y la lista de casos de smoke del humano (requirements.md §Fuera de alcance, última viñeta: toque sobre el campo, diálogo nativo, tema oscuro, Peso, Documentos, Alta de mascota, Recordatorio fecha y hora).
   - Última acción: crear progress/impl_mobile-date-field.done con una sola línea, la ruta de progress/impl_mobile-date-field.md. Está en .gitignore; no lo commitees (lo vigila scripts/harness/watch-impl.sh).
+
+## Reanudación 1 tras el bloqueo de T0 (2026-10-26)
+
+El leader resolvió el bloqueo de tu reporte. El rojo de `src/screens/map/index.test.tsx` (`selects the first pet and loads its first position (#72 R2)`) es el flake de carga de #72 R2: en tu corrida completa esa suite tardó 138 s por la concurrencia con otros jest de la máquina. El leader la corrió sola, con `pgrep` vacíos: `bunx jest --runTestsByPath src/screens/map/index.test.tsx --testTimeout=30000` → exit 0, `Tests: 303 passed, 303 total`. No es base ajena rota ni tuya.
+
+Base T0 aceptada: 155 suites, 5450 tests (5449 + el de Mapa, que pasa aislado). Úsala como T0 de la cuenta encadenada. Nada más cambia: mismo H0 c584ba3c para el diff final, misma lista cerrada, sin `./init.sh`, sin merge ni rebase.
+
+Regla nueva para toda la cadena: si un rojo de la suite completa es una suite que no tocaste y pasa sola, es carga: córrela aislada, anota el rojo y el verde aislado en el reporte y sigue. Si el rojo persiste aislado, o es un `it` de tu alcance o de un candado del inventario, PARA como antes.
+
+Sigue así, sin rehacer nada del reporte salvo lo que cambie:
+  1. Borra del reporte la sección «Bloqueo de la base ajena» y sustitúyela por «T0: flake de Mapa» con lo de arriba. Conserva anclas y skills.
+  2. Empieza en C1 y sigue la cadena entera hasta C13 y el cierre, como dice este handoff.
+  3. Última acción, igual que antes: crear `progress/impl_mobile-date-field.done`.
