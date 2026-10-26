@@ -1,10 +1,16 @@
+import { useState } from 'react';
+import { Plus } from 'reicon-react-native';
 import { useQuery } from '@tanstack/react-query';
-import { Button } from 'heroui-native';
-import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
+import { Button, Skeleton } from 'heroui-native';
+import { KeyboardAvoidingView, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { listPets } from '../../api/pets';
-import { petKeys } from '../../api/query-keys';
+import { healthKeys, petKeys } from '../../api/query-keys';
+import { getVaccineCatalog } from '../../api/health-records';
+import { useChunkyLip } from '../../theme/chunky-lip';
+import { useThemeColors } from '../../theme/use-theme-colors';
+import { TOUCH_SLOP } from '../../theme/touch-target';
 import { ScreenHeader } from '../../components/screen-header';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
@@ -17,6 +23,13 @@ export function VaccineCreateScreen({ petId }: { petId: string }) {
   const pets = useQuery({ queryKey: petKeys.list(), queryFn: () => listPets(baseUrl, token ?? '') });
   const pet = pets.data?.kind === 'ok' ? pets.data.pets.find(p => p.id === petId) : undefined;
   const species = pet?.species === 'cat' ? 'cat' : 'dog';
+  const chunkyLip = useChunkyLip();
+  const [accentStrong, accentForeground, muted, danger, foreground] = useThemeColors(['accent-strong', 'accent-foreground', 'muted', 'danger', 'foreground']);
+  const catalog = useQuery({ queryKey: healthKeys.vaccineCatalog(species), queryFn: () => getVaccineCatalog(baseUrl, token ?? '', species), enabled: pet !== undefined });
+  const entries = catalog.data?.kind === 'ok' ? catalog.data.entries : [];
+  const [selectedDraft, setSelectedDraft] = useState<string | null>(null);
+  const selectedId = selectedDraft ?? entries[0]?.id ?? 'other';
+
 
   return (
     <KeyboardAvoidingView testID="screen-vaccine-create" behavior="padding" className="flex-1 bg-background">
@@ -26,6 +39,27 @@ export function VaccineCreateScreen({ petId }: { petId: string }) {
         <Text testID="vaccine-create-legend" className="text-sm font-extrabold text-foreground">
           {t('vaccineCreate.vaccine')}<Text testID="vaccine-create-legend-species" className="font-semibold text-muted">{species === 'cat' ? t('vaccineCreate.schemeForCat') : t('vaccineCreate.schemeForDog')}</Text>
         </Text>
+        {catalog.isPending ? (
+          <View testID="vaccine-create-chips-skeleton" className="flex-row gap-2">
+            {[0, 1, 2].map(index => <Skeleton key={index} className="h-9.5 w-28 rounded-full" />)}
+          </View>
+        ) : (
+          <View testID="vaccine-create-chips" className="flex-row flex-wrap gap-2">
+            {[...entries, { id: 'other', name: t('vaccineCreate.otherVaccine') }].map(option => {
+              const selected = selectedId === option.id;
+              const other = option.id === 'other';
+              return (
+                <Pressable key={option.id} testID={`vaccine-chip-${option.id}`} accessibilityRole="button" accessibilityState={{ selected }} hitSlop={TOUCH_SLOP}
+                  onPress={() => setSelectedDraft(option.id)}
+                  className={selected ? 'h-9.5 items-center justify-center rounded-full px-3.5 bg-accent' : other ? 'h-9.5 flex-row items-center justify-center gap-1.5 rounded-full border border-dashed border-border px-3.5 bg-surface' : 'h-9.5 items-center justify-center rounded-full px-3.5 bg-default'}
+                  style={selected ? chunkyLip.primaryCompact : undefined}>
+                  {other && <Plus size={16} strokeWidth={2.8} color={selected ? accentForeground : foreground} />}
+                  <Text className={selected ? 'text-sm font-extrabold text-accent-foreground' : 'text-sm font-extrabold text-foreground'}>{option.name}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        )}
       </ScrollView>
       <View testID="vaccine-create-bar" style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: Math.max(insets.bottom, 16), gap: 12 }}>
         <Button testID="vaccine-create-submit" />
