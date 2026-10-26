@@ -1,6 +1,6 @@
 ---
 feature: "reminders-recurrence"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [backend, reminders, notifier, migration]
 ---
 
@@ -501,4 +501,4 @@ Test: `backend-pet-tracker/test/pet-reminders.e2e-spec.ts` ::
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-26) ← gate obligatorio antes de implementar

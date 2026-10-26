@@ -1,6 +1,6 @@
 ---
 feature: "reminders-recurrence"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [backend, reminders, notifier, migration]
 ---
 
