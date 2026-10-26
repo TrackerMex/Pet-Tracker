@@ -294,22 +294,22 @@ En la base medida sale `0020_nutrition_ai_structured_plan.sql`. Debe contener
 `CREATE TABLE "nutrition_ai_generations"`. El SQL generado no se edita a mano.
 La migración se cita **por nombre**, no por número.
 
-Las features #210 y #211 también generan migraciones contra `dev`. Si una de
-ellas se mergea en `dev` antes que esta PR:
+Las features #210 y #211 también generan migraciones contra `dev`. Si
+`git ls-tree origin/dev backend-pet-tracker/src/db/migrations/` muestra una 0020
+o posterior que esta branch no tiene, antes de la PR se aplica esta receta, común
+a #210, #211 y #212. Se respetan el orden y los comandos literales. Nunca se
+renumera a mano.
 
-```sh
-git merge origin/dev
-git checkout origin/dev -- backend-pet-tracker/src/db/migrations/meta
-git rm backend-pet-tracker/src/db/migrations/00NN_nutrition_ai_structured_plan.sql
-cd backend-pet-tracker && pnpm exec drizzle-kit generate --name nutrition_ai_structured_plan
-```
-
-`00NN` es el número que tenga en ese momento. Luego hay que volver a correr las
-suites unitaria y e2e.
-- Nunca se renumera a mano.
-- Nunca se hace rebase: el rebase invalida los hashes de [[traceability]].
-- El commit del merge se queda tal cual, y la regeneración va en un commit propio:
-  `chore(nutrition-ai-structured-plan): regenerate migration after merging dev (R12,R16)`.
+1. `git merge origin/dev`. Nunca rebase: invalida los hashes de [[traceability]].
+2. `git checkout origin/dev -- backend-pet-tracker/src/db/migrations/meta` (journal y snapshots quedan los de dev).
+3. `git rm backend-pet-tracker/src/db/migrations/00NN_nutrition_ai_structured_plan.sql` (00NN = número que tenga en ese momento).
+4. `git diff --name-status origin/dev -- backend-pet-tracker/src/db/migrations | wc -l` debe dar `0`. Si no, restaurar con `git checkout origin/dev -- <ruta>` o borrar el artefacto propio.
+5. `git commit --no-edit`, que cierra el merge.
+6. `cd backend-pet-tracker && pnpm exec drizzle-kit generate --name nutrition_ai_structured_plan`. Requiere `../.env` con `DATABASE_URL`. El `.sql` nuevo solo contiene `ALTER TABLE "nutrition_plans" ADD COLUMN "ai_proposal" jsonb;` y `CREATE TABLE "nutrition_ai_generations"` (más sus índices o FKs propios). Si trae cualquier otra tabla, PARAR.
+7. `grep -cF '"tag"' src/db/migrations/meta/_journal.json` = cuenta de `origin/dev` + 1. La cuenta base se mide con `git show origin/dev:backend-pet-tracker/src/db/migrations/meta/_journal.json | grep -cF '"tag"'`.
+8. Commit propio `chore(nutrition-ai-structured-plan): regenerate migration after merging dev (R12,R16)`.
+9. Recrear la base del worktree antes del siguiente `db:migrate`: `docker exec pet-tracker-postgres psql -U pet_tracker -d postgres -c 'DROP DATABASE pet_tracker_wt212;'`, luego `docker exec pet-tracker-postgres psql -U pet_tracker -d postgres -c 'CREATE DATABASE pet_tracker_wt212 OWNER pet_tracker;'` y luego `pnpm run db:migrate`. Nunca psql crudo sobre el journal.
+10. Volver a correr las suites unitaria y e2e.
 
 ## Reglas de adaptación mecánica de tests heredados (M1–M7)
 

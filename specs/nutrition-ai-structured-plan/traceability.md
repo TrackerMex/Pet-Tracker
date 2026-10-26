@@ -32,5 +32,5 @@ tags: [harness, spec, backend, nutrition, ai]
 Regla: el reviewer no aprueba si alguna fila queda "pendiente". R20 la cierra
 solo el humano, al marcar su casilla; hasta entonces la feature no pasa a `done`.
 Convención de commit: `feat(nutrition-ai-structured-plan): <desc> (R1,R2)`.
-El implementer actualiza esta tabla tras cada commit; el reviewer la valida
+El implementer rellena esta tabla en un único commit final tras el último verde ([[tasks]] §Reglas); el reviewer la valida
 al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).

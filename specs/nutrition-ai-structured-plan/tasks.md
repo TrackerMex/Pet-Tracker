@@ -23,10 +23,15 @@ tags: [harness, spec, backend, nutrition, ai]
   No se mezclan implementación y tests en un solo commit.
 - **El rojo falla por aserción**, nunca por `ReferenceError`, `Cannot find module` ni un error de tipos.
   - Si el símbolo aún no existe, el commit rojo puede llevar un **stub mínimo**: la firma exportada, devolviendo `null`, `[]`, `false` o el valor de antes.
+    Forma obligatoria, para que `pnpm exec eslint` pase en cada commit: el método o función **no** es `async`;
+    cada parámetro que el stub no usa se consume con `void <param>;` (el prefijo `_` no basta: no hay
+    `argsIgnorePattern`); si la firma devuelve una promesa, `return Promise.resolve(<valor>);`. Vale también
+    para los parámetros nuevos que se ignoran (R3, R5) y para el adaptador de R7 si el stub quita el `await` del SDK.
   - El stub se declara en el mensaje del commit, por ejemplo `(R8, stub)`.
 - **Its que nacen verdes.** Cada bloque dice qué its pasan ya en el commit rojo
   por el stub o por un requisito anterior. En cada commit rojo, al menos un it del
-  R tiene que fallar.
+  R tiene que fallar. Excepción: el bloque R16/R17 (e2e), que nace verde y se
+  prueba con la mutación local de ese bloque.
 - **Cada commit compila.** `pnpm exec tsc --noEmit -p tsconfig.json` sale con 0
   y la suite unitaria está verde, salvo los its rojos del commit rojo.
   - Los cambios de firma llevan en el mismo commit sus adaptaciones M1–M7.
@@ -34,8 +39,12 @@ tags: [harness, spec, backend, nutrition, ai]
 - **Formato.** `pnpm exec prettier --write <ficheros tocados>` antes de cada commit.
 - **Prohibido:** `./init.sh` (lo corre el leader), llamar al API real de
   Anthropic, crear recursos AWS, leer `.env`, hacer rebase y renumerar migraciones a mano.
-- **Trazabilidad.** Tras cada commit verde se actualiza la fila del R en
-  [[traceability]], con el test y el hash. La cadena no se rebasea después.
+- **Trazabilidad.** No se toca [[traceability]] durante la cadena. Tras el último
+  commit de la cadena (incluido el `chore` de regeneración de [[design]] §Migración,
+  si lo hay) se rellenan todas las filas, con el test y el hash del commit verde, en
+  un único commit `docs(nutrition-ai-structured-plan): fill traceability`. La cadena no se rebasea después.
+- **Directorio de los locks.** Los locks con rutas `src/` o `test/` se corren desde
+  `backend-pet-tracker/`. Los de documentación, desde la raíz del repo.
 
 Comandos de verificación:
 
@@ -133,7 +142,7 @@ Va antes que R8, porque R11 la usa.
 - Lock:
 
   ```sh
-  grep -cF 'imports: [PetsModule, SubscriptionsModule, ConfigModule, NutritionWeightReadModule],' src/modules/nutrition/nutrition.module.ts  # 1
+  grep -cF '    NutritionWeightReadModule,' src/modules/nutrition/nutrition.module.ts  # 1
   ```
 
 ## R3 — `weightTrend` en el hash
@@ -167,6 +176,7 @@ Va antes que R8, porque R11 la usa.
   grep -cF 'ALTER TABLE "nutrition_plans" ADD COLUMN "ai_proposal" jsonb;' src/db/migrations/*_nutrition_ai_structured_plan.sql  # 1
   grep -cF 'CREATE TABLE "nutrition_ai_generations"' src/db/migrations/*_nutrition_ai_structured_plan.sql                      # 1
   grep -cF '"tag": "0019_pet_documents_uploaded_at"' src/db/migrations/meta/_journal.json                                        # 1
+  grep -cF '_nutrition_ai_structured_plan"' src/db/migrations/meta/_journal.json                                               # 1
   ```
 
 ## R4 — System prompt de G2
@@ -307,6 +317,8 @@ Va antes que R8, porque R11 la usa.
 
 - [ ] (1) Rojo: añadir al e2e nuevo los cinco its de R16 y el de R17. Aplicar M3 y M5 en los e2e heredados.
   - Si todo lo anterior está verde, estos its nacen verdes. Se demuestra que muerden con una mutación local que **no** se commitea: `copyWithMealTimes` copiando `aiProposal` tumba el it de R17, y `NUTRITION_AI_DAILY_LIMIT = 4` tumba el cuarto `generate`. La mutación y el rojo observado se anotan en `progress/impl_nutrition-ai-structured-plan.md`.
+  - Revertir con `git checkout HEAD -- <fichero>`; `git diff --quiet -- src` sale con 0 antes del commit.
+  - Riesgo conocido: el e2e no controla el `now` del servidor (el controlador llama a `execute` sin `now`, que cae en `new Date()`) y calcula `<hoy UTC + 30>` por su cuenta. Si la corrida cruza la medianoche UTC entre el `generate` y ese cálculo, el it de R16 falla sin defecto; se repite la corrida y se anota en `progress/impl_nutrition-ai-structured-plan.md`.
   - Commit: `test(nutrition-ai-structured-plan): end-to-end proposal contract (R16,R17)`.
 - [ ] (2) Verde: nada, si nacieron verdes. Si alguno falla, el arreglo va en `feat(nutrition-ai-structured-plan): <desc> (R16)`.
 - [ ] (3) Refactor: ninguno previsto.
@@ -428,5 +440,6 @@ Va antes que R8, porque R11 la usa.
   ```
 
   Cada R-id se comprueba en [[traceability]]: el test (archivo::nombre) y el hash del commit verde.
-- [ ] Si #210 o #211 se mergearon en `dev` durante la cadena, aplicar [[design]] §Migración antes de la PR.
+- [ ] Si `git ls-tree origin/dev backend-pet-tracker/src/db/migrations/` muestra una 0020 o posterior que esta branch no tiene, aplicar [[design]] §Migración antes de la PR.
+- [ ] Rellenar [[traceability]] en el commit `docs(nutrition-ai-structured-plan): fill traceability`.
 - [ ] Escribir `progress/impl_nutrition-ai-structured-plan.md` con los hashes, las mutaciones de R16/R17 y las cifras de las suites.

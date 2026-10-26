@@ -58,6 +58,12 @@ El texto completo del comentario vigente es
 Por eso el texto nuevo y la lista de tóxicos se aprueban aquí, literalmente, en
 una casilla propia. Sin esa casilla marcada no hay handoff.
 
+Si al aprobar G2 el humano cambia algún término de §G2.2, en el mismo acto se
+enmiendan los 50 literales del test de R10 (y la cifra 50 donde aparezca) y, si
+el término es uno de los dos, los locks `'nuez moscada',` y `'raw dough'` de
+[[tasks]] §R10. Si cambia §G2.1, el literal del test de R4 y el lock del
+comentario de [[tasks]] §R4 se enmiendan igual.
+
 ### G2.1 — `NUTRITION_AI_SYSTEM_PROMPT` (literal)
 
 Son seis líneas unidas con `'\n'`, sin salto de línea al final. Cada línea se
@@ -112,7 +118,7 @@ está en [[design]] §Decisiones.
 | # | Decisión | Valor |
 |---|---|---|
 | D1 | Mecanismo de salida estructurada | `output_config.format = { type: 'json_schema', schema: NUTRITION_AI_OUTPUT_JSON_SCHEMA }` en `messages.create`. El SDK `@anthropic-ai/sdk` está fijado en `0.128.0`. El cuerpo se valida después con zod (tabla §R7), porque el esquema JSON del API no admite rangos ni longitudes |
-| D2 | Parámetros de la llamada | `max_tokens: 2000`; `thinking: { type: 'disabled' }` (lo admite Haiku 5.5 con effort `high` o menor; el default es `medium`); timeout de 15 s y 0 reintentos, como en #18; sin `temperature`, `top_p` ni `top_k`, que Haiku 5.5 rechaza con 400 |
+| D2 | Parámetros de la llamada | `max_tokens: 2000`; `thinking: { type: 'disabled' }` (lo admite Haiku 5.5 con effort `high` o menor; el default es `medium`); timeout de 15 s y 0 reintentos, como en #18; sin `temperature`, `top_p` ni `top_k`, que Haiku 5.5 rechaza con 400 salvo en su valor por defecto (`temperature: 1`, `top_p: 0.99`; `top_k` y `temperature` con `top_p` dan siempre 400) |
 | D3 | Tolerancia de gramos | La suma de `grams` puede alejarse de `dailyGrams` un 10 % como máximo: `Math.abs(suma - dailyGrams) * 100 <= dailyGrams * 10`, en aritmética entera |
 | D4 | Recomendaciones | De 1 a 3; cada una tiene entre 1 y 200 caracteres después de `trim()` |
 | D5 | Explicación | Entre 1 y 1500 caracteres después de `trim()`; el prompt pide 180 palabras como máximo |
@@ -388,7 +394,7 @@ Función pura `acceptAiOutput(output, plan, localDay)` en
   `NUTRITION_AI_DAILY_LIMIT` vale `3`.
   - Test: `src/modules/nutrition/application/use-cases/generate-nutrition-plan.use-case.spec.ts`:
     - `R14: consume con la mascota, el dia local del dueno y el limite 3`: `now = new Date('2026-10-26T05:30:00Z')` y `findOwnerTimezone` devuelve `'America/Mexico_City'`; se espera `consumeAiGeneration` con `('pet-prueba', '2026-10-25', 3)` y `NUTRITION_AI_DAILY_LIMIT === 3`.
-    - `R14: lee cinco pesos y los pasa a la IA y al hash`: `listRecent` con `('pet-prueba', 5)`; `explain` recibe como tercer argumento la tendencia del doble; el `inputsHash` del INSERT es igual a `nutritionInputHash(input, tendencia)`.
+    - `R14: lee cinco pesos y los pasa a la IA y al hash`: `listRecent` con `('pet-prueba', 5)`; la tendencia del doble es `[{ measuredAt: '2026-06-01', weightKg: 18.5 }, { measuredAt: '2026-07-01', weightKg: 19 }, { measuredAt: '2026-08-01', weightKg: 19.25 }, { measuredAt: '2026-09-01', weightKg: 19.5 }, { measuredAt: '2026-10-01', weightKg: 20 }]` (la de R2); `explain` recibe como tercer argumento esa tendencia; el `inputsHash` del INSERT es el literal `'236528deeb4b704b65e87114a81d4f8ebb26d8e0d92ef038ff34bb049fd3ad90'`, que es `nutritionInputHash(input, tendencia)` con el `input` del fichero (`ageMonths: 36`, `allergies` y `diseases` vacíos). El literal se escribe en el test; no se calcula con la función de producción.
     - `R14: la fecha de revision parte del dia local del dueno`: con `reviewInDays` 7 y el mismo `now`, `setAiResult` recibe `reviewDate: '2026-11-01'`, que cruza de mes.
 
 - **R15**: WHEN el `inputsHash` coincide con el del último plan THE SYSTEM SHALL no insertar.
