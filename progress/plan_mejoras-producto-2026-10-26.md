@@ -209,6 +209,10 @@ relativas a `mobile-pet-tracker/src/` y las de backend a `backend-pet-tracker/sr
   propuesta descartada por cota.
 - Sustituye el copy de ejemplo del canvas («Reduce la porción de la cena a 90 g…»)
   por datos reales.
+- El formato de la recomendación IA **no** es de esta feature. El 2026-10-26 el
+  humano se lo asignó a la sesión Frontend dentro de sus mejoras de UI (punto 5,
+  `progress/plan_ui-2026-10-26.md`), y lo quiere ya. La spec de #215 se escribe
+  sobre lo que ese cambio haya dejado en `dev`.
 
 ### 216 `mobile-role-aware-actions`
 - Ocultar a family las acciones de owner en las pantallas que hoy muestran el
