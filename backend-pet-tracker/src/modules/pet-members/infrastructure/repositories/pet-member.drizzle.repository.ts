@@ -1,6 +1,7 @@
-import { and, count, desc, eq, gt, isNull } from 'drizzle-orm';
+import type { PetRole } from '@/modules/pets/domain/entities/pet-membership';
+import { and, asc, count, desc, eq, gt, isNull } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
-import { petInvites, petUsers } from '@/db/schema';
+import { petInvites, petUsers, users } from '@/db/schema';
 import { Inject, Injectable } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '@/db/drizzle.constants';
@@ -128,9 +129,20 @@ export class PetMemberDrizzleRepository implements PetMemberRepository {
       };
     });
   }
-  listMembers(petId: string): Promise<PetMember[]> {
-    void petId;
-    return Promise.reject(new Error('Not implemented'));
+  async listMembers(petId: string): Promise<PetMember[]> {
+    const rows = await this.db
+      .select({
+        userId: petUsers.userId,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        role: petUsers.role,
+        joinedAt: petUsers.createdAt,
+      })
+      .from(petUsers)
+      .innerJoin(users, eq(users.id, petUsers.userId))
+      .where(and(eq(petUsers.petId, petId), eq(petUsers.status, 'active')))
+      .orderBy(asc(petUsers.createdAt), asc(petUsers.userId));
+    return rows.map((row) => ({ ...row, role: row.role as PetRole }));
   }
   deleteMembership(petId: string, userId: string): Promise<void> {
     void petId;

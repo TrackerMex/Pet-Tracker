@@ -23,8 +23,12 @@ export class PetMembersController {
   ) {}
   @Get()
   @UseGuards(PetAccessGuard)
-  list(@Req() request: PetAccessRequest) {
-    return this.listMembers.execute(request.petMembership.petId);
+  async list(@Req() request: PetAccessRequest) {
+    const members = await this.listMembers.execute(request.petMembership.petId);
+    return members.map((member) => ({
+      ...member,
+      joinedAt: member.joinedAt.toISOString(),
+    }));
   }
   @Delete(':userId')
   @HttpCode(HttpStatus.NO_CONTENT)

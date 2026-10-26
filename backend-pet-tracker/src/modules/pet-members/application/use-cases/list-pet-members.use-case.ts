@@ -9,7 +9,6 @@ export class ListPetMembersUseCase {
     @Inject(PET_MEMBER_REPOSITORY) private readonly repo: PetMemberRepository,
   ) {}
   execute(petId: string): Promise<PetMember[]> {
-    void petId;
-    return Promise.reject(new Error('Not implemented'));
+    return this.repo.listMembers(petId);
   }
 }
