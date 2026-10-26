@@ -1,5 +1,5 @@
 {
-  "id": "44e0ffa2-3891-4439-94be-12fe326e3d67",
+  "id": "0073571b-a6ef-49cb-9bb7-d04c4e52b4b8",
   "prevId": "56584d4a-4429-432e-a3bf-52738a3b6e8f",
   "version": "7",
   "dialect": "postgresql",
@@ -1813,6 +1813,179 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.pet_invites": {
+      "name": "pet_invites",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "pet_id": {
+          "name": "pet_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "code_hash": {
+          "name": "code_hash",
+          "type": "char(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "accepted_by": {
+          "name": "accepted_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "accepted_at": {
+          "name": "accepted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "revoked_at": {
+          "name": "revoked_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "pet_invites_pet_id_idx": {
+          "name": "pet_invites_pet_id_idx",
+          "columns": [
+            {
+              "expression": "pet_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "pet_invites_created_by_idx": {
+          "name": "pet_invites_created_by_idx",
+          "columns": [
+            {
+              "expression": "created_by",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "pet_invites_accepted_by_idx": {
+          "name": "pet_invites_accepted_by_idx",
+          "columns": [
+            {
+              "expression": "accepted_by",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "pet_invites_pet_id_pets_id_fk": {
+          "name": "pet_invites_pet_id_pets_id_fk",
+          "tableFrom": "pet_invites",
+          "tableTo": "pets",
+          "columnsFrom": [
+            "pet_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pet_invites_created_by_users_id_fk": {
+          "name": "pet_invites_created_by_users_id_fk",
+          "tableFrom": "pet_invites",
+          "tableTo": "users",
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pet_invites_accepted_by_users_id_fk": {
+          "name": "pet_invites_accepted_by_users_id_fk",
+          "tableFrom": "pet_invites",
+          "tableTo": "users",
+          "columnsFrom": [
+            "accepted_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "pet_invites_code_hash_unique": {
+          "name": "pet_invites_code_hash_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "code_hash"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "pet_invites_role_check": {
+          "name": "pet_invites_role_check",
+          "value": "\"pet_invites\".\"role\" in ('family')"
+        }
+      },
+      "isRLSEnabled": false
+    },
     "public.pet_users": {
       "name": "pet_users",
       "schema": "",
@@ -2198,30 +2371,6 @@
           "notNull": true,
           "default": "'scheduled'"
         },
-        "recurrence_unit": {
-          "name": "recurrence_unit",
-          "type": "varchar(5)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "recurrence_every": {
-          "name": "recurrence_every",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "recurrence_until": {
-          "name": "recurrence_until",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "recurrence_anchor_at": {
-          "name": "recurrence_anchor_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
         "schedule_name": {
           "name": "schedule_name",
           "type": "varchar(64)",
@@ -2336,18 +2485,6 @@
         "reminders_status_check": {
           "name": "reminders_status_check",
           "value": "\"reminders\".\"status\" in ('scheduled', 'sent', 'cancelled')"
-        },
-        "reminders_recurrence_unit_check": {
-          "name": "reminders_recurrence_unit_check",
-          "value": "\"reminders\".\"recurrence_unit\" in ('hour', 'day', 'week', 'month', 'year')"
-        },
-        "reminders_recurrence_every_check": {
-          "name": "reminders_recurrence_every_check",
-          "value": "case \"reminders\".\"recurrence_unit\" when 'hour' then \"reminders\".\"recurrence_every\" between 1 and 24 when 'day' then \"reminders\".\"recurrence_every\" between 1 and 365 when 'week' then \"reminders\".\"recurrence_every\" between 1 and 52 when 'month' then \"reminders\".\"recurrence_every\" between 1 and 12 when 'year' then \"reminders\".\"recurrence_every\" between 1 and 10 else true end"
-        },
-        "reminders_recurrence_shape_check": {
-          "name": "reminders_recurrence_shape_check",
-          "value": "(\"reminders\".\"recurrence_unit\" is null and \"reminders\".\"recurrence_every\" is null and \"reminders\".\"recurrence_until\" is null and \"reminders\".\"recurrence_anchor_at\" is null) or (\"reminders\".\"recurrence_unit\" is not null and \"reminders\".\"recurrence_every\" is not null and \"reminders\".\"recurrence_anchor_at\" is not null)"
         }
       },
       "isRLSEnabled": false

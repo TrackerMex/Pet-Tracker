@@ -17,6 +17,7 @@ export * from './health.schema';
 export * from './media.schema';
 export * from './nutrition.schema';
 export * from './password-reset-tokens.schema';
+export * from './pet-invites.schema';
 export * from './pets.schema';
 export * from './push-tokens.schema';
 export * from './reminders.schema';
