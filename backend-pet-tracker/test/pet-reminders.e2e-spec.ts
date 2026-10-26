@@ -335,6 +335,8 @@ describe('Pet reminders (e2e)', () => {
           'title',
           'dueAt',
           'advanceMinutes',
+          'recurrence',
+          'recurrenceUntil',
           'status',
         ].sort(),
       );
@@ -885,6 +887,57 @@ describe('Pet reminders (e2e)', () => {
         ) as unknown,
         enqueuedAt: null,
       });
+    });
+  });
+
+  describe('#210 R5: respuesta publica de las series', () => {
+    it('#210 R5: GET POST y PATCH devuelven recurrence y recurrenceUntil sin el ancla', async () => {
+      const owner = await seedUser('210-r5');
+      const pet = await seedPet(owner);
+      const expectedRows: Record<string, unknown>[] = [];
+      for (const [offset, recurrence, recurrenceUntil] of [
+        [3, { unit: 'month', every: 6 }, '2031-01-01'],
+        [4, null, null],
+      ] as const) {
+        const dueAt = new Date(Date.now() + offset * 86_400_000).toISOString();
+        const created = await api()
+          .post(`/v1/pets/${pet.id}/reminders`)
+          .set(auth(owner.token))
+          .send({
+            type: 'custom',
+            title: 'Shape',
+            dueAt,
+            recurrence,
+            recurrenceUntil,
+          })
+          .expect(201);
+        const { id } = created.body as { id: string };
+        const expected = {
+          id,
+          petId: pet.id,
+          type: 'custom',
+          title: 'Shape',
+          dueAt,
+          advanceMinutes: 60,
+          status: 'scheduled',
+          recurrence,
+          recurrenceUntil,
+        };
+        expect(created.body).toEqual(expected);
+        const patched = await api()
+          .patch(`/v1/reminders/${id}`)
+          .set(auth(owner.token))
+          .send({ title: 'Cambio' })
+          .expect(200);
+        expected.title = 'Cambio';
+        expect(patched.body).toEqual(expected);
+        expectedRows.push(expected);
+        const listed = await api()
+          .get(`/v1/pets/${pet.id}/reminders`)
+          .set(auth(owner.token))
+          .expect(200);
+        expect(listed.body).toEqual(expectedRows);
+      }
     });
   });
 });
