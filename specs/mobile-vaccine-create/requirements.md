@@ -74,8 +74,8 @@ Todas las cuentas se miden con `grep -cF` desde la raíz del worktree.
 - Cada test nombrado empieza por `#208 R<n>`.
 - Las anclas se citan por contenido, como `grep -cF '<literal>' <ruta>` → cuenta
   esperada, medida en la base `origin/dev` 2041e2b3. Las marcadas **[#220]**
-  existen solo cuando #220 está mergeada: miden 0 en 2041e2b3 y la cuenta
-  indicada tras `git merge origin/dev`.
+  existen solo cuando #220 está mergeada: el fichero no existe en 2041e2b3 y la
+  cuenta indicada vale tras `git merge origin/dev`.
 - **Copy literal.** Cada R-id fija sus literales es/en. Codex no inventa copy.
 - **Fecha fija en los tests de pantalla.** El día civil es **2026-10-06** con
   `me.timezone = 'America/Mexico_City'`. El reloj se fija con el patrón que ya
@@ -97,7 +97,7 @@ Todas las cuentas se miden con `grep -cF` desde la raíz del worktree.
 - Hace `GET` a la ruta relativa `/vaccine-catalog?species=<species>`, con el
   mismo helper (`getJson`) y la misma base que `listVaccines`.
 - Devuelve:
-  - `{ kind: 'ok', entries: VaccineCatalogEntry[] }` con 200
+  - `{ kind: 'ok', entries: VaccineCatalogEntry[] }` con 200 (el 200 es un array JSON, sin envoltorio)
   - `{ kind: 'unauthorized' }` con 401
   - `{ kind: 'error' }` con cualquier otro estado
   - `{ kind: 'unreachable', message }` si `fetch` lanza
@@ -145,10 +145,13 @@ desde el fichero nuevo `utils/vaccine-dates.ts`.
 - Suma meses de calendario a una fecha `YYYY-MM-DD`.
 - Si el día no existe en el mes destino, recorta al último día de ese mes,
   igual que `addCalendarMonths` del backend.
-- No depende de la zona horaria del proceso.
+- No depende de la zona horaria del proceso. Candado: un segundo `it.each`
+  `#208 R2: en America/Mexico_City suma %i meses a %s y da %s` recorre las mismas filas tras
+  `process.getBuiltinModule('process').env.TZ = 'America/Mexico_City'` y restaura el valor previo en
+  `afterEach`. Asignar `process.env.TZ` dentro de jest no cambia `Date`.
 
 - Test: `utils/__tests__/vaccine-dates.test.ts`, en un `it.each` titulado
-  `#208 R2: suma %i meses a %s y da %s`. Filas exactas:
+  `#208 R2: suma %i meses a %s y da %s`. Cada fila es `[months, iso, esperado]`. Filas exactas:
 
 | `iso`        | `months` | esperado     |
 |--------------|---------:|--------------|
@@ -158,6 +161,9 @@ desde el fichero nuevo `utils/vaccine-dates.ts`.
 | `2024-01-31` | 1        | `2024-02-29` |
 | `2026-03-31` | 1        | `2026-04-30` |
 | `2026-11-30` | 3        | `2027-02-28` |
+| `2026-12-31` | 2        | `2027-02-28` |
+| `2024-02-29` | 12       | `2025-02-28` |
+| `2026-11-30` | 1        | `2026-12-30` |
 
 ### R3 — Regla pura del nombre libre
 
@@ -189,15 +195,17 @@ nombrado `VaccineCreateScreen({ petId }: { petId: string })`.
 `<Stack.Screen name="pets/[petId]/vaccines/new" options={{ headerShown: false }} />`
 dentro del grupo `Stack.Protected`.
 
-- Va justo después de `meals-history` y antes de `edit-profile`, en el índice 13.
-- El grupo pasa de 14 a 15 hijos.
+- Va justo después de `meals-history`. No se fija índice absoluto: #209 también añade un hijo al grupo.
+- El grupo gana un hijo (los `+ 1 // #208 R4`).
 
 - Anclas:
   - `grep -cF '<Stack.Screen name="meals-history" options={{ headerShown: false }} />' app/_layout.tsx` → 1
   - `grep -cF 'useLocalSearchParams<{ petId: string }>()' app/pets/[petId]/docs-upload.tsx` → 1
 - Tests:
-  - `app/__tests__/layout.test.tsx`: `#208 R4: la pantalla de alta de vacuna es la decimocuarta protegida y no pinta cabecera nativa`.
-    Asserta el `name` en el índice 13 y `options` `{ headerShown: false }`.
+  - `app/__tests__/layout.test.tsx`: `#208 R4: la pantalla de alta de vacuna va justo tras meals-history y no pinta cabecera nativa`.
+    Con `names` = los `name` de los hijos del grupo protegido, asserta
+    `names.indexOf('pets/[petId]/vaccines/new') === names.indexOf('meals-history') + 1`
+    y `options` `{ headerShown: false }`.
     Además, los cuatro `toHaveLength(…)` del grupo protegido suman `+ 1 // #208 R4`,
     y sus `it` llevan `(enmendado por #208 R4)`.
   - `app/__tests__/detail-stack.guard.test.tsx`: la lista del `it.each` de `#149 R3`
@@ -220,7 +228,7 @@ Es la receta «Compacto» de la carta §13.
 - Lleva `<Plus size={16} color={accentForeground} />`.
 - Lleva `<Button.Label className="text-sm font-extrabold text-accent-foreground">`
   con «Agregar vacuna» / «Add vaccine».
-- Al pulsarlo hace
+- `onPress={openVaccineCreate}`, un handler de la pantalla que hace
   `router.push({ pathname: '/pets/[petId]/vaccines/new', params: { petId: selectedPetId } })`.
 
 **Resto de roles.** WHEN `myRole` es `'family'`, `'walker'` o `'vet'`, THE SYSTEM
@@ -232,6 +240,9 @@ SHALL NOT pintar `vaccines-add`, y la fila tiene un solo hijo.
   - `grep -cF 'queryFn: () => listPets(' screens/health/index.tsx` → 1
   - `grep -cF 'className="rounded-xl bg-accent h-10 gap-1.5 px-3.5" style={chunkyLip.primaryCompact}' screens/reminders/index.tsx` → 1
 - Test: `screens/health/index.test.tsx`:
+  - Enmienda del doble: el mock cerrado de `reicon-react-native` de este fichero (hoy `Check`,
+    `ChevronRight`, `Clock`, `HeartPulse` y `Syringe`) gana `Plus: icon('health-icon-plus')` y
+    `BellOff: icon('health-icon-bell-off')`. Va en el commit rojo de R5 y sirve también a R6 y R16.
   - `#208 R5: el owner ve «Agregar vacuna» con la receta compacta y abre el alta de su mascota`.
     Asserta `className`, `style`, el label y la llamada exacta a `router.push`.
   - `it.each(['family', 'walker', 'vet'])('#208 R5: %s no ve «Agregar vacuna»', …)`.
@@ -258,7 +269,7 @@ La tarjeta tiene cuatro hijos, en este orden:
 4. **CTA** `vaccines-empty-action`: `<Button className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary}>`.
    - Lleva `<Plus size={20} color={accentForeground} />`.
    - Lleva `<Text className="text-17 font-extrabold text-accent-foreground">` con «Agregar vacuna».
-   - Hace el mismo `router.push` que R5.
+   - `onPress={openVaccineCreate}`, el mismo handler de R5.
    - Es la receta global de primario. La desviación del canvas (52/16 → 56/17)
      está en [[design]].
 
@@ -327,8 +338,9 @@ pintar `vaccine-create-chips-skeleton`.
 orden de la API y después el chip «Otra vacuna».
 
 - Cada entrada es un `Pressable` `vaccine-chip-${entry.id}` con
-  `accessibilityRole="button"` y `accessibilityState={{ selected }}`.
-- El chip «Otra vacuna» es `vaccine-chip-other`.
+  `accessibilityRole="button"`, `accessibilityState={{ selected }}` y `hitSlop={TOUCH_SLOP}`
+  (de `theme/touch-target`, como `type-chip` de `add-reminder`).
+- El chip «Otra vacuna» es `vaccine-chip-other`, con los mismos tres props.
 - **La primera entrada queda seleccionada al cargar.**
 - Clases de chip:
 
@@ -351,7 +363,9 @@ THEN THE SYSTEM SHALL pintar solo `vaccine-chip-other`, seleccionado.
   - `#208 R8: mientras carga pinta tres esqueletos de chip y ningún chip`
   - `#208 R8: pinta los chips en el orden de la API, preselecciona el primero y cierra con «Otra vacuna»`.
     Asserta `children.map(testID)` exacto y los dos `className`.
-  - `#208 R8: pulsar un chip lo selecciona con labio de tres y deselecciona el anterior`
+  - `#208 R8: pulsar un chip lo selecciona con labio de tres y deselecciona el anterior`.
+    Asserta `props.hitSlop` igual a `TOUCH_SLOP`, importado de producción, en un chip del
+    catálogo y en `vaccine-chip-other`.
   - `#208 R8: con el catálogo en error solo queda «Otra vacuna» seleccionado`
 
 ### R9 — Modo «Otra vacuna»: nombre y contador
@@ -399,6 +413,9 @@ NOT pintar `vaccine-create-name` ni `vaccine-create-name-count`.
 - La propuesta se recalcula al cambiar de chip o de `appliedAt`, salvo que el
   usuario haya elegido «Próxima dosis» a mano después del último cambio de chip.
   Entonces su elección se conserva hasta el siguiente cambio de chip.
+- WHEN `appliedAt` cambia y la «Próxima dosis» vigente queda anterior a `appliedAt`,
+  THE SYSTEM SHALL descartarla, en los dos modos: con catálogo vuelve a
+  `addCalendarMonthsIso(appliedAt, entry.scheme.boosterMonths)`; con «Otra vacuna» vuelve a `null`.
 - `allowClear` es `false`.
 
 **«Otra vacuna».** WHILE «Otra vacuna» está seleccionado, «Próxima dosis» empieza
@@ -411,14 +428,25 @@ en `null`, con el placeholder por defecto de DateField («Elige una fecha»).
   - `grep -cF 'export function isoToLocalDate' utils/civil-date.ts` → 1
   - `grep -cF 'export function localDateToIso' utils/civil-date.ts` → 1
 - Test: `screens/vaccine-create/index.test.tsx`. Se usa el arnés de `@expo/ui`
-  de `add-reminder/index.test.tsx`: `fireEvent(picker, 'onValueChange', {}, date)`
-  más `onDismiss`.
+  de `add-reminder/index.test.tsx` con los testID de #220: el picker solo existe tras
+  `await fireEvent.press(getByTestId('vaccine-create-applied'))`, y entonces
+  `await fireEvent(getByTestId('vaccine-create-applied-picker'), 'onValueChange', {}, new Date(2026, 8, 1, 12))`
+  cambia el valor y lo desmonta. Ídem `vaccine-create-next` y `vaccine-create-next-picker`.
+  `onDismiss` solo para cerrar sin elegir, nunca después de `onValueChange`.
   - `#208 R10: aplicación empieza hoy (6 oct 2026) con máximo hoy y la próxima dosis propone 6 oct 2027`.
-    Asserta `${testID}-value` con `value` «6 oct 2026» y «6 oct 2027».
+    Asserta `${testID}-value` con `value` «6 oct 2026» y «6 oct 2027». Tras abrirlo,
+    `vaccine-create-applied-picker` tiene `maximumDate` igual a `new Date(2026, 9, 6, 12)`
+    (mediodía local, contrato de #220).
   - `#208 R10: cambiar la fecha de aplicación recalcula la propuesta`
   - `#208 R10: una próxima dosis elegida a mano sobrevive al cambio de aplicación y cae al cambiar de chip`
   - `#208 R10: «Otra vacuna» deja la próxima dosis vacía y permite borrarla`.
-    Asserta que `vaccine-create-next-clear` existe solo en este modo.
+    Con valor `null` no existe `vaccine-create-next-clear` (#220 R11). Tras elegir una fecha existe;
+    pulsarlo deja `vaccine-create-next-value` vacío. Con catálogo y fecha válida no existe.
+  - `it.each` de dos filas, una por modo,
+    `#208 R10: si la fecha de aplicación supera la próxima dosis elegida, con %s vuelve a %s`.
+    Aplicación 1 sep 2026, próxima 15 sep 2026 a mano, aplicación 1 oct 2026. Filas:
+    `['catálogo', 'la propuesta']`, con `vaccine-create-next-value` «1 oct 2027» (primera entrada,
+    `boosterMonths` 12), y `['«Otra vacuna»', 'vacía']`, con `vaccine-create-next-value` `''`.
 
 ### R11 — Nota del esquema
 
@@ -570,6 +598,8 @@ recordatorio, THE SYSTEM SHALL invalidar `healthKeys.vaccines(petId)`,
   - `#208 R15: con próxima dosis futura crea el recordatorio vaccine a las 09:00 locales sin antelación`.
     El `dueAt` esperado se calcula en el test como
     `new Date(2027, 9, 6, 9, 0, 0, 0).toISOString()`, un literal y no el helper.
+  - `#208 R15: el dueAt sigue la hora local del dispositivo`: con la zona fijada como en R2
+    antes de montar la pantalla, espera el literal `'2027-10-06T15:00:00.000Z'`.
   - `it.each` de tres filas `#208 R15: no crea recordatorio cuando %s`:
     «está desmarcado», «la respuesta no trae próxima dosis» y «la próxima dosis es hoy».
   - `#208 R15: tras el 201 invalida vacunas, recordatorios y mascotas y vuelve`
@@ -870,3 +900,5 @@ E2E_SETUP_CMD="pnpm -C backend-pet-tracker run db:migrate && pnpm -C backend-pet
 ## Aprobación
 
 - [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [ ] Smoke de #208 en dev build por el humano (fecha: ____): picker nativo de las dos fechas, teclado con
+      KAV en notas, recordatorio a las 09:00 locales. No bloquea tareas; bloquea `done`.

@@ -42,7 +42,7 @@ tags: [mobile, ui, spec]
 
 ## R2 — `addCalendarMonthsIso` con recorte a fin de mes
 
-- [ ] (1) Escribir test que falla para R2 (`utils/__tests__/vaccine-dates.test.ts`, seis filas)
+- [ ] (1) Escribir test que falla para R2 (`utils/__tests__/vaccine-dates.test.ts`, nueve filas, y el `it.each` en America/Mexico_City)
 - [ ] (2) Implementación mínima que lo pasa (`utils/vaccine-dates.ts`)
 - [ ] (3) Refactor con tests verdes
 
@@ -52,7 +52,7 @@ tags: [mobile, ui, spec]
 - [ ] (2) Implementación mínima que lo pasa (`utils/form-rules.ts`)
 - [ ] (3) Refactor con tests verdes
 
-## R4 — Ruta delgada y `Stack.Screen` en el índice 13
+## R4 — Ruta delgada y `Stack.Screen` tras `meals-history`
 
 - [ ] (1) Escribir test que falla para R4: `layout.test.tsx` con el `it` nuevo
       y los cuatro `+ 1 // #208 R4`, `detail-stack.guard.test.tsx` con su fila,
