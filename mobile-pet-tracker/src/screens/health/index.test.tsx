@@ -87,6 +87,8 @@ jest.mock('reicon-react-native', () => {
     Clock: icon('health-icon-clock'),
     HeartPulse: icon('health-icon-heart-pulse'),
     Syringe: icon('health-icon-syringe'),
+    Plus: icon('health-icon-plus'),
+    BellOff: icon('health-icon-bell-off'),
   };
 });
 
@@ -1253,14 +1255,15 @@ describe('#199 R14: panel de la próxima dosis', () => {
 
 describe('#199 R15: título de Vacunas', () => {
   beforeEach(setupHealth168);
-  it('#199 R15 Vacunas es un h2 de text-lg font-extrabold sin icono', async () => {
+  it('#199 R15 Vacunas es un h2 de text-lg font-extrabold sin icono (enmendado por #208 R5)', async () => {
     await renderHealth();
     const title = await screen.findByTestId('vaccines-title');
     expect(title.type).toBe('Text');
     expect(title.props.accessibilityRole).toBe('header');
     expect(title.props.className).toBe('mt-1 text-lg font-extrabold text-foreground');
     expect(title).toHaveTextContent('Vacunas', { exact: true });
-    expect(elementChild(screen.getByTestId('vaccines-section'), 0).props.testID).toBe('vaccines-title');
+    expect(elementChild(screen.getByTestId('vaccines-section'), 0).props.testID).toBe('vaccines-header');
+    expect(elementChild(screen.getByTestId('vaccines-header'), 0).props.testID).toBe('vaccines-title');
     expect(within(screen.getByTestId('vaccines-section')).queryByTestId('health-icon-heart-pulse')).toBeNull();
   });
   it('#199 R15 vaccines-section separa sus hijos con gap-2.5', async () => {
@@ -1486,5 +1489,35 @@ describe('#199 R21: estados de mascotas', () => {
     expect(error.props.accessibilityRole).toBe('alert');
     expect(error).toHaveTextContent('Algo salió mal', { exact: true });
     expect(screen.getByTestId('health-retry')).toHaveTextContent('Reintentar');
+  });
+});
+
+
+const flatVaccineStyle = (style: unknown) => Object.assign({}, ...[style].flat(Infinity));
+
+describe('#208 R5: acceso al alta desde Salud', () => {
+  beforeEach(setupHealth168);
+  it('#208 R5: el owner ve «Agregar vacuna» con la receta compacta y abre el alta de su mascota', async () => {
+    mockSemanticColors = true;
+    await renderHealth();
+    const add = await screen.findByTestId('vaccines-add');
+    expect(screen.getByTestId('vaccines-header').props.className).toBe('flex-row items-center justify-between');
+    expect(elementChild(screen.getByTestId('vaccines-header'), 0).props.testID).toBe('vaccines-title');
+    expect(add.props.className).toContain('rounded-xl bg-accent h-10 gap-1.5 px-3.5');
+    expect(flatVaccineStyle(add.props.style)).toMatchObject({ boxShadow: [{ offsetX: 0, offsetY: 3, blurRadius: 0, spreadDistance: 0, color: 'lip' }] });
+    const label = within(add).getByText('Agregar vacuna', { exact: true });
+    expect(label.props.className).toContain('text-sm font-extrabold text-accent-foreground');
+    const icon = within(add).getByTestId('health-icon-plus', { includeHiddenElements: true });
+    expect(icon.props.size).toBe(16);
+    expect(icon.props.style.color).toBe('accent-foreground');
+    await fireEvent.press(add);
+    expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/pets/[petId]/vaccines/new', params: { petId: 'pet-1' } });
+  });
+  it.each(['family', 'walker', 'vet'] as const)('#208 R5: %s no ve «Agregar vacuna»', async myRole => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole })] });
+    await renderHealth();
+    const header = await screen.findByTestId('vaccines-header');
+    expect(header.children).toHaveLength(1);
+    expect(screen.queryByTestId('vaccines-add')).toBeNull();
   });
 });
