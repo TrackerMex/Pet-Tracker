@@ -887,4 +887,35 @@ describe('#211 R16: pet members API', () => {
       }
     }
   });
+  it.each(['404', '409'])(
+    '#211 R19: un accept con %s no audita',
+    async (status) => {
+      const { owner, accepter, invite } = await inviteFixture();
+      const actor = status === '409' ? owner : accepter;
+      const response = await accept(
+        actor,
+        status === '409' ? invite.code : '23456789AB',
+      );
+      expect(response.status).toBe(Number(status));
+      expect(response.body).toEqual(
+        status === '409'
+          ? alreadyMemberBody
+          : {
+              statusCode: 404,
+              code: 'INVITE_NOT_ACCEPTABLE',
+              message: 'Invite code is invalid or expired',
+            },
+      );
+      const rows = await db
+        .select()
+        .from(auditLog)
+        .where(
+          and(
+            eq(auditLog.action, 'pet_invite.accept'),
+            eq(auditLog.userId, actor.id),
+          ),
+        );
+      expect(rows).toHaveLength(0);
+    },
+  );
 });
