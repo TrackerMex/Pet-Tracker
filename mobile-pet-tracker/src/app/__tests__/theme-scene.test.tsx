@@ -78,7 +78,9 @@ describe('#217 R3: las pestañas reciben el tema raíz', () => {
   afterEach(() => jest.useRealTimers());
 
   it('#217 R3: la pestaña lee el fondo de los tokens, no el de DefaultTheme', async () => {
-    await renderRouter(routes(), { initialUrl: '/home' });
+    const app = renderRouter(routes(), { initialUrl: '/home' });
+    jest.useRealTimers();
+    await app;
     const probe = await screen.findByTestId('theme-scene-background');
 
     expect(probe).toHaveTextContent('token:background');
@@ -89,7 +91,9 @@ describe('#217 R3: las pestañas reciben el tema raíz', () => {
 
   it('#217 R3: con tema oscuro la pestaña lee dark verdadero', async () => {
     mockTheme = 'dark';
-    await renderRouter(routes(), { initialUrl: '/home' });
+    const app = renderRouter(routes(), { initialUrl: '/home' });
+    jest.useRealTimers();
+    await app;
     const probe = await screen.findByTestId('theme-scene-background');
 
     expect(sceneTheme?.dark).toBe(true);
