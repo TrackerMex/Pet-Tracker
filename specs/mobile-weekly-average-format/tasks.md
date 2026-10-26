@@ -1,6 +1,6 @@
 ---
 feature: "mobile-weekly-average-format"
-status: draft
+status: approved
 tags: [harness, spec]
 ---
 
