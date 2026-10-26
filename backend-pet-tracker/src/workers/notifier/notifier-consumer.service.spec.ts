@@ -7,6 +7,7 @@ import {
 import type { Message } from '@aws-sdk/client-sqs';
 import { Logger } from '@nestjs/common';
 import { buildResourceNames } from '@/aws/resource-names';
+import type { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
 import { Reminder } from '@/modules/reminders/domain/entities/reminder.entity';
 import type { ReminderRepository } from '@/modules/reminders/domain/repositories/reminder.repository';
 import type { PushTokenRepository } from '@/modules/users/domain/repositories/push-token.repository';
@@ -371,14 +372,16 @@ function reminderRow(
 function reminderRepositoryStub() {
   const findById = jest.fn();
   const markSent = jest.fn().mockResolvedValue(true);
+  const advanceOccurrence = jest.fn().mockResolvedValue(true);
   const client = {
     create: jest.fn(),
     findDue: jest.fn(),
     markEnqueued: jest.fn(),
     findById,
     markSent,
+    advanceOccurrence,
   } as unknown as ReminderRepository;
-  return { client, findById, markSent };
+  return { client, findById, markSent, advanceOccurrence };
 }
 
 function reminderService(
@@ -386,6 +389,7 @@ function reminderService(
   tokens: MockOf<PushTokenRepository>,
   sender: MockOf<PushSender>,
   reminders: ReminderRepository,
+  pets?: PetRepository,
 ): NotifierConsumerService {
   return new NotifierConsumerService(
     sqs.client,
@@ -393,6 +397,7 @@ function reminderService(
     tokens,
     sender,
     reminders,
+    pets,
   );
 }
 
@@ -532,5 +537,149 @@ describe('#210 R12: data del push de reminder', () => {
       reminderId: REMINDER_ID,
       kind: 'reminder',
     });
+  });
+});
+
+describe('#210 R11: el notifier avanza la serie', () => {
+  let logInfo: jest.SpyInstance;
+  beforeEach(() => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-03-07T14:00:00.000Z'));
+    logInfo = jest.spyOn(Logger.prototype, 'log').mockImplementation();
+    jest.spyOn(Logger.prototype, 'error').mockImplementation();
+    jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+  });
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
+  });
+
+  it('#210 R11: serie avanza con advanceOccurrence y no marca sent', async () => {
+    const dueAt = new Date('2026-03-07T15:00:00.000Z');
+    const reminders = reminderRepositoryStub();
+    reminders.findById.mockResolvedValue(
+      new Reminder({
+        ...reminderRow(),
+        dueAt,
+        recurrence: { unit: 'day', every: 1, anchorAt: dueAt, until: null },
+      }),
+    );
+    const pets = {
+      findOwnerTimezone: jest.fn().mockResolvedValue('UTC'),
+    } as unknown as PetRepository;
+    const sqs = sqsStub([[message(reminderBody())]]);
+    const sender = senderStub();
+    await reminderService(
+      sqs,
+      tokensStub([TOKEN_A]),
+      sender,
+      reminders.client,
+      pets,
+    ).drainOnce();
+    expect(reminders.advanceOccurrence).toHaveBeenCalledWith(
+      REMINDER_ID,
+      SCHEDULE_NAME,
+      new Date('2026-03-08T15:00:00.000Z'),
+      expect.stringMatching(/^reminder-[0-9a-f-]{36}$/),
+    );
+    expect(reminders.markSent).not.toHaveBeenCalled();
+    expect(sender.send.mock.invocationCallOrder[0]).toBeLessThan(
+      reminders.advanceOccurrence.mock.invocationCallOrder[0],
+    );
+    expect(sqs.deleted).toEqual(['receipt-1']);
+  });
+
+  it('#210 R11: serie pasada de until marca sent y no avanza', async () => {
+    const dueAt = new Date('2026-03-07T15:00:00.000Z');
+    const reminders = reminderRepositoryStub();
+    reminders.findById.mockResolvedValue(
+      new Reminder({
+        ...reminderRow(),
+        dueAt,
+        recurrence: {
+          unit: 'day',
+          every: 1,
+          anchorAt: dueAt,
+          until: '2026-03-07',
+        },
+      }),
+    );
+    const pets = {
+      findOwnerTimezone: jest.fn().mockResolvedValue('UTC'),
+    } as unknown as PetRepository;
+    const sqs = sqsStub([[message(reminderBody())]]);
+    await reminderService(
+      sqs,
+      tokensStub([TOKEN_A]),
+      senderStub(),
+      reminders.client,
+      pets,
+    ).drainOnce();
+    expect(reminders.markSent).toHaveBeenCalledWith(REMINDER_ID);
+    expect(reminders.advanceOccurrence).not.toHaveBeenCalled();
+    expect(sqs.deleted).toEqual(['receipt-1']);
+  });
+
+  it.each([
+    ['America/New_York', '2026-03-08T14:00:00.000Z'],
+    [null, '2026-03-08T15:00:00.000Z'],
+    ['Mars/Base', '2026-03-08T15:00:00.000Z'],
+  ])('#210 R11: zona %s da la siguiente ocurrencia %s', async (zone, next) => {
+    const dueAt = new Date('2026-03-07T15:00:00.000Z');
+    const reminders = reminderRepositoryStub();
+    reminders.findById.mockResolvedValue(
+      new Reminder({
+        ...reminderRow(),
+        dueAt,
+        recurrence: { unit: 'day', every: 1, anchorAt: dueAt, until: null },
+      }),
+    );
+    const findOwnerTimezone = jest.fn().mockResolvedValue(zone);
+    const pets = { findOwnerTimezone } as unknown as PetRepository;
+    const sqs = sqsStub([[message(reminderBody())]]);
+    await reminderService(
+      sqs,
+      tokensStub([TOKEN_A]),
+      senderStub(),
+      reminders.client,
+      pets,
+    ).drainOnce();
+    expect(reminders.advanceOccurrence).toHaveBeenCalledWith(
+      REMINDER_ID,
+      SCHEDULE_NAME,
+      new Date(next),
+      expect.stringMatching(/^reminder-[0-9a-f-]{36}$/),
+    );
+    expect(findOwnerTimezone).toHaveBeenCalledWith(PET_ID);
+    expect(reminders.markSent).not.toHaveBeenCalled();
+    expect(sqs.deleted).toEqual(['receipt-1']);
+  });
+
+  it('#210 R13: advanceOccurrence false registra stale_schedule y borra el mensaje', async () => {
+    const dueAt = new Date('2026-03-07T15:00:00.000Z');
+    const reminders = reminderRepositoryStub();
+    reminders.findById.mockResolvedValue(
+      new Reminder({
+        ...reminderRow(),
+        dueAt,
+        recurrence: { unit: 'day', every: 1, anchorAt: dueAt, until: null },
+      }),
+    );
+    reminders.advanceOccurrence.mockResolvedValue(false);
+    const pets = {
+      findOwnerTimezone: jest.fn().mockResolvedValue('UTC'),
+    } as unknown as PetRepository;
+    const sqs = sqsStub([[message(reminderBody())]]);
+    await reminderService(
+      sqs,
+      tokensStub([TOKEN_A]),
+      senderStub(),
+      reminders.client,
+      pets,
+    ).drainOnce();
+    expect(logInfo).toHaveBeenCalledWith(
+      expect.objectContaining({ skipped: 'stale_schedule' }),
+    );
+    expect(reminders.markSent).not.toHaveBeenCalled();
+    expect(sqs.deleted).toEqual(['receipt-1']);
   });
 });

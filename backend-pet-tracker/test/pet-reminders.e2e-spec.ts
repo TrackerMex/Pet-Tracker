@@ -1126,4 +1126,72 @@ describe('Pet reminders (e2e)', () => {
       }
     });
   });
+
+  describe('#210 R11: avance de series en la cadena real', () => {
+    async function createSeries(label: string, endsToday: boolean) {
+      sendPush.mockClear();
+      await sqs.send(new PurgeQueueCommand({ QueueUrl: notificationsUrl }));
+      const owner = await seedUser(`210-r11-${label}`);
+      const pet = await seedPet(owner);
+      await api()
+        .post('/v1/me/push-tokens')
+        .set(auth(owner.token))
+        .send({
+          expoToken: `ExponentPushToken[210-${label}-${runId}]`,
+          platform: 'android',
+        })
+        .expect(200);
+      const dueAt = new Date(Date.now() + 2 * 3_600_000);
+      const created = await api()
+        .post(`/v1/pets/${pet.id}/reminders`)
+        .set(auth(owner.token))
+        .send({
+          type: 'custom',
+          title: 'Serie diaria',
+          dueAt: dueAt.toISOString(),
+          advanceMinutes: 180,
+          recurrence: { unit: 'day', every: 1 },
+          recurrenceUntil: endsToday ? dueAt.toISOString().slice(0, 10) : null,
+        })
+        .expect(201);
+      const { id } = created.body as { id: string };
+      const [before] = await db
+        .select()
+        .from(reminders)
+        .where(eq(reminders.id, id));
+      return { id, dueAt, before };
+    }
+    it('#210 R11: una serie diaria vuelve a scheduled en la siguiente ocurrencia sin duplicar push', async () => {
+      const { id, dueAt, before } = await createSeries('daily', false);
+      await dispatcher.dispatchOnce();
+      await notifier.drainOnce();
+      await dispatcher.dispatchOnce();
+      await notifier.drainOnce();
+      const delivered = sendPush.mock.calls.filter(
+        (call: unknown[]) =>
+          (call[0] as { data: { reminderId?: string } }).data.reminderId === id,
+      );
+      expect(delivered).toHaveLength(1);
+      const [row] = await db
+        .select()
+        .from(reminders)
+        .where(eq(reminders.id, id));
+      expect(row).toMatchObject({
+        status: 'scheduled',
+        dueAt: new Date(dueAt.getTime() + 86_400_000),
+        enqueuedAt: null,
+      });
+      expect(row.scheduleName).not.toBe(before.scheduleName);
+    });
+    it('#210 R11: una serie con until en su dia termina en sent', async () => {
+      const { id } = await createSeries('until', true);
+      await dispatcher.dispatchOnce();
+      await notifier.drainOnce();
+      const [row] = await db
+        .select()
+        .from(reminders)
+        .where(eq(reminders.id, id));
+      expect(row.status).toBe('sent');
+    });
+  });
 });

@@ -6,6 +6,10 @@ import {
 } from '@aws-sdk/client-sqs';
 import type { Message } from '@aws-sdk/client-sqs';
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  PET_REPOSITORY,
+  type PetRepository,
+} from '@/modules/pets/domain/repositories/pet.repository';
 import { AWS_RESOURCE_NAMES, SQS_CLIENT } from '@/aws/aws.constants';
 import type { AwsResourceNames } from '@/aws/resource-names';
 import { REMINDER_REPOSITORY } from '@/modules/reminders/domain/repositories/reminder.repository';
@@ -52,6 +56,7 @@ export class NotifierConsumerService {
     @Inject(PUSH_SENDER) private readonly sender: PushSender,
     @Inject(REMINDER_REPOSITORY)
     private readonly reminders?: ReminderRepository,
+    @Inject(PET_REPOSITORY) private readonly pets?: PetRepository,
   ) {}
 
   async drainOnce(): Promise<void> {

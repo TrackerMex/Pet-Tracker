@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { PetsModule } from '@/modules/pets/pets.module';
 import { RemindersModule } from '@/modules/reminders/reminders.module';
 import { UsersModule } from '@/modules/users/users.module';
 import { ConsolePushSender } from './console-push-sender';
@@ -21,7 +22,7 @@ import type { PushSender } from './push-sender';
  * puerto.
  */
 @Module({
-  imports: [ConfigModule, UsersModule, RemindersModule],
+  imports: [ConfigModule, UsersModule, RemindersModule, PetsModule],
   providers: [
     {
       provide: PUSH_SENDER,
