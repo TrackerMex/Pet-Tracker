@@ -12,7 +12,7 @@ Rutas de test relativas a `mobile-pet-tracker/src/`, salvo R22, que está en la 
 |---|---|---|
 | R1 | `api/__tests__/health-records.test.ts::#208 R1: …` (5 `it`) | pendiente |
 | R2 | `utils/__tests__/vaccine-dates.test.ts::#208 R2: suma %i meses a %s y da %s` | pendiente |
-| R3 | `utils/__tests__/form-rules.test.ts::#208 R3: …` (3 `it`) | pendiente |
+| R3 | `utils/form-rules.test.ts::#208 R3: …` (3 `it`) | pendiente |
 | R4 | `app/__tests__/layout.test.tsx::#208 R4: …`, `app/__tests__/detail-stack.guard.test.tsx` (`#149 R3`), `screens/vaccine-create/index.test.tsx::#208 R4: …` | pendiente |
 | R5 | `screens/health/index.test.tsx::#208 R5: …` (owner y 3 roles) | pendiente |
 | R6 | `screens/health/index.test.tsx::#208 R6: …` (tarjeta, CTA y 3 roles) | pendiente |

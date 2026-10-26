@@ -101,7 +101,7 @@ Todos en la capa de presentación móvil, salvo la línea de `init.config.sh`.
 - `mobile-pet-tracker/src/api/types.ts`: `VaccineCatalogEntry` y `CreateVaccineInput` (R1).
 - `mobile-pet-tracker/src/api/query-keys.ts`: `healthKeys.vaccineCatalog` (R1).
 - `mobile-pet-tracker/src/api/__tests__/health-records.test.ts` (R1).
-- `mobile-pet-tracker/src/utils/form-rules.ts` y `src/utils/__tests__/form-rules.test.ts`: `validateVaccine` (R3).
+- `mobile-pet-tracker/src/utils/form-rules.ts` y `src/utils/form-rules.test.ts`: `validateVaccine` (R3).
 - `mobile-pet-tracker/src/app/_layout.tsx`, `src/app/__tests__/layout.test.tsx` y `src/app/__tests__/detail-stack.guard.test.tsx` (R4).
 - `mobile-pet-tracker/src/screens/health/index.tsx` y `index.test.tsx`: cabecera con CTA, vacío del owner y aviso ámbar (R5, R6, R16).
 - `mobile-pet-tracker/src/i18n/catalog.ts` y `src/providers/__tests__/language-provider.test.tsx` (R19).

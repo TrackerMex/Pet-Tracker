@@ -175,7 +175,7 @@ THE SYSTEM SHALL exportar desde `utils/form-rules.ts`
 - En cualquier otro caso devuelve `{}`.
 
 - Ancla: `grep -cF 'export function validateWeight' utils/form-rules.ts` → 1
-- Test: `utils/__tests__/form-rules.test.ts`, un `it` por rama:
+- Test: `utils/form-rules.test.ts`, un `it` por rama:
   - `#208 R3: «Otra vacuna» con nombre en blanco pide el nombre` (con `''` y con `'   '`)
   - `#208 R3: «Otra vacuna» con nombre no pide nada`
   - `#208 R3: con catálogo no pide nombre aunque esté vacío`
@@ -965,3 +965,11 @@ Detalle y comandos en `progress/enmiendas_mobile-vaccine-create.md`.
   - La intención no cambia: cada `t()` nuevo tiene exactamente una fila.
 
 - [x] Enmiendas M1–M2 aprobadas (fecha: 2026-10-26) — firma delegada del leader (mandato 2026-10-23, ampliado 2026-10-26)
+
+## Errata del leader antes del handoff (2026-10-26)
+
+- **E1 — Ruta del test de R3.** El test de `validateVaccine` va en el fichero que ya
+  existe, `utils/form-rules.test.ts`, junto a `utils/form-rules.ts`. No va en
+  `utils/__tests__/form-rules.test.ts`, que no existe. Ancla:
+  `ls utils/form-rules.test.ts` existe y `ls utils/__tests__/form-rules.test.ts` no.
+  Se corrige en R3, design.md, tasks.md y traceability.md. La intención no cambia.

@@ -48,7 +48,7 @@ tags: [mobile, ui, spec]
 
 ## R3 — `validateVaccine` exige nombre en «Otra vacuna»
 
-- [ ] (1) Escribir test que falla para R3 (`utils/__tests__/form-rules.test.ts`, tres `it`)
+- [ ] (1) Escribir test que falla para R3 (`utils/form-rules.test.ts`, tres `it`)
 - [ ] (2) Implementación mínima que lo pasa (`utils/form-rules.ts`)
 - [ ] (3) Refactor con tests verdes
 
