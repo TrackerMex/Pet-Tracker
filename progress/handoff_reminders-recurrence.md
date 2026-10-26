@@ -226,3 +226,16 @@ Cierre (lo que el reporte debe traer):
   - Lista de ficheros tocados desde H0, desde la raíz del worktree: `git diff --name-only 705f1ea2..HEAD -- backend-pet-tracker/ docs/`. Tiene que coincidir con la lista cerrada de arriba: 29 líneas (20 de producción y migración, 9 de tests) y ninguna de docs/; `specs/` y `progress/` no entran.
   - Reporte en progress/impl_reminders-recurrence.md: comprobación del primer comando, salida de las anclas, T0 repetida por ti, commits (hash y mensaje), línea `Tests:` unitaria y e2e tras cada commit, tabla «commit, test, rojo observado» con la línea del `expect` que falló (tasks.md regla 3), `it` y filas que nacieron verdes y por qué, las nueve mutaciones M1 a M9 (mutación, comando, exit code, `expect` rojo, reversión), el `.sql` generado (sus siete sentencias, resumidas), lint y typecheck, desviaciones, lo que quedó «pendiente de medir», y tabla R1-R14 a test a commit.
   - Última acción: crear progress/impl_reminders-recurrence.done con una sola línea, la ruta de progress/impl_reminders-recurrence.md. Está en .gitignore; no lo commitees (lo vigila scripts/harness/watch-impl.sh).
+
+## Reanudación 1 (2026-10-26, tras la parada en C2)
+
+La parada en C2 fue correcta: el fallo era de la spec. Errata E9 (requirements.md § «Erratas tras la firma»): en R1, la fila «unidad desconocida» pasa de `'minute'` a `'min'`. `'minute'` no cabe en `varchar(5)` y Postgres responde `22001` antes de mirar los CHECKs.
+
+Retoma así, desde `cd /home/claude/sites/Pet-Tracker-wt-210/backend-pet-tracker && pwd`:
+  1. No toques los cambios sin commit de C2 (schema, `0020_reminders_recurrence.sql`, `0020_snapshot.json`, `_journal.json`): son correctos y la base `pet_tracker_wt210` ya tiene la 0020. No regeneres la migración.
+  2. En `test/pet-reminders.e2e-spec.ts` cambia solo el literal de la fila `['unidad desconocida', 'minute', 1, true, null, 'unit'],` a `'min'`. Es un `it` que creaste tú en C1, no uno de H0: no cuenta como enmienda E1–E8. Comprueba: `grep -cF "['unidad desconocida', 'min', 1, true, null, 'unit']," test/pet-reminders.e2e-spec.ts` → 1, y `grep -cF "'minute'" test/pet-reminders.e2e-spec.ts` → 0.
+  3. Repite la cadena de C2 entera (prettier, eslint, tsc, unitarios de la feature, `pgrep -f '[i]nit.sh'` vacío, e2e pet-reminders). Esperado: unitarios 15 suites y 144 tests; e2e 59 passed, 59 total. Commitea C2 con el cambio del test incluido en el mismo commit.
+  4. Sigue con C3–C20, M1–M9 y el cierre tal como dice este handoff. Las cifras de después de C2 no cambian.
+  5. En el reporte, añade una sección `## Reanudación 1` con lo que hiciste; no borres las secciones anteriores.
+
+El marcador `progress/impl_reminders-recurrence.done` lo ha borrado el leader. Créalo otra vez solo al final de la cadena entera, como dice «Cierre».

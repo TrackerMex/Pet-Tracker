@@ -103,7 +103,7 @@ los CHECKs por orden alfabético de nombre):
 
 | Fila | unit / every / anchor / until | Esperado |
 |---|---|---|
-| unidad desconocida | `'minute'` / 1 / now / null | `reminders_recurrence_unit_check` |
+| unidad desconocida | `'min'` / 1 / now / null | `reminders_recurrence_unit_check` (errata E9) |
 | `<u>` bajo mínimo, una fila por unidad | `'<u>'` / 0 / now / null | `reminders_recurrence_every_check` |
 | `<u>` sobre máximo, una fila por unidad | `'hour'` 25, `'day'` 366, `'week'` 53, `'month'` 13, `'year'` 11 / now / null | `reminders_recurrence_every_check` |
 | `<u>` en mínimo y máximo, dos filas por unidad | `'<u>'` / 1 y 24·365·52·12·10 / now / null | se inserta |
@@ -498,6 +498,15 @@ Test: `backend-pet-tracker/test/pet-reminders.e2e-spec.ts` ::
 - `kind` en el `data` del push de alerta.
 - La carrera de `markSent` en one-shot (#16).
 - Reanclar la serie cuando el dueño cambia de zona (D3).
+
+## Erratas tras la firma
+
+- **E9 (2026-10-26, parada de Codex en C2).** La fila «unidad desconocida» de
+  R1 usaba `'minute'`: seis caracteres en `varchar(5)`. Postgres rechaza el
+  INSERT por longitud (`22001`) antes de evaluar los CHECKs, así que el
+  `reminders_recurrence_unit_check` nunca se ejercita. Pasa a `'min'`, que cabe
+  en la columna y no es una unidad válida. La fila de R2 con
+  `unit: 'minute'` no cambia: la rechaza zod antes de llegar a la base.
 
 ## Aprobación
 
