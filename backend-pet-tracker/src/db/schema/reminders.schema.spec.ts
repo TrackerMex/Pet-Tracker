@@ -41,6 +41,10 @@ describe('R1: tabla reminders y migracion 0011 aditiva', () => {
         'schedule_name',
         'enqueued_at',
         'created_by',
+        'recurrence_unit',
+        'recurrence_every',
+        'recurrence_until',
+        'recurrence_anchor_at',
       ].sort(),
     );
     expect(columns.get('id')?.primary).toBe(true);
@@ -106,5 +110,50 @@ describe('R1: tabla reminders y migracion 0011 aditiva', () => {
     expect(migration.sql).toContain('CREATE TABLE "reminders"');
     expect(migration.sql).not.toContain('ALTER TABLE "pets"');
     expect(migration.sql).not.toContain('ALTER TABLE "users"');
+  });
+});
+
+describe('#210 R1: columnas de recurrencia y migracion aditiva', () => {
+  it('#210 R1: declara las cuatro columnas nullable y los tres CHECKs de recurrencia', () => {
+    const config = getTableConfig(reminders);
+    const columns = new Map(
+      config.columns.map((column) => [column.name, column]),
+    );
+    for (const [name, type] of [
+      ['recurrence_unit', 'varchar(5)'],
+      ['recurrence_every', 'integer'],
+      ['recurrence_until', 'date'],
+      ['recurrence_anchor_at', 'timestamp with time zone'],
+    ]) {
+      expect(columns.get(name)?.getSQLType()).toBe(type);
+      expect(columns.get(name)?.notNull).toBe(false);
+    }
+    expect(config.checks).toHaveLength(7);
+    expect(config.checks.map((check) => check.name)).toEqual(
+      expect.arrayContaining([
+        'reminders_recurrence_unit_check',
+        'reminders_recurrence_every_check',
+        'reminders_recurrence_shape_check',
+      ]),
+    );
+  });
+
+  it('#210 R1: genera una migracion reminders_recurrence solo aditiva', () => {
+    const files = readdirSync(MIGRATIONS_DIR).filter((name) =>
+      /^\d{4}_reminders_recurrence\.sql$/.test(name),
+    );
+    expect(files).toHaveLength(1);
+    const migration = readFileSync(join(MIGRATIONS_DIR, files[0]), 'utf8');
+    const statements = migration
+      .split('--> statement-breakpoint')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    expect(statements).toHaveLength(7);
+    for (const statement of statements) {
+      expect(statement).toMatch(
+        /^ALTER TABLE "reminders" ADD (COLUMN|CONSTRAINT)/,
+      );
+    }
+    expect(migration).not.toMatch(/DROP/i);
   });
 });
