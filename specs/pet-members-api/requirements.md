@@ -1,6 +1,6 @@
 ---
 feature: "pet-members-api"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, backend, pets]
 ---
 
@@ -272,15 +272,20 @@ Definiciones usadas abajo:
     - `invite-accept-rate-limit.guard.spec.ts`:
       - `#211 R10: deja pasar 10 peticiones del mismo usuario y la 11.ª lanza 429`
         (cuerpo E-429 y status 429 en la `HttpException`)
-      - `#211 R10: el contador es por usuario`
+      - `#211 R10: el contador es por usuario` — primero aserta la
+        precondición (la 11.ª del usuario A lanza 429) y después que la 1.ª
+        del usuario B pasa. Sin la precondición nacería verde con el stub.
       - `#211 R10: la ventana se reabre a los 3 600 000 ms y no antes` —
         `jest.spyOn(Date, 'now')`: 10 en `t0`; en `t0 + 3_599_999` lanza; en
         `t0 + 3_600_000` deja pasar.
     - E2E `#211 R10: la 11.ª petición en la hora responde 429 aunque el código sea válido`
       — un usuario nuevo manda 10 códigos inexistentes (10 × E-NOT-ACCEPTABLE)
       y la 11.ª, con un código válido, da E-429 y la invitación sigue pendiente.
-    - E2E `#211 R10: otro usuario no hereda el contador` — justo después, otro
-      usuario acepta ese código con 201.
+    - E2E `#211 R10: otro usuario no hereda el contador` — autocontenido, no
+      depende del it anterior: un usuario A nuevo manda 10 códigos
+      inexistentes y su 11.ª, con el código válido de una invitación creada en
+      este it, da E-429 (precondición asertada); después un usuario B nuevo
+      acepta ese mismo código con 201.
 
 ### Miembros
 
@@ -372,7 +377,9 @@ Definiciones usadas abajo:
       acción (las 4); compara `action`, `entity`, `entityId`, `userId` y
       `meta` con `toEqual`.
     - `#211 R19: el meta de las 4 acciones no contiene el código ni su hash`
-      — primero aserta que las 4 filas existen (`toHaveLength(4)`), luego que
+      — lee las 4 filas con el mismo filtro `action` + `entity_id` del
+      `it.each` (nunca por `user_id`, que en el commit 25 incluiría la fila
+      mutada), aserta que existen (`toHaveLength(4)`) y luego que
       `JSON.stringify` de cada `meta` no contiene ni el código ni su hash.
     - `#211 R19: un accept con %s no audita` — `it.each`: `'404'`, `'409'`;
       ninguna fila `pet_invite.accept` con `userId` = el aceptante.
@@ -426,4 +433,14 @@ desde que acepta.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-26)
+  Firma delegada en el leader por mandato del humano del 2026-10-23, ampliado
+  el 2026-10-26 a #208–#216 (`progress/plan_canvas-parity-2026-10-23.md` §4 y
+  `progress/plan_mejoras-producto-2026-10-26.md` §4). Base `1316410f`: las
+  anclas A1–A34 se midieron de nuevo y coinciden, igual que el literal SHA-256
+  de R2 y la cuenta de `parseBody` (12). Errata del leader antes de firmar:
+  E1, el it unitario «por usuario» de R10 aserta su precondición; E2, el it
+  E2E «otro usuario no hereda» de R10 es autocontenido; E3, el it del `meta`
+  de R19 filtra por `action` + `entity_id`. Migración: D17. Ningún endpoint
+  revela si existe un usuario o un código: R8, R13, R14 y R16, con la
+  excepción acotada de D9.

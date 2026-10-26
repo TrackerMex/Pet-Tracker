@@ -1,6 +1,6 @@
 ---
 feature: "pet-members-api"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, backend, pets]
 ---
 
@@ -356,7 +356,8 @@ Al terminar, `progress/impl_pet-members-api.md` lleva tres cosas:
 
 - [ ] (1a) Commit 23. Escribe el `it.each` de las 4 acciones y el it del
   `meta`. Cada fila lee `audit_log` (`import { auditLog } from
-  '@/db/schema'`) filtrando por `action` **y** `entity_id`. Primero aserta
+  '@/db/schema'`) filtrando por `action` **y** `entity_id`, también el it
+  del `meta` (nunca por `user_id`). Primero aserta
   `toHaveLength(1)` y después `toEqual` sobre los 5 campos.
 - [ ] (2a) Commit 24. Llama a `await this.audit.record({…})` con los objetos
   exactos de R19, **después** de que el repositorio devuelva con éxito, en
