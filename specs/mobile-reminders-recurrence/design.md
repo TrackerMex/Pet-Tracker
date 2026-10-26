@@ -1,6 +1,6 @@
 ---
 feature: "mobile-reminders-recurrence"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [mobile, reminders, recurrence, spec]
 ---
 
