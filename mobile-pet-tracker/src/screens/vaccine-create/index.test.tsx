@@ -347,3 +347,38 @@ it('#208 R13: veterinario, clínica y notas pintan etiquetas, placeholders y lí
   expect(notes.props.placeholder).toBe('Lote, reacciones o lo que quieras recordar');
   expect(notes.props.className).toBe('h-16 rounded-xl bg-default px-3.5 text-15 font-semibold text-foreground border-2 border-transparent py-3');
 });
+
+it('#208 R14: guardar con Leptospirosis envía catalogId, fechas y opcionales recortados', async () => {
+  await readyVaccineForm();
+  const submit = screen.getByTestId('vaccine-create-submit');
+  expect(submit.props.className).toContain('h-14 rounded-16 bg-accent');
+  expect(flatVaccineStyle(submit.props.style)).toMatchObject({ boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: 'token:lip' }] });
+  expect(within(submit).getByText('Guardar vacuna', { exact: true }).props.className).toBe('text-17 font-extrabold text-accent-foreground');
+  await pickVaccineDate('next', new Date(2028, 0, 12, 12));
+  await fireEvent.changeText(screen.getByTestId('vaccine-create-vet'), '  Ana  ');
+  await fireEvent.changeText(screen.getByTestId('vaccine-create-clinic'), '  Centro Vet  ');
+  await fireEvent.changeText(screen.getByTestId('vaccine-create-notes'), '  Lote 15  ');
+  await fireEvent.press(submit);
+  await waitFor(() => expect(mockCreateVaccine).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1', { catalogId: 'cat-lepto', appliedAt: '2026-10-06', nextDoseAt: '2028-01-12', vetName: 'Ana', clinic: 'Centro Vet', notes: 'Lote 15' }));
+});
+it('#208 R14: guardar «Otra vacuna» sin próxima dosis envía name recortado y omite nextDoseAt y opcionales vacíos', async () => {
+  await readyVaccineForm();
+  await fireEvent.press(screen.getByTestId('vaccine-chip-other'));
+  await fireEvent.changeText(screen.getByTestId('vaccine-create-name'), '  Leishmaniasis  ');
+  for (const id of ['vet', 'clinic', 'notes']) await fireEvent.changeText(screen.getByTestId(`vaccine-create-${id}`), '   ');
+  await fireEvent.press(screen.getByTestId('vaccine-create-submit'));
+  await waitFor(() => expect(mockCreateVaccine).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1', { name: 'Leishmaniasis', appliedAt: '2026-10-06' }));
+});
+it('#208 R14: «Otra vacuna» en blanco pinta el error del nombre y no envía', async () => {
+  await readyVaccineForm();
+  await fireEvent.press(screen.getByTestId('vaccine-chip-other'));
+  await fireEvent.changeText(screen.getByTestId('vaccine-create-name'), '   ');
+  await fireEvent.press(screen.getByTestId('vaccine-create-submit'));
+  expect(await screen.findByTestId('vaccine-create-name-message')).toHaveTextContent('Escribe el nombre de la vacuna.', { exact: true });
+  expect(mockCreateVaccine).not.toHaveBeenCalled();
+});
+it('#208 R14: el CTA se bloquea mientras envía', async () => {
+  await readyVaccineForm();
+  await fireEvent.press(screen.getByTestId('vaccine-create-submit'));
+  await waitFor(() => expect(screen.getByTestId('vaccine-create-submit')).toBeDisabled());
+});
