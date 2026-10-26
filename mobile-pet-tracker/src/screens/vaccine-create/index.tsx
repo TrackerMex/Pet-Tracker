@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { InfoCircle, Plus } from 'reicon-react-native';
+import { Bell, InfoCircle, Plus } from 'reicon-react-native';
 import { useQuery } from '@tanstack/react-query';
-import { Button, Skeleton } from 'heroui-native';
+import { Button, Checkbox, Skeleton } from 'heroui-native';
 import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -18,14 +18,17 @@ import { getMe } from '../../api/users';
 import { DateField } from '../../components/date-field';
 import { civilTodayIso } from '../../utils/civil-today-iso';
 import { addCalendarMonthsIso } from '../../utils/vaccine-dates';
+import { isoToLocalDate } from '../../utils/civil-date';
 import { ScreenHeader } from '../../components/screen-header';
 import { useAuth } from '../../providers/auth-provider';
-import { useTranslate } from '../../providers/language-provider';
+import { useLocale, useTranslate } from '../../providers/language-provider';
 
 export function VaccineCreateScreen({ petId }: { petId: string }) {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
   const t = useTranslate();
+  const locale = useLocale();
+  const [remind, setRemind] = useState(true);
   const insets = useSafeAreaInsets();
   const pets = useQuery({ queryKey: petKeys.list(), queryFn: () => listPets(baseUrl, token ?? '') });
   const pet = pets.data?.kind === 'ok' ? pets.data.pets.find(p => p.id === petId) : undefined;
@@ -112,6 +115,15 @@ export function VaccineCreateScreen({ petId }: { petId: string }) {
           <InfoCircle size={20} color={muted} />
           <Text testID="vaccine-create-note-text" className="flex-1 text-13 font-semibold text-muted">{entry ? t('vaccineCreate.noteCatalog', { name: pet?.name ?? '' }) : t('vaccineCreate.noteOther', { name: pet?.name ?? '' })}</Text>
         </View>
+        <Pressable testID="vaccine-create-reminder" accessibilityRole="checkbox" accessibilityState={{ checked: remind }}
+          onPress={() => setRemind(value => !value)} className="flex-row items-center gap-3 rounded-tile bg-surface-secondary px-3.5 py-3" style={CONTINUOUS_CORNER}>
+          <Bell size={20} color={accentStrong} />
+          <View className="flex-1">
+            <Text className="text-sm font-extrabold text-foreground">{t('vaccineCreate.remindMe')}</Text>
+            <Text testID="vaccine-create-reminder-hint" className="text-xs font-semibold text-muted">{nextDoseAt ? t('vaccineCreate.remindOn', { date: isoToLocalDate(nextDoseAt)!.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' }) }) : t('vaccineCreate.remindWhenPicked')}</Text>
+          </View>
+          <Checkbox testID="vaccine-create-reminder-checkbox" isSelected={remind} onSelectedChange={setRemind} />
+        </Pressable>
       </ScrollView>
       <View testID="vaccine-create-bar" style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: Math.max(insets.bottom, 16), gap: 12 }}>
         <Button testID="vaccine-create-submit" />
