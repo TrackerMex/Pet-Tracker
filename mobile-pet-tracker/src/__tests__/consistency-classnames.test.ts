@@ -207,12 +207,12 @@ describe('#62 R12: los TextInput crudos comparten una sola receta', () => {
     ),
   );
 
-  it('da color temático a los cinco placeholders', () => {
+  it('da color temático a los cinco placeholders (enmendado por #208 R21)', () => {
     const withPlaceholder = textInputs.filter(({ source }) =>
       /\bplaceholder=/.test(source),
     );
 
-    expect(textInputs).toHaveLength(6);
+    expect(textInputs).toHaveLength(6 + 1); // #208 R21
     expect(withPlaceholder).toHaveLength(5);
     expect(
       withPlaceholder
@@ -252,6 +252,7 @@ describe('#62 R13: el color imperativo sale siempre de useThemeColors del repo',
 
 describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () => {
   const directUses = [
+    [join('screens', 'vaccine-create', 'index.tsx'), 1], // #208 R21
     [join('components', 'date-field.tsx'), 1], // #220 R4
     [join('screens', 'geofences', 'index.tsx'), 3], // #189 R5, R6
     [join('screens', 'forgot', 'index.tsx'), 0 + 1], // #177 R10 // #205 R10
@@ -338,7 +339,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
       + 1 // #205 R13
       - 1 // #205 R17
       + 1 - 1 - 2 // #220 R4; #220 R14; #220 R15
-      + 2 // #208 R21
+      + 2 + 1 // #208 R21
     ); // #189 R6; #189 R5 (enmendado por #190 R13) // #191 R11 // #177 R5 // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168 R3, R8, R6; #170 R16; #171 R3: ready-done; #173 R10: ProfileTile
   });
 });
@@ -350,6 +351,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
   const HOME_TABULAR_DELTA_85 = 1;
   const HOME_TABULAR_DELTA_98 = 1;
   const counters = [
+    [join('screens', 'vaccine-create', 'index.tsx'), 1], // #208 R21
     [join('screens', 'map', 'index.tsx'), 3 + 1], // #116 R5
     [
       join('screens', 'home', 'index.tsx'),
@@ -369,7 +371,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
     [join('screens', 'alert-detail', 'index.tsx'), 1], // #170 R16
   ] as const;
 
-  it.each(counters)('%s aplica TABULAR_NUMS a sus %i valores', (path, count) => {
+  it.each(counters)('%s aplica TABULAR_NUMS a sus %i valores (enmendado por #208 R21)', (path, count) => {
     const source = readSource(path);
 
     expect(source).toMatch(
@@ -378,9 +380,9 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
     expect(source.match(/style=\{TABULAR_NUMS\}/g)).toHaveLength(count);
   });
 
-  it('#69 R10: mantiene la base cerrada más los deltas medidos', () => {
+  it('#69 R10: mantiene la base cerrada más los deltas medidos (enmendado por #208 R21)', () => {
     expect(counters.reduce((total, [, count]) => total + count, 0)).toBe(
-      14 + 4 + 1 + 1 + 1 + 1 + 1 + 2 + 1 + 1 + 2 + 1 + 1, // #146 R18, #105 R11, #116 R5, #115 R6, #169 R6, #170 R16
+      14 + 4 + 1 + 1 + 1 + 1 + 1 + 2 + 1 + 1 + 2 + 1 + 1 + 1, // #208 R21; #146 R18, #105 R11, #116 R5, #115 R6, #169 R6, #170 R16
     );
   });
 
@@ -439,7 +441,7 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
       + 1 // #205 R13
       - 1 // #205 R17
       + 1 - 1 - 2 // #220 R4; #220 R14; #220 R15
-      + 2 // #208 R21
+      + 2 + 1 // #208 R21
     ); // #189 R6; #189 R5 (enmendado por #190 R13) // #191 R11 // #177 R5 // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168; #170 R8: alert-detail-map; #171 R3: ready-done; #173 R10: ProfileTile
     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(1 + 1); // #177 R10 // #208 R21
     expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 2 - 1 - 1 - 1 - 1 - 2); // #191 R11 // #179 R6, R7, R11; #178 R5, R10, R12; #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6 // #198 R3 // #198 R11 // #198 R13 // #203 R5 // #205 R18

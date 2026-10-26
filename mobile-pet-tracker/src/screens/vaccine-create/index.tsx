@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Plus } from 'reicon-react-native';
 import { useQuery } from '@tanstack/react-query';
 import { Button, Skeleton } from 'heroui-native';
-import { KeyboardAvoidingView, Pressable, ScrollView, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { listPets } from '../../api/pets';
@@ -11,6 +11,9 @@ import { getVaccineCatalog } from '../../api/health-records';
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { TOUCH_SLOP } from '../../theme/touch-target';
+import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';
+import { FieldErrorMessage } from '../../components/field-error-message';
+import type { FieldIssues } from '../../utils/account-rules';
 import { ScreenHeader } from '../../components/screen-header';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
@@ -29,6 +32,9 @@ export function VaccineCreateScreen({ petId }: { petId: string }) {
   const entries = catalog.data?.kind === 'ok' ? catalog.data.entries : [];
   const [selectedDraft, setSelectedDraft] = useState<string | null>(null);
   const selectedId = selectedDraft ?? entries[0]?.id ?? 'other';
+  const [name, setName] = useState('');
+  const [nameFocused, setNameFocused] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<FieldIssues<'name' | 'appliedAt'>>({});
 
 
   return (
@@ -60,6 +66,15 @@ export function VaccineCreateScreen({ petId }: { petId: string }) {
             })}
           </View>
         )}
+        {!catalog.isPending && selectedId === 'other' && <View className="gap-1.5">
+          <View className="flex-row items-center justify-between">
+            <Text className="text-sm font-extrabold text-foreground">{t('vaccineCreate.vaccineName')}</Text>
+            <Text testID="vaccine-create-name-count" className="text-xs font-semibold text-muted" style={TABULAR_NUMS}>{`${name.length}/120`}</Text>
+          </View>
+          <TextInput testID="vaccine-create-name" value={name} onChangeText={setName} maxLength={120} onFocus={() => setNameFocused(true)} onBlur={() => setNameFocused(false)}
+            className={`h-13 rounded-xl bg-default px-3.5 text-15 font-semibold text-foreground border-2 ${nameFocused ? 'border-accent' : 'border-transparent'}`} style={CONTINUOUS_CORNER} />
+          <FieldErrorMessage testID="vaccine-create-name" issue={fieldErrors.name} />
+        </View>}
       </ScrollView>
       <View testID="vaccine-create-bar" style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: Math.max(insets.bottom, 16), gap: 12 }}>
         <Button testID="vaccine-create-submit" />
