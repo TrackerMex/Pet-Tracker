@@ -221,3 +221,59 @@ it('#208 R9: con un chip del catálogo no hay campo de nombre ni contador', asyn
   expect(screen.queryByTestId('vaccine-create-name')).toBeNull();
   expect(screen.queryByTestId('vaccine-create-name-count')).toBeNull();
 });
+
+async function pickVaccineDate(field: 'applied' | 'next', date: Date) {
+  await fireEvent.press(screen.getByTestId(`vaccine-create-${field}`));
+  await fireEvent(screen.getByTestId(`vaccine-create-${field}-picker`), 'onValueChange', {}, date);
+  expect(screen.queryByTestId(`vaccine-create-${field}-picker`)).toBeNull();
+}
+async function readyVaccineForm() {
+  const app = await renderVaccineCreate();
+  await screen.findByTestId('vaccine-chip-cat-lepto');
+  return app;
+}
+it('#208 R10: aplicación empieza hoy (6 oct 2026) con máximo hoy y la próxima dosis propone 6 oct 2027', async () => {
+  await readyVaccineForm();
+  expect(await screen.findByTestId('vaccine-create-applied-value')).toHaveProp('value', '6 oct 2026');
+  expect(screen.getByTestId('vaccine-create-next-value')).toHaveProp('value', '6 oct 2027');
+  const applied = screen.getByTestId('vaccine-create-applied');
+  expect(applied.props.className).toBe('h-12 rounded-xl bg-default');
+  await fireEvent.press(applied);
+  expect(screen.getByTestId('vaccine-create-applied-picker').props.maximumDate).toEqual(new Date(2026, 9, 6, 12));
+  await fireEvent(screen.getByTestId('vaccine-create-applied-picker'), 'onDismiss');
+  await fireEvent.press(screen.getByTestId('vaccine-create-next'));
+  expect(screen.getByTestId('vaccine-create-next-picker').props.minimumDate).toEqual(new Date(2026, 9, 6, 12));
+});
+it('#208 R10: cambiar la fecha de aplicación recalcula la propuesta', async () => {
+  await readyVaccineForm();
+  await pickVaccineDate('applied', new Date(2026, 8, 1, 12));
+  expect(screen.getByTestId('vaccine-create-applied-value')).toHaveProp('value', '1 sep 2026');
+  expect(screen.getByTestId('vaccine-create-next-value')).toHaveProp('value', '1 sep 2027');
+});
+it('#208 R10: una próxima dosis elegida a mano sobrevive al cambio de aplicación y cae al cambiar de chip', async () => {
+  await readyVaccineForm();
+  await pickVaccineDate('next', new Date(2028, 0, 12, 12));
+  await pickVaccineDate('applied', new Date(2026, 8, 1, 12));
+  expect(screen.getByTestId('vaccine-create-next-value')).toHaveProp('value', '12 ene 2028');
+  await fireEvent.press(screen.getByTestId('vaccine-chip-cat-rabia'));
+  expect(screen.getByTestId('vaccine-create-next-value')).toHaveProp('value', '1 sep 2027');
+});
+it('#208 R10: «Otra vacuna» deja la próxima dosis vacía y permite borrarla', async () => {
+  await readyVaccineForm();
+  expect(screen.queryByTestId('vaccine-create-next-clear')).toBeNull();
+  await fireEvent.press(screen.getByTestId('vaccine-chip-other'));
+  expect(screen.getByTestId('vaccine-create-next-value')).toHaveProp('value', '');
+  expect(screen.getByTestId('vaccine-create-next-value')).toHaveProp('placeholder', 'Elige una fecha');
+  expect(screen.queryByTestId('vaccine-create-next-clear')).toBeNull();
+  await pickVaccineDate('next', new Date(2027, 9, 6, 12));
+  await fireEvent.press(screen.getByTestId('vaccine-create-next-clear'), { stopPropagation: jest.fn() });
+  expect(screen.getByTestId('vaccine-create-next-value')).toHaveProp('value', '');
+});
+it.each([['catálogo', 'la propuesta'], ['«Otra vacuna»', 'vacía']])('#208 R10: si la fecha de aplicación supera la próxima dosis elegida, con %s vuelve a %s', async (mode) => {
+  await readyVaccineForm();
+  if (mode === '«Otra vacuna»') await fireEvent.press(screen.getByTestId('vaccine-chip-other'));
+  await pickVaccineDate('applied', new Date(2026, 8, 1, 12));
+  await pickVaccineDate('next', new Date(2026, 8, 15, 12));
+  await pickVaccineDate('applied', new Date(2026, 9, 1, 12));
+  expect(screen.getByTestId('vaccine-create-next-value')).toHaveProp('value', mode === 'catálogo' ? '1 oct 2027' : '');
+});
