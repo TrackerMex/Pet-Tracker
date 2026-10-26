@@ -171,9 +171,23 @@ export function HealthScreen() {
                 ) : null}
 
                 {vaccines.data?.kind === 'ok' && vaccines.data.vaccines.length === 0 ? (
+                  selectedPet?.myRole === 'owner' ? (
+                    <View testID="vaccines-empty-card" className="items-center gap-2.5 rounded-24 bg-surface-secondary px-4.5 pb-4.5 pt-5.5" style={CONTINUOUS_CORNER}>
+                      <View testID="vaccines-empty-tile" className="size-14 items-center justify-center rounded-tile bg-surface" style={CONTINUOUS_CORNER} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+                        <Syringe size={28} color={accentStrong} />
+                      </View>
+                      <Text testID="vaccines-empty-card-title" className="text-17 font-black text-foreground text-center">{t('health.noVaccinesYet')}</Text>
+                      <Text testID="vaccines-empty-card-body" className="text-sm font-medium leading-note text-muted text-center">{t('health.vaccinesEmptyBody', { name: selectedPet.name })}</Text>
+                      <Button testID="vaccines-empty-action" className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary} onPress={openVaccineCreate}>
+                        <Plus size={20} color={accentForeground} />
+                        <Text className="text-17 font-extrabold text-accent-foreground">{t('health.addVaccine')}</Text>
+                      </Button>
+                    </View>
+                  ) : (
                   <Text testID="vaccines-empty" className="text-15 leading-body text-muted">
                     {t('health.noVaccinesYet')}
                   </Text>
+                  )
                 ) : null}
 
                 {vaccines.data?.kind === 'error' ||

@@ -168,6 +168,7 @@ export const R5_HEALTH: UseRow[] = [
   { file: 'src/screens/health/index.tsx', key: 'health.vaccines' },
   { file: 'src/screens/health/index.tsx', key: 'health.nextDue' },
   { file: 'src/screens/health/index.tsx', key: 'health.noVaccinesYet' },
+  { file: 'src/screens/health/index.tsx', key: 'health.noVaccinesYet' }, // #208 R20
   { file: 'src/screens/health/index.tsx', key: 'health.couldNotLoadVaccines' },
   { file: 'src/screens/health/index.tsx', key: 'common.retry' },
   { file: 'src/screens/health/index.tsx', key: 'health.weight' },

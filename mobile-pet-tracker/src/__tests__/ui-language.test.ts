@@ -135,8 +135,8 @@ describe('#65 R4: Map resuelve su copy por clave', () => {
 });
 
 describe('#65 R5: Health resuelve su copy por clave', () => {
-  it('#186 R7: resuelve las 43 ocurrencias normativas (enmendado por #199 R25) (enmendado por #220 R16)', () => {
-    expect(R5_HEALTH).toHaveLength(32 + 1 + 1 - 2 + 3 + 2 + 1 + 1 + 4 - 1 + 1 + 7 - 1); // #220 R16; #199 R25: +7; #186 R7 // #186 R2 // +1 #90 R5, +1 #95 R4, -2 #95 R5, +3 #115 R1, +2 #155 R4, +1 #169 R6, +1 #169 R10
+  it('#186 R7: resuelve las 43 ocurrencias normativas (enmendado por #199 R25) (enmendado por #220 R16) (enmendado por #208 R20)', () => {
+    expect(R5_HEALTH).toHaveLength(32 + 1 + 1 - 2 + 3 + 2 + 1 + 1 + 4 - 1 + 1 + 7 - 1 + 1); // #220 R16 // #208 R20; #199 R25: +7; #186 R7 // #186 R2 // +1 #90 R5, +1 #95 R4, -2 #95 R5, +3 #115 R1, +2 #155 R4, +1 #169 R6, +1 #169 R10
     checkUses(R5_HEALTH);
   });
 });
