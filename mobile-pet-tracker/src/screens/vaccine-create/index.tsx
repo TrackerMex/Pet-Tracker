@@ -1,12 +1,13 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Bell, InfoCircle, Plus } from 'reicon-react-native';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Checkbox, Skeleton } from 'heroui-native';
 import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { listPets } from '../../api/pets';
-import { healthKeys, petKeys, userKeys } from '../../api/query-keys';
+import { healthKeys, petKeys, reminderKeys, userKeys } from '../../api/query-keys';
 import { createVaccine, getVaccineCatalog } from '../../api/health-records';
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -18,9 +19,11 @@ import { getMe } from '../../api/users';
 import { DateField } from '../../components/date-field';
 import { civilTodayIso } from '../../utils/civil-today-iso';
 import { addCalendarMonthsIso } from '../../utils/vaccine-dates';
-import { isoToLocalDate } from '../../utils/civil-date';
+import { hhmmToLocalDate, isoToLocalDate } from '../../utils/civil-date';
 import type { CreateVaccineInput } from '../../api/types';
 import { validateVaccine } from '../../utils/form-rules';
+import { createReminder } from '../../api/reminders';
+import { combineDateAndTime } from '../../utils/reminder-dates';
 import { ScreenHeader } from '../../components/screen-header';
 import { useAuth } from '../../providers/auth-provider';
 import { useLocale, useTranslate } from '../../providers/language-provider';
@@ -32,6 +35,7 @@ export function VaccineCreateScreen({ petId }: { petId: string }) {
   const locale = useLocale();
   const [remind, setRemind] = useState(true);
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
   const pets = useQuery({ queryKey: petKeys.list(), queryFn: () => listPets(baseUrl, token ?? '') });
   const pet = pets.data?.kind === 'ok' ? pets.data.pets.find(p => p.id === petId) : undefined;
   const species = pet?.species === 'cat' ? 'cat' : 'dog';
@@ -57,7 +61,26 @@ export function VaccineCreateScreen({ petId }: { petId: string }) {
   const [nextDoseDraft, setNextDoseDraft] = useState<string | null | undefined>(undefined);
   const nextDoseAt = nextDoseDraft === undefined ? (entry ? addCalendarMonthsIso(appliedAt, entry.scheme.boosterMonths) : null) : nextDoseDraft;
 
-  const save = useMutation({ mutationFn: (input: CreateVaccineInput) => createVaccine(baseUrl, token ?? '', petId, input) });
+  const save = useMutation({ mutationFn: async (input: CreateVaccineInput) => {
+    const result = await createVaccine(baseUrl, token ?? '', petId, input);
+    if (result.kind === 'ok') {
+      const vaccine = result.vaccine;
+      if (remind && vaccine.nextDoseAt !== null && vaccine.nextDoseAt > civilTodayIso(profileTimeZone)) {
+        await createReminder(baseUrl, token ?? '', petId, {
+          type: 'vaccine', title: vaccine.name,
+          dueAt: combineDateAndTime(isoToLocalDate(vaccine.nextDoseAt)!, hhmmToLocalDate('09:00')!).toISOString(),
+          advanceMinutes: 0,
+        });
+      }
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: healthKeys.vaccines(petId) }),
+        queryClient.invalidateQueries({ queryKey: reminderKeys.list(petId) }),
+        queryClient.invalidateQueries({ queryKey: petKeys.list() }),
+      ]);
+      router.back();
+    }
+    return result;
+  } });
   const submitting = save.isPending;
 
   async function handleSubmit() {
