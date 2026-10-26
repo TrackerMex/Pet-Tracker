@@ -450,3 +450,8 @@ desde que acepta.
   la trazabilidad va en un único commit final, el 28, como manda la
   plantilla del handoff; y en el (2b) de R19, revertir la mutación deja el
   fichero igual que en el commit 24.
+  Errata del leader tras la implementación (2026-10-26), solo en [[design]]
+  D17 y sin cambiar ningún R: E6. La receta de regenerar la migración pasa a
+  ser la receta común: checkout de `meta/` desde `origin/dev` y `git rm` solo
+  del `.sql` propio. Antes borraba el snapshot propio, y con `0020`
+  compartido con #210 ese snapshot es el de `dev`.

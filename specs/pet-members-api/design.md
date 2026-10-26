@@ -197,15 +197,23 @@ tags: [harness, spec, backend, pets]
   `0020_pet_invites.sql`, su `meta/0020_snapshot.json` y una entrada en
   `meta/_journal.json`. Nunca se escribe ni se renumera a mano.
 
-  Si otra migración (#210, #212) llega antes a `dev`, se hace esto:
+  Si otra migración (#210, #212) llega antes a `dev`, se hace esto
+  (receta común, errata E6; desde `B`):
   1. `git merge origin/dev`. **Nunca rebase.**
-  2. En el conflicto de `meta/_journal.json`, quedarse con la versión de
-     `origin/dev`.
-  3. Borrar los ficheros propios `00NN_pet_invites.sql` y
-     `meta/00NN_snapshot.json`.
-  4. Volver a correr el `generate` con el mismo `--name`.
-  5. Commit
+  2. `git checkout origin/dev -- src/db/migrations/meta`. Esto deja
+     `meta/` entera como en `dev`, incluido el snapshot de dev si comparte
+     número con el propio.
+  3. `git rm` solo del `.sql` propio, `00NN_pet_invites.sql`. El snapshot
+     no se borra: con número compartido, borrarlo borraría el de `dev`.
+  4. `git diff --name-status origin/dev -- src/db/migrations | wc -l` → 0.
+  5. `git commit --no-edit` (cierra el merge).
+  6. Volver a correr el `generate` con el mismo `--name`.
+  7. `grep -cF '"tag"' src/db/migrations/meta/_journal.json` = la cuenta de
+     `dev` + 1.
+  8. Commit
      `chore(db): regenera la migración de pet_invites tras merge de dev`.
+  9. Recrear la base `pet_tracker_wt211` del worktree y correr `db:migrate`.
+  10. Volver a correr la suite unitaria y la e2e.
 
   El test de R1 busca el fichero por regex, así que sobrevive al cambio de
   número. Si la base local del worktree ya aplicó la versión vieja, no se
