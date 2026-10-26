@@ -26,7 +26,7 @@ Pasos de R23, en dev build Android (no Expo Go), con tema claro y oscuro:
 
 `ToggleSwitch`, `ScreenHeader` y `useShadows()` no se ven en la app (R20): su smoke va con la ola 2.
 
-- [ ] Smoke de #197 R23 recorrido por el humano
+- [X] Smoke de #197 R23 recorrido por el humano
 
 ## #200 mobile-canvas-nutrition
 
@@ -45,7 +45,7 @@ Pasos de R2, R3, R4, R6, R7, R10 y R12 a R15, en dev build Android (no Expo Go),
    cabecera vuelve a Nutrición y no hay cabecera nativa duplicada.
 6. Con «Eliminar animaciones» activado en Android, todo aparece sin movimiento.
 
-- [ ] Smoke de #200 recorrido por el humano
+- [X] Smoke de #200 recorrido por el humano
 
 ## #198 mobile-canvas-home
 
@@ -66,7 +66,7 @@ Pasos de R1, R3 a R7, R10, R11 y R13 a R16, en dev build Android (no Expo Go), c
    que recupera la lista.
 7. El vacío y la pantalla sin collar se ven como sus artboards.
 
-- [ ] Smoke de #198 recorrido por el humano
+- [X] Smoke de #198 recorrido por el humano
 
 ## #199 mobile-canvas-health-weight
 
@@ -85,7 +85,7 @@ Pasos en dev build Android (no Expo Go), con tema claro y oscuro:
 5. R23: el toast aparece bajo la cabecera tras unos 400 ms, con su sombra visible en Android.
 6. R24: las entradas llegan escalonadas. Con «Quitar animaciones» todo está quieto y completo.
 
-- [ ] Smoke de #199 recorrido por el humano
+- [X] Smoke de #199 recorrido por el humano
 
 ## #202 mobile-canvas-zones
 
@@ -109,7 +109,7 @@ Pasos en dev build Android (no Expo Go), con tema claro y oscuro:
 Conocido antes del smoke: los botones del diálogo no tienen feedback al pulsar (N1 del reviewer, deuda
 registrada).
 
-- [ ] Smoke de #202 recorrido por el humano
+- [X] Smoke de #202 recorrido por el humano
 ## #206 mobile-canvas-tab-bar
 
 Spec: `specs/mobile-canvas-tab-bar/requirements.md` (§ Cierre del humano). Reviewer APROBADO sobre
@@ -131,7 +131,7 @@ Pasos en dev build Android (no Expo Go), con tema claro y oscuro:
 Conocido antes del smoke: las celdas de la barra no tienen feedback al pulsar (O2 del reviewer; ya
 pasaba antes de #206, deuda registrada).
 
-- [ ] Smoke de #206 recorrido por el humano
+- [X] Smoke de #206 recorrido por el humano
 
 ## #196 mobile-profile-photo-hero-canvas
 
@@ -155,7 +155,7 @@ Pasos en dev build Android (no Expo Go), con tema claro y oscuro:
 Conocido antes del smoke: la cámara y «Añadir mascota» no tienen feedback al pulsar (N3 del
 reviewer; ya pasaba antes de #196, deuda registrada).
 
-- [ ] Smoke de #196 recorrido por el humano
+- [X] Smoke de #196 recorrido por el humano
 
 ## #204 mobile-canvas-routine
 
@@ -184,7 +184,7 @@ Pasos en dev build Android (no Expo Go), con al menos una mascota, tres recordat
 9. En una cuenta sin mascotas, Recordatorios muestra a Pingo centrado y un volver arriba a la
    izquierda que funciona.
 
-- [ ] Smoke de #204 recorrido por el humano
+- [X] Smoke de #204 recorrido por el humano
 
 ## #203 mobile-canvas-collar-alerts
 
@@ -208,7 +208,7 @@ Pasos en dev build Android (no Expo Go), con tema claro y oscuro:
 7. La Celebración se ve igual que antes.
 8. Con «Quitar animaciones» activado en Android, nada sube (R3, R9, R11).
 
-- [ ] Smoke de #203 recorrido por el humano
+- [X] Smoke de #203 recorrido por el humano
 
 ## #201 mobile-canvas-map
 
@@ -237,7 +237,7 @@ Pasos en dev build Android (no Expo Go), en tema claro y repetidos en oscuro:
    encima de la barra. El badge verde del collar lleva labio.
 10. (S10, R15) La ruta del día se ve más gruesa que antes (5 px).
 
-- [ ] Smoke de #201 recorrido por el humano
+- [X] Smoke de #201 recorrido por el humano
 
 ## #205 mobile-canvas-account-flow
 
@@ -263,4 +263,4 @@ Pasos en dev build Android (no Expo Go), con sesión cerrada y en tema claro y o
    miden 44. Volver con datos pide confirmación como antes. La celebración no lleva pie, y el pie
    respeta la zona segura inferior con y sin botones de navegación.
 
-- [ ] Smoke de #205 recorrido por el humano
+- [X] Smoke de #205 recorrido por el humano
