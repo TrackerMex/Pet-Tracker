@@ -111,18 +111,46 @@ originales siguen igual.
 
 ## Preguntas abiertas para el humano
 
+G1 se aprobó el 2026-10-26 sobre la versión 140 del canvas. El humano pidió al leader que
+contestara estas preguntas con sus recomendaciones. Las respuestas de abajo son esas
+recomendaciones, y la spec de cada feature móvil las adopta salvo que el humano cambie alguna
+antes de que esa spec se firme.
+
 1. ¿Qué precarga llevan Mixto y Casero? Solo Seco tiene la de 350.
+   **Respuesta:** el 350 de Seco es `kcalPer100g`, no gramos. El backend admite valores de 80 a
+   600 (`KCAL_PER_100G_MIN` y `KCAL_PER_100G_MAX`). Cada tipo lleva una precarga orientativa y
+   editable: Seco 350, Húmedo 90, Mixto 220 y Casero 130. Así nadie se bloquea por no conocer el
+   dato. La spec de #209 da estos números y el copy de ayuda del campo.
 2. ¿Valen las listas cerradas de alergias y enfermedades, y el límite de 40 caracteres en «Otra»?
+   **Respuesta:** sí, valen las dos cosas. El backend guarda `allergies` y `diseases` como listas
+   de cadenas libres. La app envía la etiqueta en español tal como se ve, y «Otra» con lo que
+   escriba el usuario, sin espacios al principio ni al final.
 3. Los textos de condición corporal están escritos para perro. ¿Hace falta otra versión para gato?
+   **Respuesta:** no. Usamos un solo juego de textos neutros que sirva para las dos especies. Esos
+   textos hablan de costillas, cintura y abdomen, sin rasgos propios de una especie. La spec de
+   #209 los da como literales.
 4. ¿Es correcta las 09:00 como hora por defecto del recordatorio de la próxima dosis?
+   **Respuesta:** sí.
 5. ¿Solo el dueño ve «Agregar vacuna»?
+   **Respuesta:** sí. `POST /pets/:petId/vaccines` lleva `@RequirePetRole('owner')`, así que un
+   miembro de la familia recibiría un 403.
 6. ¿Los términos mexicanos («Carne de res», «Soya») son los que queremos?
+   **Respuesta:** sí.
 7. ¿Valen los límites de 1 a 24 horas de «Cada N horas»? ¿Debe permitir algún aviso previo?
+   **Respuesta:** los límites valen, porque coinciden con #210 D2 (`every` de 1 a 24 para `hour`).
+   No hay aviso previo: «Aviso» queda oculto, como en el artboard.
 8. **Respondida por el plan de UI (#220).** HeroUI Native OSS no trae DateField, así que #220
    crea uno propio (`components/date-field.tsx`) con modo date|time, min/max y opción de borrar.
    #208 y #213 lo usan en lugar de instanciar el picker a mano.
 9. ¿Hace falta «cancelar solo esta vez» además de cancelar la serie?
+   **Respuesta:** no. #210 solo cancela la serie entera y no tiene forma de saltar una toma. Se
+   añade si alguien lo pide.
 10. Para algo como una pastilla trimestral, ¿hace falta «cada N meses»? Ahora solo hay «Mensual».
+    **Respuesta:** sí, porque desparasitar cada 3 meses es un caso muy común. #210 ya acepta
+    `month` con `every` de 1 a 12, así que el backend no cambia. Al elegir «Mensual» aparece el
+    mismo stepper de «Cada N horas», con estos textos: «Cada» · «3 meses» · «De 1 a 12 meses.».
+    Con 1, la tarjeta dice «Se repite cada mes», como ahora. Con N mayor que 1, dice «Se repite
+    cada N meses». No hay artboard nuevo, porque el patrón ya está dibujado.
 11. **Respondida por la spec #211.** El código tiene 10 caracteres del alfabeto
     `23456789ABCDEFGHJKMNPQRSTVWXYZ`, se muestra como «K7P4Q-2M9XA» y el backend quita los espacios
     y guiones. La invitación vence a las 72 h. El backend solo guarda el hash, así que la lista de
@@ -130,8 +158,19 @@ originales siguen igual.
 12. **Respondida por la spec #211.** El 409 de «ya es miembro» no devuelve el nombre de la
     mascota, así que UnirmeYaMiembro sigue sin nombrarla.
 13. ¿«Salir de esta mascota» pide confirmación? No la dibujé.
-14. ¿Un plan con IA descartado por salirse de los límites cuenta para el límite de 3 al día? En el
-    artboard sí cuenta («Te queda 1 de 3»). La spec #212, aún sin firmar, propone lo mismo en D9:
-    se consume antes de llamar a la IA y un fallo posterior cuenta, porque pudo costar tokens.
+    **Respuesta:** sí. Salir no tiene vuelta atrás sin un código nuevo, así que va una hoja igual
+    a la de «Quitar», con estos textos: «¿Salir de la familia de Luna?» · «Dejarás de ver a Luna y
+    de recibir sus avisos. Para volver, Marta tendrá que invitarte otra vez.» · «Salir de esta
+    mascota» · «Cancelar».
+14. **Respondida por la spec #212, ya firmada (D9).** Sí cuenta: el plan se consume antes de
+    llamar a la IA, y un fallo posterior también cuenta, porque pudo costar tokens. Coincide con
+    el artboard («Te queda 1 de 3»).
 15. ¿El plan con IA se aplica solo o hace falta un «Aplicar plan»? Lo dibujé ya aplicado.
+    **Respuesta:** se aplica solo, como está dibujado. #212 R16 guarda la propuesta en
+    `ai_proposal` sin tocar el plan del motor (`dailyGrams` no cambia) y no tiene ningún paso de
+    aplicar. Un botón exigiría un endpoint nuevo. La spec de #215 decide qué pantallas muestran
+    los gramos de `aiProposal` cuando existe: como mínimo, el plan y el horario de comidas, para
+    que no se contradigan.
 16. ¿Sin collar se oculta del todo la opción de IA o se muestra como en PlanIASinCollar?
+    **Respuesta:** se muestra como en PlanIASinCollar. #212 devuelve `not_tracked` sin consumir
+    del límite ni llamar a la IA, y la pantalla explica por qué y lleva a Vincular collar.
