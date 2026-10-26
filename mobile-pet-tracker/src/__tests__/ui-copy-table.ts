@@ -62,6 +62,7 @@ export const R2_TABS: UseRow[] = [
   { file: 'src/components/floating-tab-bar.tsx', key: 'tabs.health' },
   { file: 'src/components/floating-tab-bar.tsx', key: 'tabs.food' },
   { file: 'src/components/floating-tab-bar.tsx', key: 'tabs.profile' },
+  { file: 'src/components/floating-tab-bar.tsx', key: 'tabs.bar' },
 ];
 
 export const R3_HOME: UseRow[] = [
@@ -73,7 +74,8 @@ export const R3_HOME: UseRow[] = [
   { file: 'src/screens/home/index.tsx', key: 'home.noLocationDataYet' },
   { file: 'src/screens/home/index.tsx', key: 'home.lastSeen' },
   { file: 'src/screens/home/index.tsx', key: 'home.home' },
-  { file: 'src/screens/home/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/home/index.tsx', key: 'home.loadPetsErrorTitle' }, // #198 R15
+  { file: 'src/screens/home/index.tsx', key: 'home.loadPetsErrorBody' }, // #198 R15
   { file: 'src/screens/home/index.tsx', key: 'common.retry' },
   { file: 'src/screens/home/index.tsx', key: 'common.noPetsYet' },
   { file: 'src/screens/home/index.tsx', key: 'common.noPetsBody' }, // #155 R4
@@ -156,7 +158,7 @@ export const R5_HEALTH: UseRow[] = [
   { file: 'src/utils/form-rules.ts', key: 'validation.weightRange' }, // #186 R2
   { file: 'src/utils/form-rules.ts', key: 'validation.bodyConditionRange' }, // #186 R2
   { file: 'src/utils/form-rules.ts', key: 'validation.invalidDate' }, // #186 R2
-  { file: 'src/app/_layout.tsx', key: 'weightLog.weightLog' }, // #95 R4
+  { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.weightLog' }, // #199 R1
   { file: 'src/screens/health/index.tsx', key: 'health.health' },
   { file: 'src/screens/health/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/health/index.tsx', key: 'common.retry' },
@@ -195,33 +197,40 @@ export const R5_HEALTH: UseRow[] = [
   { file: 'src/components/weight-chart.tsx', key: 'weightChart.notEnoughDataYet' },
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.monthDelta' },
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.weightLogged' },
+  { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.history' }, // #199 R9
+  { file: 'src/screens/health/index.tsx', key: 'health.appliedOn' }, // #199 R17
+  { file: 'src/screens/health/index.tsx', key: 'health.nextOn' }, // #199 R17
+  { file: 'src/screens/health/index.tsx', key: 'health.nextDoseToday' }, // #199 R14
+  { file: 'src/screens/health/index.tsx', key: 'health.nextDoseTomorrow' }, // #199 R14
+  { file: 'src/screens/health/index.tsx', key: 'health.nextDoseInDays' }, // #199 R14
+  { file: 'src/components/weight-chart.tsx', key: 'weightChart.lastSixMonths' }, // #199 R5
 ];
 
 export const R6_FOOD: UseRow[] = [
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.mealSchedule' }, // #179 R4
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.food' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'common.somethingWentWrong' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'common.retry' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'common.noPetsYet' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'common.noPetsBody' }, // #155 R4
-  { file: 'src/app/(tabs)/food.tsx', key: 'profile.addPet' }, // #155 R4
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.dailyTarget' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.dailyKcal' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.dailyGrams' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.kcalConsumedOfTarget' }, // #113 R3
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.mealsToday' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.markServed' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.undoServed' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.couldNotUpdateMeal' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.pending' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.served' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.aiRecommendation' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.noMealPlanYet' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.noMealPlanBody' }, // #155 R9
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.couldNotLoadPlan' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'common.retry' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.mealSchedule' },
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.mealScheduleLinkSubtitle' },
+  { file: 'src/screens/food/index.tsx', key: 'food.food' },
+  { file: 'src/screens/food/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/food/index.tsx', key: 'common.retry' },
+  { file: 'src/screens/food/index.tsx', key: 'common.noPetsYet' },
+  { file: 'src/screens/food/index.tsx', key: 'common.noPetsBody' }, // #155 R4
+  { file: 'src/screens/food/index.tsx', key: 'profile.addPet' }, // #155 R4
+  { file: 'src/screens/food/index.tsx', key: 'food.dailyTarget' },
+  { file: 'src/screens/food/index.tsx', key: 'food.dailyKcal' },
+  { file: 'src/screens/food/index.tsx', key: 'food.dailyGrams' },
+  { file: 'src/screens/food/index.tsx', key: 'food.kcalConsumedOfTarget' }, // #113 R3
+  { file: 'src/screens/food/index.tsx', key: 'food.mealsToday' },
+  { file: 'src/screens/food/index.tsx', key: 'food.markServed' },
+  { file: 'src/screens/food/index.tsx', key: 'food.undoServed' },
+  { file: 'src/screens/food/index.tsx', key: 'food.couldNotUpdateMeal' },
+  { file: 'src/screens/food/index.tsx', key: 'food.markServedAction' },
+  { file: 'src/screens/food/index.tsx', key: 'food.served' },
+  { file: 'src/screens/food/index.tsx', key: 'food.aiRecommendation' },
+  { file: 'src/screens/food/index.tsx', key: 'food.noMealPlanYet' },
+  { file: 'src/screens/food/index.tsx', key: 'food.noMealPlanBody' }, // #155 R9
+  { file: 'src/screens/food/index.tsx', key: 'food.couldNotLoadPlan' },
+  { file: 'src/screens/food/index.tsx', key: 'common.retry' },
+  { file: 'src/screens/food/index.tsx', key: 'food.mealSchedule' },
+  { file: 'src/screens/food/index.tsx', key: 'food.mealScheduleLinkSubtitle' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorForbidden' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorProfileRequired' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.registerWeightFirst' },
@@ -255,8 +264,8 @@ export const R6_FOOD: UseRow[] = [
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.condition' }, // #179 R8
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.food' }, // #179 R8
   { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.mealsHistory' }, // #179 R9
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.mealsHistory' }, // #105 R5
-  { file: 'src/app/(tabs)/food.tsx', key: 'food.mealsHistoryLinkSubtitle' }, // #105 R5
+  { file: 'src/screens/food/index.tsx', key: 'food.mealsHistory' }, // #105 R5
+  { file: 'src/screens/food/index.tsx', key: 'food.mealsHistoryLinkSubtitle' }, // #105 R5
   { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.previousMonth' }, // #105 R5
   { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.nextMonth' }, // #105 R5
   { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.emptyMonth' }, // #105 R5
@@ -565,6 +574,7 @@ export const R13_ALERT_DETAIL: UseRow[] = [
 ];
 
 export const R14_GEOFENCES: UseRow[] = [
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.loadingLabel' }, // #202 R10
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.title' },
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.counter' }, // #189 R1
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.progressLabel' }, // #189 R2
@@ -590,6 +600,7 @@ export const R14_GEOFENCES: UseRow[] = [
 ];
 
 export const R15_GEOFENCE_EDITOR: UseRow[] = [
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.loadingLabel' }, // #202 R18
   { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.title' }, // #189 R8
   { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.title' }, // #189 R8
   { file: 'src/screens/geofences/index.tsx', key: 'geofenceEditor.editLabel' },

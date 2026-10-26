@@ -30,6 +30,7 @@ import { TOUCH_SLOP } from '../../theme/touch-target';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
 let mockTheme: 'light' | 'dark' = 'light';
+let mockSemanticColors = false;
 
 jest.mock('../../api/pets', () => ({
   listPets: jest.fn(),
@@ -50,6 +51,15 @@ jest.mock('../../components/weight-chart', () => {
   };
 });
 
+jest.mock('../../components/rise-in', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return { RiseIn: ({ delayMs, testID, className, children }: { delayMs: number; testID?: string; className?: string; children: ReactNode }) => {
+    const props = { delayMs, testID, className };
+    return React.createElement(View, props, children);
+  } };
+});
+
 jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
 }));
@@ -67,8 +77,8 @@ jest.mock('react-native-safe-area-context', () => ({
 jest.mock('reicon-react-native', () => {
   const { View } = jest.requireActual('react-native');
   const icon = (testID: string) =>
-    function MockIcon({ color, size }: { color?: string; size?: number }) {
-      return <View {...{ size }} testID={testID} style={{ color }} />;
+    function MockIcon({ color, size, strokeWidth }: { color?: string; size?: number; strokeWidth?: number }) {
+      return <View {...{ size, strokeWidth }} testID={testID} style={{ color }} />;
     };
 
   return {
@@ -85,6 +95,7 @@ jest.mock(
   () => ({
     useThemeColors: (tokens: string[]) =>
       tokens.map((token) => {
+        if (mockSemanticColors) return token;
         if (token.startsWith('category-')) return token;
         if (token === 'warning') {
           return mockTheme === 'dark' ? '#FBBF24' : '#F59E0B';
@@ -95,7 +106,6 @@ jest.mock(
         return mockTheme === 'dark' ? '#F7F8FA' : '#0D1117';
       }),
   }),
-  { virtual: true },
 );
 
 const apiUrl = 'http://example.test/v1';
@@ -201,6 +211,7 @@ async function renderHealth(language: 'es' | 'en' = 'es') {
 
 beforeEach(() => {
   mockTheme = 'light';
+  mockSemanticColors = false;
 });
 
 describe('R4: health resuelve la mascota seleccionada', () => {
@@ -239,12 +250,13 @@ describe('R4: health resuelve la mascota seleccionada', () => {
     expect((await screen.findByTestId('health-states')).props.style).toEqual({ gap: 16 });
   });
 
-  it('R8 (mobile-design-drift): reserva la altura del loading con Skeleton', async () => {
+  it('R8 (mobile-design-drift): reserva la altura del loading con Skeleton (enmendado por #199 R21)', async () => {
     mockListPets.mockReturnValue(pending<PetsState>());
 
     await renderHealth();
 
-    expect(screen.getByTestId('health-loading').props.className).toContain('h-12');
+    const loading = await screen.findByTestId('health-loading');
+    expect(within(loading).getAllByTestId(/^health-loading-\d+$/, { includeHiddenElements: true }).map(node => node.props.className)).toEqual(['skeleton__root size-10 rounded-full', 'skeleton__root size-10 rounded-full']);
   });
 
   it.each([
@@ -345,7 +357,7 @@ describe('R5: vacunas con la próxima destacada', () => {
     expect(screen.getByText('Vacunas')).toBeVisible();
   });
 
-  it('highlights the nearest future dose and keeps row order', async () => {
+  it('highlights the nearest future dose and keeps row order (enmendado por #199 R14)', async () => {
     const vaccines = [
       makeVaccine({
         id: 'vaccine-2',
@@ -365,7 +377,7 @@ describe('R5: vacunas con la próxima destacada', () => {
     const nextCard = within(screen.getByTestId('next-vaccine-card'));
     expect(nextCard.getByText('Próxima dosis')).toBeVisible();
     expect(nextCard.getByText('Rabies')).toBeVisible();
-    expect(nextCard.getByText('1 may 2099')).toBeVisible();
+    expect(nextCard.getByTestId('next-vaccine-date')).toHaveTextContent(/^1 de mayo · en \d+ días$/);
     expect(nextCard.queryByText('2099-05-01')).toBeNull();
     expect(screen.getAllByTestId(/^vaccine-row-/).map(({ props }) => props.testID)).toEqual([
       'vaccine-row-vaccine-2',
@@ -413,7 +425,7 @@ describe('R5: vacunas con la próxima destacada', () => {
     expect(screen.queryByTestId('next-vaccine-card')).toBeNull();
   });
 
-  it('marks an overdue next-dose date with the danger token', async () => {
+  it('marks an overdue next-dose date with the danger token (enmendado por #199 R17)', async () => {
     mockListVaccines.mockResolvedValue({
       kind: 'ok',
       vaccines: [makeVaccine({ nextDoseAt: '2000-06-01' })],
@@ -424,7 +436,7 @@ describe('R5: vacunas con la próxima destacada', () => {
     await waitFor(() =>
       expect(screen.getByTestId('vaccine-row-vaccine-1')).toBeVisible(),
     );
-    const overdueDate = screen.getByText('2000-06-01');
+    const overdueDate = screen.getByText('Próxima 1 jun 2000');
     expect(overdueDate.props.className).toContain('text-danger');
   });
 
@@ -663,11 +675,11 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
     });
   });
 
-  it('aplica la receta canónica a Peso', async () => {
+  it('aplica la receta canónica a Peso (enmendado por #199 R18)', async () => {
     await renderHealth();
 
     expect((await screen.findByTestId('weight-card-title')).props.className).toBe(
-      'text-base font-bold text-foreground',
+      'text-13 font-bold text-muted',
     );
   });
 });
@@ -724,7 +736,7 @@ describe('#127 R2: el skeleton de vacunas lleva su receta en el árbol', () => {
     mockListWeights.mockReturnValue(pending<WeightsState>());
   });
 
-  it('pinta vaccines-skeleton con la clase exacta, rounded-card incluido, la vea o no el recorte de fuente', async () => {
+  it('pinta vaccines-skeleton con la clase exacta, rounded-card incluido, la vea o no el recorte de fuente (enmendado por #199 R19)', async () => {
     mockListVaccines.mockReturnValue(pending<VaccinesState>());
 
     await renderHealth();
@@ -733,7 +745,7 @@ describe('#127 R2: el skeleton de vacunas lleva su receta en el árbol', () => {
       expect(screen.getByTestId('vaccines-skeleton')).toBeVisible(),
     );
     expect(screen.getByTestId('vaccines-skeleton').props.className).toBe(
-      'skeleton__root h-24 w-full rounded-card',
+      'rounded-card border border-border bg-surface px-3.5 flex-row items-center gap-3 py-3.5',
     );
   });
 });
@@ -749,7 +761,7 @@ describe('#115 R5: la weight card dibuja la evolución con WeightChart', () => {
     mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [] });
   });
 
-  it('con dos o más registros, pasa el historial entero y en orden entre la variación y el enlace', async () => {
+  it('con dos o más registros, pasa el historial entero y en orden entre la variación y el enlace (enmendado por #199 R18)', async () => {
     const weights = [
       makeWeight({ id: 'weight-3', weightKg: 12.4, measuredAt: '2026-08-21', variation: 0.4 }),
       makeWeight({ id: 'weight-2', weightKg: 12.0, measuredAt: '2026-08-14' }),
@@ -757,27 +769,28 @@ describe('#115 R5: la weight card dibuja la evolución con WeightChart', () => {
     ];
     mockListWeights.mockResolvedValue({ kind: 'ok', weights });
     await renderHealth();
-    await screen.findByTestId('weight-chart');
+    await screen.findByTestId('weight-chart', { includeHiddenElements: true });
 
     const card = screen.getByTestId('weight-card');
-    expect(card.children).toHaveLength(4);
-    expect(elementChild(card, 1).props.className).toBe('flex-row justify-end');
-    expect(within(elementChild(card, 1)).getByTestId('weight-variation')).toHaveTextContent('+0.4 kg');
-    expect(elementChild(card, 2).props.testID).toBe('weight-chart');
-    expect(elementChild(card, 3).props.testID).toBe('weight-log-link');
+    expect(card.children).toHaveLength(3);
+    expect(elementChild(card, 0).props.className).toBe('flex-row items-end justify-between');
+    expect(within(elementChild(card, 0)).getByTestId('weight-variation')).toHaveTextContent('+0.4 kg');
+    expect(elementChild(card, 1).props.testID).toBe('weight-chart');
+    expect(elementChild(card, 2).props.testID).toBe('weight-log-link');
     expect(screen.getByTestId('weight-current')).toHaveTextContent('12.4 kg');
     const props = mockWeightChart.mock.calls.at(-1)![0];
     expect(props.entries.map(({ id }) => id)).toEqual(['weight-3', 'weight-2', 'weight-1']);
+    expect(props.variant).toBe('mini');
   });
 
-  it('con un registro, muestra el aviso de datos insuficientes de WeightChart', async () => {
+  it('con un registro, muestra el aviso de datos insuficientes de WeightChart (enmendado por #199 R18)', async () => {
     mockListWeights.mockResolvedValue({ kind: 'ok', weights: [makeWeight()] });
     await renderHealth();
     await waitFor(() => expect(screen.getByTestId('weight-chart-empty')).toHaveTextContent('Aún no hay datos suficientes'));
 
     const card = screen.getByTestId('weight-card');
-    expect(card.children).toHaveLength(4);
-    expect(elementChild(card, 2).props.testID).toBe('weight-chart-empty');
+    expect(card.children).toHaveLength(3);
+    expect(elementChild(card, 1).props.testID).toBe('weight-chart-empty');
     expect(screen.queryByTestId('weight-chart')).toBeNull();
   });
 
@@ -834,21 +847,21 @@ describe('#115 R6: la próxima vacuna dice fecha y días restantes', () => {
   afterEach(() => jest.useRealTimers());
 
   it.each([
-    { row: 'a', language: 'es', tz: 'UTC', now: '2026-12-31 12:00', past: '2026-12-30', next: '2026-12-31', days: 'Hoy', label: undefined, date: '31 dic 2026' },
-    { row: 'b', language: 'es', tz: 'UTC', now: '2026-12-31 12:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'Faltan 2 días', date: '2 ene 2027' },
-    { row: 'c', language: 'es', tz: 'UTC', now: '2027-01-01 12:00', past: '2026-12-31', next: '2027-01-01', days: 'Hoy', label: undefined, date: '1 ene 2027' },
-    { row: 'd', language: 'es', tz: 'UTC', now: '2027-01-30 12:00', past: '2027-01-29', next: '2027-02-03', days: '4 d', label: 'Faltan 4 días', date: '3 feb 2027' },
-    { row: 'e', language: 'es', tz: 'UTC', now: '2026-12-31 12:00', past: undefined, next: '2027-12-31', days: '365 d', label: 'Faltan 365 días', date: '31 dic 2027' },
-    { row: 'f', language: 'en', tz: 'UTC', now: '2026-12-31 12:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'In 2 days', date: 'Jan 2, 2027' },
-    { row: 'g', language: 'en', tz: 'UTC', now: '2027-01-01 12:00', past: '2026-12-31', next: '2027-01-01', days: 'Today', label: undefined, date: 'Jan 1, 2027' },
-    { row: 'h', language: 'es', tz: 'America/Mexico_City', now: '2026-12-31 20:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'Faltan 2 días', date: '2 ene 2027' },
-    { row: 'i', language: 'es', tz: 'UTC', now: '2026-12-31 06:00', past: '2026-12-30', next: '2026-12-31', days: 'Hoy', label: undefined, date: '31 dic 2026' },
-    { row: 'j', language: 'es', tz: 'UTC', now: '2026-12-31 06:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'Faltan 2 días', date: '2 ene 2027' },
-    { row: 'k', language: 'es', tz: 'America/New_York', now: '2027-03-13 23:30', past: '2027-03-12', next: '2027-03-15', days: '2 d', label: 'Faltan 2 días', date: '15 mar 2027' },
-    { row: 'l', language: 'es', tz: 'Pacific/Auckland', now: '2027-01-01 10:00', past: '2026-12-31', next: '2027-01-03', days: '2 d', label: 'Faltan 2 días', date: '3 ene 2027' },
-    { row: 'm', language: 'es', tz: 'America/New_York', now: '2027-11-06 12:00', past: '2027-11-05', next: '2027-11-08', days: '2 d', label: 'Faltan 2 días', date: '8 nov 2027' },
-    { row: 'n', language: 'es', tz: 'UTC', now: '2026-12-31 12:00', past: '2026-12-30', next: '2027-01-01', days: '1 d', label: 'Faltan 1 días', date: '1 ene 2027' },
-  ] as const)('fila $row: hoy $now, próxima $next', async ({ language, tz, now, past, next, days, label, date }) => {
+    { row: 'a', language: 'es', tz: 'UTC', now: '2026-12-31 12:00', past: '2026-12-30', next: '2026-12-31', days: 'Hoy', label: undefined, date: '31 de diciembre · hoy' },
+    { row: 'b', language: 'es', tz: 'UTC', now: '2026-12-31 12:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'Faltan 2 días', date: '2 de enero · en 2 días' },
+    { row: 'c', language: 'es', tz: 'UTC', now: '2027-01-01 12:00', past: '2026-12-31', next: '2027-01-01', days: 'Hoy', label: undefined, date: '1 de enero · hoy' },
+    { row: 'd', language: 'es', tz: 'UTC', now: '2027-01-30 12:00', past: '2027-01-29', next: '2027-02-03', days: '4 d', label: 'Faltan 4 días', date: '3 de febrero · en 4 días' },
+    { row: 'e', language: 'es', tz: 'UTC', now: '2026-12-31 12:00', past: undefined, next: '2027-12-31', days: '365 d', label: 'Faltan 365 días', date: '31 de diciembre · en 365 días' },
+    { row: 'f', language: 'en', tz: 'UTC', now: '2026-12-31 12:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'In 2 days', date: 'January 2 · in 2 days' },
+    { row: 'g', language: 'en', tz: 'UTC', now: '2027-01-01 12:00', past: '2026-12-31', next: '2027-01-01', days: 'Today', label: undefined, date: 'January 1 · due today' },
+    { row: 'h', language: 'es', tz: 'America/Mexico_City', now: '2026-12-31 20:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'Faltan 2 días', date: '2 de enero · en 2 días' },
+    { row: 'i', language: 'es', tz: 'UTC', now: '2026-12-31 06:00', past: '2026-12-30', next: '2026-12-31', days: 'Hoy', label: undefined, date: '31 de diciembre · hoy' },
+    { row: 'j', language: 'es', tz: 'UTC', now: '2026-12-31 06:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'Faltan 2 días', date: '2 de enero · en 2 días' },
+    { row: 'k', language: 'es', tz: 'America/New_York', now: '2027-03-13 23:30', past: '2027-03-12', next: '2027-03-15', days: '2 d', label: 'Faltan 2 días', date: '15 de marzo · en 2 días' },
+    { row: 'l', language: 'es', tz: 'Pacific/Auckland', now: '2027-01-01 10:00', past: '2026-12-31', next: '2027-01-03', days: '2 d', label: 'Faltan 2 días', date: '3 de enero · en 2 días' },
+    { row: 'm', language: 'es', tz: 'America/New_York', now: '2027-11-06 12:00', past: '2027-11-05', next: '2027-11-08', days: '2 d', label: 'Faltan 2 días', date: '8 de noviembre · en 2 días' },
+    { row: 'n', language: 'es', tz: 'UTC', now: '2026-12-31 12:00', past: '2026-12-30', next: '2027-01-01', days: '1 d', label: 'Faltan 1 días', date: '1 de enero · mañana' },
+  ] as const)('fila $row: hoy $now, próxima $next (enmendado por #199 R14) (enmendado por #199 R25)', async ({ language, tz, now, past, next, days, label, date }) => {
     // Jest copies process.env; Node's environment makes Date observe TZ.
     const hostProcess = process.getBuiltinModule('process');
     const previousTZ = hostProcess.env.TZ;
@@ -883,7 +896,7 @@ describe('#115 R6: la próxima vacuna dice fecha y días restantes', () => {
     { branch: 'hoy', next: '2026-12-31', text: 'Hoy' },
   ] as const;
 
-  it.each(NEXT_CARD_BRANCHES)('ordena la card en icono, columna y días, con la fecha en la columna ($branch)', async ({ next, text }) => {
+  it.each(NEXT_CARD_BRANCHES)('ordena la card en icono, columna y días, con la fecha en la columna ($branch) (enmendado por #199 R14)', async ({ next, text }) => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date(2026, 12 - 1, 31, 12, 0));
     mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [makeVaccine({ nextDoseAt: next })] });
@@ -894,7 +907,7 @@ describe('#115 R6: la próxima vacuna dice fecha y días restantes', () => {
     expect(card.children).toHaveLength(3);
     expect(elementChild(card, 2).props.testID).toBe('next-vaccine-days');
     const column = elementChild(card, 1);
-    expect(column.props.className).toBe('flex-1 gap-1');
+    expect(column.props.className).toBe('flex-1 gap-0.5');
     expect(column.children).toHaveLength(3);
     expect(elementChild(column, 0)).toHaveTextContent('Próxima dosis', { exact: true });
     expect(elementChild(column, 1)).toHaveTextContent('Rabies', { exact: true });
@@ -902,7 +915,7 @@ describe('#115 R6: la próxima vacuna dice fecha y días restantes', () => {
     expect(within(elementChild(card, 0)).getByTestId('health-icon-syringe')).toBeVisible();
   });
 
-  it.each(NEXT_CARD_BRANCHES)('pinta los días con la receta exacta ($branch)', async ({ next, text }) => {
+  it.each(NEXT_CARD_BRANCHES)('pinta los días con la receta exacta ($branch) (enmendado por #199 R14)', async ({ next, text }) => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date(2026, 12 - 1, 31, 12, 0));
     mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [makeVaccine({ nextDoseAt: next })] });
@@ -910,9 +923,9 @@ describe('#115 R6: la próxima vacuna dice fecha y días restantes', () => {
     await waitFor(() => expect(screen.getByTestId('next-vaccine-days')).toHaveTextContent(text, { exact: true }));
     const days = screen.getByTestId('next-vaccine-days');
 
-    expect(days.props.className).toBe('text-lg font-black text-warning-strong');
+    expect(days.props.className).toBe('text-28 font-black text-category-amber-strong');
     expect(days.props.style).toEqual({ fontVariant: ['tabular-nums'] });
-    expect(screen.getByTestId('next-vaccine-date').props.className).toBe('font-normal text-muted');
+    expect(screen.getByTestId('next-vaccine-date').props.className).toBe('text-13 font-semibold text-category-amber-strong');
   });
 });
 
@@ -986,12 +999,12 @@ function setupHealth168() {
 describe('#168 R1: Salud pinta el título grande en todas sus ramas', () => {
   beforeEach(setupHealth168);
 
-  it.each(HEALTH_BRANCHES_168)('pinta el título grande ($name)', async ({ state, branch }) => {
+  it.each(HEALTH_BRANCHES_168)('pinta el título grande ($name) (enmendado por #197 R4)', async ({ state, branch }) => {
     mockListPets.mockImplementation(async () => state);
     await renderHealth();
     await screen.findByTestId(branch);
     const title = screen.getByTestId('health-title');
-    expect(title.props.className).toBe('text-3xl font-black tracking-tight text-foreground');
+    expect(title.props.className).toBe('text-3xl font-black tracking-title text-foreground');
     expect(title).toHaveTextContent('Salud');
     expect(elementChild(title.parent!, 0)).toBe(title);
   });
@@ -1000,11 +1013,11 @@ describe('#168 R1: Salud pinta el título grande en todas sus ramas', () => {
 describe('#168 R2: Salud sin hero y con métricas estándar', () => {
   beforeEach(setupHealth168);
 
-  it('con mascotas, health-title y health-content son los únicos hijos del scroll, en ese orden', async () => {
+  it('con mascotas, health-title y health-content son los únicos hijos del scroll, en ese orden (enmendado por #199 R12)', async () => {
     await renderHealth();
     const content = await screen.findByTestId('health-content');
     expect(content.parent!.parent).toBe(screen.getByTestId('screen-health'));
-    expect(content.parent!.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['health-title', 'health-content']);
+    expect(content.parent!.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['health-header', 'health-content']);
     expect(screen.queryByTestId('pet-hero')).toBeNull();
   });
 
@@ -1015,33 +1028,37 @@ describe('#168 R2: Salud sin hero y con métricas estándar', () => {
     expect(content.props.style).toEqual({ gap: 16 });
   });
 
-  it('pone el PetSwitcher como primer hijo de health-content', async () => {
+  it('pone el PetSwitcher como primer hijo de health-content (enmendado por #199 R13) (enmendado por #199 R14) (enmendado por #199 R18)', async () => {
     await renderHealth();
     const content = await screen.findByTestId('health-content');
-    const switcher = within(elementChild(content, 0));
+    const header = screen.getByTestId('health-header');
+    expect(header.children).toHaveLength(2);
+    const switcher = within(elementChild(header, 1));
     expect(switcher.getByTestId('pet-chip-pet-1')).toBeVisible();
     expect(switcher.getByTestId('pet-chip-pet-2')).toBeVisible();
     expect(elementChild(content, 1).props.testID).toBe('vaccines-section');
-    expect(elementChild(content, 2).props.testID).toBe('weight-card');
+    expect(within(elementChild(content, 2)).getByTestId('weight-card').props.testID).toBe('weight-card');
   });
 
-  it('cambia vacunas y peso al pulsar otra mascota', async () => {
+  it('cambia vacunas y peso al pulsar otra mascota (enmendado por #199 R13)', async () => {
     mockListWeights.mockImplementation(async (_url, _token, petId) => ({ kind: 'ok', weights: [makeWeight({ weightKg: petId === 'pet-2' ? 20 : 12 })] }));
     await renderHealth();
     await within(await screen.findByTestId('vaccine-row-vaccine-1')).findByText('Vacuna de Luna');
-    const switcher = within(elementChild(screen.getByTestId('health-content'), 0));
+    const header = screen.getByTestId('health-header');
+    expect(header.children).toHaveLength(2);
+    const switcher = within(elementChild(header, 1));
     await fireEvent.press(switcher.getByTestId('pet-chip-pet-2'));
     await waitFor(() => expect(within(screen.getByTestId('vaccine-row-vaccine-1')).getByText('Vacuna de Max')).toBeVisible());
     await waitFor(() => expect(screen.getByTestId('weight-current')).toHaveTextContent('20 kg'));
     expect(screen.queryByText('Vacuna de Luna')).toBeNull();
   });
 
-  it.each(HEALTH_BRANCHES_168.slice(0, 5))('sin contenido ($name), health-title precede a health-states', async ({ state, branch }) => {
+  it.each(HEALTH_BRANCHES_168.slice(0, 5))('sin contenido ($name), health-title precede a health-states (enmendado por #199 R12)', async ({ state, branch }) => {
     mockListPets.mockImplementation(async () => state);
     await renderHealth();
     await screen.findByTestId(branch);
     const states = screen.getByTestId('health-states');
-    expect(states.parent!.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['health-title', 'health-states']);
+    expect(states.parent!.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['health-header', 'health-states']);
     expect(states.props.style).toEqual({ gap: 16 });
     expect(within(states).queryByTestId('health-title')).toBeNull();
     expect(screen.queryByTestId('pet-hero')).toBeNull();
@@ -1064,11 +1081,11 @@ describe('#168 R3: cada vacuna lleva su tile pastel', () => {
   afterEach(() => jest.useRealTimers());
 
   it.each([
-    { id: 'overdue', surface: 'size-10 items-center justify-center rounded-xl bg-category-rose', icon: 'health-icon-clock', color: 'category-rose-strong', texts: ['Vencida', '2026-01-01', '2026-02-28'], dateClass: 'font-normal text-danger' },
-    { id: 'next', surface: 'size-10 items-center justify-center rounded-xl bg-category-amber', icon: 'health-icon-clock', color: 'category-amber-strong', texts: ['Próxima', '2026-01-02', '2026-03-31'], dateClass: 'font-normal text-muted' },
-    { id: 'future', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Futura', '2026-01-03', '2026-04-02'], dateClass: 'font-normal text-muted' },
-    { id: 'completed', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Sin próxima dosis', '2026-01-04'], dateClass: 'font-normal text-muted' },
-  ])('pinta el estado de $id con su icono y textos', async ({ id, surface, icon, color, texts, dateClass }) => {
+    { id: 'overdue', surface: 'size-10 items-center justify-center rounded-xl bg-category-rose', icon: 'health-icon-clock', color: 'category-rose-strong', texts: ['Vencida', 'Aplicada 1 ene 2026 · Próxima 28 feb 2026'], dateClass: 'text-danger' },
+    { id: 'next', surface: 'size-10 items-center justify-center rounded-xl bg-category-amber', icon: 'health-icon-clock', color: 'category-amber-strong', texts: ['Próxima', 'Aplicada 2 ene 2026 · Próxima 31 mar 2026'], dateClass: undefined },
+    { id: 'future', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Futura', 'Aplicada 3 ene 2026 · Próxima 2 abr 2026'], dateClass: undefined },
+    { id: 'completed', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Sin próxima dosis', 'Aplicada 4 ene 2026'], dateClass: undefined },
+  ])('pinta el estado de $id con su icono y textos (enmendado por #199 R16) (enmendado por #199 R17)', async ({ id, surface, icon, color, texts, dateClass }) => {
     await renderHealth();
     const row = await screen.findByTestId(`vaccine-row-${id}`);
     const scope = within(row);
@@ -1092,8 +1109,12 @@ describe('#168 R3: cada vacuna lleva su tile pastel', () => {
     texts.forEach((text, index) => {
       const node = within(column).getByText(text);
       expect(elementChild(column, index)).toBe(node);
-      expect(node.props.className).toBe(index === 0 ? 'font-bold text-foreground' : index === 1 ? 'font-normal text-muted' : dateClass);
+      expect(node.props.className).toBe(index === 0 ? 'text-15 font-extrabold text-foreground' : 'text-xs text-muted');
     });
+    const dates = scope.getByTestId(`vaccine-dates-${id}`);
+    const next = within(dates).queryByText(/^Próxima /);
+    if (id === 'completed') expect(next).toBeNull();
+    else expect(next!.props.className).toBe(dateClass);
   });
 });
 
@@ -1124,5 +1145,346 @@ describe('#181 R6: health hereda la limpieza de selección', () => {
     await waitFor(() => expect(screen.getByTestId('selected-pet-id')).toHaveTextContent('none'));
     await screen.findByTestId('health-empty');
     await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+  });
+});
+
+
+describe('#199 R12: cabecera de Salud', () => {
+  beforeEach(setupHealth168);
+  it('#199 R12 con mascotas, health-header y health-content son los únicos hijos del scroll', async () => {
+    await renderHealth();
+    const content = await screen.findByTestId('health-content');
+    expect(content.parent!.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['health-header', 'health-content']);
+  });
+  it('#199 R12 health-header es una fila justify-between que empieza por health-title', async () => {
+    await renderHealth();
+    const header = await screen.findByTestId('health-header');
+    expect(header.type).toBe('View');
+    expect(header.props.className).toBe('flex-row items-center justify-between');
+    expect(elementChild(header, 0).props.testID).toBe('health-title');
+    expect(elementChild(header, 0)).toHaveTextContent('Salud', { exact: true });
+  });
+});
+
+
+describe('#199 R13: avatares de Salud', () => {
+  beforeEach(setupHealth168);
+  it('#199 R13 el selector va en health-header tras health-title en su variante avatars', async () => {
+    await renderHealth();
+    const content = await screen.findByTestId('health-content');
+    const header = screen.getByTestId('health-header');
+    expect(header.children).toHaveLength(2);
+    expect(elementChild(header, 0).props.testID).toBe('health-title');
+    const switcher = within(elementChild(header, 1));
+    for (const id of ['pet-1', 'pet-2']) {
+      expect(switcher.getByTestId(`pet-avatar-fallback-${id}`).props.className.split(' ').slice(0, 2)).toEqual(['text-sm', 'font-extrabold']);
+    }
+    expect(within(content).queryAllByTestId(/^pet-chip-/)).toHaveLength(0);
+  });
+});
+
+
+function riseDelayOf(node: TestInstance): number | undefined {
+  let host: TestInstance | null = node;
+  while (host) {
+    if (typeof host.props.delayMs === 'number') return host.props.delayMs;
+    host = host.parent;
+  }
+  return undefined;
+}
+
+describe('#199 R14: panel de la próxima dosis', () => {
+  beforeEach(() => {
+    setupHealth168();
+    mockSemanticColors = true;
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(2026, 9, 6, 12));
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [makeVaccine({ nextDoseAt: '2026-10-12' })] });
+  });
+  afterEach(() => jest.useRealTimers());
+  it('#199 R14 next-vaccine-card es un View rounded-24 sobre el pastel ámbar con esquina continua', async () => {
+    await renderHealth();
+    const card = await screen.findByTestId('next-vaccine-card');
+    expect(card.type).toBe('View');
+    expect(card.props.className).toBe('flex-row items-center gap-3.5 rounded-24 p-4 bg-category-amber');
+    expect(card.props.style).toEqual({ borderCurve: 'continuous' });
+    const content = screen.getByTestId('health-content');
+    expect(within(elementChild(content, 0)).getByTestId('next-vaccine-card').props.testID).toBe('next-vaccine-card');
+    expect(elementChild(content, 1).props.testID).toBe('vaccines-section');
+  });
+  it('#199 R14 el tile es size-13 rounded-16 bg-surface con la jeringa a 26 en warning', async () => {
+    await renderHealth();
+    const tile = elementChild(await screen.findByTestId('next-vaccine-card'), 0);
+    expect(tile.props.className).toBe('size-13 items-center justify-center rounded-16 bg-surface');
+    expect(tile.props.style).toEqual({ borderCurve: 'continuous' });
+    const icon = within(tile).getByTestId('health-icon-syringe');
+    expect(icon.props.size).toBe(26);
+    expect(icon.props.strokeWidth).toBe(2.2);
+    expect(icon.props.style.color).toBe('warning');
+  });
+  it('#199 R14 caps, nombre y fecha llevan sus clases exactas', async () => {
+    await renderHealth();
+    const card = await screen.findByTestId('next-vaccine-card');
+    const column = elementChild(card, 1);
+    expect(column.props.className).toBe('flex-1 gap-0.5');
+    expect(elementChild(column, 0).props.className).toBe('text-xs font-extrabold uppercase tracking-caps text-category-amber-strong');
+    expect(elementChild(column, 1).props.className).toBe('text-lg font-black text-foreground');
+    expect(screen.getByTestId('next-vaccine-date').props.className).toBe('text-13 font-semibold text-category-amber-strong');
+    expect(screen.getByTestId('next-vaccine-days').props.className).toBe('text-28 font-black text-category-amber-strong');
+    expect(screen.getByTestId('next-vaccine-days').props.style).toEqual({ fontVariant: ['tabular-nums'] });
+  });
+  it.each([
+    ['31 de diciembre · hoy', '2025-12-31', '2025-12-31'],
+    ['1 de enero · mañana', '2025-12-31', '2026-01-01'],
+    ['12 de octubre · en 6 días', '2026-10-06', '2026-10-12'],
+  ])('#199 R14 la fecha dice %s', async (expected, today, nextDoseAt) => {
+    const [year, month, day] = today.split('-').map(Number);
+    jest.setSystemTime(new Date(year, month - 1, day, 12));
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [makeVaccine({ nextDoseAt })] });
+    await renderHealth();
+    expect(await screen.findByTestId('next-vaccine-date')).toHaveTextContent(expected, { exact: true });
+  });
+  it('#199 R14 entra con RiseIn sin retraso', async () => {
+    await renderHealth();
+    expect(riseDelayOf(await screen.findByTestId('next-vaccine-card'))).toBe(0);
+  });
+});
+
+
+describe('#199 R15: título de Vacunas', () => {
+  beforeEach(setupHealth168);
+  it('#199 R15 Vacunas es un h2 de text-lg font-extrabold sin icono', async () => {
+    await renderHealth();
+    const title = await screen.findByTestId('vaccines-title');
+    expect(title.type).toBe('Text');
+    expect(title.props.accessibilityRole).toBe('header');
+    expect(title.props.className).toBe('mt-1 text-lg font-extrabold text-foreground');
+    expect(title).toHaveTextContent('Vacunas', { exact: true });
+    expect(elementChild(screen.getByTestId('vaccines-section'), 0).props.testID).toBe('vaccines-title');
+    expect(within(screen.getByTestId('vaccines-section')).queryByTestId('health-icon-heart-pulse')).toBeNull();
+  });
+  it('#199 R15 vaccines-section separa sus hijos con gap-2.5', async () => {
+    await renderHealth();
+    expect((await screen.findByTestId('vaccines-section')).props.className).toBe('gap-2.5');
+  });
+});
+
+
+describe('#199 R16: filas de vacunas', () => {
+  beforeEach(() => {
+    setupHealth168();
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [0, 1, 2, 3].map(index => makeVaccine({ id: `vax-${index}`, name: `Vacuna ${index}`, nextDoseAt: null })) });
+  });
+  it('#199 R16 cada vacuna es un Card flat con py-3.5 y nombre text-15 font-extrabold', async () => {
+    await renderHealth();
+    const row = await screen.findByTestId('vaccine-row-vax-0');
+    expect(row.props.className).toBe('rounded-card border border-border bg-surface px-3.5 flex-row items-center gap-3 py-3.5');
+    const name = within(row).getByText('Vacuna 0');
+    expect(name.type).toBe('Text');
+    expect(name.props.className).toBe('text-15 font-extrabold text-foreground');
+    const tile = screen.getByTestId('vaccine-tile-vax-0', { includeHiddenElements: true });
+    expect(tile.props.className).toBe('size-10 items-center justify-center rounded-xl bg-category-green');
+    expect(within(tile).getByTestId('health-icon-check', { includeHiddenElements: true }).props.size).toBe(20);
+  });
+  it.each([[0, 80], [1, 140], [2, 200], [3, 200]])('#199 R16 la fila %i entra a los %i ms', async (index, delay) => {
+    await renderHealth();
+    expect(riseDelayOf(await screen.findByTestId(`vaccine-row-vax-${index}`))).toBe(delay);
+  });
+});
+
+
+describe('#199 R17: subtítulo de vacunas', () => {
+  beforeEach(() => {
+    setupHealth168();
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(2026, 2, 31, 12));
+  });
+  afterEach(() => jest.useRealTimers());
+  async function renderDates199(overrides: Partial<Vaccine>) {
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [makeVaccine(overrides)] });
+    await renderHealth();
+    return screen.findByTestId('vaccine-dates-vaccine-1');
+  }
+  it('#199 R17 dice Aplicada y Próxima en una línea', async () => {
+    const dates = await renderDates199({ appliedAt: '2025-12-31', nextDoseAt: '2026-01-01' });
+    expect(dates.type).toBe('Text');
+    expect(dates.props.className).toBe('text-xs text-muted');
+    expect(dates).toHaveTextContent('Aplicada 31 dic 2025 · Próxima 1 ene 2026', { exact: true });
+    expect(screen.getByTestId('vaccine-text-vaccine-1').children).toHaveLength(2);
+    expect(within(dates).getByText('Próxima 1 ene 2026').parent === dates).toBe(true);
+  });
+  it('#199 R17 una dosis vencida pinta Próxima en text-danger', async () => {
+    const dates = await renderDates199({ nextDoseAt: '2026-03-30' });
+    expect(within(dates).getByText('Próxima 30 mar 2026').props.className).toBe('text-danger');
+  });
+  it('#199 R17 una dosis vigente no pinta text-danger', async () => {
+    const dates = await renderDates199({ nextDoseAt: '2026-04-01' });
+    expect(within(dates).getByText('Próxima 1 abr 2026').props.className).not.toBe('text-danger');
+  });
+  it('#199 R17 sin próxima dosis solo dice Aplicada', async () => {
+    const dates = await renderDates199({ appliedAt: '2025-12-31', nextDoseAt: null });
+    expect(dates).toHaveTextContent('Aplicada 31 dic 2025', { exact: true });
+    expect(within(dates).queryByText(/^Próxima /)).toBeNull();
+  });
+});
+
+
+describe('#199 R18: tarjeta de peso', () => {
+  beforeEach(() => {
+    setupHealth168();
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [makeWeight(), makeWeight({ id: 'old', measuredAt: '2025-01-01', weightKg: 12 })] });
+  });
+  it('#199 R18 weight-card es un View rounded-24 bg-surface-secondary sin borde con esquina continua', async () => {
+    await renderHealth();
+    const card = await screen.findByTestId('weight-card');
+    expect(card.type).toBe('View');
+    expect(card.props.className).toBe('gap-3 rounded-24 bg-surface-secondary p-4');
+    expect(card.props.style).toEqual({ borderCurve: 'continuous' });
+  });
+  it('#199 R18 la cabecera pone Peso y la cifra a la izquierda y la píldora a la derecha', async () => {
+    await renderHealth();
+    const current = await screen.findByTestId('weight-current');
+    const card = screen.getByTestId('weight-card');
+    const row = elementChild(card, 0);
+    expect(row.props.className).toBe('flex-row items-end justify-between');
+    const column = elementChild(row, 0);
+    expect(column.props.className).toBe('gap-0.5');
+    expect(column.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['weight-card-title', 'weight-current']);
+    expect(screen.getByTestId('weight-card-title').props.className).toBe('text-13 font-bold text-muted');
+    expect(current.props.className).toBe('text-3xl font-black text-foreground');
+    expect(current.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+    expect(elementChild(row, 1).props.testID).toBe('weight-variation');
+  });
+  it.each([
+    [0.4, 'bg-category-rose', 'text-category-rose-strong', '+0.4 kg'],
+    [-0.2, 'bg-category-green', 'text-category-green-strong', '-0.2 kg'],
+    [0, 'bg-default', 'text-muted', '0 kg'],
+  ] as const)('#199 R18 variación %s usa %s y %s', async (variation, surface, ink, expected) => {
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [makeWeight({ variation })] });
+    await renderHealth();
+    const pill = await screen.findByTestId('weight-variation');
+    expect(pill.type).toBe('View');
+    expect(pill.props.className).toBe(`rounded-full px-2.5 py-1 ${surface}`);
+    const text = elementChild(pill, 0);
+    expect(text.type).toBe('Text');
+    expect(text.props.className).toBe(`text-13 font-extrabold ${ink}`);
+    expect(text.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+    expect(text).toHaveTextContent(expected, { exact: true });
+  });
+  it('#199 R18 pasa variant mini y el historial entero a WeightChart', async () => {
+    await renderHealth();
+    await screen.findByTestId('weight-chart', { includeHiddenElements: true });
+    const props = mockWeightChart.mock.calls.at(-1)![0];
+    expect(props.variant).toBe('mini');
+    expect(props.entries.map(entry => entry.id)).toEqual(['weight-1', 'old']);
+  });
+  it('#199 R18 el enlace es rounded-14 bg-surface con etiqueta text-15 y chevron de 18', async () => {
+    await renderHealth();
+    const link = await screen.findByTestId('weight-log-link');
+    expect(link.props.className).toBe('flex-row items-center justify-between rounded-14 bg-surface px-3.5 py-3');
+    expect(link.props.style).toEqual({ borderCurve: 'continuous' });
+    expect(link.props.hitSlop).toEqual({ top: 6, bottom: 6, left: 6, right: 6 });
+    expect(within(link).getByText('Registro de peso').props.className).toBe('text-15 font-bold text-foreground');
+    expect(within(link).getByTestId('health-icon-chevron-right').props.size).toBe(18);
+  });
+  it('#199 R18 entra con RiseIn a los 260 ms', async () => {
+    await renderHealth();
+    expect(riseDelayOf(await screen.findByTestId('weight-card'))).toBe(260);
+  });
+});
+
+
+describe('#199 R19: estados de vacunas', () => {
+  beforeEach(setupHealth168);
+  it('#199 R19 la carga pinta una fila flat con tile y dos barras', async () => {
+    mockListVaccines.mockReturnValue(pending<VaccinesState>());
+    await renderHealth();
+    const row = await screen.findByTestId('vaccines-skeleton');
+    expect(row.props.className).toBe('rounded-card border border-border bg-surface px-3.5 flex-row items-center gap-3 py-3.5');
+    expect(within(row).getByTestId('vaccines-skeleton-tile', { includeHiddenElements: true }).props.className).toBe('skeleton__root size-10 rounded-xl');
+    const column = elementChild(row, 1);
+    expect(column.props.className).toBe('flex-1 gap-1.5');
+    expect(column.children.filter((child): child is TestInstance => typeof child !== 'string').map(child => child.props.className)).toEqual(['skeleton__root h-3.5 w-1/3 rounded-full', 'skeleton__root h-2.5 w-2/3 rounded-full']);
+  });
+  it('#199 R19 sin vacunas pinta el aviso en text-15 leading-body text-muted', async () => {
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [] });
+    await renderHealth();
+    const empty = await screen.findByTestId('vaccines-empty');
+    expect(empty.props.className).toBe('text-15 leading-body text-muted');
+    expect(empty).toHaveTextContent('Aún no hay vacunas', { exact: true });
+  });
+  it('#199 R19 con error pinta el aviso en text-danger con role alert y conserva Reintentar', async () => {
+    mockListVaccines.mockResolvedValue({ kind: 'error' });
+    await renderHealth();
+    const error = await screen.findByTestId('vaccines-error');
+    expect(error.props.className).toBe('text-15 leading-body text-danger');
+    expect(error.props.accessibilityRole).toBe('alert');
+    expect(screen.getByTestId('vaccines-retry')).toHaveTextContent('Reintentar');
+    expect(error).toHaveTextContent('No se pudieron cargar las vacunas', { exact: true });
+  });
+});
+
+
+describe('#199 R20: peso vacío y con error', () => {
+  beforeEach(setupHealth168);
+  function expectNoWeightData199() {
+    expect(screen.queryByTestId('weight-current')).toBeNull();
+    expect(screen.queryByTestId('weight-variation')).toBeNull();
+    expect(screen.queryByTestId('weight-chart', { includeHiddenElements: true })).toBeNull();
+    expect(screen.queryByTestId('weight-chart-empty')).toBeNull();
+  }
+  it('#199 R20 sin registros conserva envoltorio, Peso, aviso y enlace', async () => {
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [] });
+    await renderHealth();
+    const empty = await screen.findByTestId('weight-card-empty');
+    const card = screen.getByTestId('weight-card');
+    expect(card.props.className).toBe('gap-3 rounded-24 bg-surface-secondary p-4');
+    expect(card.props.style).toEqual({ borderCurve: 'continuous' });
+    expect(riseDelayOf(card)).toBe(260);
+    expect(within(card).getByTestId('weight-card-title')).toHaveTextContent('Peso', { exact: true });
+    expect(empty.props.className).toBe('text-15 leading-body text-muted');
+    expect(empty).toHaveTextContent('Aún no hay registros de peso', { exact: true });
+    expect(within(card).getByTestId('weight-log-link')).toBeVisible();
+    expectNoWeightData199();
+  });
+  it('#199 R20 con error pinta el aviso en text-danger con role alert dentro de la tarjeta', async () => {
+    mockListWeights.mockResolvedValue({ kind: 'error' });
+    await renderHealth();
+    const error = await screen.findByTestId('weight-card-error');
+    const card = screen.getByTestId('weight-card');
+    expect(within(card).getByTestId('weight-card-error').props.testID).toBe('weight-card-error');
+    expect(card.props.className).toBe('gap-3 rounded-24 bg-surface-secondary p-4');
+    expect(card.props.style).toEqual({ borderCurve: 'continuous' });
+    expect(riseDelayOf(card)).toBe(260);
+    expect(error.props.className).toBe('text-15 leading-body text-danger');
+    expect(error.props.accessibilityRole).toBe('alert');
+    expect(error).toHaveTextContent('No se pudo cargar el peso', { exact: true });
+    expect(within(card).getByTestId('weight-log-link')).toBeVisible();
+    expectNoWeightData199();
+  });
+});
+
+
+describe('#199 R21: estados de mascotas', () => {
+  beforeEach(setupHealth168);
+  it('#199 R21 la carga pinta dos círculos de 40 en fila', async () => {
+    mockListPets.mockReturnValue(pending<PetsState>());
+    await renderHealth();
+    const loading = await screen.findByTestId('health-loading');
+    expect(loading.type).toBe('View');
+    expect(loading.props.className).toBe('flex-row gap-2.5');
+    const circles = within(loading).getAllByTestId(/^health-loading-\d+$/, { includeHiddenElements: true });
+    expect(circles.map(node => node.props.testID)).toEqual(['health-loading-0', 'health-loading-1']);
+    expect(circles.map(node => node.props.className)).toEqual(['skeleton__root size-10 rounded-full', 'skeleton__root size-10 rounded-full']);
+    expect(loading.parent!.props.testID).toBe('health-states');
+  });
+  it('#199 R21 el error pinta el aviso en text-15 leading-body text-danger con role alert', async () => {
+    mockListPets.mockResolvedValue({ kind: 'error' });
+    await renderHealth();
+    const error = await screen.findByTestId('health-error');
+    expect(error.props.className).toBe('text-15 leading-body text-danger');
+    expect(error.props.accessibilityRole).toBe('alert');
+    expect(error).toHaveTextContent('Algo salió mal', { exact: true });
+    expect(screen.getByTestId('health-retry')).toHaveTextContent('Reintentar');
   });
 });

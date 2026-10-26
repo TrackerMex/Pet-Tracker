@@ -388,6 +388,12 @@ Flujo por feature (arranca tras el gate humano de la spec, ver `AGENTS.md` §3):
 4. **PARA.** El humano revisa y mergea el PR en GitHub. Ningún agente mergea.
 5. Tras el merge: `git checkout main && git pull` antes de la siguiente feature.
 
+**Excepción del plan de paridad (2026-10-23)**: las features de
+`progress/plan_canvas-parity-2026-10-23.md` salen de `origin/dev`, abren la PR
+con `--base dev` y el `leader` la mergea con CI verde y reviewer aprobado.
+`dev` → `main` lo revisa y mergea el humano (`CLAUDE.md` §Mandato del
+2026-10-23).
+
 **Un solo escritor sobre el working tree.** La branch la crea el `leader` en el
 paso 1; a partir de ahí, mientras Codex implementa, nadie más commitea ni hace
 `checkout` en otra terminal. El tree es uno solo y ya costó un rescate: un
@@ -631,7 +637,7 @@ compite con `bun.lock`. `init.sh` ya corre la parte móvil con
   `contentContainerStyle` es `padding: 24`, `gap: 16` y `paddingBottom:
   insets.bottom + 24`, la misma holgura inferior que `(auth)` y
   `reset-password`.
-  `pets/[petId]/geofences` queda fuera de esta excepción desde #189 E4 (cabecera transparente, ver más abajo).
+  Zonas seguras y el editor de zonas quedan fuera de esta excepción desde #202 (`headerShown: false`, cabecera en contenido; ver más abajo).
 
   **Excepción nombrada (fidelidad al canvas, 2026-10-13)**: una pantalla llevada al canvas aprobado (directiva del humano «el diseño final debe de quedar como el artifact») usa las métricas de su artboard: padding lateral 20 en vez de 24 y el `gap` que el artboard dibuja. El resto de reglas de esta viñeta se mantiene; la spec de cada pantalla nombra sus valores.
 

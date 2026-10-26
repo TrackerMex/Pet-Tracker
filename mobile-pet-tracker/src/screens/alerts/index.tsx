@@ -9,19 +9,20 @@ import type { Alert } from '../../api/types';
 import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
 import { PopIn } from '../../components/pop-in';
+import { RiseIn } from '../../components/rise-in';
+import { ScreenHeader } from '../../components/screen-header';
 import { useAlertsList } from '../../hooks/use-alerts-list';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { TABULAR_NUMS } from '../../theme/native-styles';
 import { TOUCH_SLOP } from '../../theme/touch-target';
+import { useChunkyLip } from '../../theme/chunky-lip';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { settleAlertAck } from '../../utils/alert-ack-outcome';
 import { alertTypeMeta } from '../../utils/alert-meta';
 import { alertSection } from '../../utils/alert-sections';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
-import { HomeEntrance } from '../home/home-entrance';
-
-const ALERT_ROW_ENTRANCE_LIMIT = 5;
+import { ALERT_ROW_RISE_DELAYS } from './rise-delays';
 
 function fmtOpenedAt(
   iso: string,
@@ -40,6 +41,7 @@ function fmtOpenedAt(
 }
 
 export function AlertsScreen() {
+  const chunkyLip = useChunkyLip();
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const t = useTranslate();
@@ -159,7 +161,7 @@ export function AlertsScreen() {
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           paddingHorizontal: 20,
-          paddingTop: 24,
+          paddingTop: insets.top + 8,
           paddingBottom: insets.bottom + 24,
           gap: 12,
         }}
@@ -171,18 +173,18 @@ export function AlertsScreen() {
         }}
         ListHeaderComponent={(
           <View testID="alerts-header" className="gap-3">
-            <View testID="alerts-title-row" className="flex-row items-center gap-2">
-              <Text testID="alerts-title" accessibilityRole="header" className="flex-1 text-26 font-black tracking-title text-foreground">
-                {t('alerts.title')}
-              </Text>
-              {count > 0 ? (
+            <ScreenHeader
+              testID="alerts"
+              backFallback="/"
+              title={t('alerts.title')}
+              accessory={count > 0 ? (
                 <PopIn testID="alerts-new-count" className="rounded-full bg-danger px-2.5 py-1">
                   <Text testID="alerts-new-count-text" className="text-13 font-extrabold text-danger-foreground" style={TABULAR_NUMS}>
                     {count === 1 ? t('alerts.newOne') : t('alerts.newMany', { count })}
                   </Text>
                 </PopIn>
-              ) : null}
-            </View>
+              ) : undefined}
+            />
             {displayedActionError ? (
               <Text testID="alerts-action-error" className="text-danger">
                 {displayedActionError}
@@ -237,7 +239,8 @@ export function AlertsScreen() {
                   testID={`${rowId}-ack`}
                   accessibilityRole="button"
                   variant="secondary"
-                  className="h-8.5 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3"
+                  className="h-8.5 rounded-10 border-2 border-lip-gray bg-surface px-3"
+                  style={chunkyLip.neutralCompact}
                   hitSlop={TOUCH_SLOP}
                   isDisabled={ackingId !== null}
                   onPress={() => void handleAck(item)}
@@ -258,10 +261,10 @@ export function AlertsScreen() {
               )}
             </Card>
           );
-          const row = index < ALERT_ROW_ENTRANCE_LIMIT ? (
-            <HomeEntrance index={index} testID={`${rowId}-entrance`}>
+          const row = index < ALERT_ROW_RISE_DELAYS.length ? (
+            <RiseIn delayMs={ALERT_ROW_RISE_DELAYS[index]} testID={`${rowId}-entrance`}>
               {card}
-            </HomeEntrance>
+            </RiseIn>
           ) : card;
           const section = alertSection(item.openedAt, now);
           const firstInSection = index === 0 || alertSection(rows[index - 1].openedAt, now) !== section;

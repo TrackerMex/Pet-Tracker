@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, renderHook, screen } from '@testing-library/react-native';
 import { Redirect, router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
@@ -9,6 +9,7 @@ import type { TestInstance } from 'test-renderer';
 import { en, es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
+import { useShadows } from '../../theme/shadows';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { WelcomeScreen } from './index';
 
@@ -122,31 +123,133 @@ describe('R4', () => {
 });
 
 describe('R5', () => {
-  it('aplica las dimensiones del grupo sin tab bar', async () => {
+  it('aplica las dimensiones del grupo sin tab bar (enmendado por #205 R2)', async () => {
     await renderWelcome();
     expect(screen.getByTestId('screen-welcome').props.contentContainerStyle).toEqual({
-      flexGrow: 1, justifyContent: 'center', padding: 24, gap: 16, paddingTop: 52, paddingBottom: 48,
+      flexGrow: 1, paddingHorizontal: 16, paddingTop: 52, paddingBottom: 48, // #205 R2
     });
     expect(screen.getByTestId('screen-welcome').props.className).toBe('flex-1 bg-background');
     expect(screen.getByTestId('screen-welcome').props.contentInsetAdjustmentBehavior).toBe('automatic');
   });
 
-  it('apila los siete bloques en orden', async () => {
+  it('apila los siete bloques en orden (enmendado por #205 R2)', async () => {
     await renderWelcome();
     const children = screen.getByTestId('welcome-content').children as TestInstance[];
-    expect(children).toHaveLength(7);
+    expect(children).toHaveLength(6); // #205 R2
     expect(children.map((child) => child.props.testID)).toEqual([
-      'welcome-scene', 'welcome-chips', 'welcome-brand', 'welcome-tagline',
-      'welcome-get-started', 'welcome-have-account', 'welcome-legal',
+      'welcome-rise-scene', 'welcome-rise-chips', 'welcome-rise-heading', 'welcome-spacer',
+      'welcome-rise-actions', 'welcome-legal', // #205 R2
     ]);
   });
 
-  it('pinta marca, tagline y legal con sus clases', async () => {
+  it('pinta marca, tagline y legal con sus clases (enmendado por #205 R2, R6)', async () => {
     await renderWelcome();
-    expect(screen.getByTestId('welcome-brand').props.className).toBe('text-3xl font-bold text-foreground');
-    expect(screen.getByTestId('welcome-tagline').props.className).toBe('text-center text-base text-muted');
-    expect(screen.getByTestId('welcome-legal').props.className).toBe('text-center text-xs text-muted');
-    expect(StyleSheet.flatten(screen.getByTestId('welcome-content').props.style)).toMatchObject({ alignItems: 'center', gap: 16 });
+    expect(screen.getByTestId('welcome-brand').props.className).toBe('text-34 leading-10 font-black tracking-display text-foreground'); // #205 R6
+    expect(screen.getByTestId('welcome-tagline').props.className).toBe('max-w-75 text-center text-base text-muted'); // #205 R6
+    expect(screen.getByTestId('welcome-legal').props.className).toBe('mt-4 text-center text-xs text-muted'); // #205 R6
+    expect(screen.getByTestId('welcome-rise-heading').props.className).toBe('mt-4.5 items-center gap-2'); // #205 R2
+  });
+});
+
+describe('#205 R2: Main apila sus bloques con RiseIn', () => {
+  it('#205 R2: el contenido apila escena, chips, marca, espaciador, CTAs y legal', async () => {
+    await renderWelcome();
+    const content = screen.getByTestId('welcome-content');
+    expect(content.props.className).toBe('flex-1');
+    expect(StyleSheet.flatten(content.props.style) ?? {}).not.toHaveProperty('opacity');
+    expect(StyleSheet.flatten(content.props.style) ?? {}).not.toHaveProperty('transform');
+    expect(readSource('screens/welcome/index.tsx')).not.toContain('style={entranceStyle}');
+
+    const ids = (testID: string) => (screen.getByTestId(testID).children as TestInstance[]).map((child) => child.props.testID);
+    expect(ids('welcome-content')).toEqual([
+      'welcome-rise-scene', 'welcome-rise-chips', 'welcome-rise-heading', 'welcome-spacer',
+      'welcome-rise-actions', 'welcome-legal',
+    ]);
+    expect(ids('welcome-rise-scene')).toEqual(['welcome-scene']);
+    expect(ids('welcome-rise-chips')).toEqual(['welcome-chips']);
+    expect(ids('welcome-rise-heading')).toEqual(['welcome-brand', 'welcome-tagline']);
+    expect(ids('welcome-rise-actions')).toEqual(['welcome-get-started', 'welcome-have-account']);
+
+    for (const testID of ['welcome-rise-scene', 'welcome-rise-chips', 'welcome-rise-heading', 'welcome-rise-actions']) {
+      expect(typeof screen.getByTestId(testID).props.entering).toBe('function');
+    }
+    expect(screen.getByTestId('welcome-rise-scene').props.className).toBeUndefined();
+    expect(screen.getByTestId('welcome-rise-chips').props.className).toBe('mt-6');
+    expect(screen.getByTestId('welcome-rise-heading').props.className).toBe('mt-4.5 items-center gap-2');
+    expect(screen.getByTestId('welcome-rise-actions').props.className).toBe('gap-3.5');
+    expect(screen.getByTestId('welcome-spacer').props.className).toBe('flex-1');
+    expect((screen.getByTestId('welcome-spacer').children as TestInstance[])).toHaveLength(0);
+  });
+
+  it('#205 R2: el scroll usa márgenes 16 y los insets sin centrar', async () => {
+    await renderWelcome();
+    const style = screen.getByTestId('screen-welcome').props.contentContainerStyle;
+    expect(style).toEqual({ flexGrow: 1, paddingHorizontal: 16, paddingTop: 52, paddingBottom: 48 });
+    expect(style).not.toHaveProperty('justifyContent');
+    expect(style).not.toHaveProperty('padding');
+    expect(style).not.toHaveProperty('gap');
+  });
+});
+
+describe('#205 R3: la escena de Main', () => {
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => jest.useRealTimers());
+
+  it('#205 R3: la escena es una vista de 380 con radio 32 y esquina continua', async () => {
+    await renderWelcome();
+    const scene = screen.getByTestId('welcome-scene');
+    expect(scene.props.className).toBe('h-95 w-full items-center justify-center overflow-hidden rounded-32 bg-surface-secondary');
+    expect(StyleSheet.flatten(scene.props.style)).toEqual({ borderCurve: 'continuous' });
+    const source = readSource('screens/welcome/index.tsx');
+    expect(source).not.toMatch(/<Card\s+testID="welcome-scene"/);
+    expect(source).toMatch(/<View\s+testID="welcome-scene"/);
+  });
+
+  it('#205 R3: Pingo mide 220, flota y pisa la sombra del suelo', async () => {
+    await renderWelcome();
+    const ids = (testID: string) => (screen.getByTestId(testID).children as TestInstance[]).map((child) => child.props.testID);
+    const sceneIds = ids('welcome-scene');
+    expect(sceneIds).toContain('welcome-ground');
+    expect(sceneIds.indexOf('welcome-ground')).toBeLessThan(sceneIds.indexOf('welcome-stage'));
+    expect(screen.getByTestId('welcome-ground').props.className).toBe('absolute bottom-7.5 h-3.5 w-30 rounded-full bg-border');
+    expect(ids('welcome-stage')).toEqual(['welcome-ring-0', 'welcome-ring-1', 'welcome-ring-2', 'welcome-pingo-float']);
+    expect(ids('welcome-pingo-float')).toEqual(['welcome-pingo']);
+    expect(ids('welcome-pingo')).toEqual(['welcome-pingo-wave', 'welcome-pingo-blink']);
+
+    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo-float'))).toEqual({ transform: [{ translateY: 0 }] });
+    await act(async () => { jest.advanceTimersByTime(2000); });
+    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo-float'))).toEqual({ transform: [{ translateY: -10 }] });
+
+    const pingo = getAnimatedStyle(screen.getByTestId('welcome-pingo'));
+    expect(pingo).toMatchObject({ width: 220, height: 220 });
+    expect(JSON.stringify(pingo)).not.toContain('translateY');
+    expect(readSource('screens/welcome/index.tsx')).not.toContain('pingoFloatY');
+  });
+});
+
+describe('#205 R4: bocadillo de Main', () => {
+  it('#205 R4: el bocadillo flota arriba a la derecha con el pico abajo a la derecha', async () => {
+    const { result } = await renderHook(() => useShadows());
+    await renderWelcome();
+    const scene = screen.getByTestId('welcome-scene');
+    const sceneIds = (scene.children as TestInstance[]).map((child) => child.props.testID);
+    expect(sceneIds[sceneIds.length - 1]).toBe('welcome-bubble-pop');
+    const pop = screen.getByTestId('welcome-bubble-pop');
+    expect(pop.props.className).toBe('absolute top-7 right-5.5');
+    expect((pop.children as TestInstance[]).map((child) => child.props.testID)).toEqual(['welcome-bubble']);
+    const bubble = screen.getByTestId('welcome-bubble');
+    expect(bubble.props.className).toBe('rounded-tl-16 rounded-tr-16 rounded-bl-16 rounded-br-4 bg-surface px-3.5 py-2.5');
+    const style = StyleSheet.flatten(bubble.props.style);
+    expect(style.borderCurve).toBe('continuous');
+    expect(style.boxShadow).toHaveLength(2);
+    expect(style.boxShadow).toEqual(result.current.card.boxShadow);
+    expect(screen.getByTestId('welcome-bubble-text').props.className).toBe('text-sm font-bold text-foreground');
+    const source = readSource('screens/welcome/index.tsx');
+    expect(source).toContain('<PopIn testID="welcome-bubble-pop" className="absolute top-7 right-5.5">');
+    expect(source).toMatch(/<View\s+testID="welcome-bubble"/);
+    expect(source).not.toMatch(/<Card\b/);
+    expect(source).toContain('const shadows = useShadows();');
+    expect(source).toContain('style={[CONTINUOUS_CORNER, shadows.card]}');
   });
 });
 
@@ -356,9 +459,9 @@ describe('#153 R3: las poses entran como WebP', () => {
 
 
 describe('#153 R1: el saludo de Pingo existe en los dos idiomas', () => {
-  it('declara el saludo en inglés y en español', () => {
-    expect(en['welcome.pingoGreeting']).toBe('Hi, I\'m Pingo. I\'ll help you know where your pet is and how they\'re doing.');
-    expect(es['welcome.pingoGreeting']).toBe('Hola, soy Pingo. Te ayudo a saber dónde está y cómo está tu mascota.');
+  it('declara el saludo en inglés y en español (enmendado por #205 R5)', () => {
+    expect(en['welcome.pingoGreeting']).toBe('Hi, I\'m Pingo.'); // #205 R5
+    expect(es['welcome.pingoGreeting']).toBe('Hola, soy Pingo.'); // #205 R5
   });
 
   it('no exclama ni lleva emoji en ningún idioma', () => {
@@ -368,14 +471,14 @@ describe('#153 R1: el saludo de Pingo existe en los dos idiomas', () => {
     }
   });
 
-  it('pinta el saludo en el bocadillo en español', async () => {
+  it('pinta el saludo en el bocadillo en español (enmendado por #205 R5)', async () => {
     await renderWelcome('es');
-    expect(screen.getByText('Hola, soy Pingo. Te ayudo a saber dónde está y cómo está tu mascota.').props.testID).toBe('welcome-bubble-text');
+    expect(screen.getByText('Hola, soy Pingo.').props.testID).toBe('welcome-bubble-text');
   });
 
-  it('pinta el saludo en el bocadillo en inglés', async () => {
+  it('pinta el saludo en el bocadillo en inglés (enmendado por #205 R5)', async () => {
     await renderWelcome('en');
-    expect(screen.getByText('Hi, I\'m Pingo. I\'ll help you know where your pet is and how they\'re doing.').props.testID).toBe('welcome-bubble-text');
+    expect(screen.getByText('Hi, I\'m Pingo.').props.testID).toBe('welcome-bubble-text');
   });
 
   it('registra la clave en la tabla de mobile-ui-language', () => {
@@ -386,14 +489,53 @@ describe('#153 R1: el saludo de Pingo existe en los dos idiomas', () => {
 });
 
 
+describe('#205 R7: Main sin entradas antiguas', () => {
+  it('#205 R7: el contenido no lleva fundido ni muelle de entrada', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-content')).toBeOnTheScreen();
+    const source = readSource('screens/welcome/index.tsx');
+    expect(source).not.toContain('entranceStyle');
+    expect(source).not.toContain('translateY');
+    expect(source).not.toMatch(/\bopacity\.set\(/);
+    expect(source).not.toContain('MOTION_FADE_TIMING');
+    expect(source).not.toContain('MOTION_ENTRANCE_OFFSET_Y');
+    expect(source).toMatch(/pingoScale\.set\(\s*withSpring\(\s*1,\s*MOTION_SETTLE_SPRING,?\s*\),?\s*\)/);
+  });
+});
+
+describe('#205 R6: marca y legal de Main', () => {
+  it('#205 R6: la marca pesa 34/900, el subtítulo se limita a 300 y el legal baja 16', async () => {
+    await renderWelcome('es');
+    expect(screen.getByTestId('welcome-brand').props.className).toBe('text-34 leading-10 font-black tracking-display text-foreground');
+    expect(screen.getByTestId('welcome-tagline').props.className).toBe('max-w-75 text-center text-base text-muted');
+    expect(screen.getByTestId('welcome-legal').props.className).toBe('mt-4 text-center text-xs text-muted');
+    expect(screen.getByText(es['welcome.getStarted']).props.className).toBe('text-17 font-extrabold text-accent-foreground');
+    expect(screen.getByText(es['welcome.haveAccount']).props.className).toBe('text-17 font-bold text-accent-strong');
+  });
+});
+
+describe('#205 R5: saludo de Main', () => {
+  it('#205 R5: el saludo dice «Hola, soy Pingo.» y «Hi, I\'m Pingo.»', async () => {
+    expect(es['welcome.pingoGreeting']).toBe('Hola, soy Pingo.');
+    expect(en['welcome.pingoGreeting']).toBe('Hi, I\'m Pingo.');
+    for (const value of [es['welcome.pingoGreeting'], en['welcome.pingoGreeting']]) {
+      expect(value).not.toContain('\n');
+      expect(value.match(/[.!?]/g)).toHaveLength(1);
+      expect(value.endsWith('.')).toBe(true);
+    }
+    await renderWelcome('es');
+    expect(screen.getByTestId('welcome-bubble-text').children).toEqual(['Hola, soy Pingo.']);
+  });
+});
+
 describe('#153 R5: la escena de Pingo sustituye al logo', () => {
-  it('apila la escena y los seis bloques de #118 en orden', async () => {
+  it('apila la escena y los seis bloques de #118 en orden (enmendado por #205 R2)', async () => {
     await renderWelcome();
     const children = screen.getByTestId('welcome-content').children as TestInstance[];
-    expect(children).toHaveLength(7);
+    expect(children).toHaveLength(6); // #205 R2
     expect(children.map((child) => child.props.testID)).toEqual([
-      'welcome-scene', 'welcome-chips', 'welcome-brand', 'welcome-tagline',
-      'welcome-get-started', 'welcome-have-account', 'welcome-legal',
+      'welcome-rise-scene', 'welcome-rise-chips', 'welcome-rise-heading', 'welcome-spacer',
+      'welcome-rise-actions', 'welcome-legal', // #205 R2
     ]);
   });
 
@@ -404,24 +546,27 @@ describe('#153 R5: la escena de Pingo sustituye al logo', () => {
     expect(readSource('screens/welcome/index.tsx')).not.toContain('splash-icon');
   });
 
-  it('pinta la escena como card secundaria con el bocadillo y Pingo', async () => {
+  it('pinta la escena como card secundaria con el bocadillo y Pingo (enmendado por #205 R3, R4)', async () => {
     await renderWelcome();
     const scene = screen.getByTestId('welcome-scene');
     expect(scene.props.className.split(' ')).toEqual(expect.arrayContaining([
-      'rounded-card', 'bg-surface-secondary', 'w-full', 'items-center', 'gap-3', 'py-6',
+      'rounded-32', 'bg-surface-secondary', 'w-full', 'items-center', 'justify-center', 'overflow-hidden', 'h-95', // #205 R3
     ]));
-    expect((scene.children as TestInstance[]).map((child) => child.props.testID)).toEqual(['welcome-bubble', 'welcome-stage']);
+    expect(scene.props.className.split(' ')).not.toContain('rounded-card'); // #205 R3
+    expect((scene.children as TestInstance[]).map((child) => child.props.testID)).toEqual(['welcome-ground', 'welcome-stage', 'welcome-bubble-pop']); // #205 R3, R4
   });
 
-  it('pinta el bocadillo como card de superficie con el saludo', async () => {
+  it('pinta el bocadillo como card de superficie con el saludo (enmendado por #205 R4)', async () => {
     await renderWelcome();
     const bubble = screen.getByTestId('welcome-bubble');
     expect(bubble.props.className.split(' ')).toEqual(expect.arrayContaining([
-      'rounded-card', 'bg-surface', 'shadow-sm', 'px-4', 'py-3',
+      'rounded-tl-16', 'rounded-tr-16', 'rounded-bl-16', 'rounded-br-4', 'bg-surface', 'px-3.5', 'py-2.5', // #205 R4
     ]));
+    expect(bubble.props.className.split(' ')).not.toContain('rounded-card'); // #205 R4
+    expect(bubble.props.className.split(' ')).not.toContain('shadow-sm'); // #205 R4
     expect(bubble.children).toHaveLength(1);
     expect((bubble.children[0] as TestInstance).props.testID).toBe('welcome-bubble-text');
-    expect(screen.getByTestId('welcome-bubble-text').props.className).toBe('text-center text-sm font-semibold text-foreground');
+    expect(screen.getByTestId('welcome-bubble-text').props.className).toBe('text-sm font-bold text-foreground'); // #205 R4
   });
 });
 
@@ -438,10 +583,10 @@ describe('#153 R6: Pingo se pinta con su pose y su capa de parpadeo', () => {
   it.each([
     ['welcome-pingo-wave', /assets\/images\/pingo-wave\.webp$/],
     ['welcome-pingo-blink-image', /assets\/images\/pingo-wave-blink\.webp$/],
-  ] as const)('%s pinta su pose a 200×200, sin etiqueta de accesibilidad', async (testID, pattern) => {
+  ] as const)('%s pinta su pose a 220×220, sin etiqueta de accesibilidad (enmendado por #205 R3)', async (testID, pattern) => {
     await renderWelcome();
     const image = screen.getByTestId(testID);
-    expect(image.props.style).toEqual({ width: 200, height: 200 });
+    expect(image.props.style).toEqual({ width: 220, height: 220 }); // #205 R3
     expect(image.props.contentFit).toBe('contain');
     expect(image.props.source).toEqual([expect.objectContaining({ testUri: expect.stringMatching(pattern) })]);
     expect(image.props.accessibilityLabel).toBeUndefined();
@@ -474,53 +619,6 @@ describe('#153 R8: el contenido entra con las constantes de motion.ts', () => {
     expect(Object.keys(require('./index'))).toEqual(['WelcomeScreen']);
   });
 
-  it('usa el fundido y el muelle de motion.ts', async () => {
-    await renderWelcome();
-    expect(screen.getByTestId('welcome-content')).toBeOnTheScreen();
-    const source = readSource('screens/welcome/index.tsx');
-    for (const re of [
-      /opacity\.set\(\s*withTiming\(\s*1,\s*MOTION_FADE_TIMING,?\s*\),?\s*\)/g,
-      /translateY\.set\(\s*withSpring\(\s*0,\s*MOTION_SETTLE_SPRING,?\s*\),?\s*\)/g,
-      /useSharedValue\(\s*reduceMotion \? 0 : MOTION_ENTRANCE_OFFSET_Y,?\s*\)/g,
-      /from '\.\.\/\.\.\/theme\/motion'/g,
-    ]) {
-      expect((source.match(re) ?? []).length).toBe(1);
-    }
-    for (const re of [/\b(?:duration|easing|reduceMotion):/g, /WELCOME_ENTRANCE_/g]) {
-      expect((source.match(re) ?? []).length).toBe(0);
-    }
-  });
-
-  it('arranca invisible y desplazado 12 puntos sin reduce motion', async () => {
-    await renderWelcome();
-    expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
-      alignItems: 'center', gap: 16, opacity: 0, transform: [{ translateY: 12 }],
-    }, { shouldMatchAllProps: true });
-  });
-
-  it('termina visible y en su sitio sin reduce motion', async () => {
-    await renderWelcome();
-    expect(screen.getByTestId('welcome-content')).toBeOnTheScreen();
-    // El muelle se asienta en unas 1,5 × 250 ms; 1000 ms deja más del doble.
-    await act(async () => { jest.advanceTimersByTime(1000); });
-    expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
-      alignItems: 'center', gap: 16, opacity: 1, transform: [{ translateY: 0 }],
-    }, { shouldMatchAllProps: true });
-  });
-
-  it('con reduce motion aparece sin desplazarse', async () => {
-    mockUseReducedMotion.mockReturnValue(true);
-    await renderWelcome();
-    expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
-      alignItems: 'center', gap: 16, opacity: 0, transform: [{ translateY: 0 }],
-    }, { shouldMatchAllProps: true });
-    // Misma ventana de 1000 ms que el asentamiento sin reduce motion.
-    await act(async () => { jest.advanceTimersByTime(1000); });
-    expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
-      alignItems: 'center', gap: 16, opacity: 1, transform: [{ translateY: 0 }],
-    }, { shouldMatchAllProps: true });
-    mockUseReducedMotion.mockReturnValue(false);
-  });
 });
 
 describe('#153 E1: la carta retira WELCOME_ENTRANCE_MS de la migración pendiente', () => {
@@ -546,33 +644,33 @@ describe('#153 R9: Pingo entra con un muelle de escala', () => {
   beforeEach(() => jest.useFakeTimers());
   afterEach(() => jest.useRealTimers());
 
-  it('arranca al 90 % sin reduce motion', async () => {
+  it('arranca al 90 % sin reduce motion (enmendado por #205 R3)', async () => {
     await renderWelcome();
     expect(getAnimatedStyle(screen.getByTestId('welcome-pingo'))).toEqual({
-      width: 200, height: 200, transform: [{ translateY: 0 }, { scale: 0.9 }],
+      width: 220, height: 220, transform: [{ scale: 0.9 }], // #205 R3
     });
   });
 
-  it('termina a tamaño completo sin reduce motion', async () => {
+  it('termina a tamaño completo sin reduce motion (enmendado por #205 R3)', async () => {
     await renderWelcome();
     expect(screen.getByTestId('welcome-pingo')).toBeOnTheScreen();
     // Unas 1,5 × 250 ms de asentamiento; 1000 ms deja más del doble.
     await act(async () => { jest.advanceTimersByTime(1000); });
     expect(getAnimatedStyle(screen.getByTestId('welcome-pingo'))).toEqual({
-      width: 200, height: 200, transform: [{ translateY: expect.any(Number) }, { scale: 1 }],
+      width: 220, height: 220, transform: [{ scale: 1 }], // #205 R3
     });
   });
 
-  it('con reduce motion nace a tamaño completo y no escala', async () => {
+  it('con reduce motion nace a tamaño completo y no escala (enmendado por #205 R3)', async () => {
     mockUseReducedMotion.mockReturnValue(true);
     await renderWelcome();
     expect(getAnimatedStyle(screen.getByTestId('welcome-pingo'))).toEqual({
-      width: 200, height: 200, transform: [{ translateY: 0 }, { scale: 1 }],
+      width: 220, height: 220, transform: [{ scale: 1 }], // #205 R3
     });
     // 5000 ms supera el asentamiento y el primer parpadeo de 4000 ms.
     await act(async () => { jest.advanceTimersByTime(5000); });
     expect(getAnimatedStyle(screen.getByTestId('welcome-pingo'))).toEqual({
-      width: 200, height: 200, transform: [{ translateY: 0 }, { scale: 1 }],
+      width: 220, height: 220, transform: [{ scale: 1 }], // #205 R3
     });
     mockUseReducedMotion.mockReturnValue(false);
   });
@@ -594,16 +692,6 @@ describe('#153 R10: Pingo flota en bucle', () => {
   beforeEach(() => jest.useFakeTimers());
   afterEach(() => jest.useRealTimers());
 
-  it('sube 4 puntos en medio ciclo sin reduce motion', async () => {
-    await renderWelcome();
-    expect(screen.getByTestId('welcome-pingo')).toBeOnTheScreen();
-    // Medio ciclo dura 1200 ms; 2000 ms deja 800 ms de margen.
-    await act(async () => { jest.advanceTimersByTime(2000); });
-    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo'))).toEqual({
-      width: 200, height: 200, transform: [{ translateY: -4 }, { scale: 1 }],
-    });
-  });
-
   it('repite la flotación sin fin y en vaivén', async () => {
     await renderWelcome();
     expect(screen.getByTestId('welcome-pingo')).toBeOnTheScreen();
@@ -611,25 +699,17 @@ describe('#153 R10: Pingo flota en bucle', () => {
     expect(args.filter((values) => values.length === 2 && values[0] === -1 && values[1] === true)).toEqual([[-1, true]]);
   });
 
-  it('con reduce motion no flota', async () => {
+  it('con reduce motion no flota (enmendado por #205 R3)', async () => {
     mockUseReducedMotion.mockReturnValue(true);
     await renderWelcome();
     expect(screen.getByTestId('welcome-pingo')).toBeOnTheScreen();
     // 5000 ms supera el ciclo de 2400 ms y el primer parpadeo de 4000 ms.
     await act(async () => { jest.advanceTimersByTime(5000); });
     expect(getAnimatedStyle(screen.getByTestId('welcome-pingo'))).toEqual({
-      width: 200, height: 200, transform: [{ translateY: 0 }, { scale: 1 }],
+      width: 220, height: 220, transform: [{ scale: 1 }], // #205 R3
     });
     expect(mockWithRepeat).not.toHaveBeenCalled();
     mockUseReducedMotion.mockReturnValue(false);
-  });
-
-  it('usa la flotación de motion.ts', async () => {
-    await renderWelcome();
-    expect(screen.getByTestId('welcome-pingo')).toBeOnTheScreen();
-    const source = readSource('screens/welcome/index.tsx');
-    const re = /pingoFloatY\.set\(\s*withRepeat\(\s*withTiming\(\s*-MOTION_FLOAT_OFFSET_Y,\s*MOTION_FLOAT_TIMING,?\s*\),\s*-1,\s*true,?\s*\),?\s*\)/g;
-    expect((source.match(re) ?? []).length).toBe(1);
   });
 });
 
@@ -758,11 +838,11 @@ describe('#167 R12: anillos de ping', () => {
   });
   afterEach(() => jest.useRealTimers());
 
-  it('#167 R12: el escenario apila tres anillos bajo Pingo', async () => {
+  it('#167 R12: el escenario apila tres anillos bajo Pingo (enmendado por #205 R3)', async () => {
     await renderWelcome();
     expect(screen.getByTestId('welcome-stage').children
       .map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual([
-      'welcome-ring-0', 'welcome-ring-1', 'welcome-ring-2', 'welcome-pingo',
+      'welcome-ring-0', 'welcome-ring-1', 'welcome-ring-2', 'welcome-pingo-float', // #205 R3
     ]);
   });
 
@@ -851,10 +931,10 @@ describe('#167 R12: anillos de ping', () => {
 describe('#167 R13: sin anillos con reduce motion', () => {
   beforeEach(() => mockUseReducedMotion.mockReturnValue(true));
 
-  it('#167 R13: con reduce motion el escenario solo lleva a Pingo', async () => {
+  it('#167 R13: con reduce motion el escenario solo lleva a Pingo (enmendado por #205 R3)', async () => {
     await renderWelcome();
     expect(screen.getByTestId('welcome-stage').children
-      .map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['welcome-pingo']);
+      .map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['welcome-pingo-float']); // #205 R3
   });
 
   it.each([0, 1, 2])('#167 R13: con reduce motion no hay anillo %i', async (index) => {

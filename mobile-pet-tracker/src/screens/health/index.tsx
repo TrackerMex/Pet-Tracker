@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Check, ChevronRight, Clock, HeartPulse, Syringe } from 'reicon-react-native';
+import { Check, ChevronRight, Clock, Syringe } from 'reicon-react-native';
 
 import { listVaccines, listWeights } from '../../api/health-records';
 import { listPets, type PetsState } from '../../api/pets';
@@ -11,6 +11,7 @@ import { healthKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
 import { PetSwitcher } from '../../components/pet-switcher';
+import { RiseIn } from '../../components/rise-in';
 import { WeightChart } from '../../components/weight-chart';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
@@ -23,7 +24,13 @@ import {
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
-import { calendarDaysUntil, fmtDate } from '../home/format';
+import { calendarDaysUntil, fmtDate, fmtDayMonthLong } from '../home/format';
+
+const VARIATION_TONE = {
+  up: CATEGORY_SLOTS.rose,
+  down: CATEGORY_SLOTS.green,
+  flat: { surface: 'bg-default', ink: 'text-muted' },
+} as const;
 
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -66,6 +73,8 @@ export function HealthScreen() {
     queryFn: () => listWeights(baseUrl, token ?? '', selectedPetId!),
     enabled: selectedPetId !== null,
   });
+  const variation = weight.data?.kind === 'ok' ? weight.data.weights[0]?.variation ?? null : null;
+  const variationTone = VARIATION_TONE[variation === null || variation === 0 ? 'flat' : variation > 0 ? 'up' : 'down'];
   const today = localTodayIso();
   const nextVaccine =
     vaccines.data?.kind === 'ok'
@@ -93,71 +102,61 @@ export function HealthScreen() {
         paddingBottom: insets.bottom + 96,
       }}
     >
-      <Text testID="health-title" className="text-3xl font-black tracking-tight text-foreground">
-        {t('health.health')}
-      </Text>
+      <View testID="health-header" className="flex-row items-center justify-between">
+        <Text testID="health-title" className="text-3xl font-black tracking-title text-foreground">
+          {t('health.health')}
+        </Text>
+        {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
+          <PetSwitcher
+            variant="avatars"
+            pets={pets.data.pets}
+            selectedPetId={selectedPetId}
+            onSelect={selectPet}
+          />
+        ) : null}
+      </View>
       {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
           <View testID="health-content" style={{ gap: 16 }}>
-            <PetSwitcher
-              pets={pets.data.pets}
-              selectedPetId={selectedPetId}
-              onSelect={selectPet}
-            />
-            {selectedPetId ? (
-              <View testID="vaccines-section" className="gap-3">
-                <View className="flex-row items-center gap-2">
-                  <HeartPulse size={20} color={muted} />
-                  <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-                    {t('health.vaccines')}
+            {nextVaccine ? (
+              <RiseIn delayMs={0}>
+                <View testID="next-vaccine-card" className={`flex-row items-center gap-3.5 rounded-24 p-4 ${CATEGORY_SLOTS.amber.surface}`} style={CONTINUOUS_CORNER}>
+                  <View className="size-13 items-center justify-center rounded-16 bg-surface" style={CONTINUOUS_CORNER}>
+                    <Syringe size={26} strokeWidth={2.2} color={warning} />
+                  </View>
+                  <View className="flex-1 gap-0.5">
+                    <Text className={`text-xs font-extrabold uppercase tracking-caps ${CATEGORY_SLOTS.amber.ink}`}>
+                      {t('health.nextDue')}
+                    </Text>
+                    <Text className="text-lg font-black text-foreground">{nextVaccine.name}</Text>
+                    <Text testID="next-vaccine-date" className={`text-13 font-semibold ${CATEGORY_SLOTS.amber.ink}`}>
+                      {`${fmtDayMonthLong(nextVaccine.nextDoseAt!, locale)} · ${days === 0 ? t('health.nextDoseToday') : days === 1 ? t('health.nextDoseTomorrow') : t('health.nextDoseInDays', { days })}`}
+                    </Text>
+                  </View>
+                  <Text testID="next-vaccine-days" className={`text-28 font-black ${CATEGORY_SLOTS.amber.ink}`} style={TABULAR_NUMS} accessibilityLabel={days > 0 ? t('home.nextVaccineDaysLeft', { days }) : undefined}>
+                    {days === 0 ? t('home.nextVaccineToday') : t('home.nextVaccineDays', { days })}
                   </Text>
                 </View>
+              </RiseIn>
+            ) : null}
+
+            {selectedPetId ? (
+              <View testID="vaccines-section" className="gap-2.5">
+                <Text testID="vaccines-title" accessibilityRole="header" className="mt-1 text-lg font-extrabold text-foreground">
+                  {t('health.vaccines')}
+                </Text>
 
                 {vaccines.data === undefined || vaccines.isRefetching ? (
-                  <Skeleton
-                    testID="vaccines-skeleton"
-                    className="h-24 w-full rounded-card"
-                  />
-                ) : null}
-
-                {nextVaccine ? (
-                  <Card
-                    testID="next-vaccine-card"
-                    className="flex-row items-center gap-3"
-                  >
-                    <View
-                      className="size-11 items-center justify-center rounded-xl bg-warning-soft"
-                      style={CONTINUOUS_CORNER}
-                    >
-                      <Syringe size={22} color={warning} />
+                  <Card testID="vaccines-skeleton" variant="flat" className="flex-row items-center gap-3 py-3.5">
+                    <Skeleton testID="vaccines-skeleton-tile" className="size-10 rounded-xl" />
+                    <View className="flex-1 gap-1.5">
+                      <Skeleton className="h-3.5 w-1/3 rounded-full" />
+                      <Skeleton className="h-2.5 w-2/3 rounded-full" />
                     </View>
-                    <View className="flex-1 gap-1">
-                      <Text className="text-2xs font-semibold text-warning-strong">
-                        {t('health.nextDue')}
-                      </Text>
-                      <Text className="font-bold text-foreground">
-                        {nextVaccine.name}
-                      </Text>
-                      <Text testID="next-vaccine-date" className="font-normal text-muted">
-                        {fmtDate(nextVaccine.nextDoseAt!, locale)}
-                      </Text>
-                    </View>
-                    <Text
-                      testID="next-vaccine-days"
-                      className="text-lg font-black text-warning-strong"
-                      style={TABULAR_NUMS}
-                      accessibilityLabel={
-                        days > 0 ? t('home.nextVaccineDaysLeft', { days }) : undefined
-                      }
-                    >
-                      {days === 0
-                        ? t('home.nextVaccineToday')
-                        : t('home.nextVaccineDays', { days })}
-                    </Text>
                   </Card>
                 ) : null}
 
                 {vaccines.data?.kind === 'ok' && vaccines.data.vaccines.length === 0 ? (
-                  <Text testID="vaccines-empty" className="font-normal text-muted">
+                  <Text testID="vaccines-empty" className="text-15 leading-body text-muted">
                     {t('health.noVaccinesYet')}
                   </Text>
                 ) : null}
@@ -165,7 +164,7 @@ export function HealthScreen() {
                 {vaccines.data?.kind === 'error' ||
                 vaccines.data?.kind === 'unreachable' ? (
                   <View className="items-start gap-3">
-                    <Text testID="vaccines-error" className="text-danger">
+                    <Text testID="vaccines-error" className="text-15 leading-body text-danger" accessibilityRole="alert">
                       {t('health.couldNotLoadVaccines')}
                     </Text>
                     <Button
@@ -178,17 +177,18 @@ export function HealthScreen() {
                 ) : null}
 
                 {vaccines.data?.kind === 'ok'
-                  ? vaccines.data.vaccines.map((vaccine) => {
+                  ? vaccines.data.vaccines.map((vaccine, index) => {
                       const slot = vaccine.nextDoseAt !== null && vaccine.nextDoseAt < today
                         ? 'rose'
                         : vaccine.id === nextVaccine?.id ? 'amber' : 'green';
                       const Icon = slot === 'green' ? Check : Clock;
                       const color = slot === 'rose' ? rose : slot === 'amber' ? amber : green;
                       return (
+                      <RiseIn key={vaccine.id} delayMs={80 + 60 * Math.min(index, 2)}>
                       <Card
-                        key={vaccine.id}
+                        variant="flat"
                         testID={`vaccine-row-${vaccine.id}`}
-                        className="flex-row items-center gap-3"
+                        className="flex-row items-center gap-3 py-3.5"
                       >
                         <View
                           testID={`vaccine-tile-${vaccine.id}`}
@@ -200,25 +200,23 @@ export function HealthScreen() {
                           <Icon size={20} color={color} />
                         </View>
                         <View testID={`vaccine-text-${vaccine.id}`} className="flex-1 gap-1">
-                        <Text className="font-bold text-foreground">
+                        <Text className="text-15 font-extrabold text-foreground">
                           {vaccine.name}
                         </Text>
-                        <Text className="font-normal text-muted">
-                          {vaccine.appliedAt}
+                        <Text testID={`vaccine-dates-${vaccine.id}`} className="text-xs text-muted">
+                          {t('health.appliedOn', { date: fmtDate(vaccine.appliedAt, locale) })}
+                          {vaccine.nextDoseAt ? (
+                            <>
+                              {' · '}
+                              <Text className={vaccine.nextDoseAt < today ? 'text-danger' : undefined}>
+                                {t('health.nextOn', { date: fmtDate(vaccine.nextDoseAt, locale) })}
+                              </Text>
+                            </>
+                          ) : null}
                         </Text>
-                        {vaccine.nextDoseAt ? (
-                          <Text
-                            className={
-                              vaccine.nextDoseAt < today
-                                ? 'font-normal text-danger'
-                                : 'font-normal text-muted'
-                            }
-                          >
-                            {vaccine.nextDoseAt}
-                          </Text>
-                        ) : null}
                         </View>
                       </Card>
+                      </RiseIn>
                       );
                     })
                   : null}
@@ -226,52 +224,40 @@ export function HealthScreen() {
             ) : null}
 
             {selectedPetId ? (
-              <Card
-                testID="weight-card"
-                className="gap-3"
-              >
-                <View className="flex-row items-baseline justify-between gap-3">
-                  <Text
-                    testID="weight-card-title"
-                    className="text-base font-bold text-foreground"
-                  >
-                    {t('health.weight')}
-                  </Text>
-                  {weight.data?.kind === 'ok' && weight.data.weights.length > 0 ? (
-                    <Text
-                      testID="weight-current"
-                      className="text-xl font-black text-accent-strong"
-                      style={TABULAR_NUMS}
-                    >
-                      {weight.data.weights[0].weightKg} kg
+              <RiseIn delayMs={260}>
+              <View testID="weight-card" className="gap-3 rounded-24 bg-surface-secondary p-4" style={CONTINUOUS_CORNER}>
+                <View className="flex-row items-end justify-between">
+                  <View className="gap-0.5">
+                    <Text testID="weight-card-title" className="text-13 font-bold text-muted">
+                      {t('health.weight')}
                     </Text>
+                    {weight.data?.kind === 'ok' && weight.data.weights.length > 0 ? (
+                      <Text testID="weight-current" className="text-3xl font-black text-foreground" style={TABULAR_NUMS}>
+                        {weight.data.weights[0].weightKg} kg
+                      </Text>
+                    ) : null}
+                  </View>
+                  {weight.data?.kind === 'ok' && weight.data.weights.length > 0 ? (
+                    <View testID="weight-variation" className={`rounded-full px-2.5 py-1 ${variationTone.surface}`}>
+                      <Text className={`text-13 font-extrabold ${variationTone.ink}`} style={TABULAR_NUMS}>
+                        {fmtVariation(variation)}
+                      </Text>
+                    </View>
                   ) : null}
                 </View>
 
                 {weight.data?.kind === 'ok' && weight.data.weights.length > 0 ? (
-                  <View className="flex-row justify-end">
-                    <Text
-                      testID="weight-variation"
-                      className="font-normal text-muted"
-                      style={TABULAR_NUMS}
-                    >
-                      {fmtVariation(weight.data.weights[0].variation)}
-                    </Text>
-                  </View>
-                ) : null}
-
-                {weight.data?.kind === 'ok' && weight.data.weights.length > 0 ? (
-                  <WeightChart entries={weight.data.weights} />
+                  <WeightChart entries={weight.data.weights} variant="mini" />
                 ) : null}
 
                 {weight.data?.kind === 'ok' && weight.data.weights.length === 0 ? (
-                  <Text testID="weight-card-empty" className="font-normal text-muted">
+                  <Text testID="weight-card-empty" className="text-15 leading-body text-muted">
                     {t('health.noWeightEntriesYet')}
                   </Text>
                 ) : null}
 
                 {weight.data?.kind === 'error' || weight.data?.kind === 'unreachable' ? (
-                  <Text testID="weight-card-error" className="text-danger">
+                  <Text testID="weight-card-error" className="text-15 leading-body text-danger" accessibilityRole="alert">
                     {t('health.couldNotLoadWeight')}
                   </Text>
                 ) : null}
@@ -280,16 +266,17 @@ export function HealthScreen() {
                   accessibilityRole="button"
                   testID="weight-log-link"
                   hitSlop={TOUCH_SLOP}
-                  className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+                  className="flex-row items-center justify-between rounded-14 bg-surface px-3.5 py-3"
                   style={CONTINUOUS_CORNER}
                   onPress={() => router.push('/weight-log')}
                 >
-                  <Text className="font-semibold text-foreground">
+                  <Text className="text-15 font-bold text-foreground">
                     {t('health.weightLog')}
                   </Text>
-                  <ChevronRight size={20} color={muted} />
+                  <ChevronRight size={18} color={muted} />
                 </Pressable>
-              </Card>
+              </View>
+              </RiseIn>
             ) : null}
           </View>
       ) : (
@@ -298,12 +285,14 @@ export function HealthScreen() {
           style={{ gap: 16 }}
         >
           {pets.data === undefined ? (
-            <Skeleton testID="health-loading" className="h-12 w-full rounded-card" />
+            <View testID="health-loading" className="flex-row gap-2.5">
+              {[0, 1].map(index => <Skeleton key={index} testID={`health-loading-${index}`} className="size-10 rounded-full" />)}
+            </View>
           ) : null}
 
           {pets.data && isPetsError(pets.data) ? (
             <View className="items-start gap-3">
-              <Text testID="health-error" className="text-danger">
+              <Text testID="health-error" className="text-15 leading-body text-danger" accessibilityRole="alert">
                 {t('common.somethingWentWrong')}
               </Text>
               <Button

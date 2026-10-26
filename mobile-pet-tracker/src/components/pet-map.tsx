@@ -12,6 +12,7 @@ export type PetMapProps = {
   center: MapCoordinates;
   marker: MapCoordinates | null;
   polylines: MapPolyline[];
+  polylineWidth?: number;
   colorScheme: 'light' | 'dark';
 };
 
@@ -38,6 +39,7 @@ export function PetMap(props: PetMapProps) {
     polylines: props.polylines.map((polyline) => ({
       ...polyline,
       color: polylineColor,
+      ...(props.polylineWidth === undefined ? {} : { width: props.polylineWidth }),
     })),
     colorScheme:
       props.colorScheme === 'dark'

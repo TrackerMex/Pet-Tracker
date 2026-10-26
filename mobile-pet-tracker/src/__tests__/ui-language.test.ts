@@ -76,8 +76,8 @@ describe('#65 R1: el grupo (auth) resuelve su copy por clave', () => {
 });
 
 describe('#65 R2: la barra de pestañas resuelve su copy por clave', () => {
-  it('resuelve las 5 ocurrencias normativas', () => {
-    expect(R2_TABS).toHaveLength(5);
+  it('resuelve las 5 ocurrencias normativas (enmendado por #206 R8)', () => {
+    expect(R2_TABS).toHaveLength(5 + 1);
     checkUses(R2_TABS);
   });
 });
@@ -86,8 +86,8 @@ describe('#65 R3: Home resuelve su copy por clave', () => {
   // 20 en `303fc19` + 1 de `home.walks` (#67 R7b, delta declarado en su R9b).
   // #68 añade el delta medido de weekly-activity-chart, sin recontar la base.
   // #73 añade `home.unknown` para distinguir espera inicial de desconexión.
-  it('#71 R11: registra el copy de accesos rápidos sobre los deltas heredados', () => {
-    expect(R3_HOME).toHaveLength(21 + 15 + 1 + 4 + 7 + 2 + 1 + 2 + 2 + 4); // +2 #155 R4; +4 #190 R9/R13 (enmendado por #190 R13)
+  it('#71 R11: registra el copy de accesos rápidos sobre los deltas heredados (enmendado por #198 R15)', () => {
+    expect(R3_HOME).toHaveLength(21 + 15 + 1 + 4 + 7 + 2 + 1 + 2 + 2 + 4 + 1); // +1 #198 R15 // +2 #155 R4; +4 #190 R9/R13 (enmendado por #190 R13)
     checkUses(R3_HOME);
   });
 });
@@ -134,8 +134,8 @@ describe('#65 R4: Map resuelve su copy por clave', () => {
 });
 
 describe('#65 R5: Health resuelve su copy por clave', () => {
-  it('#186 R7: resuelve las 43 ocurrencias normativas', () => {
-    expect(R5_HEALTH).toHaveLength(32 + 1 + 1 - 2 + 3 + 2 + 1 + 1 + 4 - 1 + 1); // #186 R7 // #186 R2 // +1 #90 R5, +1 #95 R4, -2 #95 R5, +3 #115 R1, +2 #155 R4, +1 #169 R6, +1 #169 R10
+  it('#186 R7: resuelve las 43 ocurrencias normativas (enmendado por #199 R25)', () => {
+    expect(R5_HEALTH).toHaveLength(32 + 1 + 1 - 2 + 3 + 2 + 1 + 1 + 4 - 1 + 1 + 7); // #199 R25: +7; #186 R7 // #186 R2 // +1 #90 R5, +1 #95 R4, -2 #95 R5, +3 #115 R1, +2 #155 R4, +1 #169 R6, +1 #169 R10
     checkUses(R5_HEALTH);
   });
 });
@@ -259,8 +259,8 @@ describe('#100 R10: el detalle de alerta resuelve su copy por clave', () => {
 });
 
 describe('#41 R10: las zonas seguras resuelven su copy por clave', () => {
-  it('registra cada ocurrencia de la pantalla y de su cabecera (enmendado por #189 R1) (enmendado por #189 R2)', () => {
-    expect(R14_GEOFENCES).toHaveLength(18 + 1 + 1 + 1 + 1); // +1 #155 R8, +1 #159 R5
+  it('registra cada ocurrencia de la pantalla y de su cabecera (enmendado por #189 R1) (enmendado por #189 R2) (enmendado por #202 R10)', () => {
+    expect(R14_GEOFENCES).toHaveLength(18 + 1 + 1 + 1 + 1 + 1); // +1 #155 R8, +1 #159 R5
     expect(R14_GEOFENCES.every(({ file }) =>
       file === 'src/app/_layout.tsx' || file === 'src/screens/geofences/index.tsx',
     )).toBe(true);
@@ -269,8 +269,8 @@ describe('#41 R10: las zonas seguras resuelven su copy por clave', () => {
 });
 
 describe('#146 R10: el editor de zonas resuelve su copy por clave', () => {
-  it('registra cada ocurrencia del editor y de sus entradas (enmendado por #189 R1)', () => {
-    expect(R15_GEOFENCE_EDITOR).toHaveLength(27 - 1 + 2 + 3); // #189 R11
+  it('registra cada ocurrencia del editor y de sus entradas (enmendado por #189 R1) (enmendado por #202 R18)', () => {
+    expect(R15_GEOFENCE_EDITOR).toHaveLength(27 - 1 + 2 + 3 + 1); // #189 R11
     expect(R15_GEOFENCE_EDITOR.every(({ file }) =>
       file === 'src/app/_layout.tsx' || file === 'src/screens/geofences/index.tsx' || file === 'src/screens/geofence-editor/index.tsx',
     )).toBe(true);
@@ -494,7 +494,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
     checkUses(ALL_USES);
   });
 
-  it('#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas', () => {
+  it('#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas (enmendado por #200 R1) (enmendado por #199 R1)', () => {
     expect(SCREEN_FILES).toHaveLength(
       19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1 // #100 R10, #41 R10, #146 R10, #105 R5
         + 1 - 1 // #117 R10: sale app/(auth)/forgot.tsx, entra screens/forgot/index.tsx
@@ -507,6 +507,8 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
         + 1 // #186 R2: utils/form-rules.ts
         + 1 // #190 R13: screens/home/pingo-phrase.ts (enmendado por #190 R13)
         + 1 // #194 R5: screens/edit-profile/index.tsx
+        + 1 - 1 // #200 R1: sale app/(tabs)/food.tsx, entra screens/food/index.tsx
+        - 1 // #199 R1: sale src/app/_layout.tsx
     );
 
     for (const file of SCREEN_FILES) {

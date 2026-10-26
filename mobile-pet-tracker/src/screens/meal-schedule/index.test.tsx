@@ -1,12 +1,14 @@
 import {
   act,
   fireEvent,
+  renderHook,
   screen,
   waitFor,
   within,
 } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect } from 'react';
+import type { TestInstance } from 'test-renderer';
 
 import {
   addMealTime,
@@ -23,6 +25,7 @@ import { getPet, type PetState } from '../../api/pets';
 import { nutritionKeys } from '../../api/query-keys';
 import type { NutritionPlan, NutritionProfile, PetProfile } from '../../api/types';
 import { es } from '../../i18n/catalog';
+import { useChunkyLip } from '../../theme/chunky-lip';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import {
@@ -53,7 +56,7 @@ jest.mock('expo-router', () => {
   );
 
   return {
-    router: { push: jest.fn(), back: jest.fn() },
+    router: { push: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false), replace: jest.fn() },
       Redirect: ({ href }: { href: string }) => {
       const props = { testID: 'meal-schedule-redirect', href };
 
@@ -92,18 +95,22 @@ jest.mock('@expo/ui/community/datetime-picker', () => {
   };
 });
 
-const mockHomeEntrance = jest.fn<void, [import('react-native').ViewProps & { index: number }]>();
-
-jest.mock('../home/home-entrance', () => {
+jest.mock('../../components/rise-in', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
-    HomeEntrance(props: import('react-native').ViewProps & { index: number }) {
-      mockHomeEntrance(props);
+    RiseIn(props: import('react-native').ViewProps & { delayMs: number; className?: string }) {
       return React.createElement(View, props);
     },
   };
 });
+
+function riseDelayOf(node: TestInstance | null): number | undefined {
+  for (let current = node; current; current = current.parent) {
+    if (current.props.delayMs !== undefined) return current.props.delayMs;
+  }
+  return undefined;
+}
 
 jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
@@ -118,6 +125,7 @@ jest.mock('reicon-react-native', () => {
     };
 
   return {
+    ChevronLeft: icon('meal-schedule-icon-back'),
     Clock: icon('meal-schedule-icon-clock'),
     Sparkles: icon('meal-schedule-icon-sparkles'),
   };
@@ -128,7 +136,6 @@ jest.mock(
   () => ({
     useThemeColors: (tokens: string[]) => tokens.map(() => '#000000'),
   }),
-  { virtual: true },
 );
 
 // Jest copies process.env; Node's environment makes Date observe TZ.
@@ -253,7 +260,7 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
     expect(mockGetNutritionProfile).not.toHaveBeenCalled();
   });
 
-  it('shows loading and the metrics under the native header (#95 R6)', async () => {
+  it('shows loading and the metrics under the native header (#95 R6) (enmendado por #200 R12)', async () => {
     mockGetNutritionPlan.mockReturnValue(pending<NutritionPlanState>());
     mockGetNutritionProfile.mockReturnValue(pending<NutritionProfileState>());
 
@@ -281,7 +288,7 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
     );
     expect(
       screen.getByTestId('screen-meal-schedule').props.contentContainerStyle,
-    ).toEqual({ paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48 });
+    ).toEqual({ paddingHorizontal: 20, paddingTop: 48, gap: 14, paddingBottom: 56 });
 
   });
 
@@ -567,7 +574,7 @@ describe('#147 R4: solo el owner ve Editar y Añadir comida', () => {
     mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
   });
 
-  it('el owner ve Editar en cada fila y Añadir comida bajo la lista', async () => {
+  it('el owner ve Editar en cada fila y Añadir comida bajo la lista (enmendado por #197 R9)', async () => {
     mockGetPet.mockResolvedValue(petState('owner'));
     await renderMealSchedule();
     await waitFor(() => expect(childTestIds(screen.getByTestId('meal-time-row-1'))).toEqual([undefined, undefined, 'meal-time-edit-1']));
@@ -576,14 +583,16 @@ describe('#147 R4: solo el owner ve Editar y Añadir comida', () => {
     expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-entry-0', 'meal-time-entry-1']);
     for (const [index, label] of [[0, 'Editar horario de las 07:30'], [1, 'Editar horario de las 19:30']] as const) {
       const button = within(screen.getByTestId(`meal-time-row-${index}`)).getByTestId(`meal-time-edit-${index}`);
+      expect(button).toHaveStyle({ boxShadow: [{ offsetX: 0, offsetY: 3, blurRadius: 0, spreadDistance: 0, color: expect.any(String) }] });
       expect(button.props.accessibilityLabel).toBe(label);
       expect(within(button).getByText('Editar')).toBeVisible();
-      expect(button.props.className.split(' ')).toEqual(expect.arrayContaining(['h-9.75', 'rounded-10', 'border-2', 'border-b-5', 'border-lip-gray', 'bg-surface']));
+      expect(button.props.className.split(' ')).toEqual(expect.arrayContaining(['h-9', 'rounded-10', 'border-2', 'border-lip-gray', 'bg-surface']));
       expect(within(button).getByText('Editar').props.className.split(' ')).toEqual(expect.arrayContaining(['text-13', 'font-extrabold', 'text-foreground']));
     }
     const add = screen.getByTestId('add-meal-time-button');
+    expect(add).toHaveStyle({ boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: expect.any(String) }] });
     expect(within(add).getByText('Añadir comida')).toBeVisible();
-    expect(add.props.className.split(' ')).toEqual(expect.arrayContaining(['h-13.5', 'rounded-14', 'border-2', 'border-b-6', 'border-lip-gray', 'bg-surface']));
+    expect(add.props.className.split(' ')).toEqual(expect.arrayContaining(['h-12.5', 'rounded-14', 'border-2', 'border-lip-gray', 'bg-surface']));
     expect(within(add).getByText('Añadir comida').props.className.split(' ')).toEqual(expect.arrayContaining(['text-15', 'font-extrabold', 'text-foreground']));
   });
 
@@ -1071,13 +1080,13 @@ describe('#179 R4: marco y título en contenido', () => {
   });
 
   function expectHeading() {
-    const heading = screen.getByTestId('meal-schedule-heading');
+    const heading = screen.getByTestId('meal-schedule-header-title');
     expect(heading).toHaveTextContent('Horario de comidas');
     expect(heading).toHaveProp('accessibilityRole', 'header');
-    expect(heading).toHaveProp('className', 'text-2xl font-black tracking-title text-foreground');
+    expect(heading).toHaveProp('className', 'text-24 font-black tracking-title text-foreground');
   }
 
-  it('muestra el título antes del contenido mientras carga', async () => {
+  it('muestra el título antes del contenido mientras carga (enmendado por #200 R12)', async () => {
     mockGetNutritionPlan.mockReturnValue(pending<NutritionPlanState>());
     mockGetNutritionProfile.mockReturnValue(pending<NutritionProfileState>());
     await renderMealSchedule();
@@ -1085,18 +1094,18 @@ describe('#179 R4: marco y título en contenido', () => {
     expectHeading();
     expect(screen.getByTestId('meal-schedule-loading')).toHaveProp('className', 'gap-3.5');
     expect(screen.getByTestId('screen-meal-schedule')).toHaveProp('contentContainerStyle', {
-      paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48,
+      paddingHorizontal: 20, paddingTop: 48, gap: 14, paddingBottom: 56,
     });
   });
 
-  it('conserva el título cuando falla la carga', async () => {
+  it('conserva el título cuando falla la carga (enmendado por #200 R12)', async () => {
     mockGetNutritionPlan.mockResolvedValue({ kind: 'error' });
     await renderMealSchedule();
     await screen.findByTestId('meal-schedule-error');
     expectHeading();
   });
 
-  it('muestra un único título con el plan cargado', async () => {
+  it('muestra un único título con el plan cargado (enmendado por #200 R12)', async () => {
     mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
     mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
     await renderMealSchedule();
@@ -1105,7 +1114,7 @@ describe('#179 R4: marco y título en contenido', () => {
     expect(screen.getAllByText('Horario de comidas')).toHaveLength(1);
   });
 
-  it('conserva el título cuando no hay plan', async () => {
+  it('conserva el título cuando no hay plan (enmendado por #200 R12)', async () => {
     await renderMealSchedule();
     await screen.findByTestId('meal-schedule-empty');
     expectHeading();
@@ -1118,13 +1127,14 @@ describe('#179 R5: resumen del artboard', () => {
     mockGetNutritionProfile.mockResolvedValue({ kind: 'not-found' });
   });
 
-  it('compone el resumen con eyebrow y tres columnas de valor y etiqueta', async () => {
+  it('compone el resumen con eyebrow y tres columnas de valor y etiqueta (enmendado por #197 R9) (enmendado por #200 R15)', async () => {
     await renderMealSchedule();
     const summary = await screen.findByTestId('meal-schedule-summary');
-    expect(summary).toHaveProp('className', 'gap-2 rounded-24 bg-accent border-b-5 border-black/25 p-4');
+    expect(summary).toHaveProp('className', 'gap-2 rounded-24 bg-accent p-4');
     expect(summary).toHaveStyle({ borderCurve: 'continuous' });
     expect(summary.children).toHaveLength(2);
     const eyebrow = summary.children[0];
+    expect(summary).toHaveStyle({ borderCurve: 'continuous', boxShadow: [{ offsetX: 0, offsetY: 5, blurRadius: 0, spreadDistance: 0, color: expect.any(String) }] });
     const columns = summary.children[1];
     if (typeof eyebrow === 'string' || typeof columns === 'string') throw new Error('Expected summary nodes');
     expect(eyebrow).toHaveTextContent('Objetivo diario');
@@ -1143,19 +1153,20 @@ describe('#179 R5: resumen del artboard', () => {
       expect(column.children[0]).toBe(valueNode);
       expect(column.children[1]).toBe(labelNode);
     }
-    expect(mockHomeEntrance).toHaveBeenCalledWith(expect.objectContaining({ testID: 'meal-schedule-summary-entry', index: 0 }));
+    expect(riseDelayOf(screen.getByTestId('meal-schedule-summary-entry'))).toBe(0);
     expect(screen.queryByText('656 kcal')).toBeNull();
     expect(screen.queryByText('187 g / día')).toBeNull();
     expect(screen.queryByText('2 comidas / día')).toBeNull();
     expect(within(summary).queryByTestId('meal-schedule-icon-fork-knife')).toBeNull();
   });
 
-  it('pinta los valores del segundo plan en sus propias columnas', async () => {
+  it('pinta los valores del segundo plan en sus propias columnas (enmendado por #197 R9)', async () => {
     mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan({
       merKcal: 1200, dailyGrams: 300, mealsPerDay: 3, mealTimes: ['07:30', '12:00', '19:30'],
     }) });
     await renderMealSchedule();
     const summary = await screen.findByTestId('meal-schedule-summary');
+    expect(summary).toHaveStyle({ borderCurve: 'continuous', boxShadow: [{ offsetX: 0, offsetY: 5, blurRadius: 0, spreadDistance: 0, color: expect.any(String) }] });
     const columns = summary.children[1];
     if (typeof columns === 'string') throw new Error('Expected columns');
     expect(columns.children).toHaveLength(3);
@@ -1200,12 +1211,13 @@ describe('#179 R6: filas del artboard', () => {
       expect(within(text).getByText('94 g')).toHaveProp('className', 'text-13 font-semibold text-muted');
       expect(text.children[0]).toHaveTextContent(time);
       expect(text.children[1]).toHaveTextContent('94 g');
-      expect(mockHomeEntrance).toHaveBeenCalledWith(expect.objectContaining({ testID: `meal-time-entry-${index}`, index: index + 1 }));
+      expect(riseDelayOf(screen.getByTestId(`meal-time-entry-${index}`))).toBe(80 + 60 * index);
       if (owner) {
         expect(row.children[2]).toHaveProp('testID', `meal-time-edit-${index}`);
         const edit = within(row).getByTestId(`meal-time-edit-${index}`);
         expect((edit.props.className as string).startsWith('pressable-feedback__root button__root ')).toBe(true);
-        expect((edit.props.className as string).endsWith(' h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3.5')).toBe(true);
+        expect((edit.props.className as string).endsWith(' h-9 rounded-10 border-2 border-lip-gray bg-surface px-3.5')).toBe(true);
+        expect(edit).toHaveStyle({ boxShadow: [{ offsetX: 0, offsetY: 3, blurRadius: 0, spreadDistance: 0, color: expect.any(String) }] });
         expect(edit).toHaveProp('hitSlop', { top: 6, bottom: 6, left: 6, right: 6 });
         expect(within(edit).getByText('Editar')).toHaveProp('className', 'text-13 font-extrabold text-foreground');
       } else {
@@ -1214,7 +1226,7 @@ describe('#179 R6: filas del artboard', () => {
     }
   }
 
-  it('el dueño ve las dos entradas planas con Editar al final de cada fila', async () => {
+  it('el dueño ve las dos entradas planas con Editar al final de cada fila (enmendado por #197 R9) (enmendado por #200 R15)', async () => {
     mockGetPet.mockResolvedValue(petState('owner'));
     await renderMealSchedule();
     await screen.findByTestId('meal-time-edit-1');
@@ -1224,7 +1236,7 @@ describe('#179 R6: filas del artboard', () => {
     expectRows(true);
   });
 
-  it('el familiar conserva el mosaico y los dos textos sin controles de edición', async () => {
+  it('el familiar conserva el mosaico y los dos textos sin controles de edición (enmendado por #200 R15)', async () => {
     mockGetPet.mockResolvedValue(petState('family'));
     await renderMealSchedule();
     await screen.findByTestId('meal-time-row-1');
@@ -1250,7 +1262,7 @@ describe('#179 R7: acciones del artboard', () => {
     expect(within(generate).getByTestId('meal-schedule-icon-sparkles')).toHaveProp('size', 16);
   }
 
-  it('el dueño ve Añadir y Generar en ese orden fuera de los horarios', async () => {
+  it('el dueño ve Añadir y Generar en ese orden fuera de los horarios (enmendado por #197 R9)', async () => {
     mockGetPet.mockResolvedValue(petState('owner'));
     await renderMealSchedule();
     await screen.findByTestId('meal-time-edit-1');
@@ -1261,8 +1273,9 @@ describe('#179 R7: acciones del artboard', () => {
     expect(within(section).queryByTestId('add-meal-time-button')).toBeNull();
     const add = within(actions).getByTestId('add-meal-time-button');
     expect((add.props.className as string).startsWith('pressable-feedback__root button__root ')).toBe(true);
-    expect((add.props.className as string).endsWith(' h-13.5 flex-1 rounded-14 border-2 border-b-6 border-lip-gray bg-surface')).toBe(true);
+    expect((add.props.className as string).endsWith(' h-12.5 flex-1 rounded-14 border-2 border-lip-gray bg-surface')).toBe(true);
     expect(within(add).getByText('Añadir comida')).toHaveProp('className', 'text-15 font-extrabold text-foreground');
+    expect(add).toHaveStyle({ boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: expect.any(String) }] });
     expectGenerate(actions);
   });
 
@@ -1360,4 +1373,40 @@ describe('#179 R8: perfil en píldoras', () => {
       ['nutrition-profile-food', 'Food dry 350 kcal/100 g', 'Food '],
     ]);
   });
+});
+
+
+it.each(['loading', 'loaded'])('#200 R12: Horario pinta su cabecera en contenido (%s)', async (state) => {
+  mockGetNutritionPlan.mockReturnValue(state === 'loading' ? pending<NutritionPlanState>() : Promise.resolve({ kind: 'ok', plan: makePlan() }));
+  mockGetNutritionProfile.mockReturnValue(state === 'loading' ? pending<NutritionProfileState>() : Promise.resolve({ kind: 'ok', profile: makeProfile() }));
+  await renderMealSchedule();
+  await screen.findByTestId(state === 'loading' ? 'meal-schedule-loading' : 'meal-schedule-summary');
+  const header = screen.getByTestId('meal-schedule-header');
+  expect(childTestIds(header.parent!)[0]).toBe('meal-schedule-header');
+  expect(screen.getByTestId('meal-schedule-header-title')).toHaveTextContent(es['mealSchedule.mealSchedule']);
+  expect(screen.queryByTestId('meal-schedule-heading')).toBeNull();
+  expect(screen.getByTestId('screen-meal-schedule').props.contentContainerStyle).toEqual({
+    paddingHorizontal: 20, paddingTop: 48, paddingBottom: 56, gap: 14,
+  });
+});
+
+
+it('#200 R14: «Generar plan» lleva el labio violeta', async () => {
+  mockGetPet.mockResolvedValue(petState('owner'));
+  mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+  mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
+  await renderMealSchedule();
+  const button = await screen.findByTestId('generate-plan-button');
+  const { result } = await renderHook(() => useChunkyLip());
+  expect(button).toHaveStyle(result.current.violet);
+});
+
+
+it.each([
+  ['meal-schedule-summary-entry', 0], ['meal-time-entry-0', 80], ['meal-time-entry-1', 140],
+] as const)('#200 R15: Horario entra con los retardos del canvas (%s)', async (id, delay) => {
+  mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+  mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
+  await renderMealSchedule();
+  expect((await screen.findByTestId(id)).props.delayMs).toBe(delay);
 });

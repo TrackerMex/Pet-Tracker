@@ -14,16 +14,11 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-  ForkKnife,
-  HeartPulse,
-  Home,
-  Map,
-  Profile,
-} from 'reicon-react-native';
+import Svg, { Circle, Path } from 'react-native-svg';
 import { useUniwind } from 'uniwind';
 
 import { useTranslate } from '../providers/language-provider';
+import { useShadows } from '../theme/shadows';
 import { useThemeColors } from '../theme/use-theme-colors';
 
 interface TabRoute {
@@ -47,12 +42,30 @@ export interface FloatingTabBarProps {
 }
 
 const TABS = [
-  { name: 'home', labelKey: 'tabs.home', Icon: Home },
-  { name: 'map', labelKey: 'tabs.map', Icon: Map },
-  { name: 'health', labelKey: 'tabs.health', Icon: HeartPulse },
-  { name: 'food', labelKey: 'tabs.food', Icon: ForkKnife },
-  { name: 'profile', labelKey: 'tabs.profile', Icon: Profile },
+  { name: 'home', labelKey: 'tabs.home' },
+  { name: 'map', labelKey: 'tabs.map' },
+  { name: 'health', labelKey: 'tabs.health' },
+  { name: 'food', labelKey: 'tabs.food' },
+  { name: 'profile', labelKey: 'tabs.profile' },
 ] as const;
+
+const TAB_ICON_SHAPES = {
+  home: <Path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" />,
+  map: <><Path d="M9 3 3 6v15l6-3 6 3 6-3V3l-6 3-6-3z" /><Path d="M9 3v15M15 6v15" /></>,
+  health: <><Path d="M20.4 13.4 12 21l-8.4-7.6A5 5 0 0 1 12 6.6a5 5 0 0 1 8.4 6.8z" /><Path d="M3.5 12h4l2-3 3 6 2-3h5.5" /></>,
+  food: <><Path d="M7 3v18M4 3v5a3 3 0 0 0 6 0V3" /><Path d="M18 21V3c-2.5 1-4 3.5-4 7 0 2 1.5 3 4 3" /></>,
+  profile: <><Circle cx="12" cy="8" r="4" /><Path d="M4 21a8 8 0 0 1 16 0" /></>,
+} as const;
+
+function TabIcon({ name, color, active }: { name: keyof typeof TAB_ICON_SHAPES; color: string; active: boolean }) {
+  return (
+    <Svg testID={`icon-tab-${name}`} width={24} height={24}
+      viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={active ? 2.4 : 2}
+      strokeLinecap="round" strokeLinejoin="round">
+      {TAB_ICON_SHAPES[name]}
+    </Svg>
+  );
+}
 
 export const TAB_INDICATOR_SPRING = {
   duration: 250,
@@ -67,6 +80,7 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
     'muted',
     'tab-pill',
   ]);
+  const shadows = useShadows();
   const insets = useSafeAreaInsets();
   const { theme } = useUniwind();
   const [containerWidth, setContainerWidth] = useState(0);
@@ -75,7 +89,7 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
   const translateX = useSharedValue(0);
   const lastPositionedIndex = useRef(activeTabIndex);
   const hasLiquidGlass = isLiquidGlassAvailable();
-  const tabWidth = (containerWidth - 16) / TABS.length;
+  const tabWidth = (containerWidth - 30) / TABS.length;
   const indicatorAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.get() }],
   }));
@@ -92,7 +106,7 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
       return;
     }
 
-    const nextX = activeTabIndex * tabWidth;
+    const nextX = activeTabIndex * (tabWidth + 4);
     translateX.set(
       previousIndex < 0 ? nextX : withSpring(nextX, TAB_INDICATOR_SPRING),
     );
@@ -106,10 +120,10 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
       return;
     }
 
-    const nextTabWidth = (width - 16) / TABS.length;
+    const nextTabWidth = (width - 30) / TABS.length;
 
     if (activeTabIndex >= 0) {
-      translateX.set(activeTabIndex * nextTabWidth);
+      translateX.set(activeTabIndex * (nextTabWidth + 4));
     }
 
     lastPositionedIndex.current = activeTabIndex;
@@ -119,8 +133,8 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
   return (
     <View
       testID="floating-tab-bar"
-      className="absolute overflow-hidden rounded-full border border-border shadow-lg"
-      style={{ bottom: insets.bottom + 12, left: 16, right: 16 }}
+      className="absolute h-16 overflow-hidden rounded-full border border-border"
+      style={{ ...shadows.tabBar, bottom: insets.bottom + 12, left: 16, right: 16 }}
       onLayout={handleLayout}
     >
       {hasLiquidGlass ? (
@@ -139,7 +153,7 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
         >
           <View
             testID="tab-bar-overlay"
-            className="flex-1 bg-glass-surface"
+            className="flex-1 bg-glass-surface-strong"
           />
         </BlurView>
       )}
@@ -150,9 +164,9 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
             {
               position: 'absolute',
               width: tabWidth,
-              left: 8,
+              left: 6,
               top: 6,
-              bottom: 6,
+              height: 52,
               borderRadius: 999,
               backgroundColor: tabPill,
             },
@@ -160,8 +174,9 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
           ]}
         />
       ) : null}
-      <View className="flex-row items-center justify-around px-2 py-3">
-        {TABS.map(({ name, labelKey, Icon }) => {
+      <View testID="tab-bar-row" className="flex-row gap-1 p-1.5"
+        accessibilityRole="tablist" accessibilityLabel={t('tabs.bar')}>
+        {TABS.map(({ name, labelKey }) => {
           const route = state.routes.find(
             (candidate) => candidate.name === name,
           );
@@ -178,7 +193,7 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
               testID={`tab-${name}`}
               accessibilityRole="tab"
               accessibilityState={{ selected: isActive }}
-              className="flex-1 items-center gap-1"
+              className="h-13 flex-1 items-center justify-center gap-0.5"
               onPress={() => {
                 const event = navigation.emit({
                   type: 'tabPress',
@@ -191,11 +206,7 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
                 }
               }}
             >
-              <Icon
-                size={24}
-                weight={isActive ? 'Filled' : 'Outline'}
-                color={isActive ? accent : muted}
-              />
+              <TabIcon name={name} active={isActive} color={isActive ? accent : muted} />
               <Text
                 className={
                   isActive

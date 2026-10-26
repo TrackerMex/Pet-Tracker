@@ -1,6 +1,7 @@
 import { Pressable, Text, View } from 'react-native';
 
 import { CONTINUOUS_CORNER } from '../theme/native-styles';
+import { useShadows } from '../theme/shadows';
 import { TOUCH_SLOP } from '../theme/touch-target';
 
 export function SegmentedControl<T extends string>({
@@ -14,6 +15,7 @@ export function SegmentedControl<T extends string>({
   onSelect: (value: T | null) => void;
   allowEmpty?: boolean;
 }) {
+  const shadows = useShadows();
   return (
     <View className="flex-row gap-1 rounded-14 bg-default p-1" style={CONTINUOUS_CORNER}>
       {options.map((option) => {
@@ -22,8 +24,8 @@ export function SegmentedControl<T extends string>({
           <Pressable
             key={option.value}
             testID={option.testID}
-            className={`h-9.5 flex-1 items-center justify-center rounded-10${selected ? ' bg-surface shadow-sm' : ''}`}
-            style={CONTINUOUS_CORNER}
+            className={`h-9.5 flex-1 items-center justify-center rounded-10${selected ? ' bg-surface' : ''}`}
+            style={[CONTINUOUS_CORNER, selected ? shadows.segment : null]}
             hitSlop={TOUCH_SLOP}
             accessibilityRole="button"
             accessibilityState={{ selected }}

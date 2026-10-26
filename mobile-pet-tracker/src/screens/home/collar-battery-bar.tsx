@@ -24,12 +24,12 @@ export function CollarBatteryBar({ pct }: { pct: number }) {
   return (
     <View
       testID="collar-battery-track"
-      className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface"
+      className="h-2 w-full overflow-hidden rounded-full bg-background"
     >
       <Animated.View
         testID="collar-battery-fill"
         className={pct > 60
-          ? 'h-full rounded-full bg-success'
+          ? 'h-full rounded-full bg-accent'
           : 'h-full rounded-full bg-warning-strong'}
         style={fillStyle}
       />

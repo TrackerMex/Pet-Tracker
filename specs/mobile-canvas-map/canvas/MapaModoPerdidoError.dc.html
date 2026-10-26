@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Modo perdido con error</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+<style>
+body{margin:0}
+a{color:#107148;text-decoration:none}a:hover{color:#0B5C3A}
+.pt{--bg:#FFFFFF;--fg:#0D1117;--surface:#FFFFFF;--surface2:#F0FBF6;--default:#F5F6F8;--muted:#667085;--border:rgba(13,17,23,0.08);--lip-gray:#E4E7EC;--accent:#178255;--accent-strong:#107148;--lip:#0E5E3C;--blue:#EFF6FF;--blue-s:#0768E0;--amber:#FFF7ED;--amber-s:#A55E07;--green:#F0FBF6;--green-s:#107148;--violet:#F5F3FF;--violet-s:#7549F7;--rose:#FFF0F3;--rose-s:#D80B34;--danger:#D92D20;--warning:#B54708;--glass:rgba(255,255,255,0.86);--pill:rgba(23,130,85,0.14);--shadow:0 1px 2px rgba(13,17,23,0.04),0 8px 24px rgba(13,17,23,0.06)}
+.pt.dark{--bg:#0D1117;--fg:#F7F8FA;--surface:#161B22;--surface2:#12231B;--default:#1F242B;--muted:#9CA3AF;--border:rgba(255,255,255,0.08);--lip-gray:#0A0D12;--accent-strong:#2AB87C;--lip:#0B4D31;--blue:#0B203A;--blue-s:#4A8DDF;--amber:#271E14;--amber-s:#C17B22;--green:#12231B;--green-s:#2AB87C;--violet:#221C33;--violet-s:#9579E7;--rose:#39131A;--rose-s:#E35E78;--danger:#F87171;--warning:#FBBF24;--glass:rgba(22,27,34,0.86);--pill:rgba(23,130,85,0.22);--shadow:0 1px 2px rgba(0,0,0,0.4)}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes ping{0%{transform:scale(.55);opacity:.55}100%{transform:scale(1.5);opacity:0}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fill{from{width:0}}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+@keyframes fall{0%{transform:translateY(-40px) rotate(0);opacity:0}10%{opacity:1}100%{transform:translateY(760px) rotate(540deg);opacity:0}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+.pt{--map-land:#EEF2EC;--map-park:#D6EAD3;--map-road:#FFFFFF}
+.pt.dark{--map-land:#1A2220;--map-park:#1F3329;--map-road:#2B3138}
+</style>
+</helmet>
+<div class="pt {{theme}}" style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: var(--bg); color: var(--fg); font-family: Inter, 'Helvetica Neue', system-ui, sans-serif">
+<svg role="img" aria-label="Mapa con la ruta de hoy y la zona segura Casa" width="390" height="844" viewBox="0 0 390 844" style="position: absolute; inset: 0; display: block">
+<rect width="390" height="844" fill="var(--map-land)"></rect>
+<rect x="232" y="90" width="150" height="120" rx="14" fill="var(--map-park)"></rect>
+<rect x="-10" y="520" width="140" height="110" rx="14" fill="var(--map-park)"></rect>
+<g stroke="var(--map-road)" stroke-width="16" stroke-linecap="round"><path d="M-20 250 L410 190"></path><path d="M120 -20 L170 870"></path><path d="M-20 470 L410 420"></path><path d="M300 -20 L330 870"></path><path d="M-20 700 L410 660"></path></g>
+<g stroke="var(--map-road)" stroke-width="7" stroke-linecap="round" opacity=".9"><path d="M40 -20 L60 870"></path><path d="M220 -20 L250 870"></path><path d="M-20 360 L410 310"></path><path d="M-20 590 L410 545"></path></g>
+<circle cx="200" cy="370" r="120" fill="rgba(23,130,85,0.12)" stroke="var(--accent-strong)" stroke-width="2"></circle>
+<path d="M150 262 C160 300 128 330 142 356 S196 394 212 420 S262 446 258 474" fill="none" stroke="var(--accent-strong)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="1 0"></path>
+<circle cx="150" cy="262" r="6" fill="var(--surface)" stroke="var(--accent-strong)" stroke-width="3"></circle>
+</svg>
+<div style="position: absolute; left: 236px; top: 452px; width: 44px; height: 44px">
+<span style="position: absolute; inset: -18px; border-radius: 50%; background: rgba(23,130,85,0.25); animation: ping 2s ease-out infinite"></span>
+<span style="position: absolute; inset: 0; border-radius: 50%; background: var(--amber); border: 3px solid #FFFFFF; box-shadow: 0 4px 12px rgba(13,17,23,0.25); color: var(--amber-s); display: flex; align-items: center; justify-content: center; font: 800 16px Inter, system-ui, sans-serif">R</span>
+</div>
+<span style="position: absolute; left: 160px; top: 252px; padding: 4px 10px; border-radius: 999px; background: var(--surface); color: var(--accent-strong); font-size: 12px; font-weight: 700; box-shadow: 0 2px 8px rgba(13,17,23,0.12)">Casa</span>
+<div style="position: absolute; left: 16px; right: 16px; bottom: 104px; display: flex; flex-direction: column; gap: 10px; animation: rise 400ms ease-out both">
+<div style="align-self: flex-start; display: flex; align-items: center; gap: 8px; padding: 6px 14px 6px 6px; border-radius: 999px; background: var(--glass); backdrop-filter: blur(20px); box-shadow: var(--shadow); border: 1px solid var(--border)">
+<span style="width: 28px; height: 28px; border-radius: 50%; background: var(--amber); color: var(--amber-s); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800">R</span>
+<span style="font-size: 15px; font-weight: 800">Rocky</span>
+<span style="display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; color: var(--accent-strong)"><span style="width: 7px; height: 7px; border-radius: 50%; background: var(--accent)"></span>GPS activo</span>
+</div>
+<section style="border-radius: 24px; background: var(--surface); box-shadow: 0 12px 32px rgba(13,17,23,0.14); padding: 12px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<div style="border-radius: 14px; background: var(--default); padding: 10px 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; font-weight: 600; color: var(--muted)">Velocidad</span><span style="font-size: 20px; font-weight: 900; color: var(--accent-strong)">3.2 km/h</span></div><div style="border-radius: 14px; background: var(--default); padding: 10px 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; font-weight: 600; color: var(--muted)">Distancia</span><span style="font-size: 20px; font-weight: 900; color: var(--fg)">1.4 km</span></div><div style="border-radius: 14px; background: var(--default); padding: 10px 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; font-weight: 600; color: var(--muted)">Actualizado</span><span style="font-size: 16px; font-weight: 700; color: var(--muted)">hace 5 min</span></div><div style="border-radius: 14px; background: var(--default); padding: 10px 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; font-weight: 600; color: var(--muted)">Batería</span><span style="font-size: 20px; font-weight: 900; color: var(--accent-strong)">72%</span></div>
+</div>
+<button type="button" style="height: 50px; border: 0; border-radius: 14px; background: var(--rose); color: var(--rose-s); font: 800 16px Inter, system-ui, sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"></path><path d="M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg>Activar modo perdido</button>
+<span role="alert" style="text-align: center; font-size: 12px; line-height: 16px; color: var(--danger)">No se pudo cambiar el modo perdido</span>
+</section>
+</div>
+<nav aria-label="Pestañas" style="position: absolute; left: 16px; right: 16px; bottom: 28px; height: 64px; box-sizing: border-box; padding: 6px; border-radius: 999px; background: var(--glass); border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(13,17,23,0.12); backdrop-filter: blur(20px); display: flex; gap: 4px"><a href="Inicio.dc.html" aria-label="Inicio" style="flex: 1; height: 52px; border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--muted)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg><span style="font-size: 10px; font-weight: 600">Inicio</span></a><a href="Mapa.dc.html" aria-label="Mapa" aria-current="page" style="flex: 1; height: 52px; background: var(--pill); border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--accent-strong)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 3 6v15l6-3 6 3 6-3V3l-6 3-6-3z"></path><path d="M9 3v15M15 6v15"></path></svg><span style="font-size: 10px; font-weight: 600">Mapa</span></a><a href="Salud.dc.html" aria-label="Salud" style="flex: 1; height: 52px; border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--muted)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.4 13.4 12 21l-8.4-7.6A5 5 0 0 1 12 6.6a5 5 0 0 1 8.4 6.8z"></path><path d="M3.5 12h4l2-3 3 6 2-3h5.5"></path></svg><span style="font-size: 10px; font-weight: 600">Salud</span></a><a href="Nutricion.dc.html" aria-label="Nutrición" style="flex: 1; height: 52px; border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--muted)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v18M4 3v5a3 3 0 0 0 6 0V3"></path><path d="M18 21V3c-2.5 1-4 3.5-4 7 0 2 1.5 3 4 3"></path></svg><span style="font-size: 10px; font-weight: 600">Nutrición</span></a><a href="Perfil.dc.html" aria-label="Perfil" style="flex: 1; height: 52px; border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--muted)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg><span style="font-size: 10px; font-weight: 600">Perfil</span></a></nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { theme: this.props.dark ? "dark" : "" };
+}
+}
+</script>
+</body>
+</html>

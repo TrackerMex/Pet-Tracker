@@ -10,10 +10,9 @@ import { Uniwind } from 'uniwind';
 import { usePushRegistration } from '../hooks/use-push-registration';
 import { DEFAULT_LANGUAGE, type Language } from '../i18n/catalog';
 import { AuthProvider, useAuth } from '../providers/auth-provider';
-import { LanguageProvider, useTranslate } from '../providers/language-provider';
+import { LanguageProvider } from '../providers/language-provider';
 import { QueryProvider } from '../providers/query-provider';
 import { SelectedPetProvider } from '../providers/selected-pet-provider';
-import { TRANSPARENT_HEADER_OPTIONS } from '../theme/header-layout';
 import { useThemeColors } from '../theme/use-theme-colors';
 import { getStoredLanguage } from '../utils/language-preference';
 import { getStoredTheme } from '../utils/theme-preference';
@@ -76,7 +75,6 @@ export default function RootLayout() {
 
 function RootStack() {
   const { status } = useAuth();
-  const t = useTranslate();
   const [background, foreground] = useThemeColors(['background', 'foreground']);
   const headerOptions = {
     headerShown: true,
@@ -93,19 +91,19 @@ function RootStack() {
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="reset-password" />
       <Stack.Protected guard={status === 'authenticated'}>
-        <Stack.Screen name="add-reminder" options={{ ...headerOptions, title: '' }} />
-        <Stack.Screen name="pets/add" options={{ ...headerOptions, title: '' }} />
-        <Stack.Screen name="pets/[petId]/docs" options={{ ...headerOptions, title: '' }} />
+        <Stack.Screen name="add-reminder" options={{ headerShown: false }} />
+        <Stack.Screen name="pets/add" options={{ headerShown: false }} />
+        <Stack.Screen name="pets/[petId]/docs" options={{ headerShown: false }} />
         <Stack.Screen name="pets/[petId]/docs-upload" options={{ ...headerOptions, title: '' }} />
-        <Stack.Screen name="weight-log" options={{ ...headerOptions, title: t('weightLog.weightLog') }} />
-            <Stack.Screen name="meal-schedule" options={{ ...headerOptions, title: '' }} />
-        <Stack.Screen name="pairing" options={{ ...headerOptions, title: '' }} />
-        <Stack.Screen name="reminders" options={{ ...headerOptions, title: '' }} />
-        <Stack.Screen name="alerts" dangerouslySingular options={{ ...headerOptions, title: '' }} />
-        <Stack.Screen name="alerts/[alertId]" dangerouslySingular options={{ ...headerOptions, title: '', contentStyle: { backgroundColor: background } }} />
-        <Stack.Screen name="pets/[petId]/geofences" options={{ ...headerOptions, title: '', ...TRANSPARENT_HEADER_OPTIONS }} />
-        <Stack.Screen name="pets/[petId]/geofence-editor" options={{ ...headerOptions, title: '' }} />
-        <Stack.Screen name="meals-history" options={{ ...headerOptions, title: '' }} />
+        <Stack.Screen name="weight-log" options={{ headerShown: false }} />
+            <Stack.Screen name="meal-schedule" options={{ headerShown: false }} />
+        <Stack.Screen name="pairing" options={{ headerShown: false }} />
+        <Stack.Screen name="reminders" options={{ headerShown: false }} />
+        <Stack.Screen name="alerts" dangerouslySingular options={{ headerShown: false }} />
+        <Stack.Screen name="alerts/[alertId]" dangerouslySingular options={{ headerShown: false, contentStyle: { backgroundColor: background } }} />
+        <Stack.Screen name="pets/[petId]/geofences" options={{ headerShown: false }} />
+        <Stack.Screen name="pets/[petId]/geofence-editor" options={{ headerShown: false }} />
+        <Stack.Screen name="meals-history" options={{ headerShown: false }} />
         <Stack.Screen name="edit-profile" options={{ ...headerOptions, title: '' }} />
       </Stack.Protected>
       <Stack.Protected guard={status !== 'authenticated'}>

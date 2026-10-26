@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { router, type Href, useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
-import { Button, Skeleton, Switch } from 'heroui-native';
+import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,8 +19,9 @@ import type { PetProfile } from '../../api/types';
 import { getMe } from '../../api/users';
 import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
-import { PetAvatar } from '../../components/pet-avatar';
+import { PetHeroHeader } from '../../components/pet-hero-header';
 import { PetSwitcher } from '../../components/pet-switcher';
+import { ToggleSwitch } from '../../components/toggle-switch';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useNotificationsBlocked } from '../../hooks/use-push-registration';
 import { useAuth } from '../../providers/auth-provider';
@@ -30,11 +31,13 @@ import {
   useTranslate,
 } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { useChunkyLip } from '../../theme/chunky-lip';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeTransition } from '../../theme/theme-transition';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS, type CategorySlot } from '../../utils/category-palette';
+import { BubblePop } from '../home/bubble-pop';
 import { HomeEntrance } from '../home/home-entrance';
 
 function formatLastSignal(
@@ -102,7 +105,7 @@ function PetPills({ pet }: { pet: PetProfile }) {
   ];
 
   return (
-    <View testID="profile-pet-chips" className="flex-row flex-wrap justify-center gap-1.5">
+    <View testID="profile-pet-chips" className="flex-row flex-wrap gap-1.5">
       {pills.filter(({ text }) => text !== null).map((pill) => (
         <View key={pill.testID} testID={pill.testID} className={`rounded-full px-2.5 py-1.25 ${CATEGORY_SLOTS[pill.slot].surface}`}>
           <Text className={`text-xs font-extrabold ${CATEGORY_SLOTS[pill.slot].ink}`}>{pill.text}</Text>
@@ -152,6 +155,7 @@ export function ProfileScreen() {
   const { theme } = useUniwind();
   const switchTheme = useThemeTransition();
   const insets = useSafeAreaInsets();
+  const chunkyLip = useChunkyLip();
   const [blue, green, amber, violet, accentStrong, accentForeground] = useThemeColors(['category-blue-strong', 'category-green-strong', 'category-amber-strong', 'category-violet-strong', 'accent-strong', 'accent-foreground']);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
@@ -187,6 +191,7 @@ export function ProfileScreen() {
   );
 
   const pet = detail.data?.kind === 'ok' ? detail.data.pet : null;
+  const showHero = pets.data === undefined || (pets.data.kind === 'ok' && pets.data.pets.length > 0);
   const petsEmpty = pets.data?.kind === 'ok' && pets.data.pets.length === 0;
   const petLoading = (pets.data === undefined || (selectedPetId !== null && detail.data === undefined)) && !petsEmpty;
   const initials = me.data?.kind === 'ok'
@@ -260,10 +265,36 @@ export function ProfileScreen() {
     <ProfileTile
       testID="reminders-link"
       slot="violet"
-      icon={<Bell size={22} color={violet} />}
+      icon={<Bell size={22} strokeWidth={2.2} color={violet} />}
       label={t('profile.reminders')}
       onPress={() => router.push('/reminders' as Href)}
     />
+  );
+
+  const titleRow = (
+  <View className="flex-row items-center justify-between gap-3">
+    <Text testID="profile-title" className={showHero ? 'text-3xl font-black tracking-title text-accent-foreground' : 'text-3xl font-black tracking-title text-foreground'}>
+      {t('profile.profile')}
+    </Text>
+    <Pressable
+      testID="profile-add-pet"
+      accessibilityRole="button"
+      hitSlop={TOUCH_SLOP}
+      className={showHero ? 'h-11 flex-row items-center gap-1.5 rounded-full bg-glass-surface-strong px-4' : 'h-9 flex-row items-center gap-1.5 rounded-full bg-tab-pill px-3.5'}
+      onPress={() => router.push('/pets/add' as Href)}
+    >
+      <View
+        testID="profile-add-pet-icon"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      >
+        <Plus size={16} strokeWidth={2.6} color={accentStrong} />
+      </View>
+      <Text className="text-sm font-extrabold text-accent-strong">
+        {t('profile.addPet')}
+      </Text>
+    </Pressable>
+  </View>
   );
 
   return (
@@ -272,58 +303,75 @@ export function ProfileScreen() {
       className="flex-1 bg-background"
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{
-        padding: 20,
         gap: 14,
-        paddingTop: insets.top + 12,
         paddingBottom: insets.bottom + 96,
       }}
     >
-      <View className="flex-row items-center justify-between gap-3">
-        <Text testID="profile-title" className="text-3xl font-black tracking-tight text-foreground">
-          {t('profile.profile')}
-        </Text>
-        <Pressable
-          testID="profile-add-pet"
-          accessibilityRole="button"
-          hitSlop={TOUCH_SLOP}
-          className="h-9 flex-row items-center gap-1.5 rounded-full bg-tab-pill px-3.5"
-          onPress={() => router.push('/pets/add' as Href)}
-        >
-          <View
-            testID="profile-add-pet-icon"
-            accessibilityElementsHidden
-            importantForAccessibility="no-hide-descendants"
+      {showHero ? (
+        <View testID="profile-hero" className="relative">
+          <PetHeroHeader
+            pet={pet}
+            variant="bleed"
+            caption={pet ? (
+              <View testID="profile-pet-card" className="min-w-0 flex-1 gap-2.5 px-1">
+                <Text testID="profile-pet-name" className="text-3xl font-black leading-8.5 tracking-display text-foreground">
+                  {pet.name}
+                </Text>
+                <PetPills pet={pet} />
+              </View>
+            ) : undefined}
           >
-            <Plus size={16} color={accentStrong} />
-          </View>
-          <Text className="text-sm font-extrabold text-accent-strong">
-            {t('profile.addPet')}
-          </Text>
-        </Pressable>
-      </View>
+            <View testID="profile-hero-top" className="gap-3 px-1">
+              {titleRow}
+              {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
+                <PetSwitcher
+                  variant="glass"
+                  pets={pets.data.pets}
+                  selectedPetId={selectedPetId}
+                  onSelect={selectPet}
+                />
+              ) : null}
+            </View>
+          </PetHeroHeader>
+          {pet ? (
+            <BubblePop testID="profile-change-photo-pop" className="absolute bottom-24 right-5">
+              <Pressable
+                testID="change-photo"
+                accessibilityRole="button"
+                accessibilityLabel={t('profile.changePhoto')}
+                accessibilityState={{ disabled: photoUploading }}
+                disabled={photoUploading}
+                hitSlop={TOUCH_SLOP}
+                className="size-11 items-center justify-center rounded-full border-3 border-background bg-accent"
+                style={chunkyLip.primary}
+                onPress={() => void handleChangePhoto()}
+              >
+                <Camera size={18} strokeWidth={2.4} color={accentForeground} />
+              </Pressable>
+            </BubblePop>
+          ) : null}
+        </View>
+      ) : null}
+      <View testID="profile-content" className="gap-3.5 px-5" style={showHero ? undefined : { paddingTop: insets.top + 12 }}>
+      {!showHero ? titleRow : null}
 
       {notificationsBlocked ? (
-        <Card testID="notifications-blocked-notice" className="items-start gap-3">
-          <Text className="font-normal text-foreground">
+        <HomeEntrance index={0} testID="profile-entrance-notice"><View testID="notifications-blocked-notice" className={`items-start gap-3 rounded-card p-3.5 ${CATEGORY_SLOTS.amber.surface}`}>
+          <Text className="text-sm leading-note font-normal text-foreground">
             {t('profile.notificationsBlocked')}
           </Text>
           <Button
             testID="notifications-open-settings"
+            className="h-11 rounded-14 px-4.5"
+            style={chunkyLip.primary}
             onPress={() => void Linking.openSettings()}
           >
-            <Button.Label>{t('profile.openSettings')}</Button.Label>
+            <Button.Label className="text-sm font-extrabold text-accent-foreground">{t('profile.openSettings')}</Button.Label>
           </Button>
-        </Card>
+        </View></HomeEntrance>
       ) : null}
 
-      {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
-        <PetSwitcher
-          variant="avatars"
-          pets={pets.data.pets}
-          selectedPetId={selectedPetId}
-          onSelect={selectPet}
-        />
-      ) : null}
+
 
       {petsEmpty ? (
         <EmptyState
@@ -343,7 +391,6 @@ export function ProfileScreen() {
 
       {petLoading ? (
         <>
-          <Skeleton testID="profile-hero-skeleton" className="h-52 w-full rounded-hero" />
           <Skeleton testID="pet-info-skeleton" className="h-52 w-full rounded-card" />
         </>
       ) : null}
@@ -362,27 +409,6 @@ export function ProfileScreen() {
 
       {pet ? (
         <>
-          <HomeEntrance index={0} testID="profile-entrance-hero"><Card variant="hero" testID="profile-pet-card" className="items-center gap-2.5">
-            <View testID="profile-pet-avatar-ring" className="relative rounded-full border-4 border-surface">
-              <PetAvatar name={pet.name} photoUrl={pet.photoUrl} cacheKey={pet.id} size={96} testID="profile-pet-avatar" />
-              <Pressable
-                testID="change-photo"
-                accessibilityRole="button"
-                accessibilityLabel={t('profile.changePhoto')}
-                accessibilityState={{ disabled: photoUploading }}
-                disabled={photoUploading}
-                hitSlop={TOUCH_SLOP}
-                className="absolute -bottom-0.5 -right-0.5 size-8.5 items-center justify-center rounded-full border-3 border-surface-secondary bg-accent"
-                onPress={() => void handleChangePhoto()}
-              >
-                <Camera size={16} color={accentForeground} />
-              </Pressable>
-            </View>
-            <Text testID="profile-pet-name" className="text-26 font-black text-foreground">
-              {pet.name}
-            </Text>
-            <PetPills pet={pet} />
-          </Card></HomeEntrance>
           {photoError ? (
             <Text testID="photo-upload-error" className="text-danger">
               {photoError}
@@ -414,14 +440,14 @@ export function ProfileScreen() {
               <ProfileTile
                 testID="documents-link"
                 slot="blue"
-                icon={<FileText size={22} color={blue} />}
+                icon={<FileText size={22} strokeWidth={2.2} color={blue} />}
                 label={t('profile.documents')}
                 onPress={() => router.push(`/pets/${pet.id}/docs` as Href)}
               />
               <ProfileTile
                 testID="pairing-link"
                 slot="green"
-                icon={<Wifi size={22} color={green} />}
+                icon={<Wifi size={22} strokeWidth={2.2} color={green} />}
                 label={t('profile.gpsCollar')}
                 onPress={() => router.push('/pairing' as Href)}
               />
@@ -430,7 +456,7 @@ export function ProfileScreen() {
               <ProfileTile
                 testID="geofences-link"
                 slot="amber"
-                icon={<MapIcon size={22} color={amber} />}
+                icon={<MapIcon size={22} strokeWidth={2.2} color={amber} />}
                 label={t('geofences.title')}
                 onPress={() => router.push(`/pets/${pet.id}/geofences` as Href)}
               />
@@ -487,7 +513,7 @@ export function ProfileScreen() {
         ) : null}
         <View testID="theme-row" className="flex-row items-center justify-between gap-4 border-t border-separator py-2.5">
           <Text className="text-sm font-semibold text-foreground">{useDarkThemeLabel}</Text>
-          <Switch
+          <ToggleSwitch
             testID="theme-toggle"
             isSelected={theme === 'dark'}
             onSelectedChange={(selected) => switchTheme(selected ? 'dark' : 'light')}
@@ -508,16 +534,19 @@ export function ProfileScreen() {
         </Pressable>
       </Card></HomeEntrance>
 
+      <HomeEntrance index={4} testID="profile-entrance-sign-out">
       <Button
         testID="profile-sign-out"
-        className="rounded-xl bg-danger-soft"
+        className={`h-13 rounded-14 ${CATEGORY_SLOTS.rose.surface}`}
         variant="danger-soft"
         onPress={() => void signOut()}
       >
-        <Button.Label className="font-bold text-danger">
+        <Text className="text-15 font-extrabold text-danger">
           {t('profile.signOut')}
-        </Button.Label>
+        </Text>
       </Button>
+      </HomeEntrance>
+      </View>
     </ScrollView>
   );
 }

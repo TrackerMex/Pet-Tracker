@@ -516,9 +516,9 @@ describe('#171 R20: maquetación del artboard', () => {
     expect(screen.getByTestId('probe-pose').props.style).toEqual({ width: 170, height: 170 });
   });
 
-  it('R20.4 el título lleva el tracking y el margen del artboard', async () => {
+  it('R20.4 el título lleva el tracking y el margen del artboard (enmendado por #197 R4)', async () => {
     await renderProbe();
-    expect(screen.getByTestId('probe-title').props.className).toBe('mt-2 text-center text-3xl font-black tracking-tight text-foreground');
+    expect(screen.getByTestId('probe-title').props.className).toBe('mt-2 text-center text-3xl font-black tracking-title text-foreground');
   });
 
   it('R20.5 el cuerpo mide 15 px con ancho máximo de 300', async () => {

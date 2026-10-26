@@ -18,7 +18,8 @@ import {
   currentMonth, longDayLabel, monthGrid, monthOf, monthRange,
   monthTitle, shiftMonth, weekdayHeaders,
 } from '../../utils/month-grid';
-import { HomeEntrance } from '../home/home-entrance';
+import { ScreenHeader } from '../../components/screen-header';
+import { RiseIn } from '../../components/rise-in';
 
 function DayNumber({ date, testID, className }: { date: string; testID?: string; className: string }) {
   return (
@@ -110,7 +111,7 @@ function MealsHistoryContent({ petId }: { petId: string }) {
         const selectedTimes = data.history.days.find(day => day.date === selectedDay)?.mealTimes ?? [];
         content = (
           <>
-            <HomeEntrance testID="meals-history-calendar-entry" index={0}>
+            <RiseIn testID="meals-history-calendar-entry" delayMs={0}>
               <View testID="meals-history-calendar" className="gap-2 rounded-24 border border-border bg-surface p-3.5" style={CONTINUOUS_CORNER}>
                 <View className="flex-row items-center justify-between">
                   <Pressable
@@ -177,9 +178,9 @@ function MealsHistoryContent({ petId }: { petId: string }) {
                   </Text>
                 ) : null}
               </View>
-            </HomeEntrance>
+            </RiseIn>
             {selectedDay !== null ? (
-              <HomeEntrance testID="meals-history-detail-entry" index={1}>
+              <RiseIn testID="meals-history-detail-entry" delayMs={100}>
                 <View testID="meals-history-detail" className="gap-2.5 rounded-24 bg-surface-secondary p-4" style={CONTINUOUS_CORNER}>
                   <View className="flex-row items-center justify-between gap-2">
                     <Text testID="meals-history-detail-title" className="flex-1 text-base font-extrabold text-foreground">
@@ -207,7 +208,7 @@ function MealsHistoryContent({ petId }: { petId: string }) {
                     </View>
                   )}
                 </View>
-              </HomeEntrance>
+              </RiseIn>
             ) : null}
           </>
         );
@@ -221,11 +222,9 @@ function MealsHistoryContent({ petId }: { petId: string }) {
       testID="screen-meals-history"
       className="flex-1 bg-background"
       contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: insets.bottom + 24 }}
+      contentContainerStyle={{ paddingHorizontal: 20, paddingTop: insets.top + 8, gap: 14, paddingBottom: insets.bottom + 32 }}
     >
-      <Text testID="meals-history-heading" accessibilityRole="header" className="text-2xl font-black tracking-title text-foreground">
-        {t('mealsHistory.mealsHistory')}
-      </Text>
+      <ScreenHeader testID="meals-history-header" size={24} backFallback="/food" title={t('mealsHistory.mealsHistory')} />
       {content}
     </ScrollView>
   );

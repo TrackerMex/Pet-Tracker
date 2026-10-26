@@ -43,6 +43,13 @@ jest.mock('reicon-react-native', () => {
   };
 });
 
+const mockChunkyLip = {
+  primary: { boxShadow: [{ offsetX: 0, offsetY: 4, color: 'mock-lip' }] },
+  primaryCompact: { boxShadow: [{ offsetX: 0, offsetY: 3, color: 'mock-lip' }] },
+};
+
+jest.mock('../../theme/chunky-lip', () => ({ useChunkyLip: () => mockChunkyLip }));
+
 jest.mock('../../api/reminders', () => ({
   createReminder: jest.fn(),
 }));
@@ -52,7 +59,7 @@ jest.mock('../../providers/auth-provider', () => ({
 }));
 
 jest.mock('expo-router', () => ({
-  router: { push: jest.fn(), back: jest.fn(), dismissTo: jest.fn() },
+  router: { push: jest.fn(), back: jest.fn(), dismissTo: jest.fn(), canGoBack: jest.fn(), replace: jest.fn() },
 }));
 
 
@@ -173,7 +180,7 @@ describe('R8: formulario de alta con chips y pickers', () => {
     });
   });
 
-  it('uses the metrics under the native header (#95 R6)', async () => {
+  it('uses the metrics under the native header (#95 R6) (enmendado por #204 R10)', async () => {
     await renderAddReminder();
 
     await waitFor(() =>
@@ -183,9 +190,10 @@ describe('R8: formulario de alta con chips y pickers', () => {
       screen.getByTestId('add-reminder-form').props.contentContainerStyle,
     ).toEqual({
       paddingHorizontal: 20,
-      paddingTop: 24,
+      paddingTop: 52,
       gap: 16,
       paddingBottom: 48,
+      flexGrow: 1,
     });
   });
 
@@ -564,17 +572,17 @@ describe('#178 R10: marco, título y chips de tipo del canvas', () => {
     await screen.findByTestId('title-input');
   });
 
-  it('usa el marco 20/24/16 bajo la cabecera nativa', () => {
+  it('usa el marco 20/24/16 bajo la cabecera nativa (enmendado por #204 R10)', () => {
     expect(screen.getByTestId('add-reminder-form').props.contentContainerStyle).toEqual({
-      paddingHorizontal: 20, paddingTop: 24, gap: 16, paddingBottom: 48,
+      paddingHorizontal: 20, paddingTop: 52, gap: 16, paddingBottom: 48, flexGrow: 1,
     });
   });
 
-  it('abre el formulario con Agregar recordatorio como título accesible', () => {
+  it('abre el formulario con Agregar recordatorio como título accesible (enmendado por #204 R10)', () => {
     const title = screen.getByTestId('add-reminder-title');
     expect(title).toHaveTextContent('Agregar recordatorio');
     expect(title.props.accessibilityRole).toBe('header');
-    expect(title.props.className).toBe('text-2xl font-black tracking-title text-foreground');
+    expect(title.props.className).toBe('text-24 font-black tracking-title text-foreground');
     expect(title.parent?.children[0]).toBe(title);
   });
 
@@ -589,9 +597,11 @@ describe('#178 R10: marco, título y chips de tipo del canvas', () => {
     }
   });
 
-  it('pinta Vacuna seleccionada con cápsula, labio y texto sin emoji', () => {
+  it('pinta Vacuna seleccionada con cápsula, labio y texto sin emoji (enmendado por #197 R7)', () => {
     const chip = screen.getByTestId('type-chip-vaccine');
-    expect(chip.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-accent border-b-3 border-black/25');
+    expect(chip.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-accent');
+    expect(chip.props.style).toEqual(mockChunkyLip.primaryCompact);
+    expect(screen.getByTestId('type-chip-custom').props.style).toBeUndefined();
     expect(chip.props.hitSlop).toEqual(TOUCH_SLOP);
     expect(chip.props.accessibilityState).toEqual({ selected: true });
     expect(within(chip).getByText('Vacuna').props.className).toBe('text-sm font-extrabold text-accent-foreground');
@@ -610,11 +620,13 @@ describe('#178 R10: marco, título y chips de tipo del canvas', () => {
     }
   });
 
-  it('invierte las recetas al seleccionar Otro', async () => {
+  it('invierte las recetas al seleccionar Otro (enmendado por #197 R7)', async () => {
     await fireEvent.press(screen.getByTestId('type-chip-custom'));
     const selected = screen.getByTestId('type-chip-custom');
     const idle = screen.getByTestId('type-chip-vaccine');
-    expect(selected.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-accent border-b-3 border-black/25');
+    expect(selected.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-accent');
+    expect(selected.props.style).toEqual(mockChunkyLip.primaryCompact);
+    expect(idle.props.style).toBeUndefined();
     expect(selected.props.accessibilityState).toEqual({ selected: true });
     expect(within(selected).getByText('Otro').props.className).toBe('text-sm font-extrabold text-accent-foreground');
     expect(idle.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-category-blue');
@@ -624,13 +636,12 @@ describe('#178 R10: marco, título y chips de tipo del canvas', () => {
 });
 
 describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
-  it('retira el botón; el título vive en el cuerpo (#178 R10)', async () => {
+  it('el título vive en el cuerpo (#178 R10) (enmendado por #204 R10)', async () => {
     process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
     mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
     mockCreateReminder.mockReturnValue(pending());
     await renderAddReminder();
     await waitFor(() => expect(screen.getByTestId('screen-add-reminder')).toBeVisible());
-    expect(screen.queryByTestId('add-reminder-back')).toBeNull();
     expect(screen.getByTestId('add-reminder-title')).toHaveTextContent(es['addReminder.addReminder']);
   });
 });
@@ -695,7 +706,7 @@ describe('#123: pickers de fecha de Nuevo recordatorio en Android a las 20:00 de
   });
 
   describe('#123 R5: el calendario de Nuevo recordatorio abre en el día local; el mínimo y la hora no se convierten', () => {
-    it('abre en el 24, con el mínimo en el instante actual y la hora a las 09:00', async () => {
+    it('abre en el 24, con el mínimo en el instante actual y la hora a las 09:00 (enmendado por #197 R7)', async () => {
       await renderAddReminder();
       await waitFor(() => expect(screen.getByTestId('date-field')).toBeVisible());
       await fireEvent.press(screen.getByTestId('date-field'));
@@ -705,12 +716,17 @@ describe('#123: pickers de fecha de Nuevo recordatorio en Android a las 20:00 de
       await fireEvent(picker, 'onDismiss');
       await fireEvent.press(screen.getByTestId('time-field'));
       expect((within(screen.getByTestId('expo-ui-picker-host')).getByTestId('time-picker').props.value as Date).getTime()).toBe(new Date(2026, 8, 24, 9, 0).getTime());
+      for (const minutes of [0, 1440, 4320, 10080]) {
+        const chip = screen.getByTestId(`advance-chip-${minutes}`);
+        expect(chip.props.style).toEqual(minutes === 10080 ? mockChunkyLip.primaryCompact : undefined);
+        expect(chip.props.className).not.toMatch(/border-b-3|border-black\/25/);
+      }
     });
   });
 });
 
 const ADVANCES = [0, 1440, 4320, 10080] as const;
-const CHIP_SELECTED = 'h-9.5 items-center justify-center rounded-full px-3.5 bg-accent border-b-3 border-black/25';
+const CHIP_SELECTED = 'h-9.5 items-center justify-center rounded-full px-3.5 bg-accent'; // (enmendado por #197 R7)
 const CHIP_IDLE = 'h-9.5 items-center justify-center rounded-full px-3.5 bg-default';
 
 function expectAdvanceChips(disabled: boolean[], selected: number) {
@@ -913,7 +929,7 @@ describe('#148 R5: add-reminder se aparta del teclado en Android', () => {
     setPlatform(originalPlatform);
   });
 
-  it('el host screen-add-reminder añade paddingBottom 291 al abrir el teclado', async () => {
+  it('el host screen-add-reminder añade paddingBottom 200 al abrir el teclado (enmendado por #204 R10)', async () => {
     setPlatform('android');
     process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
     mockUseAuth.mockReturnValue({
@@ -939,7 +955,7 @@ describe('#148 R5: add-reminder se aparta del teclado en Android', () => {
         duration: 0, easing: 'keyboard', isEventFromThisApp: true,
       });
     });
-    await waitFor(() => expect(screen.getByTestId('screen-add-reminder')).toHaveStyle({ paddingBottom: 291 }));
+    await waitFor(() => expect(screen.getByTestId('screen-add-reminder')).toHaveStyle({ paddingBottom: 200 }));
   });
 });
 
@@ -1110,5 +1126,92 @@ describe('#178 R12: chips de aviso y vista previa', () => {
     await pickTime(9, 0);
     expect(screen.getByTestId('add-reminder-preview-text')).toHaveTextContent('Te aviso el 1 ene a las 09:00.');
     expectAdvanceChips([false, true, true, true], 0);
+  });
+});
+
+describe('#204 R10: cabecera en contenido', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockCreateReminder.mockReturnValue(pending());
+  });
+
+  it('#204 R10: pinta volver y Agregar recordatorio en la cabecera en contenido', async () => {
+    await renderAddReminder();
+    await screen.findByTestId('title-input');
+    const form = screen.getByTestId('add-reminder-form');
+    const container = form.children[0];
+    if (typeof container === 'string') throw new Error('Expected scroll content');
+    const first = container.children[0];
+    expect(typeof first === 'string' ? first : first.props.testID).toBe('add-reminder');
+    expect(within(form).getByTestId('add-reminder-back')).toBeTruthy();
+    const title = within(form).getByTestId('add-reminder-title');
+    expect(title).toHaveTextContent('Agregar recordatorio');
+    expect(title.props.accessibilityRole).toBe('header');
+    expect(title.props.className).toBe('text-24 font-black tracking-title text-foreground');
+  });
+
+  it('#204 R10: volver sin historial lleva a Recordatorios', async () => {
+    mockRouter.canGoBack.mockReturnValue(false);
+    await renderAddReminder();
+    await screen.findByTestId('title-input');
+    await fireEvent.press(screen.getByTestId('add-reminder-back'));
+    expect(mockRouter.replace).toHaveBeenCalledTimes(1);
+    expect(mockRouter.replace).toHaveBeenCalledWith('/reminders');
+    expect(mockRouter.back).not.toHaveBeenCalled();
+  });
+
+  it('#204 R10: usa el marco del canvas sin cabecera nativa', async () => {
+    await renderAddReminder();
+    await screen.findByTestId('title-input');
+    const form = screen.getByTestId('add-reminder-form');
+    expect(form.props.contentContainerStyle).toEqual({
+      paddingHorizontal: 20, paddingTop: 52, gap: 16, paddingBottom: 48, flexGrow: 1,
+    });
+    expect(form.props.contentInsetAdjustmentBehavior).toBeUndefined();
+  });
+
+  it('#204 R10: el teclado no descuenta una cabecera que ya no existe', async () => {
+    setPlatform('android');
+    try {
+      await renderAddReminder();
+      await screen.findByTestId('title-input');
+      const host = screen.getByTestId('screen-add-reminder');
+      expect(host.props.keyboardVerticalOffset).toBeUndefined();
+      await fireEvent(host, 'layout', {
+        persist() {},
+        nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 700 } },
+      });
+      await act(async () => {
+        DeviceEventEmitter.emit('keyboardDidShow', {
+          startCoordinates: { screenX: 0, screenY: 800, width: 400, height: 0 },
+          endCoordinates: { screenX: 0, screenY: 500, width: 400, height: 300 },
+          duration: 0, easing: 'keyboard', isEventFromThisApp: true,
+        });
+      });
+      await waitFor(() => expect(screen.getByTestId('screen-add-reminder')).toHaveStyle({ paddingBottom: 200 }));
+    } finally {
+      setPlatform(originalPlatform);
+    }
+  });
+});
+
+describe('#204 R11: Guardar al pie', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockCreateReminder.mockReturnValue(pending());
+  });
+
+  it('#204 R11: Guardar se apoya al pie del formulario', async () => {
+    await renderAddReminder();
+    await screen.findByTestId('title-input');
+    expect(screen.getByTestId('add-reminder-submit').props.className).toContain('mt-auto h-14 rounded-16 bg-accent');
   });
 });

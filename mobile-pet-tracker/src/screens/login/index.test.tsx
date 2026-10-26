@@ -2,7 +2,8 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
-import { DeviceEventEmitter, Platform } from 'react-native';
+import { DeviceEventEmitter, Platform, StyleSheet } from 'react-native';
+import type { TestInstance } from 'test-renderer';
 
 import { login, type LoginState } from '../../api/auth';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
@@ -176,15 +177,14 @@ describe('R7: login llama a la api y navega', () => {
 });
 
 describe('#61 R8: login tiene contenedor de scroll con safe areas', () => {
-  it('#172 R19: ancla el contenido al pie dentro de un ScrollView con los insets aplicados', async () => {
+  it('#172 R19: ancla el contenido al pie dentro de un ScrollView con los insets aplicados (enmendado por #205 R8)', async () => {
     await renderLogin();
 
     const screenRoot = screen.getByTestId('login-form');
 
     expect(screenRoot.props.contentContainerStyle).toEqual({
       flexGrow: 1,
-      padding: 24,
-      gap: 16,
+      paddingHorizontal: 20, // #205 R8
       paddingTop: 52,
       paddingBottom: 48,
     });
@@ -255,23 +255,27 @@ describe('#167 R6: Pingo saluda en login y la pantalla entra en dos tiempos', ()
     } satisfies AuthContextValue);
   });
 
-  it('#167 R6: entra en dos tiempos, cabecera y cuerpo', async () => {
+  it('#167 R6: entra en dos tiempos, cabecera y cuerpo (enmendado por #205 R8)', async () => {
     await renderLogin();
-    expect(Object.fromEntries(mockHomeEntrance.mock.calls.map(([p]) => [
-      p.testID, { index: p.index, className: p.className },
-    ]))).toEqual({
-      'login-header': { index: 0, className: 'gap-4' },
-      'login-body': { index: 1, className: 'flex-1 gap-4' },
-    });
+    expect(mockHomeEntrance).not.toHaveBeenCalled(); // #205 R8
+    for (const testID of ['login-header', 'login-body', 'login-actions']) { // #205 R8
+      expect(typeof screen.getByTestId(testID).props.entering).toBe('function');
+    }
+    expect(screen.getByTestId('login-header').props.className).toBeUndefined();
+    expect(screen.getByTestId('login-body').props.className).toBe('mt-6 gap-4');
+    expect(screen.getByTestId('login-actions').props.className).toBe('gap-3.5');
   });
 
-  it('#172 R3: la cabecera lleva Volver, el saludo y el título', async () => {
+  it('#172 R3: la cabecera lleva Volver, el saludo y el título (enmendado por #205 R8)', async () => {
     await renderLogin();
     const header = screen.getByTestId('login-header');
-    expect(header.children).toHaveLength(3);
-    expect(header.children[0]).toHaveProperty('props.testID', 'login-back');
+    expect(header.children).toHaveLength(2); // #205 R8
+    expect(header.children[0]).toHaveProperty('props.testID', 'login-top'); // #205 R8
     expect(header.children[1]).toHaveProperty('props.testID', 'login-greeting');
-    expect(header.children[2]).toBe(within(header).getByText('Iniciar sesión'));
+    expect((header.children[0] as TestInstance).children).toEqual([screen.getByTestId('login-back')]); // #205 R8
+    const title = screen.getByTestId('login-title'); // #205 R8
+    expect(title.parent).toBe(header.parent); // #205 R8
+    expect(title).toHaveTextContent('Iniciar sesión'); // #205 R8
   });
 
   it('#172 R3: Volver de login vuelve a la bienvenida sin historial', async () => {
@@ -281,44 +285,52 @@ describe('#167 R6: Pingo saluda en login y la pantalla entra en dos tiempos', ()
     expect(mockRouter.replace).toHaveBeenCalledWith('/welcome');
   });
 
-  it('#172 R7: el cuerpo lleva correo, contraseña, olvido, envío y registro', async () => {
+  it('#172 R7: el cuerpo lleva correo, contraseña, olvido, envío y registro (enmendado por #205 R8)', async () => {
     mockLogin.mockResolvedValue({ kind: 'invalid-credentials' });
     await renderLogin();
     const body = screen.getByTestId('login-body');
+    const actions = screen.getByTestId('login-actions'); // #205 R8
     expect(within(body).getAllByTestId(/^(login-email|login-password|login-submit|link-register|link-forgot)$/)
       .map((node) => node.props.testID)).toEqual([
-      'login-email', 'login-password', 'link-forgot', 'login-submit', 'link-register',
+      'login-email', 'login-password', 'link-forgot', // #205 R8
     ]);
+    expect(within(actions).getAllByTestId(/^(login-email|login-password|login-submit|link-register|link-forgot)$/)
+      .map((node) => node.props.testID)).toEqual(['login-submit', 'link-register']); // #205 R8
     await submit();
     expect(within(body).getByTestId('login-error')).toBeOnTheScreen();
   });
 
-  it('#172 R7: con error, el error va entre el olvido y el envío', async () => {
+  it('#172 R7: con error, el error va entre el olvido y el envío (enmendado por #205 R8)', async () => {
     mockLogin.mockResolvedValue({ kind: 'invalid-credentials' });
     await renderLogin();
     await submit();
-    const body = screen.getByTestId('login-body');
-    expect(within(body).getAllByTestId(/^(login-email|login-password|login-error|login-submit|link-register|link-forgot)$/)
+    const ids = /^(login-email|login-password|login-error|login-submit|link-register|link-forgot)$/;
+    expect(within(screen.getByTestId('login-body')).getAllByTestId(ids)
       .map((node) => node.props.testID)).toEqual([
-      'login-email', 'login-password', 'link-forgot', 'login-error', 'login-submit', 'link-register',
+      'login-email', 'login-password', 'link-forgot', 'login-error', // #205 R8
     ]);
+    expect(within(screen.getByTestId('login-actions')).getAllByTestId(ids)
+      .map((node) => node.props.testID)).toEqual(['login-submit', 'link-register']); // #205 R8
   });
 
-  it('#172 R19: el espaciador empuja el envío al pie', async () => {
+  it('#172 R19: el espaciador empuja el envío al pie (enmendado por #205 R8)', async () => {
     mockLogin.mockResolvedValue({ kind: 'invalid-credentials' });
     await renderLogin();
     function expectSpacer(withError = false) {
       const spacer = screen.getByTestId('login-spacer');
       const cta = screen.getByTestId('login-submit');
-      expect(spacer.parent).toBe(cta.parent);
-      expect(spacer.parent).toBe(screen.getByTestId('login-body'));
+      const actions = screen.getByTestId('login-actions'); // #205 R8
+      expect(cta.parent).toBe(actions); // #205 R8
+      expect(spacer.parent).toBe(actions.parent); // #205 R8
+      expect(spacer.parent).toBe(screen.getByTestId('login-body').parent); // #205 R8
       const children = spacer.parent?.children ?? [];
       const index = children.indexOf(spacer);
-      expect(index).toBe(children.indexOf(cta) - 1);
+      expect(index).toBe(children.indexOf(actions) - 1); // #205 R8
+      expect(children.indexOf(screen.getByTestId('login-body'))).toBe(index - 1); // #205 R8
       expect(spacer.props.className).toBe('flex-1');
       expect(spacer.children).toHaveLength(0);
       if (withError) {
-        expect(children.indexOf(screen.getByTestId('login-error-row'))).toBe(index - 1);
+        expect(within(screen.getByTestId('login-body')).getByTestId('login-error-row')).toBeOnTheScreen(); // #205 R8
       }
     }
     expectSpacer();
@@ -360,29 +372,32 @@ describe('#167 R6: Pingo saluda en login y la pantalla entra en dos tiempos', ()
     expect(screen.getByTestId('login-error').props.selectable).toBe(true);
   });
 
-  it('#172 R7: sin error, el cuerpo no lleva el error', async () => {
+  it('#172 R7: sin error, el cuerpo no lleva el error (enmendado por #205 R8)', async () => {
     await renderLogin();
     const body = screen.getByTestId('login-body');
     expect(within(body).getAllByTestId(/^(login-email|login-password|login-error|login-submit|link-register|link-forgot)$/)
       .map((node) => node.props.testID)).toEqual([
-      'login-email', 'login-password', 'link-forgot', 'login-submit', 'link-register',
+      'login-email', 'login-password', 'link-forgot', // #205 R8
     ]);
   });
 
-  it('#167 R6: la cabecera va antes que el cuerpo en el scroll', async () => {
+  it('#167 R6: la cabecera va antes que el cuerpo en el scroll (enmendado por #205 R8)', async () => {
     await renderLogin();
     const header = screen.getByTestId('login-header');
     expect(header.parent?.parent).toHaveProperty('props.testID', 'login-form');
-    expect(header.parent?.children).toEqual([header, screen.getByTestId('login-body')]);
+    expect(header.parent?.children).toEqual([ // #205 R8
+      header, screen.getByTestId('login-title'), screen.getByTestId('login-body'),
+      screen.getByTestId('login-spacer'), screen.getByTestId('login-actions'),
+    ]);
   });
 
-  it('#172 R6: el título de la cabecera pesa 30/900 al inicio', async () => {
+  it('#172 R6: el título de la cabecera pesa 30/900 al inicio (enmendado por #205 R8)', async () => {
     await renderLogin();
-    expect(within(screen.getByTestId('login-header')).getByText('Iniciar sesión').props.className)
-      .toBe('text-3xl font-black text-foreground');
+    expect(screen.getByTestId('login-title').props.className) // #205 R8
+      .toBe('mt-5 text-3xl font-black tracking-display text-foreground'); // #205 R8
   });
 
-  it('#167 R6: la cabecera y el cuerpo no se mezclan', async () => {
+  it('#167 R6: la cabecera y el cuerpo no se mezclan (enmendado por #205 R8)', async () => {
     await renderLogin();
     const header = screen.getByTestId('login-header');
     const body = screen.getByTestId('login-body');
@@ -390,13 +405,16 @@ describe('#167 R6: Pingo saluda en login y la pantalla entra en dos tiempos', ()
       expect(within(header).queryByTestId(id)).toBeNull();
     }
     expect(within(body).queryByTestId('login-greeting')).toBeNull();
-    expect(within(body).queryAllByText('Iniciar sesión')).not.toContain(within(header).getByText('Iniciar sesión'));
+    const title = screen.getByTestId('login-title'); // #205 R8
+    expect(within(header).queryByTestId('login-title')).toBeNull(); // #205 R8
+    expect(within(body).queryByTestId('login-title')).toBeNull(); // #205 R8
+    expect(within(body).queryAllByText('Iniciar sesión')).not.toContain(title); // #205 R8
   });
 
-  it('#167 R6: el saludo pone a Pingo junto a su burbuja', async () => {
+  it('#167 R6: el saludo pone a Pingo junto a su burbuja (enmendado por #205 R8)', async () => {
     await renderLogin();
     const greeting = screen.getByTestId('login-greeting');
-    expect(greeting.props.className).toBe('flex-row items-center gap-3');
+    expect(greeting.props.className).toBe('mt-2 flex-row items-end gap-3'); // #205 R8
     expect(greeting.children.map((child) => typeof child === 'string' ? child : child.props.testID))
       .toEqual(['login-pingo', 'login-bubble']);
   });
@@ -411,10 +429,10 @@ describe('#167 R6: Pingo saluda en login y la pantalla entra en dos tiempos', ()
     expect(pingo.props.accessibilityLabel).toBeUndefined();
   });
 
-  it('#167 R6: la burbuja es una card secondary que ocupa el resto', async () => {
+  it('#167 R6: la burbuja es una card secondary que ocupa el resto (enmendado por #205 R8)', async () => {
     await renderLogin();
-    expect(screen.getByTestId('login-bubble').props.className.split(' ')).toEqual(
-      expect.arrayContaining(['rounded-card', 'bg-surface-secondary', 'flex-1', 'px-4', 'py-3']),
+    expect(screen.getByTestId('login-bubble').props.className.split(' ')).toEqual( // #205 R8
+      expect.arrayContaining(['bg-surface-secondary', 'flex-1', 'px-3.5', 'py-2.5']),
     );
   });
 
@@ -432,6 +450,64 @@ describe('#167 R6: Pingo saluda en login y la pantalla entra en dos tiempos', ()
       <HeroUINativeProvider><LanguageProvider initial="en"><LoginRoute /></LanguageProvider></HeroUINativeProvider>,
     );
     expect(screen.getByTestId('login-bubble-text')).toHaveTextContent('Good to see you again.');
+  });
+});
+
+describe('#205 R8: Login como el artboard', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'unauthenticated', token: null, signIn: mockSignIn, signOut: jest.fn(),
+    } satisfies AuthContextValue);
+  });
+
+  it('#205 R8: el scroll apila cabecera, título, cuerpo, espaciador y acciones', async () => {
+    await renderLogin();
+    const form = screen.getByTestId('login-form');
+    expect(form.props.contentContainerStyle).toEqual({
+      flexGrow: 1, paddingHorizontal: 20, paddingTop: 52, paddingBottom: 48,
+    });
+    const content = screen.getByTestId('login-header').parent as TestInstance;
+    expect(content.parent).toBe(form);
+    expect((content.children as TestInstance[]).map((child) => child.props.testID)).toEqual([
+      'login-header', 'login-title', 'login-body', 'login-spacer', 'login-actions',
+    ]);
+    expect(mockHomeEntrance).not.toHaveBeenCalled();
+    for (const testID of ['login-header', 'login-body', 'login-actions']) {
+      expect(typeof screen.getByTestId(testID).props.entering).toBe('function');
+    }
+    expect(screen.getByTestId('login-header').props.className).toBeUndefined();
+    expect(screen.getByTestId('login-body').props.className).toBe('mt-6 gap-4');
+    expect(screen.getByTestId('login-actions').props.className).toBe('gap-3.5');
+    expect(screen.getByTestId('login-top').props.className).toBe('-ml-2.5 flex-row');
+    expect((screen.getByTestId('login-top').children as TestInstance[]).map((child) => child.props.testID))
+      .toEqual(['login-back']);
+    expect((screen.getByTestId('login-actions').children as TestInstance[]).map((child) => child.props.testID))
+      .toEqual(['login-submit', 'link-register']);
+    expect(screen.getByTestId('login-title').props.className)
+      .toBe('mt-5 text-3xl font-black tracking-display text-foreground');
+    expect(screen.getByTestId('login-title')).toHaveTextContent('Iniciar sesión');
+  });
+
+  it('#205 R8: la burbuja es una vista con el pico abajo a la izquierda', async () => {
+    await renderLogin();
+    const bubble = screen.getByTestId('login-bubble');
+    expect(bubble.props.className).toBe(
+      'mb-4.5 flex-1 rounded-tl-16 rounded-tr-16 rounded-br-16 rounded-bl-4 bg-surface-secondary px-3.5 py-2.5',
+    );
+    expect(StyleSheet.flatten(bubble.props.style)).toEqual({ borderCurve: 'continuous' });
+    expect(bubble.children).toEqual([screen.getByTestId('login-bubble-text')]);
+    expect(screen.getByTestId('login-bubble-text').props.className).toBe('text-15 font-semibold text-foreground');
+  });
+
+  it('#205 R8: Pingo mide 88 y gira -8 grados', async () => {
+    await renderLogin();
+    const greeting = screen.getByTestId('login-greeting');
+    const pingo = screen.getByTestId('login-pingo');
+    expect(pingo.props.style).toEqual({ width: 88, height: 88, transform: [{ rotate: '-8deg' }] });
+    expect(greeting.props.className).toBe('mt-2 flex-row items-end gap-3');
+    expect(greeting.children[0]).toBe(pingo);
   });
 });
 

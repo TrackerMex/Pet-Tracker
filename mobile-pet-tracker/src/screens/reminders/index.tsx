@@ -22,6 +22,8 @@ import type { Reminder } from '../../api/types';
 import { EmptyState } from '../../components/empty-state';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { PopIn } from '../../components/pop-in';
+import { RiseIn } from '../../components/rise-in';
+import { ScreenHeader } from '../../components/screen-header';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import {
@@ -29,6 +31,7 @@ import {
   useTranslate,
 } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { MOTION_REMINDERS_STAGGER_MS } from '../../theme/motion';
 import {
   CONTINUOUS_CORNER,
   TABULAR_NUMS,
@@ -37,7 +40,6 @@ import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { daysUntil } from '../../utils/reminder-dates';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
-import { HomeEntrance } from '../home/home-entrance';
 
 function isRemindersError(state: RemindersState): boolean {
   return ['error', 'unreachable', 'missing-config', 'not-found'].includes(
@@ -152,14 +154,21 @@ export function RemindersScreen() {
   const petsEmpty = pets.data?.kind === 'ok' && pets.data.pets.length === 0;
   if (petsEmpty) {
     return (
-      <View testID="reminders-no-pets-screen" className="flex-1 items-center justify-center p-6 bg-background">
-        <EmptyState
-          testID="reminders-no-pets"
-          pose="talk"
-          title={t('common.noPetsYet')}
-          body={t('common.noPetsBody')}
-          action={{ label: t('profile.addPet'), onPress: () => router.push('/pets/add') }}
-        />
+      <View
+        testID="reminders-no-pets-frame"
+        className="flex-1 bg-background"
+        style={{ paddingTop: insets.top + 12, paddingHorizontal: 20 }}
+      >
+        <ScreenHeader testID="reminders-no-pets-header" backFallback="/profile" />
+        <View testID="reminders-no-pets-screen" className="flex-1 items-center justify-center p-6 bg-background">
+          <EmptyState
+            testID="reminders-no-pets"
+            pose="talk"
+            title={t('common.noPetsYet')}
+            body={t('common.noPetsBody')}
+            action={{ label: t('profile.addPet'), onPress: () => router.push('/pets/add') }}
+          />
+        </View>
       </View>
     );
   }
@@ -168,33 +177,30 @@ export function RemindersScreen() {
     <ScrollView
       testID="screen-reminders"
       className="flex-1 bg-background"
-      contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{
         paddingHorizontal: 20,
-        paddingTop: 24,
+        paddingTop: insets.top + 12,
         gap: 14,
         paddingBottom: insets.bottom + 24,
       }}
     >
-      <View testID="reminders-actions" className="flex-row items-center gap-2">
-        <Text
-          testID="reminders-title"
-          accessibilityRole="header"
-          className="flex-1 text-26 font-black tracking-title text-foreground"
-        >
-          {t('reminders.reminders')}
-        </Text>
-        <Button
-          testID="reminders-add-link"
-          className="rounded-xl bg-accent h-10 gap-1.5 px-3.5" style={chunkyLip.primaryCompact}
-          onPress={() => router.push('/add-reminder' as Href)}
-        >
-          <Plus size={16} color={accentForeground} />
-          <Button.Label className="text-sm font-extrabold text-accent-foreground">
-            {t('reminders.new')}
-          </Button.Label>
-        </Button>
-      </View>
+      <ScreenHeader
+        testID="reminders"
+        backFallback="/profile"
+        title={t('reminders.reminders')}
+        accessory={
+          <Button
+            testID="reminders-add-link"
+            className="rounded-xl bg-accent h-10 gap-1.5 px-3.5" style={chunkyLip.primaryCompact}
+            onPress={() => router.push('/add-reminder' as Href)}
+          >
+            <Plus size={16} color={accentForeground} />
+            <Button.Label className="text-sm font-extrabold text-accent-foreground">
+              {t('reminders.new')}
+            </Button.Label>
+          </Button>
+        }
+      />
 
       {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
         <PetSwitcher
@@ -330,10 +336,10 @@ export function RemindersScreen() {
               const time = due.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 
               return (
-                <HomeEntrance key={reminder.id} testID={`reminders-entry-${reminder.id}`} index={i}>
+                <RiseIn key={reminder.id} testID={`reminders-entry-${reminder.id}`} delayMs={i * MOTION_REMINDERS_STAGGER_MS}>
                   <View
                     testID={`reminder-row-${reminder.id}`}
-                    className={`flex-row items-center gap-3 rounded-22 bg-surface p-3.5 ${upcoming ? 'border-2 border-warning-soft' : 'border border-border'}${inactive ? ' opacity-50' : ''}`}
+                    className={`flex-row items-center gap-3 rounded-22 bg-surface p-3.5 ${upcoming ? 'border-2 border-category-amber' : 'border border-border'}${inactive ? ' opacity-50' : ''}`}
                     style={CONTINUOUS_CORNER}
                   >
                     <View
@@ -352,7 +358,7 @@ export function RemindersScreen() {
                           <PopIn testID={`reminder-upcoming-pop-${reminder.id}`}>
                             <Text
                               testID={`reminder-upcoming-${reminder.id}`}
-                              className="rounded-full bg-warning-soft px-2 py-0.75 text-11 font-extrabold text-warning-strong"
+                              className={`rounded-full px-2 py-0.75 text-11 font-extrabold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`}
                             >
                               {t('reminders.upcoming')}
                             </Text>
@@ -384,18 +390,17 @@ export function RemindersScreen() {
                     </View>
                     <Button
                       testID={`reminder-delete-${reminder.id}`}
-                      className="rounded-xl bg-danger-soft"
+                      className={`h-11 rounded-14 px-2.5 ${CATEGORY_SLOTS.rose.surface}`}
                       isDisabled={deletingId === reminder.id}
-                      size="sm"
                       variant="danger-soft"
                       onPress={() => confirmDelete(reminder)}
                     >
-                      <Button.Label className="font-semibold text-danger">
+                      <Text className="text-13 font-extrabold text-danger">
                         {t('reminders.delete')}
-                      </Button.Label>
+                      </Text>
                     </Button>
                   </View>
-                </HomeEntrance>
+                </RiseIn>
               );
             })}
           </View>
@@ -435,13 +440,13 @@ export function RemindersScreen() {
               <View className="w-full gap-3">
                 <Button
                   testID="reminders-delete-confirm"
-                  className="w-full rounded-xl bg-danger"
+                  className="h-14 w-full rounded-16 bg-danger" style={chunkyLip.danger}
                   variant="danger"
                   onPress={deleteSelectedReminder}
                 >
-                  <Button.Label className="font-bold text-danger-foreground">
+                  <Text className="text-17 font-extrabold text-danger-foreground">
                     {t('reminders.delete')}
-                  </Button.Label>
+                  </Text>
                 </Button>
                 <Button
                   testID="reminders-delete-cancel"

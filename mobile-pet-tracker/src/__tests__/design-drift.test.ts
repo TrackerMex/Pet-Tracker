@@ -50,9 +50,9 @@ describe('#178 R2: enmienda de fidelidad al canvas en Recordatorios', () => {
     expect(radios).toContain('`rounded-22` (22 px)');
   });
 
-  it('C: coloca la receta del chip seleccionado antes de Sin labio', () => {
+  it('C: coloca la receta del chip seleccionado antes de Sin labio (enmendado por #197 R21)', () => {
     const buttons = charter.slice(charter.indexOf('13. **Botón con cuerpo**'));
-    const chip = '    - **Chip seleccionado** (fidelidad al canvas, #178): cápsula `rounded-full bg-accent border-b-3 border-black/25`; el chip sin seleccionar no lleva labio.';
+    const chip = '    - **Chip seleccionado** (fidelidad al canvas, #178; labio por estilo, #197): cápsula `rounded-full bg-accent` con `style={chunkyLip.primaryCompact}`, un labio de 3 px que cuelga fuera del alto; el chip sin seleccionar no lleva labio.';
     expect(buttons.split(chip)).toHaveLength(2);
     expect(buttons.indexOf(chip)).toBeLessThan(buttons.indexOf('- **Sin labio**:'));
   });
@@ -62,7 +62,7 @@ describe('#179 R2: enmienda de fidelidad al canvas en Horario e Historial', () =
   const charter = readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
   const heading = '## Enmienda de fidelidad al canvas (2026-10-13)';
   const radiusRule = 'Fuera de la escala, por fidelidad al canvas (#179): `rounded-10` (10 px), «Editar» de la fila de Horario; `rounded-14` (14 px), mosaico de la fila y botones de acción de Horario y horas del panel del día de Historial; `rounded-24` (24 px), resumen de Horario y calendario y panel del día de Historial, que son `View` y no `Card` porque `twMerge` no sustituye `rounded-card` por un radio con nombre de valor.';
-  const actionRule = '    - **Secundarios de Horario** (fidelidad al canvas, #179): «Editar» `h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface` y «Añadir comida» `h-13.5 rounded-14 border-2 border-b-6 border-lip-gray bg-surface`, con el labio dentro del alto; «Generar plan» es tonal de la categoría violeta y sin labio, porque el labio del artboard (`rgba(91,63,163,0.35)`) no tiene token.';
+  const actionRule = '    - **Secundarios de Horario** (fidelidad al canvas, #179; labio por estilo, #197): «Editar» `h-9 rounded-10 border-2 border-lip-gray bg-surface` con `style={chunkyLip.neutralCompact}` y «Añadir comida» `h-12.5 rounded-14 border-2 border-lip-gray bg-surface` con `style={chunkyLip.neutral}`, con el labio colgando fuera del alto; el resumen verde lleva `chunkyLip.summary`; «Generar plan» es tonal de la categoría violeta con `style={chunkyLip.violet}` (#200 R14).';
 
   it('conserva las directivas, las frases y los tres tamaños de Horario', () => {
     expect(charter.split(heading)).toHaveLength(2);
@@ -91,7 +91,7 @@ describe('#179 R2: enmienda de fidelidad al canvas en Horario e Historial', () =
     expect(radios.split(radiusRule)).toHaveLength(2);
   });
 
-  it('sitúa la receta de secundarios de Horario antes de Sin labio', () => {
+  it('sitúa la receta de secundarios de Horario antes de Sin labio (enmendado por #197 R21) (enmendado por #200 R16)', () => {
     const actions = charter.slice(charter.indexOf('13. **Botón con cuerpo**'));
     expect(actions.split(actionRule)).toHaveLength(2);
     expect(actions.indexOf(actionRule)).toBeLessThan(actions.indexOf('- **Sin labio**:'));
@@ -227,17 +227,14 @@ describe('R3: Card compartido elimina rounded arbitrario', () => {
 
   it.each([
     'home',
-    'food',
     'meal-schedule',
     'health',
     'weight-log',
     'profile',
     'map',
-  ])('%s importa el Card compartido', (screen) => {
+  ])('%s importa el Card compartido (enmendado por #200 R1 y #200 R9)', (screen) => {
     const contents = readFileSync(
-      screen === 'food'
-        ? join(sourceRoot, 'app', '(tabs)', `${screen}.tsx`)
-        : join(sourceRoot, 'screens', screen, 'index.tsx'),
+      join(sourceRoot, 'screens', screen, 'index.tsx'),
       'utf8',
     );
 
@@ -340,10 +337,10 @@ describe('R11 (mobile-device-pairing): pairing usa el Card compartido y las dime
 
   it.each([
     'paddingHorizontal: 20',
-    'paddingVertical: 24',
+    'insets.top + 8',
     'gap: 16',
     'insets.bottom + 24',
-  ])('keeps the uniform screen metric %s', (metric) => {
+  ])('keeps the uniform screen metric %s (enmendado por #203 R2)', (metric) => {
     expect(pairingSource).toContain(metric);
   });
 
@@ -491,11 +488,11 @@ describe('#98 R10: la barra de comidas no mete drift de estilo', () => {
     'api/nutrition.ts',
     'api/types.ts',
     'i18n/catalog.ts',
-    'app/(tabs)/food.tsx',
+    'screens/food/index.tsx',
     'screens/home/index.tsx',
   ];
 
-  it('mantiene sus ficheros sin escapes de estilo literales', () => {
+  it('mantiene sus ficheros sin escapes de estilo literales (enmendado por #200 R1)', () => {
     const violations = featureFiles.flatMap((relativePath) => {
       const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
       return MEALS_BAR_STYLE_ESCAPES.test(contents)
@@ -585,7 +582,7 @@ describe('#87 R19: use-' + 'api no deja huella', () => {
   const legacyModule = ['use', 'api'].join('-');
   const legacyIdentifier = ['use', 'Api'].join('');
   const screenSignOutCalls: Record<string, number> = {
-    'app/(tabs)/food.tsx': 0,
+    'screens/food/index.tsx': 0,
     'screens/health/index.tsx': 0,
     'screens/map/index.tsx': 0,
     'screens/meal-schedule/index.tsx': 2, // #147 R8: el 401 de la edición de franjas
@@ -644,7 +641,7 @@ describe('#87 R19: use-' + 'api no deja huella', () => {
     ]);
   });
 
-  it('keeps literal query keys out of every migrated screen', () => {
+  it('keeps literal query keys out of every migrated screen (enmendado por #200 R1)', () => {
     const violations = Object.keys(screenSignOutCalls).filter((relativePath) =>
       /queryKey:\s*\[/.test(
         readFileSync(join(sourceRoot, relativePath), 'utf8'),
@@ -654,7 +651,7 @@ describe('#87 R19: use-' + 'api no deja huella', () => {
     expect(violations).toEqual([]);
   });
 
-  it('preserves every mutation sign-out with zero delta', () => {
+  it('preserves every mutation sign-out with zero delta (enmendado por #200 R1)', () => {
     const actual = Object.fromEntries(
       Object.keys(screenSignOutCalls).map((relativePath) => {
         const contents = readFileSync(
@@ -1094,8 +1091,9 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     })).toEqual([]);
   });
 
-  it('reutiliza HomeEntrance y PopIn sin Card en Recordatorios', () => {
-    expect(reminders).toContain("from '../home/home-entrance'");
+  it('reutiliza HomeEntrance y PopIn sin Card en Recordatorios (enmendado por #204 R6)', () => {
+    expect(reminders).toContain("from '../../components/rise-in'");
+    expect(reminders).not.toContain('home-entrance');
     expect(reminders).toContain("from '../../components/pop-in'");
     expect(reminders).not.toContain('<Card');
     expect(reminders).not.toContain('components/card');
@@ -1118,9 +1116,9 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     expect(addReminder).not.toMatch(/uppercase|tracking-widest/);
   });
 
-  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10)', () => {
+  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #203 R4) (enmendado por #203 R6) (enmendado por #203 R7) (enmendado por #204 R8) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #196 R5) (enmendado por #201 R5, R13) (enmendado por #205 R13)', () => {
     for (const [pattern, count] of [
-      [/\brounded-14\b/g, 1], [/\brounded-16\b/g, 4], [/\brounded-22\b/g, 1],
+      [/\brounded-14\b/g, 2], [/\brounded-16\b/g, 5], [/\brounded-22\b/g, 1],
     ] as const) {
       expect(reminders.match(pattern) ?? []).toHaveLength(count);
     }
@@ -1129,7 +1127,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       && !/\.test\.tsx?$/.test(file)
       && pattern.test(readFileSync(file, 'utf8')),
     ).map((file) => file.slice(sourceRoot.length + 1));
-    expect(outsideReminders(/\brounded-22\b/)).toEqual([]);
+    expect(outsideReminders(/\brounded-22\b/)).toEqual(['screens/pairing/index.tsx']); // #203 R4
     const rounded16 = Object.fromEntries(sourceFiles(sourceRoot).filter(file => file !== join(sourceRoot, featureFiles[0]) && !/\.test\.tsx?$/.test(file)).flatMap(file => {
       const count = (readFileSync(file, 'utf8').match(/\brounded-16\b/g) ?? []).length;
       return count ? [[file.slice(sourceRoot.length + 1), count]] : [];
@@ -1142,23 +1140,30 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       'screens/alert-detail/index.tsx': 2,
       'screens/docs-upload-form/index.tsx': 2,
       'screens/edit-profile/index.tsx': 1, // #194 R6
+      'screens/food/index.tsx': 2, // #200 R9
       'screens/forgot/index.tsx': 3,
-      'screens/geofence-editor/index.tsx': 3, // #189 R13
+      'screens/geofence-editor/index.tsx': 4, // #189 R13; #202 R18: +1
       'screens/geofences/index.tsx': 2, // #189 R7
+      'screens/health/index.tsx': 1, // #199 R14
       'screens/home/index.tsx': 1,
+      'screens/home/weekly-activity-chart.tsx': 1, // #198 R9
       'screens/login/index.tsx': 1,
-      'screens/pairing/index.tsx': 1,
+      'screens/map/index.tsx': 1, // #201 R13
+      'screens/pairing/index.tsx': 4, // #203 R6; #203 R7
       'screens/register/index.tsx': 1,
-      'screens/reset-password/index.tsx': 1,
+      'screens/reset-password/index.tsx': 1 + 1, // #205 R13
       'screens/weight-log/index.tsx': 1,
       'screens/welcome/index.tsx': 2,
     });
     expect(outsideReminders(/\brounded-14\b/)).toEqual([
       join('components', 'segmented-control.tsx'), // #191 R11
       join('screens', 'geofences', 'index.tsx'), // #189 R5
+      join('screens', 'health', 'index.tsx'), // #199 R18
+      join('screens', 'map', 'index.tsx'), // #201 R5
       join('screens', 'meal-schedule', 'index.tsx'), // #179 R13 comparte rounded-14
       join('screens', 'meals-history', 'index.tsx'), // #179 R13 comparte rounded-14
       join('screens', 'pairing', 'index.tsx'), // #188 R20 comparte rounded-14
+      join('screens', 'profile', 'index.tsx'), // #196 R5
     ]);
   });
 });
@@ -1190,11 +1195,11 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
     for (const source of sources) expect(source).not.toMatch(forbidden);
   });
 
-  it('reutiliza entrada, paleta, esquinas y margen táctil compartidos', () => {
-    expect(schedule).toContain("import { HomeEntrance } from '../home/home-entrance';");
+  it('reutiliza entrada, paleta, esquinas y margen táctil compartidos (enmendado por #200 R15)', () => {
+    expect(schedule).toContain("import { RiseIn } from '../../components/rise-in';");
     expect(schedule).toContain("import { CATEGORY_SLOTS } from '../../utils/category-palette';");
     expect(schedule).toContain("import { TOUCH_SLOP } from '../../theme/touch-target';");
-    expect(history).toContain("import { HomeEntrance } from '../home/home-entrance';");
+    expect(history).toContain("import { RiseIn } from '../../components/rise-in';");
     expect(history).toContain("import { TOUCH_SLOP } from '../../theme/touch-target';");
     expect(history).toContain("import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';");
   });
@@ -1216,17 +1221,18 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
     expect(schedule).not.toContain('tracking-widest');
   });
 
-  it('sitúa el título antes del resumen y los errores antes de las acciones', () => {
-    for (const anchor of ['testID="generate-plan-error"', 'testID="meal-schedule-actions"', 'testID="meal-schedule-heading"', 'testID="meal-schedule-summary"']) {
+  it('sitúa el título antes del resumen y los errores antes de las acciones (enmendado por #200 R12)', () => {
+    for (const anchor of ['testID="generate-plan-error"', 'testID="meal-schedule-actions"', 'testID="meal-schedule-header"', 'testID="meal-schedule-summary"']) {
       expect(schedule).toContain(anchor);
     }
     expect(schedule.indexOf('testID="generate-plan-error"')).toBeLessThan(schedule.indexOf('testID="meal-schedule-actions"'));
-    expect(schedule.indexOf('testID="meal-schedule-heading"')).toBeLessThan(schedule.indexOf('testID="meal-schedule-summary"'));
+    expect(schedule.indexOf('testID="meal-schedule-header"')).toBeLessThan(schedule.indexOf('testID="meal-schedule-summary"'));
   });
 
-  it('limita text-22 a Horario y text-17 al inventario de E1.2 (enmendado por #177 R10)', () => {
+  it('limita text-22 a Horario y text-17 al inventario de E1.2 (enmendado por #177 R10) (enmendado por #200 R5) (enmendado por #198 R15)', () => {
     const productionFilesMatching = (pattern: RegExp) => filesMatching(pattern).filter(path => !/\.test\.tsx?$/.test(path)).sort();
     expect(productionFilesMatching(/\btext-22\b/)).toEqual([
+      'components/empty-state.tsx', // #198 R15
       join('screens', 'alert-detail', 'index.tsx'), // #180 R3
       join('screens', 'meal-schedule', 'index.tsx'),
     ]);
@@ -1238,6 +1244,7 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
       'screens/alert-detail/index.tsx',
       'screens/docs-upload-form/index.tsx',
       'screens/edit-profile/index.tsx',
+      'screens/food/index.tsx',
       'screens/forgot/index.tsx',
       'screens/geofence-editor/index.tsx',
       'screens/geofences/index.tsx',

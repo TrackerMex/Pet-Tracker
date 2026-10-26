@@ -82,3 +82,35 @@ export const MOTION_HERO_FADE_MS = 500;
 export const MOTION_HERO_CAPTION_DELAY_MS = 80;
 export const MOTION_HERO_PING_MS = 1600;
 export const MOTION_HERO_BUBBLE_POP_DELAY_MS = 450;
+
+// #197 R11: entrada rise literal del canvas.
+export const MOTION_RISE_OFFSET_Y = 14;
+export const MOTION_RISE_TIMING = {
+  duration: MOTION_SURFACE_MS,
+  easing: Easing.bezier(0, 0, 0.58, 1),
+  reduceMotion: ReduceMotion.System,
+};
+
+// #200 R4: ring literal del canvas.
+export const MOTION_RING_TIMING = {
+  duration: 1100,
+  easing: Easing.bezier(0, 0, 0.58, 1),
+  reduceMotion: ReduceMotion.System,
+};
+export const MOTION_RING_DELAY_MS = 200;
+
+// #199 R27: draw, point pop and success-toast timings from the frozen canvas.
+export const MOTION_DRAW_TIMING = {
+  duration: 1200,
+  easing: Easing.bezier(0, 0, 0.58, 1),
+  reduceMotion: ReduceMotion.System,
+};
+export const MOTION_DRAW_DELAY_FULL_MS = 200;
+export const MOTION_DRAW_DELAY_MINI_MS = 300;
+export const MOTION_POINT_POP_MS = 400;
+export const MOTION_POINT_POP_DELAY_MS = 1300;
+export const MOTION_TOAST_FADE_MS = 300;
+export const MOTION_TOAST_DELAY_MS = 400;
+
+// #204 R3: paso de entrada de las filas de Recordatorios.
+export const MOTION_REMINDERS_STAGGER_MS = 70;

@@ -144,8 +144,8 @@ describe('#174 R11: la carta declara los cambios', () => {
     expect(collapse(guidelines.slice(start, end))).toContain('Fuera de la escala, por fidelidad al canvas (#174): `rounded-10` (10 px), ack compacto de fila de Alertas.');
   });
 
-  it('declara el secundario compacto y el reintento sin labio (enmendado por #180 R12)', () => {
-    expect(flat).toContain('- **Secundario compacto de fila** (#174): el ack de cada fila abierta de Alertas lleva `h-8.5 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3`, etiqueta `text-xs font-extrabold text-foreground` y `hitSlop={TOUCH_SLOP}` (34 + 12 = 46 de diana). Es la única excepción a la receta del secundario neutro; el inventario de #166 R3 lo lista por su `testID`.');
+  it('declara el secundario compacto y el reintento sin labio (enmendado por #180 R12) (enmendado por #197 R21)', () => {
+    expect(flat).toContain('- **Secundario compacto de fila** (#174; labio por estilo, #197): el ack de cada fila abierta de Alertas lleva `h-8.5 rounded-10 border-2 border-lip-gray bg-surface px-3` con `style={chunkyLip.neutralCompact}`, etiqueta `text-xs font-extrabold text-foreground` y `hitSlop={TOUCH_SLOP}` (34 + 12 = 46 de diana). Es la única excepción a la receta del secundario neutro; el inventario de #166 R3 lo lista por su `testID`.');
     expect(flat).toContain('(reintentos).');
     expect(flat).not.toContain('confirmar alerta en el detalle');
   });
@@ -190,61 +190,66 @@ describe('#174 R12: inventarios', () => {
     {
       token: 'border-b-5',
       pattern: /(?<![\w-])border-b-5\b/,
-      files: ['screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx'], // #179 R5; #174 R12
+      files: [], // #179 R5; #174 R12
     },
     {
       token: 'tracking-caps',
       pattern: /(?<![\w-])tracking-caps\b/,
-      files: ['screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx'], // #179 R5; #174 R12
+      files: ['screens/alerts/index.tsx', 'screens/food/index.tsx', 'screens/health/index.tsx', 'screens/meal-schedule/index.tsx'], // #179 R5; #174 R12; #200 R5; #199 R14
     },
     {
       token: 'text-15',
       pattern: /(?<![\w-])text-15\b/,
       files: [
         'components/celebration.tsx',
+        'components/confirm-dialog.tsx',
         'components/empty-state.tsx', // (enmendado por #176 R9)
         'screens/add-pet/index.tsx', // #191 R11
         'screens/alert-detail/index.tsx', // #180 R3
         'screens/alerts/index.tsx', // #174 R12: delta sobre la lista medida en H0
         'screens/docs/index.tsx', // #175 R6
+        'screens/food/index.tsx',
         'screens/forgot/index.tsx',
         'screens/geofence-editor/index.tsx', // #189 R12
+        'screens/geofences/index.tsx', // #202 R11
+        'screens/health/index.tsx', // #199 R16
         'screens/home/index.tsx', // #190 R13 (enmendado por #190 R13)
+        'screens/home/weekly-activity-chart.tsx', // #198 R9
         'screens/login/index.tsx',
+        'screens/map/index.tsx', // #201 R2
         'screens/meal-schedule/index.tsx', // #179 R7
         'screens/meals-history/index.tsx', // #179 R11
+        'screens/pairing/index.tsx', // #203 R4
+        'screens/profile/index.tsx', // #196 R6
         'screens/register/index.tsx',
         'screens/reset-password/index.tsx',
+        'screens/weight-log/index.tsx', // #199 R10
       ],
     },
     {
       token: 'tracking-title',
       pattern: /(?<![\w-])tracking-title\b/,
-      files: [
+      files: [ // #205 R16
+        'components/celebration.tsx',
         'components/empty-state.tsx', // (enmendado por #176 R8)
         'components/pet-hero-header.tsx', // #195 R6
-        'screens/add-pet/index.tsx', // #191 R11
-        'screens/add-reminder/index.tsx', // #178 R10
-        'screens/alert-detail/index.tsx', // #180 R1
-        'screens/alerts/index.tsx', // #174 R12: H0 sin consumidores
-        'screens/docs/index.tsx', // #175 R5
-        'screens/geofence-editor/index.tsx', // #189 R8
-      'screens/geofences/index.tsx', // #189 R1
-        'screens/meal-schedule/index.tsx', // #179 R4
-        'screens/meals-history/index.tsx', // #179 R9
+        'components/screen-header.tsx',
+        'screens/food/index.tsx',
+        'screens/health/index.tsx',
+        'screens/home/index.tsx', // #198 R15
         'screens/pairing/index.tsx', // #188 R16
-        'screens/reminders/index.tsx', // #178 R4
+        'screens/profile/index.tsx',
       ],
     },
-  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12)', ({ pattern, files }) => {
+  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12) (enmendado por #197 R4) (enmendado por #197 R10) (enmendado por #197 R19) (enmendado por #200 R1 y #200 R3 y #200 R5 y #200 R12 y #200 R13) (enmendado por #199 R10) (enmendado por #199 R14) (enmendado por #199 R16) (enmendado por #198 R9, R15) (enmendado por #203 R4, R8, R10) (enmendado por #204 R4) (enmendado por #204 R10) (enmendado por #204 R12) (enmendado por #202 R7) (enmendado por #202 R1) (enmendado por #202 R11) (enmendado por #202 R17) (enmendado por #196 R6) (enmendado por #201 R2) (enmendado por #205 R16)', ({ pattern, files }) => {
     expect(filesMatching(pattern)).toEqual(files);
   });
 
-  it('declara border-b-5 una sola vez', () => {
+  it('declara border-b-5 una sola vez (enmendado por #197 R10)', () => {
     const count = sourceFiles().reduce((total, path) => (
       total + (readFileSync(path, 'utf8').match(/(?<![\w-])border-b-5\b/g)?.length ?? 0)
     ), 0);
-    expect(count).toBe(1 + 1 + 1); // #179 R5, R6
+    expect(count).toBe(0); // #179 R5, R6
   });
 });
 
@@ -261,10 +266,10 @@ describe('#174 R12: grep-limpio', () => {
     expect(readSource('screens/alerts/index.tsx')).not.toMatch(/(?<![\w-])(?:min-h-20|text-2xs|shadow-sm)\b/);
   });
 
-  it('cada tracking-* va con su text-*', () => {
+  it('cada tracking-* va con su text-* (enmendado por #203 R8)', () => {
     const tracked = classNames(readSource('screens/alerts/index.tsx'))
       .filter((classes) => /(?<![\w-])tracking-/.test(classes));
-    expect(tracked).toHaveLength(2);
+    expect(tracked).toHaveLength(1);
     for (const classes of tracked) expect(classes).toMatch(/(?<![\w-])text-(?:13|15|26)\b/);
   });
 });

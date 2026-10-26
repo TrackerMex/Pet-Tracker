@@ -72,7 +72,9 @@ Tres límites, no negociables:
    fuentes Inter, `--radius-card: 20px`, `--text-2xs: 10px`. Si un valor
    nuevo se repite 2+, se añade token — no clase arbitraria.
    Tamaños de letra fuera de la escala de Tailwind (fidelidad al canvas, #173): `--text-13: 13px`, `--text-26: 26px`, `--text-11: 11px`, `--text-15: 15px`, `--text-17: 17px`, `--text-22: 22px`; cada uno es token aunque se use una vez, porque la clase arbitraria está prohibida.
-   Tracking fuera de la escala de Tailwind (fidelidad al canvas, #174): `--tracking-title: -0.02em`, `--tracking-caps: 0.06em`, `--tracking-eyebrow: 0.08em`; la clase `tracking-*` va con una clase `text-*` en el mismo elemento, porque uniwind multiplica el `em` por su tamaño.
+   Tracking fuera de la escala de Tailwind (fidelidad al canvas, #174): `--tracking-title: -0.02em`, `--tracking-caps: 0.06em`, `--tracking-eyebrow: 0.08em`, `--tracking-code: 0.14em`, `--tracking-display: -0.5px`, `--tracking-section: 1.5px`, `--tracking-mono: 0.04em`, `--tracking-dialog: -0.01em` (#197); la clase `tracking-*` va con una clase `text-*` en el mismo elemento, porque uniwind multiplica el `em` por su tamaño.
+   Interlineado fuera de la escala de Tailwind (fidelidad al canvas, #197): `--leading-body: 1.4`, `--leading-note: 1.45`; la clase `leading-*` va con una clase `text-*` en el mismo elemento, porque uniwind multiplica el interlineado sin unidad por su tamaño. Los interlineados en píxeles del canvas usan la escala de Tailwind (`leading-3.5`, `leading-5.25`, `leading-8`, `leading-8.5`) y 1.5 es `leading-normal`.
+   Tamaños fuera de la escala, por fidelidad al canvas (#199): `--text-34` (34 px), cifra de Peso.
 3. **Grep-clean permanente** (criterio de aceptación de toda feature móvil):
    - cero hex fuera de `src/theme/`
    - cero clases arbitrarias `[...]` (`rounded-[20px]`, `text-[10px]`,
@@ -128,12 +130,12 @@ Tres límites, no negociables:
    `contentContainerStyle` es `padding: 24`, `gap: 16` y `paddingBottom:
    insets.bottom + 24`, la misma holgura inferior que `(auth)` y
    `reset-password`.
-   `pets/[petId]/geofences` queda fuera de esta excepción desde #189 E4 (cabecera transparente, ver más abajo).
+   Zonas seguras y el editor de zonas quedan fuera de esta excepción desde #202 (`headerShown: false`, cabecera en contenido; ver más abajo).
 
    **Excepción nombrada (fidelidad al canvas, 2026-10-13)**: una pantalla llevada al canvas aprobado usa padding lateral 20 y el `gap` de su artboard; ver conventions.md §Dimensiones, misma excepción.
-   Zonas seguras (#189): `paddingHorizontal: 20`, `paddingTop: insets.top + 6`, `gap: 12`, `paddingBottom: insets.bottom + 40`.
+   Zonas seguras (#189, #202): `paddingHorizontal: 20`, `paddingTop: insets.top + 12`, `gap: 12`, `paddingBottom: insets.bottom + 40`.
    Hoja del Editor (#189): `paddingHorizontal: 20`, `paddingTop: 12`, `gap: 14`, `paddingBottom: insets.bottom + 36`.
-   Cabecera nativa transparente (#189 E4): Zonas seguras y la rama de formulario del Editor usan `headerTransparent: true` con `headerStyle: { backgroundColor: 'transparent' }`; el contenido empieza bajo la cabecera, el título comparte fila con la flecha, el `paddingTop` suma `insets.top` y no se usa `contentInsetAdjustmentBehavior`. Las ramas de estado del Editor conservan la cabecera opaca.
+   Cabecera en contenido (#202): Zonas seguras y el editor de zonas declaran `headerShown: false`. Zonas y las ramas de estado del Editor montan `ScreenHeader` como primer hijo del contenido; el formulario del Editor flota sobre el mapa una fila en `top: insets.top + 8` con el volver de cristal (44, `BackButton` con `strokeWidth={2.4}`) y la píldora del título, ambos con `shadows.card`.
 7. **Estados de carga**: Skeleton de heroui dimensionado como el contenido
    final. Prohibido Spinner suelto que salte el layout.
 8. **Estructura**: route delgado en `src/app/` + pantalla en `src/screens/`
@@ -201,6 +203,8 @@ Tres límites, no negociables:
 
     Fuera de la escala, por fidelidad al canvas (#191): `rounded-10` (10 px) y `rounded-14` (14 px), segmentos y contenedor del selector segmentado de Nueva mascota; `rounded-tile` (18 px) de la burbuja de Pingo, que es un `View` y no un `Card`.
 
+    Fuera de la escala, por fidelidad al canvas (#199): `rounded-24` (24 px), tarjeta de la gráfica de Peso, panel de la próxima dosis y tarjeta de peso de Salud, que son `View` con `CONTINUOUS_CORNER`; `rounded-16` (16 px), tile del panel de la próxima dosis; `rounded-14` (14 px), enlace al registro de peso de Salud.
+
 13. **Botón con cuerpo** (feature #166, 2026-10-11). Los botones de acción
     llevan un labio inferior: una sombra sólida sin desenfoque en `--lip`
     (`--color-lip`, `--color-lip-gray`) que cuelga fuera del cuerpo. El hook
@@ -216,7 +220,7 @@ Tres límites, no negociables:
       `text-17 font-bold text-accent-strong`. «Ver en el mapa» del detalle
       conserva `h-13` y su `Button.Label` `text-base font-extrabold text-foreground`.
     «Eliminar» del Editor es secundario neutro con etiqueta `text-base font-extrabold text-danger`, excepción a `text-17 … text-foreground` del neutro; sale de «Sin labio».
-    La papelera de la fila de zona es una excepción solo-icono (`size-11 rounded-xl bg-danger-soft`).
+    La papelera de la fila de zona es una excepción solo-icono (`size-11 rounded-xl` sobre `CATEGORY_SLOTS.rose.surface`, #202).
     - **Compacto**: `reminders-add-link` conserva `h-10`, `rounded-xl`,
       `gap-1.5 px-3.5`, su icono y `Button.Label` `text-sm font-extrabold text-accent-foreground`;
       usa `style={chunkyLip.primaryCompact}` (`chunkyLip.primaryCompact`, labio de 3).
@@ -228,12 +232,12 @@ Tres límites, no negociables:
     El tamaño 17 se pinta con `Text` plano de React Native por la regla de la
     Enmienda #187; no se pasa `text-17` a `Button.Label`.
     El bloqueo (`isDisabled`) no atenúa: en #189 los `Switch` y `Button` de heroui cancelan el 50 % de `disabled:element-disabled` con `KEEP_OPACITY`, y la receta gris del límite no lleva opacidad.
-    - **Chip seleccionado** (fidelidad al canvas, #178): cápsula `rounded-full bg-accent border-b-3 border-black/25`; el chip sin seleccionar no lleva labio.
-    - **Secundarios de Horario** (fidelidad al canvas, #179): «Editar» `h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface` y «Añadir comida» `h-13.5 rounded-14 border-2 border-b-6 border-lip-gray bg-surface`, con el labio dentro del alto; «Generar plan» es tonal de la categoría violeta y sin labio, porque el labio del artboard (`rgba(91,63,163,0.35)`) no tiene token.
+    - **Chip seleccionado** (fidelidad al canvas, #178; labio por estilo, #197): cápsula `rounded-full bg-accent` con `style={chunkyLip.primaryCompact}`, un labio de 3 px que cuelga fuera del alto; el chip sin seleccionar no lleva labio.
+    - **Secundarios de Horario** (fidelidad al canvas, #179; labio por estilo, #197): «Editar» `h-9 rounded-10 border-2 border-lip-gray bg-surface` con `style={chunkyLip.neutralCompact}` y «Añadir comida» `h-12.5 rounded-14 border-2 border-lip-gray bg-surface` con `style={chunkyLip.neutral}`, con el labio colgando fuera del alto; el resumen verde lleva `chunkyLip.summary`; «Generar plan» es tonal de la categoría violeta con `style={chunkyLip.violet}` (#200 R14).
+    - **Secundario compacto de fila** (#174; labio por estilo, #197): el ack de cada fila abierta de Alertas lleva `h-8.5 rounded-10 border-2 border-lip-gray bg-surface px-3` con `style={chunkyLip.neutralCompact}`, etiqueta `text-xs font-extrabold text-foreground` y `hitSlop={TOUCH_SLOP}` (34 + 12 = 46 de diana). Es la única excepción a la receta del secundario neutro; el inventario de #166 R3 lo lista por su `testID`.
     - **Sin labio**: los tonales (`bg-accent-soft`, `bg-default`), los
       destructivos (`bg-danger`, `variant="danger-soft"`) y las primarias
       de heroui sin color en `className` (reintentos).
-    - **Secundario compacto de fila** (#174): el ack de cada fila abierta de Alertas lleva `h-8.5 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3`, etiqueta `text-xs font-extrabold text-foreground` y `hitSlop={TOUCH_SLOP}` (34 + 12 = 46 de diana). Es la única excepción a la receta del secundario neutro; el inventario de #166 R3 lo lista por su `testID`.
     - Primario del detalle de alerta (#180): ack con labio, h-14 rounded-16, etiqueta text-17 font-extrabold; el secundario «Ver en el mapa» es h-13 rounded-16 con el icono Map.
     La cápsula «Añadir mascota» con `bg-tab-pill` es tonal y no lleva labio (#173).
     Los inventarios que lo verifican viven en
@@ -563,7 +567,7 @@ de la enmienda está en su `requirements.md` §R11.
 
 - [X] Enmienda #168 aprobada por humano
 
-**Regla N1 (enmienda B4 de #168)**: Salud, Nutrición y Perfil abren con el título grande; Inicio es la única pestaña con PetHeroHeader. Devolver el hero a una de las tres es una enmienda a #168.
+**Regla N1 (enmienda #196)**: Inicio y Perfil abren con PetHeroHeader a sangre; Salud y Nutrición abren con el título grande. En Perfil el título «Perfil» y «Añadir mascota» van en el slot superior del hero y el nombre con los chips en su pie. Devolver el hero a Salud o a Nutrición, o quitárselo a Inicio o a Perfil, es una enmienda a #196.
 
 ## Enmienda #171 — confeti, ping y flotación de la celebración
 
@@ -837,9 +841,9 @@ Detalle y tests en `specs/mobile-pairing-pingo-canvas-fidelity/requirements.md` 
 
 > Enmienda de `ui-guidelines` por `mobile-geofences-canvas-fidelity` (#189). Directiva del humano: «el diseño final como el artifact». La firma de esta casilla autoriza las ediciones de R16 de `specs/mobile-geofences-canvas-fidelity/requirements.md`; nada más.
 
-- **Métricas por fidelidad al canvas (A11).** Zonas: `paddingHorizontal: 20`, `paddingTop: insets.top + 6`, `gap: 12`, `paddingBottom: insets.bottom + 40`. Hoja del Editor: `paddingHorizontal: 20`, `paddingTop: 12`, `gap: 14`, `paddingBottom: insets.bottom + 36`.
+- **Métricas por fidelidad al canvas (A11).** Zonas: `paddingHorizontal: 20`, `paddingTop: insets.top + 12`, `gap: 12`, `paddingBottom: insets.bottom + 40`. Hoja del Editor: `paddingHorizontal: 20`, `paddingTop: 12`, `gap: 14`, `paddingBottom: insets.bottom + 36`.
 - **Radios fuera de la escala (regla 12).** `rounded-14` (tile de la zona), `rounded-tile` (aviso de límite), `rounded-t-hero` (hoja del Editor) y `rounded-16` (botones). Las líneas de #175 a #180 no se tocan.
-- **Botón (regla 13).** La receta deshabilitada (`h-14 rounded-16 bg-default`, etiqueta `text-17 font-extrabold text-muted`, sin labio) la aplican «Añadir zona» en el límite y «Guardar» con el nombre vacío. «Eliminar» del Editor sale de «Sin labio»: es secundario neutro con etiqueta `text-base font-extrabold text-danger`, excepción a la etiqueta `text-17 … text-foreground` del neutro. La papelera de la fila de zona es una excepción solo-icono (`size-11 rounded-xl bg-danger-soft`).
+- **Botón (regla 13).** La receta deshabilitada (`h-14 rounded-16 bg-default`, etiqueta `text-17 font-extrabold text-muted`, sin labio) la aplican «Añadir zona» en el límite y «Guardar» con el nombre vacío. «Eliminar» del Editor sale de «Sin labio»: es secundario neutro con etiqueta `text-base font-extrabold text-danger`, excepción a la etiqueta `text-17 … text-foreground` del neutro. La papelera de la fila de zona es una excepción solo-icono (`size-11 rounded-xl` sobre `CATEGORY_SLOTS.rose.surface`, #202).
 - **Paleta categórica.** `zoneCategory` (orden `green, blue, amber, violet, rose`) es el único reparto categoría → ranura de las zonas; el color es de la posición en la lista, no de la zona.
 
 - [X] Enmienda #189 aprobada por humano
@@ -879,3 +883,97 @@ nunca texto crudo del servidor.
 Detalle y tests en `specs/mobile-home-photo-hero-canvas/requirements.md` (R1 a R20).
 
 - [X] Enmienda #195 aprobada por humano
+
+## Enmienda #197 — cimientos del canvas
+
+Fecha: 2026-10-23. Feature #197 `mobile-canvas-foundations`. Fija los tokens y las piezas que consumen las pantallas de la ola 2 del canvas; no cambia el layout de ninguna pantalla.
+
+1. **Colores claros.** `--border` y `--separator` `rgba(13,17,23,0.08)`, `--danger` `#D92D20`, `--warning` `#B54708` y `--warning-strong` `#93370D` (AA sobre `bg-surface` y sobre `bg-warning-soft`). El tema oscuro no cambia.
+2. **Tipografía.** Los tokens de la línea de tracking y de la de interlineado son los únicos fuera de la escala de Tailwind. `tracking-tight` no se usa en la app: el título grande lleva `tracking-title`.
+3. **Labios por estilo.** Todo labio es `style={chunkyLip.<variante>}` de `useChunkyLip()` (`src/theme/chunky-lip.ts`) y cuelga por debajo del alto del elemento; ningún `className` lleva `border-b-N` ni `border-black/25` como labio. Variantes: `primary`, `primaryCompact`, `hero`, `summary`, `neutral`, `neutralCompact`, `danger`, `violet`, `tileViolet`, `tileAmber` y `tileBlue`. Una variante nueva se añade al hook con el literal de su artboard; no se compone a mano en la pantalla.
+4. **Entrada `rise`.** Excepción a «springs sobre timings»: la entrada escalonada de Inicio usa `MOTION_RISE_TIMING` (400 ms, `ease-out`) y sube `MOTION_RISE_OFFSET_Y` (14). Bajo reduce motion no hay entrada. Otro elemento solo usa este timing con una enmienda.
+5. **Sombras.** Toda sombra nueva sale de `useShadows()` (`src/theme/shadows.ts`): `card`, `dialog`, `floating`, `label`, `marker`, `ring`, `segment`, `sheet`, `tabBar` y `toast`; no se añaden `shadowColor` ni `elevation` de React Native. Horario e Historial de comidas siguen sin sombra (#179).
+6. **Interruptor.** Todo interruptor binario será `ToggleSwitch` (`src/components/toggle-switch.tsx`): pista de 48 x 28 en `lip-gray` apagada y `accent` encendida, pulgar blanco de 22 a 3 del borde y sin sombra. Cada pantalla lo adopta en su feature de la ola 2.
+7. **Cabecera en contenido.** `ScreenHeader` (`src/components/screen-header.tsx`) es la forma del canvas para D-H: volver de 44 con trazo 2.4 y `-ml-2.5`, eyebrow opcional, título de 26 (o 24) `font-black tracking-title` y un accesorio opcional a la derecha. La pantalla que lo adopta pone `headerShown: false` en su ruta dentro de su propia feature; mientras no lo adopte, D-H rige tal como está escrita.
+
+Detalle y tests en `specs/mobile-canvas-foundations/requirements.md` (R1 a R23).
+
+- [X] Enmienda #197 aprobada por humano
+  Firma delegada en el leader por mandato del humano del 2026-10-23 (`progress/plan_canvas-parity-2026-10-23.md` §4), igual que la de `specs/mobile-canvas-foundations/requirements.md` § Aprobación.
+
+
+## Enmienda #200 (mobile-canvas-nutrition)
+
+Fecha: 2026-10-24. Las tres pantallas de comidas consumen los cimientos del canvas de #197.
+
+1. **Entrada con RiseIn.** Nutrición, Horario e Historial usan `RiseIn` y el timing compartido de 400 ms ease-out de #197, sin entrada bajo reducir movimiento. Nutrición con plan cargado: héroe 0 ms, comidas 80 ms, aviso en posición index `110 + 30 * index` ms, IA 140 ms y enlaces 200 ms; sin plan los enlaces conservan su aparición sin RiseIn. Horario: resumen 0 ms y filas `80 + 60 * index` ms. Historial: calendario 0 ms y panel del día 100 ms.
+2. **Anillo de Nutrición.** El relleno usa `MOTION_RING_TIMING` (1100 ms ease-out, ReduceMotion.System) y `MOTION_RING_DELAY_MS` (200 ms), también al servir o deshacer. La pista conserva opacidad 0.22.
+3. **Radios de Nutrición.** Fuera de la escala por fidelidad a su canvas: `rounded-24` (24 px) en la tarjeta de comidas y `rounded-16` (16 px) en los enlaces a Horario e Historial. Cada esquina no cápsula usa `CONTINUOUS_CORNER`.
+4. **Superficies propias.** El héroe, las comidas, los avisos y la recomendación IA de Nutrición son `View`; sus enlaces son `Pressable`. Usan clases propias en lugar de `Card`, con los radios, colores e interlineados del artboard y las variantes de labio del hook compartido.
+
+Detalle y tests en `specs/mobile-canvas-nutrition/requirements.md` (R1 a R17).
+
+- [X] Enmienda #200 aprobada por humano
+  Firma delegada en el leader por mandato del humano del 2026-10-23 (`progress/plan_canvas-parity-2026-10-23.md` §4), reflejada desde `specs/mobile-canvas-nutrition/requirements.md` § Aprobación, ya firmada el 2026-10-23.
+
+## Enmienda #199: Salud y Peso al canvas (2026-10-23)
+
+- **`rise` en Salud y Peso (#199).** `RiseIn` (`components/rise-in.tsx`) aplica `MOTION_RISE_TIMING` y `MOTION_RISE_OFFSET_Y` a tarjetas y filas con los retrasos del canvas: Salud 0 (próxima dosis), `80 + 60 · min(i, 2)` (vacunas) y 260 (peso); Peso 0 (gráfica), 80 (formulario), `140 + 60 · min(i, 2)` (historial) y `60 · i` (esqueletos). Con reduce motion no hay entrada.
+- **`draw` y `pop` de la gráfica de peso (#199).** La línea se dibuja con `MOTION_DRAW_TIMING` (1200 ms, `Easing.bezier(0, 0, 0.58, 1)`) tras `MOTION_DRAW_DELAY_FULL_MS` (200) en Peso o `MOTION_DRAW_DELAY_MINI_MS` (300) en Salud; el último punto de Peso hace `pop` (0.6 → 1.08 → 1 en `MOTION_POINT_POP_MS`, 400) a los `MOTION_POINT_POP_DELAY_MS` (1300). Con reduce motion salen completos.
+- **Fundido del toast de Peso (#199).** `FadeIn` de `MOTION_TOAST_FADE_MS` (300) tras `MOTION_TOAST_DELAY_MS` (400), con la sombra `useShadows().toast`.
+
+## Enmienda #203 — Labio rojo en los destructivos del canvas
+
+Fecha: 2026-10-23. Feature #203 `mobile-canvas-collar-alerts`.
+
+> **Enmienda #203 — Labio rojo en los destructivos del canvas.** Los botones
+> destructivos que el canvas dibuja con labio (`device-unpair` y
+> `pairing-unpair-confirm`) llevan `style={chunkyLip.danger}` (`0 4px 0`
+> `--color-lip-danger`). El resto de destructivos `bg-danger` sigue en «Sin
+> labio» (§13) mientras su artboard no dibuje labio.
+
+Detalle y tests en `specs/mobile-canvas-collar-alerts/requirements.md` (R6 y R7).
+
+- [X] Enmienda #203 aprobada por humano
+  Firma delegada en el leader por mandato del humano del 2026-10-23 (`progress/plan_canvas-parity-2026-10-23.md` §4), igual que la de `specs/mobile-canvas-collar-alerts/requirements.md` § Aprobación.
+
+## Enmienda #204 — rutina en el canvas: Recordatorios, Agregar recordatorio y Documentos
+
+Fecha: 2026-10-23. Feature #204 `mobile-canvas-routine`. Lleva las tres pantallas a sus artboards del canvas.
+
+1. **Entrada `rise` fuera de Inicio.** Las filas de Recordatorios y de Documentos entran con `RiseIn` (`MOTION_RISE_TIMING`, `MOTION_RISE_OFFSET_Y`), escalonadas por índice: Recordatorios con `MOTION_REMINDERS_STAGGER_MS` (70 ms) y Documentos con `MOTION_STAGGER_MS` (60 ms). Bajo reduce motion no hay entrada.
+2. **«Eliminar» de la hoja de borrado de recordatorio.** Sale de «Sin labio» (regla 13): `h-14 w-full rounded-16 bg-danger` con `style={chunkyLip.danger}` y etiqueta `Text` 17/800 `text-danger-foreground`. Con «Cancelar» (56 px, 17/800, labio `neutral`) el par de la hoja queda simétrico: sustituye el «par asimétrico» de la Enmienda #177 para esta hoja. Los demás destructivos siguen sin labio.
+3. **«Eliminar» de fila de recordatorio.** Tonal y sin labio: `h-11 rounded-14 px-2.5` sobre `CATEGORY_SLOTS.rose.surface`, `variant="danger-soft"` y etiqueta `Text` 13/800 `text-danger`.
+4. **Ámbar de la fila próxima.** Borde `border-2 border-category-amber` y badge con `CATEGORY_SLOTS.amber.surface` y `CATEGORY_SLOTS.amber.ink`; Recordatorios deja `warning-soft` y `warning-strong` para este uso.
+
+Detalle y tests en `specs/mobile-canvas-routine/requirements.md` (R1 a R18).
+
+- [X] Enmienda #204 aprobada por humano
+  Firma delegada en el leader por mandato del humano del 2026-10-23 (`progress/plan_canvas-parity-2026-10-23.md` §4), igual que la de `specs/mobile-canvas-routine/requirements.md` § Aprobación.
+
+## Enmienda #205 — el flujo de cuenta como el canvas
+
+Fecha: 2026-10-24. Feature #205 `mobile-canvas-account-flow`. Bienvenida, inicio de sesión, registro, recuperar y nueva contraseña, y nueva mascota pasan a ser fieles a su artboard del canvas.
+
+1. **Entrada con `RiseIn`.** Las pantallas de cuenta y nueva mascota entran con `RiseIn` y los retardos de cada artboard. Se retiran el fundido y el muelle de contenido de bienvenida y `HomeEntrance` en inicio de sesión, registro y nueva contraseña. El muelle de escala de Pingo en bienvenida se conserva.
+2. **Flotación de Pingo.** `PingoFloat` vive en bienvenida y registro y sale de recuperar y nueva contraseña. La flotación de 4 puntos de bienvenida se retira (enmienda de #172 y de #153 R10).
+3. **Cabecera de nueva mascota.** Nueva mascota usa `ScreenHeader` con `headerShown: false` en su ruta y la CTA de cada paso va en un pie fijo fuera del scroll (enmienda de #191).
+4. **Escala.** `--radius-32` y `--radius-40` quedan fuera de la escala de radios por fidelidad al canvas. `--text-34` es el tamaño de la marca de bienvenida, además de la cifra de Peso que declaró #199.
+5. **Pops.** Los pops conservan el retardo fijo de `PopIn`: el canvas pide otros retardos y es una desviación consciente.
+
+Detalle y tests en `specs/mobile-canvas-account-flow/requirements.md` (R1 a R20).
+
+- [X] Enmienda #205 aprobada por humano
+  Firma delegada en el leader por mandato del humano del 2026-10-23, reflejada desde `specs/mobile-canvas-account-flow/requirements.md` § Aprobación, ya firmada.
+
+## Enmienda #206 — barra de pestañas fiel al canvas
+
+Fecha: 2026-10-23. Feature #206 `mobile-canvas-tab-bar`. Excepción nombrada a D-I.
+
+1. **Iconos de la barra.** Los cinco iconos de `FloatingTabBar` se dibujan con `react-native-svg` copiando los trazados del `<nav aria-label="Pestañas">` del canvas (24 x 24, `fill="none"`, trazo redondeado de 2,4 en la pestaña activa y de 2 en las demás) y se colorean con `accent-strong` o `muted` vía `useThemeColors`. Excepción a D-I limitada a los iconos de esta barra: ningún otro icono de navegación o de acción cambia, y siguen siendo de `reicon-react-native`.
+2. **Barra.** Cápsula de 64 con relleno de 6 y hueco de 4, celdas de 52, velo `bg-glass-surface-strong` y sombra `useShadows().tabBar`. Flota a 16 de cada lado y a 12 por encima del inset inferior.
+
+Detalle y tests en `specs/mobile-canvas-tab-bar/requirements.md` (R1 a R10).
+
+- [X] Enmienda #206 aprobada por humano
+  Firma delegada en el leader por mandato del humano del 2026-10-23 (`progress/plan_canvas-parity-2026-10-23.md` §4), reflejada desde `specs/mobile-canvas-tab-bar/requirements.md` § Aprobación, ya firmada el 2026-10-23.

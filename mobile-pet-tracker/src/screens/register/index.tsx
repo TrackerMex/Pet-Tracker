@@ -21,7 +21,7 @@ import { PasswordInput } from '../../components/password-input';
 import { FormError } from '../../components/form-error';
 import { FieldErrorMessage } from '../../components/field-error-message';
 import { useTranslate } from '../../providers/language-provider';
-import { HomeEntrance } from '../home/home-entrance';
+import { RiseIn } from '@/components/rise-in';
 
 import { validateRegister, type FieldIssues, type RegisterValues } from '../../utils/account-rules';
 
@@ -129,14 +129,13 @@ export function RegisterScreen() {
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           flexGrow: 1,
-          padding: 24,
-          gap: 16,
+          paddingHorizontal: 20,
           paddingTop: insets.top + 12,
           paddingBottom: insets.bottom + 96,
         }}
       >
-        <HomeEntrance testID="register-header" index={0} className="gap-2">
-          <View testID="register-top" className="flex-row items-center justify-between">
+        <View testID="register-header" className="gap-2">
+          <View testID="register-top" className="-ml-2.5 flex-row items-center justify-between">
             <BackButton testID="register-back" fallback="/welcome" />
             <PingoFloat testID="register-pingo-float">
               <Image
@@ -146,133 +145,135 @@ export function RegisterScreen() {
               />
             </PingoFloat>
           </View>
-          <Text className="text-3xl font-black text-foreground">
+          <Text className="text-3xl font-black tracking-display text-foreground">
             {t('register.createAccount')}
           </Text>
-        </HomeEntrance>
-
-        <View testID="register-names-row" className="flex-row gap-3">
-          <TextField className="flex-1" isInvalid={Boolean(fieldErrors.firstName)}>
-            <Label>
-              <Text className="text-13 font-semibold text-muted">
-                {t('register.firstName')}
-              </Text>
-            </Label>
-            <Input
-              testID="register-first-name"
-              className="h-13 rounded-xl bg-default"
-              value={firstName}
-              onChangeText={setFirstName}
-            />
-            <FieldErrorMessage testID="register-first-name" issue={fieldErrors.firstName} />
-          </TextField>
-          <TextField className="flex-1" isInvalid={Boolean(fieldErrors.lastName)}>
-            <Label>
-              <Text className="text-13 font-semibold text-muted">
-                {t('register.lastName')}
-              </Text>
-            </Label>
-            <Input
-              testID="register-last-name"
-              className="h-13 rounded-xl bg-default"
-              value={lastName}
-              onChangeText={setLastName}
-            />
-            <FieldErrorMessage testID="register-last-name" issue={fieldErrors.lastName} />
-          </TextField>
         </View>
 
-        <TextField isInvalid={Boolean(fieldErrors.email)}>
-          <Label>
-            <Text className="text-13 font-semibold text-muted">
-              {t('register.email')}
-            </Text>
-          </Label>
-          <Input
-            testID="register-email"
-            className="h-13 rounded-xl bg-default"
-            autoCapitalize="none"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-          />
-          <FieldErrorMessage testID="register-email" issue={fieldErrors.email} />
-        </TextField>
+        <RiseIn testID="register-body" delayMs={0} className="mt-4.5 gap-3">
+          <View testID="register-names-row" className="flex-row gap-3">
+            <TextField className="flex-1" isInvalid={Boolean(fieldErrors.firstName)}>
+              <Label>
+                <Text className="text-13 font-semibold text-muted">
+                  {t('register.firstName')}
+                </Text>
+              </Label>
+              <Input
+                testID="register-first-name"
+                className="h-13 rounded-xl bg-default"
+                value={firstName}
+                onChangeText={setFirstName}
+              />
+              <FieldErrorMessage testID="register-first-name" issue={fieldErrors.firstName} />
+            </TextField>
+            <TextField className="flex-1" isInvalid={Boolean(fieldErrors.lastName)}>
+              <Label>
+                <Text className="text-13 font-semibold text-muted">
+                  {t('register.lastName')}
+                </Text>
+              </Label>
+              <Input
+                testID="register-last-name"
+                className="h-13 rounded-xl bg-default"
+                value={lastName}
+                onChangeText={setLastName}
+              />
+              <FieldErrorMessage testID="register-last-name" issue={fieldErrors.lastName} />
+            </TextField>
+          </View>
 
-        <View testID="register-contact-row" className="flex-row gap-3">
-          <TextField className="flex-2" isInvalid={Boolean(fieldErrors.phone)}>
+          <TextField isInvalid={Boolean(fieldErrors.email)}>
             <Label>
               <Text className="text-13 font-semibold text-muted">
-                {t('register.phone')}
+                {t('register.email')}
               </Text>
             </Label>
             <Input
-              testID="register-phone"
+              testID="register-email"
               className="h-13 rounded-xl bg-default"
-              keyboardType="phone-pad"
-              value={phone}
-              onChangeText={setPhone}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
             />
-            <FieldErrorMessage testID="register-phone" issue={fieldErrors.phone} />
+            <FieldErrorMessage testID="register-email" issue={fieldErrors.email} />
           </TextField>
-          <TextField className="flex-1" isInvalid={Boolean(fieldErrors.country)}>
+
+          <View testID="register-contact-row" className="flex-row gap-3">
+            <TextField className="flex-2" isInvalid={Boolean(fieldErrors.phone)}>
+              <Label>
+                <Text className="text-13 font-semibold text-muted">
+                  {t('register.phone')}
+                </Text>
+              </Label>
+              <Input
+                testID="register-phone"
+                className="h-13 rounded-xl bg-default"
+                keyboardType="phone-pad"
+                value={phone}
+                onChangeText={setPhone}
+              />
+              <FieldErrorMessage testID="register-phone" issue={fieldErrors.phone} />
+            </TextField>
+            <TextField className="flex-1" isInvalid={Boolean(fieldErrors.country)}>
+              <Label>
+                <Text className="text-13 font-semibold text-muted">
+                  {t('register.country')}
+                </Text>
+              </Label>
+              <Input
+                testID="register-country"
+                className="h-13 rounded-xl bg-default"
+                autoCapitalize="characters"
+                maxLength={2}
+                value={country}
+                onChangeText={(value) => setCountry(value.toUpperCase())}
+              />
+              <FieldErrorMessage testID="register-country" issue={fieldErrors.country} />
+            </TextField>
+          </View>
+
+          <TextField isInvalid={Boolean(fieldErrors.password)}>
             <Label>
               <Text className="text-13 font-semibold text-muted">
-                {t('register.country')}
+                {t('register.password')}
               </Text>
             </Label>
-            <Input
-              testID="register-country"
-              className="h-13 rounded-xl bg-default"
-              autoCapitalize="characters"
-              maxLength={2}
-              value={country}
-              onChangeText={(value) => setCountry(value.toUpperCase())}
+            <PasswordInput
+              testID="register-password"
+              value={password}
+              onChangeText={setPassword}
             />
-            <FieldErrorMessage testID="register-country" issue={fieldErrors.country} />
+            <FieldErrorMessage testID="register-password" issue={fieldErrors.password} />
           </TextField>
-        </View>
 
-        <TextField isInvalid={Boolean(fieldErrors.password)}>
-          <Label>
-            <Text className="text-13 font-semibold text-muted">
-              {t('register.password')}
-            </Text>
-          </Label>
-          <PasswordInput
-            testID="register-password"
-            value={password}
-            onChangeText={setPassword}
-          />
-          <FieldErrorMessage testID="register-password" issue={fieldErrors.password} />
-        </TextField>
+          <TextField isInvalid={Boolean(fieldErrors.passwordConfirmation)}>
+            <Label>
+              <Text className="text-13 font-semibold text-muted">
+                {t('register.confirmPassword')}
+              </Text>
+            </Label>
+            <PasswordInput
+              testID="register-password-confirmation"
+              value={passwordConfirmation}
+              onChangeText={setPasswordConfirmation}
+            />
+            <FieldErrorMessage testID="register-password-confirmation" issue={fieldErrors.passwordConfirmation} />
+          </TextField>
 
-        <TextField isInvalid={Boolean(fieldErrors.passwordConfirmation)}>
-          <Label>
-            <Text className="text-13 font-semibold text-muted">
-              {t('register.confirmPassword')}
-            </Text>
-          </Label>
-          <PasswordInput
-            testID="register-password-confirmation"
-            value={passwordConfirmation}
-            onChangeText={setPasswordConfirmation}
-          />
-          <FieldErrorMessage testID="register-password-confirmation" issue={fieldErrors.passwordConfirmation} />
-        </TextField>
+          <View className="min-h-11 flex-row items-center gap-3">
+            <Checkbox
+              testID="register-terms"
+              isSelected={terms}
+              onSelectedChange={setTerms}
+            />
+            <Text className="text-15 font-medium text-foreground">{t('register.iAcceptTerms')}</Text>
+          </View>
 
-        <View className="flex-row items-center gap-3">
-          <Checkbox
-            testID="register-terms"
-            isSelected={terms}
-            onSelectedChange={setTerms}
-          />
-          <Text className="text-15 font-medium text-foreground">{t('register.iAcceptTerms')}</Text>
-        </View>
-
-        {generalError ? (
-          <FormError testID="register-error" message={generalError} />
-        ) : null}
+          {generalError ? (
+            <FormError testID="register-error" message={generalError} />
+          ) : null}
+        </RiseIn>
 
         <View testID="register-spacer" className="flex-1" />
 

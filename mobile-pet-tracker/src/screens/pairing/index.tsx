@@ -1,20 +1,19 @@
+import { BottomSheet, BottomSheetView } from '@expo/ui/community/bottom-sheet';
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { Image } from 'expo-image';
-import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { useQuery } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
-import { useContext, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
-  Alert,
   ScrollView,
   Text,
   TextInput,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { InfoCircle, Package } from 'reicon-react-native';
+import { InfoCircle, LinkBroken, Package } from 'reicon-react-native';
 
 import { claimDevice, releaseDevice } from '../../api/devices';
 import { listPets, type PetsState } from '../../api/pets';
@@ -25,6 +24,8 @@ import { Card } from '../../components/card';
 import { Celebration } from '../../components/celebration';
 import { PetAvatar } from '../../components/pet-avatar';
 import { PetSwitcher } from '../../components/pet-switcher';
+import { RiseIn } from '../../components/rise-in';
+import { ScreenHeader } from '../../components/screen-header';
 import { PingRing } from '@/components/ping-ring';
 import { PingoFloat } from '@/components/pingo-float';
 import { usePetSelection } from '../../hooks/use-pet-selection';
@@ -35,6 +36,7 @@ import {
 } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import { useShadows } from '../../theme/shadows';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { connectivityLabelKey } from '../../utils/device-connectivity';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
@@ -48,17 +50,15 @@ const PAIRING_AVATAR_SLOTS = ['amber', 'violet', 'blue', 'green', 'rose'] as con
 function PairingPetAvatar({ pet, index }: { pet: PetProfile; index: number }) {
   const slot = PAIRING_AVATAR_SLOTS[index % PAIRING_AVATAR_SLOTS.length];
   return (
-    <View testID="pairing-pet-row" className="w-full flex-row justify-end">
-      <View testID="pairing-pet-avatar" accessibilityLabel={pet.name} className="rounded-full border-2 border-accent p-0.75">
-        <View testID="pairing-pet-avatar-disc" className={`size-9 items-center justify-center overflow-hidden rounded-full ${CATEGORY_SLOTS[slot].surface}`}>
-          {pet.photoUrl ? (
-            <PetAvatar name={pet.name} photoUrl={pet.photoUrl} size={36} cacheKey={pet.id} testID="pairing-pet-avatar-image" />
-          ) : (
-            <Text testID="pairing-pet-avatar-fallback" className={`text-sm font-extrabold ${CATEGORY_SLOTS[slot].ink}`}>
-              {pet.name.charAt(0).toUpperCase()}
-            </Text>
-          )}
-        </View>
+    <View testID="pairing-pet-avatar" accessibilityLabel={pet.name} className="rounded-full border-2 border-accent p-0.75">
+      <View testID="pairing-pet-avatar-disc" className={`size-9 items-center justify-center overflow-hidden rounded-full ${CATEGORY_SLOTS[slot].surface}`}>
+        {pet.photoUrl ? (
+          <PetAvatar name={pet.name} photoUrl={pet.photoUrl} size={36} cacheKey={pet.id} testID="pairing-pet-avatar-image" />
+        ) : (
+          <Text testID="pairing-pet-avatar-fallback" className={`text-sm font-extrabold ${CATEGORY_SLOTS[slot].ink}`}>
+            {pet.name.charAt(0).toUpperCase()}
+          </Text>
+        )}
       </View>
     </View>
   );
@@ -75,18 +75,20 @@ function isTrackingError(state: PetTrackingState): boolean {
 function DeviceRow({
   label,
   testID,
+  tone,
   value,
 }: {
   label: string;
   testID: string;
+  tone: string;
   value: string;
 }) {
   return (
-    <View className="flex-row items-start justify-between gap-4">
-      <Text className="font-normal text-muted">{label}</Text>
+    <View className="flex-row items-baseline justify-between gap-3">
+      <Text className="text-sm text-muted">{label}</Text>
       <Text
         testID={testID}
-        className="shrink text-right font-semibold text-foreground"
+        className={`shrink text-right text-15 font-extrabold ${tone}`}
         selectable
       >
         {value}
@@ -97,8 +99,8 @@ function DeviceRow({
 
 export function PairingScreen() {
   const chunkyLip = useChunkyLip();
-  const [muted] = useThemeColors(['muted']);
-  const headerHeight = useContext(HeaderHeightContext);
+  const shadows = useShadows();
+  const [muted, danger] = useThemeColors(['muted', 'danger']);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const locale = useLocale();
@@ -114,6 +116,7 @@ export function PairingScreen() {
   const [code, setCode] = useState('');
   const [claiming, setClaiming] = useState(false);
   const [releasing, setReleasing] = useState(false);
+  const [unpairOpen, setUnpairOpen] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [phase, setPhase] = useState<'idle' | 'ready'>('idle');
   const [readyDevice, setReadyDevice] = useState<DeviceStatus | null>(null);
@@ -254,23 +257,21 @@ export function PairingScreen() {
       setActionError(t('common.somethingWentWrong'));
     } finally {
       setReleasing(false);
+      setUnpairOpen(false);
     }
   }
 
-  function confirmRelease() {
+  function openUnpair() {
     setActionError(null);
-    Alert.alert(
-      t('pairing.unpairAlertTitle'),
-      t('pairing.unpairAlertBody'),
-      [
-        { text: t('pairing.cancel'), style: 'cancel' },
-        {
-          text: t('pairing.unpair'),
-          style: 'destructive',
-          onPress: () => void handleRelease(),
-        },
-      ],
-    );
+    setUnpairOpen(true);
+  }
+
+  function closeUnpair() {
+    setUnpairOpen(false);
+  }
+
+  function confirmUnpair() {
+    void handleRelease();
   }
 
   return (
@@ -278,7 +279,7 @@ export function PairingScreen() {
       testID="screen-pairing"
       className="flex-1"
       behavior="padding"
-      keyboardVerticalOffset={headerHeight}
+      keyboardVerticalOffset={0}
     >
       <ScrollView
         testID="pairing-form"
@@ -287,29 +288,39 @@ export function PairingScreen() {
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           paddingHorizontal: 20,
-          paddingVertical: 24,
-          gap: 16,
+          paddingTop: insets.top + 8,
           paddingBottom: insets.bottom + 24,
-          ...(isLinking ? { flexGrow: 1 } : {}),
+          gap: 16,
+          flexGrow: 1,
         }}
       >
-        {isLinking && selectedPet && pets.data?.kind === 'ok' ? (
-          <PairingPetAvatar pet={selectedPet} index={pets.data.pets.findIndex(({ id }) => id === selectedPet.id)} />
+        {phase !== 'ready' ? (
+          <ScreenHeader
+            testID="pairing-header"
+            backFallback="/profile"
+            accessory={
+              isLinking && selectedPet && pets.data?.kind === 'ok' ? (
+                <PairingPetAvatar pet={selectedPet} index={pets.data.pets.findIndex(({ id }) => id === selectedPet.id)} />
+              ) : undefined
+            }
+          />
         ) : null}
 
         {phase === 'idle' && selectedPet?.device === null ? (
-          <View testID="pairing-hero-group" className="items-center gap-2.5">
-            <View testID="pairing-hero" className="h-37.5 w-50 items-center justify-center" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-              <PingRing testID="pairing-ring-0" delay={0} className={PAIRING_RING_CLASS_NAME} />
-              <PingRing testID="pairing-ring-1" delay={PAIRING_ARTBOARD_RING_DELAY_MS} className={PAIRING_RING_CLASS_NAME} />
-              <PingoFloat testID="pairing-pingo-float">
-                <Image testID="pairing-pingo" source={PAIRING_PINGO_SOURCE} style={{ width: 120, aspectRatio: 1 }} contentFit="contain" />
-              </PingoFloat>
+          <RiseIn delayMs={0} testID="pairing-hero-rise">
+            <View testID="pairing-hero-group" className="items-center gap-2.5">
+              <View testID="pairing-hero" className="h-37.5 w-50 items-center justify-center" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+                <PingRing testID="pairing-ring-0" delay={0} className={PAIRING_RING_CLASS_NAME} />
+                <PingRing testID="pairing-ring-1" delay={PAIRING_ARTBOARD_RING_DELAY_MS} className={PAIRING_RING_CLASS_NAME} />
+                <PingoFloat testID="pairing-pingo-float">
+                  <Image testID="pairing-pingo" source={PAIRING_PINGO_SOURCE} style={{ width: 120, aspectRatio: 1 }} contentFit="contain" />
+                </PingoFloat>
+              </View>
+              <Text testID="pairing-title" className="text-center text-28 font-black tracking-title text-foreground">
+                {t('pairing.pairCollar')}
+              </Text>
             </View>
-            <Text testID="pairing-title" className="text-center text-28 font-black tracking-title text-foreground">
-              {t('pairing.pairCollar')}
-            </Text>
-          </View>
+          </RiseIn>
         ) : null}
 
         {pets.data === undefined ? (
@@ -379,42 +390,46 @@ export function PairingScreen() {
 
         {phase === 'idle' && selectedPet?.device === null ? (
           <View className="gap-4" style={{ flexGrow: 1 }}>
-            <View className="flex-row items-start gap-2.5 rounded-tile bg-default px-3.5 py-3">
-              <View testID="pairing-plan-icon" className="mt-px">
-                <InfoCircle size={20} color={muted} />
-              </View>
-              <Text
-                testID="pairing-plan-free"
-                className="flex-1 text-13 font-normal leading-4.75 text-muted"
-                selectable
-              >
-                <Text className="font-bold text-foreground">{t('pairing.freePlanPairLead')}</Text>
-                {' '}
-                {t('pairing.freePlanPairBody')}
-              </Text>
-            </View>
-
-            <View className="gap-1.5">
-              <Text testID="pairing-activation-code-label" className="text-sm font-extrabold text-foreground">
-                {t('pairing.activationCode')}
-              </Text>
-              <TextInput
-                testID="activation-code-input"
-                className="h-15 rounded-14 border-2 border-accent bg-default px-4 font-mono text-24 tracking-code text-foreground"
-                style={CONTINUOUS_CORNER}
-                autoCapitalize="characters"
-                autoCorrect={false}
-                maxLength={64}
-                value={code}
-                onChangeText={setCode}
-              />
-              <View testID="pairing-code-hint" className="flex-row items-center gap-1.5">
-                <Package size={14} color={muted} />
-                <Text className="text-xs font-semibold text-muted">
-                  {t('pairing.printedOnCollarBox')}
+            <RiseIn delayMs={80} testID="pairing-plan-rise">
+              <View className="flex-row items-start gap-2.5 rounded-tile bg-default px-3.5 py-3">
+                <View testID="pairing-plan-icon" className="mt-px">
+                  <InfoCircle size={20} color={muted} />
+                </View>
+                <Text
+                  testID="pairing-plan-free"
+                  className="flex-1 text-13 font-normal leading-4.75 text-muted"
+                  selectable
+                >
+                  <Text className="font-bold text-foreground">{t('pairing.freePlanPairLead')}</Text>
+                  {' '}
+                  {t('pairing.freePlanPairBody')}
                 </Text>
               </View>
-            </View>
+            </RiseIn>
+
+            <RiseIn delayMs={140} testID="pairing-code-rise">
+              <View className="gap-1.5">
+                <Text testID="pairing-activation-code-label" className="text-sm font-extrabold text-foreground">
+                  {t('pairing.activationCode')}
+                </Text>
+                <TextInput
+                  testID="activation-code-input"
+                  className="h-15 rounded-14 border-2 border-accent bg-default px-4 font-mono text-24 tracking-code text-foreground"
+                  style={CONTINUOUS_CORNER}
+                  autoCapitalize="characters"
+                  autoCorrect={false}
+                  maxLength={64}
+                  value={code}
+                  onChangeText={setCode}
+                />
+                <View testID="pairing-code-hint" className="flex-row items-center gap-1.5">
+                  <Package size={14} color={muted} />
+                  <Text className="text-xs font-semibold text-muted">
+                    {t('pairing.printedOnCollarBox')}
+                  </Text>
+                </View>
+              </View>
+            </RiseIn>
 
             <View testID="pairing-submit-spacer" style={{ flexGrow: 1 }} />
 
@@ -432,96 +447,186 @@ export function PairingScreen() {
         ) : null}
 
         {phase === 'idle' && selectedPet?.device ? (
-          <View className="gap-4">
-            <Text className="text-2xl font-black text-foreground">
-              {t('pairing.gpsDevice')}
-            </Text>
-
-            <Card testID="device-status-card">
-              <View className="gap-4">
-                <DeviceRow
-                  label={t('pairing.model')}
-                  testID="device-model"
-                  value={selectedPet.device.model ?? '—'}
-                />
-                <DeviceRow
-                  label={t('pairing.battery')}
-                  testID="device-battery"
-                  value={
-                    selectedPet.device.batteryPct === null
-                      ? '—'
-                      : `${selectedPet.device.batteryPct}%`
-                  }
-                />
-                <DeviceRow
-                  label={t('pairing.connection')}
-                  testID="device-connectivity"
-                  value={connectivityKey === null ? '—' : t(connectivityKey)}
-                />
-                <DeviceRow
-                  label={t('pairing.lastMessage')}
-                  testID="device-last-message"
-                  value={
-                    selectedPet.device.lastMessageAt
-                      ? new Date(
-                          selectedPet.device.lastMessageAt,
-                        ).toLocaleString(locale)
-                      : t('pairing.noMessagesYet')
-                  }
-                />
-                <DeviceRow
-                  label={t('pairing.esn')}
-                  testID="device-esn"
-                  value={selectedPet.device.esn ?? '—'}
-                />
-              </View>
-            </Card>
-
-            {tracking.data === undefined ? (
-              <Skeleton
-                testID="plan-skeleton"
-                className="h-8 w-44 rounded-full"
-              />
-            ) : null}
-
-            {tracking.data?.kind === 'ok' && tracking.data.tracked ? (
-              <View
-                testID="plan-tracked"
-                className="self-start rounded-full bg-accent-soft px-3 py-2"
+          <View className="gap-4" style={{ flexGrow: 1 }}>
+            <RiseIn delayMs={0} testID="device-title-rise">
+              <Text
+                testID="device-title"
+                className="mt-2 text-28 font-black tracking-title text-foreground"
               >
-                <Text className="font-semibold text-success">
-                  {t('pairing.gpsTrackingActive')}
-                </Text>
-              </View>
-            ) : null}
-
-            {tracking.data?.kind === 'ok' && !tracking.data.tracked ? (
-              <Card testID="plan-free" variant="secondary">
-                <Text className="font-normal text-foreground" selectable>
-                  {t('pairing.freePlanNoActivePlan')}
-                </Text>
-              </Card>
-            ) : null}
-
-            {tracking.data && isTrackingError(tracking.data) ? (
-              <Text testID="plan-unknown" className="text-muted" selectable>
-                {t('pairing.planStatusUnavailable')}
+                {t('pairing.gpsDevice')}
               </Text>
-            ) : null}
+            </RiseIn>
+
+            <RiseIn delayMs={80} testID="device-status-rise">
+              <Card
+                testID="device-status-card"
+                className="rounded-22 px-4 py-4.5 shadow-none"
+                style={shadows.card}
+              >
+                <View className="gap-4">
+                  <DeviceRow
+                    label={t('pairing.model')}
+                    testID="device-model"
+                    tone="text-foreground"
+                    value={selectedPet.device.model ?? '—'}
+                  />
+                  <DeviceRow
+                    label={t('pairing.battery')}
+                    testID="device-battery"
+                    tone={
+                      selectedPet.device.batteryPct === null
+                        ? 'text-foreground'
+                        : 'text-accent-strong'
+                    }
+                    value={
+                      selectedPet.device.batteryPct === null
+                        ? '—'
+                        : `${selectedPet.device.batteryPct}%`
+                    }
+                  />
+                  <DeviceRow
+                    label={t('pairing.connection')}
+                    testID="device-connectivity"
+                    tone={
+                      selectedPet.device.connectivity === 'online'
+                        ? 'text-accent-strong'
+                        : 'text-foreground'
+                    }
+                    value={connectivityKey === null ? '—' : t(connectivityKey)}
+                  />
+                  <DeviceRow
+                    label={t('pairing.lastMessage')}
+                    testID="device-last-message"
+                    tone="text-foreground"
+                    value={
+                      selectedPet.device.lastMessageAt
+                        ? new Date(
+                            selectedPet.device.lastMessageAt,
+                          ).toLocaleString(locale)
+                        : t('pairing.noMessagesYet')
+                    }
+                  />
+                  <DeviceRow
+                    label={t('pairing.esn')}
+                    testID="device-esn"
+                    tone="font-mono tracking-mono text-foreground"
+                    value={selectedPet.device.esn ?? '—'}
+                  />
+                </View>
+              </Card>
+            </RiseIn>
+
+            <RiseIn delayMs={140} testID="device-plan-rise">
+              {tracking.data === undefined ? (
+                <Skeleton
+                  testID="plan-skeleton"
+                  className="h-8 w-44 rounded-full"
+                />
+              ) : null}
+
+              {tracking.data?.kind === 'ok' && tracking.data.tracked ? (
+                <View
+                  testID="plan-tracked"
+                  className="h-9 flex-row items-center gap-2 self-start rounded-full bg-tab-pill px-3.5"
+                >
+                  <View
+                    testID="plan-tracked-dot"
+                    className="size-2 rounded-full bg-accent"
+                  />
+                  <Text className="text-sm font-bold text-accent-strong">
+                    {t('pairing.gpsTrackingActive')}
+                  </Text>
+                </View>
+              ) : null}
+
+              {tracking.data?.kind === 'ok' && !tracking.data.tracked ? (
+                <Card testID="plan-free" variant="secondary">
+                  <Text className="font-normal text-foreground" selectable>
+                    {t('pairing.freePlanNoActivePlan')}
+                  </Text>
+                </Card>
+              ) : null}
+
+              {tracking.data && isTrackingError(tracking.data) ? (
+                <Text testID="plan-unknown" className="text-muted" selectable>
+                  {t('pairing.planStatusUnavailable')}
+                </Text>
+              ) : null}
+            </RiseIn>
+
+            <View testID="device-unpair-spacer" className="flex-1" />
 
             <Button
               testID="device-unpair"
-              className="min-h-11 w-full rounded-xl bg-danger"
+              className="h-13.5 w-full rounded-16 bg-danger"
+              style={chunkyLip.danger}
               isDisabled={releasing}
-              onPress={confirmRelease}
+              onPress={openUnpair}
             >
-              <Button.Label className="font-bold text-accent-foreground">
+              <Button.Label className="text-base font-extrabold text-accent-foreground">
                 {t('pairing.unpairCollar')}
               </Button.Label>
             </Button>
           </View>
         ) : null}
       </ScrollView>
+
+      <View testID="pairing-unpair-host">
+        <BottomSheet
+          index={unpairOpen ? 0 : -1}
+          enablePanDownToClose
+          onClose={closeUnpair}
+          snapPoints={['50%', '100%']}
+        >
+          <BottomSheetView>
+            <View
+              testID="pairing-unpair-sheet"
+              className="items-center gap-3 bg-surface px-5 pb-9 pt-3"
+            >
+              <View
+                testID="pairing-unpair-icon"
+                className={`size-14 items-center justify-center rounded-full ${CATEGORY_SLOTS.rose.surface}`}
+              >
+                <LinkBroken size={26} strokeWidth={2.2} color={danger} />
+              </View>
+              <Text
+                testID="pairing-unpair-title"
+                className="text-center text-xl font-black text-foreground"
+              >
+                {t('pairing.unpairAlertTitle')}
+              </Text>
+              <Text
+                testID="pairing-unpair-body"
+                className="max-w-80 text-center text-sm leading-note text-muted"
+              >
+                {t('pairing.unpairAlertBody')}
+              </Text>
+              <Button
+                testID="pairing-unpair-confirm"
+                className="w-full h-13.5 rounded-16 bg-danger"
+                style={chunkyLip.danger}
+                isDisabled={releasing}
+                onPress={confirmUnpair}
+              >
+                <Text className="text-base font-extrabold text-danger-foreground">
+                  {t('pairing.unpair')}
+                </Text>
+              </Button>
+              <Button
+                testID="pairing-unpair-cancel"
+                variant="outline"
+                className="w-full h-13.5 rounded-16 border-2 border-lip-gray bg-surface"
+                style={chunkyLip.neutral}
+                onPress={closeUnpair}
+              >
+                <Text className="text-base font-extrabold text-foreground">
+                  {t('pairing.cancel')}
+                </Text>
+              </Button>
+            </View>
+          </BottomSheetView>
+        </BottomSheet>
+      </View>
     </KeyboardAvoidingView>
   );
 }
