@@ -24,6 +24,8 @@ Esta feature es solo móvil. El backend no cambia: el contrato es el
 | i18n | `mobile-pet-tracker/src/i18n/catalog.ts` | claves `nutritionQuestionnaire.*` en `en` y `es` (R23) |
 | guardas | `mobile-pet-tracker/src/__tests__/{ui-copy-table.ts, ui-language.test.ts, design-drift.test.ts, consistency-classnames.test.ts, chunky-cta-canvas-fidelity.test.ts, legibility-classnames.test.ts, alerts-canvas-fidelity.test.ts, profile-canvas-fidelity.test.ts}` | enmiendas mecánicas (R23, R24) y `describe('#209 R25: Cuestionario sin deriva')` (R25) |
 | guardas | `mobile-pet-tracker/src/app/__tests__/layout.test.tsx` | cuentas de hijos `+ 1 // #209 R3` y el `it` nuevo de orden (R3) |
+| guardas | `mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx` | suma de `#194 R1`: `+ 77, // #209 R23` (R23) |
+| tests de pantalla | `mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx` | cuatro `it` existentes con los literales de R22, sufijo ` (enmendado por #209 R22)` (R22) |
 | docs | `docs/ui-guidelines.md` | `## Enmienda #209` con la casilla de aprobación humana `- [ ] Enmienda #209 aprobada por humano`, sin marcar (R26) |
 
 Los tests nuevos van en los ficheros que nombra cada R-id de
@@ -121,15 +123,87 @@ compartido, para no tocar Horario más de lo que pide R20–R22.
 
 ## Riesgos
 
-- **Agregados compartidos con #208 y #220** (ui-copy-table e inventarios de
-  carta): se resuelven con merge de `origin/dev` y la regla mecánica de R24.
-- **Colisión con #208 en `src/app/__tests__/layout.test.tsx`.** #208 y #209
-  añaden cada una un hijo a `Stack.Protected` y suman `+ 1` a las mismas
-  cuentas de hijos del layout. Quien mergee segunda conserva los dos `+ 1`
-  (`+ 1 // #208 R4` y `+ 1 // #209 R3`) y los dos sufijos en el nombre de cada `it`
-  tocado (`(enmendado por #208 R4) (enmendado por #209 R3)`). Los dos `it` de
-  orden no chocan: #208 R4 inserta justo tras `meals-history` y #209 R3 al
-  final, justo tras `edit-profile`.
+- **#220 ya está mergeada.** Entró en esta rama con el merge de `origin/dev`
+  `8b4cb1bd` (junto con #210 y #211), y las cifras de R3, R22, R23 y R24 están
+  re-medidas sobre esa base. Ya no es un riesgo abierto.
+- **Agregados compartidos con #208 (A16).** #208 (`mobile-vaccine-create`) va
+  a Codex antes que #209. Su spec se leyó en
+  `/home/claude/sites/Pet-Tracker-wt-208/specs/mobile-vaccine-create/requirements.md`
+  (HEAD `af829aee`, medida sobre `2041e2b3` con las marcas [#220]). Estos son
+  los agregados que tocan las dos specs y lo que suma cada una:
+
+  | Fichero | Agregado | #208 | #209 |
+  |---|---|---|---|
+  | `src/app/_layout.tsx` | hijos de `Stack.Protected` | `pets/[petId]/vaccines/new` justo tras `meals-history` (R4) | `nutrition-profile` al final, justo tras `edit-profile` (R3) |
+  | `src/app/__tests__/layout.test.tsx` | los cuatro `toHaveLength(…)` del grupo protegido | `+ 1 // #208 R4` en cada uno | `+ 1 // #209 R3` en cada uno |
+  | `src/app/__tests__/layout.test.tsx` | `it` de `edit-profile` como última pantalla | — | `at(-1)` pasa a `at(-1 - 1); // #209 R3` |
+  | `src/app/__tests__/layout.test.tsx` | `it` nuevos de orden | `#208 R4: la pantalla de alta de vacuna va justo tras meals-history …` | `#209 R3: nutrition-profile es el último hijo protegido, justo tras edit-profile` |
+  | `src/app/__tests__/layout.test.tsx` | sufijos de nombre | ` (enmendado por #208 R4)` en los cuatro `it` | ` (enmendado por #209 R3)` en cinco `it` |
+  | `src/__tests__/ui-copy-table.ts` | bloque nuevo | `R19_VACCINE_CREATE` (29 filas) | `R20_NUTRITION_QUESTIONNAIRE` (96 filas) |
+  | `src/__tests__/ui-copy-table.ts` | `ALL_USES` | `...R19_VACCINE_CREATE,` más la fila nueva de `R5_HEALTH` (+30 en total) | `...R20_NUTRITION_QUESTIONNAIRE,` (+96) |
+  | `src/__tests__/ui-copy-table.ts` | `blocks` de `#194 R5: cuadra ALL_USES …` | `R19_VACCINE_CREATE` | `R20_NUTRITION_QUESTIONNAIRE`, y sufijo ` (enmendado por #209 R23)` (#208 no fija sufijo) |
+  | `src/__tests__/ui-language.test.ts` | import de bloques | `R19_VACCINE_CREATE,` | `R20_NUTRITION_QUESTIONNAIRE,` |
+  | `src/__tests__/ui-language.test.ts` | `expect(SCREEN_FILES).toHaveLength(…)` | `+ 1 // #208 R20: screens/vaccine-create/index.tsx` | `+ 1 // #209 R23: screens/nutrition-questionnaire/index.tsx`, y sufijo ` (enmendado por #209 R23)` en `#194 R5: no deja ningún valor fijo …` (#208 no fija sufijo) |
+  | `src/__tests__/ui-language.test.ts` | `describe` nuevo | `#208 R20: alta de vacuna` | `#209 R23: el cuestionario resuelve su copy por clave` |
+  | `src/providers/__tests__/language-provider.test.tsx` | suma de `#194 R1` | `+ 26, // #208 R19` y ` (enmendado por #208 R19)` | `+ 77, // #209 R23` y ` (enmendado por #209 R23)` |
+  | `src/i18n/catalog.ts` | claves en `en` y `es` | 26 claves `health.*` y `vaccineCreate.*` | 77 claves `nutritionQuestionnaire.*` |
+  | `src/__tests__/consistency-classnames.test.ts` | `#62 R1`, `rounded-16 bg-accent` global | `+ 1 + 1 // #208 R21` | `+ 2` (19 → 21 sobre la base) |
+  | `src/__tests__/consistency-classnames.test.ts` | `#62 R14`, `directUses` | Salud `+ 2` y fila nueva `[join('screens', 'vaccine-create', 'index.tsx'), 7]` | fila nueva `[join('screens', 'nutrition-questionnaire', 'index.tsx'), 6], // #209 R24` y `+ 6 // #209 R24` en el agregado |
+  | `src/__tests__/consistency-classnames.test.ts` | `#98 R10`, `count(style={CONTINUOUS_CORNER})` | no lo lista; cae en su regla mecánica para lo no listado (su R21 cuenta 2 literales nuevos en Salud y 7 en `vaccine-create`; la cifra real sale de `progress/impl_mobile-vaccine-create.md`) | `+ 6 // #209 R24` (53 → 59 sobre la base) |
+  | `src/__tests__/chunky-cta-canvas-fidelity.test.ts` | `CTA_ROWS` | 2 filas: `vaccines-empty-action` (Salud) y `vaccine-create-submit` | 2 filas: `nutrition-questionnaire-next` y `food-create-profile`, al final |
+  | `src/__tests__/chunky-cta-canvas-fidelity.test.ts` | `#177 R6.2`, `count(/text-17/g)` | `+ 3` | `+ 2` |
+  | `src/__tests__/chunky-cta-canvas-fidelity.test.ts` | `#177 R6.2`, `count(/<Text className="text-17 font-extrabold text-accent-foreground">/g)` | `+ 2` | `+ 2` |
+  | `src/__tests__/chunky-cta-canvas-fidelity.test.ts` | `#177 R7.3`, `radii` | `'screens/health/index.tsx': 1 + 1` y entrada nueva `'screens/vaccine-create/index.tsx': 1` | `'screens/food/index.tsx': 2 + 1, // #209 R24` y entrada nueva `'screens/nutrition-questionnaire/index.tsx': 2, // #209 R24` al final |
+  | `src/__tests__/chunky-cta-canvas-fidelity.test.ts` | `#177 R7.5`, inventarios de `chunkyLip` | `primaryCompact` gana `'screens/health/index.tsx': 1` | `neutralCompact` pasa a `'screens/meal-schedule/index.tsx': 1 + 2` |
+  | `src/__tests__/design-drift.test.ts` | `describe` nuevos | `#208 R21: alta de vacuna sin deriva` | `#209 R25: Cuestionario sin deriva`, justo antes de `#178 R13` |
+
+  Solo los toca una de las dos, así que no hay choque de cifras:
+  - **Solo #208**:
+    - `R5_HEALTH` y su candado de longitud;
+    - `primaryRadius`, `#62 R15` y `#69 R10`;
+    - `#177 R3.3`, `R7.2` y `R8.1`;
+    - `detail-stack.guard.test.tsx` (`#149 R3`);
+    - `init.config.sh`.
+  - **Solo #209**:
+    - `#62 R12`, `#166 R2` y `#166 R3`;
+    - `consumers` y `#177 R7.1`;
+    - `#178 R13` y `#179 R13`;
+    - `#61 R4` (`inkSites`; #208 solo exige que Salud siga en 0);
+    - `#174 R12`, `#173 R2` y `#173 R2.4`;
+    - los cuatro `it` de `meal-schedule/index.test.tsx` de R22.
+
+  Si al mergear aparece algún otro agregado con los dos deltas, se aplica la
+  misma regla.
+
+  **Regla de merge.** Quien mergee segunda conserva los dos deltas y los dos
+  comentarios (`// #208 …` y `// #209 …`) en cada línea de la tabla.
+  - Cada nombre de `it` lleva los dos sufijos, en orden de merge (p. ej.
+    `(enmendado por #208 R4) (enmendado por #209 R3)`).
+  - En las sumas por línea, el último `+ N` es el único con coma. Ejemplo en la
+    suma de `#194 R1`: `+ 5 - 2 // #220 R16`, `+ 26 // #208 R19`,
+    `+ 77, // #209 R23`.
+  - En listas y diccionarios, la entrada de #208 va antes que la de #209,
+    salvo que el orden alfabético fijado diga otra cosa.
+  - Los números de bloque no cambian: R18 es de #220, R19 de #208 y R20 de
+    #209.
+
+  Como #208 va primero, lo normal es que #209 sea la segunda. En ese caso,
+  **el handoff de #209 se re-mide tras el merge de #208**:
+  - `git merge origin/dev`;
+  - el comando ampliado de R24 en el árbol real y en una semilla;
+  - las anclas `grep -cF` de R3, R22, R23 y R24.
+
+  Antes de lanzar Codex, cada cifra base de `requirements.md` que haya
+  movido #208 se reescribe como «base + delta».
+- **Colisión con #208 en `src/app/__tests__/layout.test.tsx`.** Es la primera
+  fila de la tabla anterior. Los dos `it` de orden no chocan: #208 R4 inserta
+  justo tras `meals-history` y #209 R3 al final, justo tras `edit-profile`.
+  En `_layout.tsx` de `8b4cb1bd`, `meals-history` es el penúltimo hijo
+  protegido y `edit-profile` el último. Por eso la inserción de #208 solo
+  desplaza `edit-profile`, que su `it` busca con `at(-1)` y no por índice. Los
+  hijos de índice fijo (décimo, undécimo y duodécimo) van antes y no se mueven.
+  Aun así, tras el merge de #208 se re-mide la tabla de R3, incluida la frase
+  «ningún otro número cambia».
 - **Sufijos de nombre en los `it` compartidos.** Los `it` que tocan #208, #220 y
   #209 suman sufijos distintos al mismo nombre. En el merge se conservan
   todos, en orden de merge. Un `-t` que filtre por nombre completo deja de

@@ -212,7 +212,8 @@ antes y `1` después.
 
 Enmiendas de `src/app/__tests__/layout.test.tsx` (regla mecánica de R24, con
 el comentario `// #209 R3` delante de los que ya hay). Las cinco cuentas son
-las del árbol base `2041e2b3`; medido en semilla: rojo
+las del árbol base `8b4cb1bd` (re-medidas tras el merge de #220, #210 y #211:
+no cambiaron); medido en semilla: rojo
 `Expected length: 14 / Received length: 15` sin enmendar, verde con ellas.
 
 | `it` de base | Base | Después |
@@ -595,6 +596,25 @@ Los dos enlaces hacen
 una función local `openNutritionProfile`, y llevan `hitSlop={TOUCH_SLOP}`:
 miden `h-9` (36 pt) y la carta exige 44 pt de objetivo táctil
 (`docs/ui-guidelines.md`, objetivos táctiles).
+
+**Decisión (A8): «Crear perfil nutricional» de Horario no tiene artboard
+propio.** El canvas congelado solo dibuja «Editar perfil»
+(`canvas/HorarioEditarPerfil.dc.html`: enlace de 36 px de alto, `padding: 0 12px`,
+radio 12, fondo `--surface`, borde de 2 px y sombra `0 3px 0` en `--lip-gray`,
+texto de 13 px y peso 800). «Crear perfil nutricional» no sale en ningún
+artboard de Horario. No se dibuja uno nuevo:
+- el copy es el ya aprobado en NutricionSinPerfil (v140,
+  `canvas/NutricionSinPerfil.dc.html`), con la misma clave
+  `nutritionQuestionnaire.createProfile`;
+- la receta es exactamente la de «Editar perfil», cambiando solo el `testID`
+  y el texto:
+  `<Pressable testID="nutrition-profile-create" hitSlop={TOUCH_SLOP} className="h-9 flex-row items-center justify-center rounded-xl border-2 border-lip-gray bg-surface px-3" style={chunkyLip.neutralCompact} onPress={openNutritionProfile}>`
+  con hijo
+  `<Text className="text-13 font-extrabold text-foreground">{t('nutritionQuestionnaire.createProfile')}</Text>`;
+- sin `accessibilityLabel` propio: el texto visible ya es la etiqueta
+  completa. Sin icono, como «Editar perfil» (decisión 13: sin el lápiz).
+
+Es una decisión del leader del 2026-10-26, no una desviación del canvas.
 - Tests: `src/screens/meal-schedule/index.test.tsx` ›
   - `it('#209 R20: owner con perfil ve Editar perfil y navega al cuestionario')`
   - `it('#209 R20: owner sin perfil ve Crear perfil nutricional')`
@@ -619,7 +639,32 @@ mostrar las etiquetas en español en lugar de los enums crudos:
 | alimento (con 380 kcal) | `mixed` | «Alimento Mixto 380 kcal/100 g» |
 | alimento (con 380 kcal) | `homemade` | «Alimento Casero 380 kcal/100 g» |
 
-Se reutilizan las claves de R7 y R11. La píldora de condición no cambia.
+Se reutilizan las claves de R7 y R11. La píldora de condición no cambia. En
+`en` las píldoras se leen «Activity Medium» y «Food Dry 350 kcal/100 g»
+(valores `en` de R23).
+
+**Tests existentes que R22 contradice** (asertan el enum crudo). Se enmiendan
+con la regla mecánica de R24: solo cambia el literal citado, y cada `it` suma
+` (enmendado por #209 R22)` al final de su nombre. El resto del nombre no se
+toca, aunque «valores crudos» y «sin traducir los valores del perfil» queden
+viejos. Todos están en `src/screens/meal-schedule/index.test.tsx`:
+
+| `it` | Literal de base | Después |
+|---|---|---|
+| `renders the plan summary, ordered portions, and complete profile` (`describe('R7: meal schedule muestra horarios y perfil')`) | `'Alimento dry 350 kcal/100 g'` y `'Actividad medium'` | `'Alimento Seco 350 kcal/100 g'` y `'Actividad Media'` |
+| `muestra las tres píldoras con condición, prefijos y valores crudos` (`describe('#179 R8: perfil en píldoras')`) | `'Actividad medium'` y `'Alimento dry 350 kcal/100 g'` | `'Actividad Media'` y `'Alimento Seco 350 kcal/100 g'` |
+| `omite condición nula y conserva las otras dos píldoras` (mismo `describe`) | `'Actividad medium'` y `'Alimento dry 350 kcal/100 g'` | `'Actividad Media'` y `'Alimento Seco 350 kcal/100 g'` |
+| `traduce los prefijos al inglés sin traducir los valores del perfil` (mismo `describe`) | `'Activity medium'` y `'Food dry 350 kcal/100 g'` | `'Activity Medium'` y `'Food Dry 350 kcal/100 g'` |
+
+Los prefijos (`'Actividad '`, `'Alimento '`, `'Activity '`, `'Food '`) no
+cambian. Anclas, desde `mobile-pet-tracker/`, en
+`src/screens/meal-schedule/index.test.tsx`:
+`grep -cF "'Alimento dry 350 kcal/100 g'"` `3` antes y `0` después;
+`grep -cF "'Actividad medium'"` `3` → `0`; `grep -cF "'Activity medium'"`
+`1` → `0`; `grep -cF "'Food dry 350 kcal/100 g'"` `1` → `0`;
+`grep -cF '(enmendado por #209 R22)'` `0` → `4`. Medido en semilla: sin
+enmendar, `Tests: 4 failed` en este fichero (`Expected … Actividad medium /
+Received: Actividad Media`); con estas enmiendas, verde.
 - Tests:
   - `it.each(THREE_ACTIVITIES)('#209 R22: actividad %s se lee «%s»')`
   - `it.each(FOUR_FOODS)('#209 R22: alimento %s se lee «%s»')`
@@ -632,54 +677,99 @@ Se reutilizan las claves de R7 y R11. La píldora de condición no cambia.
 locale). Las variables son `{{name}}`, `{{bcs}}`, `{{label}}`, `{{weight}}` y
 `{{count}}`.
 
-- `es` lleva el literal de esta tabla, que es el de R7–R20 con «Rocky»
+- `es` lleva el literal de la columna `es`, que es el de R7–R20 con «Rocky»
   sustituido por `{{name}}`.
-- `en` lleva una traducción que escribe Codex: el canvas no la da y esta spec
-  no la fija. Las variables de cada valor `en` son las mismas que las del `es`.
+- `en` lleva el literal de la columna `en`. Lo fija esta spec (decisión del
+  leader del 2026-10-26, con el precedente de `specs/mobile-date-field/requirements.md`
+  R16): Codex no traduce. Cada valor `en` tiene las mismas variables que su
+  `es`, que es lo que aserta `#194 R1` de
+  `src/providers/__tests__/language-provider.test.tsx`.
+- En el fichero, las claves van en el orden de la tabla. Los valores con
+  apóstrofo (`'s`, `don't`, `I'll`, `I'm`, `It's`, `can't`) van entre comillas
+  dobles, como los vecinos del catálogo (`"Once there's a plan, …"`).
+- `other` es una sola clave para las dos listas (Alergias y Enfermedades).
 
-| Clave (`nutritionQuestionnaire.` +) | `es` |
-|---|---|
-| `bubbleActivity` | Cuéntame cómo es un día normal de {{name}}. Con eso calculo cuánta energía necesita. |
-| `bubbleCondition` | Pasa la mano por el costado de {{name}} y elige lo que más se parezca a lo que sientes. |
-| `bubbleTargetWeight` | Con condición {{bcs}} conviene que {{name}} baje de peso poco a poco. ¿Te dijo el veterinario cuál es su peso ideal? |
-| `bubbleFood` | ¿Qué come {{name}}? Con las calorías de su alimento calculo cuántos gramos servir en cada comida. |
-| `bubbleHealth` | ¿{{name}} tiene alguna alergia o enfermedad? Si no tiene ninguna, déjalo todo sin marcar. |
-| `activityLegend` | ¿Cuánto se mueve {{name}}? |
-| `conditionLegend` | ¿Cómo está su cuerpo? |
-| `targetWeightTitle` | Peso objetivo |
-| `foodLegend` | Tipo de alimento |
-| `allergiesLegend` | Alergias |
-| `diseasesLegend` | Enfermedades |
-| `activityLow`, `activityLowDescription` | Baja · Paseos cortos y mucho descanso. |
-| `activityMedium`, `activityMediumDescription` | Media · Uno o dos paseos al día y algo de juego. |
-| `activityHigh`, `activityHighDescription` | Alta · Corre, entrena o juega con intensidad cada día. |
-| `bcs1`…`bcs9` y `bcs1Description`…`bcs9Description` | título y descripción de cada fila de la tabla de R8, en su orden |
-| `conditionSummary` | Condición {{bcs}}/9 · {{label}} |
-| `change` | Cambiar |
-| `currentWeight` | Peso actual de {{name}}: {{weight}} kg |
-| `targetWeightNote` | Si aún no lo sabes, déjalo vacío: calculo con su peso actual y lo ajustas después. |
-| `foodDry`, `foodWet`, `foodMixed`, `foodHomemade` | Seco · Húmedo · Mixto · Casero |
-| `kcalLabel` | Calorías del alimento |
-| `unitKcal` | kcal / 100 g |
-| `kcalHelp` | Entre 80 y 600 kcal por cada 100 g. |
-| `kcalNoteDry`, `kcalNoteWet`, `kcalNoteMixed`, `kcalNoteHomemade` | la nota de cada tipo de la tabla de R11 |
-| `allergyChicken`, `allergyBeef`, `allergyDairy`, `allergyWheat`, `allergyEgg`, `allergySoy`, `allergyFish` | Pollo · Carne de res · Lácteos · Trigo · Huevo · Soya · Pescado |
-| `other` | Otra (una sola clave para las dos listas) |
-| `diseaseDiabetes`, `diseaseKidney`, `diseasePancreatitis`, `diseaseLiver`, `diseaseDigestive`, `diseaseJoints` | Diabetes · Enfermedad renal · Pancreatitis · Enfermedad hepática · Problemas digestivos · Problemas articulares |
-| `otherLabel` | ¿Cuál? |
-| `otherCount` | {{count}}/40 |
-| `next` | Siguiente |
-| `saveAndGenerate` | Guardar y generar plan |
-| `generatingTitle` | Preparando el plan de {{name}} |
-| `generatingBody` | Estoy calculando sus calorías y el reparto de sus comidas. Tarda unos segundos. |
-| `generatingSaved`, `generatingCalories`, `generatingMeals` | Perfil guardado · Calculando calorías · Repartiendo comidas |
-| `profileEmptyBody` | Respóndeme unas preguntas sobre {{name}} y preparo su plan: cuántas calorías necesita y cuántos gramos servir en cada comida. |
-| `createProfile` | Crear perfil nutricional |
-| `profileEmptyNote` | Son 4 pasos y podrás cambiar tus respuestas cuando quieras. |
-| `editProfileLabel` | Editar perfil nutricional |
+| Clave (`nutritionQuestionnaire.` +) | `en` | `es` |
+|---|---|---|
+| `bubbleActivity` | Tell me about a normal day for {{name}}. That tells me how much energy they need. | Cuéntame cómo es un día normal de {{name}}. Con eso calculo cuánta energía necesita. |
+| `bubbleCondition` | Run your hand along {{name}}'s side and pick what feels closest. | Pasa la mano por el costado de {{name}} y elige lo que más se parezca a lo que sientes. |
+| `bubbleTargetWeight` | With condition {{bcs}}, {{name}} should lose weight slowly. Did the vet give you an ideal weight? | Con condición {{bcs}} conviene que {{name}} baje de peso poco a poco. ¿Te dijo el veterinario cuál es su peso ideal? |
+| `bubbleFood` | What does {{name}} eat? With the food's calories I work out how many grams to serve at each meal. | ¿Qué come {{name}}? Con las calorías de su alimento calculo cuántos gramos servir en cada comida. |
+| `bubbleHealth` | Does {{name}} have any allergies or illnesses? If not, leave everything unchecked. | ¿{{name}} tiene alguna alergia o enfermedad? Si no tiene ninguna, déjalo todo sin marcar. |
+| `activityLegend` | How active is {{name}}? | ¿Cuánto se mueve {{name}}? |
+| `conditionLegend` | What shape are they in? | ¿Cómo está su cuerpo? |
+| `targetWeightTitle` | Target weight | Peso objetivo |
+| `foodLegend` | Food type | Tipo de alimento |
+| `allergiesLegend` | Allergies | Alergias |
+| `diseasesLegend` | Illnesses | Enfermedades |
+| `activityLow` | Low | Baja |
+| `activityLowDescription` | Short walks and lots of rest. | Paseos cortos y mucho descanso. |
+| `activityMedium` | Medium | Media |
+| `activityMediumDescription` | One or two walks a day and some play. | Uno o dos paseos al día y algo de juego. |
+| `activityHigh` | High | Alta |
+| `activityHighDescription` | Runs, trains or plays hard every day. | Corre, entrena o juega con intensidad cada día. |
+| `bcs1` | Very thin | Muy delgado |
+| `bcs1Description` | Bones very visible, no fat to the touch | Huesos muy visibles, sin grasa al tacto |
+| `bcs2` | Thin | Delgado |
+| `bcs2Description` | Ribs and hips visible at a glance | Costillas y cadera se ven a simple vista |
+| `bcs3` | Slightly thin | Algo delgado |
+| `bcs3Description` | Ribs easy to feel, clear waist | Costillas fáciles de sentir, cintura marcada |
+| `bcs4` | Ideal, lean | Ideal, esbelto |
+| `bcs4Description` | Ribs felt under a little fat | Costillas se sienten con poca grasa |
+| `bcs5` | Ideal | Ideal |
+| `bcs5Description` | Ribs can be felt, waist is visible | Costillas se sienten y la cintura se ve |
+| `bcs6` | Slightly overweight | Algo de sobrepeso |
+| `bcs6Description` | Some fat over the ribs, little waist | Algo de grasa en costillas, poca cintura |
+| `bcs7` | Overweight | Sobrepeso |
+| `bcs7Description` | Ribs hard to feel | Costillas difíciles de sentir |
+| `bcs8` | Obese | Obesidad |
+| `bcs8Description` | Ribs and waist can't be felt | No se sienten las costillas ni la cintura |
+| `bcs9` | Severely obese | Obesidad severa |
+| `bcs9Description` | Heavy fat on the neck, back and belly | Grasa abundante en cuello, lomo y vientre |
+| `conditionSummary` | Condition {{bcs}}/9 · {{label}} | Condición {{bcs}}/9 · {{label}} |
+| `change` | Change | Cambiar |
+| `currentWeight` | {{name}}'s current weight: {{weight}} kg | Peso actual de {{name}}: {{weight}} kg |
+| `targetWeightNote` | If you don't know yet, leave it empty: I'll use their current weight and you can adjust it later. | Si aún no lo sabes, déjalo vacío: calculo con su peso actual y lo ajustas después. |
+| `foodDry` | Dry | Seco |
+| `foodWet` | Wet | Húmedo |
+| `foodMixed` | Mixed | Mixto |
+| `foodHomemade` | Homemade | Casero |
+| `kcalLabel` | Food calories | Calorías del alimento |
+| `unitKcal` | kcal / 100 g | kcal / 100 g |
+| `kcalHelp` | Between 80 and 600 kcal per 100 g. | Entre 80 y 600 kcal por cada 100 g. |
+| `kcalNoteDry` | I set 350, typical for dry food. If the bag says otherwise, change it: look for metabolizable energy. | Puse 350, lo habitual en alimento seco. Si la bolsa dice otro número, cámbialo: lo encuentras como energía metabolizable. |
+| `kcalNoteWet` | I set 90, typical for wet food. If the can says otherwise, change it: look for metabolizable energy. | Puse 90, lo habitual en alimento húmedo. Si la lata dice otro número, cámbialo: lo encuentras como energía metabolizable. |
+| `kcalNoteMixed` | I set 220, halfway between dry and wet. If you know the exact number, change it. | Puse 220, un punto medio entre seco y húmedo. Si sabes el número exacto, cámbialo. |
+| `kcalNoteHomemade` | I set 130, typical for homemade food. If your recipe says otherwise, change it. | Puse 130, lo habitual en comida casera. Si tu receta tiene otro número, cámbialo. |
+| `allergyChicken` | Chicken | Pollo |
+| `allergyBeef` | Beef | Carne de res |
+| `allergyDairy` | Dairy | Lácteos |
+| `allergyWheat` | Wheat | Trigo |
+| `allergyEgg` | Egg | Huevo |
+| `allergySoy` | Soy | Soya |
+| `allergyFish` | Fish | Pescado |
+| `other` | Other | Otra |
+| `diseaseDiabetes` | Diabetes | Diabetes |
+| `diseaseKidney` | Kidney disease | Enfermedad renal |
+| `diseasePancreatitis` | Pancreatitis | Pancreatitis |
+| `diseaseLiver` | Liver disease | Enfermedad hepática |
+| `diseaseDigestive` | Digestive problems | Problemas digestivos |
+| `diseaseJoints` | Joint problems | Problemas articulares |
+| `otherLabel` | Which one? | ¿Cuál? |
+| `otherCount` | {{count}}/40 | {{count}}/40 |
+| `next` | Next | Siguiente |
+| `saveAndGenerate` | Save and generate plan | Guardar y generar plan |
+| `generatingTitle` | Preparing {{name}}'s plan | Preparando el plan de {{name}} |
+| `generatingBody` | I'm working out their calories and splitting their meals. It takes a few seconds. | Estoy calculando sus calorías y el reparto de sus comidas. Tarda unos segundos. |
+| `generatingSaved` | Profile saved | Perfil guardado |
+| `generatingCalories` | Calculating calories | Calculando calorías |
+| `generatingMeals` | Splitting meals | Repartiendo comidas |
+| `profileEmptyBody` | Answer a few questions about {{name}} and I'll prepare their plan: how many calories they need and how many grams to serve at each meal. | Respóndeme unas preguntas sobre {{name}} y preparo su plan: cuántas calorías necesita y cuántos gramos servir en cada comida. |
+| `createProfile` | Create nutrition profile | Crear perfil nutricional |
+| `profileEmptyNote` | It's 4 steps, and you can change your answers anytime. | Son 4 pasos y podrás cambiar tus respuestas cuando quieras. |
+| `editProfileLabel` | Edit nutrition profile | Editar perfil nutricional |
 
-En las celdas con `·`, cada valor va a su clave en el orden de la columna
-izquierda. **No hay clave para «kg»**: la unidad del peso se escribe literal
+**No hay clave para «kg»**: la unidad del peso se escribe literal
 (`unit="kg"`). Un valor de catálogo `'kg'` coincide con el texto JSX ` kg` de
 `src/screens/health/index.tsx` y pone en rojo `#65 R18` (medido en semilla).
 
@@ -706,8 +796,9 @@ por fichero, `t('<clave>'` más `labelKey: '<clave>'`:
   y `FOOD_LABEL` (`dry: { labelKey: 'nutritionQuestionnaire.foodDry' }`, …).
 
 En `src/__tests__/ui-copy-table.ts` se añade el bloque
-`export const R20_NUTRITION_QUESTIONNAIRE: UseRow[]` justo después de
-`R17_EDIT_PROFILE`, con una fila `{ file, key }` por cada uso:
+`export const R20_NUTRITION_QUESTIONNAIRE: UseRow[]` justo después del último
+bloque que haya (`R18_DATE_FIELD` en `8b4cb1bd`; `R19_VACCINE_CREATE` si #208
+ya está mergeada), con una fila `{ file, key }` por cada uso:
 
 | Fichero | Filas |
 |---|---|
@@ -717,34 +808,75 @@ En `src/__tests__/ui-copy-table.ts` se añade el bloque
 
 Total: **N = 96**. El bloque se registra en estos sitios:
 - en `ALL_USES`, como `...R20_NUTRITION_QUESTIONNAIRE,` justo después de
-  `...R17_EDIT_PROFILE,`;
+  `...R18_DATE_FIELD,` (o de `...R19_VACCINE_CREATE,` si #208 ya está
+  mergeada);
 - en el array `blocks` del test `#194 R5: cuadra ALL_USES con la suma de sus bloques`,
-  después de `R17_EDIT_PROFILE`;
-- en el import de `src/__tests__/ui-language.test.ts`, después de
-  `R17_EDIT_PROFILE,`.
+  al final de la línea que acaba en `R18_DATE_FIELD,` (o en
+  `R19_VACCINE_CREATE,`): `R16_WELCOME, R17_EDIT_PROFILE, R18_DATE_FIELD, R20_NUTRITION_QUESTIONNAIRE,`.
+  Ese `it` suma ` (enmendado por #209 R23)` al final de su nombre, como hizo #220;
+- en el import de `src/__tests__/ui-language.test.ts`, en su propia línea,
+  `  R20_NUTRITION_QUESTIONNAIRE,`, justo después de `  R18_DATE_FIELD,` (o de
+  `  R19_VACCINE_CREATE,`).
 
 En `src/__tests__/ui-language.test.ts`:
-- `expect(SCREEN_FILES).toHaveLength(…)` gana, como última línea,
-  `+ 1 // #209 R23: screens/nutrition-questionnaire/index.tsx`. `food` y
-  `meal-schedule` ya estaban.
+- `expect(SCREEN_FILES).toHaveLength(…)` gana
+  `+ 1 // #209 R23: screens/nutrition-questionnaire/index.tsx` como línea
+  nueva justo después de `+ 1 // #220 R16: components/date-field.tsx` (y de
+  `+ 1 // #208 R20: screens/vaccine-create/index.tsx` si #208 ya está
+  mergeada). `food` y `meal-schedule` ya estaban. Su `it`,
+  `#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas …`,
+  suma ` (enmendado por #209 R23)` al final de su nombre.
 - Se añade, después del `describe('#194 R5: la pantalla de edición resuelve su copy por clave')`,
   `describe('#209 R23: el cuestionario resuelve su copy por clave')` con
   `it('#209 R23: el bloque del cuestionario tiene 96 filas')`, que hace
   `expect(R20_NUTRITION_QUESTIONNAIRE).toHaveLength(96)` y
   `checkUses(R20_NUTRITION_QUESTIONNAIRE)`.
 
-R18 lo usa la rama de #220 y R19 se reserva para #208. Si al mergear
-`origin/dev` alguno de los dos ya usa R20, este bloque toma el siguiente número
-libre.
-- Anclas (desde `mobile-pet-tracker/`):
+En `src/providers/__tests__/language-provider.test.tsx`, la suma del `it`
+`#194 R1: mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas …`
+crece en las 77 claves nuevas. Su última línea, `        + 5 - 2, // #220 R16`,
+pierde la coma (`        + 5 - 2 // #220 R16`) y debajo se añade
+`        + 77, // #209 R23` (si #208 ya está mergeada, su `+ 26 // #208 R19` va
+antes y `+ 77, // #209 R23` sigue siendo la última). El nombre del `it` suma
+` (enmendado por #209 R23)`. Sus comprobaciones de marcadores en ambos idiomas
+cubren las claves nuevas sin aserción adicional. Medido en semilla: sin la
+enmienda, `Expected length: 458` / `Received length: 535`; con ella, verde.
+
+**Números de bloque.** `R18_DATE_FIELD` es de #220, ya en `origin/dev`
+`8b4cb1bd`. `R19_VACCINE_CREATE` es de #208, que va a Codex antes que esta
+feature. Este bloque es **R20** se mergee #208 antes o después: no hay
+renumeración.
+- Anclas (desde `mobile-pet-tracker/`, antes → después, medidas en
+  `8b4cb1bd` y en la semilla):
   - `grep -cF 'R20_NUTRITION_QUESTIONNAIRE' src/__tests__/ui-copy-table.ts`:
-    `0` antes, `3` después (declaración, `ALL_USES` y `blocks`).
-  - `grep -cF "'nutritionQuestionnaire." src/i18n/catalog.ts`: `0` antes,
-    `0 + 154` después (77 por locale).
+    `0` → `3` (declaración, `ALL_USES` y `blocks`).
+  - `grep -cF '...R18_DATE_FIELD,' src/__tests__/ui-copy-table.ts`: `1` → `1`.
+  - `grep -cF 'R18_DATE_FIELD, R20_NUTRITION_QUESTIONNAIRE,' src/__tests__/ui-copy-table.ts`:
+    `0` → `1` (con #208 mergeada, el literal es
+    `R19_VACCINE_CREATE, R20_NUTRITION_QUESTIONNAIRE,`).
+  - `grep -cF 'R20_NUTRITION_QUESTIONNAIRE' src/__tests__/ui-language.test.ts`:
+    `0` → `3` (import, `toHaveLength` y `checkUses`).
+  - `grep -cF '+ 1 // #220 R16: components/date-field.tsx' src/__tests__/ui-language.test.ts`:
+    `1` → `1`.
+  - `grep -cF '+ 1 // #209 R23: screens/nutrition-questionnaire/index.tsx' src/__tests__/ui-language.test.ts`:
+    `0` → `1`.
+  - `grep -cF '+ 5 - 2, // #220 R16' src/providers/__tests__/language-provider.test.tsx`:
+    `1` → `0`.
+  - `grep -cF '+ 77, // #209 R23' src/providers/__tests__/language-provider.test.tsx`:
+    `0` → `1`.
+  - `grep -cF '(enmendado por #209 R23)' src/__tests__/ui-copy-table.ts`,
+    `src/__tests__/ui-language.test.ts` y
+    `src/providers/__tests__/language-provider.test.tsx`: `0` → `1` en cada uno.
+  - `grep -cF "'nutritionQuestionnaire." src/i18n/catalog.ts`: `0` → `154`
+    (77 por locale).
+  - `grep -cF "'dateField." src/i18n/catalog.ts`: `10` → `10` (no se toca).
   - `grep -cF "'nutritionQuestionnaire.unitKg'" src/i18n/catalog.ts` = `0`.
-- Test: los guardas existentes de `src/__tests__/ui-language.test.ts` y
-  `src/__tests__/ui-copy-table.ts`, en verde, más el `it` `#209 R23`. Medido
-  en semilla con la forma de arriba: verde con 96.
+- Test: los guardas existentes de `src/__tests__/ui-language.test.ts`,
+  `src/__tests__/ui-copy-table.ts` y
+  `src/providers/__tests__/language-provider.test.tsx`, en verde, más el `it`
+  `#209 R23`. Medido en semilla con la forma de arriba y la tabla `en`/`es`:
+  verde con 96, sin colisiones en `#65 R18` y con los mismos marcadores en los
+  dos idiomas.
 
 **R24** — THE SYSTEM SHALL mantener en verde las guardas de carta. Cada
 inventario que esta feature mueve se enmienda con la **regla mecánica**:
@@ -756,17 +888,26 @@ inventario que esta feature mueve se enmienda con la **regla mecánica**:
   tenga varias enmiendas. El resto del nombre no se toca, aunque su número
   («diecisiete primarios», «cinco secundarios») quede viejo.
 
-Las cifras son las del árbol base (`origin/dev` `2041e2b3`), medidas en una
-semilla del scratch que sigue la forma de R25. Comando, desde
-`mobile-pet-tracker/`:
-`bunx jest src/__tests__ src/app/__tests__/layout.test.tsx`.
+Las cifras son las del árbol base `8b4cb1bd` (merge de `origin/dev` con #220,
+#210 y #211 en esta rama), medidas en una semilla del scratch que sigue la
+forma de R25. Respecto de la medición anterior sobre `2041e2b3`, solo cambió la
+base de `#98 R10` (55 → 53, por #220) y tres anclas de colocación; ningún
+delta cambió. #210 y #211 no tocan estas guardas. Comando, desde
+`mobile-pet-tracker/`, sin `| tail` (el código de salida es el de jest):
+`timeout 580 bunx jest src/__tests__ src/app/__tests__/layout.test.tsx`.
 
-- Base: `Tests: 1 failed, 950 passed, 951 total`. El rojo es
-  `hosting-artifacts.test.ts`, que ya falla en la base y no es de esta
-  feature.
-- Semilla sin enmiendas: `Tests: 28 failed, 924 passed, 952 total`.
-- Semilla con las enmiendas de R3, R23 y esta lista: solo
-  `hosting-artifacts.test.ts` en rojo, como en la base.
+- Base: exit 0, `Tests: 953 passed, 953 total` (36 suites).
+  `hosting-artifacts.test.ts` está verde en el árbol real (7 tests); solo falla
+  en una semilla a la que le falte `AGENTS.md`.
+- Semilla sin enmiendas: exit 1, `Tests: 27 failed, 926 passed, 953 total`
+  (6 suites en rojo).
+- Semilla con las enmiendas de R3, R23 y esta lista: exit 0,
+  `Tests: 964 passed, 964 total`. Son 953 + 11: los cinco `it` nuevos de R3,
+  R23 y R25, y las filas de `it.each` que generan los inventarios ampliados
+  (por ejemplo, las dos filas de `CTA_ROWS` suman 4 en chunky).
+- Con las suites que también enmienda esta spec (R22 y R23), el comando es
+  `timeout 580 bunx jest src/__tests__ src/app/__tests__/layout.test.tsx src/providers/__tests__/language-provider.test.tsx src/screens/meal-schedule src/screens/food`.
+  En la semilla con todas las enmiendas: exit 0, 39 suites, 1220 tests en verde.
 
 La cifra de cada enmienda depende de la **forma** que fija R25 (componentes
 locales, `.map` sobre constantes y ternarios con literales completos). Si
@@ -778,8 +919,8 @@ Codex se aparta de esa forma, las cifras dejan de cuadrar.
 |---|---|---|
 | `#62 R1`, `rounded-16 bg-accent(?=…)` global | `toHaveLength(16 + 1 + 1 + 1)` | `toHaveLength(16 + 1 + 1 + 1 + 2)` (CTA del wizard y CTA de Nutrición; medido 19 → 21) |
 | `#62 R12`, `textInputs` | `toHaveLength(6)` | `toHaveLength(6 + 2)` (un `<TextInput` en `NumberField` y otro en `OtherField`; medido 6 → 8). `withPlaceholder` sigue en 5 |
-| `#62 R14`, `directUses` | — | fila `[join('screens', 'nutrition-questionnaire', 'index.tsx'), 6], // #209 R24` justo después de la de `reset-password`, y `+ 6 // #209 R24` en el agregado, justo después de su `- 1 // #205 R17` |
-| `#98 R10`, `count(style={CONTINUOUS_CORNER})` | agregado que acaba en `- 1 // #205 R17` | `+ 6 // #209 R24` justo después (medido 55 → 61) |
+| `#62 R14`, `directUses` | — | fila `[join('screens', 'nutrition-questionnaire', 'index.tsx'), 6], // #209 R24` justo después de la de `reset-password` (`[join('screens', 'reset-password', 'index.tsx'), 1], // #205 R13`), y `+ 6 // #209 R24` en el agregado, justo después de su `+ 1 - 1 - 2 // #220 R4; #220 R14; #220 R15` |
+| `#98 R10`, `count(style={CONTINUOUS_CORNER})` | agregado que acaba en `+ 1 - 1 - 2 // #220 R4; #220 R14; #220 R15` | `+ 6 // #209 R24` justo después (medido 53 → 59) |
 | `#166 R2`, `expected` | — | `'screens/food/index.tsx': 1, // #209 R24` justo después de `edit-profile`, y `'screens/nutrition-questionnaire/index.tsx': 1, // #209 R24` justo después de `map` |
 | `#166 R3`, `count(/border-lip-gray/g)` | `toBe(4 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1)` | `toBe(4 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 5)` (medido 12 → 17) |
 
@@ -883,19 +1024,30 @@ da el orden alfabético (`map` < `meal-schedule` < `meals-history` <
 `nutrition-questionnaire` < `pairing`). En `directUses`, `inkSites` y
 `radii` la fila nueva va al final.
 
-Anclas (desde `mobile-pet-tracker/`): `grep -cF '#209 R24' <fichero>` ≥ `1`
-en cada uno de estos siete: `src/__tests__/consistency-classnames.test.ts`,
-`src/__tests__/chunky-cta-canvas-fidelity.test.ts`,
-`src/__tests__/design-drift.test.ts`,
-`src/__tests__/legibility-classnames.test.ts`,
-`src/__tests__/alerts-canvas-fidelity.test.ts`,
-`src/__tests__/profile-canvas-fidelity.test.ts` y, por R25,
-`src/__tests__/design-drift.test.ts` también con `grep -cF '#209 R25'` = `4`
-(el `describe` y sus tres `it`).
+Anclas (desde `mobile-pet-tracker/`). En `8b4cb1bd` todas valen `0`. La
+semilla puso los comentarios `// #209 R24` pero casi ningún sufijo de nombre,
+así que su cuenta es un mínimo: con los sufijos ` (enmendado por #209 R24)` la
+cuenta real sube en uno por cada `it` enmendado.
+
+| Ancla | Base | Semilla (mínimo) |
+|---|---|---|
+| `grep -cF '#209 R24' src/__tests__/consistency-classnames.test.ts` | 0 | ≥ 8 |
+| `grep -cF '#209 R24' src/__tests__/chunky-cta-canvas-fidelity.test.ts` | 0 | ≥ 10 |
+| `grep -cF '#209 R24' src/__tests__/design-drift.test.ts` | 0 | ≥ 7 |
+| `grep -cF '#209 R24' src/__tests__/legibility-classnames.test.ts` | 0 | ≥ 2 |
+| `grep -cF '#209 R24' src/__tests__/alerts-canvas-fidelity.test.ts` | 0 | ≥ 3 |
+| `grep -cF '#209 R24' src/__tests__/profile-canvas-fidelity.test.ts` | 0 | ≥ 2 |
+| `grep -cF '#209 R25' src/__tests__/design-drift.test.ts` | 0 | = 4 (el `describe` y sus tres `it`) |
+| `grep -cF '+ 1 - 1 - 2 // #220 R4; #220 R14; #220 R15' src/__tests__/consistency-classnames.test.ts` | 2 | 2 (ancla de colocación de `#62 R14` y `#98 R10`) |
+| `grep -cF '+ 6 // #209 R24' src/__tests__/consistency-classnames.test.ts` | 0 | 2 |
+| `grep -cF "[join('screens', 'reset-password', 'index.tsx'), 1], // #205 R13" src/__tests__/consistency-classnames.test.ts` | 1 | 1 |
 - Test: estas suites, en verde: `design-drift`, `consistency-classnames`,
   `chunky-cta-canvas-fidelity`, `legibility-classnames`,
   `alerts-canvas-fidelity`, `profile-canvas-fidelity` (todas en
   `src/__tests__/`) y `src/app/__tests__/layout.test.tsx` (enmiendas de R3).
+  Las enmiendas de R22 (`src/screens/meal-schedule/index.test.tsx`) y de R23
+  (`src/providers/__tests__/language-provider.test.tsx`) se verifican con el
+  comando ampliado de arriba.
 
 **R25** — THE SYSTEM SHALL usar exactamente estas recetas de carta, que salen
 del canvas y de `docs/ui-guidelines.md` (reglas 3, 6, 7, 12 y 13; enmiendas
@@ -1112,8 +1264,12 @@ delegadas. R26 no cierra hasta entonces.
   `cd /home/claude/sites/Pet-Tracker-wt-209/mobile-pet-tracker && bunx jest <ruta> -t '#209 R<n>:'`.
   Con los dos puntos, `-t '#209 R1:'` no recoge `R10`–`R19`. Las rutas con
   paréntesis se escapan.
-- Si `origin/dev` avanza (#208, #220…), se hace `git merge origin/dev`, nunca
-  rebase. Después se re-miden los agregados de R23 y R24 con la regla mecánica.
+- Si `origin/dev` avanza, se hace `git merge origin/dev`, nunca rebase.
+  Después se re-miden los agregados de R3, R22, R23 y R24 con la regla
+  mecánica. #220 ya está en `8b4cb1bd`. #208 va a Codex antes que esta
+  feature: si mergea antes que #209, el handoff de #209 se re-mide tras ese
+  merge, y #209 conserva los deltas y sufijos de #208 junto a los suyos (lista
+  de agregados compartidos en `design.md` §Riesgos).
 - No hay dependencias nuevas, ni costo, ni recursos AWS.
 
 ## Aprobación

@@ -548,10 +548,323 @@ Valores `es` de R17, verificados en `src/i18n/catalog.ts` de la base:
 
 - **Copy `en`.** El canvas no lo da y la spec no lo fija. Lo escribe Codex,
   con las mismas variables que el `es` (R23). No se inventó.
+  *Cerrado en la ronda 2*: R23 fija la tabla `en`/`es` completa (ver abajo).
 - **A8.** «Crear perfil nutricional» de Horario no tiene artboard. No cambia
   ningún R, así que no se tocó.
+  *Cerrado en la ronda 2*: queda como decisión en R20.
 - **A15.** `plan_mejoras` dice «100 para húmedo» y la spec usa 90. Es del plan,
   no de la spec; queda para el leader.
+  *Cerrado en la ronda 2*: el plan dice ahora 90.
 - **A16.** Conflictos textuales con #208 y #220 en los agregados. No se tocó,
   por indicación del leader. design.md §Riesgos solo registra la colisión de
   `layout.test.tsx` que pedía F8.
+  *Cerrado en la ronda 2*: la lista de agregados y la regla de merge están en
+  design.md §Riesgos.
+
+## Re-medición tras el merge de #220, #210 y #211 (2026-10-26)
+
+Base nueva: `origin/dev` `8b4cb1bd` (merge en el branch: `94418dd4`). Semilla en
+`/tmp/claude-1002/-home-claude-sites-Pet-Tracker/54341eda-28f1-4262-9348-c2fbc9852939/scratchpad/erratas209r2/`.
+Estado: TERMINADO.
+
+### Semilla nueva
+
+- Construcción: `git archive 8b4cb1bd mobile-pet-tracker docs hosting specs .env.example`
+  más el parche de la semilla vieja (`diff -ruN` de `2041e2b3` contra
+  `erratas209/`, en `scratchpad/r2seed.patch`). Tres ficheros dieron rechazo
+  y se resolvieron a mano, siempre por el mismo motivo: #220 escribió antes en
+  la misma línea.
+  - `consistency-classnames.test.ts`: los dos agregados de
+    `style={CONTINUOUS_CORNER}` (`#62 R14` y `#98 R10`) acaban ahora en
+    `+ 1 - 1 - 2 // #220 R4; #220 R14; #220 R15`. El `+ 6 // #209 R24` va
+    justo después de esa línea, no de `- 1 // #205 R17`.
+  - `ui-copy-table.ts`: el último bloque de `ALL_USES` y de `blocks` es ahora
+    `R18_DATE_FIELD` (#220). `R20_NUTRITION_QUESTIONNAIRE` va después.
+  - `ui-language.test.ts`: el import termina en `R18_DATE_FIELD,` y
+    `SCREEN_FILES` en `+ 1 // #220 R16: components/date-field.tsx`. Las líneas
+    de #209 van después.
+- Primer intento sin `specs/` en la semilla: 20 suites de canvas en rojo por
+  `ENOENT` (leen `../specs/*/canvas`). Artefacto de la copia, no de la spec.
+- Semilla con todas las enmiendas, primer intento (`erratas209r2/seed.log`):
+  `Test Suites: 1 failed, 35 passed, 36 total`,
+  `Tests: 1 failed, 963 passed, 964 total`, `exit=1`. El único rojo era
+  `hosting-artifacts.test.ts`, con
+  `ENOENT: no such file or directory, open '…/erratas209r2/AGENTS.md'`: el
+  test lee `AGENTS.md` de la raíz y el `git archive` no lo copiaba. Con
+  `AGENTS.md` en la semilla (`erratas209r2/seed2.log`) queda todo verde.
+
+### Valores medidos (ronda 2)
+
+Mismo comando, sin pipe:
+`timeout 580 bunx jest src/__tests__ src/app/__tests__/layout.test.tsx`.
+
+| Árbol | Salida |
+|---|---|
+| Árbol real del worktree, base `8b4cb1bd` (`erratas209r2/base.log`) | `exit=0`, `Test Suites: 36 passed, 36 total`, `Tests: 953 passed, 953 total` |
+| Semilla sin enmiendas (`erratas209r2-noam/seed-noam.log`) | `exit=1`, `Test Suites: 6 failed, 30 passed, 36 total`, `Tests: 27 failed, 926 passed, 953 total` |
+| Semilla con todas las enmiendas (`erratas209r2/seed2.log`) | `exit=0`, `Test Suites: 36 passed, 36 total`, `Tests: 964 passed, 964 total` |
+
+`964 = 953 + 11`, el mismo `+ 11` de la ronda 1 (`951 → 962`).
+
+**`hosting-artifacts.test.ts` no falla en el árbol real.** Corrida aislada desde
+`/home/claude/sites/Pet-Tracker-wt-209/mobile-pet-tracker`
+(`timeout 300 bunx jest src/__tests__/hosting-artifacts.test.ts`,
+`erratas209r2/hosting-real.log`): `exit=0`, `Tests: 7 passed, 7 total`. El rojo
+de la ronda 1 («ya falla en la base `2041e2b3`») era el mismo artefacto: el
+`base.log` de la ronda 1 se midió sobre un extracto sin `AGENTS.md` (mismo
+`ENOENT` en `erratas209/base.log`). La observación de la ronda 1 queda
+retirada, y R24 ya no la cita.
+
+Suites en rojo sin enmiendas: `alerts-canvas-fidelity`,
+`chunky-cta-canvas-fidelity`, `consistency-classnames`, `design-drift`,
+`profile-canvas-fidelity` y `layout.test.tsx`.
+
+Pares Expected/Received de `seed-noam.log` (base `8b4cb1bd` → semilla):
+
+| Candado | Base | Semilla | Delta | ¿Lo movió #220/#210/#211? |
+|---|---|---|---|---|
+| `#62 R1` `rounded-16 bg-accent` | 19 | 21 | `+ 2` | no |
+| `#62 R12` `textInputs` | 6 | 8 | `+ 2` | no |
+| `#98 R10` `CONTINUOUS_CORNER` | 53 | 59 | `+ 6` | **sí, la base**: era 55 → 61; #220 suma `+ 1 - 1 - 2` |
+| `#166 R3` `border-lip-gray` | 12 | 17 | `+ 5` | no |
+| `#179 R13` `hitSlop` | 1 | 3 | `1 + 2` | no |
+| `#179 R13` E2.3 `split` | 2 | 4 | `2 + 2` | no |
+| `#177 R6.2` `text-17` | 30 | 32 | `+ 2` | no |
+| `#177 R7.1` `border-lip-gray` | 12 | 17 | `+ 5` | no |
+| `layout.test.tsx` hijos protegidos | 14 | 15 | `+ 1` | no |
+
+Ningún delta cambió. Solo cambió una base (`#98 R10`, y con ella el agregado
+de `#62 R14`, que es la misma suma) y tres anclas de posición, todas porque
+#220 escribió antes en la misma línea (ver «Semilla nueva»).
+
+Diferencias en el conjunto de rojos sin enmiendas frente a la ronda 1, que no
+mueven ningún delta:
+- `#65 R18` (`SCREEN_FILES`) ya no sale en rojo: la semilla sin enmiendas de
+  esta ronda no trae el bloque `R20_NUTRITION_QUESTIONNAIRE`, y sin bloque no
+  hay fichero sin cubrir. Con enmiendas está verde.
+- `#179 R13` `hitSlop` sale en rojo ahora: el `seed.log` de la ronda 1 se midió
+  antes de añadir `hitSlop` a los enlaces de Horario.
+- `hosting-artifacts` ya no sale (ver arriba).
+
+#210 y #211 no tocan ninguna de las guardas de R24 ni `layout.test.tsx`
+(`git diff --stat 2041e2b3 8b4cb1bd -- mobile-pet-tracker/src/__tests__ mobile-pet-tracker/src/app/__tests__`
+solo muestra los cambios de #220).
+
+### Hallazgo nuevo de la ronda 2: candado de longitud del catálogo
+
+El precedente que pedía el leader (`specs/mobile-date-field/requirements.md`
+R16, leído con `git show origin/dev:`) enmienda también
+`src/providers/__tests__/language-provider.test.tsx`: el `it`
+`#194 R1: mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas …`
+cuenta `Object.keys(en)` con una suma que acaba en `+ 5 - 2, // #220 R16`, y
+aserta que `es` tiene las mismas claves y los mismos marcadores `{{…}}` que
+`en`. La spec de #209 no lo nombraba en ningún sitio, y el comando de medición
+de las rondas 1 y 2 (`src/__tests__` y `layout.test.tsx`) no lo corre. Con 77
+claves nuevas por locale se pone en rojo. Medición abajo.
+
+Semilla (`erratas209r2/lp-seed.log`), sin enmendar el candado: rojo
+`Expected length: 458 / Received length: 535` (`+ 77`), el resto de la suite
+verde (`Tests: 1 failed, 53 passed, 54 total`). Con la enmienda
+`+ 5 - 2 // #220 R16` + `+ 77, // #209 R23` (`lp-seed2.log`): `exit=0`,
+`Tests: 54 passed, 54 total`. Los marcadores `{{…}}` de `en` y `es` cuadran con
+los valores `en` de la semilla. Escrito en R23 y en el comando de R24.
+
+Barrido del resto de candados que leen fuentes o el catálogo fuera de
+`src/__tests__` (`src/app/__tests__` entero,
+`src/components/__tests__/empty-state.test.tsx`,
+`src/hooks/use-pet-selection.test.tsx` y `src/providers`), en la semilla
+(`erratas209r2/extra-seed.log`): `exit=0`, `Test Suites: 16 passed, 16 total`,
+`Tests: 279 passed, 279 total`.
+
+### Hallazgo nuevo de la ronda 2: tests existentes de Horario que R22 contradice
+
+`timeout 580 bunx jest src/screens/food src/screens/meal-schedule` en la
+semilla (`erratas209r2/screens-seed.log`): Nutrición verde; Horario con
+`Tests: 4 failed` en tests existentes que asertan los enums crudos que R22
+sustituye. La spec no los nombraba:
+- `it('renders the plan summary, ordered portions, and complete profile')`
+  (`describe('R7: meal schedule muestra horarios y perfil')`);
+- `describe('#179 R8: perfil en píldoras')` ›
+  `it('muestra las tres píldoras con condición, prefijos y valores crudos')`,
+  `it('omite condición nula y conserva las otras dos píldoras')` y
+  `it('traduce los prefijos al inglés sin traducir los valores del perfil')`.
+
+Ejemplo: `Expected … Actividad medium / Received: Actividad Media`. Las
+enmiendas exactas quedan en R22.
+
+Escrito en la spec:
+- R22: tabla «Tests existentes que R22 contradice» con los cuatro `it`.
+  - Cada uno lleva el sufijo ` (enmendado por #209 R22)`.
+  - Los literales viejos y nuevos van en pares.
+  - Anclas `grep -cF`, comprobadas en la base y en la semilla:
+    - `'Alimento dry 350 kcal/100 g'` 3 → 0
+    - `'Actividad medium'` 3 → 0
+    - `'Activity medium'` 1 → 0
+    - `'Food dry 350 kcal/100 g'` 1 → 0
+    - `(enmendado por #209 R22)` 0 → 4
+- tasks.md R22: estas enmiendas van en el commit rojo de R22.
+- traceability.md fila R22: los cuatro `it`.
+
+### Hallazgo nuevo de la ronda 2: sufijos de nombre de R23
+
+#220 añadió ` (enmendado por #220 R16)` a tres `it` porque movió sus agregados:
+- `#194 R5: cuadra ALL_USES con la suma de sus bloques` (`ui-copy-table.ts`);
+- `#194 R5: no deja ningún valor fijo del catálogo …` (`ui-language.test.ts`);
+- `#194 R1: mantiene la base …` (`language-provider.test.tsx`).
+
+#209 mueve los mismos tres agregados, y R23 no pedía el sufijo. Ahora R23 lo
+exige en los tres: ` (enmendado por #209 R23)`, con ancla `grep -cF` de 0 → 1
+en cada fichero. La semilla no lo lleva porque el sufijo no cambia ninguna
+cifra.
+
+### Copy `en` (R23)
+
+- La tabla `| Clave (nutritionQuestionnaire. +) | en | es |` de R23 tiene 77
+  filas, una por clave y en el orden del catálogo. La generé desde
+  `scratchpad/en209/en.tsv` (77 valores).
+  - Cada `es` se cotejó contra el literal que fija la spec en su R-id.
+  - Los `en` son cortos y naturales, y siguen el precedente de
+    `specs/mobile-date-field/requirements.md` R16 (`git show origin/dev:`).
+- Variables: cada `en` lleva los mismos `{{…}}` que su `es`. Comprobado en la
+  semilla y por `#194 R1` de `language-provider.test.tsx`, que compara los
+  marcadores de los dos idiomas.
+- Colisiones con `#65 R18`: el `describe` (en `ui-language.test.ts`) compara
+  cada valor fijo `en` y `es` con los literales enteros de `SCREEN_FILES`.
+  Con los 77 `en` en el catálogo de la semilla, sale verde: ningún valor `en`
+  aparece como literal entero en las pantallas.
+- Corrida `en` en la semilla (`erratas209r2/en-seed.log`), con `ui-language`,
+  `language-provider`, `ui-copy-table`, `meal-schedule` y `food`: `exit=0`,
+  `Test Suites: 5 passed, 5 total`, `Tests: 291 passed, 291 total`.
+- Las píldoras de Horario en inglés quedan como «Activity Medium» y
+  «Food Dry 350 kcal/100 g» (nota en R22).
+
+### Corrida completa con las suites ampliadas
+
+`timeout 580 bunx jest src/__tests__ src/app/__tests__/layout.test.tsx src/providers/__tests__/language-provider.test.tsx src/screens/meal-schedule src/screens/food`
+en la semilla con todas las enmiendas y la tabla `en` (`erratas209r2/seed3.log`):
+- `exit=0`
+- `Test Suites: 39 passed, 39 total`
+- `Tests: 1220 passed, 1220 total`
+
+R24 da este comando como verificación final. tasks.md lo recoge en el paso
+(2b) de R24.
+
+Desglose del `+ 11` de `964 = 953 + 11`:
+- cinco `it` nuevos: R3 en `layout`, R23 en `ui-language` y los tres de R25 en
+  `design-drift`;
+- filas de `it.each` que generan los inventarios ampliados. Conteo por suite
+  con `--json`, base → semilla:
+  - `chunky-cta-canvas-fidelity` 80 → 84, por las dos filas de `CTA_ROWS` en
+    `#177 R3.1` y `R3.2`;
+  - `consistency-classnames` 79 → 80;
+  - `design-drift` 114 → 117.
+
+R24 lo explica así, sin dar el reparto fila a fila.
+
+### Anclas (ronda 2)
+
+Las anclas de colocación y de cuenta se escriben en R23 y R24 como
+`grep -cF` con su salida antes → después. Todas están medidas en
+`8b4cb1bd` y en la semilla.
+
+En R24, las cuentas de `#209 R24` por fichero quedan como mínimo (`≥`), porque
+la semilla puso los comentarios pero casi ningún sufijo de nombre:
+
+| Fichero | Mínimo de `#209 R24` |
+|---|---|
+| consistency | 8 |
+| chunky | 10 |
+| design-drift | 7 |
+| legibility | 2 |
+| alerts | 3 |
+| profile | 2 |
+
+Las demás son exactas:
+- `#209 R25` = 4;
+- `+ 6 // #209 R24` = 2;
+- `+ 1 - 1 - 2 // #220 R4; #220 R14; #220 R15` = 2.
+
+### A8 — «Crear perfil nutricional» en Horario
+
+En el canvas congelado:
+- `HorarioEditarPerfil.dc.html` tiene el artboard de «Editar perfil»: un `<a>`
+  de 36 px, `padding: 0 12px`, radio 12, `--surface`, borde de 2 px y sombra
+  `0 3px 0` en `--lip-gray`, 13 px/800, con un lápiz `svg`.
+- «Crear perfil nutricional» solo aparece en `NutricionSinPerfil.dc.html`
+  (v140).
+
+R20 deja escrita la decisión del leader:
+- el enlace de Horario no tiene artboard propio;
+- reutiliza el copy de NutricionSinPerfil (`nutritionQuestionnaire.createProfile`)
+  y la receta exacta de «Editar perfil», sin icono;
+- no lleva el lápiz por la decisión 13, que ya era una desviación declarada.
+
+La receta (clases, `chunkyLip.neutralCompact`, `hitSlop={TOUCH_SLOP}`, `testID`
+y el `Text`) es literal.
+
+### A15 — precarga de Húmedo en el plan
+
+`progress/plan_mejoras-producto-2026-10-26.md` §209 dice ahora «90 para
+húmedo», citando la respuesta a Q1 de `progress/design_ola0-mejoras-2026-10-26.md`
+(«Seco 350, Húmedo 90, Mixto 220 y Casero 130»). Solo cambia esa cifra y su
+cita.
+
+### A16 — agregados compartidos con #208
+
+Leí `/home/claude/sites/Pet-Tracker-wt-208/specs/mobile-vaccine-create/requirements.md`
+(HEAD `af829aee`) en solo lectura, sin tocar ese worktree.
+
+En `design.md` §Riesgos quedan:
+- la tabla de agregados que tocan las dos specs, con el delta de cada una:
+  - `_layout.tsx` y `layout.test.tsx` (cuentas, `at(-1 - 1)`, `it` nuevos y sufijos);
+  - `ALL_USES`, `blocks`, el import y `SCREEN_FILES`;
+  - el `describe` nuevo de `ui-language`;
+  - la suma de `#194 R1`;
+  - `catalog.ts`;
+  - `#62 R1`, `#62 R14` y `#98 R10`;
+  - `CTA_ROWS`, `#177 R6.2` (dos cuentas), `#177 R7.3 radii` y `#177 R7.5`;
+  - los `describe` nuevos de `design-drift`;
+- la lista de los que toca solo una de las dos;
+- la regla de merge:
+  - quien mergee segunda conserva los dos deltas, los dos comentarios y los
+    dos sufijos;
+  - la coma solo va en el último `+ N`;
+  - los números de bloque son fijos (R18 #220, R19 #208, R20 #209);
+  - el handoff de #209 se re-mide tras el merge de #208.
+
+R23, R24, «Reglas para la implementación» y tasks.md §Cierre remiten a esa
+lista. Dos huecos de la spec de #208 quedan anotados en la tabla. No son
+choques de cifras:
+- `#208` no lista `#98 R10`; cae en su regla mecánica;
+- `#208` no pide sufijo en los dos `it` de `#194 R5`.
+
+Comprobado en `_layout.tsx` de `8b4cb1bd`: `meals-history` es el penúltimo hijo
+protegido. Por eso la inserción de #208 solo desplaza `edit-profile`, que su
+`it` busca con `at(-1)`.
+
+### Ficheros tocados en la ronda 2
+
+- `/home/claude/sites/Pet-Tracker-wt-209/specs/mobile-nutrition-questionnaire/requirements.md`:
+  - R3: base `8b4cb1bd`;
+  - R20: decisión A8;
+  - R22: nota `en` y tabla de los cuatro `it`;
+  - R23: tabla `en`/`es`, colocaciones tras `R18_DATE_FIELD`, enmienda de
+    `language-provider`, sufijos, números de bloque y anclas;
+  - R24: base, comando, cifras, `#62 R14`/`#98 R10` y anclas;
+  - Reglas para la implementación.
+- `/home/claude/sites/Pet-Tracker-wt-209/specs/mobile-nutrition-questionnaire/design.md`:
+  - tabla de ficheros;
+  - §Riesgos (A16).
+- `/home/claude/sites/Pet-Tracker-wt-209/specs/mobile-nutrition-questionnaire/tasks.md`:
+  - R22, R23, R24 y Cierre.
+- `/home/claude/sites/Pet-Tracker-wt-209/specs/mobile-nutrition-questionnaire/traceability.md`:
+  - filas R22, R23 y R24.
+- `/home/claude/sites/Pet-Tracker-wt-209/progress/plan_mejoras-producto-2026-10-26.md`:
+  - A15.
+- Este informe.
+
+Sin commit. No toqué `docs/`, `feature_list.json` ni otros worktrees, y no
+lancé `./init.sh`.
+
+Nota para quien firme: el `+ 11` se explica por suite, no fila a fila. No
+mueve ninguna cifra ni ningún candado, así que no cuenta como punto abierto.

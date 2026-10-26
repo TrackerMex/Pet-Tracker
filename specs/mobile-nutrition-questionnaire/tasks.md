@@ -134,18 +134,28 @@ Prohibido correr `./init.sh` y e2e.
 - [ ] (3) Sin refactor.
 
 ## R22 — píldoras en español
-- [ ] (1) Los `it.each` R22.
+- [ ] (1) En un mismo commit rojo:
+  - los `it.each` R22;
+  - las enmiendas de literales de los cuatro `it` existentes de `src/screens/meal-schedule/index.test.tsx` que lista la tabla «Tests existentes que R22 contradice», cada uno con el sufijo ` (enmendado por #209 R22)`.
+  Rojo: la producción aún pinta `dry` y `medium` crudos. Anclas: `grep -cF "'Alimento dry 350 kcal/100 g'"` y `grep -cF "'Actividad medium'"` pasan de 3 a 0, y `grep -cF '(enmendado por #209 R22)'` pasa de 0 a 4, todas en ese fichero.
 - [ ] (2) Los mapas de etiquetas.
 - [ ] (3) Sin refactor.
 
 ## R23 — copy y tabla
-- [ ] (1) El bloque `R20_NUTRITION_QUESTIONNAIRE`, su registro en `ALL_USES`, `blocks` e import, y el `it` R23. Rojo si alguna clave falta en el catálogo o algún uso no cuadra.
-- [ ] (2) Las claves en `en` y `es`.
+- [ ] (1) En un mismo commit rojo:
+  - el bloque `R20_NUTRITION_QUESTIONNAIRE` y su registro en `ALL_USES` (tras `...R18_DATE_FIELD,`, o tras `...R19_VACCINE_CREATE,` si #208 ya está mergeada), en `blocks` y en el import;
+  - el `+ 1 // #209 R23: screens/nutrition-questionnaire/index.tsx` de `SCREEN_FILES`, justo después de `+ 1 // #220 R16: components/date-field.tsx`;
+  - en `src/providers/__tests__/language-provider.test.tsx`, `+ 5 - 2 // #220 R16` sin coma y `+ 77, // #209 R23` debajo;
+  - el sufijo ` (enmendado por #209 R23)` en los `it` `#194 R5` de `ui-copy-table.ts` y de `ui-language.test.ts`, y `#194 R1` de `language-provider.test.tsx`;
+  - el `it` R23.
+  Rojo si alguna clave falta en el catálogo o algún uso no cuadra. Medido en semilla sin las claves: `Expected length: 458` / `Received length: 535` en `#194 R1`.
+- [ ] (2) Las claves en `en` y `es`, con los literales de la tabla de R23 y en su orden. Codex no traduce: copia la columna `en`.
 - [ ] (3) Sin refactor.
 
 ## R24 — guardas de carta
 - [ ] (1) Correr las siete suites: `design-drift`, `consistency-classnames`, `chunky-cta-canvas-fidelity`, `legibility-classnames`, `alerts-canvas-fidelity` y `profile-canvas-fidelity` (en `src/__tests__/`), más `src/app/__tests__/layout.test.tsx`. Se esperan rojas por los inventarios.
-- [ ] (2) Las enmiendas mecánicas que lista R24, con `+ delta // #209 R24` y el sufijo ` (enmendado por #209 R24)` en cada `it` tocado. Van en un commit `test(mobile): #209 R24 enmiendas de carta`, que deja las siete en verde.
+- [ ] (2) Las enmiendas mecánicas que lista R24, con `+ delta // #209 R24` y el sufijo ` (enmendado por #209 R24)` en cada `it` tocado. El `+ 6 // #209 R24` de `#62 R14` y `#98 R10` va justo después de `+ 1 - 1 - 2 // #220 R4; #220 R14; #220 R15` (`#98 R10`: 53 → 59). Van en un commit `test(mobile): #209 R24 enmiendas de carta`, que deja las siete en verde.
+- [ ] (2b) Verificación final, desde `mobile-pet-tracker/` y sin `| tail`: `timeout 580 bunx jest src/__tests__ src/app/__tests__/layout.test.tsx src/providers/__tests__/language-provider.test.tsx src/screens/meal-schedule src/screens/food` con exit 0. En la semilla: 39 suites, 1220 tests en verde.
 - [ ] (3) Sin refactor.
 
 ## R25 — recetas de carta
@@ -161,4 +171,4 @@ Prohibido correr `./init.sh` y e2e.
 ## Cierre
 - [ ] Escribir `progress/impl_mobile-nutrition-questionnaire.md` con la tabla R-id → test → hashes rojo y verde.
 - [ ] Rellenar `traceability.md`.
-- [ ] Si `origin/dev` avanzó: `git merge origin/dev` (sin rebase) y volver a medir R23 y R24.
+- [ ] Si `origin/dev` avanzó: `git merge origin/dev` (sin rebase) y volver a medir R3, R22, R23 y R24. Si lo que entró es #208, se conservan sus deltas y sufijos junto a los de #209 en cada agregado de la lista de `design.md` §Riesgos.
