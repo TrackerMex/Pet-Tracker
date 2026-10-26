@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { mapPetMemberError } from './mappers/pet-member-error.mapper';
 import {
   Body,
@@ -6,6 +7,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Param,
   Post,
   Req,
@@ -71,17 +73,22 @@ export class PetInvitesController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(PetAccessGuard)
   @RequirePetRole('owner')
-  revoke(
+  async revoke(
     @Req() request: PetAccessRequest,
     @Param('inviteId') inviteId: string,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.revokeInvite.execute(
-      request.petMembership.petId,
-      inviteId,
-      user.id,
-      new Date(),
-    );
+    if (!z.uuid().safeParse(inviteId).success) throw new NotFoundException();
+    try {
+      return await this.revokeInvite.execute(
+        request.petMembership.petId,
+        inviteId,
+        user.id,
+        new Date(),
+      );
+    } catch (error) {
+      throw mapPetMemberError(error);
+    }
   }
 }
 @Controller('invites')

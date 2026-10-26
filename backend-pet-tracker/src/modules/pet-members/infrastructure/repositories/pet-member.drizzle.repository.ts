@@ -63,11 +63,25 @@ export class PetMemberDrizzleRepository implements PetMemberRepository {
       .orderBy(desc(petInvites.createdAt), desc(petInvites.id));
     return rows.map(toDomain);
   }
-  revokeInvite(petId: string, inviteId: string, now: Date): Promise<boolean> {
-    void petId;
-    void inviteId;
-    void now;
-    return Promise.reject(new Error('Not implemented'));
+  async revokeInvite(
+    petId: string,
+    inviteId: string,
+    now: Date,
+  ): Promise<boolean> {
+    const rows = await this.db
+      .update(petInvites)
+      .set({ revokedAt: now })
+      .where(
+        and(
+          eq(petInvites.id, inviteId),
+          eq(petInvites.petId, petId),
+          isNull(petInvites.acceptedAt),
+          isNull(petInvites.revokedAt),
+          gt(petInvites.expiresAt, now),
+        ),
+      )
+      .returning({ id: petInvites.id });
+    return rows.length === 1;
   }
   acceptInvite(
     codeHash: string,

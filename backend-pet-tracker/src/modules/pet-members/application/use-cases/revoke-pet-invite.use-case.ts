@@ -1,3 +1,4 @@
+import { PetInviteNotFoundError } from '@/modules/pet-members/domain/errors/pet-member.errors';
 import { Inject, Injectable } from '@nestjs/common';
 import { PET_MEMBER_REPOSITORY } from '@/modules/pet-members/domain/repositories/pet-member.repository';
 import type { PetMemberRepository } from '@/modules/pet-members/domain/repositories/pet-member.repository';
@@ -10,16 +11,13 @@ export class RevokePetInviteUseCase {
     @Inject(PET_MEMBER_REPOSITORY) private readonly repo: PetMemberRepository,
     @Inject(AUDIT_LOGGER) private readonly audit: AuditLogger,
   ) {}
-  execute(
+  async execute(
     petId: string,
     inviteId: string,
     userId: string,
     now: Date,
   ): Promise<void> {
-    void petId;
-    void inviteId;
-    void userId;
-    void now;
-    return Promise.reject(new Error('Not implemented'));
+    if (!(await this.repo.revokeInvite(petId, inviteId, now)))
+      throw new PetInviteNotFoundError();
   }
 }
