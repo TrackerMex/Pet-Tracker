@@ -1,4 +1,10 @@
 export const en = {
+  'dateField.placeholderDate': 'Select a date',
+  'dateField.placeholderTime': 'Select a time',
+  'dateField.ok': 'OK',
+  'dateField.cancel': 'Cancel',
+  'dateField.clear': 'Clear',
+
   'validation.firstNameRequired': 'Enter your first name',
   'validation.lastNameRequired': 'Enter your last name',
   'validation.passwordRequired': 'Enter your password',
@@ -459,6 +465,12 @@ export const en = {
 export type TranslationKey = keyof typeof en;
 
 export const es: Record<TranslationKey, string> = {
+  'dateField.placeholderDate': 'Elige una fecha',
+  'dateField.placeholderTime': 'Elige una hora',
+  'dateField.ok': 'Aceptar',
+  'dateField.cancel': 'Cancelar',
+  'dateField.clear': 'Borrar',
+
   'validation.firstNameRequired': 'Escribe tu nombre',
   'validation.lastNameRequired': 'Escribe tus apellidos',
   'validation.passwordRequired': 'Escribe tu contraseña',

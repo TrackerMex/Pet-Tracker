@@ -20,6 +20,7 @@ import {
   R15_GEOFENCE_EDITOR,
   R16_WELCOME,
   R17_EDIT_PROFILE,
+  R18_DATE_FIELD,
   type UseRow,
 } from './ui-copy-table';
 
@@ -467,6 +468,13 @@ function wholeLiterals(source: string): Set<string> {
   return literals;
 }
 
+describe('#220 R16: copy compartida de DateField', () => {
+  it('#220 R16: registra las cinco claves y sus usos', () => {
+    expect(R18_DATE_FIELD).toHaveLength(5);
+    checkUses(R18_DATE_FIELD);
+  });
+});
+
 describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () => {
   // Regresión del falso verde que destapó el reviewer el 2026-09-06: una
   // plantilla con `${…}` descuadraba el lexer y cegaba el resto del fichero.
@@ -494,7 +502,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
     checkUses(ALL_USES);
   });
 
-  it('#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas (enmendado por #200 R1) (enmendado por #199 R1)', () => {
+  it('#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas (enmendado por #200 R1) (enmendado por #199 R1) (enmendado por #220 R16)', () => {
     expect(SCREEN_FILES).toHaveLength(
       19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1 // #100 R10, #41 R10, #146 R10, #105 R5
         + 1 - 1 // #117 R10: sale app/(auth)/forgot.tsx, entra screens/forgot/index.tsx
@@ -509,6 +517,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
         + 1 // #194 R5: screens/edit-profile/index.tsx
         + 1 - 1 // #200 R1: sale app/(tabs)/food.tsx, entra screens/food/index.tsx
         - 1 // #199 R1: sale src/app/_layout.tsx
+        + 1 // #220 R16: components/date-field.tsx
     );
 
     for (const file of SCREEN_FILES) {
