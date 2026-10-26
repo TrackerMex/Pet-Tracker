@@ -159,3 +159,15 @@ El paso 1 de «Por commit» cambia así, desde el commit 16 hasta el final de la
 Sigue en el commit 16 con el árbol como lo dejaste: los cuatro ficheros modificados son tuyos. Después continúa la cadena hasta el final, según este handoff. El resto no cambia (la cadena del paso 2, las guardas, las cifras y el cierre).
 
 El leader borró el marcador `progress/impl_pet-members-api.done`. Vuelve a crearlo solo al terminar la cadena entera, como última acción. En el reporte, añade una sección «Reanudación 1» a continuación de «Parada en el commit 16», sin reescribir lo anterior.
+
+## Reanudación 2 (2026-10-26, leader)
+
+Hiciste bien en parar en el commit 21. El leader confirmó tu diagnóstico: `randomUUID()` devuelve el tipo de plantilla `` `${string}-${string}-${string}-${string}-${string}` ``. TypeScript infiere ese tipo para `target`, así que rechaza las reasignaciones a un `string` o a `'not-a-uuid'`. No cambia ninguna aserción.
+
+Sigue en el commit 21 con el árbol como lo dejaste:
+  1. En `backend-pet-tracker/test/pet-members.e2e-spec.ts`, cambia las dos declaraciones `let target = randomUUID();` (R13 y R14) a `let target: string = randomUUID();`. No toques nada más de esas líneas ni de los `it`. Comprueba desde `backend-pet-tracker/`: `grep -cF "let target: string = randomUUID();" test/pet-members.e2e-spec.ts` → 2, y `grep -cF "let target = randomUUID();" test/pet-members.e2e-spec.ts` → 0.
+  2. Repite la cadena del commit 21 desde el paso 1 (Prettier según Reanudación 1). El rojo tiene que ser por aserción, con tsc verde, como dice el handoff.
+  3. Regla para los commits 21–28: si `tsc` falla solo con TS2322 porque una variable de un test nuevo de ese commit se inicializa con `randomUUID()` y luego se reasigna, anota la variable como `: string` y regístralo en el reporte. Cualquier otro error de `tsc` sigue siendo PARA.
+  4. Continúa la cadena hasta el final, según este handoff y Reanudación 1.
+
+El marcador `progress/impl_pet-members-api.done` no existe. Créalo solo al terminar la cadena entera, como última acción. En el reporte, añade una sección «Reanudación 2» a continuación de «Parada en el commit 21 (Reanudación 1)», sin reescribir lo anterior.
