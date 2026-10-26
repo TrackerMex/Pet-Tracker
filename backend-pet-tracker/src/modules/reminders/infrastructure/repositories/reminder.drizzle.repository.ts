@@ -114,24 +114,35 @@ export class ReminderDrizzleRepository implements ReminderRepository {
     scheduleName: string | null,
     at: Date,
   ): Promise<void> {
-    void scheduleName;
     await this.db
       .update(reminders)
       .set({ enqueuedAt: at })
-      .where(eq(reminders.id, id));
+      .where(
+        and(
+          eq(reminders.id, id),
+          sql`${reminders.scheduleName} is not distinct from ${scheduleName}`,
+        ),
+      );
   }
 
-  advanceOccurrence(
+  async advanceOccurrence(
     id: string,
     scheduleName: string,
     dueAt: Date,
     newScheduleName: string,
   ): Promise<boolean> {
-    void id;
-    void scheduleName;
-    void dueAt;
-    void newScheduleName;
-    return Promise.resolve(false);
+    const rows = await this.db
+      .update(reminders)
+      .set({ dueAt, scheduleName: newScheduleName, enqueuedAt: null })
+      .where(
+        and(
+          eq(reminders.id, id),
+          eq(reminders.status, 'scheduled'),
+          eq(reminders.scheduleName, scheduleName),
+        ),
+      )
+      .returning({ id: reminders.id });
+    return rows.length === 1;
   }
 
   async markSent(id: string): Promise<boolean> {
