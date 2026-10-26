@@ -57,9 +57,15 @@ nombre de la mascota `pet-1` que devuelve el doble de `listPets` (R13).
   `fetch` que lanza → `{kind:'unreachable', message}`, `baseUrl` vacío o
   `undefined` → `{kind:'missing-config'}` sin llamar a `fetchFn`.
   Test: `src/api/__tests__/reminders.test.ts` ::
-  `#213 R3: cancelReminderSeries mapea %i a %s` (it.each de los siete estados)
-  y `#213 R3: cancelReminderSeries hace PATCH a /reminders/:id con status cancelled`
-  y `#213 R3: cancelReminderSeries sin baseUrl no llama a fetch`.
+  `#213 R3: cancelReminderSeries mapea %i a %s` (it.each de los siete códigos
+  HTTP 200, 404, 409, 403, 401, 400 y 500),
+  `#213 R3: cancelReminderSeries hace PATCH a /reminders/:id con status cancelled`,
+  `#213 R3: cancelReminderSeries sin baseUrl no llama a fetch` y
+  `#213 R3: cancelReminderSeries devuelve unreachable si fetch lanza`
+  (`fetchFn = jest.fn().mockRejectedValue(new Error('network down')) as unknown as typeof fetch`;
+  `resolves.toEqual({ kind: 'unreachable', message: 'network down' })`, el
+  mensaje que `patchJson` copia de `error.message`; mismo patrón que
+  `deleteReminder` › `maps a fetch rejection to unreachable` del fichero).
   Ancla: `grep -cF "export async function cancelReminderSeries" src/api/reminders.ts` = 1.
 
 ### Formulario «Agregar recordatorio»
@@ -77,7 +83,14 @@ nombre de la mascota `pet-1` que devuelve el doble de `listPets` (R13).
   (la receta de los chips de Aviso). Los chips de Repetición van en
   `flex-row flex-wrap gap-2` (pueden ocupar dos líneas).
   Test: `src/screens/add-reminder/index.test.tsx` ::
-  `#213 R4: Repetición ofrece seis chips con Una vez seleccionado` y
+  `#213 R4: Repetición ofrece seis chips con Una vez seleccionado` (además de
+  textos y `selected`, aserta la receta con literales escritos en el test, nunca
+  con `SELECTED_CHIP` importado de producción: `repeat-chip-once` tiene
+  `props.className` `toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-accent')`
+  y `props.style` `toEqual(mockChunkyLip.primaryCompact)`; cada uno de los
+  otros cinco tiene `props.className`
+  `toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-default')` y
+  `props.style` `toBeUndefined()`) y
   `#213 R4: pulsar un chip de repetición mueve la selección` y
   `#213 R4: Repetición va después de Hora y antes de Aviso` (orden por
   `screen.toJSON()` o por índice de los textos en el árbol).
@@ -85,13 +98,15 @@ nombre de la mascota `pet-1` que devuelve el doble de `listPets` (R13).
 - **R5**: THE SYSTEM SHALL pintar los chips de Tipo y de Aviso en una sola fila
   horizontal que no salta de línea y que se corta en el borde derecho de la
   pantalla: cada fila es un `ScrollView` con `horizontal`,
-  `showsHorizontalScrollIndicator={false}`, testID `type-chip-row` y
-  `advance-chip-row` respectivamente, `className="-mr-5"` y
+  `showsHorizontalScrollIndicator={false}`, testID `type-chips-row` y
+  `advance-chips-row` respectivamente, `className="-mr-5"` y
   `contentContainerStyle={{ gap: 8, paddingRight: 20 }}`; ninguna de las dos
-  filas lleva `flex-wrap`.
+  filas lleva `flex-wrap`. Los testID llevan `chips` en plural para que no
+  casen con los selectores por prefijo `/^type-chip-/` y `/^advance-chip-/`
+  de los `it` existentes del fichero, que siguen contando 7 y 4.
   Test: `src/screens/add-reminder/index.test.tsx` ::
   `#213 R5: Tipo y Aviso son filas horizontales sin salto de línea`
-  (aserta `props.horizontal === true` y que los 5 chips de tipo y los 4 de
+  (aserta `props.horizontal === true` y que los 7 chips de tipo y los 4 de
   aviso son descendientes de su fila).
   Ancla: `grep -cF "flex-row flex-wrap gap-2" src/screens/add-reminder/index.tsx` = 1
   (solo la fila de Repetición).
@@ -206,7 +221,12 @@ nombre de la mascota `pet-1` que devuelve el doble de `listPets` (R13).
 
   Test: `src/screens/add-reminder/index.test.tsx` ::
   `#213 R12: con %i horas la nota dice «%s»` (it.each de las filas a–h; el N
-  se alcanza pulsando `repeat-every-less` / `repeat-every-more` desde 8).
+  se alcanza pulsando `repeat-every-less` / `repeat-every-more` desde 8; el
+  `it.each` lleva `15000` como tercer argumento, el timeout por fila, porque una
+  fila hace hasta 16 pulsaciones con `await fireEvent`; el texto con «Rocky» se
+  espera sobre el árbol con
+  `await waitFor(() => expect(screen.getByTestId('add-reminder-preview-text')).toHaveTextContent(<texto>))`,
+  nunca sobre el contador de `listPets`).
 
 - **R13**: THE SYSTEM SHALL leer el nombre de la mascota seleccionada de
   `useQuery({ queryKey: petKeys.list(), queryFn: () => listPets(baseUrl, token ?? '') })`;
@@ -221,9 +241,19 @@ nombre de la mascota `pet-1` que devuelve el doble de `listPets` (R13).
   `{ kind: 'ok', pets: [<mascota id 'pet-1', name 'Rocky'>] }` (misma forma que
   `makePet` de `src/screens/reminders/index.test.tsx`).
   Test: `src/screens/add-reminder/index.test.tsx` ::
-  `#213 R13: sin nombre de mascota la nota usa la variante sin nombre`
-  (`listPets` resuelve `{ kind: 'unreachable', message: 'x' }`; texto exacto
-  `Te aviso en cada toma: 20:00, 04:00 y 12:00.`).
+  `#213 R13: sin nombre de mascota (%s) la nota usa la variante sin nombre`
+  (it.each de tres filas, una por rama de la cláusula IF; en las tres, «Cada
+  N horas» con N = 8, fecha 31 dic 2026 y `pickTime(20, 0)`, como R12 fila a, y
+  texto exacto `Te aviso en cada toma: 20:00, 04:00 y 12:00.`):
+
+  | Fila | `listPets` | Espera |
+  |---|---|---|
+  | `falla` | `mockResolvedValue({ kind: 'unreachable', message: 'x' })` | sobre el árbol: `await waitFor(() => expect(screen.getByTestId('add-reminder-preview-text')).toHaveTextContent(<texto>))`, nunca sobre el contador de `listPets` |
+  | `sin la mascota` | `mockResolvedValue({ kind: 'ok', pets: [<mascota id 'pet-2', name 'Luna'>] })` (la seleccionada es `pet-1`, `selectPet('pet-1')` del fichero) | igual que `falla`, sobre el árbol |
+  | `sin resolver` | `mockReturnValue(new Promise(() => {}))` (no resuelve nunca) | aserción síncrona `expect(screen.getByTestId('add-reminder-preview-text')).toHaveTextContent(<texto>)` justo después de elegir N, fecha y hora, sin `waitFor` ni `findBy` |
+
+  La fila `sin la mascota` es la que tumba una implementación que lee
+  `pets[0]?.name` en vez de buscar `petId`.
 
 ### Lista «Recordatorios»
 
@@ -236,7 +266,9 @@ nombre de la mascota `pet-1` que devuelve el doble de `listPets` (R13).
   «cada N semanas», «cada mes» / «cada N meses», «cada año» / «cada N años»
   (singular cuando `every === 1`), y el hasta es « · hasta el <d MMM>» cuando
   el año de `recurrenceUntil` es el año local actual, « · hasta <MMM yyyy>»
-  cuando es otro año, y nada cuando es `null`. WHILE `recurrence === null` o
+  cuando es otro año, y nada cuando es `null`. «MMM yyyy» se formatea con
+  `Intl.DateTimeFormat(locale, { month: 'short', year: 'numeric' })`, que da
+  «abr 2027» en es-MX (otras combinaciones de opciones dan «abr de 2027»). WHILE `recurrence === null` o
   el estado no es `scheduled` THE SYSTEM SHALL no pintar esa línea. Tabla
   exacta (hoy 30 dic 2026, 10:00 local):
 
@@ -276,7 +308,8 @@ nombre de la mascota `pet-1` que devuelve el doble de `listPets` (R13).
 
 - **R16**: THE SYSTEM SHALL mostrar el badge `reminder-upcoming-${id}` con el
   texto «Hoy» (en-US «Today») y el borde `border-2 border-category-amber` solo
-  cuando `status === 'scheduled'` y `daysUntil(dueAt, now) === 0`; con 1 o más
+  cuando `status === 'scheduled'` y `daysUntil(now, dueAt) === 0` (firma
+  `daysUntil(from, to)` de `src/utils/reminder-dates.ts`); con 1 o más
   días, o con días negativos, la fila no lleva badge y lleva
   `border border-border`. El valor de `reminders.upcoming` pasa de «¡Próximo!»
   a «Hoy». Los tests existentes que asertaban el badge con el umbral de 10
@@ -311,6 +344,10 @@ nombre de la mascota `pet-1` que devuelve el doble de `listPets` (R13).
   `No volveré a avisarte de Pipeta antipulgas de Rocky. Si cambias de idea, puedes crear el recordatorio otra vez.`),
   `#213 R17: sin nombre de mascota el cuerpo omite la mascota`,
   `#213 R17: las dos hojas comparten un solo BottomSheet`.
+  Esperas: la fila se espera con `await screen.findByTestId('reminder-cancel-series-<id>')`
+  y el cuerpo con el nombre de la mascota con
+  `await waitFor(() => expect(<cuerpo>).toHaveTextContent(<texto>))`, sobre el
+  árbol, nunca sobre el contador de `listPets` ni de `listReminders`.
 
 - **R18**: WHEN el usuario pulsa `reminders-cancel-series-confirm` THE SYSTEM
   SHALL llamar una vez `cancelReminderSeries(baseUrl, token, reminderId)`,
@@ -320,16 +357,34 @@ nombre de la mascota `pet-1` que devuelve el doble de `listPets` (R13).
   `reminders-action-error` «Solo el dueño puede cancelar la serie»; IF es
   `unreachable` THEN el texto de `common.cannotReachServer`; IF es `unauthorized` THEN llamar `signOut`;
   IF es `error` o `missing-config` o la llamada lanza THEN el texto de
-  `common.somethingWentWrong`. WHEN el usuario pulsa
+  `common.somethingWentWrong`. El handler es el del borrado calcado: un
+  `switch` sobre `result.kind` dentro de `try` y un `catch` que escribe
+  `common.somethingWentWrong`, de modo que el fichero gana una llamada
+  `t('common.cannotReachServer'` y dos `t('common.somethingWentWrong'` (rama
+  `error`/`missing-config` y `catch`; ver R22). WHEN el usuario pulsa
   `reminders-cancel-series-keep` o cierra la hoja THE SYSTEM SHALL cerrarla sin
   llamar `cancelReminderSeries`. No existe «cancelar solo esta vez».
   Test: `src/screens/reminders/index.test.tsx` ::
   `#213 R18: confirmar cancela la serie e invalida la lista con %s` (it.each
   `ok`, `not-found`, `not-editable`),
-  `#213 R18: confirmar con %s muestra su error` (it.each `forbidden`,
-  `unreachable`, `error`, `missing-config`; texto exacto del catálogo es-MX),
+  `#213 R18: confirmar con %s muestra su error` (it.each de cinco filas,
+  `forbidden`, `unreachable`, `error`, `missing-config` con
+  `mockResolvedValue({ kind: <fila> … })` y `throws` con
+  `mockRejectedValue(new Error('x'))`; texto exacto del catálogo es-MX:
+  `throws`, `error` y `missing-config` →
+  el valor es-MX de `common.somethingWentWrong`, `unreachable` → el de
+  `common.cannotReachServer`, `forbidden` → «Solo el dueño puede cancelar la
+  serie»),
   `#213 R18: confirmar con unauthorized cierra sesión`,
   `#213 R18: Mantener la serie cierra sin llamar a la API`.
+  Esperas, sobre el árbol: el error con
+  `await waitFor(() => expect(screen.getByTestId('reminders-action-error')).toHaveTextContent(<texto>))`;
+  la invalidación con el patrón de `refetches and removes the row after $kind`
+  del mismo fichero: `mockListReminders` encadena
+  `.mockResolvedValueOnce({ kind: 'ok', reminders: [<la serie>] })` y
+  `.mockResolvedValueOnce({ kind: 'ok', reminders: [] })`, el test espera
+  `await waitFor(() => expect(screen.queryByTestId('reminder-row-<id>')).toBeNull())`
+  y solo después aserta `expect(mockListReminders).toHaveBeenCalledTimes(2)`.
 
 - **R19**: WHILE la hoja «Cancelar serie» está abierta THE SYSTEM SHALL pasar
   al `BottomSheet` el mismo `backgroundStyle` que #218 fija para la hoja de
@@ -340,7 +395,10 @@ nombre de la mascota `pet-1` que devuelve el doble de `listPets` (R13).
   Test: `src/screens/reminders/index.test.tsx` ::
   `#213 R19: la hoja Cancelar serie hereda el fondo surface de #218`.
   Ancla (tras el merge): `grep -cF "backgroundStyle" src/screens/reminders/index.tsx` = 1
-  y `grep -cF "<BottomSheet" src/screens/reminders/index.tsx` = 1.
+  y `grep -cE "<BottomSheet([^A-Za-z]|$)" src/screens/reminders/index.tsx` = 1
+  (la expresión no cuenta `<BottomSheetView>`; es la misma regla que
+  `/<BottomSheet(?![A-Za-z])/g` de `src/__tests__/sheet-surface-background.test.ts`
+  de #218; medida = 1 en wt-218 con #218 implementada).
 
 ### Push
 
@@ -355,7 +413,10 @@ nombre de la mascota `pet-1` que devuelve el doble de `listPets` (R13).
   (it.each: `{petId:'pet-2', reminderId:'r-1', kind:'reminder'}` →
   `{pathname:'/reminders', params:{petId:'pet-2'}}`; `{kind:'reminder'}`,
   `{kind:'reminder', petId:''}` y `{kind:'reminder', petId:7}` →
-  `'/reminders'`; cada fila en `hot` y `cold`).
+  `'/reminders'`; cada fila en `hot` y `cold`). Este `it` es de un hook sin
+  árbol, así que espera al doble del router como los `it` de #100 R7 del mismo
+  fichero; esa excepción no vale para los `it` de pantalla (R12, R13, R17,
+  R18, R21), que esperan sobre el árbol.
 
 - **R21**: WHEN «Recordatorios» se abre con el parámetro de ruta `petId` y esa
   mascota está en `listPets` THE SYSTEM SHALL seleccionarla con
@@ -364,9 +425,12 @@ nombre de la mascota `pet-1` que devuelve el doble de `listPets` (R13).
   mascota).
   Test: `src/screens/reminders/index.test.tsx` ::
   `#213 R21: el parámetro petId selecciona su mascota` (mascotas `pet-1`
-  «Luna» y `pet-2` «Rocky», params `{petId:'pet-2'}`: la última llamada a
-  `listReminders` recibe `'pet-2'`) y
-  `#213 R21: un petId desconocido deja la primera mascota`.
+  «Luna» y `pet-2` «Rocky», params `{petId:'pet-2'}`: espera sobre el árbol
+  con `await waitFor(() => expect(screen.getByTestId('pet-chip-pet-2').props.accessibilityState).toEqual({ selected: true }))`,
+  el patrón del `it` de carga del mismo fichero, y después aserta que la
+  última llamada a `listReminders` recibe `'pet-2'`) y
+  `#213 R21: un petId desconocido deja la primera mascota` (misma espera con
+  `pet-chip-pet-1`).
 
 ### Catálogo y guardas
 
@@ -374,11 +438,13 @@ nombre de la mascota `pet-1` que devuelve el doble de `listPets` (R13).
   nuevas de `design.md` §Copy (32 `addReminder.*` y 22 `reminders.*`) con los
   mismos marcadores `{{…}}` en ambos idiomas, cambiar el valor de
   `reminders.upcoming`, y mantener verdes las guardas con estos deltas
-  exactos: `R8_REMINDERS` de `src/__tests__/ui-copy-table.ts` +56 filas (54
-  claves nuevas + 2 ocurrencias nuevas de `common.cannotReachServer` y
-  `common.somethingWentWrong` en `src/screens/reminders/index.tsx`), el
-  recuento de `#194 R1` +54, los iconos de `#178 R13` y los radios de
-  `design-drift` según `tasks.md` §R22; `SCREEN_FILES` no cambia.
+  exactos: `R8_REMINDERS` de `src/__tests__/ui-copy-table.ts` +57 filas (54
+  claves nuevas + 3 ocurrencias nuevas en `src/screens/reminders/index.tsx`
+  del handler de R18: 1 `common.cannotReachServer` y 2
+  `common.somethingWentWrong`), el recuento de `#194 R1` +54, los iconos de
+  `#178 R13`, los radios de `design-drift` y la lista cerrada de guardas de
+  `design-drift`, `alerts-canvas-fidelity`, `consistency-classnames` y
+  `chunky-cta-canvas-fidelity` según `tasks.md` §R22; `SCREEN_FILES` no cambia.
   Test: `src/providers/__tests__/language-provider.test.tsx` ::
   `#213 R22: claves de recurrencia en ambos idiomas` (it.each de las 54
   claves más `reminders.upcoming` con su valor es-MX y en-US exacto) y los

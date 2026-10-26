@@ -31,6 +31,18 @@ tags: [mobile, reminders, recurrence, spec]
 | R21 | pendiente | pendiente |
 | R22 | pendiente | pendiente |
 
+## `it` añadidos o renombrados por las erratas de la firma (2026-10-26)
+
+Cada fila se rellena con el nombre completo y el hash como las de arriba.
+
+| Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
+|---|---|---|
+| R3 | `src/api/__tests__/reminders.test.ts::#213 R3: cancelReminderSeries devuelve unreachable si fetch lanza` | pendiente |
+| R13 | `src/screens/add-reminder/index.test.tsx::#213 R13: sin nombre de mascota (%s) la nota usa la variante sin nombre` (filas `falla`, `sin la mascota`, `sin resolver`) | pendiente |
+| R18 | `src/screens/reminders/index.test.tsx::#213 R18: confirmar con %s muestra su error`, fila `throws` | pendiente |
+| R16 | `src/screens/reminders/index.test.tsx`: los siete `it` « (enmendado por #213 R16)» de `tasks.md` §R16 (3) | pendiente |
+| R22 | las 18 enmiendas de `tasks.md` §R22 (3), con « (enmendado por #213 R22)» en el nombre salvo los `it.each` que solo ganan casos | pendiente |
+
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `test(mobile): <desc> (R<n>)` en rojo y después
 `feat(mobile): <desc> (R<n>)`.

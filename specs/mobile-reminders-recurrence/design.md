@@ -13,11 +13,11 @@ tags: [mobile, reminders, recurrence, spec]
 
 ## Artboards congelados (`canvas/`)
 
-Canvas https://claude.ai/artifact/VqaQQsRTtis9Dbttqy3z7j. El leader pidió la
-v140 (id de versión `1793036268-d302`); la lectura sirvió una versión
-posterior (`1793050244-92d7` / `1793051574-af80`) que no se pudo fijar. El copy
-de los cuatro artboards coincide con la tabla aprobada en G1 (design doc de la
-ola 0, §Artboards nuevos). Hashes de lo congelado:
+Canvas https://claude.ai/artifact/VqaQQsRTtis9Dbttqy3z7j. Los cuatro ficheros
+de `canvas/` están verificados idénticos a la v140 (id de versión
+`1793036268-d302`, la que aprobó G1) el 2026-10-26 por el leader, sha256 a
+sha256. El copy de los cuatro artboards coincide con la tabla aprobada en G1
+(design doc de la ola 0, §Artboards nuevos). Hashes de lo congelado:
 
 | Fichero | sha256 |
 |---|---|
@@ -70,13 +70,24 @@ ola 0, §Artboards nuevos). Hashes de lo congelado:
   `paddingRight: 20`, para sangrar hasta el borde derecho como el artboard
   (la `ScrollView` del formulario tiene `paddingHorizontal: 20`). `-mr-5` es
   clase estándar (20 px), no valor arbitrario: `#193 R11` no la veta.
+  testID `type-chips-row` y `advance-chips-row`, con `chips` en plural:
+  `type-chip-row` casaría con el selector `/^type-chip-/` del `it`
+  `renders all reminder types and selects vaccine by default` (7 → 8) y
+  `advance-chip-row` con `/^advance-chip-/` de
+  `renders alert choices and selects seven days by default` (4 → 5). Medido:
+  ninguna de las 51 expresiones regex de testID de los tests de `src/` casa con
+  los dos nombres nuevos.
 - Stepper (R6, R7): un solo bloque JSX para las dos unidades, receta del
   artboard: fila `flex-row items-center gap-3 rounded-16 bg-default p-2` con
   `style={CONTINUOUS_CORNER}`; «Cada» `text-15 font-extrabold text-foreground`;
   botones `Pressable` (no `Button` de HeroUI, para no caer en twMerge)
   `size-11 items-center justify-center rounded-full border-2 border-lip-gray bg-surface`
   con iconos `Minus` y `Plus` de reicon (20, color `foreground`) y
-  `hitSlop={TOUCH_SLOP}`; valor `text-22 font-black text-foreground` con
+  `hitSlop={TOUCH_SLOP}`; el color sale de la llamada existente
+  `useThemeColors(['muted', 'accent-strong'])` de `AddReminderContent`, que
+  pasa a `useThemeColors(['muted', 'accent-strong', 'foreground'])` con
+  `const [muted, accentStrong, foreground] = …` (no se añade una segunda
+  llamada a `useThemeColors(`); valor `text-22 font-black text-foreground` con
   `accessibilityLiveRegion="polite"` y `min-w-21 text-center`; ayuda
   `repeat-every-help` `text-13 font-semibold text-muted` bajo la fila. Botón en
   extremo: `disabled` + `opacity-50`. Las claves singulares/plurales se usan
@@ -104,7 +115,13 @@ ola 0, §Artboards nuevos). Hashes de lo congelado:
 - Regla de tomas (R12): N ∈ {6, 8, 12, 24} lista tomas; el resto, frase de
   intervalo. Motivo: con N < 6 la lista pasa de cuatro tomas y no cabe en la
   nota; con N que no divide 24 las tomas no se repiten cada día y la lista
-  engaña.
+  engaña. La unión se llama con la forma corta de propiedades:
+  `const list = doses.slice(0, -1).join(', ');`,
+  `const last = doses[doses.length - 1];` y
+  `t('addReminder.dosesJoin', { list, last })`. La forma `last: …` casa con
+  `/\b(?:last|first|odd|even):/` de `#62 R6 … variantes de posición`
+  (`src/__tests__/consistency-classnames.test.ts`) y la tumba. Ancla:
+  `grep -cE "\b(last|first|odd|even):" src/screens/add-reminder/index.tsx` = 0.
 - Nombre de mascota (R13): `useQuery(petKeys.list())` comparte caché con
   Recordatorios (que ya la cargó), así que en la app no hay petición extra.
   Los tests del fichero ganan `QueryClientProvider` y el doble de `listPets`.
@@ -126,6 +143,9 @@ ola 0, §Artboards nuevos). Hashes de lo congelado:
 - Badge «Hoy» (R16): la variable `upcoming` pasa a
   `!inactive && days === 0`; el artboard pinta badge y borde ámbar solo en la
   fila de hoy y deja sin ellos la fila a cuatro días.
+- Badge: `daysUntil(now, dueAt)` con la firma `daysUntil(from, to)` de
+  `src/utils/reminder-dates.ts`, el mismo orden que la llamada actual
+  `daysUntil(new Date(), due)`.
 - Hoja compartida (R17): un único `BottomSheet`. `index` es 0 cuando
   `deleteCandidate` o `cancelCandidate` no es `null`; `onClose` y la limpieza
   de `useFocusEffect` vacían los dos. Dentro de `BottomSheetView` se pinta
@@ -135,12 +155,18 @@ ola 0, §Artboards nuevos). Hashes de lo congelado:
   clases que confirm/cancel de borrar (dos `rounded-16` nuevos).
 - Invalidación (R18): `useQueryClient().invalidateQueries({ queryKey: reminderKeys.list(petId) })`.
   Mapeo de errores con las mismas claves que el borrado, salvo `forbidden`,
-  que tiene su propia clave.
+  que tiene su propia clave. El handler es el del borrado calcado: `try` con
+  `switch` sobre `result.kind` y `catch` con `common.somethingWentWrong`. Deja
+  en `reminders/index.tsx` una llamada `t('common.cannotReachServer'` más (base
+  1 → 2) y dos `t('common.somethingWentWrong'` más (base 3 → 5): +3 filas
+  comunes en `R8_REMINDERS` (R22). Fundir el `catch` con la rama `error` no
+  está permitido: cambiaría la cifra de R22.
 
 ### Fondo de la hoja y orden de merge con #218 (R19)
 
 Verificado en `/home/claude/sites/Pet-Tracker-wt-218` (HEAD `3859b70f`, solo
-spec): #218 añade a `src/screens/reminders/index.tsx`
+spec; re-medido el 2026-10-26 en HEAD `dce08a78`, con #218 implementada, y
+sigue igual): #218 añade a `src/screens/reminders/index.tsx`
 `const [surface] = useThemeColors(['surface']);` y
 `backgroundStyle={{ backgroundColor: surface }}` en el `BottomSheet`, y trae
 `src/__tests__/sheet-surface-background.test.ts` con
@@ -160,18 +186,44 @@ que exige **un** `<BottomSheet` por fichero y **una** aparición de esa
   de la hoja de cancelar. El candado estático de #218 R3 ya cubre el fichero
   porque sigue habiendo un solo `BottomSheet`.
 - Efecto en inventarios de #218: ninguno. #213 no añade `useThemeColors(` ni
-  `backgroundStyle` ni `<BottomSheet` a `reminders/index.tsx` (añade
-  `'accent-strong'` al array del `useThemeColors` existente si no está).
+  `backgroundStyle` ni `<BottomSheet` a `reminders/index.tsx`. El color
+  `accent-strong` del icono `Repeat` de R14 se añade al final de la llamada
+  cuyo array empieza por `'category-blue-strong'` y acaba en `'danger'`:
+  `const [blueInk, amberInk, greenInk, violetInk, roseInk, muted, accentForeground, danger, accentStrong] = useThemeColors([`
+  … `'muted', 'accent-foreground', 'danger', 'accent-strong',`. Nunca a
+  `useThemeColors(['surface'])` de #218, que su guarda lee tal cual. Ancla
+  (tras el merge con #218):
+  `grep -cF "useThemeColors(" src/screens/reminders/index.tsx` = 2, la misma
+  cifra que en `dev` con #218 (base sin #218: 1).
 
-### Orden de merge con #208 y #209
+### Orden de merge con #208, #209, #214 y #218
 
-Las tres tocan `src/__tests__/ui-copy-table.ts` y el recuento de
-`#194 R1`. #208 reserva `R19_VACCINE_CREATE` (+1 `SCREEN_FILES`) y #209
-`R20_NUTRITION_QUESTIONNAIRE`. #213 no crea bloque: añade filas a
-`R8_REMINDERS`. Quien mergee después hace `git merge origin/dev` (nunca
-rebase), suma los deltas de los demás en las expresiones de mano
-(`#194 R1`, `#186 R5`) y re-mide con los tests; el delta propio de #213 es
-el de R22.
+Regla: quien mergee después hace `git merge origin/dev` (nunca rebase), suma
+los deltas de los demás en las expresiones de mano y re-mide con los tests;
+el delta propio de #213 es el de R22 y su lista cerrada de `tasks.md` §R22.
+Lo que comparte #213 con cada una:
+
+- **#208** y **#209**: `src/__tests__/ui-copy-table.ts` y el recuento de
+  `#194 R1`. #208 reserva `R19_VACCINE_CREATE` (+1 `SCREEN_FILES`) y #209
+  `R20_NUTRITION_QUESTIONNAIRE`. #213 no crea bloque: añade filas a
+  `R8_REMINDERS`. Las tres suman en `#194 R1` y `#186 R5`. #209 comparte
+  además los agregados de `chunky-cta-canvas-fidelity`,
+  `consistency-classnames` y `design-drift`.
+- **#214**: `src/__tests__/ui-copy-table.ts` (bloque `R21_PET_MEMBERS`),
+  `src/__tests__/ui-language.test.ts` (`#186 R5`, `#65 R18`), los totales de
+  esquinas de `src/__tests__/consistency-classnames.test.ts` que #213 sube en
+  +1 (el de `fusiona la esquina…` 55 → 56 y el de `#98 R10 … deja
+  CONTINUOUS_CORNER…` 53 → 54; #214 los mueve con la fila de
+  `profile/index.tsx`) y los fixtures de `src/screens/home/index.test.tsx`
+  (#213 les añade `recurrence: null, recurrenceUntil: null`).
+- **#218**: `src/screens/reminders/index.tsx` (la llamada
+  `useThemeColors(['surface'])` y el `backgroundStyle` del `BottomSheet`); ver
+  §Fondo de la hoja.
+- **Fixtures `Reminder` tipados (A16)**: R1 hace obligatorios `recurrence` y
+  `recurrenceUntil`. Cuando la segunda de #213 y #208, o de #213 y #214,
+  mergee en `dev`, todo fixture `Reminder` tipado que haya añadido #208 o #214
+  gana `recurrence: null, recurrenceUntil: null`; quien mergea segundo lo hace
+  en su rama y lo encuentra con `bunx tsc --noEmit`.
 
 ### Push (R20, R21)
 
@@ -255,6 +307,10 @@ catálogo.
 
 ### Copy sin artboard
 
+**Decisión G1 (2026-10-26, 22:44 UTC).** El humano aprobó «tal cual» el copy
+de esta tabla. La decisión se tomó en la sesión del leader. Ningún literal
+cambia.
+
 | Clave | Propuesta | Motivo |
 |---|---|---|
 | `hoursValueOne`, `monthsValueOne` | «1 hora», «1 mes» | el i18n no tiene plurales; el stepper llega a 1 |
@@ -293,7 +349,11 @@ catálogo.
   `src/hooks/use-push-registration.test.tsx`,
   `src/providers/__tests__/language-provider.test.tsx`,
   `src/__tests__/ui-copy-table.ts`, `src/__tests__/ui-language.test.ts`,
-  `src/__tests__/design-drift.test.ts`, y los fixtures de
+  `src/__tests__/design-drift.test.ts`,
+  `src/__tests__/alerts-canvas-fidelity.test.ts`,
+  `src/__tests__/consistency-classnames.test.ts`,
+  `src/__tests__/chunky-cta-canvas-fidelity.test.ts` (lista cerrada en
+  `tasks.md` §R22), y los fixtures de
   `src/screens/home/format.test.ts` y `src/screens/home/index.test.tsx`.
 - Sin ficheros nuevos de producción, sin dependencias nuevas, sin coste ni
   recursos AWS.
