@@ -800,7 +800,7 @@ describe('Pet reminders (e2e)', () => {
       string | null,
       string | null,
     ][] = [
-      ['unidad desconocida', 'minute', 1, true, null, 'unit'],
+      ['unidad desconocida', 'min', 1, true, null, 'unit'],
       ...limits.map(
         ([unit]): [string, string, number, boolean, null, string] => [
           `${unit} bajo minimo`,
