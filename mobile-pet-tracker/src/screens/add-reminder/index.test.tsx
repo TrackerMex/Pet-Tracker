@@ -1326,4 +1326,34 @@ describe('#213 R4: controles de repetición', () => {
     }
   });
 
+
+  it('#213 R6: el stepper de horas nace en 8 y muestra su ayuda', async () => {
+    await fireEvent.press(screen.getByTestId('repeat-chip-hour'));
+    const stepper = screen.getByTestId('repeat-stepper');
+    expect(stepper.props.className).toBe('flex-row items-center gap-3 rounded-16 bg-default p-2');
+    expect(stepper).toHaveStyle({ borderCurve: 'continuous' });
+    expect(within(stepper).getByText('Cada').props.className).toBe('text-15 font-extrabold text-foreground');
+    expect(screen.getByTestId('repeat-every-value')).toHaveTextContent('8 horas');
+    expect(screen.getByTestId('repeat-every-value').props.className).toBe('min-w-21 text-center text-22 font-black text-foreground');
+    expect(screen.getByTestId('repeat-every-value').props.accessibilityLiveRegion).toBe('polite');
+    expect(screen.getByTestId('repeat-every-help')).toHaveTextContent('De 1 a 24 horas.');
+    expect(screen.getByTestId('repeat-every-less').props.accessibilityLabel).toBe('Una hora menos');
+    expect(screen.getByTestId('repeat-every-more').props.accessibilityLabel).toBe('Una hora más');
+  });
+
+  it('#213 R6: el stepper de horas se detiene en 1 con «1 hora» y deshabilita menos', async () => {
+    await fireEvent.press(screen.getByTestId('repeat-chip-hour'));
+    for (let i = 0; i < 10; i++) await fireEvent.press(screen.getByTestId('repeat-every-less'));
+    expect(screen.getByTestId('repeat-every-value')).toHaveTextContent('1 hora');
+    expect(screen.getByTestId('repeat-every-less').props.accessibilityState.disabled).toBe(true);
+    expect(screen.getByTestId('repeat-every-less').props.className).toContain('opacity-50');
+  });
+
+  it('#213 R6: el stepper de horas se detiene en 24 y deshabilita más', async () => {
+    await fireEvent.press(screen.getByTestId('repeat-chip-hour'));
+    for (let i = 0; i < 20; i++) await fireEvent.press(screen.getByTestId('repeat-every-more'));
+    expect(screen.getByTestId('repeat-every-value')).toHaveTextContent('24 horas');
+    expect(screen.getByTestId('repeat-every-more').props.accessibilityState.disabled).toBe(true);
+  });
+
 });
