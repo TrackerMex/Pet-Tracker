@@ -22,6 +22,14 @@ interface InviteBody {
   expiresAt: string;
 }
 
+interface MemberBody {
+  userId: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  joinedAt: string;
+}
+
 interface PetProfileBody {
   id: string;
   myRole: string;
@@ -620,5 +628,47 @@ describe('#211 R16: pet members API', () => {
     expect(response.status).toBe(429);
     expect(response.body).toEqual(rateLimitBody);
     await accept(other, invite.code).expect(201);
+  });
+  function memberList(user: TestUser, petId: string) {
+    return api()
+      .get(`/v1/pets/${petId}/members`)
+      .set('Authorization', `Bearer ${user.token}`);
+  }
+  it('#211 R11: owner y family ven la misma lista ordenada por alta, sin email', async () => {
+    const { owner, pet, accepter, invite, label } = await inviteFixture();
+    const second = await seedUser(`second-member-${label}`);
+    await accept(accepter, invite.code).expect(201);
+    const next = await createInviteViaApi(owner, pet.id);
+    await accept(second, next.code).expect(201);
+    const inactive = await seedUser(`inactive-member-${label}`);
+    await seedMembership(pet.id, inactive.id, 'family', 'revoked');
+    const response = await memberList(owner, pet.id).expect(200);
+    const body = response.body as MemberBody[];
+    expect(body.map((member) => member.userId)).toEqual([
+      owner.id,
+      accepter.id,
+      second.id,
+    ]);
+    expect(body.map((member) => member.role)).toEqual([
+      'owner',
+      'family',
+      'family',
+    ]);
+    for (const member of body) {
+      expect(Object.keys(member).sort()).toEqual([
+        'firstName',
+        'joinedAt',
+        'lastName',
+        'role',
+        'userId',
+      ]);
+      expect(member.firstName).toBe('E2e');
+      const [row] = await memberships(pet.id, member.userId);
+      expect(member.joinedAt).toBe(row.createdAt.toISOString());
+    }
+    for (const user of [owner, accepter, second])
+      expect(JSON.stringify(body)).not.toContain(user.email);
+    const familyResponse = await memberList(accepter, pet.id).expect(200);
+    expect(familyResponse.body).toEqual(body);
   });
 });
