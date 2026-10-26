@@ -191,3 +191,33 @@ it('#208 R8: con el catálogo en error solo queda «Otra vacuna» seleccionado',
   expect(screen.getByTestId('vaccine-chip-other').props.accessibilityState).toEqual({ selected: true });
   expect(screen.queryByTestId('vaccine-create-chips-skeleton')).toBeNull();
 });
+
+it('#208 R9: «Otra vacuna» muestra nombre, contador 0/120 y lo actualiza a 13/120 con «Leishmaniasis»', async () => {
+  await renderVaccineCreate();
+  await fireEvent.press(await screen.findByTestId('vaccine-chip-other'));
+  const name = await screen.findByTestId('vaccine-create-name');
+  expect(screen.getByText('Nombre de la vacuna', { exact: true }).props.className).toBe('text-sm font-extrabold text-foreground');
+  expect(name.props.maxLength).toBe(120);
+  expect(name.props.style).toEqual({ borderCurve: 'continuous' });
+  expect(screen.getByTestId('vaccine-create-name-count')).toHaveTextContent('0/120', { exact: true });
+  expect(screen.getByTestId('vaccine-create-name-count').props.className).toBe('text-xs font-semibold text-muted');
+  expect(screen.getByTestId('vaccine-create-name-count').props.style).toEqual({ fontVariant: ['tabular-nums'] });
+  await fireEvent.changeText(name, 'Leishmaniasis');
+  expect(screen.getByTestId('vaccine-create-name-count')).toHaveTextContent('13/120', { exact: true });
+});
+it('#208 R9: el borde del nombre pasa a border-accent con foco y vuelve a border-transparent al perderlo', async () => {
+  await renderVaccineCreate();
+  await fireEvent.press(await screen.findByTestId('vaccine-chip-other'));
+  const name = await screen.findByTestId('vaccine-create-name');
+  expect(name.props.className).toBe('h-13 rounded-xl bg-default px-3.5 text-15 font-semibold text-foreground border-2 border-transparent');
+  await fireEvent(name, 'focus');
+  expect(screen.getByTestId('vaccine-create-name').props.className).toBe('h-13 rounded-xl bg-default px-3.5 text-15 font-semibold text-foreground border-2 border-accent');
+  await fireEvent(name, 'blur');
+  expect(screen.getByTestId('vaccine-create-name').props.className).toBe('h-13 rounded-xl bg-default px-3.5 text-15 font-semibold text-foreground border-2 border-transparent');
+});
+it('#208 R9: con un chip del catálogo no hay campo de nombre ni contador', async () => {
+  await renderVaccineCreate();
+  await screen.findByTestId('vaccine-chip-cat-lepto');
+  expect(screen.queryByTestId('vaccine-create-name')).toBeNull();
+  expect(screen.queryByTestId('vaccine-create-name-count')).toBeNull();
+});
