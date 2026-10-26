@@ -23,9 +23,9 @@ contrato: #212 R1 (`specs/nutrition-ai-structured-plan/requirements.md`).
 
 Los artboards están congelados en `specs/mobile-nutrition-questionnaire/canvas/`.
 **Nota para el firmante:** se congelaron de la versión viva
-`1793039639-fe0d` del canvas, no de la v140 (`1793036268-d302`) citada en el
-plan. La lectura de Artifact solo sirve la versión viva. Si la v140 difiere en
-estos ocho artboards, hay que re-congelarlos antes de firmar.
+`1793039639-fe0d` del canvas. El 2026-10-26 el leader verificó, sha256 a
+sha256, que los ocho artboards son idénticos a los de la v140
+(`1793036268-d302`) aprobada en G1. No hay que re-congelar.
 
 | Artboard | sha256 |
 |---|---|
@@ -86,7 +86,10 @@ Reglas que la app debe cumplir:
    res» y «Soya» se quedan.
 6. **Textos BCS**: un solo juego neutro de 9 textos, con banda de color: 1–3
    blue, 4–5 green, 6–7 amber, 8–9 rose (`CATEGORY_SLOTS`).
-7. **`putJson` nuevo** en `src/api/http.ts`, con el mismo patrón que `patchJson`.
+7. **`putJson` nuevo** en `src/api/http.ts`, con la misma firma y el mismo
+   cuerpo que `patchJson`: `putJson(baseUrl, path, token, body, fetchFn)`,
+   que resuelve la URL con `apiUrl(baseUrl, path)`. Solo cambia
+   `method: 'PUT'`.
 8. **Guardar** = PUT y luego POST generate. CuestionarioGenerando se muestra
    mientras dura y **avanza solo**: cuando generate da ok, la pantalla hace
    `router.back()`. No hay temporizadores ni duración mínima. El enlace «Ver
@@ -108,18 +111,24 @@ Reglas que la app debe cumplir:
     - Sin el lápiz del enlace «Editar perfil».
     - Los anillos usan `MOTION_PING_TIMING` (2400 ms), no los 2 s del
       artboard.
+    - El círculo «en curso» de Generando es un `View` estático. El artboard
+      lo hace girar, pero `src/theme/motion.ts` no tiene constante `MOTION_*`
+      de giro, y crearla queda fuera de alcance.
     - Ninguna se candada.
 14. **Copy en Voz B**, literal de los artboards. «Rocky» se sustituye por
     `{{name}}` (nombre de la mascota). Las notas de kcal de Húmedo, Mixto y
     Casero no están en el canvas y se fijan aquí, en R11.
 15. **Reutilización de claves**: antes de crear una clave, Codex busca su
-    valor `es` exacto con `grep -nF "'<valor>'" mobile-pet-tracker/src/i18n/catalog.ts`.
-    Si ya existe una clave con ese valor exacto, se reutiliza. Reutilizaciones
-    ya fijadas:
+    valor `es` exacto con `grep -nF "'<valor>'" src/i18n/catalog.ts`, desde
+    `mobile-pet-tracker/`. Si ya existe una clave con ese valor exacto, se
+    reutiliza. Reutilizaciones ya fijadas (la lista es cerrada: R23 cuenta
+    con ellas):
     - `addPet.stepProgress` ('{{current}} de {{total}}').
     - `addPet.optional` ('Opcional').
     - `mealSchedule.nutritionProfile` ('Perfil nutricional').
     - `mealSchedule.noNutritionProfileYet` ('Aún no hay perfil nutricional').
+    - `profile.editProfile` ('Editar perfil'), texto del enlace
+      `nutrition-profile-edit` de Horario (R20).
     - `common.somethingWentWrong`, `common.cannotReachServer`,
       `mealSchedule.errorForbidden` y `mealSchedule.registerWeightFirst`.
 
@@ -134,23 +143,33 @@ Convenciones:
   `myRole: 'owner'`.
 - Los literales esperados se escriben **a mano en el test**, copiados del
   canvas. Nunca se importan de `catalog.ts`.
-- Rutas relativas a `mobile-pet-tracker/`.
+- Rutas relativas a `mobile-pet-tracker/`. Todas las anclas `grep` se
+  ejecutan desde `mobile-pet-tracker/`; `docs/` se alcanza como `../docs/`.
+- Todo nombre de test nuevo empieza por `#209 R<n>:`, con dos puntos. Así
+  `-t '#209 R1:'` no recoge los `it` de otras features ni los de `R10`–`R19`.
 
 ### API
 
-**R1** — WHEN el código llama a `putJson(url, token, body, fetchFn)`, THE
-SYSTEM SHALL hacer `fetchFn(url, { method: 'PUT', headers: { 'Content-Type':
-'application/json', Authorization: 'Bearer <token>' }, body: JSON.stringify(body) })`
-y devolver un `GetResult`, igual que `patchJson`.
+**R1** — WHEN el código llama a `putJson(baseUrl, path, token, body, fetchFn)`,
+THE SYSTEM SHALL hacer ``fetchFn(apiUrl(baseUrl, path), { method: 'PUT',
+headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+body: JSON.stringify(body) })`` y devolver un `GetResult`, igual que `patchJson`
+(misma firma, mismo `try`/`catch`).
 - Test: `src/api/__tests__/nutrition.test.ts` ›
-  `it('R1: putJson envía PUT con cuerpo JSON y Bearer')`.
+  `it('#209 R1: putJson envía PUT con cuerpo JSON y Bearer')`. Llama a
+  `putJson(baseUrl, '/pets/pet-1/nutrition-profile', 'token-1', { a: 1 }, fetchFn)`
+  con las constantes `baseUrl` (`'http://example.test/v1/'`) y
+  `profileEndpoint` que ya tiene el fichero, y aserta
+  `toHaveBeenCalledWith(profileEndpoint, { method: 'PUT', headers: { Authorization: 'Bearer token-1', 'Content-Type': 'application/json' }, body: '{"a":1}' })`.
+  Una barra de más o un `/v1` duplicado da rojo.
 - Ancla previa: `grep -cF 'export async function putJson' src/api/http.ts` = `0`.
   Posterior: `1`.
 
 **R2** — WHEN el código llama a `upsertNutritionProfile(baseUrl, token, petId,
-input, fetchFn = fetch)`, THE SYSTEM SHALL hacer el PUT a
-`${baseUrl}/v1/pets/${petId}/nutrition-profile` con `input` como cuerpo y
-devolver `UpsertNutritionProfileState`:
+input, fetchFn = fetch)`, THE SYSTEM SHALL hacer el PUT con
+``putJson(baseUrl, `/pets/${petId}/nutrition-profile`, token, input, fetchFn)``
+y devolver `UpsertNutritionProfileState`. La ruta no lleva `/v1`:
+`EXPO_PUBLIC_API_URL` ya acaba en `/v1`. Tabla de resultados:
 
 | Respuesta | Resultado |
 |---|---|
@@ -166,9 +185,13 @@ devolver `UpsertNutritionProfileState`:
 `NutritionProfileInput` vive en `src/api/types.ts`:
 `{ activityLevel; bodyCondition?: number; targetWeightKg?: number; foodType; kcalPer100g: number; allergies: string[]; diseases: string[] }`.
 - Tests: `src/api/__tests__/nutrition.test.ts` ›
-  - `it('R2: upsertNutritionProfile hace PUT a nutrition-profile y devuelve ok con el perfil')`
-  - `it.each(...)('R2: status %i se mapea a %s')`, una fila por status (400, 401, 403, 404, 500).
-  - `it('R2: sin red devuelve unreachable')`.
+  - `it('#209 R2: upsertNutritionProfile hace PUT a nutrition-profile y devuelve ok con el perfil')`.
+    Llama con el `baseUrl` del fichero y aserta que el primer argumento de
+    `fetchFn` es `profileEndpoint`
+    (`'http://example.test/v1/pets/pet-1/nutrition-profile'`), con
+    `method: 'PUT'`. Un `/v1/v1` da rojo.
+  - `it.each(...)('#209 R2: status %i se mapea a %s')`, una fila por status (400, 401, 403, 404, 500).
+  - `it('#209 R2: sin red devuelve unreachable')`.
 
 ### Ruta y estructura
 
@@ -176,12 +199,46 @@ devolver `UpsertNutritionProfileState`:
 - la ruta delgada `src/app/nutrition-profile.tsx` (menos de 10 líneas) que
   solo reexporta `src/screens/nutrition-questionnaire/index.tsx`;
 - `<Stack.Screen name="nutrition-profile" options={{ headerShown: false }} />`
-  en `src/app/_layout.tsx`, junto a la de `meal-schedule`.
+  en `src/app/_layout.tsx`, como **último hijo** del grupo `Stack.Protected`,
+  justo después de la de `edit-profile`. Ponerla en medio movería todos los
+  índices que fija `src/app/__tests__/layout.test.tsx`; al final solo mueve
+  las cuentas.
 
-Ancla posterior: `grep -cF 'name="nutrition-profile"' src/app/_layout.tsx` = `1`.
-- Test: `src/screens/nutrition-questionnaire/index.test.tsx` ›
-  `it('R3: la ruta nutrition-profile es delgada y está en el Stack')`. Lee
-  ambas fuentes y aserta menos de 10 líneas y la línea de `Stack.Screen`.
+La ruta es exactamente
+`export { NutritionQuestionnaireScreen as default } from '../screens/nutrition-questionnaire';`.
+
+Anclas: `grep -cF 'name="nutrition-profile"' src/app/_layout.tsx` = `0`
+antes y `1` después.
+
+Enmiendas de `src/app/__tests__/layout.test.tsx` (regla mecánica de R24, con
+el comentario `// #209 R3` delante de los que ya hay). Las cinco cuentas son
+las del árbol base `2041e2b3`; medido en semilla: rojo
+`Expected length: 14 / Received length: 15` sin enmendar, verde con ellas.
+
+| `it` de base | Base | Después |
+|---|---|---|
+| `#194 R4: declara ocho rutas protegidas y alerts singular` | `toHaveLength(8 + 1 + 1 + 1 + 1 + 1 + 1)` | `toHaveLength(8 + 1 + 1 + 1 + 1 + 1 + 1 + 1); // #209 R3 // …` |
+| `#194 R4: declara alerts/[alertId] como décimo hijo y singular` | `toHaveLength(9 + 1 + 1 + 1 + 1 + 1)` | `toHaveLength(9 + 1 + 1 + 1 + 1 + 1 + 1); // #209 R3 // …` |
+| `#194 R4: declara pets/[petId]/geofences como undécimo hijo y no singular (enmendado por #189 R1.1)` | `toHaveLength(10 + 1 + 1 + 1 + 1)` | `toHaveLength(10 + 1 + 1 + 1 + 1 + 1); // #209 R3 // …` |
+| `#194 R4: declara pets/[petId]/geofence-editor como duodécimo hijo y no singular (enmendado por #189 R1.1)` | `toHaveLength(11 + 1 + 1 + 1)` | `toHaveLength(11 + 1 + 1 + 1 + 1); // #209 R3 // …` |
+| `#194 R4: edit-profile es la última pantalla protegida` | `Children.toArray(group.props.children).at(-1)` | `Children.toArray(group.props.children).at(-1 - 1); // #209 R3` |
+
+Cada uno de esos cinco `it` añade a su nombre el sufijo
+` (enmendado por #209 R3)`. Ningún otro número de `layout.test.tsx` cambia.
+
+- Tests:
+  - `src/screens/nutrition-questionnaire/index.test.tsx` ›
+    `it('#209 R3: la ruta nutrition-profile es delgada y está en el Stack')`.
+    Lee ambas fuentes y aserta menos de 10 líneas y la línea de
+    `Stack.Screen`.
+  - `src/app/__tests__/layout.test.tsx` ›
+    `it('#209 R3: nutrition-profile es el último hijo protegido, justo tras edit-profile')`,
+    nuevo, con el mismo arnés que el `it` de `edit-profile` (render de
+    `RootLayout`, último `Stack` simulado, grupo en el índice 4). Saca
+    `names` (el `props.name` de cada hijo) y aserta
+    `expect(names.at(-1)).toBe('nutrition-profile')` y
+    `expect(names.indexOf('nutrition-profile')).toBe(names.indexOf('edit-profile') + 1)`.
+  - Las cinco enmiendas de la tabla, en verde.
 
 **R4** — WHILE la pantalla carga la mascota (`petKeys.detail(petId)` con
 `getPet`) o el perfil (`nutritionKeys.profile(petId)` con
@@ -195,8 +252,8 @@ Ancla posterior: `grep -cF 'name="nutrition-profile"' src/app/_layout.tsx` = `1`
 - En otro caso monta el formulario. Con el perfil `not-found` el formulario
   arranca vacío; con `ok` arranca en modo edición (R15).
 - Tests: `src/screens/nutrition-questionnaire/index.test.tsx` ›
-  - `it('R4: mientras carga pinta el esqueleto')`
-  - `it('R4: si la mascota falla pinta el error de carga')`
+  - `it('#209 R4: mientras carga pinta el esqueleto')`
+  - `it('#209 R4: si la mascota falla pinta el error de carga')`
 
 **R5** — WHILE el formulario está montado, THE SYSTEM SHALL pintar:
 - `ScreenHeader` con `testID="nutrition-questionnaire"`, título «Perfil
@@ -210,7 +267,7 @@ Ancla posterior: `grep -cF 'name="nutrition-profile"' src/app/_layout.tsx` = `1`
 - La burbuja de Pingo `nutrition-questionnaire-bubble`, con el texto del paso.
 
 Valores de N: Actividad 1, Condición 2, Peso objetivo 2, Alimento 3, Salud 4.
-- Test: `it('R5: pinta cabecera, contador «1 de 4» y la barra con un segmento hecho')`.
+- Test: `it('#209 R5: pinta cabecera, contador «1 de 4» y la barra con un segmento hecho')`.
 
 **R6** — WHEN el usuario pulsa Volver (`nutrition-questionnaire-back`, o el
 gesto o botón del sistema, vía `usePreventRemove`) en un paso distinto de
@@ -222,8 +279,8 @@ Actividad, THE SYSTEM SHALL retroceder un paso sin salir de la pantalla:
 
 En Actividad, Volver sale de la pantalla.
 - Tests:
-  - `it('R6: Volver desde Alimento con condición 6 vuelve a Condición')`
-  - `it('R6: Volver desde Alimento con condición 7 vuelve a Peso objetivo')`
+  - `it('#209 R6: Volver desde Alimento con condición 6 vuelve a Condición')`
+  - `it('#209 R6: Volver desde Alimento con condición 7 vuelve a Peso objetivo')`
 
 ### Pasos
 
@@ -243,8 +300,8 @@ Y estas tres tarjetas, con `accessibilityRole="radio"` y
 `nutrition-questionnaire-next` («Siguiente») tiene `isDisabled` hasta que hay
 una elección.
 - Tests:
-  - `it('R7: Actividad pinta las tres opciones con su copy')`
-  - `it('R7: Siguiente está desactivado hasta elegir actividad')`
+  - `it('#209 R7: Actividad pinta las tres opciones con su copy')`
+  - `it('#209 R7: Siguiente está desactivado hasta elegir actividad')`
 
 **R8** — WHILE el paso es Condición, THE SYSTEM SHALL pintar estos textos:
 - Burbuja: «Pasa la mano por el costado de Rocky y elige lo que más se parezca a lo que sientes.»
@@ -267,13 +324,13 @@ Y nueve filas `bcs-option-<n>` (`accessibilityRole="radio"`), cada una con
 
 Siguiente queda desactivado hasta elegir.
 - Tests:
-  - `it.each(NINE_ROWS)('R8: fila %i pinta «%s», «%s» y la banda %s')`. La
+  - `it.each(NINE_ROWS)('#209 R8: fila %i pinta «%s», «%s» y la banda %s')`. La
     tabla se escribe a mano en el test y tiene longitud 9.
-  - `it('R8: Siguiente está desactivado hasta elegir condición')`
+  - `it('#209 R8: Siguiente está desactivado hasta elegir condición')`
 
 **R9** — WHEN el usuario pulsa Siguiente en Condición, THE SYSTEM SHALL ir a
 Alimento si la condición es < 7, o a Peso objetivo si es ≥ 7.
-- Test: `it.each([[1, 'Alimento'], [6, 'Alimento'], [7, 'Peso objetivo'], [9, 'Peso objetivo']])('R9: con condición %i Siguiente va a %s')`.
+- Test: `it.each([[1, 'Alimento'], [6, 'Alimento'], [7, 'Peso objetivo'], [9, 'Peso objetivo']])('#209 R9: con condición %i Siguiente va a %s')`.
   Aserta el paso destino por su leyenda: «Tipo de alimento» o «Peso objetivo».
 
 **R10** — WHILE el paso es Peso objetivo, THE SYSTEM SHALL:
@@ -297,10 +354,10 @@ Alimento si la condición es < 7, o a Peso objetivo si es ≥ 7.
   como `.`) no es un número > 0 y ≤ 999.99 con 2 decimales como máximo.
 
 Tests:
-- `it('R10: Peso objetivo pinta resumen, copy y contador «2 de 4»')`
-- `it('R10: Cambiar vuelve a Condición')`
-- `it('R10: sin currentWeightKg no pinta el peso actual')`
-- `it.each([['0', true], ['1000', true], ['12,345', true], ['', false], ['10,5', false]])('R10: peso «%s» desactiva Siguiente: %s')`
+- `it('#209 R10: Peso objetivo pinta resumen, copy y contador «2 de 4»')`
+- `it('#209 R10: Cambiar vuelve a Condición')`
+- `it('#209 R10: sin currentWeightKg no pinta el peso actual')`
+- `it.each([['0', true], ['1000', true], ['12,345', true], ['', false], ['10,5', false]])('#209 R10: peso «%s» desactiva Siguiente: %s')`
 
 **R11** — WHILE el paso es Alimento, THE SYSTEM SHALL pintar:
 - La burbuja «¿Qué come Rocky? Con las calorías de su alimento calculo cuántos
@@ -328,13 +385,13 @@ precarga y pintar su nota:
 Sin tipo elegido no hay nota.
 
 Tests:
-- `it.each(FOUR_TYPES)('R11: %s precarga %s kcal y su nota')`. La tabla se
+- `it.each(FOUR_TYPES)('#209 R11: %s precarga %s kcal y su nota')`. La tabla se
   escribe a mano en el test y tiene longitud 4.
-- `it('R11: cambiar de tipo sobrescribe un valor editado')`
+- `it('#209 R11: cambiar de tipo sobrescribe un valor editado')`
 
 **R12** — WHILE el paso es Alimento, THE SYSTEM SHALL desactivar Siguiente si
 falta el tipo o si `kcal-input` no es un entero entre 80 y 600.
-- Test: `it.each([['79', true], ['80', false], ['600', false], ['601', true], ['', true]])('R12: kcal «%s» desactiva Siguiente: %s')`.
+- Test: `it.each([['79', true], ['80', false], ['600', false], ['601', true], ['', true]])('#209 R12: kcal «%s» desactiva Siguiente: %s')`.
 
 **R13** — WHILE el paso es Salud, THE SYSTEM SHALL pintar:
 - La burbuja «¿Rocky tiene alguna alergia o enfermedad? Si no tiene ninguna,
@@ -356,7 +413,9 @@ falta el tipo o si `kcal-input` no es un entero entre 80 y 600.
   - problemas-digestivos «Problemas digestivos»
   - problemas-articulares «Problemas articulares»
   - otra «Otra»
-- La CTA «Guardar y generar plan».
+- La CTA «Guardar y generar plan». Es el mismo `nutrition-questionnaire-next`
+  de los pasos anteriores: el pie tiene una sola CTA en todos los pasos, y en
+  Salud solo cambia su texto. No hay otro testID de CTA.
 
 Los chips llevan `accessibilityRole="checkbox"` y
 `accessibilityState={{ checked }}`, y se marcan y desmarcan al pulsarlos.
@@ -370,8 +429,9 @@ WHILE «Otra» está marcada en una lista, THE SYSTEM SHALL pintar debajo:
 Aquí `<lista>` es `allergy` o `disease`.
 
 Tests:
-- `it('R13: Salud pinta las dos listas con su copy y orden')`
-- `it.each(['allergy', 'disease'])('R13: marcar Otra en %s muestra ¿Cuál? y el contador pasa de 0/40 a 7/40')`.
+- `it('#209 R13: Salud pinta las dos listas con su copy y orden')`. También aserta
+  que `nutrition-questionnaire-next` contiene «Guardar y generar plan».
+- `it.each(['allergy', 'disease'])('#209 R13: marcar Otra en %s muestra ¿Cuál? y el contador pasa de 0/40 a 7/40')`.
   Escribe «Maíz ok», que tiene 7 caracteres.
 
 ### Guardar y generar
@@ -393,13 +453,13 @@ llamar a `upsertNutritionProfile` con un cuerpo que cumpla todo esto:
      como máximo.
 
 Tests:
-- `it('R14: condición 5 omite targetWeightKg aunque se hubiera escrito antes')`.
+- `it('#209 R14: condición 5 omite targetWeightKg aunque se hubiera escrito antes')`.
   El test escribe peso con 7, vuelve y elige 5.
-- `it('R14: condición 7 con peso vacío omite targetWeightKg')`
-- `it('R14: condición 7 con «10,5» envía targetWeightKg 10.5')`
-- `it('R14: Otra con «  Maíz  » añade «Maíz» tras las etiquetas marcadas')`
-- `it('R14: Otra con solo espacios no añade nada')`
-- `it('R14: con 21 alergias conservadas envía 20')`. Usa el perfil precargado
+- `it('#209 R14: condición 7 con peso vacío omite targetWeightKg')`
+- `it('#209 R14: condición 7 con «10,5» envía targetWeightKg 10.5')`
+- `it('#209 R14: Otra con «  Maíz  » añade «Maíz» tras las etiquetas marcadas')`
+- `it('#209 R14: Otra con solo espacios no añade nada')`
+- `it('#209 R14: con 21 alergias conservadas envía 20')`. Usa el perfil precargado
   de R15.
 
 **R15** — WHEN el perfil existe (`getNutritionProfile` es `ok`), THE SYSTEM
@@ -415,15 +475,17 @@ Para los textos que no coinciden: el primero con 40 caracteres o menos marca
 «Otra» y rellena su campo. Los demás se conservan tal cual al final del array
 enviado (R14.4), aunque no se pintan.
 - Tests:
-  - `it('R15: con perfil existente precarga actividad, condición, peso, alimento y kcal')`
-  - `it('R15: «Pollo» marca su chip y «Maíz» rellena Otra')`
-  - `it('R15: con bodyCondition null Siguiente de Condición está desactivado')`
+  - `it('#209 R15: con perfil existente precarga actividad, condición, peso, alimento y kcal')`
+  - `it('#209 R15: «Pollo» marca su chip y «Maíz» rellena Otra')`
+  - `it('#209 R15: con bodyCondition null Siguiente de Condición está desactivado')`
 
 **R16** — WHEN el PUT empieza, THE SYSTEM SHALL sustituir el formulario por
 `nutrition-generating`, con:
-- el escenario: dos `PingRing` (`delay={0}` y `delay={1000}`); si
+- el escenario: dos `PingRing` con `testID="nutrition-generating-ring-0"`
+  (`delay={0}`) y `testID="nutrition-generating-ring-1"` (`delay={1000}`); si
   `useReducedMotion()` es verdadero, ningún anillo;
-- `PingoFloat` con `pingo-food.webp` a 112 px;
+- `PingoFloat` con `testID="nutrition-generating-pingo"` y `pingo-food.webp`
+  a 112 px (`size-28`);
 - el título «Preparando el plan de Rocky»;
 - el texto «Estoy calculando sus calorías y el reparto de sus comidas. Tarda
   unos segundos.»;
@@ -442,31 +504,46 @@ WHEN generate devuelve `ok`, THE SYSTEM SHALL invalidar
 `router.back()`.
 
 Tests:
-- `it('R16: con PUT en vuelo pinta Generando con Perfil guardado en curso')`
-- `it('R16: tras PUT ok marca Perfil guardado hecho y Calculando en curso')`
-- `it('R16: generate ok invalida perfil y plan y vuelve atrás')`
-- `it('R16: con movimiento reducido no pinta anillos')`
+- `it('#209 R16: con PUT en vuelo pinta Generando con Perfil guardado en curso')`
+- `it('#209 R16: tras PUT ok marca Perfil guardado hecho y Calculando en curso')`
+- `it('#209 R16: generate ok invalida perfil y plan y vuelve atrás')`
+- `it('#209 R16: con movimiento reducido no pinta anillos')`. Aserta que
+  `nutrition-generating-ring-0` y `-ring-1` no existen y que
+  `nutrition-generating-pingo` sí.
+
+El movimiento reducido se simula como en
+`src/components/__tests__/pet-hero-header.test.tsx`: un
+`jest.mock('react-native-reanimated', …)` de módulo que devuelve
+`{ ...jest.requireActual('react-native-reanimated'), __esModule: true, useReducedMotion: () => mockUseReducedMotion() }`,
+con `const mockUseReducedMotion = jest.fn<boolean, []>(() => false)`,
+`mockUseReducedMotion.mockReturnValue(true)` solo en el `it` de movimiento
+reducido, y `afterEach` que lo devuelve a `false`. Sin `__esModule: true` el
+doble pierde la exportación por defecto. El `it` de «PUT en vuelo» aserta
+además que los dos anillos existen, para que el de movimiento reducido no
+pase en verde con una pantalla que nunca pinta anillos.
 
 **R17** — IF el PUT o generate no devuelven `ok`, THEN THE SYSTEM SHALL volver
 al formulario en el paso Salud, con las respuestas intactas, y pintar
-`nutrition-questionnaire-error` (mismas clases que `generate-plan-error` en
-`src/screens/meal-schedule/index.tsx`) con este texto:
+`<Text testID="nutrition-questionnaire-error" className="text-danger">`
+(la misma clase que `generate-plan-error` en
+`src/screens/meal-schedule/index.tsx`) con este texto. Los literales `es` son
+los valores actuales de esas claves en `src/i18n/catalog.ts`:
 
-| Resultado | Texto |
-|---|---|
-| PUT `invalid` | «Algo salió mal» (`common.somethingWentWrong`) |
-| PUT `forbidden` | `mealSchedule.errorForbidden` |
-| PUT `unreachable` | `common.cannotReachServer` |
-| PUT `error`, `not-found` o `missing-config` | «Algo salió mal» |
-| generate `forbidden` | `mealSchedule.errorForbidden` |
-| generate `unprocessable` con `PET_WEIGHT_REQUIRED` | `mealSchedule.registerWeightFirst` |
-| generate, otro `unprocessable` o `error` | «Algo salió mal» |
-| generate `unreachable` | `common.cannotReachServer` |
-| `unauthorized` en cualquiera | `signOut()` sin texto |
+| Resultado | Clave | Texto (`es`, literal en el test) |
+|---|---|---|
+| PUT `invalid` | `common.somethingWentWrong` | «Algo salió mal» |
+| PUT `forbidden` | `mealSchedule.errorForbidden` | «Solo el dueño puede generar el plan» |
+| PUT `unreachable` | `common.cannotReachServer` | «No se pudo conectar con el servidor» |
+| PUT `error`, `not-found` o `missing-config` | `common.somethingWentWrong` | «Algo salió mal» |
+| generate `forbidden` | `mealSchedule.errorForbidden` | «Solo el dueño puede generar el plan» |
+| generate `unprocessable` con `PET_WEIGHT_REQUIRED` | `mealSchedule.registerWeightFirst` | «Primero registra un peso» |
+| generate, otro `unprocessable` o `error` | `common.somethingWentWrong` | «Algo salió mal» |
+| generate `unreachable` | `common.cannotReachServer` | «No se pudo conectar con el servidor» |
+| `unauthorized` en cualquiera | — | `signOut()` sin texto |
 
 Si el PUT fue `ok`, `nutritionKeys.profile(petId)` se invalida aunque generate
 falle.
-- Test: `it.each(ERROR_ROWS)('R17: %s %s pinta «%s»')`. Una fila por fila de
+- Test: `it.each(ERROR_ROWS)('#209 R17: %s %s pinta «%s»')`. Una fila por fila de
   la tabla, con el texto español literal escrito en el test.
 
 **R18** — WHILE el formulario está montado, THE SYSTEM SHALL tener como raíz
@@ -474,7 +551,7 @@ falle.
 y un `ScrollView` con `keyboardShouldPersistTaps="handled"`. Así
 `target-weight-input`, `kcal-input` y los campos «Otra» quedan visibles con el
 teclado abierto.
-- Test: `it('R18: la raíz es un KAV con behavior padding y el scroll persiste taps')`.
+- Test: `it('#209 R18: la raíz es un KAV con behavior padding y el scroll persiste taps')`.
 
 ### Entradas
 
@@ -496,31 +573,38 @@ cuyo plan es `not-found`, THE SYSTEM SHALL consultar también
 - Cualquier otro caso (no owner, o perfil `ok`): `food-plan-empty`, como hoy.
 
 Tests: `src/screens/food/index.test.tsx` ›
-- `it('R19: owner sin perfil ve Crear perfil nutricional y navega al cuestionario')`
-- `it.each(['family', 'walker', 'vet'])('R19: %s sin perfil ve el vacío actual')`
-- `it('R19: owner con perfil y sin plan ve el vacío actual')`
+- `it('#209 R19: owner sin perfil ve Crear perfil nutricional y navega al cuestionario')`
+- `it.each(['family', 'walker', 'vet'])('#209 R19: %s sin perfil ve el vacío actual')`
+- `it('#209 R19: owner con perfil y sin plan ve el vacío actual')`
 
 **R20** — WHILE Horario (`src/screens/meal-schedule/index.tsx`) muestra el
 perfil nutricional, THE SYSTEM SHALL:
 - con perfil `ok` y owner: pintar a la derecha de `nutrition-profile-title`
-  el enlace `nutrition-profile-edit`, con el texto «Editar perfil» y
-  `accessibilityLabel="Editar perfil nutricional"`;
+  (fila `flex-row items-center justify-between`) el enlace
+  `nutrition-profile-edit`, con el texto «Editar perfil»
+  (`t('profile.editProfile')`, reutilizada) y
+  `accessibilityLabel={t('nutritionQuestionnaire.editProfileLabel')}`
+  («Editar perfil nutricional»);
 - con perfil `not-found` y owner: pintar bajo `nutrition-profile-empty` el
-  enlace `nutrition-profile-create`, «Crear perfil nutricional»;
+  enlace `nutrition-profile-create`, «Crear perfil nutricional»
+  (`t('nutritionQuestionnaire.createProfile')`);
 - con cualquier otro rol: no pintar ningún enlace.
 
 Los dos enlaces hacen
-`router.push({ pathname: '/nutrition-profile', params: { petId } })`.
+`router.push({ pathname: '/nutrition-profile', params: { petId } })` desde
+una función local `openNutritionProfile`, y llevan `hitSlop={TOUCH_SLOP}`:
+miden `h-9` (36 pt) y la carta exige 44 pt de objetivo táctil
+(`docs/ui-guidelines.md`, objetivos táctiles).
 - Tests: `src/screens/meal-schedule/index.test.tsx` ›
-  - `it('R20: owner con perfil ve Editar perfil y navega al cuestionario')`
-  - `it('R20: owner sin perfil ve Crear perfil nutricional')`
-  - `it.each(['family', 'walker', 'vet'])('R20: %s no ve enlaces de perfil')`
+  - `it('#209 R20: owner con perfil ve Editar perfil y navega al cuestionario')`
+  - `it('#209 R20: owner sin perfil ve Crear perfil nutricional')`
+  - `it.each(['family', 'walker', 'vet'])('#209 R20: %s no ve enlaces de perfil')`
 
 **R21** — WHILE el rol de la mascota no es `owner`, THE SYSTEM SHALL no pintar
 `generate-plan-button` en Horario. Con owner se pinta como hoy.
 - Tests: `src/screens/meal-schedule/index.test.tsx` ›
-  - `it.each(['family', 'walker', 'vet'])('R21: %s no ve Generar plan')`
-  - `it('R21: owner ve Generar plan')`
+  - `it.each(['family', 'walker', 'vet'])('#209 R21: %s no ve Generar plan')`
+  - `it('#209 R21: owner ve Generar plan')`
 
 **R22** — WHILE Horario pinta las píldoras del perfil, THE SYSTEM SHALL
 mostrar las etiquetas en español en lugar de los enums crudos:
@@ -537,88 +621,321 @@ mostrar las etiquetas en español en lugar de los enums crudos:
 
 Se reutilizan las claves de R7 y R11. La píldora de condición no cambia.
 - Tests:
-  - `it.each(THREE_ACTIVITIES)('R22: actividad %s se lee «%s»')`
-  - `it.each(FOUR_FOODS)('R22: alimento %s se lee «%s»')`
+  - `it.each(THREE_ACTIVITIES)('#209 R22: actividad %s se lee «%s»')`
+  - `it.each(FOUR_FOODS)('#209 R22: alimento %s se lee «%s»')`
 
 ### Copy, carta y guardas
 
 **R23** — THE SYSTEM SHALL servir todo el copy nuevo desde
-`src/i18n/catalog.ts`, con claves `nutritionQuestionnaire.*` en `en` y en
-`es`:
-- `es` lleva el literal de R7–R20.
-- `en` lleva una traducción.
-- Las variables son `{{name}}`, `{{bcs}}`, `{{label}}`, `{{weight}}` y
-  `{{count}}`.
+`src/i18n/catalog.ts`, con **exactamente estas 77 claves**
+`nutritionQuestionnaire.*`, en este orden, en `en` y en `es` (al final de cada
+locale). Las variables son `{{name}}`, `{{bcs}}`, `{{label}}`, `{{weight}}` y
+`{{count}}`.
 
-Ningún valor del catálogo aparece como literal entero en una fuente. En
-`src/__tests__/ui-copy-table.ts` se añade el bloque
-`export const R20_NUTRITION_QUESTIONNAIRE: UseRow[]`, con una fila por cada
-`t('<clave>'` de las tres pantallas, tanto las claves nuevas como las
-reutilizadas. El bloque se registra en estos sitios:
-- en `ALL_USES`, después de `...R17_EDIT_PROFILE,`;
-- en el array `blocks` del test `#194 R5: cuadra ALL_USES con la suma de sus bloques`;
-- en el import de `src/__tests__/ui-language.test.ts`, junto con
-  `it('R23: el bloque del cuestionario tiene N filas')`, que hace
-  `expect(R20_NUTRITION_QUESTIONNAIRE).toHaveLength(N)` con N medido.
+- `es` lleva el literal de esta tabla, que es el de R7–R20 con «Rocky»
+  sustituido por `{{name}}`.
+- `en` lleva una traducción que escribe Codex: el canvas no la da y esta spec
+  no la fija. Las variables de cada valor `en` son las mismas que las del `es`.
+
+| Clave (`nutritionQuestionnaire.` +) | `es` |
+|---|---|
+| `bubbleActivity` | Cuéntame cómo es un día normal de {{name}}. Con eso calculo cuánta energía necesita. |
+| `bubbleCondition` | Pasa la mano por el costado de {{name}} y elige lo que más se parezca a lo que sientes. |
+| `bubbleTargetWeight` | Con condición {{bcs}} conviene que {{name}} baje de peso poco a poco. ¿Te dijo el veterinario cuál es su peso ideal? |
+| `bubbleFood` | ¿Qué come {{name}}? Con las calorías de su alimento calculo cuántos gramos servir en cada comida. |
+| `bubbleHealth` | ¿{{name}} tiene alguna alergia o enfermedad? Si no tiene ninguna, déjalo todo sin marcar. |
+| `activityLegend` | ¿Cuánto se mueve {{name}}? |
+| `conditionLegend` | ¿Cómo está su cuerpo? |
+| `targetWeightTitle` | Peso objetivo |
+| `foodLegend` | Tipo de alimento |
+| `allergiesLegend` | Alergias |
+| `diseasesLegend` | Enfermedades |
+| `activityLow`, `activityLowDescription` | Baja · Paseos cortos y mucho descanso. |
+| `activityMedium`, `activityMediumDescription` | Media · Uno o dos paseos al día y algo de juego. |
+| `activityHigh`, `activityHighDescription` | Alta · Corre, entrena o juega con intensidad cada día. |
+| `bcs1`…`bcs9` y `bcs1Description`…`bcs9Description` | título y descripción de cada fila de la tabla de R8, en su orden |
+| `conditionSummary` | Condición {{bcs}}/9 · {{label}} |
+| `change` | Cambiar |
+| `currentWeight` | Peso actual de {{name}}: {{weight}} kg |
+| `targetWeightNote` | Si aún no lo sabes, déjalo vacío: calculo con su peso actual y lo ajustas después. |
+| `foodDry`, `foodWet`, `foodMixed`, `foodHomemade` | Seco · Húmedo · Mixto · Casero |
+| `kcalLabel` | Calorías del alimento |
+| `unitKcal` | kcal / 100 g |
+| `kcalHelp` | Entre 80 y 600 kcal por cada 100 g. |
+| `kcalNoteDry`, `kcalNoteWet`, `kcalNoteMixed`, `kcalNoteHomemade` | la nota de cada tipo de la tabla de R11 |
+| `allergyChicken`, `allergyBeef`, `allergyDairy`, `allergyWheat`, `allergyEgg`, `allergySoy`, `allergyFish` | Pollo · Carne de res · Lácteos · Trigo · Huevo · Soya · Pescado |
+| `other` | Otra (una sola clave para las dos listas) |
+| `diseaseDiabetes`, `diseaseKidney`, `diseasePancreatitis`, `diseaseLiver`, `diseaseDigestive`, `diseaseJoints` | Diabetes · Enfermedad renal · Pancreatitis · Enfermedad hepática · Problemas digestivos · Problemas articulares |
+| `otherLabel` | ¿Cuál? |
+| `otherCount` | {{count}}/40 |
+| `next` | Siguiente |
+| `saveAndGenerate` | Guardar y generar plan |
+| `generatingTitle` | Preparando el plan de {{name}} |
+| `generatingBody` | Estoy calculando sus calorías y el reparto de sus comidas. Tarda unos segundos. |
+| `generatingSaved`, `generatingCalories`, `generatingMeals` | Perfil guardado · Calculando calorías · Repartiendo comidas |
+| `profileEmptyBody` | Respóndeme unas preguntas sobre {{name}} y preparo su plan: cuántas calorías necesita y cuántos gramos servir en cada comida. |
+| `createProfile` | Crear perfil nutricional |
+| `profileEmptyNote` | Son 4 pasos y podrás cambiar tus respuestas cuando quieras. |
+| `editProfileLabel` | Editar perfil nutricional |
+
+En las celdas con `·`, cada valor va a su clave en el orden de la columna
+izquierda. **No hay clave para «kg»**: la unidad del peso se escribe literal
+(`unit="kg"`). Un valor de catálogo `'kg'` coincide con el texto JSX ` kg` de
+`src/screens/health/index.tsx` y pone en rojo `#65 R18` (medido en semilla).
+
+Ningún valor del catálogo aparece como literal entero en una fuente.
+
+**Forma de los usos** (de ella sale la cifra de filas). `checkUses` cuenta,
+por fichero, `t('<clave>'` más `labelKey: '<clave>'`:
+
+- En `src/screens/nutrition-questionnaire/index.tsx` cada clave aparece
+  exactamente una vez, salvo dos que aparecen dos veces:
+  `common.somethingWentWrong` (el error de carga de R4 y `SAVE_ERRORS.generic`)
+  y `nutritionQuestionnaire.other` (la fila `otra` de `ALLERGIES` y la de
+  `DISEASES`).
+- Las opciones son constantes de módulo con `{ labelKey: '<clave>' }`:
+  `ACTIVITY_OPTIONS` (`title` y `description`), `BCS_ROWS` (`title` y
+  `description`), `FOOD_TYPES` (`labelKey` y `note: { labelKey }`),
+  `ALLERGIES`, `DISEASES`, `SAVE_ERRORS` (`forbidden`, `unreachable`,
+  `weightRequired`, `generic`) y `GENERATING_ROWS`. El JSX las pinta con `.map`
+  y `t(x.labelKey)`.
+- El texto de la CTA es
+  `step === 'health' ? t('nutritionQuestionnaire.saveAndGenerate') : t('nutritionQuestionnaire.next')`.
+- En `src/screens/meal-schedule/index.tsx` las píldoras de R22 usan dos mapas
+  de módulo, `ACTIVITY_LABEL` (`low: { labelKey: 'nutritionQuestionnaire.activityLow' }`, …)
+  y `FOOD_LABEL` (`dry: { labelKey: 'nutritionQuestionnaire.foodDry' }`, …).
+
+En `src/__tests__/ui-copy-table.ts` se añade el bloque
+`export const R20_NUTRITION_QUESTIONNAIRE: UseRow[]` justo después de
+`R17_EDIT_PROFILE`, con una fila `{ file, key }` por cada uso:
+
+| Fichero | Filas |
+|---|---|
+| `src/screens/nutrition-questionnaire/index.tsx` | 82 = 73 claves nuevas (las 77 menos `profileEmptyBody`, `createProfile`, `profileEmptyNote` y `editProfileLabel`) + 7 reutilizadas (`mealSchedule.nutritionProfile`, `addPet.stepProgress`, `addPet.optional`, `common.somethingWentWrong`, `mealSchedule.errorForbidden`, `common.cannotReachServer`, `mealSchedule.registerWeightFirst`) + 2 repetidas (`common.somethingWentWrong` y `nutritionQuestionnaire.other`) |
+| `src/screens/food/index.tsx` | 4: `mealSchedule.noNutritionProfileYet`, `nutritionQuestionnaire.profileEmptyBody`, `nutritionQuestionnaire.createProfile`, `nutritionQuestionnaire.profileEmptyNote` |
+| `src/screens/meal-schedule/index.tsx` | 10: `nutritionQuestionnaire.editProfileLabel`, `profile.editProfile`, `nutritionQuestionnaire.createProfile`, `nutritionQuestionnaire.activityLow`, `…activityMedium`, `…activityHigh`, `nutritionQuestionnaire.foodDry`, `…foodWet`, `…foodMixed`, `…foodHomemade` |
+
+Total: **N = 96**. El bloque se registra en estos sitios:
+- en `ALL_USES`, como `...R20_NUTRITION_QUESTIONNAIRE,` justo después de
+  `...R17_EDIT_PROFILE,`;
+- en el array `blocks` del test `#194 R5: cuadra ALL_USES con la suma de sus bloques`,
+  después de `R17_EDIT_PROFILE`;
+- en el import de `src/__tests__/ui-language.test.ts`, después de
+  `R17_EDIT_PROFILE,`.
+
+En `src/__tests__/ui-language.test.ts`:
+- `expect(SCREEN_FILES).toHaveLength(…)` gana, como última línea,
+  `+ 1 // #209 R23: screens/nutrition-questionnaire/index.tsx`. `food` y
+  `meal-schedule` ya estaban.
+- Se añade, después del `describe('#194 R5: la pantalla de edición resuelve su copy por clave')`,
+  `describe('#209 R23: el cuestionario resuelve su copy por clave')` con
+  `it('#209 R23: el bloque del cuestionario tiene 96 filas')`, que hace
+  `expect(R20_NUTRITION_QUESTIONNAIRE).toHaveLength(96)` y
+  `checkUses(R20_NUTRITION_QUESTIONNAIRE)`.
 
 R18 lo usa la rama de #220 y R19 se reserva para #208. Si al mergear
 `origin/dev` alguno de los dos ya usa R20, este bloque toma el siguiente número
 libre.
-- Anclas previas:
-  - `grep -cF 'R20_NUTRITION_QUESTIONNAIRE' src/__tests__/ui-copy-table.ts` = `0`.
-  - `grep -cF "'nutritionQuestionnaire." src/i18n/catalog.ts` = `0`.
+- Anclas (desde `mobile-pet-tracker/`):
+  - `grep -cF 'R20_NUTRITION_QUESTIONNAIRE' src/__tests__/ui-copy-table.ts`:
+    `0` antes, `3` después (declaración, `ALL_USES` y `blocks`).
+  - `grep -cF "'nutritionQuestionnaire." src/i18n/catalog.ts`: `0` antes,
+    `0 + 154` después (77 por locale).
+  - `grep -cF "'nutritionQuestionnaire.unitKg'" src/i18n/catalog.ts` = `0`.
 - Test: los guardas existentes de `src/__tests__/ui-language.test.ts` y
-  `src/__tests__/ui-copy-table.ts`, en verde, más el `it` R23.
+  `src/__tests__/ui-copy-table.ts`, en verde, más el `it` `#209 R23`. Medido
+  en semilla con la forma de arriba: verde con 96.
 
-**R24** — THE SYSTEM SHALL mantener en verde las guardas de carta. Para eso,
-cada inventario que esta feature mueve se enmienda con la **regla mecánica**:
-- cifra nueva = cifra base + delta medido, con el comentario `// #209 R24`;
-- nunca se reescribe la base.
+**R24** — THE SYSTEM SHALL mantener en verde las guardas de carta. Cada
+inventario que esta feature mueve se enmienda con la **regla mecánica**:
+- cifra nueva = cifra base + delta, con el comentario `// #209 R24` delante
+  de los comentarios que ya tiene la línea;
+- nunca se reescribe la base;
+- el `it` que contiene (o usa) la línea enmendada suma
+  ` (enmendado por #209 R24)` al final de su nombre, una sola vez aunque
+  tenga varias enmiendas. El resto del nombre no se toca, aunque su número
+  («diecisiete primarios», «cinco secundarios») quede viejo.
 
-Deltas esperados, a medir con `grep -c` antes de enmendar:
+Las cifras son las del árbol base (`origin/dev` `2041e2b3`), medidas en una
+semilla del scratch que sigue la forma de R25. Comando, desde
+`mobile-pet-tracker/`:
+`bunx jest src/__tests__ src/app/__tests__/layout.test.tsx`.
 
-- **`src/__tests__/design-drift.test.ts`**
-  - `describe('#209 R24: Cuestionario sin deriva')` nuevo, copiado del de
-    `#175 R10: Documentos sin deriva`. Su `featureFiles` es
-    `['screens/nutrition-questionnaire/index.tsx']`.
-  - Lista de `outsideReminders(/\brounded-14\b/)`: añadir
-    `join('screens', 'nutrition-questionnaire', 'index.tsx'), // #209 R24`
-    entre `meals-history` y `pairing`.
-  - Diccionario de `rounded-16`: la entrada nueva cuenta 1 y `food` sube +1.
-- **`src/__tests__/consistency-classnames.test.ts`**
-  - #62 R1: `rounded-16 bg-accent` global, +2 (la CTA del wizard y la de
-    Nutrición).
-  - #166 R2: `expected`, con la entrada nueva a 1 y `food` +1.
-  - #62 R14: `directUses` de `style={CONTINUOUS_CORNER}`, con una fila nueva
-    por la pantalla nueva y el agregado + N.
-  - #166 R3: `count(/border-lip-gray/g)`, + N (radio de actividad, fila
-    pendiente de Generando y el enlace de Horario).
-- **`src/__tests__/chunky-cta-canvas-fidelity.test.ts`**
-  - `CTA_ROWS`: +2 filas, `nutrition-questionnaire-next` y
-    `food-create-profile`, con las clases de R25.
-  - `radii` del fichero nuevo y de `food`.
-  - `inventory(/chunkyLip\.primary\b/g)`: nuevo 1 y `food` +1.
-  - `inventory(/style=\{chunkyLip\.neutralCompact\}/g)`: `meal-schedule`
-    pasa de 1 al número medido.
-  - `ctaFiles` y `consumers` incluyen el fichero nuevo.
-- **`src/__tests__/legibility-classnames.test.ts`**
-  - #61 R4: `inkSites`, con la fila del fichero nuevo a 1 («Cambiar») y el
-    agregado +1.
+- Base: `Tests: 1 failed, 950 passed, 951 total`. El rojo es
+  `hosting-artifacts.test.ts`, que ya falla en la base y no es de esta
+  feature.
+- Semilla sin enmiendas: `Tests: 28 failed, 924 passed, 952 total`.
+- Semilla con las enmiendas de R3, R23 y esta lista: solo
+  `hosting-artifacts.test.ts` en rojo, como en la base.
 
-Ancla: `grep -cF '#209 R24' mobile-pet-tracker/src/__tests__/*.ts` ≥ `1` por
-cada fichero enmendado.
-- Test: las cinco suites citadas, en verde.
+La cifra de cada enmienda depende de la **forma** que fija R25 (componentes
+locales, `.map` sobre constantes y ternarios con literales completos). Si
+Codex se aparta de esa forma, las cifras dejan de cuadrar.
+
+**`src/__tests__/consistency-classnames.test.ts`**
+
+| Candado | Base | Después |
+|---|---|---|
+| `#62 R1`, `rounded-16 bg-accent(?=…)` global | `toHaveLength(16 + 1 + 1 + 1)` | `toHaveLength(16 + 1 + 1 + 1 + 2)` (CTA del wizard y CTA de Nutrición; medido 19 → 21) |
+| `#62 R12`, `textInputs` | `toHaveLength(6)` | `toHaveLength(6 + 2)` (un `<TextInput` en `NumberField` y otro en `OtherField`; medido 6 → 8). `withPlaceholder` sigue en 5 |
+| `#62 R14`, `directUses` | — | fila `[join('screens', 'nutrition-questionnaire', 'index.tsx'), 6], // #209 R24` justo después de la de `reset-password`, y `+ 6 // #209 R24` en el agregado, justo después de su `- 1 // #205 R17` |
+| `#98 R10`, `count(style={CONTINUOUS_CORNER})` | agregado que acaba en `- 1 // #205 R17` | `+ 6 // #209 R24` justo después (medido 55 → 61) |
+| `#166 R2`, `expected` | — | `'screens/food/index.tsx': 1, // #209 R24` justo después de `edit-profile`, y `'screens/nutrition-questionnaire/index.tsx': 1, // #209 R24` justo después de `map` |
+| `#166 R3`, `count(/border-lip-gray/g)` | `toBe(4 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1)` | `toBe(4 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 5)` (medido 12 → 17) |
+
+Los 6 `style={CONTINUOUS_CORNER}` del wizard y los 5 `border-lip-gray` nuevos
+son los que lista R25. Los 5 `border-lip-gray`: el radio sin elegir de
+Actividad, el círculo «en curso» y el «pendiente» de Generando, y los dos
+enlaces de Horario.
+
+**`src/__tests__/chunky-cta-canvas-fidelity.test.ts`**
+
+- `CTA_ROWS`: dos filas al final, tras la de `weight-log`:
+  - `['screens/nutrition-questionnaire/index.tsx', literalId('nutrition-questionnaire-next'), 'h-14 rounded-16 bg-accent', ['isDisabled={!canContinue}', 'onPress={() => void handleNext()}']], // #209 R24`
+  - `['screens/food/index.tsx', literalId('food-create-profile'), 'w-full h-14 rounded-16 bg-accent', ['onPress={openNutritionProfile}']], // #209 R24`
+
+  Ninguna entra en `disabledCtas` ni lleva `KEEP_OPACITY`: la CTA del wizard
+  usa `style={chunkyLip.primary}` tal cual, y `isDisabled={!canContinue}` va
+  en sus `keeps`. Los nombres `canContinue`, `handleNext` y
+  `openNutritionProfile` son obligatorios.
+- `consumers`: se quita `'screens/food/index.tsx'` de la lista literal, que
+  acaba en `// #201 R13 // #209 R24: sale screens/food/index.tsx, que entra por CTA_ROWS`.
+  Si no, sale duplicado en #177 R7.4.
+- `radii`: `'screens/food/index.tsx': 2` pasa a `2 + 1, // #209 R24`, y se
+  añade `'screens/nutrition-questionnaire/index.tsx': 2, // #209 R24` al
+  final, tras `welcome`.
+- `#177 R6.2`: `count(/text-17/g)` gana `+ 2` (medido 30 → 32), y
+  `count(/<Text className="text-17 font-extrabold text-accent-foreground">/g)`
+  gana `+ 2`.
+- `#177 R7.1`: `count(/border-lip-gray/g)` pasa de `toBe(10 + 1 + 1)` a
+  `toBe(10 + 1 + 1 + 5)` (medido 12 → 17).
+- `#177 R7.3`: `count(/\brounded-16\b/g)` gana `+ 3` (CTA y resumen del
+  wizard, CTA de Nutrición).
+- `#177 R7.5`: `inventory(/style=\{chunkyLip\.neutralCompact\}/g)` pasa a
+  `{ 'screens/alerts/index.tsx': 1, 'screens/meal-schedule/index.tsx': 1 + 2 }`.
+  El inventario de `primaryCompact` no cambia: el chip de Salud usa
+  `style={isChecked ? chunkyLip.primaryCompact : undefined}`, que ese
+  inventario no cuenta.
+- `#177 R3.3`, `R7.2`, `R7.4` y `R8.1` no llevan cifra propia: se ponen
+  verdes con las filas de `CTA_ROWS` y el cambio de `consumers`.
+
+**`src/__tests__/design-drift.test.ts`**
+
+- `describe('#209 R25: Cuestionario sin deriva')` nuevo, justo antes de
+  `describe('#178 R13: Recordatorios sin deriva')`, con
+  `const featureFiles = ['screens/nutrition-questionnaire/index.tsx']` y tres
+  `it`. Cada uno aserta que `featureFiles.filter(…)` es `[]`:
+  - `it('#209 R25: no deja hex, clases arbitrarias, StyleSheet ni sombras sueltas')`,
+    con la constante `MEALS_BAR_STYLE_ESCAPES` que ya tiene el fichero;
+  - `it('#209 R25: no deja text-accent suelto')`, con `/text-accent(?![-\w])/`;
+  - `it('#209 R25: no trae dependencias vetadas, useThemeColor ni emoji')`,
+    con `/expo-linear-gradient|expo-symbols|lottie-react-native|@rive-app|\buseThemeColor\b|\p{Extended_Pictographic}/u`.
+
+  No se copian los `it` de radios ni de iconos de `#175 R10`: R25 usa
+  `rounded-tile`, `rounded-14` y `rounded-10`, y los iconos los fija la
+  decisión 12.
+- `#178 R13`, diccionario de `rounded-16`: `'screens/food/index.tsx': 2, // #200 R9`
+  pasa a `2 + 1, // #200 R9 // #209 R24`, y se añade
+  `'screens/nutrition-questionnaire/index.tsx': 2, // #209 R24` justo
+  después de `map`.
+- `#178 R13`, lista de `outsideReminders(/\brounded-14\b/)`: añadir
+  `join('screens', 'nutrition-questionnaire', 'index.tsx'), // #209 R24`
+  justo después de `meals-history`.
+- `#179 R13`, `it('limita text-22 a Horario y text-17 al inventario de E1.2 …')`:
+  añadir `'screens/nutrition-questionnaire/index.tsx', // #209 R24` justo
+  después de `meal-schedule` en la lista de `text-17`.
+- `#179 R13`, `it('limita los márgenes táctiles a Editar y las dos flechas')`:
+  `expect(schedule.match(/hitSlop=\{TOUCH_SLOP\}/g)).toHaveLength(1)` pasa a
+  `toHaveLength(1 + 2)` (los dos enlaces de R20).
+- `#179 R13`, `it('ancla las tres etiquetas Text con los literales de E2.3')`:
+  su bucle pasa a pares `[label, parts]`, con
+  `['<Text className="text-13 font-extrabold text-foreground">', 2 + 2], // #209 R24`
+  y las otras dos etiquetas a `2`, y aserta
+  `expect(schedule.split(label)).toHaveLength(parts)`.
+
+**`src/__tests__/legibility-classnames.test.ts`**
+
+- `#61 R4`, `inkSites`: fila `[join('screens', 'nutrition-questionnaire', 'index.tsx'), 1], // #209 R24`
+  al final, tras la de `welcome` (el «Cambiar» `text-accent-strong`). En el
+  agregado, la última línea
+  `+ 1, // #198 R4: +1 Inicio` pasa a `+ 1 // #198 R4: +1 Inicio` y se añade
+  `+ 1, // #209 R24` debajo.
+
+**`src/__tests__/alerts-canvas-fidelity.test.ts`**
+
+- `#174 R12`, lista de `rounded-10`:
+  `files: ['components/segmented-control.tsx', 'screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx', 'screens/nutrition-questionnaire/index.tsx'], // #179 R6; #174 R12; #209 R24`.
+- `#174 R12`, listas de `text-15` y de `tracking-title`: añadir
+  `'screens/nutrition-questionnaire/index.tsx', // #209 R24`, justo después
+  de `meals-history` en la de `text-15` y justo después de `home` en la de
+  `tracking-title`.
+
+**`src/__tests__/profile-canvas-fidelity.test.ts`**
+
+- `#173 R2`, lista de `rounded-tile`: añadir
+  `'screens/nutrition-questionnaire/index.tsx', // #209 R24` justo después de
+  `home`.
+- `#173 R2.4`, lista de `text-13`: añadir la misma línea justo después de
+  `meal-schedule`.
+
+En las listas y diccionarios de rutas ordenados, el sitio citado es el que
+da el orden alfabético (`map` < `meal-schedule` < `meals-history` <
+`nutrition-questionnaire` < `pairing`). En `directUses`, `inkSites` y
+`radii` la fila nueva va al final.
+
+Anclas (desde `mobile-pet-tracker/`): `grep -cF '#209 R24' <fichero>` ≥ `1`
+en cada uno de estos siete: `src/__tests__/consistency-classnames.test.ts`,
+`src/__tests__/chunky-cta-canvas-fidelity.test.ts`,
+`src/__tests__/design-drift.test.ts`,
+`src/__tests__/legibility-classnames.test.ts`,
+`src/__tests__/alerts-canvas-fidelity.test.ts`,
+`src/__tests__/profile-canvas-fidelity.test.ts` y, por R25,
+`src/__tests__/design-drift.test.ts` también con `grep -cF '#209 R25'` = `4`
+(el `describe` y sus tres `it`).
+- Test: estas suites, en verde: `design-drift`, `consistency-classnames`,
+  `chunky-cta-canvas-fidelity`, `legibility-classnames`,
+  `alerts-canvas-fidelity`, `profile-canvas-fidelity` (todas en
+  `src/__tests__/`) y `src/app/__tests__/layout.test.tsx` (enmiendas de R3).
 
 **R25** — THE SYSTEM SHALL usar exactamente estas recetas de carta, que salen
 del canvas y de `docs/ui-guidelines.md` (reglas 3, 6, 7, 12 y 13; enmiendas
-#187 y #197):
+#187 y #197).
 
-- **CTA primaria** (wizard y Nutrición): `Button`
-  `className="h-14 rounded-16 bg-accent"` con `style={chunkyLip.primary}` e
-  hijo `<Text className="text-17 font-extrabold text-accent-foreground">`. En
-  Nutrición se añade `w-full`. El pie del wizard es
+**Forma** (de ella salen las cifras de R24; en una semilla con esta forma,
+R24 queda verde):
+- Componentes locales del fichero del wizard: `NumberField`
+  (`kind: 'weight' | 'kcal'`), `OtherField`, `NoteRow`, `BcsBadge`,
+  `HealthChips` y `Generating`.
+- Hay exactamente dos `<TextInput`: uno en `NumberField` y otro en
+  `OtherField`.
+- Las listas se pintan con `.map` sobre las constantes de módulo de R23.
+- Los `className` que cambian con el estado son ternarios con los dos
+  literales completos. La única interpolación permitida es
+  `CATEGORY_SLOTS[slot].surface` / `.ink`.
+- Hay un solo `const chunkyLip = useChunkyLip();` en la pantalla. Los
+  componentes locales lo reciben por prop, con el tipo
+  `type ChunkyLip = ReturnType<typeof useChunkyLip>;`.
+- El wizard tiene exactamente seis `style={CONTINUOUS_CORNER}`: la tarjeta de
+  actividad, `NumberField`, el `TextInput` de `OtherField`, `NoteRow`, la
+  burbuja y la lista de Generando.
+
+Recetas:
+
+- **CTA primaria del wizard** (`nutrition-questionnaire-next`, la única CTA del
+  pie en los cuatro pasos):
+  `<Button testID="nutrition-questionnaire-next" className="h-14 rounded-16 bg-accent" style={chunkyLip.primary} isDisabled={!canContinue} onPress={() => void handleNext()}>`
+  con hijo `<Text className="text-17 font-extrabold text-accent-foreground">`,
+  cuyo texto es el ternario de R23. El pie es
   `View className="bg-background px-5 pt-4"` con
-  `paddingBottom: Math.max(insets.bottom, 16)`.
+  `style={{ paddingBottom: Math.max(insets.bottom, 16) }}`.
+- **CTA de Nutrición**:
+  `<Button testID="food-create-profile" className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary} onPress={openNutritionProfile}>`,
+  con el mismo hijo `Text`. El literal de `className` es ese, con `w-full`
+  delante, porque `CTA_ROWS` (R24) lo busca entero.
+- **Barra de pasos**: `nutrition-questionnaire-step-bar`,
+  `flex-row gap-1.5 px-5`. Cada segmento es
+  `h-1.5 flex-1 rounded-full bg-accent` (hecho o actual) o
+  `h-1.5 flex-1 rounded-full bg-lip-gray`.
 - **Tarjeta de actividad**: `Pressable`
   `flex-row items-center gap-3 rounded-tile border-2 p-3.5` +
   `style={CONTINUOUS_CORNER}`.
@@ -637,57 +954,95 @@ del canvas y de `docs/ui-guidelines.md` (reglas 3, 6, 7, 12 y 13; enmiendas
   - Elegida: `border-accent bg-tab-pill`.
   - Badge `size-7.5 items-center justify-center rounded-10` con banda; su
     número es `text-sm font-black`.
-  - Título `text-sm font-extrabold leading-tight`.
+  - Título `text-sm font-extrabold leading-tight text-foreground`.
   - Descripción `text-xs leading-tight text-muted`.
 - **Chip de tipo de alimento**: las clases de `OptionalChip` de
-  `src/screens/add-pet/index.tsx`, copiadas, sin labio.
-- **Chip de Salud**:
+  `src/screens/add-pet/index.tsx`, copiadas, sin labio, con
+  `hitSlop={TOUCH_SLOP}`.
+  - Sin elegir: `h-11 justify-center rounded-full border border-border bg-default px-4`,
+    texto `text-sm font-semibold text-foreground`.
+  - Elegido: `h-11 justify-center rounded-full border border-accent bg-tab-pill px-4`,
+    texto `text-sm font-bold text-foreground`.
+- **Chips de Salud** (`HealthChips`): contenedor `flex-row flex-wrap gap-2`.
+  Cada chip es `Pressable` `${list}-chip-${slug}`, con
+  `accessibilityRole="checkbox"` y `hitSlop={TOUCH_SLOP}`.
   - Sin marcar: `h-9 justify-center rounded-full bg-default px-3`, texto
     `text-sm font-extrabold text-foreground`.
-  - Marcado: `h-9 justify-center rounded-full bg-accent px-3` +
-    `style={chunkyLip.primaryCompact}`, texto
+  - Marcado: `h-9 justify-center rounded-full bg-accent px-3`, texto
     `text-sm font-extrabold text-accent-foreground`.
+  - El labio es `style={isChecked ? chunkyLip.primaryCompact : undefined}`.
   - Es `Pressable`, no `Button`.
-- **Campo numérico**:
-  `h-16 flex-row items-center gap-2 rounded-14 border-2 bg-default px-4` +
-  `style={CONTINUOUS_CORNER}`.
-  - Borde `border-accent` con foco y `border-transparent` sin él.
-  - `TextInput` `flex-1 text-28 font-black text-foreground`.
-  - Unidad `text-lg font-extrabold text-muted` (kg) o
-    `text-15 font-extrabold text-muted` (kcal).
-- **Campo «Otra»**: las clases del input de `add-pet`, con
-  `border-accent` con foco.
-- **Nota con icono**: `flex-row gap-2.5 rounded-tile bg-default px-3.5 py-3` +
-  `CONTINUOUS_CORNER`, con icono `InfoCircle` y texto
+- **Campo numérico** (`NumberField`): `View` con el ternario
+  `h-16 flex-row items-center gap-2 rounded-14 border-2 border-accent bg-default px-4`
+  (con foco) /
+  `h-16 flex-row items-center gap-2 rounded-14 border-2 border-transparent bg-default px-4`
+  (sin foco), más `style={CONTINUOUS_CORNER}`.
+  - `TextInput` `flex-1 text-28 font-black text-foreground`, sin
+    `placeholder`. Si algún día lleva uno, lleva también
+    `placeholderTextColor` y `withPlaceholder` de `#62 R12` gana `+ 1`.
+  - Unidad `text-lg font-extrabold text-muted` (`kind="weight"`) o
+    `text-15 font-extrabold text-muted` (`kind="kcal"`).
+- **Campo «Otra»** (`OtherField`): contenedor `gap-1.5`, con una fila
+  `flex-row justify-between`. En ella van la etiqueta y el contador
+  `${list}-other-count`, los dos `text-13 font-semibold text-muted`.
+  - Debajo, un `TextInput` `${list}-other-input` con `maxLength={40}`, sin
+    `placeholder`, y `style={CONTINUOUS_CORNER}`.
+  - Su `className` es el ternario
+    `h-12 rounded-xl border-2 border-accent bg-default px-3.5 text-15 font-semibold text-foreground`
+    (con foco) /
+    `h-12 rounded-xl border-2 border-transparent bg-default px-3.5 text-15 font-semibold text-foreground`
+    (sin foco), que es la clase del input de `add-pet`.
+- **Nota con icono** (`NoteRow`): `flex-row gap-2.5 rounded-tile bg-default px-3.5 py-3` +
+  `style={CONTINUOUS_CORNER}`, con icono `InfoCircle` y texto
   `flex-1 text-13 font-semibold leading-body text-foreground`.
 - **Ayuda**: `text-13 font-semibold text-muted`.
 - **Resumen de Peso objetivo**:
   `flex-row items-center gap-2.5 rounded-16 bg-default px-3 py-2.5`. El
   enlace «Cambiar» es `Pressable` `h-11 justify-center` con texto
   `text-13 font-extrabold text-accent-strong` y `hitSlop={TOUCH_SLOP}`.
-- **Burbuja**: las clases de `add-pet-bubble`, con la cola en `top-5.5`
+- **Burbuja**: `nutrition-questionnaire-bubble`,
+  `flex-1 rounded-tile bg-surface-secondary px-3 py-2.5` +
+  `style={CONTINUOUS_CORNER}`, con texto
+  `text-13 font-semibold leading-body text-foreground`. La cola es
+  `absolute -left-1.5 top-5.5 size-3 rotate-45 bg-surface-secondary`
   (`top-4.5` en Condición). Pingo mide `size-13` (`size-11` en Condición).
 - **Leyendas**: `text-lg font-black text-foreground`.
-- **Lista de Generando**: `gap-3 rounded-tile bg-default px-4 py-3.5` +
-  `CONTINUOUS_CORNER`. Cada fila es `flex-row items-center gap-3`, con un
-  círculo `size-6.5 rounded-full`:
-  - hecho: `items-center justify-center bg-accent` con `Check`, texto
-    `text-15 font-bold`;
-  - en curso: `border-3 border-lip-gray border-t-accent`, girando con
-    `MOTION_*` existente o estático si hay movimiento reducido, texto
-    `text-15 font-extrabold`;
-  - pendiente: `border-2 border-lip-gray`, texto
-    `text-15 font-semibold text-muted`.
-- **Enlace de Horario** («Editar perfil» y «Crear perfil nutricional»):
-  `Pressable`
-  `h-9 flex-row items-center justify-center rounded-xl border-2 border-lip-gray bg-surface px-3`
-  + `style={chunkyLip.neutralCompact}`, con texto
-  `text-13 font-extrabold text-foreground`. No es `Button`, para no mover los
-  inventarios de `Button` neutro.
-- **NutricionSinPerfil**:
+- **Error de guardado**: `<Text testID="nutrition-questionnaire-error" className="text-danger">`
+  (R17).
+- **Generando** (`Generating`):
+  - raíz `nutrition-generating`,
+    `flex-1 items-center justify-center gap-5 bg-background px-5`;
+  - escenario `size-45 items-center justify-center`, con
+    ``{reduceMotion ? null : [0, 1000].map((delay, index) => <PingRing key={delay} testID={`nutrition-generating-ring-${index}`} delay={delay} className="size-45 rounded-full border-3 border-accent" />)}``
+    y `<PingoFloat testID="nutrition-generating-pingo">`, cuyo hijo es la
+    imagen de Pingo en `size-28`;
+  - textos en un `View` `gap-2`: título
+    `text-center text-24 font-black tracking-title text-foreground`, cuerpo
+    `text-center text-15 font-semibold leading-note text-muted`;
+  - lista `nutrition-generating-steps`, con
+    `accessibilityLiveRegion="polite"`,
+    `gap-3 self-stretch rounded-tile bg-default px-4 py-3.5` y
+    `style={CONTINUOUS_CORNER}`;
+  - cada fila es `flex-row items-center gap-3`, con un círculo:
+    - hecho: `size-6.5 items-center justify-center rounded-full bg-accent`
+      con `Check` de `size={16}`, y texto `text-15 font-bold text-foreground`;
+    - en curso: un `View` estático
+      `size-6.5 rounded-full border-3 border-lip-gray border-t-accent`, sin
+      animación (decisión 13), y texto `text-15 font-extrabold text-foreground`;
+    - pendiente: `size-6.5 rounded-full border-2 border-lip-gray`, y texto
+      `text-15 font-semibold text-muted`.
+- **Enlaces de Horario** («Editar perfil» y «Crear perfil nutricional», R20):
+  `<Pressable testID="nutrition-profile-edit" hitSlop={TOUCH_SLOP} className="h-9 flex-row items-center justify-center rounded-xl border-2 border-lip-gray bg-surface px-3" style={chunkyLip.neutralCompact} onPress={openNutritionProfile}>`
+  (y lo mismo con `testID="nutrition-profile-create"`), con hijo
+  `<Text className="text-13 font-extrabold text-foreground">`.
+  - No es `Button`, para no mover los inventarios de `Button` neutro.
+  - `hitSlop` lleva el área táctil de `h-9` (36 pt) a 44 pt.
+- **NutricionSinPerfil** (`food-profile-empty`):
   - sección `items-center gap-3`;
   - escenario `h-50 w-55 items-center justify-center`, con un disco
-    `absolute size-47.5 rounded-full bg-surface-secondary`;
+    `absolute size-47.5 rounded-full bg-surface-secondary` y
+    `<PingoFloat testID="food-profile-pingo">`, cuyo hijo es la imagen de
+    Pingo en `size-37.5`;
   - título `text-center text-24 font-black tracking-title`;
   - texto `text-center text-15 font-medium leading-normal text-muted`;
   - nota `text-center text-13 font-semibold text-muted`.
@@ -701,7 +1056,12 @@ Prohibido:
 - pasar `text-13`/`text-15`/`text-17` a componentes de HeroUI (enmienda #187);
 - un labio que no venga de `useChunkyLip()` (enmienda #197).
 
-Test: `design-drift.test.ts` › el `describe` de R24, más las suites de R24.
+- Test: `src/__tests__/design-drift.test.ts` ›
+  `describe('#209 R25: Cuestionario sin deriva')`, con los tres `it` que fija
+  R24, más las suites de R24.
+- Ancla (desde `mobile-pet-tracker/`):
+  `grep -cF '#209 R25' src/__tests__/design-drift.test.ts`: `0` antes, `4`
+  después.
 
 **R26** — THE SYSTEM SHALL añadir a `docs/ui-guidelines.md`, al final, la
 sección literal siguiente:
@@ -713,14 +1073,19 @@ sección literal siguiente:
 - Fuera de la escala, por fidelidad al canvas (#209): tarjetas de actividad y lista de Generando en `rounded-tile`, filas BCS y campos numéricos en `rounded-14`, badges BCS en `rounded-10`, resumen de peso objetivo en `rounded-16`.
 - Chips de Salud: receta de chip elegido de la regla 13 (`rounded-full bg-accent` + `chunkyLip.primaryCompact`); chips de tipo de alimento: receta de `OptionalChip`, sin labio.
 
-- [ ] Aprobada por humano (G4, fecha: ____)
+- [ ] Enmienda #209 aprobada por humano
 ```
 
-La casilla la marca el humano (G4 no está delegado). R26 no cierra hasta
-entonces.
-- Ancla previa: `grep -cF '## Enmienda #209' docs/ui-guidelines.md` = `0`.
-  Posterior: `1`.
-- Test: el reviewer ejecuta el ancla. No hay test de jest.
+La casilla tiene el mismo formato que las de las enmiendas previas
+(`- [X] Enmienda #206 aprobada por humano`). Codex la commitea sin marcar.
+La marca el humano, porque las enmiendas de `docs/ui-guidelines.md` no están
+delegadas. R26 no cierra hasta entonces.
+- Anclas (desde `mobile-pet-tracker/`):
+  - `grep -cF '## Enmienda #209' ../docs/ui-guidelines.md`: `0` antes, `1`
+    después.
+  - `grep -cE -- '- \[[ xX]\] Enmienda #209 aprobada por humano' ../docs/ui-guidelines.md`
+    = `1`.
+- Test: el reviewer ejecuta las anclas. No hay test de jest.
 
 ## Fuera de alcance
 
@@ -744,8 +1109,9 @@ entonces.
   en rojo y después `feat(mobile): #209 R<n> ...`. Nada de implementación,
   tests y docs en un solo commit.
 - Prohibido correr `./init.sh` y e2e. Los tests se lanzan con
-  `cd /home/claude/sites/Pet-Tracker-wt-209/mobile-pet-tracker && bunx jest <ruta> -t 'R<n>'`.
-  Las rutas con paréntesis se escapan.
+  `cd /home/claude/sites/Pet-Tracker-wt-209/mobile-pet-tracker && bunx jest <ruta> -t '#209 R<n>:'`.
+  Con los dos puntos, `-t '#209 R1:'` no recoge `R10`–`R19`. Las rutas con
+  paréntesis se escapan.
 - Si `origin/dev` avanza (#208, #220…), se hace `git merge origin/dev`, nunca
   rebase. Después se re-miden los agregados de R23 y R24 con la regla mecánica.
 - No hay dependencias nuevas, ni costo, ni recursos AWS.

@@ -19,22 +19,28 @@ Los grupos contiguos que comparten un commit rojo y uno verde se declaran en
 el bloque, como en R7–R8.
 
 Comando base:
-`cd /home/claude/sites/Pet-Tracker-wt-209/mobile-pet-tracker && bunx jest <ruta> -t 'R<n>'`.
+`cd /home/claude/sites/Pet-Tracker-wt-209/mobile-pet-tracker && bunx jest <ruta> -t '#209 R<n>:'`.
+Todos los `it` nuevos empiezan por `#209 R<n>:`; con los dos puntos,
+`-t '#209 R1:'` no recoge `R10`–`R19`. Las rutas con paréntesis se escapan.
 Prohibido correr `./init.sh` y e2e.
 
 ## R1 — putJson
-- [ ] (1) `src/api/__tests__/nutrition.test.ts` › `R1: putJson envía PUT con cuerpo JSON y Bearer`. Rojo porque `putJson` no existe.
+- [ ] (1) `src/api/__tests__/nutrition.test.ts` › `#209 R1: putJson envía PUT con cuerpo JSON y Bearer`. Rojo porque `putJson` no existe.
 - [ ] (2) `putJson` en `src/api/http.ts`, copiado de `patchJson`.
 - [ ] (3) Sin refactor.
 
 ## R2 — upsertNutritionProfile
-- [ ] (1) Los tres `it` R2 en `src/api/__tests__/nutrition.test.ts`.
+- [ ] (1) Los tres `it` `#209 R2:` en `src/api/__tests__/nutrition.test.ts`. El de `ok` aserta la URL `profileEndpoint`.
 - [ ] (2) `NutritionProfileInput` en `types.ts`; `UpsertNutritionProfileState` y `upsertNutritionProfile` en `nutrition.ts`.
 - [ ] (3) Sin refactor.
 
 ## R3 — ruta y Stack
-- [ ] (1) `src/screens/nutrition-questionnaire/index.test.tsx` › `R3: ...`, que lee las fuentes.
-- [ ] (2) `src/app/nutrition-profile.tsx` y la línea `Stack.Screen` en `_layout.tsx`. La pantalla queda como esqueleto mínimo.
+- [ ] (1) En un mismo commit rojo:
+  - `src/screens/nutrition-questionnaire/index.test.tsx` › `#209 R3: la ruta nutrition-profile es delgada y está en el Stack`, que lee las fuentes;
+  - `src/app/__tests__/layout.test.tsx` › `#209 R3: nutrition-profile es el último hijo protegido, justo tras edit-profile`, nuevo;
+  - las cinco enmiendas de `layout.test.tsx` de la tabla de R3 (`+ 1 // #209 R3`, `at(-1 - 1)` y el sufijo ` (enmendado por #209 R3)` en cada `it` tocado).
+  Rojo: sin la línea en `_layout.tsx`, las cuentas reciben 14 y esperan 15.
+- [ ] (2) `src/app/nutrition-profile.tsx` y la línea `Stack.Screen` como último hijo de `Stack.Protected`, justo tras `edit-profile`. La pantalla queda como esqueleto mínimo.
 - [ ] (3) Sin refactor.
 
 ## R4 — carga
@@ -43,7 +49,7 @@ Prohibido correr `./init.sh` y e2e.
 - [ ] (3) Sin refactor.
 
 ## R5 — cabecera, contador y barra
-- [ ] (1) `R5: ...`.
+- [ ] (1) `#209 R5: pinta cabecera, contador «1 de 4» y la barra con un segmento hecho`.
 - [ ] (2) `ScreenHeader`, `step-label`, `step-bar` y la burbuja.
 - [ ] (3) Sin refactor.
 
@@ -108,7 +114,7 @@ Prohibido correr `./init.sh` y e2e.
 - [ ] (3) Sin refactor.
 
 ## R18 — teclado
-- [ ] (1) `R18: ...`.
+- [ ] (1) `#209 R18: la raíz es un KAV con behavior padding y el scroll persiste taps`.
 - [ ] (2) La raíz KAV y `keyboardShouldPersistTaps`. Si R5 ya lo dejó así, el test nace verde: entonces se declara en `progress/impl_mobile-nutrition-questionnaire.md` y se hace el commit del test solo.
 - [ ] (3) Sin refactor.
 
@@ -138,18 +144,18 @@ Prohibido correr `./init.sh` y e2e.
 - [ ] (3) Sin refactor.
 
 ## R24 — guardas de carta
-- [ ] (1) Correr las cinco suites. Se esperan rojas por los inventarios.
-- [ ] (2) Enmiendas mecánicas `+ delta // #209 R24`, más el `describe` nuevo de design-drift.
+- [ ] (1) Correr las siete suites: `design-drift`, `consistency-classnames`, `chunky-cta-canvas-fidelity`, `legibility-classnames`, `alerts-canvas-fidelity` y `profile-canvas-fidelity` (en `src/__tests__/`), más `src/app/__tests__/layout.test.tsx`. Se esperan rojas por los inventarios.
+- [ ] (2) Las enmiendas mecánicas que lista R24, con `+ delta // #209 R24` y el sufijo ` (enmendado por #209 R24)` en cada `it` tocado. Van en un commit `test(mobile): #209 R24 enmiendas de carta`, que deja las siete en verde.
 - [ ] (3) Sin refactor.
 
 ## R25 — recetas de carta
-- [ ] (1) El `describe('#209 R24: Cuestionario sin deriva')` cubre hex, clases arbitrarias y StyleSheet.
+- [ ] (1) `src/__tests__/design-drift.test.ts` › `describe('#209 R25: Cuestionario sin deriva')`, con los tres `it` que fija R24. Si el wizard ya sigue R25, nace verde: se declara en `progress/impl_mobile-nutrition-questionnaire.md` y se hace el commit del test solo.
 - [ ] (2) Ajustar las clases a la receta de R25.
 - [ ] (3) Sin refactor.
 
 ## R26 — enmienda de ui-guidelines
-- [ ] (1) Ancla `grep -cF '## Enmienda #209' docs/ui-guidelines.md` = `0`.
-- [ ] (2) Commit `docs(ui): #209 R26 enmienda`, con la sección literal y la casilla G4 sin marcar.
+- [ ] (1) Desde `mobile-pet-tracker/`: `grep -cF '## Enmienda #209' ../docs/ui-guidelines.md` = `0`.
+- [ ] (2) Commit `docs(ui): #209 R26 enmienda`, con la sección literal y la casilla `- [ ] Enmienda #209 aprobada por humano` sin marcar. Después, `grep -cF '## Enmienda #209' ../docs/ui-guidelines.md` = `1` y `grep -cE -- '- \[[ xX]\] Enmienda #209 aprobada por humano' ../docs/ui-guidelines.md` = `1`. La casilla la marca el humano.
 - [ ] (3) Sin refactor.
 
 ## Cierre

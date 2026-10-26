@@ -17,13 +17,14 @@ Esta feature es solo móvil. El backend no cambia: el contrato es el
 | infraestructura (api) | `mobile-pet-tracker/src/api/nutrition.ts` | `upsertNutritionProfile` y `UpsertNutritionProfileState` (R2) |
 | dominio (tipos) | `mobile-pet-tracker/src/api/types.ts` | `NutritionProfileInput` (R2) |
 | ruta | `mobile-pet-tracker/src/app/nutrition-profile.tsx` | ruta delgada nueva (R3) |
-| ruta | `mobile-pet-tracker/src/app/_layout.tsx` | `Stack.Screen name="nutrition-profile"` (R3) |
+| ruta | `mobile-pet-tracker/src/app/_layout.tsx` | `Stack.Screen name="nutrition-profile"` como último hijo de `Stack.Protected`, justo tras `edit-profile` (R3) |
 | pantalla | `mobile-pet-tracker/src/screens/nutrition-questionnaire/index.tsx` | wizard y Generando (R4–R18, R25) |
 | pantalla | `mobile-pet-tracker/src/screens/food/index.tsx` | consulta de perfil y `food-profile-empty` (R19) |
 | pantalla | `mobile-pet-tracker/src/screens/meal-schedule/index.tsx` | enlaces de perfil, «Generar plan» solo para owner, píldoras (R20–R22) |
 | i18n | `mobile-pet-tracker/src/i18n/catalog.ts` | claves `nutritionQuestionnaire.*` en `en` y `es` (R23) |
-| guardas | `mobile-pet-tracker/src/__tests__/{ui-copy-table.ts, ui-language.test.ts, design-drift.test.ts, consistency-classnames.test.ts, chunky-cta-canvas-fidelity.test.ts, legibility-classnames.test.ts}` | enmiendas mecánicas (R23, R24) |
-| docs | `docs/ui-guidelines.md` | `## Enmienda #209` con la casilla G4 (R26) |
+| guardas | `mobile-pet-tracker/src/__tests__/{ui-copy-table.ts, ui-language.test.ts, design-drift.test.ts, consistency-classnames.test.ts, chunky-cta-canvas-fidelity.test.ts, legibility-classnames.test.ts, alerts-canvas-fidelity.test.ts, profile-canvas-fidelity.test.ts}` | enmiendas mecánicas (R23, R24) y `describe('#209 R25: Cuestionario sin deriva')` (R25) |
+| guardas | `mobile-pet-tracker/src/app/__tests__/layout.test.tsx` | cuentas de hijos `+ 1 // #209 R3` y el `it` nuevo de orden (R3) |
+| docs | `docs/ui-guidelines.md` | `## Enmienda #209` con la casilla de aprobación humana `- [ ] Enmienda #209 aprobada por humano`, sin marcar (R26) |
 
 Los tests nuevos van en los ficheros que nombra cada R-id de
 `requirements.md`.
@@ -40,6 +41,10 @@ NutritionQuestionnaireScreen          lee petId (useLocalSearchParams), consulta
      ├─ phase === 'form'  → KAV raíz + header + barra + ScrollView key={step} + pie con la CTA única
      └─ phase !== 'form'  → Generating (R16)
 ```
+
+- El círculo «en curso» de Generando es un `View` estático: `src/theme/motion.ts`
+  no tiene constante `MOTION_*` de giro (decisión 13). Los únicos elementos
+  animados de Generando son los dos `PingRing` y `PingoFloat`.
 
 - `stepNumber(step)`: activity 1, condition 2, target 2, food 3, health 4.
 - `nextStep`: condition va a target si bcs ≥ 7 y a food en otro caso. Las
@@ -86,6 +91,12 @@ compartido, para no tocar Horario más de lo que pide R20–R22.
   enlaces.
 - Los enlaces son un `Pressable` con labio `neutralCompact`. No son `Button`:
   así no entran en los inventarios de `Button` neutro de #166 R3 y #177 R8.1.
+- Miden `h-9` (36 pt), así que llevan `hitSlop={TOUCH_SLOP}` para llegar a
+  44 pt. Eso mueve `#179 R13` de `1` a `1 + 2` (R24).
+- «Editar perfil» pinta `t('profile.editProfile')` («Editar perfil», clave que
+  ya existe) con `accessibilityLabel={t('nutritionQuestionnaire.editProfileLabel')}`
+  («Editar perfil nutricional»). «Crear perfil nutricional» pinta
+  `t('nutritionQuestionnaire.createProfile')`.
 - Las píldoras cambian solo el valor: `loadedProfile.activityLevel` pasa a
   `t(ACTIVITY_LABEL[...])` y `foodType` a `t(FOOD_LABEL[...])`, con mapas
   locales al fichero.
@@ -112,5 +123,17 @@ compartido, para no tocar Horario más de lo que pide R20–R22.
 
 - **Agregados compartidos con #208 y #220** (ui-copy-table e inventarios de
   carta): se resuelven con merge de `origin/dev` y la regla mecánica de R24.
-- **Versión del canvas:** congelado de la versión viva `1793039639-fe0d`, no
-  de la v140. Ver la nota en `requirements.md`.
+- **Colisión con #208 en `src/app/__tests__/layout.test.tsx`.** #208 y #209
+  añaden cada una un hijo a `Stack.Protected` y suman `+ 1` a las mismas
+  cuentas de hijos del layout. Quien mergee segunda conserva los dos `+ 1`
+  (`+ 1 // #208 R4` y `+ 1 // #209 R3`) y los dos sufijos en el nombre de cada `it`
+  tocado (`(enmendado por #208 R4) (enmendado por #209 R3)`). Los dos `it` de
+  orden no chocan: #208 R4 inserta justo tras `meals-history` y #209 R3 al
+  final, justo tras `edit-profile`.
+- **Sufijos de nombre en los `it` compartidos.** Los `it` que tocan #208, #220 y
+  #209 suman sufijos distintos al mismo nombre. En el merge se conservan
+  todos, en orden de merge. Un `-t` que filtre por nombre completo deja de
+  encontrarlos; por eso los comandos usan el prefijo `#209 R<n>:`.
+- **Versión del canvas:** los artboards congelados se verificaron idénticos a
+  los de la v140 (`1793036268-d302`) el 2026-10-26, sha256 a sha256. Ver la
+  nota en `requirements.md`.
