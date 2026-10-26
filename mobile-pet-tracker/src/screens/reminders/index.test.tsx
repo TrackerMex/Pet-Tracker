@@ -179,6 +179,8 @@ function makeReminder(overrides: Partial<Reminder> = {}): Reminder {
     dueAt: '2026-08-27T09:00:00.000Z',
     advanceMinutes: 10080,
     status: 'scheduled',
+    recurrence: null,
+    recurrenceUntil: null,
     ...overrides,
   };
 }

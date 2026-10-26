@@ -218,6 +218,8 @@ export type ReminderType =
 
 export type ReminderStatus = 'scheduled' | 'sent' | 'cancelled';
 
+export type Recurrence = { unit: 'hour' | 'day' | 'week' | 'month' | 'year'; every: number };
+
 export interface Reminder {
   id: string;
   petId: string;
@@ -226,6 +228,8 @@ export interface Reminder {
   dueAt: string;
   advanceMinutes: number;
   status: ReminderStatus;
+  recurrence: Recurrence | null;
+  recurrenceUntil: string | null;
 }
 
 export type AlertType = 'geofence_exit' | 'battery_low';
