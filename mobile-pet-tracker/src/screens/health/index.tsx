@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Check, ChevronRight, Clock, Syringe } from 'reicon-react-native';
+import { Check, ChevronRight, Clock, Plus, Syringe } from 'reicon-react-native';
 
 import { listVaccines, listWeights } from '../../api/health-records';
 import { listPets, type PetsState } from '../../api/pets';
@@ -22,6 +22,7 @@ import {
   TABULAR_NUMS,
 } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
+import { useChunkyLip } from '../../theme/chunky-lip';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { calendarDaysUntil, fmtDate, fmtDayMonthLong } from '../home/format';
@@ -49,8 +50,10 @@ function fmtVariation(variation: number | null): string {
 }
 
 export function HealthScreen() {
-  const [warning, muted, rose, amber, green] = useThemeColors([
+  const chunkyLip = useChunkyLip();
+  const [warning, muted, rose, amber, green, accentStrong, accentForeground] = useThemeColors([
     'warning', 'muted', 'category-rose-strong', 'category-amber-strong', 'category-green-strong',
+    'accent-strong', 'accent-foreground',
   ]);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
@@ -63,6 +66,10 @@ export function HealthScreen() {
     queryFn: () => listPets(baseUrl, token ?? ''),
   });
   usePetSelection({ data: pets.data, isRefreshing: pets.isRefetching });
+  const selectedPet = pets.data?.kind === 'ok' ? pets.data.pets.find(p => p.id === selectedPetId) : undefined;
+  function openVaccineCreate() {
+    if (selectedPetId) router.push({ pathname: '/pets/[petId]/vaccines/new', params: { petId: selectedPetId } });
+  }
   const vaccines = useQuery({
     queryKey: healthKeys.vaccines(selectedPetId ?? ''),
     queryFn: () => listVaccines(baseUrl, token ?? '', selectedPetId!),
@@ -141,9 +148,17 @@ export function HealthScreen() {
 
             {selectedPetId ? (
               <View testID="vaccines-section" className="gap-2.5">
-                <Text testID="vaccines-title" accessibilityRole="header" className="mt-1 text-lg font-extrabold text-foreground">
-                  {t('health.vaccines')}
-                </Text>
+                <View testID="vaccines-header" className="flex-row items-center justify-between">
+                  <Text testID="vaccines-title" accessibilityRole="header" className="mt-1 text-lg font-extrabold text-foreground">
+                    {t('health.vaccines')}
+                  </Text>
+                  {selectedPet?.myRole === 'owner' ? (
+                    <Button testID="vaccines-add" className="rounded-xl bg-accent h-10 gap-1.5 px-3.5" style={chunkyLip.primaryCompact} onPress={openVaccineCreate}>
+                      <Plus size={16} color={accentForeground} />
+                      <Button.Label className="text-sm font-extrabold text-accent-foreground">{t('health.addVaccine')}</Button.Label>
+                    </Button>
+                  ) : null}
+                </View>
 
                 {vaccines.data === undefined || vaccines.isRefetching ? (
                   <Card testID="vaccines-skeleton" variant="flat" className="flex-row items-center gap-3 py-3.5">
