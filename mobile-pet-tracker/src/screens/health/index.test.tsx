@@ -212,6 +212,7 @@ async function renderHealth(language: 'es' | 'en' = 'es') {
 }
 
 beforeEach(() => {
+  clearVaccineReminderNotice();
   mockTheme = 'light';
   mockSemanticColors = false;
 });
@@ -1571,5 +1572,50 @@ describe('#208 R6: vacío de vacunas por rol', () => {
     expect(empty).toHaveTextContent('Aún no hay vacunas', { exact: true });
     expect(screen.queryByTestId('vaccines-empty-card')).toBeNull();
     expect(screen.queryByTestId('vaccines-empty-action')).toBeNull();
+  });
+});
+
+
+const { existsSync: vaccineNoticeExists } = jest.requireActual<typeof import('fs')>('fs');
+function healthNoticeApi() {
+  expect(vaccineNoticeExists('src/hooks/vaccine-reminder-notice.ts')).toBe(true);
+  return jest.requireActual<typeof import('../../hooks/vaccine-reminder-notice')>('../../hooks/vaccine-reminder-notice');
+}
+function clearVaccineReminderNotice() {
+  if (vaccineNoticeExists('src/hooks/vaccine-reminder-notice.ts')) healthNoticeApi().clearVaccineReminderNotice();
+}
+describe('#208 R16: aviso de recordatorio pendiente en Salud', () => {
+  beforeEach(setupHealth168);
+  it('#208 R16: con aviso pendiente de la mascota seleccionada pinta el aviso ámbar literal', async () => {
+    healthNoticeApi().showVaccineReminderNotice('pet-1');
+    mockSemanticColors = true;
+    await renderHealth();
+    const notice = await screen.findByTestId('vaccine-reminder-notice');
+    expect(screen.getByTestId('health-root').props.className).toBe('flex-1');
+    expect(notice.parent).toBe(screen.getByTestId('screen-health').parent);
+    expect(notice.props.className).toBe('absolute left-4 right-4 flex-row items-center gap-2.5 rounded-tile border border-border px-3.5 py-3 bg-category-amber');
+    expect(notice.props.accessibilityRole).toBe('alert');
+    expect(notice.props.accessibilityLiveRegion).toBe('polite');
+    expect(flatVaccineStyle(notice.props.style)).toMatchObject({ bottom: 104, borderCurve: 'continuous', boxShadow: expect.any(Array) });
+    expect(screen.getByTestId('vaccine-reminder-notice-text').props.className).toBe('flex-1 text-13 font-semibold text-foreground');
+    expect(screen.getByText('Guardé la vacuna de Luna, pero no pude crear su recordatorio.', { exact: true })).toBeVisible();
+    const action = screen.getByTestId('vaccine-reminder-notice-action');
+    expect(action.props.className).toBe('min-h-11 justify-center');
+    expect(within(action).getByText('Crear ahora', { exact: true }).props.className).toBe('text-13 font-extrabold text-category-amber-strong');
+    const icon = within(notice).getByTestId('health-icon-bell-off', { includeHiddenElements: true });
+    expect([icon.props.size, icon.props.style.color]).toEqual([20, 'category-amber-strong']);
+  });
+  it('#208 R16: «Crear ahora» limpia el aviso y abre Agregar recordatorio', async () => {
+    healthNoticeApi().showVaccineReminderNotice('pet-1');
+    await renderHealth();
+    await fireEvent.press(await screen.findByTestId('vaccine-reminder-notice-action'));
+    await waitFor(() => expect(screen.queryByTestId('vaccine-reminder-notice')).toBeNull());
+    expect(mockRouter.push).toHaveBeenCalledWith('/add-reminder');
+  });
+  it('#208 R16: un aviso de otra mascota no se pinta', async () => {
+    healthNoticeApi().showVaccineReminderNotice('pet-2');
+    await renderHealth();
+    await screen.findByTestId('vaccines-section');
+    expect(screen.queryByTestId('vaccine-reminder-notice')).toBeNull();
   });
 });

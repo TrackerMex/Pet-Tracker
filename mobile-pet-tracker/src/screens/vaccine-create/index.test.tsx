@@ -59,7 +59,7 @@ const mockRouter = jest.mocked(router);
 const nativeProcess = process.getBuiltinModule('process');
 const originalZone = nativeProcess.env.TZ;
 const apiUrl = 'http://example.test/v1';
-const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
+const { readFileSync, existsSync } = jest.requireActual<typeof import('fs')>('fs');
 const flatVaccineStyle = (style: unknown) => Object.assign({}, ...[style].flat(Infinity));
 
 function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
@@ -88,9 +88,24 @@ function subscribeReturned(listener: () => void) {
   returnedListeners.add(listener);
   return () => { returnedListeners.delete(listener); };
 }
+function noticeApi() {
+  expect(existsSync('src/hooks/vaccine-reminder-notice.ts')).toBe(true);
+  return jest.requireActual<typeof import('../../hooks/vaccine-reminder-notice')>('../../hooks/vaccine-reminder-notice');
+}
+function clearVaccineReminderNotice() {
+  if (existsSync('src/hooks/vaccine-reminder-notice.ts')) noticeApi().clearVaccineReminderNotice();
+}
+function VaccineNoticeProbe() {
+  const { useVaccineReminderNotice } = noticeApi();
+  const notice = useVaccineReminderNotice();
+  return <Text testID="vaccine-create-notice-probe">{notice ?? ''}</Text>;
+}
 function VaccineFlow() {
   const returned = useSyncExternalStore(subscribeReturned, () => mockReturned);
-  return returned ? <Text testID="vaccine-create-returned">Salud</Text> : <VaccineCreateScreen petId="pet-1" />;
+  return <>
+    {existsSync('src/hooks/vaccine-reminder-notice.ts') && <VaccineNoticeProbe />}
+    {returned ? <Text testID="vaccine-create-returned">Salud</Text> : <VaccineCreateScreen petId="pet-1" />}
+  </>;
 }
 async function renderVaccineCreate() {
   return renderWithProviders(<VaccineFlow />, {
@@ -100,6 +115,7 @@ async function renderVaccineCreate() {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  clearVaccineReminderNotice();
   mockReturned = false;
   mockRouter.back.mockImplementation(() => {
     mockReturned = true;
@@ -433,4 +449,28 @@ it('#208 R15: tras el 201 invalida vacunas, recordatorios y mascotas y vuelve', 
   expect(invalidate).toHaveBeenCalledWith({ queryKey: ['reminders', 'list', 'pet-1'] });
   expect(invalidate).toHaveBeenCalledWith({ queryKey: ['pets', 'list'] });
   expect(mockRouter.back).toHaveBeenCalledTimes(1);
+});
+
+it('#208 R16: si el recordatorio falla deja el aviso de la mascota y vuelve sin borrar la vacuna', async () => {
+  noticeApi();
+  const fetchSpy = jest.spyOn(global, 'fetch').mockRejectedValue(new Error('unexpected request'));
+  try {
+    mockCreateVaccine.mockResolvedValue({ kind: 'ok', vaccine: makeVaccine() });
+    mockCreateReminder.mockResolvedValue({ kind: 'error' });
+    await readyVaccineForm();
+    await fireEvent.press(screen.getByTestId('vaccine-create-submit'));
+    await screen.findByTestId('vaccine-create-returned');
+    expect(screen.getByTestId('vaccine-create-notice-probe')).toHaveTextContent('pet-1', { exact: true });
+    expect(mockCreateVaccine).toHaveBeenCalledTimes(1);
+    expect(fetchSpy.mock.calls.some(([, init]) => init?.method === 'DELETE')).toBe(false);
+  } finally { fetchSpy.mockRestore(); }
+});
+it('#208 R16: si el recordatorio se crea limpia un aviso anterior', async () => {
+  noticeApi().showVaccineReminderNotice('pet-2');
+  mockCreateVaccine.mockResolvedValue({ kind: 'ok', vaccine: makeVaccine() });
+  await readyVaccineForm();
+  expect(screen.getByTestId('vaccine-create-notice-probe')).toHaveTextContent('pet-2', { exact: true });
+  await fireEvent.press(screen.getByTestId('vaccine-create-submit'));
+  await screen.findByTestId('vaccine-create-returned');
+  expect(screen.getByTestId('vaccine-create-notice-probe').children).toEqual([]);
 });
