@@ -17,6 +17,7 @@ const NAMES = buildResourceNames('');
 
 function reminder(id: string, dueAt: string): Reminder {
   return new Reminder({
+    recurrence: null,
     id,
     petId: '01924a3f-0000-7000-8000-0000000000aa',
     type: 'custom',
@@ -205,10 +206,12 @@ describe('#125 R2: el dispatcher escribe en el cuerpo cuándo vence, en la zona 
   it('dos mascotas con owners en zonas distintas: cada cuerpo con la suya', async () => {
     const first = new Reminder({
       ...reminder('first', '2026-10-01T03:30:00.000Z'),
+      recurrence: null,
       petId: PET_A,
     });
     const second = new Reminder({
       ...reminder('second', '2026-10-01T03:30:00.000Z'),
+      recurrence: null,
       petId: PET_B,
     });
     const repository = repositoryStub();
@@ -245,10 +248,12 @@ describe('#125 R2: el dispatcher escribe en el cuerpo cuándo vence, en la zona 
   it('si la zona del owner no se puede leer, esa fila no se encola y las siguientes sí', async () => {
     const failed = new Reminder({
       ...reminder('failed', '2026-10-01T03:30:00.000Z'),
+      recurrence: null,
       petId: PET_A,
     });
     const sent = new Reminder({
       ...reminder('sent', '2026-10-01T03:30:00.000Z'),
+      recurrence: null,
       petId: PET_B,
     });
     const repository = repositoryStub();

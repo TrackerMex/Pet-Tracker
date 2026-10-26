@@ -353,6 +353,7 @@ function reminderRow(
   scheduleName = SCHEDULE_NAME,
 ): Reminder {
   return new Reminder({
+    recurrence: null,
     id: REMINDER_ID,
     petId: PET_ID,
     type: 'deworming',

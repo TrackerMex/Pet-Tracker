@@ -18,9 +18,17 @@ export class ReminderDrizzleRepository implements ReminderRepository {
   constructor(@Inject(DRIZZLE) private readonly db: NodePgDatabase) {}
 
   async create(data: NewReminder): Promise<Reminder> {
+    const { recurrence, ...values } = data;
     const [row] = await this.db
       .insert(reminders)
-      .values({ id: uuidv7(), ...data })
+      .values({
+        id: uuidv7(),
+        ...values,
+        recurrenceUnit: recurrence?.unit ?? null,
+        recurrenceEvery: recurrence?.every ?? null,
+        recurrenceUntil: recurrence?.until ?? null,
+        recurrenceAnchorAt: recurrence?.anchorAt ?? null,
+      })
       .returning();
     return toDomain(row);
   }
@@ -118,5 +126,16 @@ function toDomain(row: ReminderRow): Reminder {
     scheduleName: row.scheduleName,
     enqueuedAt: row.enqueuedAt,
     createdBy: row.createdBy,
+    recurrence:
+      row.recurrenceUnit === null
+        ? null
+        : {
+            unit: row.recurrenceUnit as NonNullable<
+              Reminder['recurrence']
+            >['unit'],
+            every: row.recurrenceEvery!,
+            anchorAt: row.recurrenceAnchorAt!,
+            until: row.recurrenceUntil,
+          },
   });
 }

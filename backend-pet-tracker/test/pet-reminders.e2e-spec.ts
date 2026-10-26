@@ -852,4 +852,39 @@ describe('Pet reminders (e2e)', () => {
       },
     );
   });
+
+  describe('#210 R4: persistencia de recurrencia', () => {
+    it('#210 R4: POST con recurrence guarda las cuatro columnas', async () => {
+      const owner = await seedUser('210-r4');
+      const pet = await seedPet(owner);
+      const dueAt = new Date(Date.now() + 3 * 86_400_000);
+      const response = await api()
+        .post(`/v1/pets/${pet.id}/reminders`)
+        .set(auth(owner.token))
+        .send({
+          type: 'custom',
+          title: 'Serie R4',
+          dueAt: dueAt.toISOString(),
+          recurrence: { unit: 'week', every: 2 },
+          recurrenceUntil: '2031-01-01',
+        })
+        .expect(201);
+      const { id } = response.body as { id: string };
+      const [row] = await db
+        .select()
+        .from(reminders)
+        .where(eq(reminders.id, id));
+      expect(row).toMatchObject({
+        recurrenceUnit: 'week',
+        recurrenceEvery: 2,
+        recurrenceUntil: '2031-01-01',
+        recurrenceAnchorAt: dueAt,
+        status: 'scheduled',
+        scheduleName: expect.stringMatching(
+          /^reminder-[0-9a-f-]{36}$/,
+        ) as unknown,
+        enqueuedAt: null,
+      });
+    });
+  });
 });

@@ -1,5 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { uuidv7 } from 'uuidv7';
+import {
+  PET_REPOSITORY,
+  type PetRepository,
+} from '@/modules/pets/domain/repositories/pet.repository';
 import { CreateReminderDto } from '@/modules/reminders/application/dto/reminder.dto';
 import { Reminder } from '@/modules/reminders/domain/entities/reminder.entity';
 import { REMINDER_REPOSITORY } from '@/modules/reminders/domain/repositories/reminder.repository';
@@ -10,6 +14,7 @@ export class CreateReminderUseCase {
   constructor(
     @Inject(REMINDER_REPOSITORY)
     private readonly reminders: ReminderRepository,
+    @Inject(PET_REPOSITORY) private readonly pets: PetRepository,
   ) {}
 
   execute(
@@ -28,6 +33,7 @@ export class CreateReminderUseCase {
       scheduleName: `reminder-${uuidv7()}`,
       enqueuedAt: null,
       createdBy: userId,
+      recurrence: null,
     });
   }
 }

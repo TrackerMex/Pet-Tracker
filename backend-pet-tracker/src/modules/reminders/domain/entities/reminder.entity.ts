@@ -23,6 +23,7 @@ export interface ReminderProps {
   scheduleName: string | null;
   enqueuedAt: Date | null;
   createdBy: string;
+  recurrence: ReminderRecurrence | null;
 }
 
 export class Reminder implements ReminderProps {
@@ -37,6 +38,7 @@ export class Reminder implements ReminderProps {
   readonly scheduleName: string | null;
   readonly enqueuedAt: Date | null;
   readonly createdBy: string;
+  readonly recurrence: ReminderRecurrence | null;
 
   constructor(props: ReminderProps) {
     Object.assign(this, props);

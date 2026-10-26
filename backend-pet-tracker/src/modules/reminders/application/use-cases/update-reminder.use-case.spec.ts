@@ -9,6 +9,7 @@ const USER_ID = '01924a3f-0000-7000-8000-0000000000bb';
 
 function reminder(): Reminder {
   return new Reminder({
+    recurrence: null,
     id: REMINDER_ID,
     petId: PET_ID,
     type: 'custom',
@@ -24,7 +25,11 @@ function reminder(): Reminder {
 }
 
 function reminderWithStatus(status: Reminder['status']): Reminder {
-  return new Reminder({ ...reminder(), status });
+  return new Reminder({
+    ...reminder(),
+    recurrence: null,
+    status,
+  });
 }
 
 function repositoryStubs() {
