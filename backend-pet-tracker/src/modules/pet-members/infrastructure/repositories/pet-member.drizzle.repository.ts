@@ -1,4 +1,4 @@
-import { and, count, eq, gt, isNull } from 'drizzle-orm';
+import { and, count, desc, eq, gt, isNull } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
 import { petInvites, petUsers } from '@/db/schema';
 import { Inject, Injectable } from '@nestjs/common';
@@ -46,22 +46,22 @@ export class PetMemberDrizzleRepository implements PetMemberRepository {
       .insert(petInvites)
       .values({ ...input, id: uuidv7(), role: 'family' })
       .returning();
-    return {
-      id: row.id,
-      petId: row.petId,
-      role: 'family',
-      createdBy: row.createdBy,
-      createdAt: row.createdAt,
-      expiresAt: row.expiresAt,
-      acceptedBy: row.acceptedBy,
-      acceptedAt: row.acceptedAt,
-      revokedAt: row.revokedAt,
-    };
+    return toDomain(row);
   }
-  listPendingInvites(petId: string, now: Date): Promise<PetInvite[]> {
-    void petId;
-    void now;
-    return Promise.reject(new Error('Not implemented'));
+  async listPendingInvites(petId: string, now: Date): Promise<PetInvite[]> {
+    const rows = await this.db
+      .select()
+      .from(petInvites)
+      .where(
+        and(
+          eq(petInvites.petId, petId),
+          isNull(petInvites.acceptedAt),
+          isNull(petInvites.revokedAt),
+          gt(petInvites.expiresAt, now),
+        ),
+      )
+      .orderBy(desc(petInvites.createdAt), desc(petInvites.id));
+    return rows.map(toDomain);
   }
   revokeInvite(petId: string, inviteId: string, now: Date): Promise<boolean> {
     void petId;
@@ -88,4 +88,18 @@ export class PetMemberDrizzleRepository implements PetMemberRepository {
     void userId;
     return Promise.reject(new Error('Not implemented'));
   }
+}
+
+function toDomain(row: typeof petInvites.$inferSelect): PetInvite {
+  return {
+    id: row.id,
+    petId: row.petId,
+    role: 'family',
+    createdBy: row.createdBy,
+    createdAt: row.createdAt,
+    expiresAt: row.expiresAt,
+    acceptedBy: row.acceptedBy,
+    acceptedAt: row.acceptedAt,
+    revokedAt: row.revokedAt,
+  };
 }

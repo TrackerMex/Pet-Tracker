@@ -55,8 +55,17 @@ export class PetInvitesController {
   @Get()
   @UseGuards(PetAccessGuard)
   @RequirePetRole('owner')
-  list(@Req() request: PetAccessRequest) {
-    return this.listInvites.execute(request.petMembership.petId, new Date());
+  async list(@Req() request: PetAccessRequest) {
+    const invites = await this.listInvites.execute(
+      request.petMembership.petId,
+      new Date(),
+    );
+    return invites.map((invite) => ({
+      id: invite.id,
+      role: invite.role,
+      createdAt: invite.createdAt.toISOString(),
+      expiresAt: invite.expiresAt.toISOString(),
+    }));
   }
   @Delete(':inviteId')
   @HttpCode(HttpStatus.NO_CONTENT)
