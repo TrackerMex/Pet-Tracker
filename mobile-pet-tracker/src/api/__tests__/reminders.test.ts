@@ -1,4 +1,4 @@
-import { createReminder, deleteReminder, listReminders } from '../reminders';
+import { cancelReminderSeries, createReminder, deleteReminder, listReminders } from '../reminders';
 
 const baseUrl = 'http://example.test/v1/';
 const endpoint = 'http://example.test/v1/pets/pet-1/reminders';
@@ -284,5 +284,43 @@ describe('#213 R2: cuerpos de creación', () => {
     const body = JSON.parse(jest.mocked(fetchFn).mock.calls[0][1]!.body as string);
     expect(Object.keys(body).sort()).toEqual(keys);
     expect(body).toEqual(input);
+  });
+});
+
+
+describe('#213 R3: cancelación de series', () => {
+  it.each([
+    [200, 'ok'], [404, 'not-found'], [409, 'not-editable'], [403, 'forbidden'],
+    [401, 'unauthorized'], [400, 'error'], [500, 'error'],
+  ])('#213 R3: cancelReminderSeries mapea %i a %s', async (status, kind) => {
+    expect(cancelReminderSeries).toEqual(expect.any(Function));
+    const fetchFn = jest.fn().mockResolvedValue(response(status as number, {})) as unknown as typeof fetch;
+    await expect(cancelReminderSeries(baseUrl, 'jwt-token', 'reminder-1', fetchFn)).resolves.toEqual({ kind });
+  });
+
+  it('#213 R3: cancelReminderSeries hace PATCH a /reminders/:id con status cancelled', async () => {
+    expect(cancelReminderSeries).toEqual(expect.any(Function));
+    const fetchFn = jest.fn().mockResolvedValue(response(200, {})) as unknown as typeof fetch;
+    await cancelReminderSeries(baseUrl, 'jwt-token', 'reminder-1', fetchFn);
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+    expect(fetchFn).toHaveBeenCalledWith('http://example.test/v1/reminders/reminder-1', {
+      method: 'PATCH', headers: { Authorization: 'Bearer jwt-token', 'Content-Type': 'application/json' },
+      body: '{"status":"cancelled"}',
+    });
+  });
+
+  it('#213 R3: cancelReminderSeries sin baseUrl no llama a fetch', async () => {
+    expect(cancelReminderSeries).toEqual(expect.any(Function));
+    const fetchFn = jest.fn() as unknown as typeof fetch;
+    for (const missing of [undefined, '']) {
+      await expect(cancelReminderSeries(missing, 'jwt-token', 'reminder-1', fetchFn)).resolves.toEqual({ kind: 'missing-config' });
+    }
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+
+  it('#213 R3: cancelReminderSeries devuelve unreachable si fetch lanza', async () => {
+    expect(cancelReminderSeries).toEqual(expect.any(Function));
+    const fetchFn = jest.fn().mockRejectedValue(new Error('network down')) as unknown as typeof fetch;
+    await expect(cancelReminderSeries(baseUrl, 'jwt-token', 'reminder-1', fetchFn)).resolves.toEqual({ kind: 'unreachable', message: 'network down' });
   });
 });
