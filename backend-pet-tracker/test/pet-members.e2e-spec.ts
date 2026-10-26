@@ -237,4 +237,87 @@ describe('#211 R16: pet members API', () => {
     expect(row.expiresAt.toISOString()).toBe(body.expiresAt);
     expect(Object.values(row).map(String)).not.toContain(body.code);
   });
+  const invitesLimitBody = {
+    statusCode: 409,
+    code: 'PET_INVITES_LIMIT',
+    message: 'Too many pending invites for this pet',
+  };
+  const membersLimitBody = {
+    statusCode: 409,
+    code: 'PET_MEMBERS_LIMIT',
+    message: 'Pet member limit reached',
+  };
+  async function pendingFive(owner: TestUser, petId: string) {
+    const invites: InviteBody[] = [];
+    for (let i = 0; i < 5; i++)
+      invites.push(await createInviteViaApi(owner, petId));
+    return invites;
+  }
+  function requestInvite(owner: TestUser, petId: string) {
+    return api()
+      .post(`/v1/pets/${petId}/invites`)
+      .set('Authorization', `Bearer ${owner.token}`);
+  }
+  it('#211 R4: la sexta pendiente responde PET_INVITES_LIMIT y no crea fila', async () => {
+    const { owner, pet } = await fixture();
+    await pendingFive(owner, pet.id);
+    const response = await requestInvite(owner, pet.id);
+    expect(response.status).toBe(409);
+    expect(response.body).toEqual(invitesLimitBody);
+    expect(
+      await db.select().from(petInvites).where(eq(petInvites.petId, pet.id)),
+    ).toHaveLength(5);
+  });
+  it('#211 R4: una invitación revocada libera su plaza', async () => {
+    const { owner, pet } = await fixture();
+    const invites = await pendingFive(owner, pet.id);
+    const before = await requestInvite(owner, pet.id);
+    expect(before.status).toBe(409);
+    expect(before.body).toEqual(invitesLimitBody);
+    await db
+      .update(petInvites)
+      .set({ revokedAt: new Date() })
+      .where(eq(petInvites.id, invites[0].id));
+    await requestInvite(owner, pet.id).expect(201);
+  });
+  it('#211 R4: una invitación expirada libera su plaza', async () => {
+    const { owner, pet } = await fixture();
+    const invites = await pendingFive(owner, pet.id);
+    const before = await requestInvite(owner, pet.id);
+    expect(before.status).toBe(409);
+    expect(before.body).toEqual(invitesLimitBody);
+    await db
+      .update(petInvites)
+      .set({ expiresAt: new Date(Date.now() - 60000) })
+      .where(eq(petInvites.id, invites[0].id));
+    await requestInvite(owner, pet.id).expect(201);
+  });
+  it('#211 R4: con 9 miembros activos se crea una y la siguiente responde PET_MEMBERS_LIMIT', async () => {
+    const { owner, pet, label } = await fixture();
+    for (let i = 0; i < 8; i++) {
+      const member = await seedUser(`limit-${label}-${i}`);
+      await seedMembership(pet.id, member.id, 'family');
+    }
+    await requestInvite(owner, pet.id).expect(201);
+    const response = await requestInvite(owner, pet.id);
+    expect(response.status).toBe(409);
+    expect(response.body).toEqual(membersLimitBody);
+    expect(
+      await db.select().from(petInvites).where(eq(petInvites.petId, pet.id)),
+    ).toHaveLength(1);
+  });
+  it('#211 R4: con ambos límites alcanzados gana PET_INVITES_LIMIT', async () => {
+    const { owner, pet, label } = await fixture();
+    for (let i = 0; i < 4; i++) {
+      const member = await seedUser(`both-${label}-${i}`);
+      await seedMembership(pet.id, member.id, 'family');
+    }
+    await pendingFive(owner, pet.id);
+    const response = await requestInvite(owner, pet.id);
+    expect(response.status).toBe(409);
+    expect(response.body).toEqual(invitesLimitBody);
+    expect(
+      await db.select().from(petInvites).where(eq(petInvites.petId, pet.id)),
+    ).toHaveLength(5);
+  });
 });
