@@ -31,6 +31,36 @@ import DocsRoute from '../../app/pets/[petId]/docs';
 import DocsUploadRoute from '../../app/pets/[petId]/docs-upload';
 import { createQueryClient } from '../../providers/query-provider';
 
+jest.mock('@expo/ui', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
+
+  return {
+    Host: (props: Record<string, unknown>) => {
+      const { children, ...hostProps } = props;
+
+      return React.createElement(
+        View,
+        { ...hostProps, testID: 'expo-ui-picker-host' },
+        children as never,
+      );
+    },
+  };
+});
+
+jest.mock('@expo/ui/community/datetime-picker', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
+
+  return function MockDateTimePicker(props: Record<string, unknown>) {
+    return React.createElement(View, props);
+  };
+});
+
 jest.mock('standard-navigation', () => ({}));
 // #185 R9: renderRouter carga /mock, que omite useReducedMotion en Reanimated 4.
 jest.mock('react-native-reanimated/mock', () => ({
@@ -208,10 +238,15 @@ async function openUploadForm(docs = [docOne]) {
   return screen.findByTestId('docs-upload-form');
 }
 
+async function pickDocumentDate(date: Date) {
+  await fireEvent.press(screen.getByTestId('docs-date-input'));
+  await fireEvent(screen.getByTestId('docs-date-picker'), 'onValueChange', {}, date);
+}
+
 async function fillDocumentForm() {
   await fireEvent.changeText(screen.getByTestId('docs-type-input'), 'Vacunación');
   await fireEvent.changeText(screen.getByTestId('docs-name-input'), 'Antirrábica');
-  await fireEvent.changeText(screen.getByTestId('docs-date-input'), '2026-10-01');
+  await pickDocumentDate(new Date(2026, 9, 1));
   await fireEvent.changeText(screen.getByTestId('docs-vet-input'), 'Dra. Pérez');
 }
 
@@ -279,14 +314,14 @@ describe('#185 R9 (antes #158 R5): selector y formulario de subida', () => {
     expect(screen.getByTestId('docs-upload-file')).toHaveTextContent('vacuna.pdf');
   });
 
-  it('declara las props, clases y fecha civil de los controles (enmendado por #177 R10)', async () => {
+  it('declara las props, clases y fecha civil de los controles (enmendado por #177 R10) (enmendado por #220 R13)', async () => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date('2026-10-09T12:00:00Z'));
     await openUploadForm();
     const fields = [
       ['Tipo', 'docs-type-input', '', 40],
       ['Nombre', 'docs-name-input', '', 120],
-      ['Fecha', 'docs-date-input', '2026-10-09', undefined],
+      ['Fecha', 'docs-date-input-value', '9 oct 2026', undefined],
       ['Veterinario (opcional)', 'docs-vet-input', '', 120],
     ] as const;
     for (const [labelText, id, value, maxLength] of fields) {
@@ -300,7 +335,7 @@ describe('#185 R9 (antes #158 R5): selector y formulario de subida', () => {
       expect(label.props.className).toEqual(expect.stringContaining('font-semibold'));
       expect(label.props.className).toEqual(expect.stringContaining('text-foreground'));
     }
-    expect(screen.getByTestId('docs-date-input').props.placeholder).toBe('AAAA-MM-DD');
+    expect(screen.getByTestId('docs-date-input-value').props.placeholder).toBe('Elige una fecha');
     const submit = screen.getByTestId('docs-upload-submit');
     expect(submit).toHaveTextContent('Subir documento');
     expect(submit.props.className).toEqual(expect.stringContaining('h-14 rounded-16 bg-accent'));
@@ -317,9 +352,9 @@ describe('#185 R9 (antes #158 R5): selector y formulario de subida', () => {
     expect(cancelLabel.props.className).toEqual(expect.stringContaining('text-foreground'));
   });
 
-  it.each([{ docs: [] }, { docs: [docOne] }])('cancelar reinicia los campos sin red con lista %j', async ({ docs }) => {
+  it.each([{ docs: [] }, { docs: [docOne] }])('cancelar reinicia los campos sin red con lista %j (enmendado por #220 R13)', async ({ docs }) => {
     await openUploadForm(docs);
-    const initialDate = screen.getByTestId('docs-date-input').props.value;
+    const initialDate = screen.getByTestId('docs-date-input-value').props.value;
     await fillDocumentForm();
     await fireEvent.press(screen.getByTestId('docs-upload-cancel'));
     const entry = await screen.findByTestId(docs.length ? 'docs-upload' : 'docs-empty-action');
@@ -330,7 +365,7 @@ describe('#185 R9 (antes #158 R5): selector y formulario de subida', () => {
     expect(screen.getByTestId('docs-type-input').props.value).toBe('');
     expect(screen.getByTestId('docs-name-input').props.value).toBe('');
     expect(screen.getByTestId('docs-vet-input').props.value).toBe('');
-    expect(screen.getByTestId('docs-date-input').props.value).toBe(initialDate);
+    expect(screen.getByTestId('docs-date-input-value').props.value).toBe(initialDate);
     expect(mockCreatePetDocument).not.toHaveBeenCalled();
     expect(mockAssetFetch).not.toHaveBeenCalled();
   });
@@ -340,8 +375,7 @@ describe('#185 R9 (antes #158 R6): validación antes de leer o crear', () => {
   it.each([
     { label: 'tipo solo con espacios', input: 'docs-type-input', value: '   ', message: 'Este campo es obligatorio' },
     { label: 'nombre vacío', input: 'docs-name-input', value: '', message: 'Este campo es obligatorio' },
-    { label: 'fecha sin formato ISO', input: 'docs-date-input', value: '09/10/2026', message: 'Escribe una fecha válida con formato AAAA-MM-DD' },
-  ])('#186 R6: rechaza $label bajo su campo sin llamadas', async ({ input, value, message }) => {
+  ])('#186 R6: rechaza $label bajo su campo sin llamadas (enmendado por #220 R13)', async ({ input, value, message }) => {
     await openUploadForm();
     await fillDocumentForm();
     await fireEvent.changeText(screen.getByTestId(input), value);
@@ -373,25 +407,14 @@ describe('#185 R9 (antes #158 R6): validación antes de leer o crear', () => {
 });
 
 describe('#186 R6: errores de campos y contrato del documento', () => {
-  it('#186 R6: rechaza un calendario falso antes de leer el archivo', async () => {
+  it('#186 R6: muestra los tres campos inválidos simultáneamente (enmendado por #220 R13)', async () => {
     await openUploadForm();
-    await fillDocumentForm();
-    await fireEvent.changeText(screen.getByTestId('docs-date-input'), '2026-02-30');
-    await fireEvent.press(screen.getByTestId('docs-upload-submit'));
-    await waitFor(() => expect(screen.queryByTestId('docs-date-input-message')).toHaveTextContent('Escribe una fecha válida con formato AAAA-MM-DD'));
-    expect(mockGetDocumentAsync).toHaveBeenCalledTimes(1);
-    expect(mockAssetFetch).not.toHaveBeenCalled();
-    expect(mockCreatePetDocument).not.toHaveBeenCalled();
-  });
-
-  it('#186 R6: muestra los tres campos inválidos simultáneamente', async () => {
-    await openUploadForm();
-    await fireEvent.changeText(screen.getByTestId('docs-date-input'), 'bad-date');
+    await pickDocumentDate(new Date(2026, 9, 1));
     await fireEvent.press(screen.getByTestId('docs-upload-submit'));
     await waitFor(() => expect(screen.queryByTestId('docs-type-input-message')).toHaveTextContent('Este campo es obligatorio'));
     expect(screen.queryByTestId('docs-type-input-message-row')).not.toBeNull();
     expect(screen.queryByTestId('docs-name-input-message-row')).not.toBeNull();
-    expect(screen.queryByTestId('docs-date-input-message-row')).not.toBeNull();
+    expect(screen.queryByTestId('docs-date-input-message-row')).toBeNull();
   });
 
   it('#186 R6: el estado inválido de HeroUI marca tipo pero no veterinario', async () => {
@@ -404,11 +427,11 @@ describe('#186 R6: errores de campos y contrato del documento', () => {
     expect(screen.queryByTestId('docs-type-input-message')).toHaveTextContent('Este campo es obligatorio');
   });
 
-  it('#186 R6: fecha recortada se envía una vez sin mensajes de campo', async () => {
+  it('#186 R6: fecha recortada se envía una vez sin mensajes de campo (enmendado por #220 R13)', async () => {
     mockCreatePetDocument.mockReturnValue(pending());
     await openUploadForm();
     await fillDocumentForm();
-    await fireEvent.changeText(screen.getByTestId('docs-date-input'), ' 2026-10-09 ');
+    await pickDocumentDate(new Date(2026, 9, 9));
     await fireEvent.press(screen.getByTestId('docs-upload-submit'));
     await waitFor(() => expect(screen.getByTestId('docs-upload-submit')).toBeDisabled());
     expect(screen.queryAllByTestId(/-message-row$/)).toHaveLength(0);
@@ -441,7 +464,7 @@ const docTwo = {
 };
 
 describe('#185 R9 (antes #158 R7): una subida correcta refresca la lista', () => {
-  it('sube el PDF en orden con los cuatro campos recortados', async () => {
+  it('sube el PDF en orden con los cuatro campos recortados (enmendado por #220 R13)', async () => {
     mockGetDocumentAsync.mockResolvedValueOnce({
       canceled: false,
       assets: [{ uri: 'file:///cache/vacuna.pdf', name: 'vacuna.pdf', mimeType: 'application/pdf', size: 1000, lastModified: 0 }],
@@ -454,7 +477,7 @@ describe('#185 R9 (antes #158 R7): una subida correcta refresca la lista', () =>
     await screen.findByTestId('docs-upload-form');
     await fireEvent.changeText(screen.getByTestId('docs-type-input'), ' Vacunación ');
     await fireEvent.changeText(screen.getByTestId('docs-name-input'), ' Antirrábica ');
-    await fireEvent.changeText(screen.getByTestId('docs-date-input'), ' 2026-10-01 ');
+    await pickDocumentDate(new Date(2026, 9, 1));
     await fireEvent.changeText(screen.getByTestId('docs-vet-input'), ' Dra. Pérez ');
     await fireEvent.press(screen.getByTestId('docs-upload-submit'));
     await waitFor(() => expect(within(screen.getByTestId('doc-doc-2')).getByText('Antirrábica')).toHaveTextContent('Antirrábica'));
@@ -587,7 +610,7 @@ describe('#185 R9 (antes #158 R9): cada fallo conserva el formulario y sus valor
     { label: 'confirmar error', stage: 'confirmar', state: { kind: 'error' }, error: 'Algo salió mal' },
     { label: 'confirmar missing-config', stage: 'confirmar', state: { kind: 'missing-config' }, error: 'Algo salió mal' },
     { label: 'confirmar rechaza', stage: 'confirmar', reject: true, error: 'Algo salió mal' },
-  ] as const)('$label', async (row) => {
+  ] as const)('$label (enmendado por #220 R13)', async (row) => {
     if (row.stage === 'fetch') mockAssetFetch.mockRejectedValue(new Error('local read failed'));
     if (row.stage === 'blob') mockAssetFetch.mockResolvedValue({ blob: jest.fn().mockRejectedValue(new Error('blob failed')) });
     if (row.stage === 'crear') {
@@ -607,7 +630,7 @@ describe('#185 R9 (antes #158 R9): cada fallo conserva el formulario y sus valor
     for (const [id, value] of [
       ['docs-type-input', 'Vacunación'],
       ['docs-name-input', 'Antirrábica'],
-      ['docs-date-input', '2026-10-01'],
+      ['docs-date-input-value', '1 oct 2026'],
       ['docs-vet-input', 'Dra. Pérez'],
     ]) expect(screen.getByTestId(id).props.value).toBe(value);
     expect(screen.getByTestId('docs-upload-submit').props.accessibilityState?.disabled).toBe(false);
@@ -675,16 +698,16 @@ describe('#185 R9 (antes #158 R11): el formulario se aparta del teclado en Andro
 });
 
 describe('#185 R2.2: la pantalla monta el formulario con los params', () => {
-  it('conserva archivo, cuatro controles y métricas bajo cabecera nativa', async () => {
+  it('conserva archivo, cuatro controles y métricas bajo cabecera nativa (enmendado por #220 R13)', async () => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date('2026-10-09T12:00:00Z'));
     await openUploadForm();
     expect(screen.getByTestId('docs-upload-file')).toHaveTextContent('vacuna.pdf');
     expect(screen.getByTestId('docs-type-input').props.maxLength).toBe(40);
     expect(screen.getByTestId('docs-name-input').props.maxLength).toBe(120);
-    expect(screen.getByTestId('docs-date-input').props.maxLength).toBeUndefined();
-    expect(screen.getByTestId('docs-date-input').props.placeholder).toBe('AAAA-MM-DD');
-    expect(screen.getByTestId('docs-date-input').props.value).toBe('2026-10-09');
+    expect(screen.getByTestId('docs-date-input-value').props.maxLength).toBeUndefined();
+    expect(screen.getByTestId('docs-date-input-value').props.placeholder).toBe('Elige una fecha');
+    expect(screen.getByTestId('docs-date-input-value').props.value).toBe('9 oct 2026');
     expect(screen.getByTestId('docs-vet-input').props.maxLength).toBe(120);
     const source = readFileSync(join(process.cwd(), 'src/screens/docs-upload-form/index.tsx'), 'utf8');
     expect(source).toContain('behavior="padding"');
@@ -800,8 +823,8 @@ describe('#185 R8: clases de botón, etiqueta e input intactas', () => {
     ['cancel', 1, 'h-14 rounded-16 border-2 border-lip-gray bg-surface'],
     ['cancelLabel', 1, 'text-17 font-extrabold text-foreground'],
     ['labels', 8, 'text-2xs font-semibold text-foreground'],
-    ['inputs', 4, 'rounded-xl bg-default'],
-  ] as const)('conserva %s sin alterar sus clases', (row, count, expected) => {
+    ['inputs', 3, 'rounded-xl bg-default'],
+  ] as const)('conserva %s sin alterar sus clases (enmendado por #220 R13)', (row, count, expected) => {
     const source = readFileSync(join(process.cwd(), 'src/screens/docs-upload-form/index.tsx'), 'utf8');
     const openingTag = (id: string) => {
       const anchor = source.indexOf(`testID="${id}"`);
@@ -828,5 +851,27 @@ describe('#185 R8: clases de botón, etiqueta e input intactas', () => {
     expect(submit).toContain('isDisabled={uploading}');
     expect(cancel).toContain('isDisabled={uploading}');
     expect(cancel).toContain('variant="outline"');
+  });
+});
+
+
+describe('#220 R13: Documentos usa DateField', () => {
+  it('#220 R13: la fecha del documento se elige con el selector y se envía recortada de tiempo', async () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(2026, 9, 9, 12));
+    mockCreatePetDocument.mockReturnValue(pending());
+    await openUploadForm();
+    expect(screen.getByTestId('docs-date-input-value').props.value).toBe('9 oct 2026');
+    await fireEvent.press(screen.getByTestId('docs-date-input'));
+    const picker = screen.getByTestId('docs-date-picker');
+    expect(picker.props.maximumDate).toBeUndefined();
+    expect(picker.props.minimumDate).toBeUndefined();
+    await fireEvent(picker, 'onValueChange', {}, new Date(2026, 9, 1, 15, 45));
+    expect(screen.getByTestId('docs-date-input-value').props.value).toBe('1 oct 2026');
+    await fireEvent.changeText(screen.getByTestId('docs-type-input'), 'Vacunación');
+    await fireEvent.changeText(screen.getByTestId('docs-name-input'), 'Antirrábica');
+    await fireEvent.press(screen.getByTestId('docs-upload-submit'));
+    await waitFor(() => expect(screen.getByTestId('docs-upload-submit')).toBeDisabled());
+    expect(mockCreatePetDocument).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1', { type: 'Vacunación', name: 'Antirrábica', date: '2026-10-01' });
   });
 });
