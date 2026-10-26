@@ -163,7 +163,13 @@ function AddReminderContent({ petId }: { petId: string }) {
           <Text className="text-sm font-extrabold text-foreground">
             {t('addReminder.type')}
           </Text>
-          <View className="flex-row flex-wrap gap-2">
+          <ScrollView
+            testID="type-chips-row"
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="-mr-5"
+            contentContainerStyle={{ gap: 8, paddingRight: 20 }}
+          >
             {REMINDER_TYPES.map(([reminderType, meta]) => {
               const selected = type === reminderType;
               const slot = CATEGORY_SLOTS[meta.category];
@@ -189,7 +195,7 @@ function AddReminderContent({ petId }: { petId: string }) {
                 </Pressable>
               );
             })}
-          </View>
+          </ScrollView>
         </View>
 
         <View className="gap-1.5">
@@ -273,7 +279,13 @@ function AddReminderContent({ petId }: { petId: string }) {
           <Text className="text-sm font-extrabold text-foreground">
             {t('addReminder.alert')}
           </Text>
-          <View className="flex-row flex-wrap gap-2">
+          <ScrollView
+            testID="advance-chips-row"
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="-mr-5"
+            contentContainerStyle={{ gap: 8, paddingRight: 20 }}
+          >
             {ADVANCE_OPTIONS.map((option) => {
               const selected = selectedAdvance === option.minutes;
               const disabled = isAdvancePast(pickedDueAt, option.minutes, now);
@@ -296,7 +308,7 @@ function AddReminderContent({ petId }: { petId: string }) {
                 </Pressable>
               );
             })}
-          </View>
+          </ScrollView>
         </View>
 
         {notifyAt ? (
