@@ -1,3 +1,4 @@
+import { validateVaccine } from './form-rules';
 import type { FieldIssues } from './account-rules';
 
 type PetValues = {
@@ -167,5 +168,23 @@ describe('#191 R7: validateAddPetBasics', () => {
     if (!name.trim()) {
       expect(validateAddPetBasics({ name }).name).toBe(validateAddPet({ ...validPet, name }).name);
     }
+  });
+});
+
+
+describe('#208 R3: nombre libre de vacuna', () => {
+  it('#208 R3: «Otra vacuna» con nombre en blanco pide el nombre', () => {
+    expect(typeof validateVaccine).toBe('function');
+    for (const name of ['', '   ']) {
+      expect(validateVaccine({ mode: 'other', name })).toEqual({ name: { labelKey: 'vaccineCreate.nameRequired' } });
+    }
+  });
+  it('#208 R3: «Otra vacuna» con nombre no pide nada', () => {
+    expect(typeof validateVaccine).toBe('function');
+    expect(validateVaccine({ mode: 'other', name: ' Rabia ' })).toEqual({});
+  });
+  it('#208 R3: con catálogo no pide nombre aunque esté vacío', () => {
+    expect(typeof validateVaccine).toBe('function');
+    expect(validateVaccine({ mode: 'catalog', name: '' })).toEqual({});
   });
 });
