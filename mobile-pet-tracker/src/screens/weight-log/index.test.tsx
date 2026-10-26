@@ -40,6 +40,36 @@ declare function require(moduleName: 'path'): {
 const { readFileSync } = require('fs');
 const { join } = require('path');
 
+jest.mock('@expo/ui', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
+
+  return {
+    Host: (props: Record<string, unknown>) => {
+      const { children, ...hostProps } = props;
+
+      return React.createElement(
+        View,
+        { ...hostProps, testID: 'expo-ui-picker-host' },
+        children as never,
+      );
+    },
+  };
+});
+
+jest.mock('@expo/ui/community/datetime-picker', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
+
+  return function MockDateTimePicker(props: Record<string, unknown>) {
+    return React.createElement(View, props);
+  };
+});
+
 jest.mock('../../api/health-records', () => ({
   createWeight: jest.fn(),
   listWeights: jest.fn(),
@@ -153,11 +183,9 @@ function pending<T>(): Promise<T> {
   return new Promise(() => undefined);
 }
 
-function deviceTodayIso(): string {
-  const today = new Date();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
-  return `${today.getFullYear()}-${month}-${day}`;
+async function pickWeightDate(date: Date) {
+  await fireEvent.press(screen.getByTestId('weight-date-input'));
+  await fireEvent(screen.getByTestId('weight-date-picker'), 'onValueChange', {}, date);
 }
 
 beforeEach(() => {
@@ -367,7 +395,7 @@ describe('R9: alta de peso con degradación por kind', () => {
 
   afterEach(() => jest.useRealTimers());
 
-  it('renders the inline form with the local date prefilled (#90 R3)', async () => {
+  it('renders the inline form with the local date prefilled (#90 R3) (enmendado por #220 R12)', async () => {
     mockCreateWeight.mockReturnValue(pending<CreateWeightState>());
 
     await renderWeightLog();
@@ -377,8 +405,8 @@ describe('R9: alta de peso con degradación por kind', () => {
       'decimal-pad',
     );
     await waitFor(() =>
-      expect(screen.getByTestId('weight-date-input').props.value).toBe(
-        '2026-09-18',
+      expect(screen.getByTestId('weight-date-input-value').props.value).toBe(
+        '18 sep 2026',
       ),
     );
     expect(screen.getByTestId('weight-bc-input').props.keyboardType).toBe(
@@ -400,7 +428,7 @@ describe('R9: alta de peso con degradación por kind', () => {
     expect(mockCreateWeight).not.toHaveBeenCalled();
   });
 
-  it('submits all fields, clears them, and refetches the list (#72 R2) (#90 R3)', async () => {
+  it('submits all fields, clears them, and refetches the list (#72 R2) (#90 R3) (enmendado por #220 R12)', async () => {
     mockCreateWeight.mockResolvedValue({
       kind: 'ok',
       weight: makeWeight({ weightKg: 12.8, bodyCondition: 6 }),
@@ -409,10 +437,7 @@ describe('R9: alta de peso con degradación por kind', () => {
     await renderWeightLog();
     await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
     await fireEvent.changeText(screen.getByTestId('weight-input'), '12.8');
-    await fireEvent.changeText(
-      screen.getByTestId('weight-date-input'),
-      '2026-08-20',
-    );
+    await pickWeightDate(new Date(2026, 7, 20));
     await fireEvent.changeText(screen.getByTestId('weight-bc-input'), '6');
     await fireEvent.press(screen.getByTestId('weight-submit'));
 
@@ -430,8 +455,8 @@ describe('R9: alta de peso con degradación por kind', () => {
     expect(mockListWeights).toHaveBeenCalledTimes(2);
     expect(screen.getByTestId('weight-bc-input').props.value).toBe('');
     await waitFor(() =>
-      expect(screen.getByTestId('weight-date-input').props.value).toBe(
-        '2026-09-18',
+      expect(screen.getByTestId('weight-date-input-value').props.value).toBe(
+        '18 sep 2026',
       ),
     );
     expect(screen.queryByTestId('weight-form-error')).toBeNull();
@@ -521,12 +546,12 @@ describe('R9: alta de peso con degradación por kind', () => {
     ['1000', 'El peso debe ser mayor que 0 y como máximo 999,99 kg'],
     ['12abc', 'Introduce un peso válido'],
     ['72,5', null],
-  ])('#186 R7: peso «%s» respeta decimal y rango', async (weight, message) => {
+  ])('#186 R7: peso «%s» respeta decimal y rango (enmendado por #220 R12)', async (weight, message) => {
     mockCreateWeight.mockReturnValue(pending());
     await renderWeightLog();
     await screen.findByTestId('weight-input');
     await fireEvent.changeText(screen.getByTestId('weight-input'), weight!);
-    await fireEvent.changeText(screen.getByTestId('weight-date-input'), '2026-08-20');
+    await pickWeightDate(new Date(2026, 7, 20));
     await fireEvent.press(screen.getByTestId('weight-submit'));
     if (message !== null) {
       await waitFor(() => expect(screen.queryByTestId('weight-input-message')).toHaveTextContent(message));
@@ -537,35 +562,17 @@ describe('R9: alta de peso con degradación por kind', () => {
     }
   });
 
-  it.each([
-    ['2026-02-30', 'Escribe una fecha válida con formato AAAA-MM-DD'],
-    [' 2026-08-20 ', null],
-  ])('#186 R7: fecha «%s» es real y se envía recortada', async (date, message) => {
-    mockCreateWeight.mockReturnValue(pending());
-    await renderWeightLog();
-    await screen.findByTestId('weight-input');
-    await fireEvent.changeText(screen.getByTestId('weight-input'), '12.4');
-    await fireEvent.changeText(screen.getByTestId('weight-date-input'), date!);
-    await fireEvent.press(screen.getByTestId('weight-submit'));
-    if (message !== null) {
-      await waitFor(() => expect(screen.queryByTestId('weight-date-input-message')).toHaveTextContent(message));
-      expect(mockCreateWeight).not.toHaveBeenCalled();
-    } else {
-      await waitFor(() => expect(screen.getByTestId('weight-submit')).toBeDisabled());
-      expect(mockCreateWeight).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1', { weightKg: 12.4, measuredAt: '2026-08-20' });
-    }
-  });
 
   it.each([
     ['10', 'La condición corporal es un número entero del 1 al 9'],
     ['abc', 'La condición corporal es un número entero del 1 al 9'],
     ['  ', null],
-  ])('#186 R7: condición corporal «%s» valida y omite blanco', async (body, message) => {
+  ])('#186 R7: condición corporal «%s» valida y omite blanco (enmendado por #220 R12)', async (body, message) => {
     mockCreateWeight.mockReturnValue(pending());
     await renderWeightLog();
     await screen.findByTestId('weight-input');
     await fireEvent.changeText(screen.getByTestId('weight-input'), '12.4');
-    await fireEvent.changeText(screen.getByTestId('weight-date-input'), '2026-08-20');
+    await pickWeightDate(new Date(2026, 7, 20));
     await fireEvent.changeText(screen.getByTestId('weight-bc-input'), body!);
     await fireEvent.press(screen.getByTestId('weight-submit'));
     if (message !== null) {
@@ -577,16 +584,16 @@ describe('R9: alta de peso con degradación por kind', () => {
     }
   });
 
-  it('#186 R7: muestra simultáneamente las tres filas inválidas', async () => {
+  it('#186 R7: muestra simultáneamente las tres filas inválidas (enmendado por #220 R12)', async () => {
     await renderWeightLog();
     await screen.findByTestId('weight-input');
     await fireEvent.changeText(screen.getByTestId('weight-input'), 'abc');
-    await fireEvent.changeText(screen.getByTestId('weight-date-input'), 'bad-date');
+    await pickWeightDate(new Date(2026, 7, 20));
     await fireEvent.changeText(screen.getByTestId('weight-bc-input'), '10');
     await fireEvent.press(screen.getByTestId('weight-submit'));
     await waitFor(() => expect(screen.queryByTestId('weight-input-message')).toHaveTextContent('Introduce un peso válido'));
     expect(screen.queryByTestId('weight-input-message-row')).not.toBeNull();
-    expect(screen.queryByTestId('weight-date-input-message-row')).not.toBeNull();
+    expect(screen.queryByTestId('weight-date-input-message-row')).toBeNull();
     expect(screen.queryByTestId('weight-bc-input-message-row')).not.toBeNull();
   });
 
@@ -642,9 +649,9 @@ describe('#90 R3: la fecha por defecto sale de la zona del perfil', () => {
   afterEach(() => jest.useRealTimers());
 
   it.each([
-    ['Pacific/Kiritimati', '2026-09-18'],
-    ['Pacific/Pago_Pago', '2026-09-17'],
-  ])('usa %s para el valor visible, el payload y el reset', async (timezone, expected) => {
+    ['Pacific/Kiritimati', '2026-09-18', '18 sep 2026'],
+    ['Pacific/Pago_Pago', '2026-09-17', '17 sep 2026'],
+  ])('usa %s para el valor visible, el payload y el reset (enmendado por #220 R12)', async (timezone, expected, label) => {
     mockGetMe.mockResolvedValue({ kind: 'ok', me: makeProfile(timezone) });
     mockCreateWeight.mockResolvedValue({
       kind: 'ok',
@@ -653,7 +660,7 @@ describe('#90 R3: la fecha por defecto sale de la zona del perfil', () => {
 
     await renderWeightLog();
     await waitFor(() =>
-      expect(screen.getByTestId('weight-date-input').props.value).toBe(expected),
+      expect(screen.getByTestId('weight-date-input-value').props.value).toBe(label),
     );
     expect(mockGetMe).toHaveBeenCalledWith(apiUrl, 'jwt-token');
 
@@ -669,7 +676,7 @@ describe('#90 R3: la fecha por defecto sale de la zona del perfil', () => {
       ),
     );
     await waitFor(() =>
-      expect(screen.getByTestId('weight-date-input').props.value).toBe(expected),
+      expect(screen.getByTestId('weight-date-input-value').props.value).toBe(label),
     );
   });
 });
@@ -692,14 +699,14 @@ describe('#90 R4: sin zona del perfil la fecha cae al dispositivo', () => {
 
   afterEach(() => jest.useRealTimers());
 
-  it('usa el día del dispositivo mientras el perfil está pendiente', async () => {
+  it('usa el día del dispositivo mientras el perfil está pendiente (enmendado por #220 R12)', async () => {
     mockGetMe.mockReturnValue(pending());
 
     await renderWeightLog();
 
     await waitFor(() =>
-      expect(screen.getByTestId('weight-date-input').props.value).toBe(
-        deviceTodayIso(),
+      expect(screen.getByTestId('weight-date-input-value').props.value).toBe(
+        '17 sep 2026',
       ),
     );
   });
@@ -708,20 +715,20 @@ describe('#90 R4: sin zona del perfil la fecha cae al dispositivo', () => {
     { kind: 'unreachable', message: 'network down' } as const,
     { kind: 'error' } as const,
     { kind: 'missing-config' } as const,
-  ])('usa el día del dispositivo cuando me devuelve $kind', async (state) => {
+  ])('usa el día del dispositivo cuando me devuelve $kind (enmendado por #220 R12)', async (state) => {
     mockGetMe.mockResolvedValue(state);
 
     await renderWeightLog();
     await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
     await waitFor(() =>
-      expect(screen.getByTestId('weight-date-input').props.value).toBe(
-        deviceTodayIso(),
+      expect(screen.getByTestId('weight-date-input-value').props.value).toBe(
+        '17 sep 2026',
       ),
     );
     expect(screen.queryByTestId('weight-form-error')).toBeNull();
   });
 
-  it('usa el día del dispositivo sin lanzar para una zona inválida', async () => {
+  it('usa el día del dispositivo sin lanzar para una zona inválida (enmendado por #220 R12)', async () => {
     mockGetMe.mockResolvedValue({
       kind: 'ok',
       me: makeProfile('Not/A/Zone'),
@@ -730,8 +737,8 @@ describe('#90 R4: sin zona del perfil la fecha cae al dispositivo', () => {
     await renderWeightLog();
     await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
     await waitFor(() =>
-      expect(screen.getByTestId('weight-date-input').props.value).toBe(
-        deviceTodayIso(),
+      expect(screen.getByTestId('weight-date-input-value').props.value).toBe(
+        '17 sep 2026',
       ),
     );
     expect(screen.queryByTestId('weight-form-error')).toBeNull();
@@ -943,10 +950,10 @@ describe('#169 R6: resumen del peso en la card de la gráfica', () => {
   it.each([
     ['Pacific/Pago_Pago', '2026-09-30', '+1.4 kg este mes'],
     ['Pacific/Kiritimati', '2026-10-01', null],
-  ] as const)('en %s pinta el peso actual y el delta del día civil (enmendado por #199 R4) (enmendado por #199 R7)', async (timezone, today, delta) => {
+  ] as const)('en %s pinta el peso actual y el delta del día civil (enmendado por #199 R4) (enmendado por #199 R7) (enmendado por #220 R12)', async (timezone, today, delta) => {
     mockGetMe.mockResolvedValue({ kind: 'ok', me: makeProfile(timezone) });
     await renderWeightLog();
-    await waitFor(() => expect(screen.getByTestId('weight-date-input').props.value).toBe(today));
+    await waitFor(() => expect(screen.getByTestId('weight-date-input-value').props.value).toBe(today === '2026-09-30' ? '30 sep 2026' : '1 oct 2026'));
 
     const current = await screen.findByTestId('weight-current');
     expect(current).toHaveTextContent('12.4 kg', { exact: true });
@@ -1412,14 +1419,14 @@ describe('#199 R11: fechas del historial', () => {
   it.each([
     ['2025-12-31', '31 dic'],
     ['2026-01-01', '1 ene'],
-  ])('#199 R11 la fecha %s se lee %s en text-13 font-semibold', async (measuredAt, expected) => {
+  ])('#199 R11 la fecha %s se lee %s en text-13 font-semibold (enmendado por #220 R12)', async (measuredAt, expected) => {
     mockListWeights.mockResolvedValue({ kind: 'ok', weights: [makeWeight({ measuredAt })] });
     await renderWeightLog();
     const date = await screen.findByTestId('weight-row-weight-1-date');
     expect(date.type).toBe('Text');
     expect(date.props.className).toBe('text-13 font-semibold text-muted');
     expect(date).toHaveTextContent(expected, { exact: true });
-    expect(screen.getByTestId('weight-date-input').props.value).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(screen.getByTestId('weight-date-input-value').props.value).toMatch(/^\d{1,2} [a-z]{3} \d{4}$/);
   });
 });
 
@@ -1517,5 +1524,29 @@ describe('#199 R23: toast de registro', () => {
   it('#199 R23 el fuente declara FadeIn.duration(MOTION_TOAST_FADE_MS).delay(MOTION_TOAST_DELAY_MS)', () => {
     const source = readFileSync(join(process.cwd(), 'src/screens/weight-log/index.tsx'), 'utf8');
     expect(source).toContain('entering={FadeIn.duration(MOTION_TOAST_FADE_MS).delay(MOTION_TOAST_DELAY_MS)}');
+  });
+});
+
+
+describe('#220 R12: Peso usa DateField', () => {
+  beforeEach(() => {
+    prepareWeightLogTests();
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-09-17T23:30:00Z'));
+  });
+  afterEach(() => jest.useRealTimers());
+  it('#220 R12: el campo de fecha muestra hoy en la zona del perfil y se elige con el selector', async () => {
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-date-input-value').props.value).toBe('18 sep 2026'));
+    await fireEvent.press(screen.getByTestId('weight-date-input'));
+    const picker = screen.getByTestId('weight-date-picker');
+    expect(picker.props.maximumDate.getTime()).toBe(new Date(2026, 8, 18, 12).getTime());
+    expect(picker.props.minimumDate).toBeUndefined();
+    await fireEvent(picker, 'onValueChange', {}, new Date(2026, 7, 20));
+    expect(screen.getByTestId('weight-date-input-value').props.value).toBe('20 ago 2026');
+    await fireEvent.changeText(screen.getByTestId('weight-input'), '12.4');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+    await waitFor(() => expect(screen.getByTestId('weight-submit')).toBeDisabled());
+    expect(mockCreateWeight).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1', { weightKg: 12.4, measuredAt: '2026-08-20' });
   });
 });
