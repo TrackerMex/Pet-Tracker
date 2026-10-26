@@ -107,6 +107,11 @@ Todos en la capa de presentación móvil, salvo la línea de `init.config.sh`.
 - `mobile-pet-tracker/src/i18n/catalog.ts` y `src/providers/__tests__/language-provider.test.tsx` (R19).
 - `mobile-pet-tracker/src/__tests__/ui-copy-table.ts` y `src/__tests__/ui-language.test.ts` (R20).
 - `mobile-pet-tracker/src/__tests__/chunky-cta-canvas-fidelity.test.ts`, `consistency-classnames.test.ts` y `design-drift.test.ts` (R21).
+- `mobile-pet-tracker/src/__tests__/profile-canvas-fidelity.test.ts` y
+  `alerts-canvas-fidelity.test.ts` (R21, M3).
+  - Los mueven los feats de R6, R9 y R11, que adelantan sus entradas.
+  - R16 y R17 escriben las clases categóricas con `CATEGORY_SLOTS` de
+    `utils/category-palette.ts` (M3, `#64 R9`).
 - `init.config.sh` e `init-e2e-gate.test.mjs`, en la raíz (R22).
 
 **No cambia:** `backend-pet-tracker/` y `init.sh`.

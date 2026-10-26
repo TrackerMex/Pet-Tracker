@@ -627,7 +627,11 @@ SHALL pintar `vaccine-reminder-notice`.
 - Es una superposición `absolute` hermana del `ScrollView`, que pasa a
   envolverse en `<View testID="health-root" className="flex-1">`.
 - `accessibilityRole="alert"` y `accessibilityLiveRegion="polite"`.
-- Clase: `absolute left-4 right-4 flex-row items-center gap-2.5 rounded-tile border border-border px-3.5 py-3 bg-category-amber`.
+- Clase renderizada: `absolute left-4 right-4 flex-row items-center gap-2.5 rounded-tile border border-border px-3.5 py-3 bg-category-amber`.
+  - Se escribe ``className={`absolute left-4 right-4 flex-row items-center gap-2.5 rounded-tile border border-border px-3.5 py-3 ${CATEGORY_SLOTS.amber.surface}`}``,
+    con el `CATEGORY_SLOTS` que Salud ya importa, como en `next-vaccine-card`.
+    El literal está vetado (M3): `#64 R9` no admite clases categóricas fuera de
+    `utils/category-palette.ts`.
 - Estilo: `[{ bottom: 104 }, shadows.toast, CONTINUOUS_CORNER]`, con
   `const shadows = useShadows();` de `theme/shadows`, como en `weight-log`.
   - Ancla: `grep -cF 'shadows.toast' screens/weight-log/index.tsx` → 1.
@@ -638,7 +642,8 @@ SHALL pintar `vaccine-reminder-notice`.
     - en: «I saved {{name}}'s vaccine, but I couldn't create its reminder.»
     - clave `health.vaccineReminderFailed`
   - `Pressable vaccine-reminder-notice-action`, `min-h-11 justify-center`, con
-    `Text text-13 font-extrabold text-category-amber-strong`:
+    un `Text` que renderiza `text-13 font-extrabold text-category-amber-strong`,
+    escrito ``className={`text-13 font-extrabold ${CATEGORY_SLOTS.amber.ink}`}`` (M3):
     «Crear ahora» / «Create now» (`health.createReminderNow`)
 - Pulsar la acción llama a `clearVaccineReminderNotice()` y
   `router.push('/add-reminder')`.
@@ -671,8 +676,11 @@ SHALL pintar `vaccine-reminder-notice`.
 encima del CTA, `vaccine-create-error`.
 
 - `accessibilityRole="alert"`.
-- Clase: `flex-row items-center gap-2.5 rounded-tile px-3.5 py-3 bg-category-rose`,
+- Clase renderizada: `flex-row items-center gap-2.5 rounded-tile px-3.5 py-3 bg-category-rose`,
   con `style={CONTINUOUS_CORNER}`.
+  - Se escribe ``className={`flex-row items-center gap-2.5 rounded-tile px-3.5 py-3 ${CATEGORY_SLOTS.rose.surface}`}``.
+  - Lleva `import { CATEGORY_SLOTS } from '../../utils/category-palette';`.
+  - El literal está vetado por `#64 R9` (M3).
 - Lleva `<AlertTriangle size={20} color={danger} />` y el texto
   `vaccine-create-error-text`, `flex-1 text-13 font-bold text-danger`:
   - es: «No pude guardar la vacuna. Tus datos siguen aquí; revisa tu conexión y vuelve a intentarlo.»
@@ -855,6 +863,49 @@ los nodos nuevos con estos deltas exactos. Cada `it` tocado suma
 - `#62 R15` `counters`:
   - nueva entrada `[join('screens', 'vaccine-create', 'index.tsx'), 1]`
   - la suma de `#69 R10` gana `+ 1`
+- `#62 R12` «da color temático a los cinco placeholders» (M3):
+  - `toHaveLength(6)` de `textInputs` pasa a `toHaveLength(6 + 1); // #208 R21`
+    en el feat de R9 (input del nombre). Pasa a `toHaveLength(6 + 1 + 3); // #208 R21`
+    en el de R13 (veterinario, clínica y notas).
+  - `toHaveLength(5)` de `withPlaceholder` pasa a `toHaveLength(5 + 3); // #208 R21`
+    en el feat de R13. El nombre no lleva placeholder.
+  - El `it` hermano «elimina el borde duplicado de los seis campos» no se toca.
+- `#64 R9` no se toca: `files` sigue siendo `[join('utils', 'category-palette.ts')]`.
+  R16 y R17 escriben las clases categóricas con `CATEGORY_SLOTS` (M3).
+
+Los siguientes inventarios los añade M3. Cada entrada nueva lleva el comentario
+literal `// #208 R21`. Detalle, cifras base y anclas en
+`progress/enmiendas_mobile-vaccine-create.md` §M3.
+
+`__tests__/profile-canvas-fidelity.test.ts`:
+
+- `#173 R2` «reserva rounded-tile a sus consumidores aprobados»:
+  - `'screens/health/index.tsx'` entre `geofences` y `home`, en el feat de R6
+    (tile de la tarjeta vacía)
+  - `'screens/vaccine-create/index.tsx'` al final, en el feat de R11 (la nota)
+  - la lista pasa de 6 a 8
+- `#173 R2.4` «limita text-13 a Perfil…»: `'screens/vaccine-create/index.tsx'`
+  en su sitio de orden, en el feat de R11 (texto de la nota). R16 y R17 no lo
+  mueven.
+
+`__tests__/alerts-canvas-fidelity.test.ts`:
+
+- `#174 R12`, fila `text-15`: `'screens/vaccine-create/index.tsx'` entre
+  `reset-password` y `weight-log`, en el feat de R9. La lista pasa de 23 a 24.
+
+`__tests__/design-drift.test.ts`:
+
+- `#178 R13` «reserva los radios 14, 16 y 22…», mapa `rounded16`:
+  - `'screens/health/index.tsx': 1, // #199 R14` pasa a
+    `'screens/health/index.tsx': 1 + 1, // #199 R14; #208 R21` en el feat de R6
+    (CTA de la tarjeta vacía)
+  - nueva entrada `'screens/vaccine-create/index.tsx': 1, // #208 R21` en el
+    feat de R14 (CTA de envío)
+- `#179 R13` «limita text-22 a Horario y text-17…», lista de `text-17`:
+  - `'screens/health/index.tsx'` entre `geofences` y `home`, en el feat de R6
+  - `'screens/vaccine-create/index.tsx'` entre `reset-password` y `weight-log`,
+    en el feat de R14
+  - la lista pasa de 20 a 22
 
 **Regla mecánica para lo no listado.** IF otro inventario cerrado falla **solo**
 por nodos que esta spec exige, THEN la enmienda:
@@ -973,3 +1024,40 @@ Detalle y comandos en `progress/enmiendas_mobile-vaccine-create.md`.
   `utils/__tests__/form-rules.test.ts`, que no existe. Ancla:
   `ls utils/form-rules.test.ts` existe y `ls utils/__tests__/form-rules.test.ts` no.
   Se corrige en R3, design.md, tasks.md y traceability.md. La intención no cambia.
+
+## Enmienda M3 tras la corrida completa de R6 (2026-10-26)
+
+Medida contra `75d1b82e` (rojo de R6) más los cambios locales de Codex. Detalle,
+cifras base, anclas `grep -cF` y la corrida de sondas en
+`progress/enmiendas_mobile-vaccine-create.md` §M3.
+
+- **M3 — Inventarios fuera de la lista cerrada de R21.**
+  - Qué cambia:
+    - R21 lista seis candados más. Los mueven estos feats:
+
+      | candado | fichero | feats |
+      |---|---|---|
+      | `#173 R2` rounded-tile | `profile-canvas-fidelity` | R6 y R11 |
+      | `#173 R2.4` text-13 | `profile-canvas-fidelity` | R11 |
+      | `#174 R12` text-15 | `alerts-canvas-fidelity` | R9 |
+      | `#178 R13` rounded16 | `design-drift` | R6 y R14 |
+      | `#179 R13` text-17 | `design-drift` | R6 y R14 |
+      | `#62 R12` TextInput | `consistency-classnames` | R9 y R13 |
+
+    - R16 y R17 escriben `bg-category-amber`, `text-category-amber-strong` y
+      `bg-category-rose` con `CATEGORY_SLOTS`, no como literales.
+  - Por qué:
+    - La corrida completa de R6 dio tres rojos fuera de la lista: `#173 R2`,
+      `#178 R13` y `#179 R13`.
+    - El barrido con sondas de R7–R18 encontró tres inventarios más y el defecto
+      D2. `#64 R9` prohíbe nombrar esas clases fuera de `utils/category-palette.ts`,
+      y ampliar su lista aflojaría la aserción.
+  - La intención no cambia: las clases renderizadas son las mismas.
+  - T0 del handoff pasa a 5548 tests en 157 suites. Es corrección de medida, no
+    de requisito: ver §M3.C.
+  - Afecta a:
+    - R16, R17 y R21
+    - `design.md` §Archivos afectados
+    - `tasks.md` §R21
+
+- [ ] Enmienda M3 aprobada (fecha: ____)

@@ -171,6 +171,25 @@ tags: [mobile, ui, spec]
 
 - [ ] (1) Escribir test que falla para R21: el `describe` de deriva nuevo y las
       enmiendas exactas listadas en [[requirements]] R21, cada una con su sufijo
+- Lista cerrada M3. Cada entrada se adelanta en el feat que crea el nodo, no
+  en R21. Las cifras base y las anclas están en
+  `progress/enmiendas_mobile-vaccine-create.md` §M3:
+
+  | feat | fichero en `__tests__/` | candado | cambio |
+  |---|---|---|---|
+  | R6 | `profile-canvas-fidelity.test.ts` | `#173 R2` | + Salud (rounded-tile) |
+  | R6 | `design-drift.test.ts` | `#178 R13` | Salud `1 + 1` en `rounded16` |
+  | R6 | `design-drift.test.ts` | `#179 R13` | + Salud (text-17) |
+  | R9 | `alerts-canvas-fidelity.test.ts` | `#174 R12` | + alta en `text-15` |
+  | R9 | `consistency-classnames.test.ts` | `#62 R12` | `textInputs` `6 + 1` |
+  | R11 | `profile-canvas-fidelity.test.ts` | `#173 R2` | + alta (rounded-tile) |
+  | R11 | `profile-canvas-fidelity.test.ts` | `#173 R2.4` | + alta (text-13) |
+  | R13 | `consistency-classnames.test.ts` | `#62 R12` | `textInputs` `6 + 1 + 3` y `withPlaceholder` `5 + 3` |
+  | R14 | `design-drift.test.ts` | `#178 R13` | + alta `: 1` en `rounded16` |
+  | R14 | `design-drift.test.ts` | `#179 R13` | + alta (text-17) |
+
+  - `#64 R9` no se toca: R16 y R17 usan `CATEGORY_SLOTS`.
+  - Cada `it` gana `(enmendado por #208 R21)` en el primer commit que lo mueve.
 - [ ] (2) Implementación mínima que lo pasa: corregir la deriva que aparezca,
       nunca aflojar la guarda
 - [ ] (3) Refactor con tests verdes

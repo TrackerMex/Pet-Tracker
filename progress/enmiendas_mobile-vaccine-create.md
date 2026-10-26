@@ -270,3 +270,127 @@ Opciones que se plantearon:
 
 Con M2 aplicada, R20 queda listo para el handoff en cuanto se aprueben las
 enmiendas M1–M2.
+
+## M3 (2026-10-26) — candados de la suite completa en R6 y barrido preventivo R7–R18
+
+- Medido en el worktree, branch `feature/208-mobile-vaccine-create`, HEAD `75d1b82e`
+  (rojo de R6) más los cambios locales sin commit de Codex (`screens/health/index.tsx`
+  con R6 implementado y adelantos en cuatro tests). Sin tocarlos.
+- Origen: `progress/impl_mobile-vaccine-create.md` §DETENIDO y `progress/full-208-r6.log`.
+
+- `screens/vaccine-create/index.tsx` en ese árbol es el stub de 3 líneas de R4
+  (`25742076`): toda cifra base de la pantalla es 0.
+- Comandos desde `mobile-pet-tracker/src`. `grep -c` cuenta líneas.
+- Cada entrada nueva lleva el comentario literal `// #208 R21`, y cada `it` que
+  se mueve gana `(enmendado por #208 R21)` en el commit que lo mueve primero.
+  Así cada ancla es única por fichero.
+
+### A. Los tres rojos de la corrida de R6
+
+Los tres fallan **solo** por nodos de R6 en Salud: la tarjeta vacía con su tile
+`rounded-tile`, el CTA `rounded-16` y las dos clases `text-17` (título y
+etiqueta). La pantalla de alta los vuelve a mover más tarde: se lista aquí para
+que Codex no pare dos veces en el mismo candado.
+
+| candado | fichero:línea | base | nueva | commit que lo mueve | comando de medida |
+|---|---|---|---|---|---|
+| `#173 R2` «reserva rounded-tile a sus consumidores aprobados»: entrada `'screens/health/index.tsx', // #208 R21` entre `geofences` y `home` | `__tests__/profile-canvas-fidelity.test.ts:47` (lista en :48–55) | 0 (lista de 6) | 1 (lista de 7) | feat R6 | `grep -cF "'screens/health/index.tsx', // #208 R21" __tests__/profile-canvas-fidelity.test.ts` |
+| `#173 R2`, misma lista: entrada `'screens/vaccine-create/index.tsx', // #208 R21` al final, tras `profile` | `__tests__/profile-canvas-fidelity.test.ts:48` | 0 | 1 (lista de 8). Con B1, el ancla de la columna siguiente da 2 | feat R11 (la nota; R12 y R17 ya no lo mueven) | `grep -cF "'screens/vaccine-create/index.tsx', // #208 R21" __tests__/profile-canvas-fidelity.test.ts` → 2 tras R11 |
+| `#178 R13` «reserva los radios 14, 16 y 22…», mapa `rounded16`: Salud `1` pasa a `1 + 1` | `__tests__/design-drift.test.ts:1119` (entrada en :1147) | `'screens/health/index.tsx': 1, // #199 R14` → 1 | esa línea → 0, y `'screens/health/index.tsx': 1 + 1, // #199 R14; #208 R21` → 1 | feat R6 | `grep -cF "'screens/health/index.tsx': 1 + 1, // #199 R14; #208 R21" __tests__/design-drift.test.ts` |
+| `#178 R13`, mismo mapa: nueva entrada `'screens/vaccine-create/index.tsx': 1, // #208 R21` (el CTA `h-14 rounded-16 bg-accent`) | `__tests__/design-drift.test.ts:1131–1157` | 0 | 1 | feat R14 | `grep -cF "'screens/vaccine-create/index.tsx': 1, // #208 R21" __tests__/design-drift.test.ts` |
+| `#179 R13` «limita text-22 a Horario y text-17…»: entrada `'screens/health/index.tsx', // #208 R21` entre `geofences` y `home` | `__tests__/design-drift.test.ts:1232` (lista en :1239–1260) | 0 (lista de 20) | 1 (lista de 21) | feat R6 | `grep -cF "'screens/health/index.tsx', // #208 R21" __tests__/design-drift.test.ts` |
+| `#179 R13`, misma lista: entrada `'screens/vaccine-create/index.tsx', // #208 R21` entre `reset-password` y `weight-log` | `__tests__/design-drift.test.ts:1239` | 0 | 1 (lista de 22). Se mide tras R14 y antes del feat de R21, porque el `describe` nuevo de R21 nombra el fichero | feat R14 (etiqueta del CTA) | `grep -cF "'screens/vaccine-create/index.tsx', // #208 R21" __tests__/design-drift.test.ts` |
+
+### B. Barrido preventivo
+
+**Método.** Dos pasadas, ambas sobre una copia del worktree en el scratchpad
+(`…/scratchpad/audit208m3/wt/`), nunca sobre el worktree.
+
+1. **Sondas.** La copia lleva:
+   - el `screens/health/index.tsx` local de Codex (R5 y R6) más el aviso de R16,
+     con sus clases literales;
+   - un `screens/vaccine-create/index.tsx` sonda con cada literal de R7–R18.
+2. **Grep.** Cada regex que los tests guardia pasan a `filesMatching`,
+   `productionFilesMatching`, `inventory`, `count`, `outsideReminders`,
+   `matchAll` o a un campo `pattern:` se evalúa contra las dos sondas, junto
+   con los `.includes('…')` de los escáneres de `sourceFiles()`.
+   - 34 + 3 coincidencias. Las que leen un solo fichero ajeno a #208 se
+     descartan: `alert-detail`, los imports de reicon de Documentos y
+     Recordatorios, `map`, `geofences` y `EmptyState`.
+3. **jest.** Con `pgrep` vacío, se corrió jest sobre la copia:
+   `bunx jest --silent --ci src/__tests__ src/app/__tests__ src/components/__tests__/empty-state.test.tsx`.
+   - Resultado: 46 suites y 1106 tests, con 17 rojos.
+   - **Diez rojos ya están cubiertos**, por R21 o por la lista mecánica del
+     handoff (l.49–56). Fallan en la sonda solo porque sus sumandos llegan con
+     feats que aún no existen:
+     - `#166 R2`
+     - `#177 R3.3`, `R6.2`, `R7.2`, `R7.3`, `R7.4` (entra por `CTA_ROWS`),
+       `R7.5` y `R8.1`
+     - `#62 R1`
+     - `#98 R10`
+   - **Los otros siete** son los tres de §A y los cuatro de abajo.
+   - Ninguno de los siete depende de los `View` envoltorio que la sonda añade
+     sin que la spec los pida.
+   - `legibility-classnames`, `forms-validation-global`,
+     `health-weight-canvas-fidelity`, `tab-headers-canvas` y `heroui-text-size-merge`
+     quedan verdes con las sondas.
+
+| candado | fichero:línea | base | nueva | commit que lo mueve | comando de medida |
+|---|---|---|---|---|---|
+| **B1** `#173 R2.4` «limita text-13 a Perfil y a las pantallas de cuenta…»: entrada `'screens/vaccine-create/index.tsx', // #208 R21` en su sitio de orden | `__tests__/profile-canvas-fidelity.test.ts:67` (lista desde :68) | 0 | 1. El ancla compartida con §A da 2 tras R11 | feat R11 (`vaccine-create-note-text`). R16 no lo mueve: Salud ya está, `// #199 R14`. R17 tampoco: la pantalla ya está | `grep -cF "'screens/vaccine-create/index.tsx', // #208 R21" __tests__/profile-canvas-fidelity.test.ts` |
+| **B2** `#174 R12` fila `text-15` de «limita $token a su inventario de producción»: entrada `'screens/vaccine-create/index.tsx', // #208 R21` entre `reset-password` y `weight-log` | `__tests__/alerts-canvas-fidelity.test.ts:201` (lista :203–226, aserción :245) | 0 (lista de 23) | 1 (lista de 24) | feat R9 (input del nombre). R13 no lo mueve | `grep -cF "'screens/vaccine-create/index.tsx', // #208 R21" __tests__/alerts-canvas-fidelity.test.ts` |
+| **B3a** `#62 R12` «da color temático a los cinco placeholders»: total de `<TextInput … />` | `__tests__/consistency-classnames.test.ts:210` (aserción :215) | `expect(textInputs).toHaveLength(6);` → 1 | esa línea → 0, y `expect(textInputs).toHaveLength(6 + 1 + 3); // #208 R21` → 1 | feat R9 la deja en `toHaveLength(6 + 1); // #208 R21` (nombre). Feat R13 la cierra en `6 + 1 + 3` (veterinario, clínica, notas) | `grep -cF "expect(textInputs).toHaveLength(6 + 1 + 3); // #208 R21" __tests__/consistency-classnames.test.ts` |
+| **B3b** `#62 R12`, mismo `it`: los que llevan `placeholder=` | `__tests__/consistency-classnames.test.ts:216` | `expect(withPlaceholder).toHaveLength(5);` → 1 | esa línea → 0, y `expect(withPlaceholder).toHaveLength(5 + 3); // #208 R21` → 1 | feat R13. El nombre de R9 no lleva placeholder; los tres de R13 sí, con `placeholderTextColor={muted}`. El `it` hermano «elimina el borde duplicado» no se mueve: los inputs usan `border-2`, no `border border-border` | `grep -cF "expect(withPlaceholder).toHaveLength(5 + 3); // #208 R21" __tests__/consistency-classnames.test.ts` |
+| **B4** `#64 R9` «centraliza las diez clases completas y prohíbe interpolarlas»: `files` sigue siendo solo `utils/category-palette.ts` | `__tests__/consistency-classnames.test.ts:452` (aserción :484) | 1 | 1. **No se toca ni lleva sufijo** | ninguno (ver defecto D2) | `grep -cF "expect(inventory.files).toEqual([join('utils', 'category-palette.ts')]);" __tests__/consistency-classnames.test.ts` |
+
+**Defecto D2 (spec, no inventario).** R16 y R17 escribían en la clase los
+literales `bg-category-amber`, `text-category-amber-strong` y `bg-category-rose`.
+`#64 R9` prohíbe nombrarlos fuera del módulo de paleta, y su título dice que no
+se amplía. La regla mecánica de R21 no aplica: añadir los ficheros a `files`
+aflojaría la aserción. Se corrige en R16 y R17 con `CATEGORY_SLOTS`, como ya
+hace Salud en `next-vaccine-card`:
+
+- Las clases que ve el test de render no cambian.
+- `interpolatedFiles` sigue vacío, porque el patrón ``(?:bg|text)-category-\$\{``
+  no casa con `${CATEGORY_SLOTS.…}`.
+
+| ancla de producción | base | nueva | commit | comando |
+|---|---|---|---|---|
+| ``${CATEGORY_SLOTS.amber.surface}`` en Salud | 1 | 2 | feat R16 | `grep -cF '${CATEGORY_SLOTS.amber.surface}' screens/health/index.tsx` |
+| ``${CATEGORY_SLOTS.amber.ink}`` en Salud | 3 | 4 | feat R16 | `grep -cF '${CATEGORY_SLOTS.amber.ink}' screens/health/index.tsx` |
+| ``${CATEGORY_SLOTS.rose.surface}`` en la pantalla de alta | 0 | 1 | feat R17 | `grep -cF '${CATEGORY_SLOTS.rose.surface}' screens/vaccine-create/index.tsx` |
+| import de `CATEGORY_SLOTS` en la pantalla de alta | 0 | 1 | feat R17 | `grep -cF "import { CATEGORY_SLOTS } from '../../utils/category-palette';" screens/vaccine-create/index.tsx` |
+
+Las clases categóricas literales están en 0 en los dos ficheros y siguen en 0
+tras R16 y R17:
+
+- `grep -cE "(bg|text)-category-" screens/health/index.tsx` → 0
+- `grep -cE "(bg|text)-category-" screens/vaccine-create/index.tsx` → 0
+
+**Reparto.**
+- R6 mueve los tres candados de §A en Salud: rounded-tile, rounded16 y text-17.
+- La pantalla de alta mueve:
+  - R9: B2 y B3a (+1)
+  - R11: B1 y la entrada de rounded-tile de §A
+  - R13: B3a (+3) y B3b
+  - R14: rounded16 y text-17 de §A
+  - R16 y R17: las anclas de D2. Ningún inventario.
+- Ninguno lo mueven R7, R8, R10, R12, R15 ni R18.
+
+Sin cubrir por la corrida: los escáneres fuera de esos tres directorios
+(`screens/home/index.test.tsx`, `screens/welcome/index.test.tsx` y
+`hooks/use-pet-selection.test.tsx`). El grep no les encontró ninguna regex que
+lea los ficheros nuevos.
+
+### C. Corrección de T0
+
+- La base del handoff aceptada (`progress/handoff_mobile-vaccine-create.md`
+  l.140: 157 suites, 5470 tests) no contó
+  `src/screens/docs-upload-form/index.test.tsx`. El SIGKILL lo mató en esa corrida.
+- El leader lo midió solo: 78 tests.
+- **T0 correcta: 5548 tests en 157 suites** (5470 + 78).
+- Cuadre con la corrida de R6 de Codex (`progress/full-208-r6.log`, 5588 tests):
+  - 5470 + 78 + 40 = 5588, donde 40 son los tests que la cadena suma hasta el rojo de R6.
+  - La cuenta nominal de Codex (5510 = 5470 + 40) se queda 78 corta por esa misma suite.
+- La cadena del handoff se recalcula desde 5548. El handoff lo edita el leader;
+  esta enmienda no lo toca.
