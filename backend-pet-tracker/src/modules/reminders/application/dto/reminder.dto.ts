@@ -34,7 +34,7 @@ const CancelReminderSchema = z.strictObject({
   status: z.literal('cancelled'),
 });
 
-const EditReminderSchema = z
+export const EditReminderSchema = z
   .strictObject({
     dueAt: FutureDueAtSchema.optional(),
     advanceMinutes: AdvanceMinutesSchema.optional(),
