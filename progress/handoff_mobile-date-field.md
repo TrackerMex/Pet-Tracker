@@ -122,3 +122,14 @@ Sigue así, sin rehacer nada del reporte salvo lo que cambie:
   1. Borra del reporte la sección «Bloqueo de la base ajena» y sustitúyela por «T0: flake de Mapa» con lo de arriba. Conserva anclas y skills.
   2. Empieza en C1 y sigue la cadena entera hasta C13 y el cierre, como dice este handoff.
   3. Última acción, igual que antes: crear `progress/impl_mobile-date-field.done`.
+
+## Reanudación 2 tras el bloqueo de C6 (2026-10-26)
+
+El leader resolvió el bloqueo de tu reporte. Es un candado que el spec_author omitió: `legibility-classnames` pide `accent` solo a las huellas de EmptyState y `date-field.tsx` lo pide por R6. Firma delegada en `504aee66` (design.md §8, «Enmienda 1»; R17 pasa a nueve enmiendas). La lista cerrada gana `src/__tests__/legibility-classnames.test.ts`, solo ese `it`. Nada más cambia: mismo H0 c584ba3c para el diff final, sin `./init.sh`, sin merge ni rebase. Conserva los cinco ficheros de C6 sin commitear en el árbol.
+
+Sigue así:
+  1. Lee design.md §8. Edita solo ese `it`: lista esperada con `'components/date-field.tsx'` primero, comentario `// (enmendado por #220 R6)` y sufijo ` (enmendado por #220 R6)` en el título.
+  2. Commit solo de ese fichero, sin arrastrar C6 (`git add` con esa ruta y `git commit --only <ruta> -m "test(#220): R6 amend the accent-request lock for DateField"`). Antes, comprueba con `bunx jest --runTestsByPath src/__tests__/legibility-classnames.test.ts --testTimeout=30000` que pasa a verde; pega la línea `Tests:`. El commit es verde, no rojo: el rojo existía desde C4 y fue tu hallazgo (anótalo en el reporte, con la mutación de §8 en rojo y revertida).
+  3. Repite el jest completo (`bun run test > ../progress/full-220-c06.log 2>&1; echo exit=$?`), sin pipe. Con la cuenta encadenada previa más cero tests nuevos en este paso. Si todo verde (o solo flakes de carga aislados), commit C6 como estaba previsto.
+  4. Continúa en C7 hasta C13 y el cierre. Actualiza la tabla de enmiendas del reporte y borra la sección «Bloqueo de reanudación 1».
+  5. Última acción: crear `progress/impl_mobile-date-field.done`.
