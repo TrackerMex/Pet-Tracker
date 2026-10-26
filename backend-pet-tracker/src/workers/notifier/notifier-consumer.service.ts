@@ -173,7 +173,11 @@ export class NotifierConsumerService {
       return;
     }
 
-    await this.sendPush(reminder.petId, message, messageId);
+    await this.sendPush(reminder.petId, message, messageId, {
+      petId: message.data.petId,
+      reminderId: message.data.reminderId,
+      kind: 'reminder',
+    });
     await this.reminders.markSent(message.reminderId);
   }
 
@@ -192,9 +196,11 @@ export class NotifierConsumerService {
 
   private async sendPush(
     petId: string,
-    message: NotificationMessage,
+    envelope: NotificationMessage,
     messageId: string,
+    data: Record<string, string> = envelope.data,
   ): Promise<void> {
+    const message = { ...envelope, data };
     const tokens = await this.pushTokens.findActiveMembersTokens(petId);
 
     if (tokens.length === 0) {
