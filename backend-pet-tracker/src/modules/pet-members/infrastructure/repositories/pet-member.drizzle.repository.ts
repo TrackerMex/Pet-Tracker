@@ -1,3 +1,5 @@
+import { uuidv7 } from 'uuidv7';
+import { petInvites } from '@/db/schema';
 import { Inject, Injectable } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '@/db/drizzle.constants';
@@ -19,15 +21,28 @@ export class PetMemberDrizzleRepository implements PetMemberRepository {
     void now;
     return Promise.reject(new Error('Not implemented'));
   }
-  createInvite(input: {
+  async createInvite(input: {
     petId: string;
     codeHash: string;
     createdBy: string;
     createdAt: Date;
     expiresAt: Date;
   }): Promise<PetInvite> {
-    void input;
-    return Promise.reject(new Error('Not implemented'));
+    const [row] = await this.db
+      .insert(petInvites)
+      .values({ ...input, id: uuidv7(), role: 'family' })
+      .returning();
+    return {
+      id: row.id,
+      petId: row.petId,
+      role: 'family',
+      createdBy: row.createdBy,
+      createdAt: row.createdAt,
+      expiresAt: row.expiresAt,
+      acceptedBy: row.acceptedBy,
+      acceptedAt: row.acceptedAt,
+      revokedAt: row.revokedAt,
+    };
   }
   listPendingInvites(petId: string, now: Date): Promise<PetInvite[]> {
     void petId;

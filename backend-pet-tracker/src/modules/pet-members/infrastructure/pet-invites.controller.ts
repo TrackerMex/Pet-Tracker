@@ -30,15 +30,22 @@ export class PetInvitesController {
   @Post()
   @UseGuards(PetAccessGuard)
   @RequirePetRole('owner')
-  create(
+  async create(
     @Req() request: PetAccessRequest,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.createInvite.execute(
+    const { invite, code } = await this.createInvite.execute(
       request.petMembership.petId,
       user.id,
       new Date(),
     );
+    return {
+      id: invite.id,
+      code,
+      role: invite.role,
+      createdAt: invite.createdAt.toISOString(),
+      expiresAt: invite.expiresAt.toISOString(),
+    };
   }
   @Get()
   @UseGuards(PetAccessGuard)

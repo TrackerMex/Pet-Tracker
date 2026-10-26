@@ -1,3 +1,8 @@
+import {
+  generateInviteCode,
+  hashInviteCode,
+  INVITE_TTL_MS,
+} from '../invite-code';
 import { Inject, Injectable } from '@nestjs/common';
 import { PET_MEMBER_REPOSITORY } from '@/modules/pet-members/domain/repositories/pet-member.repository';
 import type { PetMemberRepository } from '@/modules/pet-members/domain/repositories/pet-member.repository';
@@ -13,14 +18,19 @@ export class CreatePetInviteUseCase {
     @Inject(PET_MEMBER_REPOSITORY) private readonly repo: PetMemberRepository,
     @Inject(AUDIT_LOGGER) private readonly audit: AuditLogger,
   ) {}
-  execute(
+  async execute(
     petId: string,
     userId: string,
     now: Date,
   ): Promise<{ invite: PetInvite; code: string }> {
-    void petId;
-    void userId;
-    void now;
-    return Promise.reject(new Error('Not implemented'));
+    const code = generateInviteCode();
+    const invite = await this.repo.createInvite({
+      petId,
+      codeHash: hashInviteCode(code),
+      createdBy: userId,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + INVITE_TTL_MS),
+    });
+    return { invite, code };
   }
 }
