@@ -274,7 +274,10 @@ La checklist suma dos puntos para este plan:
 | G4 | Smoke en el dev build de Android: push recurrente real (`PUSH_ENABLED=true`), `Share` nativo e invitación entre dos cuentas | Por lotes, al final de cada ola (`progress/smoke_mejoras-producto.md`) | ese fichero |
 | G5 | Mergear `dev` → `main` | Cuando el humano dé la app por lista | PR en GitHub |
 
-- [ ] G1 aprobado por humano: artboards y copy de la ola 0 (versión del canvas: ________)
+- [x] G1 aprobado por humano: artboards y copy de la ola 0 (versión del canvas: v140)
+  - El humano lo aprobó en la sesión del leader el 2026-10-26 con estas palabras: «G1 aprobado, v140 contesta la preguntas y
+    dime que recomiendas». Las respuestas a las preguntas abiertas están en
+    `progress/design_ola0-mejoras-2026-10-26.md` §Preguntas abiertas.
 
 ## 6. Riesgos
 
