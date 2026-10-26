@@ -19,6 +19,10 @@ import { users } from '@/db/schema/users.schema';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
+import {
+  REMINDER_REPOSITORY,
+  type ReminderRepository,
+} from '@/modules/reminders/domain/repositories/reminder.repository';
 import { RemindersDispatchService } from '@/modules/reminders/infrastructure/reminders-dispatch.service';
 import { NotifierConsumerService } from '@/workers/notifier/notifier-consumer.service';
 import { PUSH_SENDER } from '@/workers/notifier/push-sender';
@@ -1054,6 +1058,72 @@ describe('Pet reminders (e2e)', () => {
         recurrenceAnchorAt: null,
         recurrenceUntil: null,
       });
+    });
+  });
+
+  describe('#210 R13: escrituras condicionadas al schedule', () => {
+    it('#210 R13: markEnqueued con scheduleName viejo no toca enqueued_at', async () => {
+      const owner = await seedUser('210-r13-enqueue');
+      const pet = await seedPet(owner);
+      const id = await seedReminder(pet.id, owner.id, {
+        dueAt: new Date(Date.now() + 3 * 86_400_000),
+      });
+      const repository = app.get<ReminderRepository>(REMINDER_REPOSITORY);
+      const at = new Date();
+      await repository.markEnqueued(id, 'reminder-old', at);
+      const [afterOld] = await db
+        .select()
+        .from(reminders)
+        .where(eq(reminders.id, id));
+      await repository.markEnqueued(id, `reminder-${id}`, at);
+      const [afterCurrent] = await db
+        .select()
+        .from(reminders)
+        .where(eq(reminders.id, id));
+      expect(afterCurrent.enqueuedAt).toEqual(at);
+      expect(afterOld.enqueuedAt).toBeNull();
+    });
+    it('#210 R13: advanceOccurrence solo avanza la fila con su scheduleName y scheduled', async () => {
+      const owner = await seedUser('210-r13-advance');
+      const pet = await seedPet(owner);
+      const repository = app.get<ReminderRepository>(REMINDER_REPOSITORY);
+      const next = new Date(Date.now() + 4 * 86_400_000);
+      for (const mode of ['old', 'cancelled', 'current'] as const) {
+        const id = await seedReminder(pet.id, owner.id, {
+          dueAt: new Date(Date.now() + 3 * 86_400_000),
+          status: mode === 'cancelled' ? 'cancelled' : 'scheduled',
+        });
+        await db
+          .update(reminders)
+          .set({ enqueuedAt: new Date() })
+          .where(eq(reminders.id, id));
+        const [before] = await db
+          .select()
+          .from(reminders)
+          .where(eq(reminders.id, id));
+        const newScheduleName = `reminder-${uuidv7()}`;
+        const advanced = await repository.advanceOccurrence(
+          id,
+          mode === 'old' ? 'reminder-old' : before.scheduleName!,
+          next,
+          newScheduleName,
+        );
+        const [after] = await db
+          .select()
+          .from(reminders)
+          .where(eq(reminders.id, id));
+        expect(advanced).toBe(mode === 'current');
+        expect(after).toEqual(
+          mode === 'current'
+            ? {
+                ...before,
+                dueAt: next,
+                scheduleName: newScheduleName,
+                enqueuedAt: null,
+              }
+            : before,
+        );
+      }
     });
   });
 });

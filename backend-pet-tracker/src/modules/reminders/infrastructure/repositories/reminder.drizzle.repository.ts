@@ -109,11 +109,29 @@ export class ReminderDrizzleRepository implements ReminderRepository {
     return rows.map(toDomain);
   }
 
-  async markEnqueued(id: string, at: Date): Promise<void> {
+  async markEnqueued(
+    id: string,
+    scheduleName: string | null,
+    at: Date,
+  ): Promise<void> {
+    void scheduleName;
     await this.db
       .update(reminders)
       .set({ enqueuedAt: at })
       .where(eq(reminders.id, id));
+  }
+
+  advanceOccurrence(
+    id: string,
+    scheduleName: string,
+    dueAt: Date,
+    newScheduleName: string,
+  ): Promise<boolean> {
+    void id;
+    void scheduleName;
+    void dueAt;
+    void newScheduleName;
+    return Promise.resolve(false);
   }
 
   async markSent(id: string): Promise<boolean> {

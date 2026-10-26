@@ -106,8 +106,8 @@ describe('R5: dispatcher encola vencidos una sola vez', () => {
         .filter((command) => command instanceof SendMessageCommand),
     ).toHaveLength(2);
     expect(repository.markEnqueued.mock.calls).toEqual([
-      [first.id, NOW],
-      [second.id, NOW],
+      [first.id, first.scheduleName, NOW],
+      [second.id, second.scheduleName, NOW],
     ]);
   });
 
@@ -149,8 +149,16 @@ describe('R5: dispatcher encola vencidos una sola vez', () => {
     ).dispatchOnce();
 
     expect(repository.markEnqueued).toHaveBeenCalledTimes(1);
-    expect(repository.markEnqueued).toHaveBeenCalledWith(sent.id, NOW);
-    expect(repository.markEnqueued).not.toHaveBeenCalledWith(failed.id, NOW);
+    expect(repository.markEnqueued).toHaveBeenCalledWith(
+      sent.id,
+      sent.scheduleName,
+      NOW,
+    );
+    expect(repository.markEnqueued).not.toHaveBeenCalledWith(
+      failed.id,
+      failed.scheduleName,
+      NOW,
+    );
     expect(logError).toHaveBeenCalled();
   });
 });
@@ -281,7 +289,9 @@ describe('#125 R2: el dispatcher escribe en el cuerpo cuándo vence, en la zona 
               .body,
         ),
     ).toEqual(['Recordatorio: Reminder sent · 30 de septiembre a las 21:30']);
-    expect(repository.markEnqueued.mock.calls).toEqual([[sent.id, NOW]]);
+    expect(repository.markEnqueued.mock.calls).toEqual([
+      [sent.id, sent.scheduleName, NOW],
+    ]);
     expect(logError).toHaveBeenCalled();
   });
 });

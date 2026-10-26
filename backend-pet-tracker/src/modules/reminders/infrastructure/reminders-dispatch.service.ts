@@ -57,7 +57,7 @@ export class RemindersDispatchService {
             }),
           }),
         );
-        await this.reminders.markEnqueued(reminder.id, new Date());
+        await this.reminders.markEnqueued(reminder.id, null, new Date());
       } catch (error) {
         this.logger.error({
           scope: REMINDERS_SCOPE,
