@@ -1,3 +1,8 @@
+import { normalizeInviteCode, hashInviteCode } from '../invite-code';
+import {
+  InviteNotAcceptableError,
+  AlreadyPetMemberError,
+} from '@/modules/pet-members/domain/errors/pet-member.errors';
 import { Inject, Injectable } from '@nestjs/common';
 import { PET_MEMBER_REPOSITORY } from '@/modules/pet-members/domain/repositories/pet-member.repository';
 import type { PetMemberRepository } from '@/modules/pet-members/domain/repositories/pet-member.repository';
@@ -10,14 +15,21 @@ export class AcceptPetInviteUseCase {
     @Inject(PET_MEMBER_REPOSITORY) private readonly repo: PetMemberRepository,
     @Inject(AUDIT_LOGGER) private readonly audit: AuditLogger,
   ) {}
-  execute(
+  async execute(
     rawCode: string,
     userId: string,
     now: Date,
   ): Promise<{ petId: string; role: 'family' }> {
-    void rawCode;
-    void userId;
-    void now;
-    return Promise.reject(new Error('Not implemented'));
+    const code = normalizeInviteCode(rawCode);
+    if (code === null) throw new InviteNotAcceptableError();
+    const result = await this.repo.acceptInvite(
+      hashInviteCode(code),
+      userId,
+      now,
+    );
+    if (result.status === 'not_acceptable')
+      throw new InviteNotAcceptableError();
+    if (result.status === 'already_member') throw new AlreadyPetMemberError();
+    return { petId: result.invite.petId, role: 'family' };
   }
 }

@@ -83,15 +83,50 @@ export class PetMemberDrizzleRepository implements PetMemberRepository {
       .returning({ id: petInvites.id });
     return rows.length === 1;
   }
-  acceptInvite(
+  async acceptInvite(
     codeHash: string,
     userId: string,
     now: Date,
   ): Promise<AcceptInviteResult> {
-    void codeHash;
-    void userId;
-    void now;
-    return Promise.reject(new Error('Not implemented'));
+    // shortcut: concurrent accepts of different codes for the same member can conflict on the PK; revisit if observed.
+    return this.db.transaction<AcceptInviteResult>(async (tx) => {
+      const [invite] = await tx
+        .select()
+        .from(petInvites)
+        .where(
+          and(
+            eq(petInvites.codeHash, codeHash),
+            isNull(petInvites.acceptedAt),
+            isNull(petInvites.revokedAt),
+            gt(petInvites.expiresAt, now),
+          ),
+        )
+        .limit(1)
+        .for('update');
+      if (!invite) return { status: 'not_acceptable' };
+      const [member] = await tx
+        .select()
+        .from(petUsers)
+        .where(
+          and(eq(petUsers.petId, invite.petId), eq(petUsers.userId, userId)),
+        )
+        .limit(1);
+      if (member) return { status: 'already_member' };
+      await tx
+        .update(petInvites)
+        .set({ acceptedBy: userId, acceptedAt: now })
+        .where(eq(petInvites.id, invite.id));
+      await tx.insert(petUsers).values({
+        petId: invite.petId,
+        userId,
+        role: 'family',
+        status: 'active',
+      });
+      return {
+        status: 'accepted',
+        invite: toDomain({ ...invite, acceptedBy: userId, acceptedAt: now }),
+      };
+    });
   }
   listMembers(petId: string): Promise<PetMember[]> {
     void petId;

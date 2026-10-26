@@ -1,6 +1,8 @@
-import { z } from 'zod';
+import { AcceptInviteSchema } from '@/modules/pet-members/application/dto/accept-invite.dto';
+import { z, ZodType } from 'zod';
 import { mapPetMemberError } from './mappers/pet-member-error.mapper';
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -95,10 +97,29 @@ export class PetInvitesController {
 export class InvitesController {
   constructor(private readonly acceptInvite: AcceptPetInviteUseCase) {}
   @Post('accept')
-  accept(
-    @Body() body: { code: string },
-    @CurrentUser() user: CurrentUserPayload,
-  ) {
-    return this.acceptInvite.execute(body?.code, user.id, new Date());
+  async accept(@Body() body: unknown, @CurrentUser() user: CurrentUserPayload) {
+    const dto = parseBody(AcceptInviteSchema, body);
+    try {
+      return await this.acceptInvite.execute(dto.code, user.id, new Date());
+    } catch (error) {
+      throw mapPetMemberError(error);
+    }
   }
+}
+
+function parseBody<T>(schema: ZodType<T>, body: unknown): T {
+  const result = schema.safeParse(body);
+
+  if (!result.success) {
+    throw new BadRequestException({
+      statusCode: HttpStatus.BAD_REQUEST,
+      message: 'Validation failed',
+      errors: result.error.issues.map((issue) => ({
+        path: issue.path.join('.'),
+        message: issue.message,
+      })),
+    });
+  }
+
+  return result.data;
 }

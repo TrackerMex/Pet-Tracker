@@ -4,6 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  InviteNotAcceptableError,
+  AlreadyPetMemberError,
   PetInviteNotFoundError,
   PendingInvitesLimitError,
   PetMembersLimitError,
@@ -23,5 +25,17 @@ export function mapPetMemberError(error: unknown): unknown {
       message: 'Pet member limit reached',
     });
   if (error instanceof PetInviteNotFoundError) return new NotFoundException();
+  if (error instanceof InviteNotAcceptableError)
+    return new NotFoundException({
+      statusCode: HttpStatus.NOT_FOUND,
+      code: 'INVITE_NOT_ACCEPTABLE',
+      message: 'Invite code is invalid or expired',
+    });
+  if (error instanceof AlreadyPetMemberError)
+    return new ConflictException({
+      statusCode: HttpStatus.CONFLICT,
+      code: 'ALREADY_PET_MEMBER',
+      message: 'User is already a member of this pet',
+    });
   return error;
 }
