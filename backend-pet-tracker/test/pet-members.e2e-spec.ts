@@ -588,4 +588,37 @@ describe('#211 R16: pet members API', () => {
       .expect(403);
     expect(await push.findActiveMembersTokens(pet.id)).toContain(expoToken);
   });
+  const rateLimitBody = { statusCode: 429, message: 'Too Many Requests' };
+  async function exhaustAccept(user: TestUser) {
+    for (let i = 0; i < 10; i++) {
+      const response = await accept(user, '23456789AB');
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual({
+        statusCode: 404,
+        code: 'INVITE_NOT_ACCEPTABLE',
+        message: 'Invite code is invalid or expired',
+      });
+    }
+  }
+  it('#211 R10: la 11.ª petición en la hora responde 429 aunque el código sea válido', async () => {
+    const { accepter, invite } = await inviteFixture();
+    await exhaustAccept(accepter);
+    const response = await accept(accepter, invite.code);
+    expect(response.status).toBe(429);
+    expect(response.body).toEqual(rateLimitBody);
+    const [row] = await db
+      .select()
+      .from(petInvites)
+      .where(eq(petInvites.id, invite.id));
+    expect(row.acceptedAt).toBeNull();
+  });
+  it('#211 R10: otro usuario no hereda el contador', async () => {
+    const { accepter, invite, label } = await inviteFixture();
+    const other = await seedUser(`other-counter-${label}`);
+    await exhaustAccept(accepter);
+    const response = await accept(accepter, invite.code);
+    expect(response.status).toBe(429);
+    expect(response.body).toEqual(rateLimitBody);
+    await accept(other, invite.code).expect(201);
+  });
 });
