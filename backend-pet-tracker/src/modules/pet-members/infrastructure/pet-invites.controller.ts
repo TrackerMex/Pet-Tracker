@@ -1,3 +1,4 @@
+import { mapPetMemberError } from './mappers/pet-member-error.mapper';
 import {
   Body,
   Controller,
@@ -34,18 +35,22 @@ export class PetInvitesController {
     @Req() request: PetAccessRequest,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    const { invite, code } = await this.createInvite.execute(
-      request.petMembership.petId,
-      user.id,
-      new Date(),
-    );
-    return {
-      id: invite.id,
-      code,
-      role: invite.role,
-      createdAt: invite.createdAt.toISOString(),
-      expiresAt: invite.expiresAt.toISOString(),
-    };
+    try {
+      const { invite, code } = await this.createInvite.execute(
+        request.petMembership.petId,
+        user.id,
+        new Date(),
+      );
+      return {
+        id: invite.id,
+        code,
+        role: invite.role,
+        createdAt: invite.createdAt.toISOString(),
+        expiresAt: invite.expiresAt.toISOString(),
+      };
+    } catch (error) {
+      throw mapPetMemberError(error);
+    }
   }
   @Get()
   @UseGuards(PetAccessGuard)

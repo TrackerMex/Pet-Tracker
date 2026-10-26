@@ -1,4 +1,8 @@
 import {
+  PendingInvitesLimitError,
+  PetMembersLimitError,
+} from '@/modules/pet-members/domain/errors/pet-member.errors';
+import {
   generateInviteCode,
   hashInviteCode,
   INVITE_TTL_MS,
@@ -23,6 +27,15 @@ export class CreatePetInviteUseCase {
     userId: string,
     now: Date,
   ): Promise<{ invite: PetInvite; code: string }> {
+    // shortcut: simultaneous creates can exceed the product limit; serialize if this becomes a problem.
+    const { pendingInvites, activeMembers } = await this.repo.countSlots(
+      petId,
+      now,
+    );
+    if (pendingInvites >= MAX_PENDING_INVITES_PER_PET)
+      throw new PendingInvitesLimitError();
+    if (activeMembers + pendingInvites >= MAX_MEMBERS_PER_PET)
+      throw new PetMembersLimitError();
     const code = generateInviteCode();
     const invite = await this.repo.createInvite({
       petId,

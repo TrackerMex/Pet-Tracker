@@ -1,5 +1,6 @@
+import { and, count, eq, gt, isNull } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
-import { petInvites } from '@/db/schema';
+import { petInvites, petUsers } from '@/db/schema';
 import { Inject, Injectable } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '@/db/drizzle.constants';
@@ -13,13 +14,26 @@ import type {
 @Injectable()
 export class PetMemberDrizzleRepository implements PetMemberRepository {
   constructor(@Inject(DRIZZLE) private readonly db: NodePgDatabase) {}
-  countSlots(
+  async countSlots(
     petId: string,
     now: Date,
   ): Promise<{ pendingInvites: number; activeMembers: number }> {
-    void petId;
-    void now;
-    return Promise.reject(new Error('Not implemented'));
+    const [pending] = await this.db
+      .select({ count: count() })
+      .from(petInvites)
+      .where(
+        and(
+          eq(petInvites.petId, petId),
+          isNull(petInvites.acceptedAt),
+          isNull(petInvites.revokedAt),
+          gt(petInvites.expiresAt, now),
+        ),
+      );
+    const [members] = await this.db
+      .select({ count: count() })
+      .from(petUsers)
+      .where(and(eq(petUsers.petId, petId), eq(petUsers.status, 'active')));
+    return { pendingInvites: pending.count, activeMembers: members.count };
   }
   async createInvite(input: {
     petId: string;
