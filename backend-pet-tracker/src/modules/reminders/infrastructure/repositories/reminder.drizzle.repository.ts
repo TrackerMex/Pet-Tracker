@@ -64,9 +64,22 @@ export class ReminderDrizzleRepository implements ReminderRepository {
     changes: ReminderChanges,
     newScheduleName: string,
   ): Promise<Reminder> {
+    const { recurrence, ...values } = changes;
     const [row] = await this.db
       .update(reminders)
-      .set({ ...changes, scheduleName: newScheduleName, enqueuedAt: null })
+      .set({
+        ...values,
+        ...('recurrence' in changes
+          ? {
+              recurrenceUnit: recurrence?.unit ?? null,
+              recurrenceEvery: recurrence?.every ?? null,
+              recurrenceUntil: recurrence?.until ?? null,
+              recurrenceAnchorAt: recurrence?.anchorAt ?? null,
+            }
+          : {}),
+        scheduleName: newScheduleName,
+        enqueuedAt: null,
+      })
       .where(and(eq(reminders.id, id), eq(reminders.status, 'scheduled')))
       .returning();
     return toDomain(row);

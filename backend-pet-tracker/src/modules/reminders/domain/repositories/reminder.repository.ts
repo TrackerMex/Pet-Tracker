@@ -7,7 +7,7 @@ export const REMINDER_REPOSITORY = Symbol('ReminderRepository');
 
 export type NewReminder = Omit<ReminderProps, 'id'>;
 export type ReminderChanges = Partial<
-  Pick<ReminderProps, 'dueAt' | 'advanceMinutes' | 'title'>
+  Pick<ReminderProps, 'dueAt' | 'advanceMinutes' | 'title' | 'recurrence'>
 >;
 
 export interface ReminderRepository {
