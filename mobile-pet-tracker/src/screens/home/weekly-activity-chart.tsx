@@ -25,6 +25,7 @@ import { Check, TrendDown, TrendUp } from 'reicon-react-native';
 
 import type { DayEntry, WeekComparison } from '../../api/types';
 import { Card } from '../../components/card';
+import { LOCALES } from '../../i18n/catalog';
 import {
   useLocale,
   useTranslate,
@@ -223,13 +224,12 @@ function dayAccessibilityLabel(
   });
 }
 
-function formatTrendPercent(value: number, locale: string): string {
-  const formatted = new Intl.NumberFormat(locale, {
+function formatTrendPercent(value: number): string {
+  return new Intl.NumberFormat(LOCALES.en, {
     signDisplay: 'exceptZero',
     maximumFractionDigits: 1,
+    useGrouping: false,
   }).format(value);
-
-  return locale.startsWith('es') ? formatted.replace('.', ',') : formatted;
 }
 
 function DetailMetric({
@@ -550,7 +550,7 @@ export function WeeklyActivityChart(
                 style={TABULAR_NUMS}
               >
                 {t('weeklyActivity.trend', {
-                  percent: formatTrendPercent(trend, locale),
+                  percent: formatTrendPercent(trend),
                 })}
               </Text>
             </View>
