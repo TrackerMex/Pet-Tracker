@@ -44,6 +44,13 @@ export class CreatePetInviteUseCase {
       createdAt: now,
       expiresAt: new Date(now.getTime() + INVITE_TTL_MS),
     });
+    await this.audit.record({
+      userId,
+      action: 'pet_invite.create',
+      entity: 'pet_invite',
+      entityId: invite.id,
+      meta: { petId },
+    });
     return { invite, code };
   }
 }

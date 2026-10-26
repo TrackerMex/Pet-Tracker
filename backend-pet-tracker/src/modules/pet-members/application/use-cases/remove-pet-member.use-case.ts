@@ -31,5 +31,12 @@ export class RemovePetMemberUseCase {
       throw new PetMemberNotFoundError();
     if (membership.role === 'owner') throw new OwnerNotRemovableError();
     await this.repo.deleteMembership(petId, targetUserId);
+    await this.audit.record({
+      userId: actor.userId,
+      action: 'pet_member.remove',
+      entity: 'pet',
+      entityId: petId,
+      meta: { memberUserId: targetUserId },
+    });
   }
 }

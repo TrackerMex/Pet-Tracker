@@ -19,5 +19,12 @@ export class RevokePetInviteUseCase {
   ): Promise<void> {
     if (!(await this.repo.revokeInvite(petId, inviteId, now)))
       throw new PetInviteNotFoundError();
+    await this.audit.record({
+      userId,
+      action: 'pet_invite.revoke',
+      entity: 'pet_invite',
+      entityId: inviteId,
+      meta: { petId },
+    });
   }
 }

@@ -30,6 +30,13 @@ export class AcceptPetInviteUseCase {
     if (result.status === 'not_acceptable')
       throw new InviteNotAcceptableError();
     if (result.status === 'already_member') throw new AlreadyPetMemberError();
+    await this.audit.record({
+      userId,
+      action: 'pet_invite.accept',
+      entity: 'pet_invite',
+      entityId: result.invite.id,
+      meta: { petId: result.invite.petId },
+    });
     return { petId: result.invite.petId, role: 'family' };
   }
 }
