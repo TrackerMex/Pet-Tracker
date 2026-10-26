@@ -83,7 +83,9 @@ implementar. Ningún agente se auto-aprueba la spec.
 las features de `progress/plan_canvas-parity-2026-10-23.md` (ver `CLAUDE.md`
 §Mandato del 2026-10-23). El `spec_author` sigue sin aprobar su propia spec.
 Esas features integran en la rama `dev`, donde el leader mergea sus PRs; a
-`main` solo llega `dev` cuando el humano la mergea.
+`main` solo llega `dev` cuando el humano la mergea. El 2026-10-26 el humano
+amplió la misma excepción a #208–#216 de
+`progress/plan_mejoras-producto-2026-10-26.md`.
 
 ---
 
