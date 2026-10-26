@@ -3628,7 +3628,7 @@
   {
     "id": 221,
     "name": "mobile-orbit-rename-copy",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P3",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 1). La mascota pasa de Pingo a Orbit en el texto visible (welcome.pingoGreeting, ES y EN) y en la carta docs/ui-guidelines.md punto 7; los identificadores y assets los renombra #225. Evidencia en progress/explore_ui-mascota-orbit-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },
