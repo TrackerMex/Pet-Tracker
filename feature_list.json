@@ -3551,7 +3551,7 @@
   {
     "id": 210,
     "name": "reminders-recurrence",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P1",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 1). Recordatorios recurrentes en backend: migración nueva con recurrence jsonb nullable {unit: hour|day|week|month|year, every} y recurrence_until; CreateReminderSchema y UpdateReminderSchema la admiten y GET la devuelve. En notifyReminder, tras el push, un recurrente se reprograma a la primera ocurrencia futura (sin ráfaga de perdidas; day/week/month/year anclados a la hora local del owner, hour absoluta) con scheduleName nuevo, o markSent si pasó until. Cancelar serie = PATCH status cancelled existente. El push lleva kind reminder y reminderId en data. Sin AWS real: EventBridge rate/cron solo anotado en design.md. Coordina su migración con #211 y #212 (§3 del plan). Evidencia en progress/explore_vaccines-reminders-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },
