@@ -1,6 +1,6 @@
 ---
 feature: "mobile-theme-flash-statusbar"
-status: draft
+status: approved
 tags: [harness, spec]
 ---
 

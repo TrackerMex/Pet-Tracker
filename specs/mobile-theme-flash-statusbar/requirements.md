@@ -1,6 +1,6 @@
 ---
 feature: "mobile-theme-flash-statusbar"
-status: draft
+status: approved
 tags: [harness, spec]
 ---
 
@@ -252,7 +252,7 @@ el foco (R5, R6). `app/(tabs)/_layout.tsx` queda sin cambio (R7).
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (firma delegada del leader, mandato 2026-10-23 ampliado 2026-10-26; fecha: 2026-10-26) ← gate obligatorio antes de implementar
   (firma delegada en el leader por el mandato del 2026-10-23, ampliado el 2026-10-26,
   tras la checklist de `progress/plan_canvas-parity-2026-10-23.md` §4 y
   `progress/plan_ui-2026-10-26.md` §4).
