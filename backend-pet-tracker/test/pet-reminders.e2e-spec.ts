@@ -5,7 +5,7 @@ import {
 } from '@aws-sdk/client-sqs';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
 import { App } from 'supertest/types';
@@ -776,5 +776,80 @@ describe('Pet reminders (e2e)', () => {
         .where(eq(reminders.id, reminderId));
       expect(after).toEqual(before);
     });
+  });
+
+  describe('#210 R1: CHECKs de recurrencia en Postgres', () => {
+    let owner: UserFixture;
+    let pet: { id: string };
+    beforeAll(async () => {
+      owner = await seedUser('210-r1');
+      pet = await seedPet(owner);
+    });
+    const limits = [
+      ['hour', 24],
+      ['day', 365],
+      ['week', 52],
+      ['month', 12],
+      ['year', 10],
+    ] as const;
+    const cases: [
+      string,
+      string | null,
+      number | null,
+      boolean,
+      string | null,
+      string | null,
+    ][] = [
+      ['unidad desconocida', 'minute', 1, true, null, 'unit'],
+      ...limits.map(
+        ([unit]): [string, string, number, boolean, null, string] => [
+          `${unit} bajo minimo`,
+          unit,
+          0,
+          true,
+          null,
+          'every',
+        ],
+      ),
+      ...limits.map(
+        ([unit, max]): [string, string, number, boolean, null, string] => [
+          `${unit} sobre maximo`,
+          unit,
+          max + 1,
+          true,
+          null,
+          'every',
+        ],
+      ),
+      ...limits.flatMap(
+        ([unit, max]): [string, string, number, boolean, null, null][] => [
+          [`${unit} minimo`, unit, 1, true, null, null],
+          [`${unit} maximo`, unit, max, true, null, null],
+        ],
+      ),
+      ['serie sin ancla', 'day', 1, false, null, 'shape'],
+      ['until sin serie', null, null, false, '2027-01-01', 'shape'],
+      ['every sin unidad', null, 3, true, null, 'shape'],
+      ['unidad sin every', 'week', null, true, null, 'shape'],
+      ['serie completa con until', 'month', 6, true, '2027-01-01', null],
+    ];
+    it.each(cases)(
+      '#210 R1: CHECK %s',
+      async (_label, unit, every, anchor, until, check) => {
+        const insert = db.execute(sql`insert into reminders
+        (id, pet_id, type, title, due_at, created_by, recurrence_unit, recurrence_every, recurrence_anchor_at, recurrence_until)
+        values (${uuidv7()}, ${pet.id}, 'custom', 'CHECK recurrence', now(), ${owner.id}, ${unit}, ${every}, ${anchor ? sql`now()` : sql`null`}, ${until})`);
+        if (check) {
+          await expect(insert).rejects.toMatchObject({
+            cause: {
+              code: '23514',
+              constraint: `reminders_recurrence_${check}_check`,
+            },
+          });
+        } else {
+          await expect(insert).resolves.toBeDefined();
+        }
+      },
+    );
   });
 });
