@@ -6,6 +6,13 @@ import {
 } from '@aws-sdk/client-sqs';
 import type { Message } from '@aws-sdk/client-sqs';
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { uuidv7 } from 'uuidv7';
+import { ownerTimeZone } from '@/modules/pets/application/owner-local-day';
+import { nextOccurrence } from '@/modules/reminders/application/recurrence';
+import {
+  PET_REPOSITORY,
+  type PetRepository,
+} from '@/modules/pets/domain/repositories/pet.repository';
 import { AWS_RESOURCE_NAMES, SQS_CLIENT } from '@/aws/aws.constants';
 import type { AwsResourceNames } from '@/aws/resource-names';
 import { REMINDER_REPOSITORY } from '@/modules/reminders/domain/repositories/reminder.repository';
@@ -52,6 +59,7 @@ export class NotifierConsumerService {
     @Inject(PUSH_SENDER) private readonly sender: PushSender,
     @Inject(REMINDER_REPOSITORY)
     private readonly reminders?: ReminderRepository,
+    @Inject(PET_REPOSITORY) private readonly pets?: PetRepository,
   ) {}
 
   async drainOnce(): Promise<void> {
@@ -173,8 +181,41 @@ export class NotifierConsumerService {
       return;
     }
 
-    await this.sendPush(reminder.petId, message, messageId);
-    await this.reminders.markSent(message.reminderId);
+    await this.sendPush(reminder.petId, message, messageId, {
+      petId: message.data.petId,
+      reminderId: message.data.reminderId,
+      kind: 'reminder',
+    });
+    if (reminder.recurrence === null) {
+      await this.reminders.markSent(message.reminderId);
+      return;
+    }
+    if (!this.pets) throw new Error('Pet repository unavailable');
+    const timeZone = ownerTimeZone(
+      await this.pets.findOwnerTimezone(reminder.petId),
+      {
+        scope: NOTIFIER_SCOPE,
+        messageId,
+        petId: reminder.petId,
+      },
+    );
+    const next = nextOccurrence(
+      { ...reminder, recurrence: reminder.recurrence },
+      new Date(),
+      timeZone,
+    );
+    if (next === null) {
+      await this.reminders.markSent(message.reminderId);
+      return;
+    }
+    const advanced = await this.reminders.advanceOccurrence(
+      message.reminderId,
+      message.scheduleName,
+      next,
+      `reminder-${uuidv7()}`,
+    );
+    if (!advanced)
+      this.logReminderSkipped(messageId, message.reminderId, 'stale_schedule');
   }
 
   private logReminderSkipped(
@@ -192,9 +233,11 @@ export class NotifierConsumerService {
 
   private async sendPush(
     petId: string,
-    message: NotificationMessage,
+    envelope: NotificationMessage,
     messageId: string,
+    data: Record<string, string> = envelope.data,
   ): Promise<void> {
+    const message = { ...envelope, data };
     const tokens = await this.pushTokens.findActiveMembersTokens(petId);
 
     if (tokens.length === 0) {

@@ -1,0 +1,7 @@
+ALTER TABLE "reminders" ADD COLUMN "recurrence_unit" varchar(5);--> statement-breakpoint
+ALTER TABLE "reminders" ADD COLUMN "recurrence_every" integer;--> statement-breakpoint
+ALTER TABLE "reminders" ADD COLUMN "recurrence_until" date;--> statement-breakpoint
+ALTER TABLE "reminders" ADD COLUMN "recurrence_anchor_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "reminders" ADD CONSTRAINT "reminders_recurrence_unit_check" CHECK ("reminders"."recurrence_unit" in ('hour', 'day', 'week', 'month', 'year'));--> statement-breakpoint
+ALTER TABLE "reminders" ADD CONSTRAINT "reminders_recurrence_every_check" CHECK (case "reminders"."recurrence_unit" when 'hour' then "reminders"."recurrence_every" between 1 and 24 when 'day' then "reminders"."recurrence_every" between 1 and 365 when 'week' then "reminders"."recurrence_every" between 1 and 52 when 'month' then "reminders"."recurrence_every" between 1 and 12 when 'year' then "reminders"."recurrence_every" between 1 and 10 else true end);--> statement-breakpoint
+ALTER TABLE "reminders" ADD CONSTRAINT "reminders_recurrence_shape_check" CHECK (("reminders"."recurrence_unit" is null and "reminders"."recurrence_every" is null and "reminders"."recurrence_until" is null and "reminders"."recurrence_anchor_at" is null) or ("reminders"."recurrence_unit" is not null and "reminders"."recurrence_every" is not null and "reminders"."recurrence_anchor_at" is not null));

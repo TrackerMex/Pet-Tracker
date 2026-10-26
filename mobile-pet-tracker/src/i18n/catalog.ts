@@ -1,4 +1,10 @@
 export const en = {
+  'dateField.placeholderDate': 'Select a date',
+  'dateField.placeholderTime': 'Select a time',
+  'dateField.ok': 'OK',
+  'dateField.cancel': 'Cancel',
+  'dateField.clear': 'Clear',
+
   'validation.firstNameRequired': 'Enter your first name',
   'validation.lastNameRequired': 'Enter your last name',
   'validation.passwordRequired': 'Enter your password',
@@ -204,7 +210,6 @@ export const en = {
   'weightLog.weight': 'Weight',
   'weightLog.weightKg': 'Weight (kg)',
   'weightLog.measuredAt': 'Measured at',
-  'weightLog.yyyyMmDd': 'YYYY-MM-DD',
   'weightLog.bodyCondition': 'Body condition',
   'weightLog.bodyConditionPlaceholder': 'Body condition 1-9 (optional)',
   'weightLog.logWeight': 'Log weight',
@@ -298,7 +303,6 @@ export const en = {
   'docs.type': 'Type',
   'docs.name': 'Name',
   'docs.date': 'Date',
-  'docs.datePlaceholder': 'YYYY-MM-DD',
   'docs.vet': 'Vet (optional)',
   'docs.cancel': 'Cancel',
   'docs.errorFileFormat': 'Choose a PDF, JPEG, or PNG file',
@@ -459,6 +463,12 @@ export const en = {
 export type TranslationKey = keyof typeof en;
 
 export const es: Record<TranslationKey, string> = {
+  'dateField.placeholderDate': 'Elige una fecha',
+  'dateField.placeholderTime': 'Elige una hora',
+  'dateField.ok': 'Aceptar',
+  'dateField.cancel': 'Cancelar',
+  'dateField.clear': 'Borrar',
+
   'validation.firstNameRequired': 'Escribe tu nombre',
   'validation.lastNameRequired': 'Escribe tus apellidos',
   'validation.passwordRequired': 'Escribe tu contraseña',
@@ -664,7 +674,6 @@ export const es: Record<TranslationKey, string> = {
   'weightLog.weight': 'Peso',
   'weightLog.weightKg': 'Peso (kg)',
   'weightLog.measuredAt': 'Fecha de medición',
-  'weightLog.yyyyMmDd': 'AAAA-MM-DD',
   'weightLog.bodyCondition': 'Condición corporal',
   'weightLog.bodyConditionPlaceholder': 'Condición corporal 1-9 (opcional)',
   'weightLog.logWeight': 'Registrar peso',
@@ -758,7 +767,6 @@ export const es: Record<TranslationKey, string> = {
   'docs.type': 'Tipo',
   'docs.name': 'Nombre',
   'docs.date': 'Fecha',
-  'docs.datePlaceholder': 'AAAA-MM-DD',
   'docs.vet': 'Veterinario (opcional)',
   'docs.cancel': 'Cancelar',
   'docs.errorFileFormat': 'Elige un archivo PDF, JPEG o PNG',

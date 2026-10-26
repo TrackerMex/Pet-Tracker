@@ -1,15 +1,14 @@
 import { useChunkyLip } from '../../theme/chunky-lip';
-import { Host } from '@expo/ui';
-import ExpoDateTimePicker from '@expo/ui/community/datetime-picker';
 import { router, type Href } from 'expo-router';
 import { Button } from 'heroui-native';
 import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Bell, Calendar, Clock } from 'reicon-react-native';
+import { Bell } from 'reicon-react-native';
 
 import { createReminder } from '../../api/reminders';
 import type { ReminderType } from '../../api/types';
+import { DateField } from '../../components/date-field';
 import { FieldErrorMessage } from '../../components/field-error-message';
 import { ScreenHeader } from '../../components/screen-header';
 import type { FieldIssues } from '../../utils/account-rules';
@@ -21,7 +20,7 @@ import {
 } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
-import { fromPickerValue, toPickerValue } from '../../utils/date-picker-value';
+import { hhmmToLocalDate, isoToLocalDate, localDateToIso, timeToHhmm } from '../../utils/civil-date';
 import { combineDateAndTime } from '../../utils/reminder-dates';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
@@ -73,8 +72,6 @@ function AddReminderContent({ petId }: { petId: string }) {
   const [time, setTime] = useState(initialTime);
   const [advanceMinutes, setAdvanceMinutes] = useState(10080);
   const [now, setNow] = useState(Date.now);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldIssues<'title' | 'date'>>({});
@@ -209,79 +206,35 @@ function AddReminderContent({ petId }: { petId: string }) {
             <Text className="text-sm font-extrabold text-foreground">
               {t('addReminder.date')}
             </Text>
-            <Pressable
-              accessibilityRole="button"
+            <DateField
               testID="date-field"
-              className="h-13 flex-row items-center gap-2 rounded-xl bg-default px-3.5"
-              style={CONTINUOUS_CORNER}
-              onPress={() => setShowDatePicker(true)}
-            >
-              <Calendar size={18} color={muted} />
-              <Text className={`text-base font-semibold ${date ? 'text-foreground' : 'text-muted'}`}>
-                {date
-                  ? date.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })
-                  : t('addReminder.selectDate')}
-              </Text>
-            </Pressable>
+              pickerTestID="date-picker"
+              value={date === null ? null : localDateToIso(date)}
+              onChange={(next) => { setDate(next === null ? null : isoToLocalDate(next)); setNow(Date.now()); }}
+              minDate={localDateToIso(new Date())}
+              placeholder={t('addReminder.selectDate')}
+            />
             <FieldErrorMessage testID="date-field" issue={fieldErrors.date} />
           </View>
           <View className="flex-2 gap-1.5">
             <Text className="text-sm font-extrabold text-foreground">
               {t('addReminder.time')}
             </Text>
-            <Pressable
-              accessibilityRole="button"
+            <DateField
               testID="time-field"
-              className="h-13 flex-row items-center gap-2 rounded-xl bg-default px-3.5"
-              style={CONTINUOUS_CORNER}
-              onPress={() => setShowTimePicker(true)}
-            >
-              <Clock size={18} color={muted} />
-              <Text className="text-base font-semibold text-foreground">
-                {time.toLocaleTimeString(locale, {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hourCycle: 'h23',
-                })}
-              </Text>
-            </Pressable>
+              pickerTestID="time-picker"
+              mode="time"
+              value={timeToHhmm(time)}
+              onChange={(next) => {
+                if (next !== null) {
+                  const picked = hhmmToLocalDate(next);
+                  if (picked !== null) setTime(picked);
+                }
+                setNow(Date.now());
+              }}
+            />
           </View>
         </View>
-
-        {showDatePicker ? (
-          <Host>
-            <ExpoDateTimePicker
-              testID="date-picker"
-              mode="date"
-              minimumDate={new Date()}
-              presentation="dialog"
-              value={toPickerValue(date ?? new Date())}
-              onDismiss={() => setShowDatePicker(false)}
-              onValueChange={(_event, selectedDate) => {
-                setDate(fromPickerValue(selectedDate));
-                setNow(Date.now());
-                setShowDatePicker(false);
-              }}
-            />
-          </Host>
-        ) : null}
-
-        {showTimePicker ? (
-          <Host>
-            <ExpoDateTimePicker
-              testID="time-picker"
-              mode="time"
-              presentation="dialog"
-              value={time}
-              onDismiss={() => setShowTimePicker(false)}
-              onValueChange={(_event, selectedTime) => {
-                setTime(selectedTime);
-                setNow(Date.now());
-                setShowTimePicker(false);
-              }}
-            />
-          </Host>
-        ) : null}
 
         <View className="gap-2">
           <Text className="text-sm font-extrabold text-foreground">

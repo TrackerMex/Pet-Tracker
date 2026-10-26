@@ -51,13 +51,17 @@ export class PetRemindersController {
     @Body() body: unknown,
   ): Promise<ReminderResponse> {
     const dto = parseBody<CreateReminderDto>(CreateReminderSchema, body);
-    return toReminderResponse(
-      await this.createReminder.execute(
-        request.petMembership.petId,
-        dto,
-        request.user.id,
-      ),
-    );
+    try {
+      return toReminderResponse(
+        await this.createReminder.execute(
+          request.petMembership.petId,
+          dto,
+          request.user.id,
+        ),
+      );
+    } catch (error) {
+      throw mapReminderError(error);
+    }
   }
 
   @Get()

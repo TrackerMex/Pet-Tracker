@@ -17,6 +17,7 @@ const NAMES = buildResourceNames('');
 
 function reminder(id: string, dueAt: string): Reminder {
   return new Reminder({
+    recurrence: null,
     id,
     petId: '01924a3f-0000-7000-8000-0000000000aa',
     type: 'custom',
@@ -105,8 +106,8 @@ describe('R5: dispatcher encola vencidos una sola vez', () => {
         .filter((command) => command instanceof SendMessageCommand),
     ).toHaveLength(2);
     expect(repository.markEnqueued.mock.calls).toEqual([
-      [first.id, NOW],
-      [second.id, NOW],
+      [first.id, first.scheduleName, NOW],
+      [second.id, second.scheduleName, NOW],
     ]);
   });
 
@@ -148,8 +149,16 @@ describe('R5: dispatcher encola vencidos una sola vez', () => {
     ).dispatchOnce();
 
     expect(repository.markEnqueued).toHaveBeenCalledTimes(1);
-    expect(repository.markEnqueued).toHaveBeenCalledWith(sent.id, NOW);
-    expect(repository.markEnqueued).not.toHaveBeenCalledWith(failed.id, NOW);
+    expect(repository.markEnqueued).toHaveBeenCalledWith(
+      sent.id,
+      sent.scheduleName,
+      NOW,
+    );
+    expect(repository.markEnqueued).not.toHaveBeenCalledWith(
+      failed.id,
+      failed.scheduleName,
+      NOW,
+    );
     expect(logError).toHaveBeenCalled();
   });
 });
@@ -205,10 +214,12 @@ describe('#125 R2: el dispatcher escribe en el cuerpo cuándo vence, en la zona 
   it('dos mascotas con owners en zonas distintas: cada cuerpo con la suya', async () => {
     const first = new Reminder({
       ...reminder('first', '2026-10-01T03:30:00.000Z'),
+      recurrence: null,
       petId: PET_A,
     });
     const second = new Reminder({
       ...reminder('second', '2026-10-01T03:30:00.000Z'),
+      recurrence: null,
       petId: PET_B,
     });
     const repository = repositoryStub();
@@ -245,10 +256,12 @@ describe('#125 R2: el dispatcher escribe en el cuerpo cuándo vence, en la zona 
   it('si la zona del owner no se puede leer, esa fila no se encola y las siguientes sí', async () => {
     const failed = new Reminder({
       ...reminder('failed', '2026-10-01T03:30:00.000Z'),
+      recurrence: null,
       petId: PET_A,
     });
     const sent = new Reminder({
       ...reminder('sent', '2026-10-01T03:30:00.000Z'),
+      recurrence: null,
       petId: PET_B,
     });
     const repository = repositoryStub();
@@ -276,7 +289,9 @@ describe('#125 R2: el dispatcher escribe en el cuerpo cuándo vence, en la zona 
               .body,
         ),
     ).toEqual(['Recordatorio: Reminder sent · 30 de septiembre a las 21:30']);
-    expect(repository.markEnqueued.mock.calls).toEqual([[sent.id, NOW]]);
+    expect(repository.markEnqueued.mock.calls).toEqual([
+      [sent.id, sent.scheduleName, NOW],
+    ]);
     expect(logError).toHaveBeenCalled();
   });
 });

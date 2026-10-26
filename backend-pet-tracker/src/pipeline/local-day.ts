@@ -225,3 +225,25 @@ function partsFormatterFor(timeZone: string): Intl.DateTimeFormat {
 
   return formatter;
 }
+
+/** Conserva la hora de pared del ancla, con DST compatible (hueco previo, solape temprano). */
+export function sameLocalTimeOn(
+  anchorMs: number,
+  day: string,
+  timeZone: string,
+): number {
+  assertTimeZone(timeZone);
+  // offsetMsAt trabaja en segundos; conserva aparte los milisegundos del ancla.
+  const milliseconds = ((anchorMs % 1000) + 1000) % 1000;
+  const anchor = anchorMs - milliseconds;
+  const dayMs = 86_400_000;
+  const wallTime =
+    (((anchor + offsetMsAt(anchor, timeZone)) % dayMs) + dayMs) % dayMs;
+  const wall = new Date(`${day}T00:00:00.000Z`).getTime() + wallTime;
+  const previous = wall - offsetMsAt(wall - dayMs, timeZone);
+  const next = wall - offsetMsAt(wall + dayMs, timeZone);
+  const candidates = [previous, next]
+    .filter((candidate) => candidate + offsetMsAt(candidate, timeZone) === wall)
+    .sort((a, b) => a - b);
+  return (candidates[0] ?? previous) + milliseconds;
+}
