@@ -100,7 +100,7 @@ describe('#62 R1: la escala de radios está declarada y el botón primario tiene
     );
 
     expect(primaryRadius).toHaveLength(1 + 1); // #208 R21 // #177 R10
-    expect(sourceFiles().flatMap(path => readFileSync(path, 'utf8').match(/rounded-16 bg-accent(?=[\s'"`])/g) ?? [])).toHaveLength(16 + 1 + 1 + 1 + 1); // #208 R21 // #194 R6 // #191 R11 // #201 R13
+    expect(sourceFiles().flatMap(path => readFileSync(path, 'utf8').match(/rounded-16 bg-accent(?=[\s'"`])/g) ?? [])).toHaveLength(16 + 1 + 1 + 1 + 1 + 1); // #208 R21 // #194 R6 // #191 R11 // #201 R13
     expect(filesMatching(/rounded-2xl bg-accent(?=[\s'"`])/)).toEqual([]);
   });
 });
@@ -583,6 +583,7 @@ describe('#98 R11: la carta y la spec de Food registran la enmienda', () => {
 
 describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', () => {
   const expected = {
+      'screens/vaccine-create/index.tsx': 1, // #208 R21
       'screens/health/index.tsx': 1, // #208 R21
       'components/celebration.tsx': 1,
       'components/empty-state.tsx': 1,

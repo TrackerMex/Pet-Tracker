@@ -47,6 +47,7 @@ function inventory(pattern: RegExp): Record<string, number> {
 const count = (pattern: RegExp) => Object.values(inventory(pattern)).reduce((sum, n) => sum + n, 0);
 
 const CTA_ROWS = [
+  ['screens/vaccine-create/index.tsx', literalId('vaccine-create-submit'), 'h-14 rounded-16 bg-accent', ['isDisabled={submitting}', 'onPress={() => void handleSubmit()}']], // #208 R21
   ['screens/health/index.tsx', literalId('vaccines-empty-action'), 'w-full h-14 rounded-16 bg-accent', ['onPress={openVaccineCreate}']], // #208 R21
   ['screens/edit-profile/index.tsx', literalId('edit-profile-save'), 'w-full h-14 rounded-16 bg-accent', ['onPress={() => void handleSubmit()}', 'isDisabled={submitting}']], // #194 R7
   ['screens/login/index.tsx', literalId('login-submit'), 'w-full h-14 rounded-16 bg-accent', ['isDisabled={submitting}', 'onPress={() => void handleSubmit()}']],
@@ -80,7 +81,7 @@ const NEUTRAL_ROWS = [
 const primaryIds = CTA_ROWS.map(([, anchor]) => idOf(anchor)).sort();
 const neutralIds = NEUTRAL_ROWS.map(([, anchor]) => idOf(anchor)).sort();
 const ctaFiles = [...new Set(CTA_ROWS.map(([path]) => path))].sort(); // #191 R11
-const consumers = [...ctaFiles, 'screens/vaccine-create/index.tsx', 'screens/reminders/index.tsx', 'screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx', 'screens/food/index.tsx', 'screens/profile/index.tsx', 'screens/map/index.tsx'].sort(); // #201 R13
+const consumers = [...ctaFiles, 'screens/reminders/index.tsx', 'screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx', 'screens/food/index.tsx', 'screens/profile/index.tsx', 'screens/map/index.tsx'].sort(); // #201 R13
 const neutralInventory = ['${rowId}-ack', 'add-meal-time-button', 'alert-detail-view-map', 'docs-upload-cancel', 'forgot-resend', 'geofence-editor-delete', 'meal-time-edit-${index}', 'pairing-unpair-cancel', 'reminders-delete-cancel', 'secondary.testID', 'welcome-have-account'];
 const radii = {
   'screens/edit-profile/index.tsx': 1, // #194 R6
@@ -94,6 +95,7 @@ const radii = {
   'screens/forgot/index.tsx': 3,
   'screens/geofence-editor/index.tsx': 4, // #189 R13; #202 R18: +1
   'screens/geofences/index.tsx': 2, // #189 R7
+  'screens/vaccine-create/index.tsx': 1, // #208 R21
   'screens/health/index.tsx': 1 + 1, // #199 R14 // #208 R21
   'screens/home/index.tsx': 1,
   'screens/home/weekly-activity-chart.tsx': 1, // #198 R9
@@ -167,8 +169,8 @@ it('#177 R6.2: recuentos de etiquetas (enmendado por #189 R7) (enmendado por #18
   // #177 R6
   expect(count(/<Button\.Label/g)).toBe(35 - 15 - 1 - 1 - 1 - 1 - 1 - 1 + 1); // #191 R11 // #189 R5; #189 R13; // #196 R6: -1 // #204 R8; #204 R9 // #208 R21
   expect(count(/Button\.Label/g)).toBe(82 - 30 - 2 - 2 - 2 - 2 - 2 - 2 + 2); // #191 R11 // #189 R5; #189 R13; // #196 R6: -2 // #204 R8; #204 R9 // #208 R21
-  expect(count(/text-17/g)).toBe(8 + 15 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 2); // #200 R5; #199 R9 // #194 R6 // #191 R11 // #189 R7; #189 R13 // #204 R9 // #208 R21
-  expect(count(/<Text className="text-17 font-extrabold text-accent-foreground">/g)).toBe(5 + 11 + 1 + 1 - 1 - 1 + 1); // #194 R6 // #191 R11 // #189 R7; #189 R13 // #208 R21
+  expect(count(/text-17/g)).toBe(8 + 15 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 2 + 1); // #200 R5; #199 R9 // #194 R6 // #191 R11 // #189 R7; #189 R13 // #204 R9 // #208 R21 // #208 R21
+  expect(count(/<Text className="text-17 font-extrabold text-accent-foreground">/g)).toBe(5 + 11 + 1 + 1 - 1 - 1 + 1 + 1); // #194 R6 // #191 R11 // #189 R7; #189 R13 // #208 R21 // #208 R21
   expect(count(/text-17 font-extrabold text-foreground/g)).toBe(3 + 3 + 1 + 1); // #200 R5; #199 R9
   expect(count(/<Text className="text-17 font-bold text-accent-strong">/g)).toBe(0 + 1);
 });
@@ -184,7 +186,7 @@ it('#177 R7.2: inventarios de las dos recetas de primario (enmendado por #201 R1
 });
 it('#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por #191 R11) (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #198 R9) (enmendado por #203 R6) (enmendado por #203 R7) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #201 R13) (enmendado por #205 R13) (enmendado por #208 R21)', () => {
   expect(inventory(/\brounded-16\b/g)).toEqual(radii);
-  expect(count(/\brounded-16\b/g)).toBe(26 + 1 + 1 + 1 + 2 + 2 + 1 + 1 + 1 + 2 + 1 + 1 + 1 + 1 + 1); // #204 R9 (+1) // #202 R18 (+1) // #200 R9 (+2); #198 R9 (+1); #199 R14 (+1); #203 R6 (+1); #203 R7 (+2); #201 R13 (+1); #205 R13 (+1) // #194 R6 // #191 R11 // #189 R7; #189 R13 // #208 R21
+  expect(count(/\brounded-16\b/g)).toBe(26 + 1 + 1 + 1 + 2 + 2 + 1 + 1 + 1 + 2 + 1 + 1 + 1 + 1 + 1 + 1); // #204 R9 (+1) // #202 R18 (+1) // #200 R9 (+2); #198 R9 (+1); #199 R14 (+1); #203 R6 (+1); #203 R7 (+2); #201 R13 (+1); #205 R13 (+1) // #194 R6 // #191 R11 // #189 R7; #189 R13 // #208 R21 // #208 R21
 });
 it('#177 R7.4: solo la definición y los dieciocho consumidores usan el hook (enmendado por #197 R10) (enmendado por #200 R3) (enmendado por #196 R4) (enmendado por #201 R13) (enmendado por #208 R21)', () => {
   expect(Object.keys(inventory(/useChunkyLip/g)).sort()).toEqual([...consumers, 'theme/chunky-lip.ts'].sort());

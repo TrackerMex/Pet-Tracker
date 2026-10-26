@@ -1152,6 +1152,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       'screens/pairing/index.tsx': 4, // #203 R6; #203 R7
       'screens/register/index.tsx': 1,
       'screens/reset-password/index.tsx': 1 + 1, // #205 R13
+      'screens/vaccine-create/index.tsx': 1, // #208 R21
       'screens/weight-log/index.tsx': 1,
       'screens/welcome/index.tsx': 2,
     });
@@ -1256,6 +1257,7 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
       'screens/register/index.tsx',
       'screens/reminders/index.tsx',
       'screens/reset-password/index.tsx',
+      'screens/vaccine-create/index.tsx', // #208 R21
       'screens/weight-log/index.tsx',
       'screens/welcome/index.tsx',
     ]);
