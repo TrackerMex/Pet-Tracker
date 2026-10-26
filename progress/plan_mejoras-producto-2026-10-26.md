@@ -36,7 +36,7 @@
 | Repetición | **Calendario + cada N h** | Una vez, Diario, Semanal, Mensual, Anual y «cada N horas» (medicación). Modelo de intervalo `{unidad, cada}`. La hora se ancla a la zona del owner. Sin fin, o hasta una fecha. |
 | Flujo | **Extender el mandato del 2026-10-23** | El leader firma las specs con la checklist de firma delegada (`plan_canvas-parity-2026-10-23.md` §4), lanza Codex en herdr, abre las PRs a `dev` y las mergea con CI verde y veredicto «aprobado» del `reviewer`. `dev` → `main` lo mergea el humano. |
 | Diseño | **Artboards nuevos** | El leader añade artboards al canvas «Pet Tracker: propuesta de UI» con el lenguaje actual y el copy en Voz B. El humano los aprueba antes de cada spec móvil (gate G1). |
-| Costo IA | **Collar + límite diario** | Se mantiene OV3 (IA solo con collar activo) y se añade un límite de N generaciones con IA por mascota y día. Pasado el límite, se sirve el plan del motor sin IA y sin llamada. **N queda pendiente de confirmar** (la propuesta es 3, sacada del texto de la opción): gate G3. |
+| Costo IA | **Collar + límite diario** | Se mantiene OV3 (IA solo con collar activo) y se añade un límite de N generaciones con IA por mascota y día. Pasado el límite, se sirve el plan del motor sin IA y sin llamada. **N = 3**, elegido por el humano el 2026-10-26 («3 por día», gate G3 cerrado). |
 | Vacuna → aviso | **Toggle opt-in** | En el formulario, un switch «Recordarme la próxima dosis», encendido por defecto, crea un recordatorio de tipo `vaccine` con el endpoint que ya existe. Es solo móvil y no acopla módulos. |
 
 Valores por defecto del leader, sin pregunta (el humano puede revertirlos):
@@ -266,7 +266,7 @@ La checklist suma dos puntos para este plan:
 |---|---|---|---|
 | G1 | Aprobar los artboards nuevos y su copy | Antes de la spec de cada feature móvil | `progress/plan_mejoras-producto-2026-10-26.md` §5, abajo |
 | G2 | Aprobar el system prompt nuevo y la lista de alimentos tóxicos | Antes del handoff de #212 | `specs/nutrition-ai-structured-plan/requirements.md` |
-| G3 | Confirmar N (generaciones con IA por mascota y día) | Antes del handoff de #212 | `specs/nutrition-ai-structured-plan/requirements.md` |
+| G3 | Confirmar N (generaciones con IA por mascota y día) | **Cerrado el 2026-10-26: N = 3** («3 por día») | este plan, §1 |
 | G4 | Smoke en el dev build de Android: push recurrente real (`PUSH_ENABLED=true`), `Share` nativo e invitación entre dos cuentas | Por lotes, al final de cada ola (`progress/smoke_mejoras-producto.md`) | ese fichero |
 | G5 | Mergear `dev` → `main` | Cuando el humano dé la app por lista | PR en GitHub |
 
