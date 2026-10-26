@@ -1,3 +1,4 @@
+import { InvalidRecurrenceError } from '@/modules/reminders/domain/errors/reminder.errors';
 import { Reminder } from '@/modules/reminders/domain/entities/reminder.entity';
 import type { ReminderRepository } from '@/modules/reminders/domain/repositories/reminder.repository';
 import type { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
@@ -46,8 +47,20 @@ function repositoryStubs() {
     markSent: jest.fn(),
   } as unknown as ReminderRepository;
   const findMembership = jest.fn();
-  const pets = { findMembership } as unknown as PetRepository;
-  return { reminders, findById, reschedule, cancel, pets, findMembership };
+  const findOwnerTimezone = jest.fn().mockResolvedValue('UTC');
+  const pets = {
+    findMembership,
+    findOwnerTimezone,
+  } as unknown as PetRepository;
+  return {
+    reminders,
+    findById,
+    reschedule,
+    cancel,
+    pets,
+    findMembership,
+    findOwnerTimezone,
+  };
 }
 
 describe('R10: UpdateReminderUseCase autoriza via reminder.petId', () => {
@@ -131,4 +144,83 @@ describe('R11: UpdateReminderUseCase rechaza reminders no editables', () => {
       expect(stubs.cancel).not.toHaveBeenCalled();
     },
   );
+});
+
+describe('#210 R6: edicion de la serie', () => {
+  const dueAt = new Date('2026-11-01T15:00:00.000Z');
+  const nextDueAt = new Date('2026-12-01T15:00:00.000Z');
+  const original = {
+    unit: 'day' as const,
+    every: 1,
+    anchorAt: dueAt,
+    until: '2027-01-01',
+  };
+  it.each([
+    [
+      'recurrence nueva',
+      { recurrence: { unit: 'week', every: 2 } },
+      false,
+      { unit: 'week', every: 2, anchorAt: dueAt, until: original.until },
+    ],
+    ['recurrence null', { recurrence: null }, false, null],
+    [
+      'recurrenceUntil fecha',
+      { recurrenceUntil: '2027-02-01' },
+      false,
+      { ...original, until: '2027-02-01' },
+    ],
+    [
+      'recurrenceUntil null',
+      { recurrenceUntil: null },
+      false,
+      { ...original, until: null },
+    ],
+    [
+      'dueAt reancla',
+      { dueAt: nextDueAt.toISOString() },
+      false,
+      { ...original, anchorAt: nextDueAt },
+    ],
+    ['solo title', { title: 'Nuevo' }, false, undefined],
+    ['until sobre one-shot', { recurrenceUntil: '2027-02-01' }, true, 'error'],
+    [
+      'recurrence null con until',
+      { recurrence: null, recurrenceUntil: '2027-02-01' },
+      false,
+      'error',
+    ],
+  ] as const)('#210 R6: PATCH %s', async (_label, body, oneShot, expected) => {
+    const stubs = repositoryStubs();
+    stubs.findById.mockResolvedValue(
+      new Reminder({
+        ...reminder(),
+        dueAt,
+        recurrence: oneShot ? null : original,
+      }),
+    );
+    stubs.findMembership.mockResolvedValue({ role: 'owner', status: 'active' });
+    const result = new UpdateReminderUseCase(
+      stubs.reminders,
+      stubs.pets,
+    ).execute(REMINDER_ID, body, USER_ID);
+    if (expected === 'error') {
+      await expect(result).rejects.toThrow(InvalidRecurrenceError);
+      expect(stubs.reschedule).not.toHaveBeenCalled();
+    } else {
+      await result;
+      const changes: Record<string, unknown> = {};
+      if ('dueAt' in body) changes.dueAt = new Date(body.dueAt);
+      if ('title' in body) changes.title = body.title;
+      if (expected !== undefined) changes.recurrence = expected;
+      expect(stubs.reschedule).toHaveBeenCalledWith(
+        REMINDER_ID,
+        changes,
+        expect.stringMatching(/^reminder-[0-9a-f-]{36}$/),
+      );
+      if (expected === undefined)
+        expect(
+          (stubs.reschedule.mock.calls[0] as unknown[])[1],
+        ).not.toHaveProperty('recurrence');
+    }
+  });
 });

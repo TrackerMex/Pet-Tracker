@@ -940,4 +940,120 @@ describe('Pet reminders (e2e)', () => {
       }
     });
   });
+
+  describe('#210 R3: reglas cruzadas en HTTP', () => {
+    it('#210 R3: POST con recurrenceUntil sin recurrence responde 400 sin insertar', async () => {
+      const owner = await seedUser('210-r3-post');
+      const pet = await seedPet(owner);
+      const response = await api()
+        .post(`/v1/pets/${pet.id}/reminders`)
+        .set(auth(owner.token))
+        .send({
+          type: 'custom',
+          title: 'Invalido',
+          dueAt: new Date(Date.now() + 3 * 86_400_000).toISOString(),
+          recurrenceUntil: '2031-01-01',
+        })
+        .expect(400);
+      expect(response.body).toEqual({
+        statusCode: 400,
+        message: 'Invalid recurrence',
+      });
+      expect(
+        await db.select().from(reminders).where(eq(reminders.petId, pet.id)),
+      ).toHaveLength(0);
+    });
+    it('#210 R3: PATCH que deja until antes de dueAt responde 400 sin cambiar la fila', async () => {
+      const owner = await seedUser('210-r3-patch');
+      const pet = await seedPet(owner);
+      const created = await api()
+        .post(`/v1/pets/${pet.id}/reminders`)
+        .set(auth(owner.token))
+        .send({
+          type: 'custom',
+          title: 'Serie',
+          dueAt: new Date(Date.now() + 3 * 86_400_000).toISOString(),
+          recurrence: { unit: 'day', every: 1 },
+        })
+        .expect(201);
+      const { id } = created.body as { id: string };
+      const [before] = await db
+        .select()
+        .from(reminders)
+        .where(eq(reminders.id, id));
+      const response = await api()
+        .patch(`/v1/reminders/${id}`)
+        .set(auth(owner.token))
+        .send({ recurrenceUntil: new Date().toISOString().slice(0, 10) })
+        .expect(400);
+      expect(response.body).toEqual({
+        statusCode: 400,
+        message: 'Invalid recurrence',
+      });
+      const [after] = await db
+        .select()
+        .from(reminders)
+        .where(eq(reminders.id, id));
+      expect(after).toEqual(before);
+    });
+  });
+  describe('#210 R6: PATCH de las columnas de recurrencia', () => {
+    it('#210 R6: PATCH reancla, conserva y limpia columnas de la serie', async () => {
+      const owner = await seedUser('210-r6');
+      const pet = await seedPet(owner);
+      const until = new Date(Date.now() + 30 * 86_400_000)
+        .toISOString()
+        .slice(0, 10);
+      const created = await api()
+        .post(`/v1/pets/${pet.id}/reminders`)
+        .set(auth(owner.token))
+        .send({
+          type: 'custom',
+          title: 'Serie',
+          dueAt: new Date(Date.now() + 3 * 86_400_000).toISOString(),
+          recurrence: { unit: 'week', every: 2 },
+          recurrenceUntil: until,
+        })
+        .expect(201);
+      const { id } = created.body as { id: string };
+      const dueAt = new Date(Date.now() + 4 * 86_400_000);
+      await api()
+        .patch(`/v1/reminders/${id}`)
+        .set(auth(owner.token))
+        .send({ dueAt: dueAt.toISOString() })
+        .expect(200);
+      let [row] = await db.select().from(reminders).where(eq(reminders.id, id));
+      expect(row).toMatchObject({
+        dueAt,
+        recurrenceUnit: 'week',
+        recurrenceEvery: 2,
+        recurrenceAnchorAt: dueAt,
+        recurrenceUntil: until,
+      });
+      await api()
+        .patch(`/v1/reminders/${id}`)
+        .set(auth(owner.token))
+        .send({ recurrenceUntil: null })
+        .expect(200);
+      [row] = await db.select().from(reminders).where(eq(reminders.id, id));
+      expect(row).toMatchObject({
+        recurrenceUnit: 'week',
+        recurrenceEvery: 2,
+        recurrenceAnchorAt: dueAt,
+        recurrenceUntil: null,
+      });
+      await api()
+        .patch(`/v1/reminders/${id}`)
+        .set(auth(owner.token))
+        .send({ recurrence: null })
+        .expect(200);
+      [row] = await db.select().from(reminders).where(eq(reminders.id, id));
+      expect(row).toMatchObject({
+        recurrenceUnit: null,
+        recurrenceEvery: null,
+        recurrenceAnchorAt: null,
+        recurrenceUntil: null,
+      });
+    });
+  });
 });
