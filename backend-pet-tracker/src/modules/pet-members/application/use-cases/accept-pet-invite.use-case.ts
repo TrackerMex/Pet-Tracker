@@ -20,13 +20,6 @@ export class AcceptPetInviteUseCase {
     userId: string,
     now: Date,
   ): Promise<{ petId: string; role: 'family' }> {
-    await this.audit.record({
-      userId,
-      action: 'pet_invite.accept',
-      entity: 'pet_invite',
-      entityId: userId,
-      meta: {},
-    });
     const code = normalizeInviteCode(rawCode);
     if (code === null) throw new InviteNotAcceptableError();
     const result = await this.repo.acceptInvite(
