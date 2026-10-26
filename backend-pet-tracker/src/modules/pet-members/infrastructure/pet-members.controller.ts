@@ -1,9 +1,12 @@
+import { z } from 'zod';
+import { mapPetMemberError } from './mappers/pet-member-error.mapper';
 import {
   Controller,
   Delete,
   Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Param,
   Req,
   UseGuards,
@@ -33,15 +36,21 @@ export class PetMembersController {
   @Delete(':userId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(PetAccessGuard)
-  remove(
+  async remove(
     @Req() request: PetAccessRequest,
     @Param('userId') targetUserId: string,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.removeMember.execute(
-      request.petMembership.petId,
-      { userId: user.id, role: request.petMembership.role },
-      targetUserId,
-    );
+    if (!z.uuid().safeParse(targetUserId).success)
+      throw new NotFoundException();
+    try {
+      return await this.removeMember.execute(
+        request.petMembership.petId,
+        { userId: user.id, role: request.petMembership.role },
+        targetUserId,
+      );
+    } catch (error) {
+      throw mapPetMemberError(error);
+    }
   }
 }

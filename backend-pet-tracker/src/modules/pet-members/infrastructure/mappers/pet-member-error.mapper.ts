@@ -1,9 +1,13 @@
 import {
   ConflictException,
+  ForbiddenException,
   HttpStatus,
   NotFoundException,
 } from '@nestjs/common';
 import {
+  MemberRemovalForbiddenError,
+  PetMemberNotFoundError,
+  OwnerNotRemovableError,
   InviteNotAcceptableError,
   AlreadyPetMemberError,
   PetInviteNotFoundError,
@@ -36,6 +40,15 @@ export function mapPetMemberError(error: unknown): unknown {
       statusCode: HttpStatus.CONFLICT,
       code: 'ALREADY_PET_MEMBER',
       message: 'User is already a member of this pet',
+    });
+  if (error instanceof MemberRemovalForbiddenError)
+    return new ForbiddenException();
+  if (error instanceof PetMemberNotFoundError) return new NotFoundException();
+  if (error instanceof OwnerNotRemovableError)
+    return new ConflictException({
+      statusCode: HttpStatus.CONFLICT,
+      code: 'OWNER_NOT_REMOVABLE',
+      message: 'An owner cannot be removed',
     });
   return error;
 }

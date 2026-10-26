@@ -144,10 +144,10 @@ export class PetMemberDrizzleRepository implements PetMemberRepository {
       .orderBy(asc(petUsers.createdAt), asc(petUsers.userId));
     return rows.map((row) => ({ ...row, role: row.role as PetRole }));
   }
-  deleteMembership(petId: string, userId: string): Promise<void> {
-    void petId;
-    void userId;
-    return Promise.reject(new Error('Not implemented'));
+  async deleteMembership(petId: string, userId: string): Promise<void> {
+    await this.db
+      .delete(petUsers)
+      .where(and(eq(petUsers.petId, petId), eq(petUsers.userId, userId)));
   }
 }
 

@@ -1,3 +1,8 @@
+import {
+  MemberRemovalForbiddenError,
+  PetMemberNotFoundError,
+  OwnerNotRemovableError,
+} from '@/modules/pet-members/domain/errors/pet-member.errors';
 import { Inject, Injectable } from '@nestjs/common';
 import { PET_MEMBER_REPOSITORY } from '@/modules/pet-members/domain/repositories/pet-member.repository';
 import type { PetMemberRepository } from '@/modules/pet-members/domain/repositories/pet-member.repository';
@@ -14,14 +19,17 @@ export class RemovePetMemberUseCase {
     @Inject(PET_REPOSITORY) private readonly pets: PetRepository,
     @Inject(AUDIT_LOGGER) private readonly audit: AuditLogger,
   ) {}
-  execute(
+  async execute(
     petId: string,
     actor: { userId: string; role: PetRole },
     targetUserId: string,
   ): Promise<void> {
-    void petId;
-    void actor;
-    void targetUserId;
-    return Promise.reject(new Error('Not implemented'));
+    if (actor.role !== 'owner' && targetUserId !== actor.userId)
+      throw new MemberRemovalForbiddenError();
+    const membership = await this.pets.findMembership(petId, targetUserId);
+    if (!membership || membership.status !== 'active')
+      throw new PetMemberNotFoundError();
+    if (membership.role === 'owner') throw new OwnerNotRemovableError();
+    await this.repo.deleteMembership(petId, targetUserId);
   }
 }
