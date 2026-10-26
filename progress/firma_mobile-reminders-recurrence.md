@@ -635,3 +635,176 @@ Ninguna errata ni aviso queda sin escribir. Fuera del texto de la spec quedan:
   y la corrida final con `src/app/__tests__` (A10) escritos.
 - traceability.md: tabla nueva con los `it` añadidos o renombrados (R3, R13,
   R18 `throws`, R16, R22).
+
+## Re-medida sobre dev 0c37e77a (spec_author, 2026-10-26)
+
+Base congelada: `85971913` (merge de `origin/dev` `0c37e77a` en la rama, trae
+#218 PR #267 y #219 PR #266). Delta móvil: `git diff 8b4cb1bd 0c37e77a --
+mobile-pet-tracker` (9 ficheros). El merge no trae #208, #209 ni #214.
+
+### Pasos
+
+1. [x] Lectura del delta (9 ficheros).
+2. [x] Anclas «Ancla:» y literales «base» de `tasks.md` (Paso 0, §R5, §R12,
+   §R15, §R16, §R17, §R18, §R22 1–18) con `grep -c` sobre el árbol fusionado.
+3. [x] Delta aplicado a la semilla `audit213/seed`.
+4. [x] Corridas en la semilla: suite del §4 y `bunx jest src/app/__tests__`.
+5. [x] Puntos a mirar: `sheet-surface-background.test.ts` con la hoja de
+   R17/R19; `it` de R19; `it` de #218 en `reminders/index.test.tsx` frente a
+   R14–R18 (fixtures `Reminder`, A16); recuento de `it` de reminders.
+6. [x] Enmiendas M1… o «ninguna».
+7. [x] Cierre: lista de enmiendas, tabla de corridas, Paso 0.
+
+### 1. Delta (leído)
+
+- `src/screens/reminders/index.tsx` (+2): `const [surface] = useThemeColors(['surface']);`
+  tras la llamada `'category-blue-strong'…'danger'`, y
+  `backgroundStyle={{ backgroundColor: surface }}` en el único `<BottomSheet`.
+  Es exactamente lo que `design.md` §Fondo de la hoja daba por hecho.
+- `src/screens/reminders/index.test.tsx` (+24): un `describe` nuevo,
+  `#218 R1: el cajón de borrar pinta su contenedor con el token surface`, con
+  un `it` que usa `canvasReminders` sin tocarlo, pulsa `reminder-delete-a` y
+  lee `within(screen.getByTestId('reminders-delete-host')).getByTestId('community-bottom-sheet')`
+  con el `flat` del fichero. No declara fixtures `Reminder` nuevos.
+- `src/__tests__/sheet-surface-background.test.ts` (nuevo): `#218 R3`, un
+  `it` (importadores = pairing y reminders) y un `it.each` de 2 casos; por
+  fichero exige `/<BottomSheet(?![A-Za-z])/g` = 1, una sola
+  `backgroundStyle={{ backgroundColor: surface }}` y
+  `const [surface] = useThemeColors(['surface']);` literal.
+- `pairing/index.tsx` y su test (#218 R2), `home/format.ts`,
+  `home/weekly-activity-chart.tsx` y sus tests (#219): ninguno es fichero de
+  #213 ni de sus guardas; el delta no añade fixtures `Reminder` tipados
+  (`grep` de `Reminder|dueAt|advanceMinutes` en las líneas `+`: solo las dos
+  del `it` de #218 R1, que reutiliza `canvasReminders`). A16 no se dispara.
+
+### 2. Anclas y literales base de `tasks.md` (árbol fusionado `85971913`)
+
+Script: `audit213/scripts/remeasure.py` (`grep -cF` / `grep -cE` línea a
+línea, desde `mobile-pet-tracker/`). 75 comprobaciones; 73 dan la cifra
+esperada.
+
+| Sitio | Literal o ancla | Esperada | Medida |
+|---|---|---|---|
+| Paso 0 | `grep -cF "backgroundStyle" …/reminders/index.tsx` | 1 | 1 |
+| §R5 (2) | `grep -cF "flex-row flex-wrap gap-2" …/add-reminder/index.tsx` | 1 | 2 (ver nota a) |
+| §R12 (2) | `grep -cE "\b(last\|first\|odd\|even):" …/add-reminder/index.tsx` | 0 | 0 |
+| §R15 (2) | `grep -cF "rounded-14 px-2.5" …/reminders/index.tsx` | 1 | 1 |
+| §R16 (3) | `(enmendado por #213 R16)` / `// #213 R16` / `todayCanvasReminders` en el test | 0 / 0 / 0 | 0 / 0 / 0 |
+| §R16 (3) | `¡Próximo!` en el test / en `catalog.ts` | 2 / 1 | 2 / 1 |
+| §R16 (3) 1–7 | nombres de los siete `it` y sus líneas (`week-edge`, `badge-edge`, `plus-eight`, `toHaveTextContent('¡Próximo!')` del punto 5, `pop-a`) | 1 cada uno | 1 cada uno, salvo la línea del punto 1 (ver nota b) |
+| §R17 (3) | `grep -cE "<BottomSheet([^A-Za-z]\|$)"` / `grep -cF "<BottomSheet"` | 1 / 2 | 1 / 2 |
+| §R18 (2) | `t('common.cannotReachServer'` / `t('common.somethingWentWrong'` / `signOut(` | 1 / 3 / 1 | 1 / 3 / 1 |
+| design A11 | `useThemeColors(` / `const [surface] = useThemeColors(['surface']);` / `'muted', 'accent-foreground', 'danger',` | 2 / 1 / 1 | 2 / 1 / 1 |
+| §R22 1 | `// #213 R22` en `ui-copy-table.ts` | 0 | 0 |
+| §R22 2–4 | `#186 R5 … 56 …`, la expresión `50 + 1 - 2 … - 3`, `#65 R18`, `#194 R1 …`, `        + 5 - 2, // #220 R16` | 1 cada uno | 1 cada uno |
+| §R22 5–8 | literales de `design-drift` (iconos, `rounded-16` 5, `rounded-14` 2, `rounded-22` 1, `add-reminder: 1`, `screenSignOutCalls` reminders 1, `empty-state … #198 R15`) | 1 cada uno | 1 cada uno |
+| §R22 9 | `'screens/add-pet/index.tsx', // #191 R11` y nombre del `it` | 1 | 1 |
+| §R22 10–12 | `directUses` `3 + 1 - 2`, `+ 1 - 1 - 2 // #220 R4; …` (2), `pairing-unpair-cancel // #203 R7`, `border-lip-gray … 4 + 1×8` | 1 / 2 / 1 / 1 | 1 / 2 / 1 / 1 |
+| §R22 13–18 | literales de `chunky-cta-canvas-fidelity` (`reminders-delete-cancel`, `neutralInventory`, `text-17` 8+15+…, `3 + 3 + 1 + 1`, `10 + 1 + 1`, mapa `radii` 1 y `5, // #204 R9`, `+ 2 + 1 + 1 + 1 + 1); // #204 R9 (+1)`, `NEUTRAL_ROWS.map(… 1)`) | 1 cada uno | 1 cada uno |
+
+Notas:
+
+- **a.** `add-reminder/index.tsx` no está en el delta: da 2 también en
+  `8b4cb1bd` (líneas 156 y 243, Tipo y Aviso). El `= 1` de §R5 (2) es la
+  cifra **tras** implementar R5 (los dos `View` pasan a `ScrollView
+  horizontal`; queda el de Repetición): la semilla da 1 (línea 271). No
+  caducó; es un ancla de llegada, no de base.
+- **b.** §R16 (3) punto 1 cita la expectativa en una línea,
+  `expect(screen.getByTestId('reminder-upcoming-upcoming')).toHaveTextContent('¡Próximo!')`;
+  en el fichero está partida en tres líneas (`toHaveTextContent(` /
+  `'¡Próximo!',` / `);`, hoy 689–691) y ya lo estaba en `8b4cb1bd` (el delta
+  inserta 24 líneas en la 1396, después). No la mueve el merge; el recuento
+  `¡Próximo!` = 2 sigue cuadrando y la sustitución prescrita no cambia de
+  sentido. Se anota como observación, no como enmienda.
+
+### 3. Delta aplicado a la semilla
+
+- Copia de seguridad: `audit213/seed.pre-merge/reminders-index.tsx` y
+  `reminders-index.test.tsx`.
+- Los 7 ficheros que la semilla no tocaba (iguales a `8b4cb1bd`, `cmp`)
+  copiados de `0c37e77a`, incluido `sheet-surface-background.test.ts`.
+- `reminders/index.tsx` y su test: `patch -p1` del delta
+  (`audit213/delta-reminders.patch`), sin rechazos (fuzz 2 y 1 por el
+  `accentStrong` y la hoja hermana de la simulación). Resultado revisado a
+  mano: `const [surface] = useThemeColors(['surface']);` queda debajo de la
+  llamada que acaba en `'danger', 'accent-strong',` y el `backgroundStyle` en
+  el único `BottomSheet`, que envuelve las dos hojas hermanas.
+- La semilla no tenía `it` de R14–R19 (solo implementación, enmiendas de R16
+  y de R22). Para mirar R19 se añade un `it` simulado
+  (`audit213/scripts/r19.py`) en un `describe` propio tras el de `#218 R1`:
+  serie mensual `s1` programada, pulsa `reminder-cancel-series-s1`, espera
+  `reminders-cancel-series-sheet`, comprueba que no está
+  `reminders-delete-sheet`, lee el `community-bottom-sheet` dentro de
+  `reminders-delete-host` con `index` 0 y `flat(backgroundStyle)` =
+  `{ backgroundColor: 'color:surface' }`.
+
+### 4. Corridas en la semilla fusionada
+
+Sin pipe, `timeout 590`, desde `audit213/seed/mobile-pet-tracker`; logs en
+`audit213/`. Había 1 jest ajeno corriendo; ningún timeout, nada que re-correr.
+
+| Log | Comando | Exit | Recuentos |
+|---|---|---|---|
+| `remerge.reminders.log` | `bunx jest src/__tests__/sheet-surface-background.test.ts src/screens/reminders` | 0 | 2 suites, 86/86 (reminders 83 = 81 + `#218 R1` + R19 simulado; `sheet-surface-background` 3 = 1 + it.each de 2) |
+| `remerge.final.log` | suite del §4: `bunx jest src/__tests__ src/providers/__tests__/language-provider.test.tsx src/screens/add-reminder src/screens/reminders src/hooks/use-push-registration.test.tsx` | 0 | `Test Suites: 40 passed, 40 total`, `Tests: 1186 passed, 1186 total` (antes 39 / 1181: +1 suite y +3 de `sheet-surface-background`, +1 `#218 R1`, +1 R19 simulado) |
+| `remerge.app.log` | `bunx jest src/app/__tests__` | 0 | `Test Suites: 10 passed, 10 total`, `Tests: 85 passed, 85 total` (igual que `seed.app.log`) |
+| `remerge.home-pairing.log` | `bunx jest src/screens/home src/screens/pairing` (ficheros del delta, extra) | 0 | `Test Suites: 8 passed, 8 total`, `Tests: 645 passed, 645 total` |
+
+### 5. Puntos mirados
+
+- **`sheet-surface-background.test.ts` frente a R17/R19**: verde con la hoja
+  hermana de R17 dentro del único `BottomSheetView`. Las tres condiciones de
+  `#218 R3` son las que `design.md` §Fondo de la hoja ya respeta: un solo
+  `<BottomSheet` (la ERE de §R17 es la misma regla que
+  `/<BottomSheet(?![A-Za-z])/g`), una sola `backgroundStyle` y la línea
+  `useThemeColors(['surface'])` intacta (A11: `accentStrong` va a la otra
+  llamada). Una hoja de cancelar con `BottomSheet` propio tumbaría
+  `#218 R3`, que es lo que la spec ya prohíbe.
+- **`it` de R19**: el simulado nace verde (lista «`it` que nacen verdes»,
+  punto 4: «verde por R17 + #218»). La «misma consulta del
+  `community-bottom-sheet` que usa `#218 R1`» ya existe en el árbol:
+  `within(screen.getByTestId('reminders-delete-host')).getByTestId('community-bottom-sheet')`
+  con `flat(...)` del fichero; R17 no renombra `reminders-delete-host`, así
+  que la referencia de R19 se resuelve sin ambigüedad.
+- **`#218 R1` frente a R14–R18**: pulsa `reminder-delete-a` sobre
+  `canvasReminders`. La fila `a` es `scheduled` y, con `makeReminder`
+  enmendado por R14 (`recurrence: null`), no es serie: R15 le deja
+  `reminder-delete-a`. No aserta badges (R16) ni cuerpo de hoja (R17). No
+  declara fixtures `Reminder` propios: A16 no tiene nada que añadir y
+  `bunx tsc --noEmit` no cambia por este `it`.
+- **Recuento de `it` de reminders**: 81 → 82 en el árbol real (+`#218 R1`);
+  83 en la semilla con R19 simulado. La spec no fija ese recuento en ningún
+  sitio (`grep` de `81`/`82` en `specs/mobile-reminders-recurrence/`: 0), así
+  que no caduca nada.
+- `git diff 0c37e77a 85971913 -- mobile-pet-tracker`: vacío; el árbol móvil
+  de la rama es el de `dev`.
+
+### 6. Enmiendas
+
+**Ninguna.** Ninguna premisa ni cifra de la spec cambió con el merge:
+
+- el Paso 0 da `1`, así que R19 se implementa como está escrito;
+- las anclas de §R15, §R17, §R18 y A11 dan su cifra base (A11
+  `useThemeColors(` = 2 era ya la cifra «tras el merge con #218»);
+- los 18 puntos de §R22 conservan sus literales base (ninguno de sus siete
+  ficheros está en el delta) y la suite del §4 pasa entera con las 18
+  enmiendas de la semilla; ninguna otra guarda cae;
+- el merge no trae #208, #209 ni #214, así que la segunda viñeta del Paso 0
+  no se dispara.
+
+`requirements.md`, `design.md`, `tasks.md` y `traceability.md` no se tocan.
+
+Observaciones fuera del merge (no son enmiendas, no bloquean):
+
+- O1 (nota a): el `= 1` de §R5 (2) es cifra de llegada (base 2 → 1).
+- O2 (nota b): la expectativa del punto 1 de §R16 (3) está partida en tres
+  líneas en el fichero; el recuento `¡Próximo!` sí cuadra.
+
+### 7. Cierre
+
+- Enmiendas: ninguna.
+- Corridas: tabla del punto 4, las cuatro con `exit=0`.
+- **Paso 0 de `tasks.md`: sigue correcto tal cual.** La primera viñeta
+  (`git merge origin/dev` + `backgroundStyle` = 1) da 1 en `85971913`; si
+  Codex la repite y `dev` no se ha movido, el merge es un «Already up to
+  date». La segunda (#208, #209, #214) sigue vigente para cuando entren.
