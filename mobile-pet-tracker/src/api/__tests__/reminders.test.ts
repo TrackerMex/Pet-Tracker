@@ -270,3 +270,19 @@ describe('R3: deleteReminder borra y mapea por kind', () => {
     expect(fetchFn).not.toHaveBeenCalled();
   });
 });
+
+
+describe('#213 R2: cuerpos de creación', () => {
+  it.each([
+    ['sin recurrencia', {}, ['advanceMinutes', 'dueAt', 'title', 'type']],
+    ['horas', { recurrence: { unit: 'hour', every: 8 } }, ['advanceMinutes', 'dueAt', 'recurrence', 'title', 'type']],
+    ['meses hasta', { recurrence: { unit: 'month', every: 3 }, recurrenceUntil: '2027-06-30' }, ['advanceMinutes', 'dueAt', 'recurrence', 'recurrenceUntil', 'title', 'type']],
+  ] as const)('#213 R2: createReminder envía el cuerpo %s', async (_label, recurrence, keys) => {
+    const input = { type: 'vaccine' as const, title: 'Rabies booster', dueAt: '2026-09-01T09:00:00.000Z', advanceMinutes: 10080, ...recurrence };
+    const fetchFn = jest.fn().mockResolvedValue(response(201, makeReminder())) as unknown as typeof fetch;
+    await createReminder(baseUrl, 'jwt-token', 'pet-1', input, fetchFn);
+    const body = JSON.parse(jest.mocked(fetchFn).mock.calls[0][1]!.body as string);
+    expect(Object.keys(body).sort()).toEqual(keys);
+    expect(body).toEqual(input);
+  });
+});
