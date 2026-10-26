@@ -698,7 +698,9 @@ fechas y textos.
 - es: «La fecha de aplicación no puede ser futura.»
 - en: «The date given can't be in the future.»
 - `issue` es `{ labelKey: 'vaccineCreate.appliedAtFuture' }`.
-- `vaccine-create-applied` lleva `isInvalid`.
+- `vaccine-create-applied-value` lleva `android:border-danger` entre las clases de
+  su `props.className`: es el observable de `isInvalid` en DateField (#220 R5). El
+  disparador `vaccine-create-applied` no recibe esa prop (M1).
 
 **Otros paths.** WHEN la validación trae solo otros `path`, THE SYSTEM SHALL
 pintar `vaccine-create-error` con el texto de la clave existente
@@ -745,11 +747,10 @@ Marcadores:
 
 **Bloque nuevo.** THE SYSTEM SHALL añadir en `__tests__/ui-copy-table.ts` el
 bloque exportado `R19_VACCINE_CREATE`, con una fila por cada `t('…')` o
-`labelKey: '…'` nuevo. Son **30** filas:
+`labelKey: '…'` nuevo. Son **29** filas:
 
-- **6** de `src/screens/health/index.tsx`:
+- **5** de `src/screens/health/index.tsx`:
   - `health.addVaccine` dos veces
-  - `health.noVaccinesYet` una vez (título de la tarjeta)
   - `health.vaccinesEmptyBody`
   - `health.vaccineReminderFailed`
   - `health.createReminderNow`
@@ -758,14 +759,30 @@ bloque exportado `R19_VACCINE_CREATE`, con una fila por cada `t('…')` o
   dos veces; y `validation.checkDetails`.
 - **1** de `src/utils/form-rules.ts`: `vaccineCreate.nameRequired`.
 
+**Segundo uso de `health.noVaccinesYet`.** El título de la tarjeta vacía es un
+segundo `t('health.noVaccinesYet')` en `src/screens/health/index.tsx`. Su fila va
+en `R5_HEALTH` y no en este bloque, porque `checkUses` cuadra cada bloque por
+separado:
+
+- `R5_HEALTH` gana una segunda fila
+  `{ file: 'src/screens/health/index.tsx', key: 'health.noVaccinesYet' }, // #208 R20`.
+- Su `it` `#186 R7: resuelve las 43 ocurrencias normativas …` suma
+  `(enmendado por #208 R20)`.
+- Su candado de longitud gana `+ 1 // #208 R20`. Ancla:
+  `grep -cF 'expect(R5_HEALTH).toHaveLength(32 + 1 + 1 - 2 + 3 + 2 + 1 + 1 + 4 - 1 + 1 + 7 - 1); // #220 R16' __tests__/ui-language.test.ts` → 1 (antes) y 0 (después).
+
 **Integración.** `ALL_USES` esparce el bloque. El array `blocks` del test
-`#194 R5: cuadra ALL_USES con la suma de sus bloques` lo incluye.
+`#194 R5: cuadra ALL_USES con la suma de sus bloques` lo incluye. Entre las 29
+filas del bloque y la fila de `R5_HEALTH`, `ALL_USES` y la suma de `#194 R5`
+crecen **+30**.
 
 **Tests en `__tests__/ui-language.test.ts`:**
 
 - Se añade
-  `describe('#208 R20: alta de vacuna', () => { it('#208 R20: R19_VACCINE_CREATE tiene 30 usos y cuadra con el código', …) })`,
-  con `expect(R19_VACCINE_CREATE).toHaveLength(30)` y `checkUses(R19_VACCINE_CREATE)`.
+  `describe('#208 R20: alta de vacuna', () => { it('#208 R20: R19_VACCINE_CREATE tiene 29 usos y cuadra con el código', …) })`,
+  con `expect(R19_VACCINE_CREATE).toHaveLength(29)` y `checkUses(R19_VACCINE_CREATE)`.
+- `#186 R7` sigue verde con `checkUses(R5_HEALTH)`, que ahora espera dos usos de
+  `health.noVaccinesYet`.
 - La longitud de `SCREEN_FILES` suma `+ 1 // #208 R20: screens/vaccine-create/index.tsx`.
 - El escáner de copy suelta sigue verde: ninguna cadena del catálogo aparece
   literal en los ficheros nuevos.
@@ -902,3 +919,49 @@ E2E_SETUP_CMD="pnpm -C backend-pet-tracker run db:migrate && pnpm -C backend-pet
 - [x] Aprobado por humano (fecha: 2026-10-26) ← gate obligatorio antes de implementar
 - [ ] Smoke de #208 en dev build por el humano (fecha: ____): picker nativo de las dos fechas, teclado con
       KAV en notas, recordatorio a las 09:00 locales. No bloquea tareas; bloquea `done`.
+
+## Enmiendas tras el merge de #220 (2026-10-26)
+
+Re-medición contra `a315a6af` (merge de `origin/dev` con #220, `81ca7529`).
+Detalle y comandos en `progress/enmiendas_mobile-vaccine-create.md`.
+
+- **M1 — Observable de `isInvalid` en la fecha de aplicación (R18).**
+  - Qué cambia: el último punto de «Fecha futura» en R18 decía «`vaccine-create-applied`
+    lleva `isInvalid`». Ahora dice que `vaccine-create-applied-value` lleva
+    `android:border-danger` entre las clases de su `props.className`.
+  - Por qué: en `components/date-field.tsx` de `a315a6af`, el `testID` va al
+    `Pressable` disparador, que no recibe `isInvalid`. La prop llega a
+    `InputGroup.Input` (`${testID}-value`), y el test de #220 la observa así:
+    `#220 R5: borde de error para isInvalid=%s` mira `android:border-danger` en
+    `field-value`. Una aserción sobre `vaccine-create-applied` no podría pasar en
+    verde. R10 no cambia: sigue pasando `isInvalid={Boolean(fieldErrors.appliedAt)}`
+    a DateField.
+  - Afecta a: R18, en `#208 R18: un 400 de appliedAt pinta el error de campo traducido`.
+    La intención no cambia: la fecha de aplicación se marca inválida.
+
+- **M2 — Fila del segundo `health.noVaccinesYet` (R20).**
+  - Qué cambia:
+    - `R19_VACCINE_CREATE` pasaba de 30 a **29** filas (5 de Salud), en el texto,
+      en el título del `it` y en `toHaveLength(29)`. La viñeta de Salud pierde
+      `health.noVaccinesYet`.
+    - La fila de `health.noVaccinesYet` pasa a `R5_HEALTH`, como segunda fila
+      `// #208 R20`.
+    - El `it` `#186 R7` suma `(enmendado por #208 R20)`, y el candado de longitud
+      de `R5_HEALTH` gana `+ 1 // #208 R20`.
+    - `ALL_USES` y la suma de `#194 R5` siguen creciendo **+30**.
+  - Por qué: `checkUses` (`__tests__/ui-language.test.ts`) cuadra cada bloque por
+    separado. Por cada `file+key` exige tantos usos en el fichero como filas haya
+    en el bloque. `R5_HEALTH` ya tiene una fila `health.noVaccinesYet` por
+    `vaccines-empty`, que R6 conserva. Con la tarjeta, el fichero tiene dos usos.
+    Con la redacción anterior, `checkUses(R5_HEALTH)` y `checkUses(R19_VACCINE_CREATE)`
+    habrían esperado 1 y encontrado 2: ninguno de los dos podía pasar en verde. El
+    leader eligió esta opción, la (a) de D1 en
+    `progress/enmiendas_mobile-vaccine-create.md`.
+  - El defecto es anterior al merge de #220.
+  - Afecta a:
+    - R20: `#208 R20: R19_VACCINE_CREATE tiene 29 usos y cuadra con el código`.
+    - `#186 R7` en `__tests__/ui-language.test.ts`.
+    - `tasks.md` §R20 y `traceability.md` fila R20.
+  - La intención no cambia: cada `t()` nuevo tiene exactamente una fila.
+
+- [x] Enmiendas M1–M2 aprobadas (fecha: 2026-10-26) — firma delegada del leader (mandato 2026-10-23, ampliado 2026-10-26)

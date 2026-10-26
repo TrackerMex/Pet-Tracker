@@ -29,7 +29,7 @@ Rutas de test relativas a `mobile-pet-tracker/src/`, salvo R22, que está en la 
 | R17 | `screens/vaccine-create/index.test.tsx::#208 R17: …` | pendiente |
 | R18 | `screens/vaccine-create/index.test.tsx::#208 R18: …` | pendiente |
 | R19 | `providers/__tests__/language-provider.test.tsx::#194 R1 … (enmendado por #208 R19)` | pendiente |
-| R20 | `__tests__/ui-language.test.ts::#208 R20: R19_VACCINE_CREATE tiene 30 usos y cuadra con el código` | pendiente |
+| R20 | `__tests__/ui-language.test.ts::#208 R20: R19_VACCINE_CREATE tiene 29 usos y cuadra con el código` y `#186 R7: … (enmendado por #208 R20)` | pendiente |
 | R21 | `__tests__/design-drift.test.ts::#208 R21: …` y los inventarios enmendados de `chunky-cta-canvas-fidelity` y `consistency-classnames` | pendiente |
 | R22 | `init-e2e-gate.test.mjs::#208 R22: E2E_SETUP_CMD siembra el catálogo de vacunas entre migrar y aprovisionar` | pendiente |
 

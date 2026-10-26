@@ -154,11 +154,14 @@ tags: [mobile, ui, spec]
 - [ ] (2) Implementación mínima que lo pasa
 - [ ] (3) Refactor con tests verdes
 
-## R20 — Bloque `R19_VACCINE_CREATE` de 30 usos
+## R20 — Bloque `R19_VACCINE_CREATE` de 29 usos
 
 - [ ] (1) Escribir test que falla para R20: `describe` nuevo en `ui-language.test.ts`,
-      `SCREEN_FILES + 1` y el bloque en `blocks`. El bloque y sus 30 filas son
-      el propio test, en `ui-copy-table.ts`
+      `SCREEN_FILES + 1` y el bloque en `blocks`. El bloque y sus 29 filas son
+      el propio test, en `ui-copy-table.ts`. En el mismo commit, `R5_HEALTH`
+      gana la segunda fila `health.noVaccinesYet` `// #208 R20`, su candado de
+      longitud `+ 1 // #208 R20` y el `it` `#186 R7` el sufijo
+      `(enmendado por #208 R20)` (M2)
 - [ ] (2) Implementación mínima que lo pasa: ajustar solo si una fila no cuadra
       con el código. Si todo cuadró ya, el commit `feat` se omite y se dice en
       el informe
