@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { eq, inArray } from 'drizzle-orm';
@@ -11,6 +11,14 @@ import { auditLog, petInvites, pets, petUsers, users } from '@/db/schema';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
 import { AppModule } from '@/app.module';
+
+interface InviteBody {
+  id: string;
+  code: string;
+  role: string;
+  createdAt: string;
+  expiresAt: string;
+}
 
 interface PetProfileBody {
   id: string;
@@ -191,4 +199,42 @@ describe('#211 R16: pet members API', () => {
       expect(response.status).toBe(401);
     },
   );
+  async function createInviteViaApi(
+    owner: TestUser,
+    petId: string,
+  ): Promise<InviteBody> {
+    const response = await api()
+      .post(`/v1/pets/${petId}/invites`)
+      .set('Authorization', `Bearer ${owner.token}`)
+      .send({ role: 'owner' })
+      .expect(201);
+    return response.body as InviteBody;
+  }
+  it('#211 R3: crea la invitación, devuelve el código una vez y guarda solo su hash', async () => {
+    const { owner, pet } = await fixture();
+    const body = await createInviteViaApi(owner, pet.id);
+    expect(Object.keys(body).sort()).toEqual([
+      'code',
+      'createdAt',
+      'expiresAt',
+      'id',
+      'role',
+    ]);
+    expect(body.role).toBe('family');
+    expect(body.code).toMatch(/^[23456789ABCDEFGHJKMNPQRSTVWXYZ]{10}$/);
+    expect(
+      new Date(body.expiresAt).getTime() - new Date(body.createdAt).getTime(),
+    ).toBe(259200000);
+    const [row] = await db
+      .select()
+      .from(petInvites)
+      .where(eq(petInvites.id, body.id));
+    expect(row.codeHash).toBe(
+      createHash('sha256').update(body.code).digest('hex'),
+    );
+    expect(row.createdBy).toBe(owner.id);
+    expect(row.createdAt.toISOString()).toBe(body.createdAt);
+    expect(row.expiresAt.toISOString()).toBe(body.expiresAt);
+    expect(Object.values(row).map(String)).not.toContain(body.code);
+  });
 });
