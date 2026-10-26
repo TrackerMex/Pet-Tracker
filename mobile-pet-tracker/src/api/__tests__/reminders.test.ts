@@ -31,6 +31,23 @@ function makeReminder(overrides: Record<string, unknown> = {}) {
 }
 
 describe('R1: listReminders mapea la respuesta por kind', () => {
+  it('#213 R1: listReminders conserva recurrence y recurrenceUntil del backend', async () => {
+    for (const [recurrence, recurrenceUntil] of [
+      [{ unit: 'month', every: 1 }, '2027-04-10'],
+      [null, null],
+    ]) {
+      const fetchFn = jest.fn().mockResolvedValue(response(200, [
+        makeReminder({ recurrence, recurrenceUntil }),
+      ])) as unknown as typeof fetch;
+      const result = await listReminders(baseUrl, 'jwt-token', 'pet-1', fetchFn);
+      expect(result.kind).toBe('ok');
+      if (result.kind !== 'ok') throw new Error('Expected reminders');
+      const [reminder] = result.reminders;
+      expect(reminder.recurrence).toEqual(recurrence);
+      expect(reminder.recurrenceUntil).toBe(recurrenceUntil);
+    }
+  });
+
   it('gets reminders with the bearer token', async () => {
     const reminders = [makeReminder(), makeReminder({ id: 'reminder-2' })];
     const fetchFn = jest
