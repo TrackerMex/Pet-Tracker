@@ -1194,4 +1194,27 @@ describe('Pet reminders (e2e)', () => {
       expect(row.status).toBe('sent');
     });
   });
+
+  describe('#210 R14: autorizacion opaca de recurrencia', () => {
+    it('#210 R14: PATCH con recurrenceUntil invalido sobre reminder ajeno responde el mismo 404', async () => {
+      const owner = await seedUser('210-r14-owner');
+      const outsider = await seedUser('210-r14-outsider');
+      const pet = await seedPet(owner);
+      const id = await seedReminder(pet.id, owner.id, {
+        dueAt: new Date(Date.now() + 3 * 86_400_000),
+      });
+      const body = { recurrenceUntil: '2031-01-01' };
+      const foreign = await api()
+        .patch(`/v1/reminders/${id}`)
+        .set(auth(outsider.token))
+        .send(body);
+      const missing = await api()
+        .patch(`/v1/reminders/${uuidv7()}`)
+        .set(auth(outsider.token))
+        .send(body);
+      expect(missing.status).toBe(404);
+      expect(foreign.status).toBe(missing.status);
+      expect(foreign.body).toEqual(missing.body);
+    });
+  });
 });
