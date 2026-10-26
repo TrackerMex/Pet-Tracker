@@ -442,7 +442,8 @@ describe('R5: vacunas con la próxima destacada', () => {
     expect(overdueDate.props.className).toContain('text-danger');
   });
 
-  it('shows the vaccines empty state', async () => {
+  it('shows the vaccines empty state (enmendado por #208 R6)', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: 'family' })] });
     mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [] });
 
     await renderHealth();
@@ -457,7 +458,8 @@ describe('R5: vacunas con la próxima destacada', () => {
   it.each([
     { kind: 'error' } as const,
     { kind: 'unreachable', message: 'network down' } as const,
-  ])('shows and retries a $kind vaccine error', async (state) => {
+  ])('shows and retries a $kind vaccine error (enmendado por #208 R6)', async (state) => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: 'family' })] });
     mockListVaccines
       .mockResolvedValueOnce(state)
       .mockResolvedValueOnce({ kind: 'ok', vaccines: [] });
@@ -1409,7 +1411,8 @@ describe('#199 R19: estados de vacunas', () => {
     expect(column.props.className).toBe('flex-1 gap-1.5');
     expect(column.children.filter((child): child is TestInstance => typeof child !== 'string').map(child => child.props.className)).toEqual(['skeleton__root h-3.5 w-1/3 rounded-full', 'skeleton__root h-2.5 w-2/3 rounded-full']);
   });
-  it('#199 R19 sin vacunas pinta el aviso en text-15 leading-body text-muted', async () => {
+  it('#199 R19 sin vacunas pinta el aviso en text-15 leading-body text-muted (enmendado por #208 R6)', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: 'family' })] });
     mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [] });
     await renderHealth();
     const empty = await screen.findByTestId('vaccines-empty');
@@ -1519,5 +1522,54 @@ describe('#208 R5: acceso al alta desde Salud', () => {
     const header = await screen.findByTestId('vaccines-header');
     expect(header.children).toHaveLength(1);
     expect(screen.queryByTestId('vaccines-add')).toBeNull();
+  });
+});
+
+
+describe('#208 R6: vacío de vacunas por rol', () => {
+  beforeEach(() => {
+    setupHealth168();
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [] });
+  });
+  it('#208 R6: el owner sin vacunas ve la tarjeta del canvas con sus cuatro hijos y copy literal', async () => {
+    mockSemanticColors = true;
+    await renderHealth();
+    const card = await screen.findByTestId('vaccines-empty-card');
+    expect(card.props.className).toBe('items-center gap-2.5 rounded-24 bg-surface-secondary px-4.5 pb-4.5 pt-5.5');
+    expect(card.props.style).toEqual({ borderCurve: 'continuous' });
+    expect(card.children).toHaveLength(4);
+    expect(card.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['vaccines-empty-tile', 'vaccines-empty-card-title', 'vaccines-empty-card-body', 'vaccines-empty-action']);
+    const tile = screen.getByTestId('vaccines-empty-tile', { includeHiddenElements: true });
+    expect(tile.props.className).toBe('size-14 items-center justify-center rounded-tile bg-surface');
+    expect(tile.props.style).toEqual({ borderCurve: 'continuous' });
+    const icon = within(tile).getByTestId('health-icon-syringe', { includeHiddenElements: true });
+    expect(icon.props.size).toBe(28);
+    expect(icon.props.style.color).toBe('accent-strong');
+    expect(screen.getByTestId('vaccines-empty-card-title').props.className).toBe('text-17 font-black text-foreground text-center');
+    expect(screen.getByTestId('vaccines-empty-card-title')).toHaveTextContent('Aún no hay vacunas', { exact: true });
+    expect(screen.getByTestId('vaccines-empty-card-body').props.className).toBe('text-sm font-medium leading-note text-muted text-center');
+    expect(screen.getByText('Registra la primera vacuna de Luna y te aviso antes de cada próxima dosis.', { exact: true })).toBeVisible();
+    const action = screen.getByTestId('vaccines-empty-action');
+    expect(action.props.className).toContain('w-full h-14 rounded-16 bg-accent');
+    expect(flatVaccineStyle(action.props.style)).toMatchObject({ boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: 'lip' }] });
+    expect(within(action).getByText('Agregar vacuna', { exact: true }).props.className).toBe('text-17 font-extrabold text-accent-foreground');
+    const plus = within(action).getByTestId('health-icon-plus', { includeHiddenElements: true });
+    expect(plus.props.size).toBe(20);
+    expect(plus.props.style.color).toBe('accent-foreground');
+    expect(screen.queryByTestId('vaccines-empty')).toBeNull();
+  });
+  it('#208 R6: el CTA del vacío abre el alta de vacuna de la mascota', async () => {
+    await renderHealth();
+    await fireEvent.press(await screen.findByTestId('vaccines-empty-action'));
+    expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/pets/[petId]/vaccines/new', params: { petId: 'pet-1' } });
+  });
+  it.each(['family', 'walker', 'vet'] as const)('#208 R6: %s sin vacunas ve el aviso plano sin CTA', async myRole => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole })] });
+    await renderHealth();
+    const empty = await screen.findByTestId('vaccines-empty');
+    expect(empty.props.className).toBe('text-15 leading-body text-muted');
+    expect(empty).toHaveTextContent('Aún no hay vacunas', { exact: true });
+    expect(screen.queryByTestId('vaccines-empty-card')).toBeNull();
+    expect(screen.queryByTestId('vaccines-empty-action')).toBeNull();
   });
 });
