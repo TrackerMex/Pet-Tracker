@@ -87,7 +87,7 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
         + 1 // #206 R8
         + 1 // #202 R10
         + 1 // #202 R18
-        + 5 - 1, // #220 R16
+        + 5 - 2, // #220 R16
     );
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {
@@ -610,7 +610,7 @@ describe('#117 R1: el catálogo trae las claves de recuperar contraseña', () =>
 
 
 describe('#158 R1: claves y nueva frase de Pingo', () => {
-  it('#158 R1: declara los 13 pares exactos y su registro', () => {
+  it('#158 R1: declara los 12 pares exactos y su registro (enmendado por #220 R16)', () => {
     const english = en as Record<string, string>;
     const spanish = es as Record<string, string>;
     const languageDesign = readFileSync(
@@ -622,7 +622,6 @@ describe('#158 R1: claves y nueva frase de Pingo', () => {
       ["docs.type", "Type", "Tipo"],
       ["docs.name", "Name", "Nombre"],
       ["docs.date", "Date", "Fecha"],
-      ["docs.datePlaceholder", "YYYY-MM-DD", "AAAA-MM-DD"],
       ["docs.vet", "Vet (optional)", "Veterinario (opcional)"],
       ["docs.cancel", "Cancel", "Cancelar"],
       ["docs.errorFileFormat", "Choose a PDF, JPEG, or PNG file", "Elige un archivo PDF, JPEG o PNG"],

@@ -14,6 +14,7 @@ import {
   type CreatePetDocumentState,
   type DocumentContentType,
 } from '../../api/media';
+import { DateField } from '../../components/date-field';
 import { FieldErrorMessage } from '../../components/field-error-message';
 import type { FieldIssues } from '../../utils/account-rules';
 import { validateDocument } from '../../utils/form-rules';
@@ -179,12 +180,12 @@ export function DocsUploadFormScreen({ petId }: { petId: string }) {
                 {t('docs.date')}
               </Label.Text>
             </Label>
-            <Input
+            <DateField
               testID="docs-date-input"
-              className="rounded-xl bg-default"
+              pickerTestID="docs-date-picker"
               value={date}
-              onChangeText={setDate}
-              placeholder={t('docs.datePlaceholder')}
+              onChange={(next) => { if (next !== null) setDate(next); }}
+              isInvalid={Boolean(fieldErrors.date)}
             />
             <FieldErrorMessage testID="docs-date-input" issue={fieldErrors.date} />
           </TextField>

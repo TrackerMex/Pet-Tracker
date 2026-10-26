@@ -333,7 +333,6 @@ export const R7_PROFILE: UseRow[] = [
   { file: 'src/screens/docs-upload-form/index.tsx', key: 'docs.type' }, // #158 R12
   { file: 'src/screens/docs-upload-form/index.tsx', key: 'docs.name' }, // #158 R12
   { file: 'src/screens/docs-upload-form/index.tsx', key: 'docs.date' }, // #158 R12
-  { file: 'src/screens/docs-upload-form/index.tsx', key: 'docs.datePlaceholder' }, // #158 R12
   { file: 'src/screens/docs-upload-form/index.tsx', key: 'docs.vet' }, // #158 R12
   { file: 'src/screens/docs-upload-form/index.tsx', key: 'docs.cancel' }, // #158 R12
   { file: 'src/screens/docs/index.tsx', key: 'docs.errorFileFormat' }, // #158 R12
