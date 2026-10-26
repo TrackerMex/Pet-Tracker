@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, within } from '@testing-library/react-native';
-import { HeroUINativeProvider, Label } from 'heroui-native';
+import { HeroUINativeProvider } from 'heroui-native';
 import type { ComponentProps } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 
@@ -133,7 +133,7 @@ describe('#220 R2: DateField muestra el día civil en el idioma elegido', () => 
     await renderField({ label: 'Fecha del documento' });
     const parent = screen.getByTestId('parent');
     expect(parent.children.indexOf(screen.getByTestId('field-label'))).toBeLessThan(parent.children.indexOf(screen.getByTestId('field')));
-    expect(screen.UNSAFE_getByType(Label.Text).props.className).toBe('text-sm font-extrabold text-foreground');
+    expect(within(screen.getByTestId('field-label')).getByText('Fecha del documento').props.className).toBe('label__text text-sm font-extrabold text-foreground');
   });
   it('#220 R5: sin label no monta etiqueta', async () => {
     await renderField();
