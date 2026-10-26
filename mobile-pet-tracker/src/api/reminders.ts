@@ -1,5 +1,5 @@
 import { deleteJson, getJson, postJson, readJson } from './http';
-import type { Reminder, ReminderType } from './types';
+import type { Recurrence, Reminder, ReminderType } from './types';
 
 export type RemindersState =
   | { kind: 'ok'; reminders: Reminder[] }
@@ -14,6 +14,8 @@ export interface CreateReminderInput {
   title: string;
   dueAt: string;
   advanceMinutes: number;
+  recurrence?: Recurrence;
+  recurrenceUntil?: string;
 }
 
 export type CreateReminderState =
@@ -86,6 +88,8 @@ export async function createReminder(
     title: input.title,
     dueAt: input.dueAt,
     advanceMinutes: input.advanceMinutes,
+    ...(input.recurrence === undefined ? {} : { recurrence: input.recurrence }),
+    ...(input.recurrenceUntil === undefined ? {} : { recurrenceUntil: input.recurrenceUntil }),
   };
   const result = await postJson(
     baseUrl,
