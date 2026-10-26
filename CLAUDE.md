@@ -130,6 +130,13 @@ Lo demás no cambia:
 
 El plan vivo está en `progress/plan_canvas-parity-2026-10-23.md`.
 
+**Ampliación del 2026-10-26.** El humano extendió este mandato, tal cual, a las
+features #208–#216 de `progress/plan_mejoras-producto-2026-10-26.md`. Usan la
+misma checklist de firma (`plan_canvas-parity-2026-10-23.md` §4, más los puntos
+que añade el plan nuevo en su §4) y sus PRs también van a `dev`. Los gates
+humanos de ese plan (§5: artboards y copy, prompt de IA y alimentos tóxicos, el
+límite diario de IA, smoke en dispositivo y `dev` → `main`) no se delegan.
+
 ## UI móvil
 
 Todo trabajo sobre `mobile-pet-tracker/` (specs, handoffs, reviews) se rige
