@@ -137,6 +137,15 @@ que añade el plan nuevo en su §4) y sus PRs también van a `dev`. Los gates
 humanos de ese plan (§5: artboards y copy, prompt de IA y alimentos tóxicos, el
 límite diario de IA, smoke en dispositivo y `dev` → `main`) no se delegan.
 
+**Ampliación del 2026-10-26 (UI).** El humano asignó a la sesión @Frontend las
+mejoras de UI de `progress/plan_ui-2026-10-26.md` y pidió que trabaje como se
+trabaja en esta sesión («Le asigne a @Frontend las mejorar de UI indicale que
+debe de trabajar como se esta trabajando en esta sesion»). El mandato cubre
+las features #217–#225, con la misma checklist de firma (más los tres puntos
+del §4 de ese plan) y PRs a `dev`. No se delegan: los artboards y el copy (G1),
+el smoke en dispositivo (G2), el rebuild del dev build (G3), las enmiendas de
+`docs/ui-guidelines.md` (G4), el PNG de Orbit (G6) y `dev` → `main` (G5).
+
 ## UI móvil
 
 Todo trabajo sobre `mobile-pet-tracker/` (specs, handoffs, reviews) se rige
