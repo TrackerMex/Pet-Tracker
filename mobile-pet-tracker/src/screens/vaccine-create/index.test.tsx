@@ -323,3 +323,27 @@ it('#208 R12: pulsar la tarjeta desmarca y vuelve a marcar', async () => {
   await fireEvent.press(screen.getByTestId('vaccine-create-reminder-checkbox'));
   expect(screen.getByTestId('vaccine-create-reminder').props.accessibilityState).toEqual({ checked: false });
 });
+
+it('#208 R13: veterinario, clínica y notas pintan etiquetas, placeholders y límites literales', async () => {
+  await readyVaccineForm();
+  for (const [id, label, limit] of [['vet', 'Veterinario', 120], ['clinic', 'Clínica', 120], ['notes', 'Notas', 2000]] as const) {
+    const field = await screen.findByTestId(`vaccine-create-${id}`);
+    expect(screen.getByText(label, { exact: true }).props.className).toBe('text-sm font-extrabold text-foreground');
+    expect(field.props.maxLength).toBe(limit);
+    expect(field.props.placeholderTextColor).toBe('token:muted');
+    expect(field.props.style).toEqual({ borderCurve: 'continuous' });
+  }
+  const vet = screen.getByTestId('vaccine-create-vet');
+  const clinic = screen.getByTestId('vaccine-create-clinic');
+  expect(vet.props.placeholder).toBe('Opcional');
+  expect(clinic.props.placeholder).toBe('Opcional');
+  expect(vet.props.className).toBe('h-13 rounded-xl bg-default px-3.5 text-15 font-semibold text-foreground border-2 border-transparent');
+  expect(clinic.props.className).toBe('h-13 rounded-xl bg-default px-3.5 text-15 font-semibold text-foreground border-2 border-transparent');
+  expect(vet.parent?.props.className).toBe('flex-1 gap-1.5');
+  expect(vet.parent?.parent?.props.className).toBe('flex-row gap-2.5');
+  const notes = screen.getByTestId('vaccine-create-notes');
+  expect(notes.props.multiline).toBe(true);
+  expect(notes.props.textAlignVertical).toBe('top');
+  expect(notes.props.placeholder).toBe('Lote, reacciones o lo que quieras recordar');
+  expect(notes.props.className).toBe('h-16 rounded-xl bg-default px-3.5 text-15 font-semibold text-foreground border-2 border-transparent py-3');
+});
