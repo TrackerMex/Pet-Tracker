@@ -1,6 +1,6 @@
 ---
 feature: "nutrition-ai-structured-plan"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, backend, nutrition, ai]
 ---
 
@@ -479,6 +479,6 @@ Función pura `acceptAiOutput(output, plan, localDay)` en
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-26) ← gate obligatorio antes de implementar
 
 La casilla G2 (§G2) y la casilla R20 son gates aparte. La firma delegada del leader no las cubre.
