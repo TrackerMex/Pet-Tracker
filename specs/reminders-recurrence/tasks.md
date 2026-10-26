@@ -17,7 +17,7 @@ tags: [backend, reminders, notifier, migration]
    compilación (ts-jest tiene los diagnósticos activos): por eso varios commits
    rojos llevan *stubs* declarados abajo. Le sigue
    `feat(reminders): #210 R<n> <desc>` en verde. Un `refactor(...)` opcional va
-   después, con todo verde.
+   después, con todo verde. `<desc>` en inglés (`docs/conventions.md` §Commits).
 2. **Orden fijo**: la tabla de abajo, de arriba a abajo. No se reordena ni se
    funden commits.
 3. **Base medida.** Antes del primer commit, mide la base de la suite unitaria
@@ -43,34 +43,35 @@ tags: [backend, reminders, notifier, migration]
    `git checkout HEAD -- <fichero>` y registra las tres cosas en el reporte.
    Ninguna mutación se commitea.
 8. **Prefijo**: todo `describe`/`it` nuevo empieza por `#210 R<n>:`; los `it`
-   existentes de la lista E1–E7 conservan su nombre.
+   existentes de la lista E1–E8 conservan su nombre.
 9. **Migración**: §Migración de abajo (idéntica a [[design]] §Migración).
 
 ## Commits
 
 | # | Commit | Rojo esperado (por aserción) | Stubs en el commit rojo |
 |---|---|---|---|
-| C1 | `test(reminders): #210 R1 columnas y CHECKs de recurrencia` | schema spec: columnas ausentes, migración no encontrada; e2e `#210 R1: CHECK %s`: código `42703` en vez de `23514` y filas aceptadas que fallan | — |
-| C2 | `feat(reminders): #210 R1 columnas, CHECKs y migracion aditiva` | — | — |
-| C3 | `test(reminders): #210 R3 R7 R8 R9 R10 calculo de ocurrencias` | `recurrence.spec.ts`: todas las filas R7–R10 y las filas «lanza» de R3 | tipos de entidad, `InvalidRecurrenceError`, `recurrence.ts` stub |
-| C4 | `feat(reminders): #210 R3 R7 R8 R9 R10 calculo de ocurrencias` | — | — |
-| C5 | `test(reminders): #210 R2 validacion zod de recurrence` | dto spec: rechazos con `path` raíz (`unrecognized_keys`) y aceptaciones fallidas | `export` de `EditReminderSchema` |
-| C6 | `feat(reminders): #210 R2 validacion zod de recurrence` | — | — |
-| C7 | `test(reminders): #210 R4 POST persiste la serie` | `create-reminder.use-case.spec.ts` fila serie; e2e R4 con columnas null | `ReminderProps.recurrence`, E4, mapeo drizzle, constructor con `pets`, create pasa `recurrence: null` |
-| C8 | `feat(reminders): #210 R4 POST persiste la serie` | — | — |
-| C9 | `test(reminders): #210 R5 shape de respuesta con recurrence` | e2e R5 y E3: claves ausentes | — |
-| C10 | `feat(reminders): #210 R5 shape de respuesta con recurrence` | — | — |
-| C11 | `test(reminders): #210 R3 R6 reglas cruzadas y PATCH de series` | update spec R6 sin clave `recurrence`; e2e R3 (500 y 200 en vez de 400), e2e R6 | E7 |
-| C12 | `feat(reminders): #210 R3 R6 reglas cruzadas y PATCH de series` | — | — |
-| C13 | `test(reminders): #210 R13 escrituras condicionadas a schedule_name` | E2 (`null` en vez del `scheduleName`); e2e R13 fila vieja de `markEnqueued` y fila de éxito de `advanceOccurrence` | firmas nuevas del puerto, drizzle sin condición, `advanceOccurrence` devuelve `false`, dispatcher pasa `null` |
-| C14 | `feat(reminders): #210 R13 escrituras condicionadas a schedule_name` | — | — |
-| C15 | `test(reminders): #210 R12 kind en el data del push de reminder` | spec R12, E1, E5: `data` sin `kind` | — |
-| C16 | `feat(reminders): #210 R12 kind en el data del push de reminder` | — | — |
-| C17 | `test(reminders): #210 R11 el notifier avanza la serie` | spec R11 (serie y zonas), spec `#210 R13` de `stale_schedule`, e2e R11 diaria | E6, 6.º parámetro `pets?`, `PetsModule` en `NotifierModule` |
-| C18 | `feat(reminders): #210 R11 el notifier avanza la serie` | — | — |
-| C19 | `test(reminders): #210 R14 404 opaco con cuerpos de recurrencia` | nace verde (declarado) | — |
+| C1 | `test(reminders): #210 R1 recurrence columns and CHECKs` | schema spec: columnas ausentes, migración no encontrada, E8 sin las cuatro columnas; e2e `#210 R1: CHECK %s`: código `42703` en vez de `23514` y filas aceptadas que fallan | — |
+| C2 | `feat(reminders): #210 R1 recurrence columns, CHECKs and additive migration` | — | — |
+| C3 | `test(reminders): #210 R3 R7 R8 R9 R10 occurrence calculation` | `recurrence.spec.ts`: todas las filas R7–R10 y las filas «lanza» de R3 | tipos de entidad, `InvalidRecurrenceError`, `recurrence.ts` stub |
+| C4 | `feat(reminders): #210 R3 R7 R8 R9 R10 occurrence calculation` | — | — |
+| C5 | `test(reminders): #210 R2 zod validation of recurrence` | dto spec: rechazos con `path` raíz (`unrecognized_keys`) y aceptaciones fallidas | `export` de `EditReminderSchema` |
+| C6 | `feat(reminders): #210 R2 zod validation of recurrence` | — | — |
+| C7 | `test(reminders): #210 R4 POST persists the series` | `create-reminder.use-case.spec.ts` fila serie; e2e R4 con columnas null | `ReminderProps.recurrence`, E4, mapeo drizzle, constructor con `pets`, create pasa `recurrence: null` |
+| C8 | `feat(reminders): #210 R4 POST persists the series` | — | — |
+| C9 | `test(reminders): #210 R5 response shape with recurrence` | e2e R5 y E3: claves ausentes | — |
+| C10 | `feat(reminders): #210 R5 response shape with recurrence` | — | — |
+| C11 | `test(reminders): #210 R3 R6 cross-field rules and series PATCH` | update spec R6 sin clave `recurrence`; e2e R3 (500 y 200 en vez de 400), e2e R6 | E7 |
+| C12 | `feat(reminders): #210 R3 R6 cross-field rules and series PATCH` | — | — |
+| C13 | `test(reminders): #210 R13 writes conditioned on schedule_name` | E2 (`null` en vez del `scheduleName`); e2e R13 fila vieja de `markEnqueued` y fila de éxito de `advanceOccurrence` | firmas nuevas del puerto, drizzle sin condición, `advanceOccurrence` devuelve `false`, dispatcher pasa `null` |
+| C14 | `feat(reminders): #210 R13 writes conditioned on schedule_name` | — | — |
+| C15 | `test(reminders): #210 R12 kind in the reminder push data` | spec R12, E1, E5: `data` sin `kind` | — |
+| C16 | `feat(reminders): #210 R12 kind in the reminder push data` | — | — |
+| C17 | `test(reminders): #210 R11 notifier advances the series` | spec R11 (serie y zonas), spec `#210 R13` de `stale_schedule`, e2e R11 diaria | E6, 6.º parámetro `pets?`, `PetsModule` en `NotifierModule` |
+| C18 | `feat(reminders): #210 R11 notifier advances the series` | — | — |
+| C19 | `test(reminders): #210 R14 opaque 404 with recurrence bodies` | nace verde (declarado) | — |
+| C20 | `docs(reminders): #210 fill traceability` | — (solo `specs/reminders-recurrence/traceability.md`) | — |
 
-## Enmiendas a tests existentes (lista cerrada E1–E7)
+## Enmiendas a tests existentes (lista cerrada E1–E8)
 
 Cifras medidas en la base `1316410f` con `grep -cF '<literal>' <ruta>` desde
 `backend-pet-tracker/`. Ninguna otra línea de tests existentes cambia.
@@ -84,6 +85,7 @@ Cifras medidas en la base `1316410f` con `grep -cF '<literal>' <ruta>` desde
 | E5 | `test/pet-reminders.e2e-spec.ts` | `data: { petId: pet.id, reminderId },` (1) | pasa a `data: { petId: pet.id, reminderId, kind: 'reminder' },` | literal base 0; literal nuevo 1 | C15 |
 | E6 | `src/workers/notifier/notifier-consumer.service.spec.ts` | `return { client, findById, markSent };` (1) | el stub de reminders gana `advanceOccurrence` (`jest.fn().mockResolvedValue(true)`) y lo devuelve; el builder `reminderService(` gana un 5.º parámetro opcional `pets?: PetRepository` que pasa como 6.º argumento del constructor | literal base 0 | C17 |
 | E7 | `src/modules/reminders/application/use-cases/update-reminder.use-case.spec.ts` | `const pets = { findMembership } as unknown as PetRepository;` (1) | el stub gana `findOwnerTimezone` (`jest.fn().mockResolvedValue('UTC')`) y lo devuelve en el objeto de stubs | literal base 0 | C11 |
+| E8 | `src/db/schema/reminders.schema.spec.ts` | `'created_by',` (2): solo la aparición dentro del array de `expect([...columns.keys()].sort()).toEqual(` (1), en el `it` `exporta reminders con las columnas, tipos y nulabilidad aprobados` | el array gana `'recurrence_unit', 'recurrence_every', 'recurrence_until', 'recurrence_anchor_at',` justo después de `'created_by',` | literal base 0 de `'recurrence_unit',` | C1 (rojo por aserción, verde en C2) |
 
 ## R1 — Columnas, CHECKs y migración aditiva
 
@@ -93,8 +95,8 @@ Cifras medidas en la base `1316410f` con `grep -cF '<literal>' <ruta>` desde
   `/^\d{4}_reminders_recurrence\.sql$/`, exige longitud 1 (`toHaveLength(1)`,
   aserción, no `throw`), parte el SQL por `--> statement-breakpoint` y exige que
   cada sentencia no vacía empiece por `ALTER TABLE "reminders" ADD COLUMN` o
-  `ALTER TABLE "reminders" ADD CONSTRAINT`, y que el fichero no contenga `DROP`.
-  En el e2e, `describe('#210 R1: CHECKs de recurrencia en Postgres')` con un
+  `ALTER TABLE "reminders" ADD CONSTRAINT`, y que el fichero no contenga `DROP`,
+  y aplica E8. En el e2e, `describe('#210 R1: CHECKs de recurrencia en Postgres')` con un
   owner y una mascota sembrados en `beforeAll` y `it.each` de las filas de la
   tabla R1 (una fila por unidad en las líneas «por unidad»: 1 + 5 + 5 + 10 + 4
   + 1 = 26 filas). Cada fila inserta con `db.execute(sql\`insert into reminders (id, pet_id, type, title, due_at, created_by, recurrence_unit, recurrence_every, recurrence_anchor_at, recurrence_until) values (...)\`)`
@@ -103,7 +105,10 @@ Cifras medidas en la base `1316410f` con `grep -cF '<literal>' <ruta>` desde
   o `resolves` para las aceptadas.
 - [ ] (2) Implementación mínima que lo pasa — C2: columnas y `check(...)` en
   `reminders.schema.ts`, luego `db:generate` (§Migración). Commitea el `.sql`,
-  el snapshot y el journal generados sin editarlos.
+  el snapshot y el journal generados sin editarlos. Tras `db:generate`,
+  `grep -cF '"tag"' backend-pet-tracker/src/db/migrations/meta/_journal.json`
+  = A24 + 1 (21 en la base `1316410f`; tras un merge de `origin/dev`, la cuenta
+  de `origin/dev` + 1, §Migración paso 7).
 - [ ] (3) Refactor con tests verdes.
 
 ## R2 — Validación zod
@@ -152,7 +157,11 @@ Cifras medidas en la base `1316410f` con `grep -cF '<literal>' <ruta>` desde
   constructor de `CreateReminderUseCase` con `pets` sin usar, y el use case
   pasando siempre `recurrence: null`. **Nace verde** el segundo `it`: mutación
   tras C8, llamar a `findOwnerTimezone` siempre; rojo.
-- [ ] (2) Implementación mínima que lo pasa — C8.
+- [ ] (2) Implementación mínima que lo pasa — C8. C8 llama a
+  `assertValidRecurrence` en el create; el mapeo de `InvalidRecurrenceError`
+  a 400 llega en C12. C8 extrae `ownerTimeZone` a `owner-local-day.ts`, de forma
+  que `localDayInZone` lo reutilice sin cambiar su comportamiento (los tests
+  existentes de `owner-local-day` siguen verdes sin tocarlos).
 - [ ] (3) Refactor con tests verdes.
 
 ## R5 — Shape de respuesta
@@ -188,8 +197,10 @@ Cifras medidas en la base `1316410f` con `grep -cF '<literal>' <ruta>` desde
   [[requirements]] R7, asertando `nextOccurrence(...)?.toISOString()` contra el
   literal. Stubs de C3: `RECURRENCE_UNITS`, `RecurrenceUnit`,
   `ReminderRecurrence` en la entidad (sin tocar `ReminderProps`),
-  `InvalidRecurrenceError`, y `recurrence.ts` con `assertValidRecurrence`
-  no-op y `nextOccurrence` devolviendo `reminder.dueAt`.
+  `InvalidRecurrenceError`, y `recurrence.ts` con `assertValidRecurrence` cuyo
+  cuerpo es solo `void <param>;` por cada parámetro, y `nextOccurrence` con
+  `void now; void timeZone; return reminder.dueAt;`. Sin los `void`, eslint da
+  6 × `no-unused-vars` y la regla 6 bloquea el commit rojo.
 - [ ] (2) Implementación mínima que lo pasa — C4, con `sameLocalTimeOn` en
   `local-day.ts`.
 - [ ] (3) Refactor con tests verdes.
@@ -223,7 +234,14 @@ Cifras medidas en la base `1316410f` con `grep -cF '<literal>' <ruta>` desde
   asertando `advanceOccurrence` con
   `(REMINDER_ID, <scheduleName del mensaje>, <Date esperada>, expect.stringMatching(/^reminder-[0-9a-f-]{36}$/))`
   y `markSent` no llamado; la fila until (day 1, `until` = `'2026-03-07'`, UTC)
-  con `markSent(REMINDER_ID)` y `advanceOccurrence` no llamado. Mismo commit:
+  con `markSent(REMINDER_ID)` y `advanceOccurrence` no llamado. La fila de
+  serie se construye dentro del `it`, sin tocar `reminderRow()`, con
+  `new Reminder({ ...reminderRow(), dueAt: <dueAt>, recurrence: { unit: 'day', every: 1, anchorAt: <dueAt>, until: <null o '2026-03-07'> } })`
+  (`<dueAt>` = `new Date('2026-03-07T15:00:00.000Z')` en las filas de zona).
+  `Reminder` no tiene accesor `props`: su constructor hace
+  `Object.assign(this, props)` y la clase `implements ReminderProps`, así que el
+  spread de la instancia da las props; `anchorAt` y `until` van dentro de
+  `recurrence` (`ReminderRecurrence`), no como campos sueltos. Mismo commit:
   `#210 R13: advanceOccurrence false registra stale_schedule y borra el mensaje`
   (`advanceOccurrence` → `false`; `Logger.prototype.log` recibe
   `expect.objectContaining({ skipped: 'stale_schedule' })`; un
@@ -264,13 +282,18 @@ Cifras medidas en la base `1316410f` con `grep -cF '<literal>' <ruta>` desde
   nuevos; nombre viejo → `false` y fila `toEqual` a la previa; `cancelled` con el
   nombre vigente → `false` y fila intacta). Stubs: firmas nuevas en el puerto,
   `markEnqueued` de drizzle sin la condición nueva, `advanceOccurrence` de
-  drizzle devolviendo `false` sin escribir, dispatcher pasando `null` como
+  drizzle **sin** `async`, con cuerpo
+  `void id; void scheduleName; void dueAt; void newScheduleName; return Promise.resolve(false);`
+  (la forma `async … { return false; }` da `require-await` + 4 ×
+  `no-unused-vars`), dispatcher pasando `null` como
   `scheduleName`. **Nacen verdes**: la fila `not.toHaveBeenCalledWith(failed…)`
   de E2, la llamada con nombre vigente de `markEnqueued` y las dos filas
   `false` de `advanceOccurrence`. Mutaciones tras C14: quitar la condición de
   `schedule_name` en `advanceOccurrence` (rojo la fila de nombre viejo); quitar
   la de `status` (rojo la fila `cancelled`); `where` de `markEnqueued` con
-  `schedule_name = 'x'` fijo (rojo la llamada vigente).
+  `schedule_name = 'x'` fijo (rojo la llamada vigente); el dispatcher llama a
+  `markEnqueued` también para el reminder cuyo envío falló (la fila
+  `not.toHaveBeenCalledWith(failed…)` pasa a rojo).
   El tercer punto de R13 (`stale_schedule` al recibir `false`) se prueba en C17
   (bloque R11).
 - [ ] (2) Implementación mínima que lo pasa — C14.
@@ -295,16 +318,39 @@ Cifras medidas en la base `1316410f` con `grep -cF '<literal>' <ruta>` desde
 pnpm -C backend-pet-tracker db:generate --name reminders_recurrence
 ```
 
-En la base debería salir `0020_reminders_recurrence.sql`. **Si #211 o #212
-mergean antes en `dev`** con su propia migración del mismo número:
+Requiere `.env` en la raíz del repo con `DATABASE_URL`: `drizzle.config.ts`
+carga `../.env` y aborta si falta. En la base debería salir
+`0020_reminders_recurrence.sql`. **Si #211 o #212 mergean antes en `dev`** con
+su propia migración del mismo número, se aplica la receta común de
+regeneración (la misma de #211 y #212), literal y en este orden:
 
-1. `git merge origin/dev` (**nunca** `rebase`).
-2. En `meta/_journal.json` y snapshots en conflicto, quedarse con `origin/dev`.
-3. Borrar el `.sql` `*_reminders_recurrence.sql` propio, su
-   `meta/<NNNN>_snapshot.json` y su entrada del journal si sobrevivió.
-4. Repetir el mismo `db:generate --name reminders_recurrence` y comprobar que el
-   `.sql` nuevo solo tiene `ALTER TABLE "reminders" ADD COLUMN` / `ADD CONSTRAINT`.
-5. Commit del merge con los artefactos regenerados.
+1. `git merge origin/dev`. Nunca rebase: invalida los hashes de [[traceability]].
+2. `git checkout origin/dev -- backend-pet-tracker/src/db/migrations/meta`
+   (journal y snapshots quedan los de dev).
+3. `git rm backend-pet-tracker/src/db/migrations/00NN_reminders_recurrence.sql`
+   (00NN = número que tenga en ese momento).
+4. `git diff --name-status origin/dev -- backend-pet-tracker/src/db/migrations | wc -l`
+   debe dar `0`. Si no, queda un artefacto propio: restaurar con
+   `git checkout origin/dev -- <ruta>` o borrarlo si dev no lo tiene.
+5. `git commit --no-edit`, que cierra el merge.
+6. `cd backend-pet-tracker && pnpm exec drizzle-kit generate --name reminders_recurrence`.
+   Requiere `../.env` con `DATABASE_URL`, porque `drizzle.config.ts` lo carga.
+   El `.sql` nuevo solo contiene las sentencias propias: cuatro
+   `ALTER TABLE "reminders" ADD COLUMN` (`"recurrence_unit"`,
+   `"recurrence_every"`, `"recurrence_until"`, `"recurrence_anchor_at"`) y tres
+   `ALTER TABLE "reminders" ADD CONSTRAINT` (`"reminders_recurrence_unit_check"`,
+   `"reminders_recurrence_every_check"`, `"reminders_recurrence_shape_check"`).
+   Si trae cualquier otra tabla, PARAR.
+7. `grep -cF '"tag"' src/db/migrations/meta/_journal.json` = cuenta de
+   `origin/dev` + 1.
+8. Commit propio `chore(reminders): regenerate migration after merging dev`
+   (solo existe si hay colisión; queda fuera de la tabla C1–C20).
+9. Recrear la base del worktree antes del siguiente `db:migrate`:
+   `docker exec pet-tracker-postgres psql -U pet_tracker -d postgres -c 'DROP DATABASE pet_tracker_wt210;'`,
+   luego
+   `docker exec pet-tracker-postgres psql -U pet_tracker -d postgres -c 'CREATE DATABASE pet_tracker_wt210 OWNER pet_tracker;'`
+   y luego `pnpm run db:migrate`. Nunca psql crudo sobre el journal.
+10. Volver a correr las suites unitaria y e2e.
 
 **Nunca** se renumera nada a mano.
 
@@ -314,4 +360,4 @@ mergean antes en `dev`** con su propia migración del mismo número:
 - [ ] e2e `pet-reminders` verde (medido por quien tenga la infraestructura).
 - [ ] [[traceability]] sin filas «pendiente».
 - [ ] `progress/impl_reminders-recurrence.md` con base, rojos por commit y las
-  ocho mutaciones (R3, R4, R6, R11, R13 ×3, R14) registradas.
+  nueve mutaciones (R3, R4, R6, R11, R13 ×4, R14) registradas.

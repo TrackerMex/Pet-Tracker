@@ -18,7 +18,7 @@ tags: [backend, reminders, notifier, migration]
 > empieza por `#210 R<n>:` — los ficheros tocados ya tienen R-ids de #12, #16 y
 > #47 (`docs/conventions.md` §Prefijo de feature cuando un fichero acumula R-ids
 > de dos specs). Los `it` existentes que esta feature enmienda (lista cerrada
-> E1–E7 de [[tasks]]) **conservan su nombre**: las trazabilidades de #16 y #47
+> E1–E8 de [[tasks]]) **conservan su nombre**: las trazabilidades de #16 y #47
 > los citan.
 
 ## Contexto
@@ -75,6 +75,8 @@ Glosario:
 | A25 | `0019_pet_documents_uploaded_at` | `B/src/db/migrations/meta/_journal.json` | 1 |
 | A26 | `reminders: body as Reminder[]` | `mobile-pet-tracker/src/api/reminders.ts` | 1 |
 
+A12: el `\|` es escape de tabla; el literal lleva `|`.
+
 A26: el móvil castea sin parseo estricto, así que las claves nuevas del GET no
 lo rompen (las consumirá #213).
 
@@ -124,7 +126,9 @@ y `config.checks` de longitud 7) y
 `#210 R1: genera una migracion reminders_recurrence solo aditiva`;
 `backend-pet-tracker/test/pet-reminders.e2e-spec.ts` :: `#210 R1: CHECK %s`.
 El `it` existente `declara los CHECKs, FKs e indices exactos` usa
-`expect.arrayContaining`: no se enmienda.
+`expect.arrayContaining`: no se enmienda. El `it` existente `exporta reminders
+con las columnas, tipos y nulabilidad aprobados` compara la lista exacta de
+columnas: se enmienda (E8 de [[tasks]]).
 
 ### R2 — Validación zod de `recurrence` y `recurrenceUntil`
 

@@ -25,8 +25,11 @@ tags: [backend, reminders, notifier, migration]
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `test(reminders): #210 R<n> <desc>` (rojo) seguido de
-`feat(reminders): #210 R<n> <desc>` (verde); orden en [[tasks]] §Commits. Cada
+`feat(reminders): #210 R<n> <desc>` (verde), con `<desc>` en inglés; orden en
+[[tasks]] §Commits. Cada
 fila cita el commit rojo **y** el verde (R14: solo el rojo, nace verde).
-El implementer actualiza esta tabla tras cada commit; el reviewer la valida
+El implementer la rellena con los hashes en UN commit final
+`docs(reminders): #210 fill traceability` (C20), tras el último verde y sin
+mezclarla con los commits TDD; el reviewer la valida
 al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).
 No se rebasea la rama tras rellenarla: invalidaría los hashes.

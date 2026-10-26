@@ -177,22 +177,41 @@ pnpm -C backend-pet-tracker db:generate --name reminders_recurrence
 En la base (`1316410f`) la última migración es `0019_pet_documents_uploaded_at`
 (A24 = 20 entradas, A25), así que debería salir
 `0020_reminders_recurrence.sql`. Los tests la localizan por la regex
-`/^\d{4}_reminders_recurrence\.sql$/`, nunca por número.
+`/^\d{4}_reminders_recurrence\.sql$/`, nunca por número. Requiere `.env` en la
+raíz del repo con `DATABASE_URL`: `drizzle.config.ts` carga `../.env` y aborta
+si falta.
 
 **Si #211 o #212 mergean antes en `dev`** y traen su propia migración con el
-mismo número, el procedimiento es exactamente este, en este orden:
+mismo número, se aplica la receta común de regeneración (la misma de #211 y
+#212), literal y en este orden:
 
-1. `git merge origin/dev` en `feature/210-reminders-recurrence` (**nunca**
-   `rebase`: invalidaría los hashes de [[traceability]]).
-2. En los conflictos de `meta/_journal.json` y de snapshots, quedarse con la
-   versión de `origin/dev`.
-3. Borrar los tres artefactos propios: el `.sql` `*_reminders_recurrence.sql`,
-   su `meta/<NNNN>_snapshot.json` y su entrada en `_journal.json` (si sobrevivió
-   al paso 2).
-4. Volver a correr el mismo `pnpm -C backend-pet-tracker db:generate --name reminders_recurrence`
-   (sale con el siguiente número libre) y comprobar que el `.sql` nuevo solo
-   tiene `ALTER TABLE "reminders" ADD COLUMN` / `ADD CONSTRAINT`.
-5. Commit del merge con los tres artefactos regenerados.
+1. `git merge origin/dev`. Nunca rebase: invalida los hashes de [[traceability]].
+2. `git checkout origin/dev -- backend-pet-tracker/src/db/migrations/meta`
+   (journal y snapshots quedan los de dev).
+3. `git rm backend-pet-tracker/src/db/migrations/00NN_reminders_recurrence.sql`
+   (00NN = número que tenga en ese momento).
+4. `git diff --name-status origin/dev -- backend-pet-tracker/src/db/migrations | wc -l`
+   debe dar `0`. Si no, queda un artefacto propio: restaurar con
+   `git checkout origin/dev -- <ruta>` o borrarlo si dev no lo tiene.
+5. `git commit --no-edit`, que cierra el merge.
+6. `cd backend-pet-tracker && pnpm exec drizzle-kit generate --name reminders_recurrence`.
+   Requiere `../.env` con `DATABASE_URL`, porque `drizzle.config.ts` lo carga.
+   El `.sql` nuevo solo contiene las sentencias propias: cuatro
+   `ALTER TABLE "reminders" ADD COLUMN` (`"recurrence_unit"`,
+   `"recurrence_every"`, `"recurrence_until"`, `"recurrence_anchor_at"`) y tres
+   `ALTER TABLE "reminders" ADD CONSTRAINT` (`"reminders_recurrence_unit_check"`,
+   `"reminders_recurrence_every_check"`, `"reminders_recurrence_shape_check"`).
+   Si trae cualquier otra tabla, PARAR.
+7. `grep -cF '"tag"' src/db/migrations/meta/_journal.json` = cuenta de
+   `origin/dev` + 1.
+8. Commit propio `chore(reminders): regenerate migration after merging dev`
+   (solo existe si hay colisión; queda fuera de la tabla C1–C20 de [[tasks]]).
+9. Recrear la base del worktree antes del siguiente `db:migrate`:
+   `docker exec pet-tracker-postgres psql -U pet_tracker -d postgres -c 'DROP DATABASE pet_tracker_wt210;'`,
+   luego
+   `docker exec pet-tracker-postgres psql -U pet_tracker -d postgres -c 'CREATE DATABASE pet_tracker_wt210 OWNER pet_tracker;'`
+   y luego `pnpm run db:migrate`. Nunca psql crudo sobre el journal.
+10. Volver a correr las suites unitaria y e2e.
 
 **Nunca** se renumera a mano un fichero, un snapshot ni una entrada del journal.
 
