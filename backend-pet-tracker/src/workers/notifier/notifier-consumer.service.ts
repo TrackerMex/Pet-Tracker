@@ -6,6 +6,9 @@ import {
 } from '@aws-sdk/client-sqs';
 import type { Message } from '@aws-sdk/client-sqs';
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { uuidv7 } from 'uuidv7';
+import { ownerTimeZone } from '@/modules/pets/application/owner-local-day';
+import { nextOccurrence } from '@/modules/reminders/application/recurrence';
 import {
   PET_REPOSITORY,
   type PetRepository,
@@ -183,7 +186,36 @@ export class NotifierConsumerService {
       reminderId: message.data.reminderId,
       kind: 'reminder',
     });
-    await this.reminders.markSent(message.reminderId);
+    if (reminder.recurrence === null) {
+      await this.reminders.markSent(message.reminderId);
+      return;
+    }
+    if (!this.pets) throw new Error('Pet repository unavailable');
+    const timeZone = ownerTimeZone(
+      await this.pets.findOwnerTimezone(reminder.petId),
+      {
+        scope: NOTIFIER_SCOPE,
+        messageId,
+        petId: reminder.petId,
+      },
+    );
+    const next = nextOccurrence(
+      { ...reminder, recurrence: reminder.recurrence },
+      new Date(),
+      timeZone,
+    );
+    if (next === null) {
+      await this.reminders.markSent(message.reminderId);
+      return;
+    }
+    const advanced = await this.reminders.advanceOccurrence(
+      message.reminderId,
+      message.scheduleName,
+      next,
+      `reminder-${uuidv7()}`,
+    );
+    if (!advanced)
+      this.logReminderSkipped(messageId, message.reminderId, 'stale_schedule');
   }
 
   private logReminderSkipped(
