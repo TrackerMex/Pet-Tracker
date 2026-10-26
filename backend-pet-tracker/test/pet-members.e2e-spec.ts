@@ -798,4 +798,93 @@ describe('#211 R16: pet members API', () => {
       (members.body as MemberBody[]).map((member) => member.userId),
     ).not.toContain(accepter.id);
   });
+  const auditActions = [
+    'pet_invite.create',
+    'pet_invite.revoke',
+    'pet_invite.accept',
+    'pet_member.remove',
+  ];
+  function auditRows(action: string, entityId: string) {
+    return db
+      .select()
+      .from(auditLog)
+      .where(and(eq(auditLog.action, action), eq(auditLog.entityId, entityId)));
+  }
+  async function auditScenario() {
+    const { owner, pet, accepter, invite } = await inviteFixture();
+    await accept(accepter, invite.code).expect(201);
+    await removeMember(owner, pet.id, accepter.id).expect(204);
+    const revoked = await createInviteViaApi(owner, pet.id);
+    await api()
+      .delete(`/v1/pets/${pet.id}/invites/${revoked.id}`)
+      .set('Authorization', `Bearer ${owner.token}`)
+      .expect(204);
+    return {
+      codes: [invite.code, revoked.code],
+      entries: [
+        {
+          userId: owner.id,
+          action: 'pet_invite.create',
+          entity: 'pet_invite',
+          entityId: invite.id,
+          meta: { petId: pet.id },
+        },
+        {
+          userId: owner.id,
+          action: 'pet_invite.revoke',
+          entity: 'pet_invite',
+          entityId: revoked.id,
+          meta: { petId: pet.id },
+        },
+        {
+          userId: accepter.id,
+          action: 'pet_invite.accept',
+          entity: 'pet_invite',
+          entityId: invite.id,
+          meta: { petId: pet.id },
+        },
+        {
+          userId: owner.id,
+          action: 'pet_member.remove',
+          entity: 'pet',
+          entityId: pet.id,
+          meta: { memberUserId: accepter.id },
+        },
+      ],
+    };
+  }
+  it.each(auditActions)(
+    '#211 R19: auditar %s deja su fila exacta',
+    async (action) => {
+      const { entries } = await auditScenario();
+      const expected = entries[auditActions.indexOf(action)];
+      const rows = await auditRows(action, expected.entityId);
+      expect(rows).toHaveLength(1);
+      const row = rows[0];
+      expect({
+        userId: row.userId,
+        action: row.action,
+        entity: row.entity,
+        entityId: row.entityId,
+        meta: row.meta,
+      }).toEqual(expected);
+    },
+  );
+  it('#211 R19: el meta de las 4 acciones no contiene el código ni su hash', async () => {
+    const { codes, entries } = await auditScenario();
+    const rows = (
+      await Promise.all(
+        entries.map((entry) => auditRows(entry.action, entry.entityId)),
+      )
+    ).flat();
+    expect(rows).toHaveLength(4);
+    for (const row of rows) {
+      for (const code of codes) {
+        expect(JSON.stringify(row.meta)).not.toContain(code);
+        expect(JSON.stringify(row.meta)).not.toContain(
+          createHash('sha256').update(code).digest('hex'),
+        );
+      }
+    }
+  });
 });
