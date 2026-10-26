@@ -149,3 +149,13 @@ Cierre (lo que el reporte debe traer):
   - Lista de ficheros tocados desde H0, desde la raíz del worktree: `git diff --name-only f1d0f320..HEAD -- backend-pet-tracker/ docs/`. Tiene que coincidir con la lista cerrada de arriba; `specs/` y `progress/` no entran.
   - Reporte en progress/impl_pet-members-api.md: comprobación del primer comando, salida de las 34 anclas y de parseBody, commits (hash y mensaje), línea `Tests:` tras cada commit, tabla «commit, test, rojo observado» con la línea del `expect` que falló (tasks.md), el rojo del 25 y el verde del 26, `it` que nacieron verdes y por qué, el `.sql` generado (sus sentencias, resumidas), lint y typecheck, desviaciones, y tabla R1-R21 a test a commit.
   - Última acción: crear progress/impl_pet-members-api.done con una sola línea, la ruta de progress/impl_pet-members-api.md. Está en .gitignore; no lo commitees (lo vigila scripts/harness/watch-impl.sh).
+
+## Reanudación 1 (2026-10-26, leader)
+
+Hiciste bien en parar en el commit 16. No es un fallo del código ni de una guarda. Prettier 3.9.6 no es idempotente en la cadena `await tx.insert(petUsers).values({...})` de `pet-member.drizzle.repository.ts`. El leader lo midió sobre una copia fuera del árbol: desde el estado en que lo dejaste, una pasada más cambia el fichero y la siguiente ya no.
+
+El paso 1 de «Por commit» cambia así, desde el commit 16 hasta el final de la cadena:
+  1. `pnpm exec prettier --write <ficheros .ts del commit>` y después `pnpm exec prettier --check <los mismos>`. Si `--check` da 1, repite el par `--write` y `--check`. Como máximo, tres `--write` por commit. Si después del tercero `--check` sigue dando 1, PARA. En el reporte, anota cuántas pasadas necesitó cada commit.
+Sigue en el commit 16 con el árbol como lo dejaste: los cuatro ficheros modificados son tuyos. Después continúa la cadena hasta el final, según este handoff. El resto no cambia (la cadena del paso 2, las guardas, las cifras y el cierre).
+
+El leader borró el marcador `progress/impl_pet-members-api.done`. Vuelve a crearlo solo al terminar la cadena entera, como última acción. En el reporte, añade una sección «Reanudación 1» a continuación de «Parada en el commit 16», sin reescribir lo anterior.
