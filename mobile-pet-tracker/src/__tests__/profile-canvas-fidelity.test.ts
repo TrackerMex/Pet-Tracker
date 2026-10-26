@@ -53,6 +53,7 @@ describe('#173 R2: inventario de radios nuevos', () => {
       'screens/home/index.tsx', // (enmendado por #190 R13)
       'screens/pairing/index.tsx', // #188 R18
       'screens/profile/index.tsx',
+      'screens/vaccine-create/index.tsx', // #208 R21
     ]);
   });
 });
@@ -65,7 +66,7 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/home/index.tsx', // #198 R15
     ]);
   });
-  it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8) (enmendado por #189 R6) (enmendado por #200 R8) (enmendado por #199 R7) (enmendado por #199 R14) (enmendado por #198 R5)', () => {
+  it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8) (enmendado por #189 R6) (enmendado por #200 R8) (enmendado por #199 R7) (enmendado por #199 R14) (enmendado por #198 R5) (enmendado por #208 R21)', () => {
     expect(filesMatching(/\btext-13\b/)).toEqual([
       'components/form-error.tsx',
       'screens/add-pet/index.tsx', // #191 R11
@@ -86,6 +87,7 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/register/index.tsx',
       'screens/reminders/index.tsx', // #178 R6
       'screens/reset-password/index.tsx',
+      'screens/vaccine-create/index.tsx', // #208 R21
       'screens/weight-log/index.tsx', // #199 R7
     ]);
   });

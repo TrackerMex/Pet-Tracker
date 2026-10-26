@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus } from 'reicon-react-native';
+import { InfoCircle, Plus } from 'reicon-react-native';
 import { useQuery } from '@tanstack/react-query';
 import { Button, Skeleton } from 'heroui-native';
 import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
@@ -107,6 +107,10 @@ export function VaccineCreateScreen({ petId }: { petId: string }) {
           <View className="flex-1">
             <DateField testID="vaccine-create-next" label={t('vaccineCreate.nextDose')} value={nextDoseAt} minDate={appliedAt} onChange={setNextDoseDraft} allowClear={!entry} />
           </View>
+        </View>
+        <View testID="vaccine-create-note" className="flex-row gap-2.5 rounded-tile bg-default px-3.5 py-3" style={CONTINUOUS_CORNER}>
+          <InfoCircle size={20} color={muted} />
+          <Text testID="vaccine-create-note-text" className="flex-1 text-13 font-semibold text-muted">{entry ? t('vaccineCreate.noteCatalog', { name: pet?.name ?? '' }) : t('vaccineCreate.noteOther', { name: pet?.name ?? '' })}</Text>
         </View>
       </ScrollView>
       <View testID="vaccine-create-bar" style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: Math.max(insets.bottom, 16), gap: 12 }}>
