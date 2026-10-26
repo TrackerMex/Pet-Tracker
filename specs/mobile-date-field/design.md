@@ -1,6 +1,6 @@
 ---
 feature: "mobile-date-field"
-status: draft        # draft | approved
+status: approved
 tags: [harness, spec]
 ---
 
