@@ -185,7 +185,6 @@ export const R5_HEALTH: UseRow[] = [
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.weight' },
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.weightKg' },
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.measuredAt' },
-  { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.yyyyMmDd' },
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.bodyCondition' },
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.bodyConditionPlaceholder' },
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.logWeight' },
@@ -334,7 +333,6 @@ export const R7_PROFILE: UseRow[] = [
   { file: 'src/screens/docs-upload-form/index.tsx', key: 'docs.type' }, // #158 R12
   { file: 'src/screens/docs-upload-form/index.tsx', key: 'docs.name' }, // #158 R12
   { file: 'src/screens/docs-upload-form/index.tsx', key: 'docs.date' }, // #158 R12
-  { file: 'src/screens/docs-upload-form/index.tsx', key: 'docs.datePlaceholder' }, // #158 R12
   { file: 'src/screens/docs-upload-form/index.tsx', key: 'docs.vet' }, // #158 R12
   { file: 'src/screens/docs-upload-form/index.tsx', key: 'docs.cancel' }, // #158 R12
   { file: 'src/screens/docs/index.tsx', key: 'docs.errorFileFormat' }, // #158 R12
@@ -660,6 +658,14 @@ export const R17_EDIT_PROFILE: UseRow[] = [
   { file: 'src/screens/edit-profile/index.tsx', key: 'profile.accountUnavailable' },
 ];
 
+export const R18_DATE_FIELD: UseRow[] = [
+  { file: 'src/components/date-field.tsx', key: 'dateField.placeholderDate' },
+  { file: 'src/components/date-field.tsx', key: 'dateField.placeholderTime' },
+  { file: 'src/components/date-field.tsx', key: 'dateField.ok' },
+  { file: 'src/components/date-field.tsx', key: 'dateField.cancel' },
+  { file: 'src/components/date-field.tsx', key: 'dateField.clear' },
+];
+
 export const ALL_USES: UseRow[] = [
   ...R1_AUTH,
   ...R2_TABS,
@@ -678,6 +684,7 @@ export const ALL_USES: UseRow[] = [
   ...R15_GEOFENCE_EDITOR,
   ...R16_WELCOME,
   ...R17_EDIT_PROFILE,
+  ...R18_DATE_FIELD,
 ];
 
 describe('#65: la tabla de uso de copy está disponible al runner', () => {
@@ -687,12 +694,12 @@ describe('#65: la tabla de uso de copy está disponible al runner', () => {
 
   // Enmienda (3): el candado es la consistencia interna, no una constante
   // escrita a mano — es la tercera vez que una cifra congelada envejece.
-  it('#194 R5: cuadra ALL_USES con la suma de sus bloques', () => {
+  it('#194 R5: cuadra ALL_USES con la suma de sus bloques (enmendado por #220 R16)', () => {
     const blocks = [
       R1_AUTH, R2_TABS, R3_HOME, R4_MAP, R5_HEALTH, R6_FOOD,
       R7_PROFILE, R8_REMINDERS, R9_ADD_PET, R10_PAIRING, R11_RESET,
       R12_ALERTS, R13_ALERT_DETAIL, R14_GEOFENCES, R15_GEOFENCE_EDITOR,
-      R16_WELCOME, R17_EDIT_PROFILE,
+      R16_WELCOME, R17_EDIT_PROFILE, R18_DATE_FIELD,
     ];
 
     expect(ALL_USES).toHaveLength(

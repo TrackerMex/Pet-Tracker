@@ -1,12 +1,10 @@
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { usePreventRemove } from 'expo-router/react-navigation';
-import { Host } from '@expo/ui';
-import ExpoDateTimePicker from '@expo/ui/community/datetime-picker';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Button } from 'heroui-native';
-import { Calendar, Camera } from 'reicon-react-native';
+import { Camera } from 'reicon-react-native';
 import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -24,16 +22,16 @@ import { SegmentedControl } from '../../components/segmented-control';
 import { PetAvatar } from '../../components/pet-avatar';
 import { RiseIn } from '../../components/rise-in';
 import { ScreenHeader } from '../../components/screen-header';
+import { DateField } from '../../components/date-field';
 import { FieldErrorMessage } from '../../components/field-error-message';
 import type { FieldIssues } from '../../utils/account-rules';
+import { isoToLocalDate, localDateToIso } from '../../utils/civil-date';
 import { validateAddPet, validateAddPetBasics } from '../../utils/form-rules';
 import { useAuth } from '../../providers/auth-provider';
 import {
-  useLocale,
   useTranslate,
 } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
-import { fromPickerValue, toPickerValue } from '../../utils/date-picker-value';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -42,13 +40,6 @@ type Species = CreatePetInput['species'];
 type Sex = NonNullable<CreatePetInput['sex']>;
 type PetSize = NonNullable<CreatePetInput['size']>;
 type AgeMode = 'birthDate' | 'months';
-
-function dateToIso(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
 
 function OptionalChip<T extends string | boolean>({
   current,
@@ -99,7 +90,6 @@ export function AddPetScreen() {
     queryKey: petKeys.list(),
     queryFn: () => listPets(baseUrl, token ?? ''),
   });
-  const locale = useLocale();
   const t = useTranslate();
   const { selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
@@ -116,7 +106,6 @@ export function AddPetScreen() {
   const [ageMode, setAgeMode] = useState<AgeMode>('birthDate');
   const [birthDate, setBirthDate] = useState<Date | null>(null);
   const [approxAgeMonths, setApproxAgeMonths] = useState('');
-  const [showDatePicker, setShowDatePicker] = useState(false);
   const [photoAsset, setPhotoAsset] = useState<{
     uri: string;
     contentType: PhotoContentType;
@@ -198,7 +187,7 @@ export function AddPetScreen() {
 
     const trimmedName = name.trim();
     const ageInput: Pick<CreatePetInput, 'birthDate' | 'approxAgeMonths'> = ageMode === 'birthDate'
-      ? { birthDate: dateToIso(birthDate!) }
+      ? { birthDate: localDateToIso(birthDate!) }
       : { approxAgeMonths: Number(approxAgeMonths) };
 
     const trimmedBreed = breed.trim();
@@ -402,20 +391,15 @@ export function AddPetScreen() {
               ))}
             </View>
             {ageMode === 'birthDate' ? (
-              <Pressable
-                accessibilityRole="button"
+              <DateField
                 testID="birth-date-field"
-                className="h-12 flex-row items-center gap-2 rounded-xl border-2 border-transparent bg-default px-3.5"
-                style={CONTINUOUS_CORNER}
-                onPress={() => setShowDatePicker(true)}
-              >
-                <Calendar size={18} color={muted} />
-                <Text className={`text-15 font-semibold ${birthDate ? 'text-foreground' : 'text-muted'}`}>
-                  {birthDate
-                    ? birthDate.toLocaleDateString(locale)
-                    : t('addPet.selectBirthDate')}
-                </Text>
-              </Pressable>
+                pickerTestID="birth-date-picker"
+                value={birthDate === null ? null : localDateToIso(birthDate)}
+                onChange={(next) => setBirthDate(next === null ? null : isoToLocalDate(next))}
+                maxDate={localDateToIso(new Date())}
+                placeholder={t('addPet.selectBirthDate')}
+                isInvalid={Boolean(fieldErrors.birthDate)}
+              />
             ) : (
               <TextInput
                 testID="approx-age-input"
@@ -433,23 +417,6 @@ export function AddPetScreen() {
             {ageMode === 'months' && <FieldErrorMessage testID="approx-age-input" issue={fieldErrors.approxAgeMonths} />}
           </View>
         </RiseIn>
-
-        {showDatePicker ? (
-          <Host>
-            <ExpoDateTimePicker
-              testID="birth-date-picker"
-              mode="date"
-              maximumDate={new Date()}
-              presentation="dialog"
-              value={toPickerValue(birthDate ?? new Date())}
-              onDismiss={() => setShowDatePicker(false)}
-              onValueChange={(_event, selectedDate) => {
-                setBirthDate(fromPickerValue(selectedDate));
-                setShowDatePicker(false);
-              }}
-            />
-          </Host>
-        ) : null}
 
         <RiseIn testID="add-pet-rise-sterilized" delayMs={120}>
           <View className="gap-1.5">

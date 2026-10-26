@@ -3558,7 +3558,7 @@
   {
     "id": 211,
     "name": "pet-members-api",
-    "status": "pending",
+    "status": "done",
     "priority": "P1",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 1). Compartir mascota en backend: hoy solo existe la fila owner en pet_users y no hay endpoints de miembros. Tabla pet_invites (code_hash, role family, created_by, expires_at, accepted_by/at, revoked_at); POST /v1/pets/:petId/invites (owner, código en claro una sola vez, un solo uso, caducidad), GET y DELETE de invitaciones pendientes, POST /v1/invites/accept {code} sin petId (patrón devices/claim, error genérico para inválido/caducado/usado, 409 si ya es miembro, rate limit contra fuerza bruta), GET /v1/pets/:petId/members (nombre y rol, sin email) y DELETE /v1/pets/:petId/members/:userId (owner quita family o el miembro se sale; nunca sin owner). Solo rol family en v1; walker y vet sin uso. Auditoría con AuditLogger. Coordina su migración con #210 y #212. Evidencia en progress/explore_roles-sharing-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },
@@ -3621,7 +3621,7 @@
   {
     "id": 220,
     "name": "mobile-date-field",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 1). Componente DateField propio sobre piezas de heroui-native y el selector nativo de @expo/ui, modo fecha u hora, valor ISO, mínimo, máximo y borrable; migra Registro de peso, Documentos, Alta de mascota y Nuevo recordatorio. Va antes de #208 y #213. Evidencia en progress/explore_ui-heroui-fechas-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },

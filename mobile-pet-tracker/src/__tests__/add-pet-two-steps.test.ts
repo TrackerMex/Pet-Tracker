@@ -15,9 +15,9 @@ it('#191 R11: la carta recoge la enmienda', () => {
   expect(charter.slice(charter.indexOf(heading))).toMatch(/- \[[ xX]\] Enmienda #191 aprobada por humano/);
 });
 
-it('#191 R11: add-pet y el selector cumplen los inventarios (enmendado por #205 R17)', () => {
+it('#191 R11: add-pet y el selector cumplen los inventarios (enmendado por #205 R17) (enmendado por #220 R14)', () => {
   expect(screenSource.match(/\brounded-16\b/g)).toHaveLength(2);
-  expect(screenSource.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(6);
+  expect(screenSource.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(5);
   expect(selector.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(2 - 1); // #205 R17
   expect(screenSource.match(/FieldErrorMessage/g)).toHaveLength(4);
   expect(screenSource.match(/\busePreventRemove\s*\(/g)).toHaveLength(1);
