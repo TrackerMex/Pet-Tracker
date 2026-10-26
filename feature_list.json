@@ -3533,5 +3533,68 @@
     "status": "done",
     "priority": "P1",
     "description": "Registrada el 2026-10-24 por el diagnóstico del flake de tinte (Expected 'color:foreground', Received '#0D1117', fallback del hook real useThemeColors; deuda registrada en el cierre de #200 y vista en #198). Cuatro tests móviles (screens/food, health, meal-schedule y profile) mockean con la opción virtual de jest.mock módulos que sí existen (theme/use-theme-colors y expo-image-picker); el mapa de IDs de jest-resolve es uno por proceso y el ID sin extensión que cachea uno lo hereda cualquier test posterior del mismo proceso que mockee ese módulo sin la opción, que carga el hook real. Cambio solo de tests, sin producción: quita la opción en los cuatro y añade el candado src/__tests__/jest-virtual-mock-lock.test.ts, que falla si algún *.test.ts(x) de src la usa. Sin test determinista de la contaminación (ver design.md). El caso #200 R9 mockRouter.push 0 llamadas queda abierto. Sin dependencias. Spec en specs/mobile-jest-virtual-mock-poisoning/."
+  },
+  {
+    "id": 208,
+    "name": "mobile-vaccine-create",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 2). Alta de vacuna desde la app: hoy solo existe POST /v1/pets/:petId/vaccines (owner) y Salud es de solo lectura, así que en la app real nunca hay vacunas. Ruta delgada app/pets/[petId]/vaccines/new.tsx más pantalla en src/screens/; clientes getVaccineCatalog y createVaccine en src/api/health-records.ts; catálogo por especie o nombre libre (exactamente uno), appliedAt no futuro, nextDoseAt opcional, veterinario, clínica y notas. Toggle «Recordarme la próxima dosis» encendido por defecto, que tras el 201 crea un recordatorio type vaccine con el endpoint existente si nextDoseAt es futuro (hora por defecto la fija la spec). CTA solo para owner. init.sh pasa a correr seed:vaccines (idempotente). Fuera: editar y borrar vacunas. Depende del gate G1 (artboard AltaVacuna). Evidencia en progress/explore_vaccines-reminders-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 209,
+    "name": "mobile-nutrition-questionnaire",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 2). Cuestionario de nutrición: hoy no hay formulario del perfil y «Generar plan» acaba en 422 en la app real. Wizard por pasos sobre el PUT /v1/pets/:petId/nutrition-profile existente (actividad, BCS 1-9, peso objetivo si BCS >= 7, tipo de alimento y kcal/100 g con precarga, alergias y enfermedades con lista cerrada más «otra» acotada); putJson nuevo en src/api/http.ts; al guardar llama a nutrition-plan/generate. Entradas desde el estado sin perfil y «Editar perfil» en Horario; «Generar plan» oculto a quien no es owner. Preguntas que el motor no modela quedan fuera. Depende del gate G1 (artboard CuestionarioNutricion). Evidencia en progress/explore_nutrition-questionnaire-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 210,
+    "name": "reminders-recurrence",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 1). Recordatorios recurrentes en backend: migración nueva con recurrence jsonb nullable {unit: hour|day|week|month|year, every} y recurrence_until; CreateReminderSchema y UpdateReminderSchema la admiten y GET la devuelve. En notifyReminder, tras el push, un recurrente se reprograma a la primera ocurrencia futura (sin ráfaga de perdidas; day/week/month/year anclados a la hora local del owner, hour absoluta) con scheduleName nuevo, o markSent si pasó until. Cancelar serie = PATCH status cancelled existente. El push lleva kind reminder y reminderId en data. Sin AWS real: EventBridge rate/cron solo anotado en design.md. Coordina su migración con #211 y #212 (§3 del plan). Evidencia en progress/explore_vaccines-reminders-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 211,
+    "name": "pet-members-api",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 1). Compartir mascota en backend: hoy solo existe la fila owner en pet_users y no hay endpoints de miembros. Tabla pet_invites (code_hash, role family, created_by, expires_at, accepted_by/at, revoked_at); POST /v1/pets/:petId/invites (owner, código en claro una sola vez, un solo uso, caducidad), GET y DELETE de invitaciones pendientes, POST /v1/invites/accept {code} sin petId (patrón devices/claim, error genérico para inválido/caducado/usado, 409 si ya es miembro, rate limit contra fuerza bruta), GET /v1/pets/:petId/members (nombre y rol, sin email) y DELETE /v1/pets/:petId/members/:userId (owner quita family o el miembro se sale; nunca sin owner). Solo rol family en v1; walker y vet sin uso. Auditoría con AuditLogger. Coordina su migración con #210 y #212. Evidencia en progress/explore_roles-sharing-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 212,
+    "name": "nutrition-ai-structured-plan",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 1). Decisión B híbrida del humano: el motor determinista fija las cotas (kcal, gramos, comidas) y la IA propone dentro con salida estructurada validada con zod: gramos por franja existente (respeta #103, sin proponer horarios), recomendaciones de seguimiento y fecha de revisión; fuera de cota o inválida, se sirve el plan del motor. Filtro determinista de alimentos tóxicos. Tendencia de peso entra en el prompt y en el hash. Gate OV3 (collar activo) más límite diario de N generaciones con IA por mascota. .max() en allergies y diseases. Enmienda brief §16 y plan 009 en la misma PR. Gates humanos: G2 (system prompt nuevo y lista de tóxicos) y G3 (valor de N) antes del handoff. Coordina su migración con #210 y #211. Evidencia en progress/explore_nutrition-questionnaire-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 213,
+    "name": "mobile-reminders-recurrence",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 2). Repetición en la app: chips en add-reminder (Una vez, Diario, Semanal, Mensual, Anual, Cada N horas con stepper) y campo Hasta opcional; etiqueta «Se repite…» en la lista; «Cancelar serie» con patchJson existente; notificationHref lleva un push de recordatorio a Recordatorios en vez de /alerts. Depende de #210 y del gate G1 (artboard NuevoRecordatorio con Repetición). Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 214,
+    "name": "mobile-pet-members",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 2). Familia en la app: quinta tarjeta «Familia» en Perfil que abre app/pets/[petId]/members.tsx; owner lista miembros, invita (código y Share nativo con texto en Voz B), revoca invitaciones y quita miembros; family ve la lista y puede salir. «Unirme con código» desde Perfil y desde el estado sin mascotas, reutilizando el patrón de input de pairing; tras aceptar invalida mascotas y selecciona la nueva. Depende de #211 y del gate G1 (artboards Familia). Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 215,
+    "name": "mobile-nutrition-ai-plan",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 3). Nutrición muestra la propuesta estructurada de la IA (gramos por comida, recomendaciones, fecha de revisión) o el plan del motor si no la hay; estados de límite diario alcanzado, sin collar y propuesta descartada por cota. Sustituye el copy de ejemplo del canvas por datos reales. Depende de #212, #209 y del gate G1 (artboard PlanIA). Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 216,
+    "name": "mobile-role-aware-actions",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 3). Ocultar a family las acciones de owner que hoy se muestran y acaban en 403: registro de peso, alta de recordatorio, borrado en Recordatorios, vincular collar y subir documentos, con el patrón de solo lectura existente; el 403 del backend queda como red. Depende de #214. Evidencia en progress/explore_roles-sharing-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   }
 ]
