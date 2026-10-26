@@ -320,4 +320,41 @@ describe('#211 R16: pet members API', () => {
       await db.select().from(petInvites).where(eq(petInvites.petId, pet.id)),
     ).toHaveLength(5);
   });
+  it('#211 R5: lista solo las pendientes, de la más nueva a la más vieja, sin código', async () => {
+    const { owner, pet, label } = await fixture();
+    const invites = await pendingFive(owner, pet.id);
+    const accepter = await seedUser(`list-${label}`);
+    await db
+      .update(petInvites)
+      .set({ acceptedBy: accepter.id, acceptedAt: new Date() })
+      .where(eq(petInvites.id, invites[1].id));
+    await db
+      .update(petInvites)
+      .set({ revokedAt: new Date() })
+      .where(eq(petInvites.id, invites[2].id));
+    await db
+      .update(petInvites)
+      .set({ expiresAt: new Date(Date.now() - 60000) })
+      .where(eq(petInvites.id, invites[3].id));
+    const response = await api()
+      .get(`/v1/pets/${pet.id}/invites`)
+      .set('Authorization', `Bearer ${owner.token}`)
+      .expect(200);
+    const body = response.body as Omit<InviteBody, 'code'>[];
+    expect(body.map((invite) => invite.id)).toEqual([
+      invites[4].id,
+      invites[0].id,
+    ]);
+    for (const invite of body)
+      expect(Object.keys(invite).sort()).toEqual([
+        'createdAt',
+        'expiresAt',
+        'id',
+        'role',
+      ]);
+    for (const invite of invites)
+      expect(JSON.stringify(body)).not.toContain(invite.code);
+    expect(JSON.stringify(body)).not.toContain('codeHash');
+    expect(JSON.stringify(body)).not.toContain('code_hash');
+  });
 });
