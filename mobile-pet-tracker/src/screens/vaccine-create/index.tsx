@@ -6,7 +6,7 @@ import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } fr
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { listPets } from '../../api/pets';
-import { healthKeys, petKeys } from '../../api/query-keys';
+import { healthKeys, petKeys, userKeys } from '../../api/query-keys';
 import { getVaccineCatalog } from '../../api/health-records';
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -14,6 +14,10 @@ import { TOUCH_SLOP } from '../../theme/touch-target';
 import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';
 import { FieldErrorMessage } from '../../components/field-error-message';
 import type { FieldIssues } from '../../utils/account-rules';
+import { getMe } from '../../api/users';
+import { DateField } from '../../components/date-field';
+import { civilTodayIso } from '../../utils/civil-today-iso';
+import { addCalendarMonthsIso } from '../../utils/vaccine-dates';
 import { ScreenHeader } from '../../components/screen-header';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
@@ -35,6 +39,26 @@ export function VaccineCreateScreen({ petId }: { petId: string }) {
   const [name, setName] = useState('');
   const [nameFocused, setNameFocused] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldIssues<'name' | 'appliedAt'>>({});
+  const me = useQuery({ queryKey: userKeys.me(), queryFn: () => getMe(baseUrl, token ?? '') });
+  const profileTimeZone = me.data?.kind === 'ok' ? me.data.me.timezone : undefined;
+  const [now] = useState(() => new Date());
+  const today = civilTodayIso(profileTimeZone, now);
+  const [appliedDraft, setAppliedDraft] = useState<string | null>(null);
+  const appliedAt = appliedDraft ?? today;
+  const entry = entries.find(item => item.id === selectedId);
+  const [nextDoseDraft, setNextDoseDraft] = useState<string | null | undefined>(undefined);
+  const nextDoseAt = nextDoseDraft === undefined ? (entry ? addCalendarMonthsIso(appliedAt, entry.scheme.boosterMonths) : null) : nextDoseDraft;
+
+  function selectVaccine(id: string) {
+    setSelectedDraft(id);
+    setNextDoseDraft(undefined);
+  }
+  function changeApplied(next: string | null) {
+    if (next === null) return;
+    setAppliedDraft(next);
+    if (nextDoseAt !== null && nextDoseAt < next) setNextDoseDraft(undefined);
+  }
+
 
 
   return (
@@ -56,7 +80,7 @@ export function VaccineCreateScreen({ petId }: { petId: string }) {
               const other = option.id === 'other';
               return (
                 <Pressable key={option.id} testID={`vaccine-chip-${option.id}`} accessibilityRole="button" accessibilityState={{ selected }} hitSlop={TOUCH_SLOP}
-                  onPress={() => setSelectedDraft(option.id)}
+                  onPress={() => selectVaccine(option.id)}
                   className={selected ? 'h-9.5 items-center justify-center rounded-full px-3.5 bg-accent' : other ? 'h-9.5 flex-row items-center justify-center gap-1.5 rounded-full border border-dashed border-border px-3.5 bg-surface' : 'h-9.5 items-center justify-center rounded-full px-3.5 bg-default'}
                   style={selected ? chunkyLip.primaryCompact : undefined}>
                   {other && <Plus size={16} strokeWidth={2.8} color={selected ? accentForeground : foreground} />}
@@ -75,6 +99,15 @@ export function VaccineCreateScreen({ petId }: { petId: string }) {
             className={`h-13 rounded-xl bg-default px-3.5 text-15 font-semibold text-foreground border-2 ${nameFocused ? 'border-accent' : 'border-transparent'}`} style={CONTINUOUS_CORNER} />
           <FieldErrorMessage testID="vaccine-create-name" issue={fieldErrors.name} />
         </View>}
+        <View testID="vaccine-create-dates" className="flex-row gap-2.5">
+          <View className="flex-1">
+            <DateField testID="vaccine-create-applied" label={t('vaccineCreate.appliedAt')} value={appliedAt} maxDate={today} onChange={changeApplied} isInvalid={Boolean(fieldErrors.appliedAt)} />
+            <FieldErrorMessage testID="vaccine-create-applied" issue={fieldErrors.appliedAt} />
+          </View>
+          <View className="flex-1">
+            <DateField testID="vaccine-create-next" label={t('vaccineCreate.nextDose')} value={nextDoseAt} minDate={appliedAt} onChange={setNextDoseDraft} allowClear={!entry} />
+          </View>
+        </View>
       </ScrollView>
       <View testID="vaccine-create-bar" style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: Math.max(insets.bottom, 16), gap: 12 }}>
         <Button testID="vaccine-create-submit" />
