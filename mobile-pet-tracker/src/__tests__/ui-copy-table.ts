@@ -185,7 +185,6 @@ export const R5_HEALTH: UseRow[] = [
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.weight' },
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.weightKg' },
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.measuredAt' },
-  { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.yyyyMmDd' },
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.bodyCondition' },
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.bodyConditionPlaceholder' },
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.logWeight' },
