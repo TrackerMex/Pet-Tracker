@@ -6,7 +6,8 @@ import {
 } from '@testing-library/react-native';
 import type { QueryClient } from '@tanstack/react-query';
 import * as Notifications from 'expo-notifications';
-import { Stack } from 'expo-router';
+import { Stack, ThemeProvider } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { Children, isValidElement, type ReactNode } from 'react';
 import { Uniwind } from 'uniwind';
 
@@ -20,6 +21,12 @@ const { join } = jest.requireActual<typeof import('path')>('path');
 let mockUseQueryInStack = false;
 let mockLayoutQueryClient: QueryClient | undefined;
 const mockSetPushToken = jest.fn();
+const mockNavigationThemeSentinel = { source: 'navigation-theme-sentinel' };
+
+jest.mock('../../theme/navigation-theme', () => ({
+  useNavigationTheme: () => mockNavigationThemeSentinel,
+}));
+jest.mock('expo-status-bar', () => ({ StatusBar: jest.fn(() => null) }));
 
 jest.mock('../../utils/language-preference', () => ({
   getStoredLanguage: jest.fn(),
@@ -85,6 +92,7 @@ jest.mock('expo-router', () => {
   }
 
   return {
+    ThemeProvider: jest.fn(({ children }: { children: ReactNode }) => children),
     router: { push: jest.fn() },
     usePathname: () => '/home',
     Stack: Object.assign(
@@ -148,6 +156,47 @@ const mockGetStoredLanguage = jest.mocked(getStoredLanguage);
 const mockGetStoredTheme = jest.mocked(getStoredTheme);
 const mockSetTheme = jest.mocked(Uniwind.setTheme);
 const mockGetPermissions = jest.mocked(Notifications.getPermissionsAsync);
+
+describe('#217 R2: proveedor raíz del tema de navegación', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseQueryInStack = false;
+    mockGetStoredTheme.mockResolvedValue(undefined);
+    mockGetStoredLanguage.mockResolvedValue(undefined);
+  });
+
+  it('#217 R2: el ThemeProvider raíz recibe el tema de navegación', async () => {
+    await render(<RootLayout />);
+    await screen.findByTestId('root-stack');
+
+    expect(jest.mocked(ThemeProvider).mock.calls.at(-1)?.[0].value)
+      .toBe(mockNavigationThemeSentinel);
+  });
+
+  it('#217 R2: el orden de la fuente es hook, proveedor, HeroUINativeProvider', () => {
+    const source = readFileSync(join(process.cwd(), 'src/app/_layout.tsx'), 'utf8');
+    const hook = source.indexOf('useNavigationTheme()');
+    const ready = source.indexOf('if (!themeReady)');
+    const provider = source.indexOf('<ThemeProvider value={navigationTheme}>');
+
+    expect(hook).toBeGreaterThan(-1);
+    expect(hook).toBeLessThan(ready);
+    expect(ready).toBeLessThan(provider);
+    expect(provider).toBeLessThan(source.indexOf('<HeroUINativeProvider>'));
+  });
+
+  it('#217 R4: monta una sola StatusBar auto antes del proveedor de HeroUI', async () => {
+    await render(<RootLayout />);
+    await screen.findByTestId('root-stack');
+
+    expect(jest.mocked(StatusBar).mock.calls.map(([props]) => props)).toEqual([{ style: 'auto' }]);
+    const source = readFileSync(join(process.cwd(), 'src/app/_layout.tsx'), 'utf8');
+    const statusBar = source.indexOf('<StatusBar style="auto" />');
+    expect(source.indexOf('<ThemeProvider value={navigationTheme}>')).toBeLessThan(statusBar);
+    expect(statusBar).toBeLessThan(source.indexOf('<HeroUINativeProvider>'));
+    expect(source.split('<StatusBar')).toHaveLength(2);
+  });
+});
 
 describe('R4: RootLayout restaura el tema', () => {
   beforeEach(() => {
