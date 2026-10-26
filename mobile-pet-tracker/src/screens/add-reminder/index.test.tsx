@@ -333,7 +333,7 @@ describe('R9: guardar con validación y degradación por kind', () => {
     expect(mockCreateReminder).not.toHaveBeenCalled();
   });
 
-  it('#186 R5: fecha ausente muestra su error bajo la columna', async () => {
+  it('#186 R5: fecha ausente muestra su error bajo la columna (enmendado por #220 R15)', async () => {
     mockCreateReminder.mockResolvedValue({ kind: 'error' });
     await renderAddReminder();
     await waitFor(() => expect(screen.getByTestId('title-input')).toBeVisible());
@@ -345,7 +345,8 @@ describe('R9: guardar con validación y degradación por kind', () => {
     expect(screen.queryByTestId('add-reminder-error')).toBeNull();
     expect(screen.getByTestId('add-reminder-submit')).not.toBeDisabled();
     const field = screen.getByTestId('date-field');
-    expect(field.children).toHaveLength(2);
+    expect(field.children).toHaveLength(1);
+    expect(screen.getByTestId('date-field-value').parent?.children).toHaveLength(2);
     expect(field.parent!.props.className).toBe('flex-3 gap-1.5');
     expect(within(field.parent!).queryByTestId('date-field-message')).toHaveTextContent('Elige una fecha');
     expect(within(field).queryByTestId('date-field-message')).toBeNull();

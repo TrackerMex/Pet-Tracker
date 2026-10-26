@@ -23,7 +23,7 @@ jest.mock('uniwind', () => ({
 jest.mock('reicon-react-native', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
-  const icon = (testID: string) => (props: Record<string, unknown>) => React.createElement(View, { ...props, testID });
+  const icon = (testID: string) => function MockIcon(props: Record<string, unknown>) { return React.createElement(View, { ...props, testID }); };
   return { ...jest.requireActual('reicon-react-native'), Calendar: icon('icon-calendar'), Clock: icon('icon-clock'), X: icon('icon-x') };
 });
 jest.mock('@expo/ui', () => {
@@ -34,7 +34,7 @@ jest.mock('@expo/ui', () => {
 jest.mock('@expo/ui/community/datetime-picker', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
-  return (props: Record<string, unknown>) => React.createElement(View, props);
+  return function MockDateTimePicker(props: Record<string, unknown>) { return React.createElement(View, props); };
 });
 
 const originalOS = Platform.OS;
