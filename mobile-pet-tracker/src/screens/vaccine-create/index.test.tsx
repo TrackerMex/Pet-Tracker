@@ -132,3 +132,62 @@ it('#208 R7: un gato ve «· esquema para gato»', async () => {
   await renderVaccineCreate();
   await waitFor(() => expect(screen.getByTestId('vaccine-create-legend-species')).toHaveTextContent('· esquema para gato', { exact: true }));
 });
+
+jest.mock('reicon-react-native', () => {
+  const actual = jest.requireActual('reicon-react-native');
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  const icon = (testID: string) => function Icon(props: Record<string, unknown>) { return React.createElement(View, { ...props, testID }); };
+  return { ...actual, Plus: icon('vaccine-create-plus-icon'), InfoCircle: icon('vaccine-create-info-icon'), Bell: icon('vaccine-create-bell-icon'), AlertTriangle: icon('vaccine-create-alert-icon') };
+});
+
+it('#208 R8: mientras carga pinta tres esqueletos de chip y ningún chip', async () => {
+  mockCatalog.mockReturnValue(pending());
+  await renderVaccineCreate();
+  const skeleton = await screen.findByTestId('vaccine-create-chips-skeleton');
+  expect(skeleton.children).toHaveLength(3);
+  expect(skeleton.children.map(child => typeof child === 'string' ? child : child.props.className)).toEqual(Array(3).fill('skeleton__root h-9.5 w-28 rounded-full'));
+  expect(screen.queryByTestId('vaccine-create-chips')).toBeNull();
+  expect(screen.queryByTestId('vaccine-chip-other')).toBeNull();
+});
+it('#208 R8: pinta los chips en el orden de la API, preselecciona el primero y cierra con «Otra vacuna»', async () => {
+  await renderVaccineCreate();
+  const chips = await screen.findByTestId('vaccine-create-chips');
+  expect(chips.props.className).toBe('flex-row flex-wrap gap-2');
+  expect(chips.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['vaccine-chip-cat-lepto', 'vaccine-chip-cat-dhppi', 'vaccine-chip-cat-rabia', 'vaccine-chip-cat-tos', 'vaccine-chip-other']);
+  const first = screen.getByTestId('vaccine-chip-cat-lepto');
+  expect(first.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-accent');
+  expect(first.props.accessibilityRole).toBe('button');
+  expect(first.props.accessibilityState).toEqual({ selected: true });
+  expect(screen.getByTestId('vaccine-chip-cat-rabia').props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-default');
+  const other = screen.getByTestId('vaccine-chip-other');
+  expect(other.props.className).toBe('h-9.5 flex-row items-center justify-center gap-1.5 rounded-full border border-dashed border-border px-3.5 bg-surface');
+  expect(within(other).getByText('Otra vacuna', { exact: true }).props.className).toBe('text-sm font-extrabold text-foreground');
+  const plus = within(other).getByTestId('vaccine-create-plus-icon', { includeHiddenElements: true });
+  expect([plus.props.size, plus.props.strokeWidth, plus.props.color]).toEqual([16, 2.8, 'token:foreground']);
+  expect(mockCatalog).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'dog');
+});
+it('#208 R8: pulsar un chip lo selecciona con labio de tres y deselecciona el anterior', async () => {
+  await renderVaccineCreate();
+  const rabia = await screen.findByTestId('vaccine-chip-cat-rabia');
+  expect(rabia.props.hitSlop).toEqual(TOUCH_SLOP);
+  await fireEvent.press(rabia);
+  expect(screen.getByTestId('vaccine-chip-cat-rabia').props.accessibilityState).toEqual({ selected: true });
+  expect(flatVaccineStyle(screen.getByTestId('vaccine-chip-cat-rabia').props.style)).toMatchObject({ boxShadow: [{ offsetX: 0, offsetY: 3, blurRadius: 0, spreadDistance: 0, color: 'token:lip' }] });
+  expect(screen.getByTestId('vaccine-chip-cat-lepto').props.accessibilityState).toEqual({ selected: false });
+  expect(screen.getByTestId('vaccine-chip-cat-lepto').props.style).toBeUndefined();
+  const other = screen.getByTestId('vaccine-chip-other');
+  expect(other.props.hitSlop).toEqual(TOUCH_SLOP);
+  await fireEvent.press(other);
+  expect(screen.getByTestId('vaccine-chip-other').props.accessibilityState).toEqual({ selected: true });
+  expect(within(screen.getByTestId('vaccine-chip-other')).getByTestId('vaccine-create-plus-icon', { includeHiddenElements: true }).props.color).toBe('token:accent-foreground');
+  expect(within(screen.getByTestId('vaccine-chip-other')).getByText('Otra vacuna').props.className).toBe('text-sm font-extrabold text-accent-foreground');
+});
+it('#208 R8: con el catálogo en error solo queda «Otra vacuna» seleccionado', async () => {
+  mockCatalog.mockResolvedValue({ kind: 'error' });
+  await renderVaccineCreate();
+  const chips = await screen.findByTestId('vaccine-create-chips');
+  expect(chips.children).toHaveLength(1);
+  expect(screen.getByTestId('vaccine-chip-other').props.accessibilityState).toEqual({ selected: true });
+  expect(screen.queryByTestId('vaccine-create-chips-skeleton')).toBeNull();
+});
