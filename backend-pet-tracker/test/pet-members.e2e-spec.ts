@@ -1,7 +1,9 @@
-import { createHash, randomUUID } from 'node:crypto';
+import { PUSH_TOKEN_REPOSITORY } from '@/modules/users/domain/repositories/push-token.repository';
+import type { PushTokenRepository } from '@/modules/users/domain/repositories/push-token.repository';
+import { createHash, randomInt, randomUUID } from 'node:crypto';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import request, { Response } from 'supertest';
 import { App } from 'supertest/types';
@@ -418,5 +420,172 @@ describe('#211 R16: pet members API', () => {
     expect(
       await db.select().from(petInvites).where(eq(petInvites.id, invite.id)),
     ).toEqual(before);
+  });
+  function accept(user: TestUser, code: string) {
+    return api()
+      .post('/v1/invites/accept')
+      .set('Authorization', `Bearer ${user.token}`)
+      .send({ code });
+  }
+  function memberships(petId: string, userId: string) {
+    return db
+      .select()
+      .from(petUsers)
+      .where(and(eq(petUsers.petId, petId), eq(petUsers.userId, userId)));
+  }
+  async function inviteFixture() {
+    const value = await fixture();
+    const accepter = await seedUser(`accepter-${value.label}`);
+    const invite = await createInviteViaApi(value.owner, value.pet.id);
+    return { ...value, accepter, invite };
+  }
+  it('#211 R7: aceptar crea la membresía family activa y responde { petId, role }', async () => {
+    const { pet, accepter, invite } = await inviteFixture();
+    const response = await accept(accepter, invite.code).expect(201);
+    expect(response.body).toEqual({ petId: pet.id, role: 'family' });
+    const rows = await memberships(pet.id, accepter.id);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].role).toBe('family');
+    expect(rows[0].status).toBe('active');
+  });
+  it('#211 R7: la invitación aceptada guarda accepted_by y accepted_at', async () => {
+    const { accepter, invite } = await inviteFixture();
+    await accept(accepter, invite.code).expect(201);
+    const [row] = await db
+      .select()
+      .from(petInvites)
+      .where(eq(petInvites.id, invite.id));
+    expect(row.acceptedBy).toBe(accepter.id);
+    expect(row.acceptedAt).toBeInstanceOf(Date);
+  });
+  it('#211 R7: acepta el código en minúsculas y con guion', async () => {
+    const { pet, accepter, invite } = await inviteFixture();
+    const code = invite.code.toLowerCase();
+    const response = await accept(
+      accepter,
+      `${code.slice(0, 5)}-${code.slice(5)}`,
+    ).expect(201);
+    expect(response.body).toEqual({ petId: pet.id, role: 'family' });
+  });
+  it.each([
+    'no existe',
+    'no normaliza',
+    'está expirado',
+    'está revocado',
+    'ya se usó',
+  ])('#211 R8: responde el mismo 404 si el código %s', async (state) => {
+    const { pet, accepter, invite, label } = await inviteFixture();
+    let code = invite.code;
+    if (state === 'no existe')
+      code = Array.from(
+        { length: 10 },
+        () => '23456789ABCDEFGHJKMNPQRSTVWXYZ'[randomInt(0, 30)],
+      ).join('');
+    if (state === 'no normaliza') code = 'abc';
+    if (state === 'está expirado')
+      await db
+        .update(petInvites)
+        .set({ expiresAt: new Date(Date.now() - 60000) })
+        .where(eq(petInvites.id, invite.id));
+    if (state === 'está revocado')
+      await db
+        .update(petInvites)
+        .set({ revokedAt: new Date() })
+        .where(eq(petInvites.id, invite.id));
+    if (state === 'ya se usó') {
+      const previous = await seedUser(`previous-${label}`);
+      await db
+        .update(petInvites)
+        .set({ acceptedBy: previous.id, acceptedAt: new Date() })
+        .where(eq(petInvites.id, invite.id));
+    }
+    const response = await accept(accepter, code);
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({
+      statusCode: 404,
+      code: 'INVITE_NOT_ACCEPTABLE',
+      message: 'Invite code is invalid or expired',
+    });
+    expect(await memberships(pet.id, accepter.id)).toEqual([]);
+  });
+  it.each([{}, { code: 123 }, { code: '   ' }, { code: 'A'.repeat(65) }])(
+    '#211 R8: responde 400 con el cuerpo %j',
+    async (body) => {
+      const { accepter } = await inviteFixture();
+      const response = await api()
+        .post('/v1/invites/accept')
+        .set('Authorization', `Bearer ${accepter.token}`)
+        .send(body);
+      expect(response.status).toBe(400);
+      expect(response.body as { statusCode: number; message: string }).toEqual(
+        expect.objectContaining({
+          statusCode: 400,
+          message: 'Validation failed',
+        }),
+      );
+    },
+  );
+  const alreadyMemberBody = {
+    statusCode: 409,
+    code: 'ALREADY_PET_MEMBER',
+    message: 'User is already a member of this pet',
+  };
+  it('#211 R9: el owner que acepta su propio código recibe 409 y la invitación sigue pendiente', async () => {
+    const { owner, pet, accepter, invite } = await inviteFixture();
+    const before = await memberships(pet.id, owner.id);
+    const response = await accept(owner, invite.code);
+    expect(response.status).toBe(409);
+    expect(response.body).toEqual(alreadyMemberBody);
+    expect(await memberships(pet.id, owner.id)).toEqual(before);
+    const [row] = await db
+      .select()
+      .from(petInvites)
+      .where(eq(petInvites.id, invite.id));
+    expect(row.acceptedAt).toBeNull();
+    await accept(accepter, invite.code).expect(201);
+  });
+  it('#211 R9: un family que acepta otro código de la misma mascota recibe 409 y conserva su rol', async () => {
+    const { pet, accepter, invite } = await inviteFixture();
+    await seedMembership(pet.id, accepter.id, 'family');
+    const before = await memberships(pet.id, accepter.id);
+    const response = await accept(accepter, invite.code);
+    expect(response.status).toBe(409);
+    expect(response.body).toEqual(alreadyMemberBody);
+    expect(await memberships(pet.id, accepter.id)).toEqual(before);
+    const [row] = await db
+      .select()
+      .from(petInvites)
+      .where(eq(petInvites.id, invite.id));
+    expect(row.acceptedAt).toBeNull();
+  });
+  it('#211 R20: el nuevo family lista la mascota, la lee, no la edita y recibe push', async () => {
+    const { pet, accepter, invite } = await inviteFixture();
+    const expoToken = `ExponentPushToken[pet-members-${RUN_ID}]`;
+    await api()
+      .post('/v1/me/push-tokens')
+      .set('Authorization', `Bearer ${accepter.token}`)
+      .send({ expoToken, platform: 'android' })
+      .expect(200);
+    const push = app.get<PushTokenRepository>(PUSH_TOKEN_REPOSITORY);
+    expect(await push.findActiveMembersTokens(pet.id)).not.toContain(expoToken);
+    await accept(accepter, invite.code).expect(201);
+    const list = await api()
+      .get('/v1/pets')
+      .set('Authorization', `Bearer ${accepter.token}`)
+      .expect(200);
+    expect(
+      (list.body as PetProfileBody[]).find((p) => p.id === pet.id)?.myRole,
+    ).toBe('family');
+    const detail = await api()
+      .get(`/v1/pets/${pet.id}`)
+      .set('Authorization', `Bearer ${accepter.token}`)
+      .expect(200);
+    expect(profileBody(detail).myRole).toBe('family');
+    await api()
+      .patch(`/v1/pets/${pet.id}`)
+      .set('Authorization', `Bearer ${accepter.token}`)
+      .send({ name: 'No' })
+      .expect(403);
+    expect(await push.findActiveMembersTokens(pet.id)).toContain(expoToken);
   });
 });
