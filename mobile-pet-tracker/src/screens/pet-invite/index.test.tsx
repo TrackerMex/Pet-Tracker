@@ -1,5 +1,7 @@
-import { render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import * as Clipboard from 'expo-clipboard';
 import { HeroUINativeProvider } from 'heroui-native';
+import { Share } from 'react-native';
 
 import { LanguageProvider } from '../../providers/language-provider';
 import PetInviteScreen from './index';
@@ -24,7 +26,13 @@ async function renderInvite(language: 'es' | 'en' = 'es') {
   return render(<HeroUINativeProvider><LanguageProvider initial={language}><PetInviteScreen /></LanguageProvider></HeroUINativeProvider>);
 }
 
-beforeEach(() => { mockParams = params; });
+beforeEach(() => {
+  mockParams = params;
+  jest.mocked(Clipboard.setStringAsync).mockResolvedValue(true);
+  jest.spyOn(Share, 'share').mockResolvedValue({ action: Share.sharedAction });
+});
+
+afterEach(() => { jest.restoreAllMocks(); });
 
 it('R14: muestra el código partido, el vencimiento y el mensaje literal', async () => {
   await renderInvite();
@@ -48,4 +56,39 @@ it('R14: sin código no ofrece compartir', async () => {
   await renderInvite();
   expect(screen.queryByTestId('pet-invite-share')).toBeNull();
   expect(screen.queryByTestId('pet-invite-copy')).toBeNull();
+});
+
+it('R15: Compartir abre la hoja nativa con el mensaje', async () => {
+  await renderInvite();
+  await fireEvent.press(screen.getByTestId('pet-invite-share'));
+  expect(Share.share).toHaveBeenCalledTimes(1);
+  expect(Share.share).toHaveBeenCalledWith({ message: 'Ana te invita a cuidar a Rocky en Pet Tracker. Abre la app, toca «Unirme con código» y escribe K7P4Q-2M9XA. Vence el 9 oct a las 14:00.' });
+});
+
+it('R15: un Share rechazado no rompe la pantalla', async () => {
+  jest.mocked(Share.share).mockRejectedValue(new Error('x'));
+  await renderInvite();
+  await fireEvent.press(screen.getByTestId('pet-invite-share'));
+  await act(async () => undefined);
+  expect(screen.getByTestId('pet-invite-header-title')).toHaveTextContent('Invitar a cuidar a Rocky');
+  expect(screen.getByTestId('pet-invite-code')).toHaveTextContent('K7P4Q-2M9XA');
+});
+
+it('R15: Copiar código copia el código con guion y confirma', async () => {
+  let finish!: (value: boolean) => void;
+  jest.mocked(Clipboard.setStringAsync).mockReturnValue(new Promise((resolve) => { finish = resolve; }));
+  await renderInvite();
+  await fireEvent.press(screen.getByTestId('pet-invite-copy'));
+  expect(Clipboard.setStringAsync).toHaveBeenCalledWith('K7P4Q-2M9XA');
+  expect(screen.getByTestId('pet-invite-copy-label')).toHaveTextContent('Copiar código');
+  await act(async () => finish(true));
+  await waitFor(() => expect(screen.getByTestId('pet-invite-copy-label')).toHaveTextContent('Código copiado'));
+});
+
+it('R15: si copiar falla la etiqueta no cambia', async () => {
+  jest.mocked(Clipboard.setStringAsync).mockRejectedValue(new Error('x'));
+  await renderInvite();
+  await fireEvent.press(screen.getByTestId('pet-invite-copy'));
+  await act(async () => undefined);
+  expect(screen.getByTestId('pet-invite-copy-label')).toHaveTextContent('Copiar código');
 });
