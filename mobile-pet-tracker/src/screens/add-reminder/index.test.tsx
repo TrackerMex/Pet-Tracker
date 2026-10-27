@@ -127,7 +127,7 @@ function SelectionProbe() {
 }
 
 async function renderAddReminder(selected = true, language: 'en' | 'es' = 'es') {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
   return render(
     <QueryClientProvider client={queryClient}>
     <HeroUINativeProvider>
