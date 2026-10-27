@@ -295,3 +295,53 @@ Comparé cada literal con `catalog.ts` (es) y con R4–R21:
 **Veredicto de la tercera revisión: aprobado.** Queda condicionado a que el `./init.sh` del leader salga verde sobre 2a00094f. Un commit nuevo bajo `mobile-pet-tracker/`, merge incluido, exige relanzar al reviewer.
 
 Hash revisado: 2a00094f
+
+## Cuarta revisión (merge de dev 1065897b)
+
+Fecha: 2026-10-27
+Veredicto: APROBADO (con la misma condición de `./init.sh` que la tercera revisión, ver abajo)
+
+Alcance: solo lo que entró después del veredicto de la tercera revisión (2a00094f). Es el commit de cierre 67754aea más el merge 2c201c8f, que trae origin/dev 1065897b (#212 nutrition-ai-structured-plan). HEAD medido: `2c201c8f7a33ae13f54e471e2592ba551439a9a8` en `feature/214-mobile-pet-members`. Los padres del merge son `67754aea` y `1065897b`. La merge-base de los dos lados es `2c103bb4` (PR #274, #222). Al empezar, `git status --short` estaba vacío.
+
+### 1. Código móvil de #214 sin cambios desde la aprobación
+
+- `git diff --stat 2a00094f 2c201c8f -- mobile-pet-tracker` da 0 líneas. El código móvil es el mismo que aprobó la tercera revisión.
+- `git diff --name-only 2a00094f 2c201c8f -- backend-pet-tracker`: todo cae en los módulos nutrition y health/nutrition-weight, en `src/db/migrations`, en `src/db/schema/nutrition*` o en `test/{meal*,nutrition*}`. Filtrando esas rutas no queda nada.
+
+### 2. El merge no altera ningún fichero de #212 y current.md se resolvió bien
+
+Hay 57 ficheros de #212 (merge-base..1065897b) y 58 de #214 (merge-base..67754aea). Solo tres están en los dos lados: `feature_list.json`, `progress/current.md` y `progress/smoke_mejoras-producto.md`.
+
+- `git diff --name-only 1065897b 2c201c8f` coincide exactamente con el conjunto de ficheros de #214. `comm` da vacío en los dos sentidos.
+- Ninguno de los 54 ficheros que solo tocó #212 difiere entre 1065897b y 2c201c8f. Ninguno de los 55 que solo tocó #214 difiere entre 67754aea y 2c201c8f. Las dos medidas se hicieron con `GIT_LITERAL_PATHSPECS=1`, para que `[petId]` y `(tabs)` no se lean como glob.
+- `git diff --name-only 67754aea 2c201c8f`, lo que el merge mete en la rama, es un subconjunto del conjunto de #212. Vacío fuera de él.
+- Ficheros que tocaron los dos lados:
+  - `feature_list.json`: respecto a 1065897b solo cambia #214, `pending` → `spec_ready`. Respecto a 67754aea solo cambia #212, `pending` → `spec_ready`. El JSON es válido, no hay ninguna feature `in_progress` y quedan `{212: spec_ready, 214: spec_ready}`.
+  - `progress/current.md`: respecto a 1065897b añade solo la sección «Fallback al subagente `implementer` (#214, 2026-10-27)». Respecto a 67754aea añade solo la sección «Fallback… (#212, 2026-10-27 12:05 UTC)». Las dos secciones quedan completas. `git grep -nE '^(<<<<<<<|>>>>>>>|=======$)'` sobre los tres ficheros sale con exit 1 (sin marcadores) y `git diff --check 1065897b 2c201c8f -- progress/current.md` sale con exit 0.
+  - `progress/smoke_mejoras-producto.md`: la sección de #212 (R20) queda antes de #208 y la de #214 al final. Las dos están completas, cada una con su casilla `- [ ]`.
+
+### 3. 67754aea solo toca progress/
+
+`git show --stat 67754aea` da `progress/review_mobile-pet-members.md` (+297) y `progress/smoke_mejoras-producto.md` (+19/−7), 2 ficheros. No toca nada de `mobile-pet-tracker/` ni de `backend-pet-tracker/`. Su padre es 2a00094f.
+
+### 4. #212 no choca con el cliente de API de #214
+
+- #212 cambia 42 ficheros de backend y 0 de móvil. Ninguna de sus rutas casa con `member|invit|access|share|family`.
+- El cliente `mobile-pet-tracker/src/api/pet-members.ts` llama a `GET /pets/:petId/members`, `GET|POST /pets/:petId/invites`, `DELETE /pets/:petId/invites/:inviteId`, `DELETE /pets/:petId/members/:userId` y `POST /invites/accept`. Las seis rutas existen en 2c201c8f: `pet-members.controller.ts` (`@Controller('pets/:petId/members')`, `@Get()`, `@Delete(':userId')`) y `pet-invites.controller.ts` (`@Controller('pets/:petId/invites')` con `@Post()`, `@Get()` y `@Delete(':inviteId')`, y `@Controller('invites')` con `@Post('accept')`).
+- `git diff --stat <merge-base> 2c201c8f` sobre `modules/pet-members` (controladores y `application/dto/accept-invite.dto.ts` incluidos), `modules/pets`, `modules/auth`, `src/common`, `app.module.ts` y `main.ts` da vacío.
+- La migración 0022 de #212 solo crea `nutrition_ai_generations` (FK a `pets` con `ON DELETE cascade`) y añade `nutrition_plans.ai_proposal`. No toca las tablas de miembros ni de invitaciones.
+
+### Checklist (solo lo que este merge puede mover)
+
+- C2: [x] ninguna feature `in_progress`, `feature_list.json` válido. [x] `progress/current.md` mantiene las dos secciones de fallback.
+- C3, C4, C5, C6: sin cambios desde la tercera revisión. El merge no toca código, tests, trazabilidad ni la spec de #214 (sus 55 ficheros propios son idénticos a 67754aea).
+- C7: N/A, igual que antes.
+
+### Observaciones (no bloquean)
+
+1. La sección #214 de `progress/current.md` todavía dice «Ahora hace la Adenda 6, el merge de `dev` con #222». Esa adenda ya terminó. Viene de la rama tal cual y no la introdujo la resolución del conflicto. Puede actualizarse al cerrar la sesión.
+2. Por instrucción del leader, el reviewer no ejecutó `./init.sh`. En el momento de medir, el check `verify` de la PR #276 estaba `QUEUED` sobre el head `2c201c8f`, con `mergeable: MERGEABLE`.
+
+**Veredicto de la cuarta revisión: aprobado.** Queda condicionado a que `bash ./init.sh` salga verde en el CI de la PR #276 (check `verify`) sobre 2c201c8f. Un commit nuevo bajo `mobile-pet-tracker/` o `backend-pet-tracker/`, merge incluido, exige relanzar al reviewer.
+
+Hash revisado: 2c201c8f
