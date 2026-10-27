@@ -109,3 +109,22 @@ it('#209 R4: si la mascota falla pinta el error de carga', async () => {
   await renderQuestionnaire();
   expect(await screen.findByTestId('nutrition-questionnaire-load-error')).toHaveTextContent('Algo salió mal', { exact: true });
 });
+
+it('#209 R5: pinta cabecera, contador «1 de 4» y la barra con un segmento hecho', async () => {
+  await renderQuestionnaire();
+  const header = await screen.findByTestId('nutrition-questionnaire');
+  expect(within(header).getByText('Perfil nutricional')).toBeVisible();
+  expect(screen.getByTestId('nutrition-questionnaire-title').props.className).toBe('text-24 font-black tracking-title text-foreground');
+  expect(screen.getByTestId('nutrition-questionnaire-step-label')).toHaveTextContent('1 de 4', { exact: true });
+  const bar = screen.getByTestId('nutrition-questionnaire-step-bar');
+  expect(bar).toHaveProp('accessibilityRole', 'progressbar');
+  expect(bar).toHaveProp('accessibilityValue', { min: 1, max: 4, now: 1 });
+  expect(bar.children).toHaveLength(4);
+  expect(bar.children.map(child => typeof child === 'string' ? child : child.props.className)).toEqual([
+    'h-1.5 flex-1 rounded-full bg-accent',
+    'h-1.5 flex-1 rounded-full bg-lip-gray',
+    'h-1.5 flex-1 rounded-full bg-lip-gray',
+    'h-1.5 flex-1 rounded-full bg-lip-gray',
+  ]);
+  expect(screen.getByTestId('nutrition-questionnaire-bubble')).toHaveTextContent('Cuéntame cómo es un día normal de Rocky. Con eso calculo cuánta energía necesita.', { exact: true });
+});
