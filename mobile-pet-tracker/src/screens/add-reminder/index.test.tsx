@@ -1356,4 +1356,34 @@ describe('#213 R4: controles de repetición', () => {
     expect(screen.getByTestId('repeat-every-more').props.accessibilityState.disabled).toBe(true);
   });
 
+  it('#213 R7: el stepper de meses nace en 1 mes y se detiene en 12', async () => {
+    await fireEvent.press(screen.getByTestId('repeat-chip-month'));
+    expect(screen.getByTestId('repeat-every-value')).toHaveTextContent('1 mes');
+    expect(screen.getByTestId('repeat-every-help')).toHaveTextContent('De 1 a 12 meses.');
+    expect(screen.getByTestId('repeat-every-less').props.accessibilityLabel).toBe('Un mes menos');
+    expect(screen.getByTestId('repeat-every-more').props.accessibilityLabel).toBe('Un mes más');
+    expect(screen.getByTestId('repeat-every-less').props.accessibilityState.disabled).toBe(true);
+    for (let i = 0; i < 14; i++) await fireEvent.press(screen.getByTestId('repeat-every-more'));
+    expect(screen.getByTestId('repeat-every-value')).toHaveTextContent('12 meses');
+    expect(screen.getByTestId('repeat-every-more').props.accessibilityState.disabled).toBe(true);
+    for (let i = 0; i < 14; i++) await fireEvent.press(screen.getByTestId('repeat-every-less'));
+    expect(screen.getByTestId('repeat-every-value')).toHaveTextContent('1 mes');
+  });
+
+  it.each(['once', 'day', 'week', 'year'])('#213 R7: sin stepper con %s', async (key) => {
+    await fireEvent.press(screen.getByTestId(`repeat-chip-${key}`));
+    expect(screen.queryByTestId('repeat-stepper')).toBeNull();
+  });
+
+  it('#213 R7: cada unidad conserva su valor al cambiar de chip', async () => {
+    await fireEvent.press(screen.getByTestId('repeat-chip-hour'));
+    await fireEvent.press(screen.getByTestId('repeat-every-more'));
+    await fireEvent.press(screen.getByTestId('repeat-chip-month'));
+    await fireEvent.press(screen.getByTestId('repeat-every-more'));
+    await fireEvent.press(screen.getByTestId('repeat-chip-hour'));
+    expect(screen.getByTestId('repeat-every-value')).toHaveTextContent('9 horas');
+    await fireEvent.press(screen.getByTestId('repeat-chip-month'));
+    expect(screen.getByTestId('repeat-every-value')).toHaveTextContent('2 meses');
+  });
+
 });
