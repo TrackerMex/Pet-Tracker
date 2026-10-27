@@ -7,6 +7,7 @@ import {
   within,
 } from '@testing-library/react-native';
 import { router, useFocusEffect } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { HeroUINativeProvider } from 'heroui-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState, type ReactNode } from 'react';
@@ -166,6 +167,8 @@ jest.mock('../../components/pet-switcher', () => {
     },
   };
 });
+
+jest.mock('expo-status-bar', () => ({ StatusBar: jest.fn(() => null) }));
 
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn() },
@@ -2540,5 +2543,34 @@ describe('#196 R9: índices de entrada fijos por rama', () => {
     expect(entrance.props.index).toBe(0);
     expect(mockHomeEntrance.mock.calls.filter(([props]) => props.testID === 'profile-entrance-notice').map(([props]) => props.index)).toEqual(expect.arrayContaining([0]));
     expect(screen.queryByTestId('profile-entrance-hero')).toBeNull();
+  });
+});
+
+describe('#217 R6: la barra clara depende del hero de Perfil', () => {
+  beforeEach(() => {
+    setupProfile168();
+    mockTheme = 'light';
+  });
+
+  it('#217 R6: con hero pide la barra clara', async () => {
+    await renderProfile();
+    await screen.findByTestId('profile-pet-card');
+    expect(jest.mocked(StatusBar).mock.calls.at(-1)?.[0]).toEqual({ style: 'light' });
+    const source = readFileSync(`${process.cwd()}/src/screens/profile/index.tsx`, 'utf8');
+    const bar = source.indexOf('{showHero ? <HeroStatusBar /> : null}');
+    expect(bar).toBeGreaterThan(-1);
+    expect(bar).toBeLessThan(source.indexOf('{showHero ? ('));
+  });
+
+  it('#217 R6: sin mascotas no pide ninguna barra', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    const view = await renderProfile();
+    await screen.findByTestId('profile-pets-empty');
+    jest.mocked(StatusBar).mockClear();
+    await view.rerender(<ProfileScreen />);
+    expect(screen.getByTestId('profile-pets-empty')).toBeVisible();
+    expect(StatusBar).not.toHaveBeenCalled();
+    const source = readFileSync(`${process.cwd()}/src/screens/profile/index.tsx`, 'utf8');
+    expect(source).toContain('{showHero ? <HeroStatusBar /> : null}');
   });
 });
