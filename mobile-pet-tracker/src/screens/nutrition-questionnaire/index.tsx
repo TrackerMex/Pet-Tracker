@@ -479,15 +479,19 @@ export function NutritionQuestionnaireScreen() {
   useEffect(() => {
     if (pet.data?.kind === 'unauthorized' || profile.data?.kind === 'unauthorized') void signOut();
   }, [pet.data?.kind, profile.data?.kind, signOut]);
+  const insets = useSafeAreaInsets();
 
   if (pet.isPending || profile.isPending) {
-    return <View testID="nutrition-questionnaire-skeleton" className="flex-1 gap-4 bg-background p-5">
+    return <View testID="nutrition-questionnaire-skeleton" className="flex-1 gap-4 bg-background px-5 pb-5" style={{ paddingTop: insets.top + 12 }}>
       <Skeleton className="h-14 w-full rounded-xl" />
       <Skeleton className="h-40 w-full rounded-card" />
     </View>;
   }
   if (pet.data?.kind !== 'ok' || profile.data?.kind === 'error' || profile.data?.kind === 'unreachable') {
-    return <Text testID="nutrition-questionnaire-load-error" className="text-danger">{t('common.somethingWentWrong')}</Text>;
+    return <View testID="nutrition-questionnaire-load-error-screen" className="flex-1 gap-4 bg-background px-5 pb-5" style={{ paddingTop: insets.top + 12 }}>
+      <ScreenHeader testID="nutrition-questionnaire" size={24} backFallback="/food" />
+      <Text testID="nutrition-questionnaire-load-error" className="text-danger">{t('common.somethingWentWrong')}</Text>
+    </View>;
   }
   return <QuestionnaireForm initial={profile.data?.kind === 'ok' ? profile.data.profile : null} pet={pet.data.pet} />;
 }
