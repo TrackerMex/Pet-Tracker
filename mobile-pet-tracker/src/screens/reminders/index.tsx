@@ -70,6 +70,7 @@ export function RemindersScreen() {
   const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
   const selectedPetIdRef = useRef<string | null>(selectedPetId);
+  const appliedRoutePetIdRef = useRef<string | null>(null);
   const insets = useSafeAreaInsets();
   const [blueInk, amberInk, greenInk, violetInk, roseInk, muted, accentForeground, danger, accentStrong] = useThemeColors([
     'category-blue-strong', 'category-amber-strong', 'category-green-strong',
@@ -87,9 +88,12 @@ export function RemindersScreen() {
   });
   usePetSelection({ data: pets.data, isRefreshing: pets.isRefetching });
   useEffect(() => {
-    if (typeof petId === 'string' && petId !== selectedPetId && pets.data?.kind === 'ok'
-      && pets.data.pets.some(({ id }) => id === petId)) selectPet(petId);
-  }, [petId, pets.data, selectPet, selectedPetId]);
+    if (typeof petId === 'string' && petId !== appliedRoutePetIdRef.current && pets.data?.kind === 'ok'
+      && pets.data.pets.some(({ id }) => id === petId)) {
+      appliedRoutePetIdRef.current = petId;
+      selectPet(petId);
+    }
+  }, [petId, pets.data, selectPet]);
   const reminders = useQuery({
     queryKey: reminderKeys.list(selectedPetId ?? ''),
     queryFn: () => listReminders(baseUrl, token ?? '', selectedPetId!),
