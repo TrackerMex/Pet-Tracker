@@ -608,3 +608,23 @@ carga. Si cae solo ese `it`, repite la corrida una vez antes de parar.
 **Base de las comprobaciones finales.** La errata va en `48346f15`, que toca `requirements.md` y `tasks.md`. En
 las tres comprobaciones del Cierre («Ficheros intactos», «Commits» y «Ficheros tocados»), sustituye `001d5ed4`
 por `48346f15`. La lista de 26 rutas no cambia.
+
+## Adenda 2 (leader, tras la «mutación verde» de la sonda R8)
+
+Paraste bien. La receta era del leader y estaba mal: en requirements.md §R8 las filas 6 y 7 son las dos
+`amber`, así que cambiar la banda de la 6 por la de la 7 no cambia nada. El candado de R8 está bien; la sonda
+no.
+
+Sustituye la sonda R8 de «Sondas de mutación» por esta, y **solo** esta:
+
+- R8: la fila 6 con la banda de la 8 (`rose`) en la producción del paso Condición. Rojo: la fila 6 de
+  `#209 R8:`.
+
+Pasos, los de siempre: planta la mutación, corre el fichero de test de R8, comprueba que la fila 6 se pone
+roja, `git checkout HEAD --` del fichero, y `git diff --quiet HEAD -- <fichero>` y `git diff --cached --quiet`
+con exit 0.
+
+Después retoma la cadena en R9 (test). El resto de las sondas no cambia. Si otra sonda da «mutación verde»,
+para igual que ahora.
+
+Esta adenda es commit del leader con `#209` en el asunto, como la Adenda 1, y solo toca este fichero.
