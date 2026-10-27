@@ -1,8 +1,8 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 
-import { listPetMembers } from '../../api/pet-members';
+import { listPetMembers, removePetMember, type RemovePetMemberState } from '../../api/pet-members';
 import { getPet } from '../../api/pets';
 import type { PetProfile } from '../../api/types';
 import { getMe } from '../../api/users';
@@ -11,6 +11,7 @@ import { renderWithProviders } from '../../../test/render-with-providers';
 import PetMembersScreen from './index';
 
 const mockSignOut = jest.fn().mockResolvedValue(undefined);
+const originalApiUrl = process.env.EXPO_PUBLIC_API_URL;
 
 jest.mock('../../api/pets', () => ({ getPet: jest.fn() }));
 jest.mock('../../api/users', () => ({ getMe: jest.fn() }));
@@ -34,6 +35,18 @@ jest.mock('react-native-safe-area-context', () => ({
 jest.mock('../../theme/use-theme-colors', () => ({
   useThemeColors: (tokens: string[]) => tokens.map((token) => `color:${token}`),
 }));
+jest.mock('@expo/ui/community/bottom-sheet', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    BottomSheet: ({ children, index, ...props }: Record<string, unknown>) =>
+      typeof index === 'number' && index >= 0
+        ? React.createElement(View as unknown as React.ComponentType<Record<string, unknown>>, { ...props, index, testID: 'community-bottom-sheet' }, children as never)
+        : null,
+    BottomSheetView: ({ children, ...props }: Record<string, unknown>) =>
+      React.createElement(View, props, children as never),
+  };
+});
 
 const pet: PetProfile = {
   id: 'pet-1', name: 'Rocky', species: 'dog', breed: null, sex: 'male',
@@ -64,9 +77,16 @@ async function renderMembers() {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
   jest.mocked(getPet).mockResolvedValue({ kind: 'ok', pet });
   jest.mocked(listPetMembers).mockResolvedValue({ kind: 'ok', members });
   jest.mocked(getMe).mockResolvedValue({ kind: 'ok', me });
+  jest.mocked(removePetMember).mockResolvedValue({ kind: 'ok' });
+});
+
+afterAll(() => {
+  if (originalApiUrl === undefined) delete process.env.EXPO_PUBLIC_API_URL;
+  else process.env.EXPO_PUBLIC_API_URL = originalApiUrl;
 });
 
 it('R8: muestra el skeleton mientras carga', async () => {
@@ -180,4 +200,82 @@ it('R10: walker tampoco ve acciones de dueño', async () => {
   expect(screen.queryAllByTestId(/^pet-invites-/)).toHaveLength(0);
   expect(screen.queryByTestId('pet-members-code-note')).toBeNull();
   expect(screen.queryByTestId('pet-members-invite-cta')).toBeNull();
+});
+
+async function renderRemoving() {
+  const app = await renderMembers();
+  await waitFor(() => expect(screen.getByTestId('member-row-user-2-remove')).toBeVisible());
+  await fireEvent.press(screen.getByTestId('member-row-user-2-remove'));
+  await waitFor(() => expect(screen.getByTestId('member-remove-sheet')).toBeVisible());
+  return app;
+}
+
+it('R11: el sheet nombra a la persona y a su mascota', async () => {
+  await renderRemoving();
+  expect(screen.getByTestId('member-remove-sheet-title')).toHaveTextContent('¿Quitar a Luis Ortega?');
+  expect(screen.getByTestId('member-remove-sheet-body')).toHaveTextContent('Luis dejará de ver a Rocky y de recibir sus avisos. Podrás enviarle otra invitación cuando quieras.');
+  expect(screen.getByTestId('member-remove-sheet-avatar', { includeHiddenElements: true })).toHaveTextContent('LO');
+  expect(screen.getByTestId('community-bottom-sheet').props.backgroundStyle).toEqual({ backgroundColor: 'color:surface' });
+});
+
+it('R11: Cancelar cierra sin llamar a la API', async () => {
+  await renderRemoving();
+  await fireEvent.press(screen.getByTestId('member-remove-sheet-cancel'));
+  await waitFor(() => expect(screen.queryByTestId('member-remove-sheet')).toBeNull());
+  expect(removePetMember).not.toHaveBeenCalled();
+});
+
+it('R11: confirmar quita e invalida la lista', async () => {
+  const { queryClient } = await renderRemoving();
+  const invalidate = jest.spyOn(queryClient, 'invalidateQueries');
+  await fireEvent.press(screen.getByTestId('member-remove-sheet-confirm'));
+  await waitFor(() => expect(screen.queryByTestId('member-remove-sheet')).toBeNull());
+  expect(removePetMember).toHaveBeenCalledWith('http://example.test/v1', 'token', 'pet-1', 'user-2');
+  expect(invalidate).toHaveBeenCalledWith({ queryKey: ['pet-members', 'pet-1'] });
+});
+
+it('R11: rejected invalida y avisa', async () => {
+  jest.mocked(removePetMember).mockResolvedValue({ kind: 'rejected' });
+  const { queryClient } = await renderRemoving();
+  const invalidate = jest.spyOn(queryClient, 'invalidateQueries');
+  await fireEvent.press(screen.getByTestId('member-remove-sheet-confirm'));
+  await waitFor(() => expect(screen.getByTestId('pet-members-action-error')).toHaveTextContent('Algo salió mal'));
+  expect(screen.queryByTestId('member-remove-sheet')).toBeNull();
+  expect(invalidate).toHaveBeenCalledWith({ queryKey: ['pet-members', 'pet-1'] });
+});
+
+it('R11: unreachable deja el sheet abierto', async () => {
+  jest.mocked(removePetMember).mockResolvedValue({ kind: 'unreachable', message: 'x' });
+  await renderRemoving();
+  await fireEvent.press(screen.getByTestId('member-remove-sheet-confirm'));
+  await waitFor(() => expect(screen.getByTestId('pet-members-action-error')).toHaveTextContent('No se pudo conectar con el servidor'));
+  expect(screen.getByTestId('member-remove-sheet')).toBeVisible();
+});
+
+it('R11: error deja el sheet abierto', async () => {
+  jest.mocked(removePetMember).mockResolvedValue({ kind: 'error' });
+  await renderRemoving();
+  await fireEvent.press(screen.getByTestId('member-remove-sheet-confirm'));
+  await waitFor(() => expect(screen.getByTestId('pet-members-action-error')).toHaveTextContent('Algo salió mal'));
+  expect(screen.getByTestId('member-remove-sheet')).toBeVisible();
+});
+
+it('R11: unauthorized cierra sesión', async () => {
+  jest.mocked(removePetMember).mockResolvedValue({ kind: 'unauthorized' });
+  await renderRemoving();
+  await fireEvent.press(screen.getByTestId('member-remove-sheet-confirm'));
+  await waitFor(() => expect(screen.getByTestId('member-remove-sheet-confirm')).toBeEnabled());
+  expect(mockSignOut).toHaveBeenCalledTimes(1);
+});
+
+it('R11: doble toque llama una sola vez', async () => {
+  let finish!: (result: RemovePetMemberState) => void;
+  jest.mocked(removePetMember).mockReturnValue(new Promise((resolve) => { finish = resolve; }));
+  await renderRemoving();
+  await fireEvent.press(screen.getByTestId('member-remove-sheet-confirm'));
+  expect(screen.getByTestId('member-remove-sheet-confirm')).toBeDisabled();
+  await fireEvent.press(screen.getByTestId('member-remove-sheet-confirm'));
+  expect(removePetMember).toHaveBeenCalledTimes(1);
+  await act(async () => finish({ kind: 'ok' }));
+  await waitFor(() => expect(screen.queryByTestId('member-remove-sheet')).toBeNull());
 });
