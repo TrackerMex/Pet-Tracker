@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Bell, InfoCircle, Plus } from 'reicon-react-native';
+import { AlertTriangle, Bell, InfoCircle, Plus } from 'reicon-react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Checkbox, Skeleton } from 'heroui-native';
 import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
@@ -25,6 +25,7 @@ import { validateVaccine } from '../../utils/form-rules';
 import { createReminder } from '../../api/reminders';
 import { combineDateAndTime } from '../../utils/reminder-dates';
 import { clearVaccineReminderNotice, showVaccineReminderNotice } from '../../hooks/vaccine-reminder-notice';
+import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { ScreenHeader } from '../../components/screen-header';
 import { useAuth } from '../../providers/auth-provider';
 import { useLocale, useTranslate } from '../../providers/language-provider';
@@ -35,6 +36,7 @@ export function VaccineCreateScreen({ petId }: { petId: string }) {
   const t = useTranslate();
   const locale = useLocale();
   const [remind, setRemind] = useState(true);
+  const [formError, setFormError] = useState(false);
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const pets = useQuery({ queryKey: petKeys.list(), queryFn: () => listPets(baseUrl, token ?? '') });
@@ -87,17 +89,21 @@ export function VaccineCreateScreen({ petId }: { petId: string }) {
   const submitting = save.isPending;
 
   async function handleSubmit() {
+    setFormError(false);
     const issues = validateVaccine({ mode: entry ? 'catalog' : 'other', name });
     setFieldErrors(issues);
     if (Object.keys(issues).length > 0) return;
-    await save.mutateAsync({
+    try {
+      const result = await save.mutateAsync({
       ...(entry ? { catalogId: entry.id } : { name: name.trim() }),
       appliedAt,
       ...(nextDoseAt ? { nextDoseAt } : {}),
       ...(vetName.trim() ? { vetName: vetName.trim() } : {}),
       ...(clinic.trim() ? { clinic: clinic.trim() } : {}),
       ...(notes.trim() ? { notes: notes.trim() } : {}),
-    });
+      });
+      if (result.kind !== 'ok') setFormError(true);
+    } catch { setFormError(true); }
   }
 
   function selectVaccine(id: string) {
@@ -191,6 +197,10 @@ export function VaccineCreateScreen({ petId }: { petId: string }) {
         </View>
       </ScrollView>
       <View testID="vaccine-create-bar" style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: Math.max(insets.bottom, 16), gap: 12 }}>
+        {formError && <View testID="vaccine-create-error" accessibilityRole="alert" className={`flex-row items-center gap-2.5 rounded-tile px-3.5 py-3 ${CATEGORY_SLOTS.rose.surface}`} style={CONTINUOUS_CORNER}>
+          <AlertTriangle size={20} color={danger} />
+          <Text testID="vaccine-create-error-text" className="flex-1 text-13 font-bold text-danger">{t('vaccineCreate.saveError')}</Text>
+        </View>}
         <Button testID="vaccine-create-submit" className="h-14 rounded-16 bg-accent" style={chunkyLip.primary} isDisabled={submitting} onPress={() => void handleSubmit()}>
           <Text className="text-17 font-extrabold text-accent-foreground">{t('vaccineCreate.save')}</Text>
         </Button>
