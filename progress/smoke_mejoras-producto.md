@@ -109,3 +109,36 @@ En el dev build de Android (no Expo Go):
    (R12).
 
 - [ ] Smoke de #214 recorrido por el humano (fecha: ____)
+
+## #216 mobile-role-aware-actions
+
+Spec: `specs/mobile-role-aware-actions/requirements.md` (§Aprobación). Reviewer APROBADO sobre `0bb40b8d`
+(`progress/review_mobile-role-aware-actions.md`). Como en #208 y #214, la spec dice que su smoke
+**bloquea `done`**.
+
+No necesita rebuild propio: #216 no añade módulos nativos. Usa el mismo dev build que #214.
+
+Hacen falta dos cuentas de la misma mascota: A (dueña) y B (`family`). B se une con el código de
+invitación de #214 (pasos 2 y 6 del smoke de #214). Para el paso 5, la mascota no debe tener
+collar al principio; para el paso 6, A vincula uno.
+
+En el dev build de Android (no Expo Go), primero con la cuenta B:
+
+1. Inicio: los accesos rápidos son solo «Peso» y «Documentos», en ese orden. No sale
+   «Recordatorio». Cada tile conserva su color y abre su pantalla de siempre.
+2. Inicio, tarjeta del collar (mascota sin collar): se ve el estado, pero no el enlace «Vincular
+   collar».
+3. Peso: se ven la cabecera, la gráfica y el historial, pero no el formulario de alta.
+4. Recordatorios: no sale «Nuevo» en la cabecera. Con la lista vacía, el vacío sale sin botón. Con
+   recordatorios creados por A, ninguna fila tiene el botón de borrar ni el de cancelar la serie,
+   y la línea de repetición de una serie sigue saliendo.
+5. Vincular collar (mascota sin collar): en lugar del formulario sale la nota «Solo el dueño puede
+   vincular un collar.», centrada, bajo el héroe.
+6. Vincular collar (después de que A vincule un collar): se ven el título y la tarjeta de estado
+   del collar, pero no «Desvincular».
+
+Con la cuenta A, los mismos seis puntos: A lo ve todo («Recordatorio», «Vincular collar», el
+formulario de Peso, «Nuevo», los botones de las filas, el formulario de vincular y
+«Desvincular»).
+
+- [ ] Smoke de #216 recorrido por el humano (fecha: ____)

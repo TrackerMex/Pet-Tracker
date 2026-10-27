@@ -326,11 +326,11 @@ describe('R5: reminders monta con métricas y estados', () => {
     );
   });
 
-  it('opens the add-reminder route', async () => {
+  it('opens the add-reminder route (enmendado por #216 R4)', async () => {
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
 
     await renderReminders();
-    await fireEvent.press(screen.getByTestId('reminders-add-link'));
+    await fireEvent.press(await screen.findByTestId('reminders-add-link'));
 
     expect(mockRouter.push).toHaveBeenCalledWith('/add-reminder');
   });
@@ -2220,4 +2220,117 @@ describe('#213 R14: series en Recordatorios', () => {
     expect(mockListReminders).toHaveBeenLastCalledWith('http://example.test/v1', 'jwt-token', 'pet-1');
   });
 
+});
+
+describe('#216 R4: Nuevo es solo del dueño', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+  });
+
+  it.each([
+    ['owner', 3],
+    ['family', 2],
+    ['walker', 2],
+    ['vet', 2],
+  ] as const)('#216 R4 con el rol %s y recordatorios la cabecera tiene %i hijos', async (role, headerChildren) => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: role })] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [makeReminder()] });
+    await renderReminders();
+    await screen.findByTestId('reminder-row-reminder-1');
+
+    const header = screen.getByTestId('reminders');
+    expect(header.children).toHaveLength(headerChildren);
+    if (role === 'owner') {
+      expect(screen.queryByTestId('reminders-add-link')).not.toBeNull();
+      const last = header.children.at(-1);
+      expect(typeof last === 'string' ? last : last?.props.testID).toBe('reminders-add-link');
+    } else {
+      expect(screen.queryByTestId('reminders-add-link')).toBeNull();
+    }
+  });
+
+  it.each([
+    ['owner', true],
+    ['family', false],
+    ['walker', false],
+    ['vet', false],
+  ] as const)('#216 R4 con el rol %s y sin recordatorios Nuevo se pinta: %s', async (role, actionVisible) => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: role })] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+    await renderReminders();
+    await screen.findByTestId('reminders-empty');
+
+    expect(screen.queryByTestId('reminders-empty-title')).not.toBeNull();
+    for (const testID of ['reminders-empty-action', 'reminders-add-link']) {
+      if (actionVisible) expect(screen.queryByTestId(testID)).not.toBeNull();
+      else expect(screen.queryByTestId(testID)).toBeNull();
+    }
+  });
+
+  it('#216 R4 al pasar a una mascota que no es del dueño, Nuevo se va', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo', myRole: 'family' })] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+    await renderReminders();
+    await screen.findByTestId('reminders-add-link');
+
+    await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
+
+    await waitFor(() => expect(screen.queryByTestId('reminders-add-link')).toBeNull());
+  });
+});
+
+describe('#216 R5: borrar y cancelar serie son solo del dueño', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+  });
+
+  it.each([
+    ['owner', 3],
+    ['family', 2],
+    ['walker', 2],
+    ['vet', 2],
+  ] as const)('#216 R5 con el rol %s cada fila tiene %i hijos', async (role, rowChildren) => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: role })] });
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: [makeReminder(), makeReminder({ id: 'reminder-2', recurrence: { unit: 'month', every: 1 } })],
+    });
+    await renderReminders();
+    await screen.findByTestId('reminder-row-reminder-2');
+
+    for (const id of ['reminder-1', 'reminder-2']) {
+      const row = screen.getByTestId(`reminder-row-${id}`);
+      expect(row.children).toHaveLength(rowChildren);
+      expect(row.children[0]).toHaveProperty('props.testID', `reminder-tile-${id}`);
+      expect(row.children[1]).toHaveProperty('props.className', 'min-w-0 flex-1 gap-0.75');
+    }
+    if (role === 'owner') {
+      expect(screen.getByTestId('reminder-row-reminder-1').children[2]).toHaveProperty(
+        'props.testID',
+        'reminder-delete-reminder-1',
+      );
+      expect(screen.getByTestId('reminder-row-reminder-2').children[2]).toHaveProperty(
+        'props.testID',
+        'reminder-cancel-series-reminder-2',
+      );
+    } else {
+      expect(screen.queryByTestId('reminder-delete-reminder-1')).toBeNull();
+      expect(screen.queryByTestId('reminder-cancel-series-reminder-2')).toBeNull();
+    }
+    expect(screen.queryByTestId('reminder-repeats-reminder-2')).not.toBeNull();
+  });
 });
