@@ -669,6 +669,7 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
       'geofence-editor-delete', // #189 R13
       'meal-time-edit-${index}', // #179 R6
       'pairing-unpair-cancel', // #203 R7
+      'reminders-cancel-series-keep', // #213 R17
       'reminders-delete-cancel',
       'secondary.testID', // #171 R14
       'welcome-have-account',
@@ -677,7 +678,7 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
       (total, path) => total + (readFileSync(path, 'utf8').match(pattern) ?? []).length,
       0,
     );
-    expect(count(/border-lip-gray/g)).toBe(4 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 2); // #213 R6 (+2) // #189 R13; #179 R6, R7; #170 R16; #171 R14; #174 R8; #175 R7: borde de la zona de subida; #203 R7
+    expect(count(/border-lip-gray/g)).toBe(4 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 2 + 1); // #213 R6 (+2); #213 R17 (+1) // #189 R13; #179 R6, R7; #170 R16; #171 R14; #174 R8; #175 R7: borde de la zona de subida; #203 R7
     expect(count(/\bborder-b-6\b/g)).toBe(0); // #177 R10
   });
 

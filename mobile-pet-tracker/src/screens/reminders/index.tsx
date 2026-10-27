@@ -106,6 +106,7 @@ export function RemindersScreen() {
       }
       return () => {
         setDeleteCandidate(null);
+        setCancelCandidate(null);
         setActionError(null);
       };
     }, [refetchReminders]),
@@ -158,6 +159,7 @@ export function RemindersScreen() {
 
   const dismissDeleteSheet = useCallback(() => {
     setDeleteCandidate(null);
+    setCancelCandidate(null);
   }, []);
 
   const deleteSelectedReminder = useCallback(() => {
@@ -167,6 +169,7 @@ export function RemindersScreen() {
     void handleDelete(reminderId);
   }, [deleteCandidate, handleDelete]);
 
+  const cancelPetName = pets.data?.kind === 'ok' ? pets.data.pets.find(({ id }) => id === cancelCandidate?.petId)?.name : undefined;
   const petsEmpty = pets.data?.kind === 'ok' && pets.data.pets.length === 0;
   if (petsEmpty) {
     return (
@@ -451,13 +454,37 @@ export function RemindersScreen() {
 
       <View testID="reminders-delete-host">
         <BottomSheet
-          index={deleteCandidate === null ? -1 : 0}
+          index={deleteCandidate === null && cancelCandidate === null ? -1 : 0}
           enablePanDownToClose
           onClose={dismissDeleteSheet}
           snapPoints={['50%', '100%']}
           backgroundStyle={{ backgroundColor: surface }}
         >
           <BottomSheetView>
+            {cancelCandidate ? (
+              <View testID="reminders-cancel-series-sheet" className="items-center gap-3 bg-surface px-5 pb-9 pt-3">
+                <View testID="reminders-cancel-series-icon" className={`size-14 items-center justify-center rounded-full ${CATEGORY_SLOTS.rose.surface}`}>
+                  <Repeat size={26} color={danger} />
+                </View>
+                <Text className="text-center text-xl font-black text-foreground">{t('reminders.cancelSeriesTitle')}</Text>
+                <Text testID="reminders-cancel-series-reference" className="text-center text-base font-semibold text-foreground">
+                  {t('reminders.cancelSeriesReference', { title: cancelCandidate.title, cadence: cancelCandidate.recurrence ? cadenceText(cancelCandidate.recurrence, t) : '' })}
+                </Text>
+                <Text className="text-center text-sm font-normal text-muted">
+                  {cancelPetName
+                    ? t('reminders.cancelSeriesBody', { title: cancelCandidate.title, pet: cancelPetName })
+                    : t('reminders.cancelSeriesBodyNoPet', { title: cancelCandidate.title })}
+                </Text>
+                <View className="w-full gap-3">
+                  <Button testID="reminders-cancel-series-confirm" className="h-14 w-full rounded-16 bg-danger" style={chunkyLip.danger} variant="danger">
+                    <Text className="text-17 font-extrabold text-danger-foreground">{t('reminders.cancelSeriesConfirm')}</Text>
+                  </Button>
+                  <Button testID="reminders-cancel-series-keep" className="w-full h-14 rounded-16 border-2 border-lip-gray bg-surface" style={chunkyLip.neutral} variant="outline">
+                    <Text className="text-17 font-extrabold text-foreground">{t('reminders.keepSeries')}</Text>
+                  </Button>
+                </View>
+              </View>
+            ) : (
             <View
               testID="reminders-delete-sheet"
               className="items-center gap-3 bg-surface px-5 pb-9 pt-3"
@@ -503,6 +530,7 @@ export function RemindersScreen() {
                 </Button>
               </View>
             </View>
+            )}
           </BottomSheetView>
         </BottomSheet>
       </View>
