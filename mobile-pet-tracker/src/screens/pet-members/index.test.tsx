@@ -1,4 +1,5 @@
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
+import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 
@@ -11,6 +12,7 @@ import { renderWithProviders } from '../../../test/render-with-providers';
 import PetMembersScreen from './index';
 
 const mockSignOut = jest.fn().mockResolvedValue(undefined);
+const mockClearPet = jest.fn();
 const originalApiUrl = process.env.EXPO_PUBLIC_API_URL;
 
 jest.mock('../../api/pets', () => ({ getPet: jest.fn() }));
@@ -24,6 +26,9 @@ jest.mock('../../api/pet-members', () => ({
 }));
 jest.mock('../../providers/auth-provider', () => ({
   useAuth: () => ({ token: 'token', signOut: mockSignOut }),
+}));
+jest.mock('../../providers/selected-pet-provider', () => ({
+  useSelectedPet: () => ({ clearPet: mockClearPet }),
 }));
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn(), canGoBack: () => true, dismissTo: jest.fn() },
@@ -78,6 +83,8 @@ async function renderMembers() {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockClearPet.mockReset();
+  jest.mocked(router.dismissTo).mockReset();
   process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
   jest.mocked(getPet).mockResolvedValue({ kind: 'ok', pet });
   jest.mocked(listPetMembers).mockResolvedValue({ kind: 'ok', members });
@@ -380,4 +387,84 @@ it('R16: el dueño no ve Salir', async () => {
   expect(screen.queryByTestId('pet-members-owner-note')).toBeNull();
   expect(screen.queryByTestId('pet-members-leave-hint')).toBeNull();
   expect(screen.queryByTestId('pet-members-leave')).toBeNull();
+});
+
+async function renderLeaving(withOwner = true) {
+  familyView();
+  if (!withOwner) jest.mocked(listPetMembers).mockResolvedValue({ kind: 'ok', members: [members[1]] });
+  const app = await renderMembers();
+  await waitFor(() => expect(screen.getByTestId('pet-members-leave')).toBeVisible());
+  await fireEvent.press(screen.getByTestId('pet-members-leave'));
+  await waitFor(() => expect(screen.getByTestId('member-leave-sheet')).toBeVisible());
+  return app;
+}
+
+it('R17: el sheet de salir nombra a la mascota y al dueño', async () => {
+  await renderLeaving();
+  expect(screen.getByTestId('member-leave-sheet-title')).toHaveTextContent('¿Salir de la familia de Rocky?');
+  expect(screen.getByTestId('member-leave-sheet-body')).toHaveTextContent('Dejarás de ver a Rocky y de recibir sus avisos. Para volver, Ana García tendrá que invitarte otra vez.');
+});
+
+it('R17: sin dueño en la lista el cuerpo usa la variante sin nombre', async () => {
+  await renderLeaving(false);
+  expect(screen.getByTestId('member-leave-sheet-body')).toHaveTextContent('Dejarás de ver a Rocky y de recibir sus avisos. Para volver, necesitarás una invitación nueva.');
+});
+
+it('R17: Cancelar no llama a la API', async () => {
+  await renderLeaving();
+  await fireEvent.press(screen.getByTestId('member-leave-sheet-cancel'));
+  await waitFor(() => expect(screen.queryByTestId('member-leave-sheet')).toBeNull());
+  expect(removePetMember).not.toHaveBeenCalled();
+});
+
+it('R17: salir limpia la mascota, invalida la lista y vuelve a Inicio en orden', async () => {
+  const { queryClient } = await renderLeaving();
+  const order: unknown[] = [];
+  const remove = queryClient.removeQueries.bind(queryClient);
+  const invalidate = queryClient.invalidateQueries.bind(queryClient);
+  jest.spyOn(queryClient, 'removeQueries').mockImplementation((filters) => {
+    order.push(['removeQueries', filters?.queryKey]);
+    remove(filters);
+  });
+  jest.spyOn(queryClient, 'invalidateQueries').mockImplementation(async (filters) => {
+    order.push(['invalidateQueries', filters?.queryKey]);
+    await invalidate(filters);
+  });
+  mockClearPet.mockImplementation(() => { order.push(['clearPet']); });
+  jest.mocked(router.dismissTo).mockImplementation((href) => { order.push(['dismissTo', href]); });
+  await fireEvent.press(screen.getByTestId('member-leave-sheet-confirm'));
+  await waitFor(() => expect(screen.getByTestId('pet-members-list')).toBeVisible());
+  expect(removePetMember).toHaveBeenCalledWith('http://example.test/v1', 'token', 'pet-1', 'user-2');
+  expect(order).toEqual([
+    ['removeQueries', ['pets', 'detail', 'pet-1']],
+    ['removeQueries', ['pet-members', 'pet-1']],
+    ['clearPet'],
+    ['invalidateQueries', ['pets', 'list']],
+    ['dismissTo', '/home'],
+  ]);
+});
+
+it('R17: unreachable deja el sheet abierto', async () => {
+  jest.mocked(removePetMember).mockResolvedValue({ kind: 'unreachable', message: 'x' });
+  await renderLeaving();
+  await fireEvent.press(screen.getByTestId('member-leave-sheet-confirm'));
+  await waitFor(() => expect(screen.getByTestId('pet-members-action-error')).toHaveTextContent('No se pudo conectar con el servidor'));
+  expect(screen.getByTestId('member-leave-sheet')).toBeVisible();
+});
+
+it('R17: rejected deja el sheet abierto', async () => {
+  jest.mocked(removePetMember).mockResolvedValue({ kind: 'rejected' });
+  await renderLeaving();
+  await fireEvent.press(screen.getByTestId('member-leave-sheet-confirm'));
+  await waitFor(() => expect(screen.getByTestId('pet-members-action-error')).toHaveTextContent('Algo salió mal'));
+  expect(screen.getByTestId('member-leave-sheet')).toBeVisible();
+});
+
+it('R17: unauthorized cierra sesión', async () => {
+  jest.mocked(removePetMember).mockResolvedValue({ kind: 'unauthorized' });
+  await renderLeaving();
+  await fireEvent.press(screen.getByTestId('member-leave-sheet-confirm'));
+  await waitFor(() => expect(screen.getByTestId('member-leave-sheet-confirm')).toBeEnabled());
+  expect(mockSignOut).toHaveBeenCalledTimes(1);
+  expect(screen.queryByTestId('pet-members-action-error')).toBeNull();
 });
