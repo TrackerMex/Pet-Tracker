@@ -5,7 +5,10 @@ import type {
   NutritionEngineInput,
   NutritionPlanResult,
 } from '@/modules/nutrition/domain/nutrition-engine';
-import { buildUserPrompt } from './nutrition-prompt';
+import {
+  buildUserPrompt,
+  NUTRITION_AI_SYSTEM_PROMPT,
+} from './nutrition-prompt';
 import {
   AnthropicNutritionExplainer,
   NUTRITION_AI_TIMEOUT_MS,
@@ -79,9 +82,7 @@ describe('R9 (nutrition-ai-explainer #18): parametros exactos de la llamada', ()
     ]);
     expect(params.model).toBe('modelo-de-prueba');
     expect(params.max_tokens).toBe(1200);
-    expect(params.system).toBe(
-      'Eres el asistente de nutrición de Pet Tracker. Explica planes de alimentación de mascotas en español sencillo y cálido. Nunca des diagnósticos, nunca contradigas al veterinario, incluye siempre que es orientativo. Máximo 180 palabras.',
-    );
+    expect(params.system).toBe(NUTRITION_AI_SYSTEM_PROMPT);
     expect(params.messages).toHaveLength(1);
     expect(params.messages[0].role).toBe('user');
     expect(params.messages[0].content).toBe(buildUserPrompt(input, result));
