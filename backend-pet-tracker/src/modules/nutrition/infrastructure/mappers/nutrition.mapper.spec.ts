@@ -16,6 +16,7 @@ function plan(aiExplanation: string | null): NutritionPlan {
     objective: 'maintenance',
     warnings: [],
     aiExplanation,
+    aiProposal: null,
     inputsHash: 'h'.repeat(64),
     generatedAt: new Date('2026-10-08T00:00:00Z'),
   });

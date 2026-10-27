@@ -1,3 +1,4 @@
+import type { NutritionAiProposal } from '@/modules/nutrition/domain/nutrition-ai-proposal';
 import type {
   NutritionPlanResult,
   NutritionObjective,
@@ -16,6 +17,7 @@ export interface NutritionPlanProps {
   objective: NutritionObjective;
   warnings: NutritionWarning[];
   aiExplanation: string | null;
+  aiProposal: NutritionAiProposal | null;
   inputsHash: string;
   generatedAt: Date;
 }
@@ -34,6 +36,7 @@ export class NutritionPlan implements NutritionPlanProps {
   readonly objective: NutritionObjective;
   readonly warnings: NutritionWarning[];
   readonly aiExplanation: string | null;
+  readonly aiProposal: NutritionAiProposal | null;
   readonly inputsHash: string;
   readonly generatedAt: Date;
 
@@ -75,6 +78,7 @@ export function copyWithMealTimes(
     objective: plan.objective,
     warnings: plan.warnings,
     aiExplanation: plan.aiExplanation,
+    aiProposal: plan.aiProposal,
     inputsHash: plan.inputsHash,
   };
 }

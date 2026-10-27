@@ -70,6 +70,7 @@ export class GenerateNutritionPlanUseCase {
       ...carriedSchedule(latestPlan, result),
       engineMealsPerDay: result.mealsPerDay,
       aiExplanation: null,
+      aiProposal: null,
       inputsHash,
     });
     return this.explainPlan(petId, input, plan);

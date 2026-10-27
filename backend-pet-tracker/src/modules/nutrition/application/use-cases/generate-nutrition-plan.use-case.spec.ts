@@ -60,6 +60,7 @@ function setup(
     ...projected,
     engineMealsPerDay: 2,
     aiExplanation: null,
+    aiProposal: null,
     inputsHash: nutritionInputHash(input, []),
     generatedAt: new Date(),
   });

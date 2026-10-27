@@ -19,6 +19,7 @@ function plan(overrides: Partial<NutritionPlanProps> = {}): NutritionPlan {
     objective: 'maintenance',
     warnings: [],
     aiExplanation: 'texto',
+    aiProposal: null,
     inputsHash: 'a'.repeat(64),
     generatedAt: new Date('2026-10-02T00:00:00Z'),
     ...overrides,
@@ -118,6 +119,7 @@ describe('R3 (meal-schedule-editing #103): copyWithMealTimes ordena, recuenta y 
       objective: 'weight_loss',
       warnings: [{ code: 'weight_loss_plan', message: 'aviso' }],
       aiExplanation: 'texto',
+      aiProposal: null,
       inputsHash: 'a'.repeat(64),
     });
   });
@@ -128,5 +130,23 @@ describe('R3 (meal-schedule-editing #103): copyWithMealTimes ordena, recuenta y 
     copyWithMealTimes(original, times);
     expect(times).toEqual(['19:30', '07:30', '12:00']);
     expect(original.mealTimes).toEqual(['07:30', '19:30']);
+  });
+});
+
+describe('R17 (nutrition-ai-structured-plan #212): copia del horario', () => {
+  it('R17: la copia por cambio de horario descarta la propuesta y conserva la explicacion', () => {
+    const proposal = {
+      mealGrams: [
+        { mealTime: '07:30', grams: 150 },
+        { mealTime: '19:30', grams: 155 },
+      ],
+      recommendations: ['Pésala cada dos semanas.'],
+      reviewDate: '2026-11-25',
+    };
+    const original = plan({ aiProposal: proposal });
+    const copy = copyWithMealTimes(original, ['08:15', '19:30']);
+    expect(copy.aiProposal).toBeNull();
+    expect(copy.aiExplanation).toBe('texto');
+    expect(original.aiProposal).toStrictEqual(proposal);
   });
 });
