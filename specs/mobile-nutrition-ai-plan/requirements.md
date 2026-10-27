@@ -115,7 +115,7 @@ API de un componente de #224.
 | `src/__tests__/ui-copy-table.ts` | R4 añade filas a `R6_FOOD`. | Añade el bloque nuevo `R22_NUTRITION_PLAN` (R19). |
 | `src/__tests__/ui-language.test.ts`, agregado de `SCREEN_FILES` | R4 añade `+ 1 // #224 R4: screens/food/ai-explanation.tsx`. | Su `+ 1 // #215 R19` va **detrás** de la línea de #224. |
 | `src/providers/__tests__/language-provider.test.tsx`, total de claves | R4 añade `+ 3 // #224 R4`. | Su `+ 16, // #215 R19` va **la última**, y la coma se mueve a ella. |
-| `src/__tests__/profile-canvas-fidelity.test.ts`, lista de text-13 | R13 quita `screens/food/index.tsx` y añade `screens/food/ai-explanation.tsx`. | Añade `screens/nutrition-plan/index.tsx` delante de `screens/nutrition-questionnaire/index.tsx` (R20). |
+| `src/__tests__/profile-canvas-fidelity.test.ts`, lista de text-13 | R13 conserva `screens/food/index.tsx` y solo añade `screens/food/ai-explanation.tsx` (fe de erratas E1 de #224, `cbbf08cd`: la lista pasa de 25 a 26). | Añade `screens/nutrition-plan/index.tsx` delante de `screens/nutrition-questionnaire/index.tsx` (R20). |
 | `src/__tests__/nutrition-canvas-fidelity.test.ts`, constantes `AI_EXPLANATION` y `AI_PARSER` (#224 R13) | Las crea. | No las toca. |
 
 #### Re-verificar al mergear #224
