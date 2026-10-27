@@ -1247,3 +1247,80 @@ Cifras reales de los «≥» de R24 tras el merge:
 
 - La única edición fuera de las líneas en conflicto es la fila de `food` en `tracking-title`. Una mutación que borre el `tracking-title` del vacío de R19 en `food/index.tsx` vuelve a poner esa guarda en rojo.
 - Los logs de esta adenda (`progress/lint-209.log`, `guards-209.log`, `conflicted-209.log` y `merge-test-209.log`) están ignorados por `.gitignore` (`*.log`) y no se commitean.
+
+## Corrección tras la primera revisión (Adenda 5)
+
+Relevo: subagente `implementer` (fallback de Codex, cuota agotada; ver `progress/current.md`), 2026-10-27. Skill cargada: `expo:expo-overview`. Spec: errata ronda 6 (`3c31d6b5`) en R4, R5, R16 y R19.
+
+### Punto de partida
+
+- `pwd` = `/home/claude/sites/Pet-Tracker-wt-209`; branch `feature/209-mobile-nutrition-questionnaire`.
+- `git log --oneline -2`: `28cb9ecc docs(progress): #209 handoff Adenda 5 (fixes for the first review)` / `3c31d6b5 docs(spec): #209 errata round 6 for the first review (F1, F2)`. **H5 = `28cb9ecc`**.
+- `progress/impl_mobile-nutrition-questionnaire.done` no existía al empezar.
+
+### T0 sobre el merge (punto 1)
+
+Los dos pgreps vacíos antes de cada corrida de jest de esta adenda.
+- `bun install --frozen-lockfile`: `Checked 1324 installs across 1145 packages (no changes)`, exit 0.
+- `test ! -e .expo/types/router.d.ts` exit 0; `bunx tsc --noEmit` exit 0.
+- `bun run test > ../progress/t0-adenda5-209.log 2>&1`: exit=0, `Test Suites: 168 passed, 168 total`, `Tests: 6217 passed, 6217 total` (178 s). SIGKILL = 0, `failed to run` = 0. Cuadra con la cifra del leader. Ningún flake.
+
+### Cadena (punto 2)
+
+Cada commit, con los dos ficheros (`src/screens/nutrition-questionnaire/index.test.tsx` y `src/screens/food/index.test.tsx`) en «Jest de un fichero»:
+
+| # | Commit | Corrida | `Tests:` |
+|---|---|---|---|
+| 1 | `63d4295e` test(mobile): #209 R4 rojo (errata ronda 6) | `a5-c1-209.log`, exit 1 | `Tests: 1 failed, 201 passed, 202 total` |
+| 2 | `f75ece10` feat(mobile): #209 R4 inset y volver en la carga y el error | `a5-c2-209.log`, exit 0 | `Tests: 202 passed, 202 total` |
+| 3 | `5333d27c` test(mobile): #209 R5 R16 R19 rojo (errata ronda 6) | `a5-c3-209.log`, exit 1 | `Tests: 3 failed, 202 passed, 205 total` |
+| 4 | `fbff52ee` feat(mobile): #209 R5 R16 R19 Pingo por style | `a5-c4-209.log`, exit 0 | `Tests: 205 passed, 205 total` |
+
+Rojos, todos por aserción o por «Unable to find» de RNTL (ninguna excepción de producción):
+- Commit 1, `#209 R4: esqueleto y error de carga respetan el inset superior y el error tiene volver`: `expect(skeleton.props.style).toEqual({ paddingTop: 52 })` → `Expected: {"paddingTop": 52}` / `Received: undefined`.
+- Commit 3:
+  - `#209 R5: Pingo de la burbuja mide 52 pt y 44 pt en Condición por style` → `Unable to find an element with testID: nutrition-questionnaire-pingo`;
+  - `#209 R16: Pingo de Generando mide 112 pt por style` → `Unable to find an element with testID: nutrition-generating-pingo-image`;
+  - `#209 R19: Pingo de NutricionSinPerfil mide 150 pt por style` → `Unable to find an element with testID: food-profile-pingo-image`.
+
+Producción:
+- `nutrition-questionnaire/index.tsx`: `NutritionQuestionnaireScreen` llama a `const insets = useSafeAreaInsets();` tras el `useEffect` y antes del primer `return`. El esqueleto y el error de carga son los dos contenedores literales de R4. El `Text` del error y los dos `Skeleton` no cambian. Las dos `Image` (Generando y burbuja) llevan los literales de R16 y R5: `testID`, `style` y sin `className`.
+- `food/index.tsx`: la `Image` de `food-profile-pingo` lleva el literal de R19.
+
+Guardas tras el commit 4 (los dos pgreps vacíos):
+- T0 guardas (`a5-guards-209.log`): exit=0, `Test Suites: 37 passed, 37 total`, `Tests: 1010 passed, 1010 total`.
+- T0 ampliado (`a5-ext-209.log`): exit=0, `Test Suites: 40 passed, 40 total`, `Tests: 1351 passed, 1351 total`.
+
+### Sondas (punto 3)
+
+Cada una sobre el árbol del commit 4, con solo su `it` (`-t`), revertida con `git checkout HEAD -- <fichero>`. Tras cada reversión, `git diff --quiet HEAD -- <fichero>` = 0 y `git diff --cached --quiet` = 0. Ninguna se commiteó.
+
+| Sonda | Fichero | `it` que cae | Salida |
+|---|---|---|---|
+| R4: `paddingTop: insets.top + 12` → `insets.top` en la rama del error | `nutrition-questionnaire/index.tsx` | `#209 R4: esqueleto y error de carga respetan el inset superior y el error tiene volver` | `- "paddingTop": 52,` / `+ "paddingTop": 40,` (`a5-probe1-209.log`) |
+| R4: sin `ScreenHeader` en la rama del error | `nutrition-questionnaire/index.tsx` | el mismo | `Unable to find an element with testID: nutrition-questionnaire-back` (`a5-probe2-209.log`) |
+| R5: `44` y `52` intercambiados | `nutrition-questionnaire/index.tsx` | `#209 R5: Pingo de la burbuja mide 52 pt y 44 pt en Condición por style` | Expected `{"height": 44, "width": 44}` / Received `{"height": 52, "width": 52}` (`a5-probe3-209.log`) |
+| R16: sin `style`, con `className="size-28"` | `nutrition-questionnaire/index.tsx` | `#209 R16: Pingo de Generando mide 112 pt por style` | Expected `{"height": 112, "width": 112}` / Received `{}` (`a5-probe4-209.log`) |
+| R19: `150` → `112` en `width` y `height` | `food/index.tsx` | `#209 R19: Pingo de NutricionSinPerfil mide 150 pt por style` | Expected `{"height": 150, "width": 150}` / Received `{"height": 112, "width": 112}` (`a5-probe5-209.log`) |
+
+### Cierre (punto 4)
+
+- Suite completa (`adenda5-test-209.log`): exit=0, `Test Suites: 168 passed, 168 total`, `Tests: 6221 passed, 6221 total` (172 s). SIGKILL = 0, `failed to run` = 0. Son 6217 + 4. Ningún flake.
+- `test ! -e .expo/types/router.d.ts` exit 0; `bunx tsc --noEmit` exit 0; `bunx expo lint --no-cache > ../progress/lint-209.log 2>&1 && test ! -s ../progress/lint-209.log` exit 0.
+- Guardas de «Guardas que R1 a R26 cruzan»:
+  - `grep -c '#209'` = 0 en los 9 ficheros de producción;
+  - `grep -cP -- '#209(?! R[0-9])'` = 0 en `nutrition-questionnaire/index.test.tsx` y `food/index.test.tsx`;
+  - `@expo/ui/community/bottom-sheet` = 0 en `nutrition-questionnaire`, `food` y `meal-schedule`;
+  - `StyleSheet` = 0 en `nutrition-questionnaire/index.test.tsx`;
+  - `grep -cF -- '- [ ] Enmienda #209 aprobada por humano' ../docs/ui-guidelines.md` = 1.
+- `traceability.md`: en R4, R5, R16 y R19, el `it` nuevo va al final de la columna de tests y los dos commits nuevos al final de la de commits. No se tocó ninguna otra fila ni ningún otro hash.
+
+### Desviaciones y notas para el reviewer
+
+- **Trailers.** El commit 1 salió primero como `19fb3778`, sin los trailers `Co-Authored-By`/`Claude-Session` que llevan los commits anteriores de la rama. Lo enmendé en el acto con el mismo árbol y el mismo asunto, y quedó en `63d4295e`, antes de cualquier otro commit. `19fb3778` no aparece en la historia.
+- **`cleanup`.** El `it` de R4 rinde las dos ramas en un solo `it`, como permite R4 («tras `cleanup`»). Para eso añadí `cleanup` al import de `@testing-library/react-native` del test.
+- **Dos esperas** que la spec no escribe literalmente, ambas según `docs/conventions.md` §Esperas:
+  - en R5, `await screen.findByTestId('bcs-option-1')` tras `goToCondition()`, antes de medir los 44 pt, porque el cambio de paso es asíncrono (`void handleNext()`);
+  - en R19, `await screen.findByTestId('food-profile-empty')` antes de buscar la imagen.
+
+  Ninguna de las dos cambia las aserciones. Las sondas de R5 y R19 salen rojas por el valor, no por la espera.
