@@ -1,3 +1,6 @@
+import { shiftDay } from '@/pipeline/local-day';
+import { mentionsToxicFood } from './nutrition-toxic-foods';
+
 export const NUTRITION_AI_DAILY_LIMIT = 3;
 export const NUTRITION_AI_GRAMS_TOLERANCE_PERCENT = 10;
 export const NUTRITION_AI_WEIGHT_TREND_POINTS = 5;
@@ -47,9 +50,10 @@ export function acceptAiOutput(
     explanation: output.explanation,
     proposal: {
       mealGrams: plan.mealTimes.map((time) => byTime.get(time)!),
-      recommendations: output.recommendations,
+      recommendations: output.recommendations.filter(
+        (r) => !mentionsToxicFood(r),
+      ),
       reviewDate: shiftDay(localDay, output.reviewInDays),
     },
   };
 }
-import { shiftDay } from '@/pipeline/local-day';
