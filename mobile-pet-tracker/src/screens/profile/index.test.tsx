@@ -18,6 +18,7 @@ import type { TestInstance } from 'test-renderer';
 
 import { requestPhotoUploadUrl, uploadPhotoToUrl } from '../../api/media';
 import { getPet, listPets, type PetState, type PetsState } from '../../api/pets';
+import { listPetMembers } from '../../api/pet-members';
 import { petKeys, userKeys } from '../../api/query-keys';
 import type { PetProfile } from '../../api/types';
 import { getMe, type MeState } from '../../api/users';
@@ -35,6 +36,7 @@ import { setStoredLanguage } from '../../utils/language-preference';
 import { ProfileScreen } from '.';
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { TOUCH_SLOP } from '../../theme/touch-target';
+import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
 const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
@@ -79,6 +81,8 @@ jest.mock('../../api/pets', () => ({
   getPet: jest.fn(),
   listPets: jest.fn(),
 }));
+
+jest.mock('../../api/pet-members', () => ({ listPetMembers: jest.fn() }));
 
 jest.mock('../../api/media', () => ({
   ...jest.requireActual('../../api/media'),
@@ -211,6 +215,7 @@ let selectPetFromTest: ((petId: string) => void) | undefined;
 beforeEach(() => {
   mockLaunchImageLibrary.mockReset();
   mockLaunchImageLibrary.mockResolvedValue({ canceled: true, assets: null });
+  jest.mocked(listPetMembers).mockResolvedValue({ kind: 'error' }); // #214 R5
 });
 
 function pending<T>(): Promise<T> {
@@ -1241,7 +1246,7 @@ describe('#41 R9: Perfil enlaza a las zonas seguras de la mascota activa', () =>
     mockGetPet.mockResolvedValue({ kind: 'ok', pet });
   });
 
-  it('pinta la fila de zonas seguras tras la de GPS y abre la ruta de la mascota activa', async () => {
+  it('pinta la fila de zonas seguras tras la de GPS y abre la ruta de la mascota activa (enmendado por #214 R4, R6)', async () => {
     await renderProfile();
     const link = await screen.findByTestId('geofences-link');
     expect(link).toHaveTextContent('Zonas seguras');
@@ -1252,6 +1257,7 @@ describe('#41 R9: Perfil enlaza a las zonas seguras de la mascota activa', () =>
     expect(within(link).getByText('Zonas seguras').props.className).toBe('text-sm font-extrabold text-category-amber-strong');
     expect(screen.getAllByTestId(/-link$/).map((row) => row.props.testID)).toEqual([
       'documents-link', 'pairing-link', 'geofences-link', 'reminders-link',
+      'members-link', 'join-pet-link', // #214 R4, R6
     ]);
     await fireEvent.press(link);
     expect(mockRouter.push).toHaveBeenCalledTimes(1);
@@ -1585,12 +1591,12 @@ describe('#168 R6 (enmendado por #173 R10): los accesos son tiles pastel en reji
     expect(mockRouter.push).toHaveBeenCalledWith(destination);
   });
 
-  it('con mascota ordena dos filas de dos tiles', async () => {
+  it('con mascota ordena dos filas de dos tiles (enmendado por #214 R4, R6)', async () => {
     await renderProfile();
     await screen.findByTestId('pet-info-card');
     const grid = screen.getByTestId('profile-links');
     expect(grid.props.className).toBe('gap-2');
-    expect(grid.children).toHaveLength(2);
+    expect(grid.children).toHaveLength(2 + 2); // #214 R4, R6
     const first = profileChild(grid, 0);
     const second = profileChild(grid, 1);
     expect(first.props.testID).toBe('profile-links-row-0');
@@ -1604,14 +1610,14 @@ describe('#168 R6 (enmendado por #173 R10): los accesos son tiles pastel en reji
     expect(screen.queryAllByTestId(/-link-tile$/, { includeHiddenElements: true })).toHaveLength(0);
   });
 
-  it('sin mascota deja recordatorios solo y a ancho completo', async () => {
+  it('sin mascota deja recordatorios solo y a ancho completo (enmendado por #214 R6)', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
     mockGetPet.mockReturnValue(pending<PetState>());
     await renderProfile();
     await screen.findByTestId('profile-pets-empty');
     const grid = screen.getByTestId('profile-links');
     expect(grid.props.className).toBe('gap-2');
-    expect(grid.children).toHaveLength(1);
+    expect(grid.children).toHaveLength(1 + 1); // #214 R6
     const row = profileChild(grid, 0);
     expect(row.props.testID).toBe('profile-links-row-0');
     expect(row.props.className).toBe('flex-row gap-2');
@@ -2701,5 +2707,135 @@ describe('#217 R10: el cambio de tema es inmediato y persistido', () => {
       .toBeLessThan(mockSetStoredTheme.mock.invocationCallOrder[0]);
     expect(readFileSync(`${process.cwd()}/src/screens/profile/index.tsx`, 'utf8'))
       .not.toContain('theme-transition');
+  });
+});
+
+
+describe('#214 R4: tarjeta de Familia', () => {
+  beforeEach(setupProfile168);
+
+  it('R4: con mascota añade la fila de Familia a ancho completo y navega a members', async () => {
+    await renderProfile();
+    const link = await screen.findByTestId('members-link');
+    const row = screen.getByTestId('profile-links-row-2');
+    expect(row.props.className).toBe('flex-row gap-2');
+    expect(row.children).toHaveLength(1);
+    expect(profileChild(row, 0)).toBe(link);
+    expect(link.props.className).toBe(`flex-row items-center gap-2.5 rounded-tile p-3 ${CATEGORY_SLOTS.rose.surface}`);
+    expect(screen.getByTestId('members-link-label').props.className).toBe(`text-sm font-extrabold ${CATEGORY_SLOTS.rose.ink}`);
+    expect(screen.getByTestId('members-link-label')).toHaveTextContent('Familia');
+    expect(link.props.accessibilityRole).toBe('button');
+    expect(link.props.hitSlop).toEqual(TOUCH_SLOP);
+    expect(link).toHaveStyle({ borderCurve: 'continuous' });
+    await fireEvent.press(link);
+    expect(mockRouter.push).toHaveBeenCalledWith('/pets/pet-1/members');
+  });
+
+  it('R4: sin mascota no hay tarjeta de Familia', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    mockGetPet.mockReturnValue(pending<PetState>());
+    await renderProfile();
+    await screen.findByTestId('profile-pets-empty');
+    expect(screen.queryByTestId('members-link')).toBeNull();
+  });
+});
+
+
+function familyMembers214(count: number) {
+  return Array.from({ length: count }, (_, index) => ({
+    userId: `user-${index + 1}`, firstName: 'Ana', lastName: 'García',
+    role: index === 0 ? 'owner' as const : 'family' as const,
+    joinedAt: '2026-10-06T09:05:00.000Z',
+  }));
+}
+
+describe('#214 R5: subtítulo de Familia', () => {
+  beforeEach(() => {
+    setupProfile168();
+    const pet = makePet({ name: 'Rocky' });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+  });
+
+  it('R5: con un solo miembro dice Solo tú cuidas a Rocky', async () => {
+    jest.mocked(listPetMembers).mockResolvedValue({ kind: 'ok', members: familyMembers214(1) });
+    await renderProfile();
+    expect(await screen.findByTestId('members-link-subtitle')).toHaveTextContent('Solo tú cuidas a Rocky');
+  });
+
+  it('R5: con dos miembros usa el singular', async () => {
+    jest.mocked(listPetMembers).mockResolvedValue({ kind: 'ok', members: familyMembers214(2) });
+    await renderProfile();
+    expect(await screen.findByTestId('members-link-subtitle')).toHaveTextContent('Tú y 1 persona más cuidan a Rocky');
+  });
+
+  it('R5: con tres miembros dice Tú y 2 personas más cuidan a Rocky', async () => {
+    jest.mocked(listPetMembers).mockResolvedValue({ kind: 'ok', members: familyMembers214(3) });
+    const { queryClient } = await renderProfile();
+    expect(await screen.findByTestId('members-link-subtitle')).toHaveTextContent('Tú y 2 personas más cuidan a Rocky');
+    expect(listPetMembers).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1');
+    expect(queryClient.getQueryData(['pet-members', 'pet-1'])).toEqual({ kind: 'ok', members: familyMembers214(3) });
+  });
+
+  it('R5: oculta el subtítulo mientras carga', async () => {
+    jest.mocked(listPetMembers).mockReturnValue(pending());
+    await renderProfile();
+    await screen.findByTestId('members-link');
+    expect(screen.queryByTestId('members-link-subtitle')).toBeNull();
+  });
+
+  it('R5: oculta el subtítulo si la lista falla', async () => {
+    const failures: Awaited<ReturnType<typeof listPetMembers>>[] = [
+      { kind: 'error' }, { kind: 'unreachable', message: 'x' }, { kind: 'unauthorized' },
+    ];
+    for (const result of failures) {
+      jest.mocked(listPetMembers).mockResolvedValue(result);
+      const { unmount } = await renderWithProviders(<ProfileScreen />, { wrapper: ProfileWrapper, onUnauthorized: mockSignOut });
+      await screen.findByTestId('members-link');
+      await act(async () => undefined);
+      expect(screen.queryByTestId('members-link-subtitle')).toBeNull();
+      expect(mockSignOut).not.toHaveBeenCalled();
+      await unmount();
+    }
+  });
+
+  it('R5: en inglés dice You and 2 more people care for Rocky', async () => {
+    jest.mocked(listPetMembers).mockResolvedValue({ kind: 'ok', members: familyMembers214(3) });
+    await renderProfile();
+    await screen.findByTestId('members-link');
+    await fireEvent.press(screen.getByTestId('language-toggle'));
+    await waitFor(() => expect(screen.getByTestId('members-link-subtitle')).toHaveTextContent('You and 2 more people care for Rocky'));
+  });
+});
+
+
+describe('#214 R6: Unirme con código en Perfil', () => {
+  beforeEach(setupProfile168);
+
+  it('R6: con mascota la cuarta fila es Unirme con código y navega a join-pet', async () => {
+    await renderProfile();
+    await screen.findByTestId('pet-info-card');
+    const row = screen.getByTestId('profile-links-row-3');
+    const link = screen.getByTestId('join-pet-link');
+    expect(row.children).toHaveLength(1);
+    expect(profileChild(row, 0)).toBe(link);
+    expect(profileChild(screen.getByTestId('profile-links'), 3)).toBe(row);
+    expect(link.props.className).toBe(`flex-row items-center gap-2.5 rounded-tile p-3 ${CATEGORY_SLOTS.amber.surface}`);
+    expect(screen.getByTestId('join-pet-link-label')).toHaveTextContent('Unirme con código');
+    expect(screen.getByTestId('join-pet-link-subtitle')).toHaveTextContent('¿Te invitaron a cuidar una mascota?');
+    expect(screen.getByTestId('join-pet-link-subtitle').props.className).toBe(`text-xs font-semibold ${CATEGORY_SLOTS.amber.ink}`);
+    await fireEvent.press(link);
+    expect(mockRouter.push).toHaveBeenCalledWith('/join-pet');
+  });
+
+  it('R6: sin mascota la segunda fila es Unirme con código', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    mockGetPet.mockReturnValue(pending<PetState>());
+    await renderProfile();
+    await screen.findByTestId('profile-pets-empty');
+    const row = screen.getByTestId('profile-links-row-1');
+    expect(row.children).toHaveLength(1);
+    expect(profileChild(row, 0)).toBe(screen.getByTestId('join-pet-link'));
+    expect(profileChild(screen.getByTestId('profile-links'), 1)).toBe(row);
   });
 });

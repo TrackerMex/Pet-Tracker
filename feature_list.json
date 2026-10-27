@@ -3579,7 +3579,7 @@
   {
     "id": 214,
     "name": "mobile-pet-members",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P1",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 2). Familia en la app: quinta tarjeta «Familia» en Perfil que abre app/pets/[petId]/members.tsx; owner lista miembros, invita (código y Share nativo con texto en Voz B), revoca invitaciones y quita miembros; family ve la lista y puede salir. «Unirme con código» desde Perfil y desde el estado sin mascotas, reutilizando el patrón de input de pairing; tras aceptar invalida mascotas y selecciona la nueva. Depende de #211 y del gate G1 (artboards Familia). Firma delegada al leader. Registrada sin spec."
   },

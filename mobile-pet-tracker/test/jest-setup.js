@@ -11,3 +11,4 @@ jest.mock('expo-status-bar', () => ({
   ...jest.requireActual('expo-status-bar'),
   StatusBar: () => null,
 }));
+jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn() }));
