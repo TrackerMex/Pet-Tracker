@@ -27,6 +27,8 @@ function makeReminder(
     dueAt,
     advanceMinutes: 60,
     status,
+    recurrence: null,
+    recurrenceUntil: null,
   };
 }
 
