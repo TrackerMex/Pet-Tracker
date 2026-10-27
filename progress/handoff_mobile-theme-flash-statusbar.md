@@ -10,6 +10,7 @@ Entorno: el worktree ya tiene `.env` y `mobile-pet-tracker/node_modules` (`bun i
 Árbol: `progress/*.log` los ignora git. El chequeo de árbol limpio se acota: `cd /home/claude/sites/Pet-Tracker-wt-217/mobile-pet-tracker && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)"`. Nunca `test -z "$(git status --short)"` tras `git add`.
 
 Archivos (lista cerrada; si necesitas otro, PARA y pregunta al leader). Todos bajo mobile-pet-tracker/src/ salvo indicación:
+  - ../test/jest-setup.js (solo C6b: doble global de `expo-status-bar`, enmienda del 2026-10-27)
   - theme/navigation-theme.ts (nuevo, R1)
   - theme/__tests__/navigation-theme.test.tsx (nuevo, R1)
   - components/hero-status-bar.tsx (nuevo, R5)
@@ -97,6 +98,17 @@ Cadena (tasks.md manda; pega la línea `Tests:` tras cada commit):
   # -- C4 -- feat(#217): R5 add HeroStatusBar. components/hero-status-bar.tsx. +0.
   # -- C5 -- test(#217): R2-R4 root theme provider and status bar. app/__tests__/layout.test.tsx (dobles nuevos de `ThemeProvider`, `../../theme/navigation-theme` y `expo-status-bar` en este commit, y los `it` R2 x2 y R4 x1) y app/__tests__/theme-scene.test.tsx nuevo (R3 x2). Todos rojos por la aserción. +5.
   # -- C6 -- feat(#217): R2-R4 wire ThemeProvider and StatusBar in RootLayout. app/_layout.tsx. +0. Tras él, mide los seis tests con `renderRouter` de app/__tests__/ (ver arriba).
+  # -- C6b -- test(#217): global double for expo-status-bar. ENMIENDA DEL LEADER 2026-10-27: los 3 guards de navegación cayeron tras C6 porque el `<StatusBar>` real corrompe el contador de inmediatos de Node bajo `renderRouter` (ver specs/mobile-theme-flash-statusbar/design.md §Enmienda del 2026-10-27). Añade AL FINAL de mobile-pet-tracker/test/jest-setup.js, tal cual:
+  #
+  #   // The real <StatusBar> defers its native update with setImmediate; under
+  #   // renderRouter's fake timers its unmount calls the real clearImmediate on a fake
+  #   // id and corrupts Node's immediate counter (tests then time out).
+  #   jest.mock('expo-status-bar', () => ({
+  #     ...jest.requireActual('expo-status-bar'),
+  #     StatusBar: () => null,
+  #   }));
+  #
+  # Precede esas líneas con UNA línea en blanco. Solo ese fichero. Tras el commit, mide los seis tests con `renderRouter` (deben pasar sin editarlos) y los 4 ficheros de #217; guarda los logs. Total +0. Luego CONTINÚA con C7 (ya no hay bloqueo).
   # -- C7 -- test(#217): R6 hero status bar in home and profile. screens/home/index.test.tsx y screens/profile/index.test.tsx: doble de `expo-status-bar` y los `it` R6 (x4). Rojos. +4.
   # -- C8 -- feat(#217): R6 request the light status bar on hero screens. `<HeroStatusBar />` condicional en Inicio y Perfil. +0.
   # -- C9 -- test(#217): R8-R12 lock the removal of nitro. __tests__/design-drift.test.ts: `describe` de R8 (x2), R9 (x2), R11 (x1), R12 (x1); screens/profile/index.test.tsx: `it` R10 (x1). R8, R9, R11 y R10 rojos; R12 nace verde (los dos ficheros nuevos existen desde C2 y C4), dilo y demuéstralo con una mutación. +7.

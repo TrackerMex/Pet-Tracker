@@ -66,6 +66,7 @@ tags: [harness, spec]
 | pantalla | `screens/home/index.tsx`, `screens/profile/index.tsx` | `<HeroStatusBar />` condicional (R6); Perfil: interruptor instantáneo, imports (R10) |
 | manifiesto | `package.json`, `bun.lock` | R8 |
 | tests nuevos | `theme/__tests__/navigation-theme.test.tsx`, `components/__tests__/hero-status-bar.test.tsx`, `app/__tests__/theme-scene.test.tsx` | R1, R5, R3 |
+| setup de jest | `test/jest-setup.js` (bajo `mobile-pet-tracker/`) | doble global de `expo-status-bar` (enmienda del 2026-10-27) |
 | tests editados | `app/__tests__/layout.test.tsx`, `screens/home/index.test.tsx`, `screens/profile/index.test.tsx`, `app/(tabs)/__tests__/screens.test.tsx`, `__tests__/design-drift.test.ts` | R2, R4, R6, R10, R11, R8, R9, R12 |
 | tests borrados | `theme/__tests__/theme-transition.test.tsx` (6 `it`), `theme/__tests__/theme-transition.degraded.test.tsx` (1 `it`) | R9 |
 
@@ -76,7 +77,7 @@ Cada fila dice qué hace el candado, si esta feature lo mueve y cómo se resuelv
 | Candado | ¿Se mueve? | Resolución |
 |---|---|---|
 | `app/__tests__/layout.test.tsx` (mocks de `expo-router`, `uniwind` solo con `Uniwind.setTheme`, `use-theme-colors`) | **Sí**: `RootLayout` ahora importa `ThemeProvider`, `useNavigationTheme` y `StatusBar` | Se añaden dobles: `ThemeProvider: jest.fn(({ children }) => children)` en el de `expo-router`; `jest.mock('../../theme/navigation-theme', () => ({ useNavigationTheme: () => navigationThemeSentinel }))` (así `uniwind` no necesita `useUniwind`); `jest.mock('expo-status-bar', ...)`. Van en el commit `test` rojo, no en el `feat`. Los candados de fuente de ese fichero (`<AuthProvider>` < `<QueryProvider>` < `<Stack `; `<QueryProvider>`…`<RootStack />`) no se mueven: `ThemeProvider` y `StatusBar` van fuera de ellos. |
-| Los seis tests con `renderRouter` y `RootLayout` real (`detail-stack.navigation`, `detail-stack.guard`, `alert-detail.navigation`, `alert-detail.notification`, `reminders-alerts-stack.navigation`, `reminders-alerts-stack.notification`, todos en `app/__tests__/`) | Probablemente no: no mockean `uniwind` ni `expo-router`, así que usan los reales (`RootStack` ya llama a `useThemeColors`, que usa `useUniwind`) | No se editan. Se miden tras el `feat` de `_layout.tsx`; si alguno cae, se anota como hallazgo y se resuelve con un doble **en ese fichero**, no en un setup global. `expo-status-bar` real renderiza `null`. |
+| Los seis tests con `renderRouter` y `RootLayout` real (`detail-stack.navigation`, `detail-stack.guard`, `alert-detail.navigation`, `alert-detail.notification`, `reminders-alerts-stack.navigation`, `reminders-alerts-stack.notification`, todos en `app/__tests__/`) | Probablemente no: no mockean `uniwind` ni `expo-router`, así que usan los reales (`RootStack` ya llama a `useThemeColors`, que usa `useUniwind`) | No se editan. Se miden tras el `feat` de `_layout.tsx`; si alguno cae, se anota como hallazgo. **Enmendado el 2026-10-27**: cayeron 3 tras C6 (ver §Enmienda del 2026-10-27); se resuelve con un doble global de `expo-status-bar` en `test/jest-setup.js`, porque el `<StatusBar>` real no renderiza `null` bajo `renderRouter`. |
 | `app/(tabs)/__tests__/layout.test.tsx`, `app/__tests__/tabs-layout.test.tsx` | No | `(tabs)/_layout.tsx` no cambia (R7). |
 | `theme/__tests__/font-registration.test.ts` | No | Lee `_layout.tsx`: exige `useFonts({`, el registro y `not.toContain('return null')`. No se usa `return null`. |
 | `screens/home/index.test.tsx`, `screens/profile/index.test.tsx`, `app/(tabs)/__tests__/screens.test.tsx` | Sí, solo en lo de nitro y el doble de `expo-status-bar` | Sus dobles de `expo-router` ya traen `useIsFocused: jest.fn(() => true)`. Se añade el doble de `expo-status-bar` en Inicio y Perfil. `screens.test.tsx` solo pierde el `jest.mock` nitro. `profile/index.test.tsx` línea del `import { withThemeTransition }`, dos `jest.mock` y el `it('R2: …')` se retiran. |
@@ -102,3 +103,21 @@ Cada fila dice qué hace el candado, si esta feature lo mueve y cómo se resuelv
 - **Mantener `react-native-nitro-theme-transition` y arreglar solo el fondo**: descartado
   por el humano (plan §1): quitarlo también simplifica el arranque (sin comprobación de
   módulo nativo).
+
+## Enmienda del 2026-10-27: doble global de `expo-status-bar`
+
+Medido tras C6 (`930ab8c4`): `detail-stack.navigation` (`#194 R4` apila), `detail-stack.guard`
+(`#194 R4` expulsa; `#149 R2` cierra sesión) fallan (timeout de 5000 ms y «REPLACE … welcome
+was not handled»). Sin C6 pasan 23/23. Diagnóstico en
+`progress/explore_217-guards.md` (worktree de sondeo): el `<StatusBar>` real de
+`expo-status-bar` usa `setImmediate`/`clearImmediate` estáticos; `renderRouter` activa timers
+falsos y, al desmontar tras `useRealTimers`, se llama al `clearImmediate` real con un id falso,
+lo que corrompe el contador de inmediatos de Node. Con `ThemeProvider` y `useNavigationTheme`
+pero sin `StatusBar` pasan 23/23; con `StatusBar` y sin `ThemeProvider` fallan los mismos 3.
+
+Premisa falsa de la fila anterior: «`expo-status-bar` real renderiza `null`». Resolución: un
+`jest.mock('expo-status-bar', ...)` en `test/jest-setup.js` que conserva el resto del módulo y
+sustituye `StatusBar` por `() => null` (8 líneas). Los ficheros que ya declaran su propio doble
+(`layout.test.tsx`, `hero-status-bar.test.tsx`, y los de Inicio y Perfil en R6) lo sobrescriben
+a nivel de fichero. La forma de R2, R3, R4 y R5 no cambia. Es un commit `test` propio (C6b),
+posterior a C6.
