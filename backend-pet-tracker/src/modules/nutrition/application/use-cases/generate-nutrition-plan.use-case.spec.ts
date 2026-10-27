@@ -1,4 +1,5 @@
 import { Logger } from '@nestjs/common';
+import { NUTRITION_AI_DAILY_LIMIT } from '@/modules/nutrition/domain/nutrition-ai-proposal';
 import type { NutritionAiOutput } from '@/modules/nutrition/domain/nutrition-ai-proposal';
 import type {
   NutritionWeightPoint,
@@ -59,6 +60,8 @@ function setup(
     tracked?: boolean;
     latest?: NutritionPlan | null;
     granted?: boolean;
+    timezone?: string;
+    trend?: NutritionWeightPoint[];
   } = {},
 ) {
   const inserted = new NutritionPlan({
@@ -116,7 +119,9 @@ function setup(
     approxAgeMonths: 36,
     createdAt: now,
   });
-  const findOwnerTimezone = jest.fn().mockResolvedValue('UTC');
+  const findOwnerTimezone = jest
+    .fn()
+    .mockResolvedValue(options.timezone ?? 'UTC');
   const pets = { findById, findOwnerTimezone } as unknown as PetRepository;
   const isPetTracked = jest.fn().mockResolvedValue(options.tracked ?? true);
   const subscriptions = { isPetTracked } as unknown as SubscriptionRepository;
@@ -135,7 +140,7 @@ function setup(
     );
   const listRecent = jest
     .fn<Promise<NutritionWeightPoint[]>, [string, number]>()
-    .mockResolvedValue([]);
+    .mockResolvedValue(options.trend ?? []);
   const weights: NutritionWeightReader = { listRecent };
   const useCase = new GenerateNutritionPlanUseCase(
     nutrition,
@@ -284,5 +289,56 @@ describe('R13 (nutrition-ai-structured-plan #212): estados de la fase de IA', ()
         calls[index].mock.invocationCallOrder[0],
       );
     }
+  });
+});
+
+describe('R14 (nutrition-ai-structured-plan #212): entradas de la fase de IA', () => {
+  const trend: NutritionWeightPoint[] = [
+    { measuredAt: '2026-06-01', weightKg: 18.5 },
+    { measuredAt: '2026-07-01', weightKg: 19 },
+    { measuredAt: '2026-08-01', weightKg: 19.25 },
+    { measuredAt: '2026-09-01', weightKg: 19.5 },
+    { measuredAt: '2026-10-01', weightKg: 20 },
+  ];
+  it('R14: consume con la mascota, el dia local del dueno y el limite 3', async () => {
+    const f = setup({ timezone: 'America/Mexico_City' });
+    await f.useCase.execute(petId, new Date('2026-10-26T05:30:00Z'));
+    expect(f.consumeAiGeneration).toHaveBeenCalledWith(
+      'pet-prueba',
+      '2026-10-25',
+      3,
+    );
+    expect(NUTRITION_AI_DAILY_LIMIT).toBe(3);
+  });
+  it('R14: lee cinco pesos y los pasa a la IA y al hash', async () => {
+    const f = setup({ trend });
+    await f.useCase.execute(petId, now);
+    expect(f.listRecent).toHaveBeenCalledWith('pet-prueba', 5);
+    expect(f.explain).toHaveBeenCalledTimes(1);
+    expect(f.explain.mock.calls[0][2]).toStrictEqual([
+      { measuredAt: '2026-06-01', weightKg: 18.5 },
+      { measuredAt: '2026-07-01', weightKg: 19 },
+      { measuredAt: '2026-08-01', weightKg: 19.25 },
+      { measuredAt: '2026-09-01', weightKg: 19.5 },
+      { measuredAt: '2026-10-01', weightKg: 20 },
+    ]);
+    const [inserted] = f.insertPlan.mock.calls[0] as [{ inputsHash: string }];
+    expect(inserted.inputsHash).toBe(
+      '236528deeb4b704b65e87114a81d4f8ebb26d8e0d92ef038ff34bb049fd3ad90',
+    );
+  });
+  it('R14: la fecha de revision parte del dia local del dueno', async () => {
+    const f = setup({
+      timezone: 'America/Mexico_City',
+      output: { ...VALID_OUTPUT, reviewInDays: 7 },
+    });
+    await f.useCase.execute(petId, new Date('2026-10-26T05:30:00Z'));
+    expect(f.setAiResult).toHaveBeenCalledTimes(1);
+    const [, , proposal] = f.setAiResult.mock.calls[0] as [
+      string,
+      string,
+      { reviewDate: string },
+    ];
+    expect(proposal.reviewDate).toBe('2026-11-01');
   });
 });
