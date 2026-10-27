@@ -1861,4 +1861,19 @@ describe('#223 R5: la insignia espera al último cursor y suma las abiertas de t
     expect(screen.getByTestId('alerts-retry')).toBeVisible();
     expect(screen.queryByTestId('alerts-attended')).toBeNull();
   });
+
+  it('#223 R13: mientras drena sin abiertas pinta el esqueleto, no el vacío ni la tarjeta de calma', async () => {
+    let finishSecond!: (page: AlertsState) => void;
+    mockListAlerts.mockResolvedValueOnce({ kind: 'ok', items: [makeAlert({ status: 'acked' })], nextCursor: 'c1' })
+      .mockReturnValueOnce(new Promise<AlertsState>((resolve) => { finishSecond = resolve; }));
+    await renderAlerts();
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+    await waitFor(() => expect(screen.queryByTestId('alerts-loading')).not.toBeNull());
+    expect(mockListAlerts).toHaveBeenCalledTimes(2);
+    expect(screen.queryByTestId('alerts-empty')).toBeNull();
+    expect(screen.queryByTestId('alerts-calm')).toBeNull();
+    await act(async () => finishSecond({ kind: 'ok', items: [makeAlert({ id: 'arriving-open' })], nextCursor: null }));
+    await screen.findByTestId('alert-row-arriving-open');
+    expect(screen.queryByTestId('alerts-loading')).toBeNull();
+  });
 });
