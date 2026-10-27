@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import {
   act,
@@ -16,7 +17,8 @@ import {
   createReminder,
   type CreateReminderState,
 } from '../../api/reminders';
-import type { Reminder } from '../../api/types';
+import type { PetProfile, Reminder } from '../../api/types';
+import { listPets } from '../../api/pets';
 import { es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
@@ -52,6 +54,8 @@ const mockChunkyLip = {
 };
 
 jest.mock('../../theme/chunky-lip', () => ({ useChunkyLip: () => mockChunkyLip }));
+
+jest.mock('../../api/pets', () => ({ listPets: jest.fn() }));
 
 jest.mock('../../api/reminders', () => ({
   createReminder: jest.fn(),
@@ -101,6 +105,9 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
 
+const mockListPets = jest.mocked(listPets);
+beforeEach(() => { mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ name: 'Rocky' })] }); });
+
 const mockCreateReminder = jest.mocked(createReminder);
 const mockUseAuth = jest.mocked(useAuth);
 const mockRouter = jest.mocked(router);
@@ -120,7 +127,9 @@ function SelectionProbe() {
 }
 
 async function renderAddReminder(selected = true, language: 'en' | 'es' = 'es') {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
+    <QueryClientProvider client={queryClient}>
     <HeroUINativeProvider>
       <LanguageProvider initial={language}>
         <SelectedPetProvider>
@@ -130,7 +139,8 @@ async function renderAddReminder(selected = true, language: 'en' | 'es' = 'es') 
           </HeaderHeightContext.Provider>
         </SelectedPetProvider>
       </LanguageProvider>
-    </HeroUINativeProvider>,
+    </HeroUINativeProvider>
+    </QueryClientProvider>,
   );
 }
 
@@ -148,6 +158,37 @@ async function pickUntil(date: Date) {
   expect(screen.queryByTestId('until-field')).not.toBeNull();
   await fireEvent.press(screen.getByTestId('until-field'));
   await fireEvent(screen.getByTestId('until-picker'), 'onValueChange', {}, date);
+}
+
+function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
+  return {
+    id: 'pet-1',
+    name: 'Luna',
+    species: 'dog',
+    breed: 'Mixed',
+    sex: 'female',
+    birthDate: null,
+    approxAgeMonths: 30,
+    ageMonths: 30,
+    currentWeightKg: 12,
+    size: 'medium',
+    color: 'black',
+    sterilized: true,
+    microchip: null,
+    photoUrl: null,
+    lostMode: false,
+    lastPosition: null,
+    lastCommunicationAt: null,
+    myRole: 'owner',
+    device: null,
+    nextVaccine: null,
+    nextReminder: null,
+    activitySummary: null,
+    mealsToday: null,
+    createdAt: '2026-08-20T00:00:00.000Z',
+    updatedAt: '2026-08-21T00:00:00.000Z',
+    ...overrides,
+  };
 }
 
 function makeReminder(overrides: Partial<Reminder> = {}): Reminder {
@@ -1522,6 +1563,33 @@ describe('#213 R4: controles de repetición', () => {
     await pickTime(23, 30);
     await fireEvent.press(screen.getByTestId('advance-chip-0'));
     expect(screen.getByTestId('add-reminder-preview-text')).toHaveTextContent('Te aviso cada miércoles a las 23:30.');
+  });
+
+  it.each([
+    [8, "Te aviso en cada toma de Rocky: 20:00, 04:00 y 12:00.", false],
+    [8, "Te aviso en cada toma de Rocky: 20:00, 04:00 y 12:00, hasta el 2 ene 2027.", true],
+    [6, "Te aviso en cada toma de Rocky: 20:00, 02:00, 08:00 y 14:00.", false],
+    [12, "Te aviso en cada toma de Rocky: 20:00 y 08:00.", false],
+    [24, "Te aviso en cada toma de Rocky: 20:00.", false],
+    [5, "Te aviso cada 5 horas desde las 20:00.", false],
+    [7, "Te aviso cada 7 horas desde las 20:00, hasta el 2 ene 2027.", true],
+    [1, "Te aviso cada hora desde las 20:00.", false],
+  ] as const)('#213 R12: con %i horas la nota dice «%s»', async (count, expected, hasUntil) => {
+    await fireEvent.press(screen.getByTestId('repeat-chip-hour'));
+    for (let i = 8; i > count; i--) await fireEvent.press(screen.getByTestId('repeat-every-less'));
+    for (let i = 8; i < count; i++) await fireEvent.press(screen.getByTestId('repeat-every-more'));
+    await pickDate(new Date(2026, 11, 31, 12));
+    await pickTime(20, 0);
+    if (hasUntil) await pickUntil(new Date(2027, 0, 2, 12));
+    await waitFor(() => expect(screen.getByTestId('add-reminder-preview-text')).toHaveTextContent(expected));
+  }, 15000);
+
+  it('#213 R12: cuatro horas usa intervalo y no lista tomas', async () => {
+    await fireEvent.press(screen.getByTestId('repeat-chip-hour'));
+    for (let i = 0; i < 4; i++) await fireEvent.press(screen.getByTestId('repeat-every-less'));
+    await pickDate(new Date(2026, 11, 31, 12));
+    await pickTime(20, 0);
+    await waitFor(() => expect(screen.getByTestId('add-reminder-preview-text')).toHaveTextContent('Te aviso cada 4 horas desde las 20:00.'));
   });
 
 });
