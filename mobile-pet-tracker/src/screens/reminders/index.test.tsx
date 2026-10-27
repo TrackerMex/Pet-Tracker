@@ -2061,4 +2061,64 @@ describe('#213 R14: series en Recordatorios', () => {
     }
   });
 
+  it('#213 R17: Cancelar serie abre la hoja con su copy', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-cancel-series-series');
+    await fireEvent.press(screen.getByTestId('reminder-cancel-series-series'));
+    expect(screen.queryByTestId('reminders-cancel-series-sheet')).not.toBeNull();
+    const sheet = screen.getByTestId('reminders-cancel-series-sheet');
+    expect(screen.queryByTestId('reminders-delete-sheet')).toBeNull();
+    const body = 'No volveré a avisarte de Pipeta antipulgas de Rocky. Si cambias de idea, puedes crear el recordatorio otra vez.';
+    await waitFor(() => expect(screen.getByTestId('reminders-cancel-series-sheet')).toHaveTextContent(body));
+    expect(within(sheet).getByText('¿Cancelar la serie?')).toBeVisible();
+    expect(within(sheet).getByTestId('reminders-cancel-series-reference')).toHaveTextContent('Pipeta antipulgas · cada mes');
+    const tile = within(sheet).getByTestId('reminders-cancel-series-icon');
+    expect(tile.props.className).toBe('size-14 items-center justify-center rounded-full bg-category-rose');
+    const icon = within(tile).getByTestId('reminders-icon-repeat', { includeHiddenElements: true });
+    expect(icon.props.size).toBe(26);
+    expect(icon.props.color).toBe('color:danger');
+    const confirm = within(sheet).getByTestId('reminders-cancel-series-confirm');
+    expect(confirm).toHaveTextContent('Cancelar la serie');
+    expect(confirm.props.className).toContain('h-14 w-full rounded-16 bg-danger');
+    expect(within(confirm).getByText('Cancelar la serie').props.className).toBe('text-17 font-extrabold text-danger-foreground');
+    const keep = within(sheet).getByTestId('reminders-cancel-series-keep');
+    expect(keep).toHaveTextContent('Mantener la serie');
+    expect(keep.props.className).toContain('w-full h-14 rounded-16 border-2 border-lip-gray bg-surface');
+    expect(within(keep).getByText('Mantener la serie').props.className).toBe('text-17 font-extrabold text-foreground');
+    const tree = JSON.stringify(screen.toJSON());
+    let position = -1;
+    for (const part of ['reminders-cancel-series-icon', '¿Cancelar la serie?', 'reminders-cancel-series-reference', body, 'reminders-cancel-series-confirm', 'reminders-cancel-series-keep']) {
+      expect(tree.indexOf(part)).toBeGreaterThan(position);
+      position = tree.indexOf(part);
+    }
+  });
+
+  it('#213 R17: sin nombre de mascota el cuerpo omite la mascota', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ id: 'pet-2', name: 'Luna' })] });
+    await renderReminders();
+    await screen.findByTestId('reminder-cancel-series-series');
+    await fireEvent.press(screen.getByTestId('reminder-cancel-series-series'));
+    expect(screen.queryByTestId('reminders-cancel-series-sheet')).not.toBeNull();
+    await waitFor(() => expect(screen.getByTestId('reminders-cancel-series-sheet')).toHaveTextContent('No volveré a avisarte de Pipeta antipulgas. Si cambias de idea, puedes crear el recordatorio otra vez.'));
+  });
+
+  it('#213 R17: las dos hojas comparten un solo BottomSheet', async () => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [
+      makeReminder({ id: 'series', title: 'Pipeta antipulgas', recurrence: { unit: 'month', every: 1 } }),
+      makeReminder({ id: 'once' }),
+    ] });
+    await renderReminders();
+    await screen.findByTestId('reminder-cancel-series-series');
+    await fireEvent.press(screen.getByTestId('reminder-cancel-series-series'));
+    const host = screen.getByTestId('reminders-delete-host');
+    expect(within(host).getAllByTestId('community-bottom-sheet')).toHaveLength(1);
+    expect(screen.queryByTestId('reminders-cancel-series-sheet')).not.toBeNull();
+    expect(screen.queryByTestId('reminders-delete-sheet')).toBeNull();
+    await fireEvent(within(host).getByTestId('community-bottom-sheet'), 'onClose');
+    await fireEvent.press(screen.getByTestId('reminder-delete-once'));
+    expect(within(host).getAllByTestId('community-bottom-sheet')).toHaveLength(1);
+    expect(screen.getByTestId('reminders-delete-sheet')).toBeVisible();
+    expect(screen.queryByTestId('reminders-cancel-series-sheet')).toBeNull();
+  });
+
 });
