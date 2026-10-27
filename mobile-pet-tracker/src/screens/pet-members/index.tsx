@@ -5,9 +5,9 @@ import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { InfoCircle, Key, Logout } from 'reicon-react-native';
+import { InfoCircle, Key, Logout, Plus } from 'reicon-react-native';
 
-import { listPetInvites, listPetMembers, removePetMember, revokePetInvite, type PetMember } from '../../api/pet-members';
+import { createPetInvite, listPetInvites, listPetMembers, removePetMember, revokePetInvite, type PetMember } from '../../api/pet-members';
 import { getPet } from '../../api/pets';
 import { inviteKeys, memberKeys, petKeys, userKeys } from '../../api/query-keys';
 import { getMe } from '../../api/users';
@@ -32,7 +32,7 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
   const { clearPet } = useSelectedPet();
   const chunkyLip = useChunkyLip();
   const [surface] = useThemeColors(['surface']);
-  const [amberStrong, foreground, danger] = useThemeColors(['category-amber-strong', 'foreground', 'danger']);
+  const [amberStrong, foreground, danger, accentForeground] = useThemeColors(['category-amber-strong', 'foreground', 'danger', 'accent-foreground']);
   const [removing, setRemoving] = useState<{ member: PetMember; slot: CategorySlot } | null>(null);
   const [leaveOpen, setLeaveOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -75,6 +75,7 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
 
   async function handleRemove() {
     if (!removing || busyRef.current) return;
+    setActionError(null);
     busyRef.current = true;
     setBusy(true);
     try {
@@ -106,6 +107,7 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
 
   async function handleRevoke(inviteId: string) {
     if (busyRef.current) return;
+    setActionError(null);
     busyRef.current = true;
     setBusy(true);
     try {
@@ -114,6 +116,39 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
         case 'ok':
         case 'not-found':
           await queryClient.invalidateQueries({ queryKey: inviteKeys.list(petId) });
+          break;
+        case 'unauthorized':
+          await signOut();
+          break;
+        case 'unreachable':
+          setActionError(t('common.cannotReachServer'));
+          break;
+        default:
+          setActionError(t('common.somethingWentWrong'));
+      }
+    } finally {
+      busyRef.current = false;
+      setBusy(false);
+    }
+  }
+
+  async function handleInvite() {
+    if (!pet || !me || busyRef.current) return;
+    setActionError(null);
+    busyRef.current = true;
+    setBusy(true);
+    try {
+      const result = await createPetInvite(baseUrl, token ?? '', petId);
+      switch (result.kind) {
+        case 'ok':
+          await queryClient.invalidateQueries({ queryKey: inviteKeys.list(petId) });
+          router.push({ pathname: '/pets/[petId]/invite', params: { petId, petName: pet.name, inviterName: me.firstName, code: result.invite.code, expiresAt: result.invite.expiresAt } });
+          break;
+        case 'invites-limit':
+          setActionError(t('members.invitesLimit'));
+          break;
+        case 'members-limit':
+          setActionError(t('members.membersLimit', { petName: pet.name }));
           break;
         case 'unauthorized':
           await signOut();
@@ -221,7 +256,7 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
                       {canRemove ? rolePill : null}
                     </View>
                     {canRemove ? (
-                      <Button testID={`member-row-${member.userId}-remove`} variant="danger-soft" className={`h-11 rounded-14 px-3 ${CATEGORY_SLOTS.rose.surface}`} accessibilityLabel={t('members.removeA11y', { name })} isDisabled={busy} onPress={() => setRemoving({ member, slot })}>
+                      <Button testID={`member-row-${member.userId}-remove`} variant="danger-soft" className={`h-11 rounded-14 px-3 ${CATEGORY_SLOTS.rose.surface}`} accessibilityLabel={t('members.removeA11y', { name })} isDisabled={busy} onPress={() => { setActionError(null); setRemoving({ member, slot }); }}>
                         <Text className="text-13 font-extrabold text-danger">{t('members.remove')}</Text>
                       </Button>
                     ) : rolePill}
@@ -254,11 +289,26 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
                 </View>
               </>
             ) : null}
+            {isOwner ? (
+              <View testID="pet-members-code-note" className="flex-row items-center gap-2.5 rounded-tile bg-default px-3.5 py-3">
+                <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><InfoCircle size={20} color={foreground} /></View>
+                <Text className="text-13 font-semibold leading-note text-foreground" selectable>{t('members.codeNote')}</Text>
+              </View>
+            ) : null}
             {!isOwner && ownerName ? (
               <View testID="pet-members-owner-note" className="flex-row items-center gap-2.5 rounded-tile bg-default px-3.5 py-3">
                 <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><InfoCircle size={20} color={foreground} /></View>
                 <Text className="flex-1 text-13 font-semibold leading-note text-foreground" selectable>{t('members.ownerNote', { ownerName, petName: pet.name })}</Text>
               </View>
+            ) : null}
+            {isOwner ? (
+              <>
+                <View style={{ flexGrow: 1 }} />
+                <Button testID="pet-members-invite-cta" className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary} isDisabled={busy} onPress={() => void handleInvite()}>
+                  <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><Plus size={20} color={accentForeground} /></View>
+                  <Text className="text-17 font-extrabold text-accent-foreground">{t('members.inviteCta')}</Text>
+                </Button>
+              </>
             ) : null}
             {!isOwner ? (
               <>
