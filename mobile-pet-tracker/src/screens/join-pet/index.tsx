@@ -1,4 +1,5 @@
 import { Image } from 'expo-image';
+import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Button } from 'heroui-native';
 import { useRef, useState } from 'react';
@@ -7,11 +8,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CheckCircle, InfoCircle } from 'reicon-react-native';
 
 import { acceptInvite } from '../../api/pet-members';
+import { petKeys } from '../../api/query-keys';
 import { PingRing } from '../../components/ping-ring';
 import { PingoFloat } from '../../components/pingo-float';
 import { ScreenHeader } from '../../components/screen-header';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
+import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -22,6 +25,8 @@ type JoinError = 'not-acceptable' | 'rate-limited' | 'unreachable' | 'error' | '
 export default function JoinPetScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token, signOut } = useAuth();
+  const queryClient = useQueryClient();
+  const { selectPet } = useSelectedPet();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
   const chunkyLip = useChunkyLip();
@@ -39,8 +44,12 @@ export default function JoinPetScreen() {
     setBusy(true);
     try {
       const result = await acceptInvite(baseUrl, token ?? '', input.trim());
-      if (result.kind === 'unauthorized') await signOut();
-      else if (result.kind !== 'ok') setState(result.kind);
+      if (result.kind === 'ok') {
+        await queryClient.invalidateQueries({ queryKey: petKeys.list() });
+        selectPet(result.petId);
+        router.dismissTo('/home');
+      } else if (result.kind === 'unauthorized') await signOut();
+      else setState(result.kind);
     } finally {
       busyRef.current = false;
       setBusy(false);
