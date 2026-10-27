@@ -695,7 +695,7 @@ El motor de alimentación deberá combinar reglas determinísticas e inteligenci
 
 * Fecha de próxima revisión.
 
-La IA deberá explicar el plan en lenguaje sencillo, pero no modificar automáticamente una dieta veterinaria ni recomendar tratamientos clínicos.
+La IA deberá explicar el plan en lenguaje sencillo y podrá proponer, dentro de las cotas que fije el motor de reglas (kcal diarias, gramos totales con una tolerancia de ±10 % y número de comidas), el reparto de gramos por comida, recomendaciones de seguimiento y una fecha de revisión; nunca modificará automáticamente una dieta veterinaria ni recomendará tratamientos clínicos (enmienda #212, 2026-10-26).
 
 ---
 
