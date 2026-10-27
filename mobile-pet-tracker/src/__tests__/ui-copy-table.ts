@@ -521,6 +521,7 @@ export const R10_PAIRING: UseRow[] = [
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.errorPetHasDevice' },
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.errorNoSubscription' },
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.errorForbiddenClaim' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.errorForbiddenClaim' }, // #216 R6
   { file: 'src/screens/pairing/index.tsx', key: 'common.cannotReachServer' },
   { file: 'src/screens/pairing/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/pairing/index.tsx', key: 'common.somethingWentWrong' },
