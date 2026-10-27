@@ -1,9 +1,10 @@
 import { Image } from 'expo-image';
+import { router } from 'expo-router';
 import { Button } from 'heroui-native';
 import { useRef, useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { InfoCircle } from 'reicon-react-native';
+import { CheckCircle, InfoCircle } from 'reicon-react-native';
 
 import { acceptInvite } from '../../api/pet-members';
 import { PingRing } from '../../components/ping-ring';
@@ -29,7 +30,7 @@ export default function JoinPetScreen() {
   const [busy, setBusy] = useState(false);
   const [state, setState] = useState<JoinError | 'already-member' | null>(null);
   const busyRef = useRef(false);
-  const border = state === 'not-acceptable' ? 'border-danger' : 'border-accent';
+  const border = state === 'not-acceptable' ? 'border-danger' : state === 'already-member' ? 'border-transparent' : 'border-accent';
 
   async function submit() {
     if (input.trim() === '' || busyRef.current) return;
@@ -39,7 +40,7 @@ export default function JoinPetScreen() {
     try {
       const result = await acceptInvite(baseUrl, token ?? '', input.trim());
       if (result.kind === 'unauthorized') await signOut();
-      else if (result.kind !== 'ok' && result.kind !== 'already-member') setState(result.kind);
+      else if (result.kind !== 'ok') setState(result.kind);
     } finally {
       busyRef.current = false;
       setBusy(false);
@@ -58,10 +59,10 @@ export default function JoinPetScreen() {
           </PingoFloat>
         </View>
         <Text testID="join-pet-title" accessibilityRole="header" className="text-center text-28 font-black tracking-title text-foreground">{t('joinPet.title')}</Text>
-        <View testID="join-pet-note" className="flex-row items-center gap-2.5 rounded-tile bg-default px-3.5 py-3">
+        {state !== 'already-member' ? <View testID="join-pet-note" className="flex-row items-center gap-2.5 rounded-tile bg-default px-3.5 py-3">
           <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><InfoCircle size={20} color={foreground} /></View>
           <Text className="flex-1 text-13 font-semibold leading-note text-foreground">{t('joinPet.note')}</Text>
-        </View>
+        </View> : null}
         <Text testID="join-pet-label" className="text-sm font-extrabold text-foreground">{t('invite.codeLabel')}</Text>
         <TextInput testID="join-pet-input" placeholder="XXXXX-XXXXX" placeholderTextColor={muted} maxLength={11} autoCapitalize="characters" autoCorrect={false} autoComplete="off" accessibilityLabel={t('invite.codeLabel')} className={`h-15 rounded-14 border-2 ${border} bg-default px-4 font-mono text-24 tracking-code text-foreground`} style={CONTINUOUS_CORNER} value={input} onChangeText={(value) => { setInput(value); setState(null); }} />
         {state && state !== 'already-member' ? (
@@ -69,11 +70,20 @@ export default function JoinPetScreen() {
             {state === 'not-acceptable' ? t('joinPet.invalid') : state === 'rate-limited' ? t('forgot.tooManyAttempts') : state === 'unreachable' ? t('common.cannotReachServer') : t('common.somethingWentWrong')}
           </Text>
         ) : null}
-        <Text testID="join-pet-hint" className="text-13 font-semibold text-muted">{t('joinPet.hint')}</Text>
+        {state === 'already-member' ? (
+          <View testID="join-pet-already-member" accessibilityLiveRegion="polite" className="flex-row items-center gap-2.5 rounded-tile bg-surface-secondary p-3.5">
+            <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><CheckCircle size={20} color={accentStrong} /></View>
+            <Text className="flex-1 text-sm font-bold text-foreground">{t('joinPet.alreadyMember')}</Text>
+          </View>
+        ) : <Text testID="join-pet-hint" className="text-13 font-semibold text-muted">{t('joinPet.hint')}</Text>}
         <View style={{ flexGrow: 1 }} />
-        <Button testID="join-pet-submit" className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary} isDisabled={input.trim() === '' || busy} onPress={() => void submit()}>
+        {state === 'already-member' ? (
+          <Button testID="join-pet-go-home" className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary} onPress={() => router.dismissTo('/home')}>
+            <Text className="text-17 font-extrabold text-accent-foreground">{t('joinPet.goHome')}</Text>
+          </Button>
+        ) : <Button testID="join-pet-submit" className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary} isDisabled={input.trim() === '' || busy} onPress={() => void submit()}>
           <Text className="text-17 font-extrabold text-accent-foreground">{t('joinPet.submit')}</Text>
-        </Button>
+        </Button>}
       </ScrollView>
     </KeyboardAvoidingView>
   );
