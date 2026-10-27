@@ -211,21 +211,25 @@ Anclas: `grep -cF 'name="nutrition-profile"' src/app/_layout.tsx` = `0`
 antes y `1` después.
 
 Enmiendas de `src/app/__tests__/layout.test.tsx` (regla mecánica de R24, con
-el comentario `// #209 R3` delante de los que ya hay). Las cinco cuentas son
-las del árbol base `8b4cb1bd` (re-medidas tras el merge de #220, #210 y #211:
-no cambiaron); medido en semilla: rojo
-`Expected length: 14 / Received length: 15` sin enmendar, verde con ellas.
+el comentario `// #209 R3` delante de los que ya hay). (errata ronda 3) Las
+cinco cuentas son las del árbol base `1dbac74f` (dev `b185ae61`, tras el
+merge de #208, que añadió `pets/[petId]/vaccines/new` entre `meals-history` y
+`edit-profile`). Rojo esperado sin enmendar:
+`Expected length: 15 / Received length: 16`; verde con ellas.
 
 | `it` de base | Base | Después |
 |---|---|---|
-| `#194 R4: declara ocho rutas protegidas y alerts singular` | `toHaveLength(8 + 1 + 1 + 1 + 1 + 1 + 1)` | `toHaveLength(8 + 1 + 1 + 1 + 1 + 1 + 1 + 1); // #209 R3 // …` |
-| `#194 R4: declara alerts/[alertId] como décimo hijo y singular` | `toHaveLength(9 + 1 + 1 + 1 + 1 + 1)` | `toHaveLength(9 + 1 + 1 + 1 + 1 + 1 + 1); // #209 R3 // …` |
-| `#194 R4: declara pets/[petId]/geofences como undécimo hijo y no singular (enmendado por #189 R1.1)` | `toHaveLength(10 + 1 + 1 + 1 + 1)` | `toHaveLength(10 + 1 + 1 + 1 + 1 + 1); // #209 R3 // …` |
-| `#194 R4: declara pets/[petId]/geofence-editor como duodécimo hijo y no singular (enmendado por #189 R1.1)` | `toHaveLength(11 + 1 + 1 + 1)` | `toHaveLength(11 + 1 + 1 + 1 + 1); // #209 R3 // …` |
+| `#194 R4: declara ocho rutas protegidas y alerts singular (enmendado por #208 R4)` | `toHaveLength(8 + 1 + 1 + 1 + 1 + 1 + 1 + 1)` | `toHaveLength(8 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1); // #209 R3 // #194 R4 // …` |
+| `#194 R4: declara alerts/[alertId] como décimo hijo y singular (enmendado por #208 R4)` | `toHaveLength(9 + 1 + 1 + 1 + 1 + 1 + 1)` | `toHaveLength(9 + 1 + 1 + 1 + 1 + 1 + 1 + 1); // #209 R3 // #194 R4 // …` |
+| `#194 R4: declara pets/[petId]/geofences como undécimo hijo y no singular (enmendado por #189 R1.1) (enmendado por #208 R4)` | `toHaveLength(10 + 1 + 1 + 1 + 1 + 1)` | `toHaveLength(10 + 1 + 1 + 1 + 1 + 1 + 1); // #209 R3 // #194 R4 // …` |
+| `#194 R4: declara pets/[petId]/geofence-editor como duodécimo hijo y no singular (enmendado por #189 R1.1) (enmendado por #208 R4)` | `toHaveLength(11 + 1 + 1 + 1 + 1)` | `toHaveLength(11 + 1 + 1 + 1 + 1 + 1); // #209 R3 // #194 R4 // …` |
 | `#194 R4: edit-profile es la última pantalla protegida` | `Children.toArray(group.props.children).at(-1)` | `Children.toArray(group.props.children).at(-1 - 1); // #209 R3` |
 
 Cada uno de esos cinco `it` añade a su nombre el sufijo
-` (enmendado por #209 R3)`. Ningún otro número de `layout.test.tsx` cambia.
+` (enmendado por #209 R3)`, al final, detrás de los que ya lleva (en los
+cuatro primeros, detrás de ` (enmendado por #208 R4)`). Ningún otro número
+de `layout.test.tsx` cambia. El `describe('#208 R4: alta de vacuna protegida')`
+busca `vaccines/new` por `indexOf` y no se toca.
 
 - Tests:
   - `src/screens/nutrition-questionnaire/index.test.tsx` ›
@@ -797,8 +801,8 @@ por fichero, `t('<clave>'` más `labelKey: '<clave>'`:
 
 En `src/__tests__/ui-copy-table.ts` se añade el bloque
 `export const R20_NUTRITION_QUESTIONNAIRE: UseRow[]` justo después del último
-bloque que haya (`R18_DATE_FIELD` en `8b4cb1bd`; `R19_VACCINE_CREATE` si #208
-ya está mergeada), con una fila `{ file, key }` por cada uso:
+bloque, `R19_VACCINE_CREATE` (errata ronda 3: #208 ya está mergeada en
+`1dbac74f`), con una fila `{ file, key }` por cada uso:
 
 | Fichero | Filas |
 |---|---|
@@ -808,60 +812,69 @@ ya está mergeada), con una fila `{ file, key }` por cada uso:
 
 Total: **N = 96**. El bloque se registra en estos sitios:
 - en `ALL_USES`, como `...R20_NUTRITION_QUESTIONNAIRE,` justo después de
-  `...R18_DATE_FIELD,` (o de `...R19_VACCINE_CREATE,` si #208 ya está
-  mergeada);
+  `...R19_VACCINE_CREATE,` (errata ronda 3);
 - en el array `blocks` del test `#194 R5: cuadra ALL_USES con la suma de sus bloques`,
-  al final de la línea que acaba en `R18_DATE_FIELD,` (o en
-  `R19_VACCINE_CREATE,`): `R16_WELCOME, R17_EDIT_PROFILE, R18_DATE_FIELD, R20_NUTRITION_QUESTIONNAIRE,`.
-  Ese `it` suma ` (enmendado por #209 R23)` al final de su nombre, como hizo #220;
+  al final de la línea que acaba en `R19_VACCINE_CREATE,` (errata ronda 3):
+  `R16_WELCOME, R17_EDIT_PROFILE, R18_DATE_FIELD, R19_VACCINE_CREATE, R20_NUTRITION_QUESTIONNAIRE,`.
+  Ese `it` suma ` (enmendado por #209 R23)` al final de su nombre, detrás de
+  ` (enmendado por #220 R16) (enmendado por #208 R20)`;
 - en el import de `src/__tests__/ui-language.test.ts`, en su propia línea,
-  `  R20_NUTRITION_QUESTIONNAIRE,`, justo después de `  R18_DATE_FIELD,` (o de
-  `  R19_VACCINE_CREATE,`).
+  `  R20_NUTRITION_QUESTIONNAIRE,`, justo después de `  R19_VACCINE_CREATE,`
+  (errata ronda 3).
 
 En `src/__tests__/ui-language.test.ts`:
 - `expect(SCREEN_FILES).toHaveLength(…)` gana
   `+ 1 // #209 R23: screens/nutrition-questionnaire/index.tsx` como línea
-  nueva justo después de `+ 1 // #220 R16: components/date-field.tsx` (y de
-  `+ 1 // #208 R20: screens/vaccine-create/index.tsx` si #208 ya está
-  mergeada). `food` y `meal-schedule` ya estaban. Su `it`,
+  nueva justo después de `+ 1 // #208 R20: screens/vaccine-create/index.tsx`
+  (errata ronda 3: esa línea va tras `+ 1 // #220 R16: components/date-field.tsx`).
+  `food` y `meal-schedule` ya estaban. Su `it`,
   `#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas …`,
-  suma ` (enmendado por #209 R23)` al final de su nombre.
-- Se añade, después del `describe('#194 R5: la pantalla de edición resuelve su copy por clave')`,
-  `describe('#209 R23: el cuestionario resuelve su copy por clave')` con
+  suma ` (enmendado por #209 R23)` al final de su nombre, detrás de
+  ` (enmendado por #208 R20)`.
+- Se añade al final del fichero, después del `describe('#208 R20: alta de vacuna')`
+  (errata ronda 3: ese `describe` va tras el de
+  `#194 R5: la pantalla de edición resuelve su copy por clave` y hoy es el
+  último), `describe('#209 R23: el cuestionario resuelve su copy por clave')` con
   `it('#209 R23: el bloque del cuestionario tiene 96 filas')`, que hace
   `expect(R20_NUTRITION_QUESTIONNAIRE).toHaveLength(96)` y
   `checkUses(R20_NUTRITION_QUESTIONNAIRE)`.
 
 En `src/providers/__tests__/language-provider.test.tsx`, la suma del `it`
 `#194 R1: mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas …`
-crece en las 77 claves nuevas. Su última línea, `        + 5 - 2, // #220 R16`,
-pierde la coma (`        + 5 - 2 // #220 R16`) y debajo se añade
-`        + 77, // #209 R23` (si #208 ya está mergeada, su `+ 26 // #208 R19` va
-antes y `+ 77, // #209 R23` sigue siendo la última). El nombre del `it` suma
-` (enmendado por #209 R23)`. Sus comprobaciones de marcadores en ambos idiomas
-cubren las claves nuevas sin aserción adicional. Medido en semilla: sin la
-enmienda, `Expected length: 458` / `Received length: 535`; con ella, verde.
+crece en las 77 claves nuevas. (errata ronda 3) Su última línea en
+`1dbac74f` es `        + 26, // #208 R19` (la de `+ 5 - 2 // #220 R16`, justo
+encima, ya no lleva coma). Pierde la coma (`        + 26 // #208 R19`) y
+debajo se añade `        + 77, // #209 R23`, que queda como la última. El
+nombre del `it` suma ` (enmendado por #209 R23)` detrás de
+` (enmendado por #208 R19)`. Sus comprobaciones de marcadores en ambos idiomas
+cubren las claves nuevas sin aserción adicional. Rojo esperado sin la
+enmienda (errata ronda 3: 484 claves por locale en `1dbac74f`):
+`Expected length: 484` / `Received length: 561`; con ella, verde. El
+`#158 R1` también lleva ` (enmendado por #208 R19)` sin cambio de aserción;
+#209 no lo toca.
 
 **Números de bloque.** `R18_DATE_FIELD` es de #220, ya en `origin/dev`
-`8b4cb1bd`. `R19_VACCINE_CREATE` es de #208, que va a Codex antes que esta
-feature. Este bloque es **R20** se mergee #208 antes o después: no hay
-renumeración.
-- Anclas (desde `mobile-pet-tracker/`, antes → después, medidas en
-  `8b4cb1bd` y en la semilla):
+`8b4cb1bd`. `R19_VACCINE_CREATE` es de #208, mergeada en `1dbac74f`. Este
+bloque es **R20**: no hay renumeración.
+- Anclas (desde `mobile-pet-tracker/`, antes → después; errata ronda 3:
+  medidas en `1dbac74f`):
   - `grep -cF 'R20_NUTRITION_QUESTIONNAIRE' src/__tests__/ui-copy-table.ts`:
     `0` → `3` (declaración, `ALL_USES` y `blocks`).
-  - `grep -cF '...R18_DATE_FIELD,' src/__tests__/ui-copy-table.ts`: `1` → `1`.
-  - `grep -cF 'R18_DATE_FIELD, R20_NUTRITION_QUESTIONNAIRE,' src/__tests__/ui-copy-table.ts`:
-    `0` → `1` (con #208 mergeada, el literal es
-    `R19_VACCINE_CREATE, R20_NUTRITION_QUESTIONNAIRE,`).
+  - `grep -cF '...R19_VACCINE_CREATE,' src/__tests__/ui-copy-table.ts`: `1` → `1`.
+  - `grep -cF 'R19_VACCINE_CREATE, R20_NUTRITION_QUESTIONNAIRE,' src/__tests__/ui-copy-table.ts`:
+    `0` → `1`.
   - `grep -cF 'R20_NUTRITION_QUESTIONNAIRE' src/__tests__/ui-language.test.ts`:
     `0` → `3` (import, `toHaveLength` y `checkUses`).
-  - `grep -cF '+ 1 // #220 R16: components/date-field.tsx' src/__tests__/ui-language.test.ts`:
+  - `grep -cF '+ 1 // #208 R20: screens/vaccine-create/index.tsx' src/__tests__/ui-language.test.ts`:
     `1` → `1`.
   - `grep -cF '+ 1 // #209 R23: screens/nutrition-questionnaire/index.tsx' src/__tests__/ui-language.test.ts`:
     `0` → `1`.
   - `grep -cF '+ 5 - 2, // #220 R16' src/providers/__tests__/language-provider.test.tsx`:
+    `0` → `0`.
+  - `grep -cF '+ 26, // #208 R19' src/providers/__tests__/language-provider.test.tsx`:
     `1` → `0`.
+  - `grep -cF '+ 26 // #208 R19' src/providers/__tests__/language-provider.test.tsx`:
+    `0` → `1`.
   - `grep -cF '+ 77, // #209 R23' src/providers/__tests__/language-provider.test.tsx`:
     `0` → `1`.
   - `grep -cF '(enmendado por #209 R23)' src/__tests__/ui-copy-table.ts`,
@@ -888,26 +901,36 @@ inventario que esta feature mueve se enmienda con la **regla mecánica**:
   tenga varias enmiendas. El resto del nombre no se toca, aunque su número
   («diecisiete primarios», «cinco secundarios») quede viejo.
 
-Las cifras son las del árbol base `8b4cb1bd` (merge de `origin/dev` con #220,
-#210 y #211 en esta rama), medidas en una semilla del scratch que sigue la
-forma de R25. Respecto de la medición anterior sobre `2041e2b3`, solo cambió la
-base de `#98 R10` (55 → 53, por #220) y tres anclas de colocación; ningún
-delta cambió. #210 y #211 no tocan estas guardas. Comando, desde
-`mobile-pet-tracker/`, sin `| tail` (el código de salida es el de jest):
-`timeout 580 bunx jest src/__tests__ src/app/__tests__/layout.test.tsx`.
+(errata ronda 3) Las cifras son las del árbol base `1dbac74f` (merge de
+`origin/dev` `b185ae61`, con #219, #218 y #208, en esta rama). Las bases de
+ronda 2 se midieron en una semilla del scratch sobre `8b4cb1bd` que sigue la
+forma de R25; las de ronda 3 se re-midieron con `grep -cF` y `node -e` sobre
+`1dbac74f`, sin jest. #208 movió las bases de `#62 R1`, `#62 R12`, `#62 R14`,
+`#98 R10`, `#177 R6.2` y `#177 R7.3`, y el ancla de colocación de `#62 R14` y
+`#98 R10`. Ningún delta de #209 cambió. #218 y #219 no tocan estas guardas.
+Comando, desde `mobile-pet-tracker/`, sin `| tail` (el código de salida es el
+de jest): `timeout 580 bunx jest src/__tests__ src/app/__tests__/layout.test.tsx`.
 
-- Base: exit 0, `Tests: 953 passed, 953 total` (36 suites).
+- Base (errata ronda 3, **derivada**, la mide Codex antes del primer commit):
+  exit 0, `Tests: 965 passed, 965 total` (37 suites). Son los 953 de
+  `8b4cb1bd` más los 12 que suma el merge: +3 y una suite nueva
+  (`sheet-surface-background.test.ts`, #218 R3), +1 en `design-drift`, +1 en
+  `ui-language`, +1 en `layout.test.tsx`, +4 en chunky (dos filas de
+  `CTA_ROWS`) y +2 en `consistency-classnames` (una fila de `directUses` y
+  otra de `counters`).
   `hosting-artifacts.test.ts` está verde en el árbol real (7 tests); solo falla
   en una semilla a la que le falte `AGENTS.md`.
-- Semilla sin enmiendas: exit 1, `Tests: 27 failed, 926 passed, 953 total`
-  (6 suites en rojo).
-- Semilla con las enmiendas de R3, R23 y esta lista: exit 0,
-  `Tests: 964 passed, 964 total`. Son 953 + 11: los cinco `it` nuevos de R3,
-  R23 y R25, y las filas de `it.each` que generan los inventarios ampliados
-  (por ejemplo, las dos filas de `CTA_ROWS` suman 4 en chunky).
+- Semilla sin enmiendas (ronda 2, sobre `8b4cb1bd`): exit 1,
+  `Tests: 27 failed, 926 passed, 953 total` (6 suites en rojo).
+- Con las enmiendas de R3, R23 y esta lista (errata ronda 3, derivada):
+  exit 0, `Tests: 976 passed, 976 total`. Son 965 + 11: los cinco `it` nuevos
+  de R3, R23 y R25, y las filas de `it.each` que generan los inventarios
+  ampliados (por ejemplo, las dos filas de `CTA_ROWS` suman 4 en chunky).
 - Con las suites que también enmienda esta spec (R22 y R23), el comando es
   `timeout 580 bunx jest src/__tests__ src/app/__tests__/layout.test.tsx src/providers/__tests__/language-provider.test.tsx src/screens/meal-schedule src/screens/food`.
-  En la semilla con todas las enmiendas: exit 0, 39 suites, 1220 tests en verde.
+  Con todas las enmiendas (errata ronda 3, derivada): exit 0, 40 suites,
+  1232 tests en verde (1220 y 39 en ronda 2, más los 12 tests y la suite del
+  merge).
 
 La cifra de cada enmienda depende de la **forma** que fija R25 (componentes
 locales, `.map` sobre constantes y ternarios con literales completos). Si
@@ -917,10 +940,10 @@ Codex se aparta de esa forma, las cifras dejan de cuadrar.
 
 | Candado | Base | Después |
 |---|---|---|
-| `#62 R1`, `rounded-16 bg-accent(?=…)` global | `toHaveLength(16 + 1 + 1 + 1)` | `toHaveLength(16 + 1 + 1 + 1 + 2)` (CTA del wizard y CTA de Nutrición; medido 19 → 21) |
-| `#62 R12`, `textInputs` | `toHaveLength(6)` | `toHaveLength(6 + 2)` (un `<TextInput` en `NumberField` y otro en `OtherField`; medido 6 → 8). `withPlaceholder` sigue en 5 |
-| `#62 R14`, `directUses` | — | fila `[join('screens', 'nutrition-questionnaire', 'index.tsx'), 6], // #209 R24` justo después de la de `reset-password` (`[join('screens', 'reset-password', 'index.tsx'), 1], // #205 R13`), y `+ 6 // #209 R24` en el agregado, justo después de su `+ 1 - 1 - 2 // #220 R4; #220 R14; #220 R15` |
-| `#98 R10`, `count(style={CONTINUOUS_CORNER})` | agregado que acaba en `+ 1 - 1 - 2 // #220 R4; #220 R14; #220 R15` | `+ 6 // #209 R24` justo después (medido 53 → 59) |
+| `#62 R1`, `rounded-16 bg-accent(?=…)` global | `toHaveLength(16 + 1 + 1 + 1 + 1 + 1)` (errata ronda 3) | `toHaveLength(16 + 1 + 1 + 1 + 1 + 1 + 2)` (CTA del wizard y CTA de Nutrición; 21 → 23) |
+| `#62 R12`, `textInputs` | `toHaveLength(6 + 1 + 3); // #208 R21` (errata ronda 3) | `toHaveLength(6 + 1 + 3 + 2); // #209 R24 // #208 R21` (un `<TextInput` en `NumberField` y otro en `OtherField`; 10 → 12). `withPlaceholder` sigue en `5 + 3` (8) |
+| `#62 R14`, `directUses` | — | fila `[join('screens', 'nutrition-questionnaire', 'index.tsx'), 6], // #209 R24` justo después de la de `reset-password` (`[join('screens', 'reset-password', 'index.tsx'), 1], // #205 R13`, que sigue siendo la última), y `+ 6 // #209 R24` en el agregado, justo después de su `+ 2 + 7 // #208 R21` (errata ronda 3; 64 → 70) |
+| `#98 R10`, `count(style={CONTINUOUS_CORNER})` | agregado que acaba en `+ 2 + 7 // #208 R21` (errata ronda 3) | `+ 6 // #209 R24` justo después (62 → 68) |
 | `#166 R2`, `expected` | — | `'screens/food/index.tsx': 1, // #209 R24` justo después de `edit-profile`, y `'screens/nutrition-questionnaire/index.tsx': 1, // #209 R24` justo después de `map` |
 | `#166 R3`, `count(/border-lip-gray/g)` | `toBe(4 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1)` | `toBe(4 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 5)` (medido 12 → 17) |
 
@@ -945,13 +968,13 @@ enlaces de Horario.
 - `radii`: `'screens/food/index.tsx': 2` pasa a `2 + 1, // #209 R24`, y se
   añade `'screens/nutrition-questionnaire/index.tsx': 2, // #209 R24` al
   final, tras `welcome`.
-- `#177 R6.2`: `count(/text-17/g)` gana `+ 2` (medido 30 → 32), y
+- `#177 R6.2`: `count(/text-17/g)` gana `+ 2` (errata ronda 3: 33 → 35), y
   `count(/<Text className="text-17 font-extrabold text-accent-foreground">/g)`
-  gana `+ 2`.
+  gana `+ 2` (errata ronda 3: 18 → 20).
 - `#177 R7.1`: `count(/border-lip-gray/g)` pasa de `toBe(10 + 1 + 1)` a
   `toBe(10 + 1 + 1 + 5)` (medido 12 → 17).
 - `#177 R7.3`: `count(/\brounded-16\b/g)` gana `+ 3` (CTA y resumen del
-  wizard, CTA de Nutrición).
+  wizard, CTA de Nutrición; errata ronda 3: 44 → 47).
 - `#177 R7.5`: `inventory(/style=\{chunkyLip\.neutralCompact\}/g)` pasa a
   `{ 'screens/alerts/index.tsx': 1, 'screens/meal-schedule/index.tsx': 1 + 2 }`.
   El inventario de `primaryCompact` no cambia: el chip de Salud usa
@@ -1024,7 +1047,8 @@ da el orden alfabético (`map` < `meal-schedule` < `meals-history` <
 `nutrition-questionnaire` < `pairing`). En `directUses`, `inkSites` y
 `radii` la fila nueva va al final.
 
-Anclas (desde `mobile-pet-tracker/`). En `8b4cb1bd` todas valen `0`. La
+Anclas (desde `mobile-pet-tracker/`). En `1dbac74f` (errata ronda 3) todas
+las de `#209` valen `0`. La
 semilla puso los comentarios `// #209 R24` pero casi ningún sufijo de nombre,
 así que su cuenta es un mínimo: con los sufijos ` (enmendado por #209 R24)` la
 cuenta real sube en uno por cada `it` enmendado.
@@ -1038,7 +1062,8 @@ cuenta real sube en uno por cada `it` enmendado.
 | `grep -cF '#209 R24' src/__tests__/alerts-canvas-fidelity.test.ts` | 0 | ≥ 3 |
 | `grep -cF '#209 R24' src/__tests__/profile-canvas-fidelity.test.ts` | 0 | ≥ 2 |
 | `grep -cF '#209 R25' src/__tests__/design-drift.test.ts` | 0 | = 4 (el `describe` y sus tres `it`) |
-| `grep -cF '+ 1 - 1 - 2 // #220 R4; #220 R14; #220 R15' src/__tests__/consistency-classnames.test.ts` | 2 | 2 (ancla de colocación de `#62 R14` y `#98 R10`) |
+| `grep -cF '+ 1 - 1 - 2 // #220 R4; #220 R14; #220 R15' src/__tests__/consistency-classnames.test.ts` | 2 | 2 (errata ronda 3: ya no es la última línea de los agregados) |
+| `grep -cF '+ 2 + 7 // #208 R21' src/__tests__/consistency-classnames.test.ts` | 2 | 2 (errata ronda 3: ancla de colocación de `#62 R14` y `#98 R10`) |
 | `grep -cF '+ 6 // #209 R24' src/__tests__/consistency-classnames.test.ts` | 0 | 2 |
 | `grep -cF "[join('screens', 'reset-password', 'index.tsx'), 1], // #205 R13" src/__tests__/consistency-classnames.test.ts` | 1 | 1 |
 - Test: estas suites, en verde: `design-drift`, `consistency-classnames`,
@@ -1266,10 +1291,14 @@ delegadas. R26 no cierra hasta entonces.
   paréntesis se escapan.
 - Si `origin/dev` avanza, se hace `git merge origin/dev`, nunca rebase.
   Después se re-miden los agregados de R3, R22, R23 y R24 con la regla
-  mecánica. #220 ya está en `8b4cb1bd`. #208 va a Codex antes que esta
-  feature: si mergea antes que #209, el handoff de #209 se re-mide tras ese
-  merge, y #209 conserva los deltas y sufijos de #208 junto a los suyos (lista
-  de agregados compartidos en `design.md` §Riesgos).
+  mecánica. #220 ya está en `8b4cb1bd`. (errata ronda 3) #208, #218 y #219
+  ya están en `1dbac74f` (dev `b185ae61`), y la re-medida tras ese merge es
+  la ronda 3 de `progress/firma_mobile-nutrition-questionnaire.md`. #209
+  conserva los deltas y sufijos de #208 delante de los suyos (lista de
+  agregados compartidos en `design.md` §Riesgos).
+- (errata ronda 3) #209 no importa `@expo/ui/community/bottom-sheet`: el
+  `#218 R3` de `src/__tests__/sheet-surface-background.test.ts` solo admite
+  `pairing` y `reminders`.
 - No hay dependencias nuevas, ni costo, ni recursos AWS.
 
 ## Aprobación

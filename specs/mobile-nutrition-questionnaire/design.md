@@ -126,6 +126,13 @@ compartido, para no tocar Horario más de lo que pide R20–R22.
 - **#220 ya está mergeada.** Entró en esta rama con el merge de `origin/dev`
   `8b4cb1bd` (junto con #210 y #211), y las cifras de R3, R22, R23 y R24 están
   re-medidas sobre esa base. Ya no es un riesgo abierto.
+- **#208, #218 y #219 ya están mergeadas (errata ronda 3).** Entraron con el
+  merge de `origin/dev` `b185ae61` en `1dbac74f`. Las cifras de R3, R23 y R24
+  están re-medidas sobre esa base en la ronda 3 de
+  `progress/firma_mobile-nutrition-questionnaire.md`. #219 no toca ninguna
+  guarda de #209. #218 añade `#218 R3` (solo `pairing` y `reminders` importan
+  `@expo/ui/community/bottom-sheet`), que #209 no pisa. La tabla A16 de abajo
+  queda como registro: lo que hizo #208 de verdad está en `1dbac74f`.
 - **Agregados compartidos con #208 (A16).** #208 (`mobile-vaccine-create`) va
   a Codex antes que #209. Su spec se leyó en
   `/home/claude/sites/Pet-Tracker-wt-208/specs/mobile-vaccine-create/requirements.md`
@@ -175,6 +182,21 @@ compartido, para no tocar Horario más de lo que pide R20–R22.
   Si al mergear aparece algún otro agregado con los dos deltas, se aplica la
   misma regla.
 
+  (errata ronda 3) Medido en `1dbac74f`, la tabla y las listas se quedaron
+  cortas en cuatro puntos:
+  - #208 sí fijó sufijos: ` (enmendado por #208 R20)` en
+    `#194 R5: cuadra ALL_USES …` y en `#194 R5: no deja ningún valor fijo …`,
+    y ` (enmendado por #208 R19)` en `#194 R1` y en `#158 R1`. Este último
+    no cambia de aserción; #209 no lo toca.
+  - `#62 R12` no es «Solo #209»: #208 lo dejó en `6 + 1 + 3` (`textInputs`)
+    y `5 + 3` (`withPlaceholder`). Es el único agregado nuevo con cifra
+    compartida, y #209 suma `+ 2` solo a `textInputs`.
+  - #208 también añadió filas o sufijos en `#166 R2`, `#178 R13`, `#179 R13`
+    (`text-17`), `#174 R12`, `#173 R2` y `#173 R2.4`. Son filas de lista o de
+    diccionario, sin cifra compartida, y ninguna colocación de #209 cambia.
+  - En `#62 R14` y `#98 R10`, la última línea del agregado pasó a ser
+    `+ 2 + 7 // #208 R21`, y `+ 6 // #209 R24` va detrás.
+
   **Regla de merge.** Quien mergee segunda conserva los dos deltas y los dos
   comentarios (`// #208 …` y `// #209 …`) en cada línea de la tabla.
   - Cada nombre de `it` lleva los dos sufijos, en orden de merge (p. ej.
@@ -194,7 +216,9 @@ compartido, para no tocar Horario más de lo que pide R20–R22.
   - las anclas `grep -cF` de R3, R22, R23 y R24.
 
   Antes de lanzar Codex, cada cifra base de `requirements.md` que haya
-  movido #208 se reescribe como «base + delta».
+  movido #208 se reescribe como «base + delta». (errata ronda 3) Hecho en la
+  ronda 3, con `grep -cF` y `node -e` y sin jest. Codex mide el T0 del árbol
+  real antes de su primer commit.
 - **Colisión con #208 en `src/app/__tests__/layout.test.tsx`.** Es la primera
   fila de la tabla anterior. Los dos `it` de orden no chocan: #208 R4 inserta
   justo tras `meals-history` y #209 R3 al final, justo tras `edit-profile`.

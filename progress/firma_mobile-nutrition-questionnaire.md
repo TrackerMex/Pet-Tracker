@@ -868,3 +868,165 @@ lancé `./init.sh`.
 
 Nota para quien firme: el `+ 11` se explica por suite, no fila a fila. No
 mueve ninguna cifra ni ningún candado, así que no cuenta como punto abierto.
+
+## Ronda 3 — re-medida sobre dev b185ae61 (#208)
+
+La rama mergeó `origin/dev` en `1dbac74f`. Base anterior: `8b4cb1bd`. El
+merge trae **tres** features, no solo #208:
+- #219 `mobile-weekly-average-format` (PR #266, `c425672d`): solo
+  `screens/home/format.ts`, `weekly-activity-chart.tsx` y sus tests. No toca
+  ninguna guarda de esta spec.
+- #218 `mobile-sheet-surface-background` (PR #267, `0c37e77a`): `pairing`,
+  `reminders` y una suite nueva, `src/__tests__/sheet-surface-background.test.ts`
+  (`#218 R3`).
+- #208 `mobile-vaccine-create` (PR #268, `b185ae61`).
+
+Medición en solo lectura sobre `1dbac74f`: `git diff 8b4cb1bd 1dbac74f`,
+`grep -cF` y `node -e`. Sin jest y sin `./init.sh` (otras instancias de
+Codex comparten la máquina). Todas las rutas son desde `mobile-pet-tracker/`.
+
+### Tabla de anclas
+
+| Ancla | Antes (`8b4cb1bd`) | Ahora (`1dbac74f`) | Comando |
+|---|---|---|---|
+| R3, cuenta de `#194 R4: declara ocho rutas…` | `toHaveLength(8 + 1 + 1 + 1 + 1 + 1 + 1)` (14) | `toHaveLength(8 + 1 + 1 + 1 + 1 + 1 + 1 + 1); // #194 R4 // #185 R10 // #100 R2, #41 R4, #146 R5, #105 R8 // #208 R4` (15) | `grep -cF 'toHaveLength(8 + 1 + 1 + 1 + 1 + 1 + 1 + 1); // #194 R4' src/app/__tests__/layout.test.tsx` = 1 |
+| R3, décimo hijo | `9 + 1×5` | `9 + 1 + 1 + 1 + 1 + 1 + 1` | `grep -cF 'toHaveLength(9 + 1 + 1 + 1 + 1 + 1 + 1); // #194 R4' …layout.test.tsx` = 1 |
+| R3, undécimo hijo | `10 + 1×4` | `10 + 1 + 1 + 1 + 1 + 1` | `grep -cF 'toHaveLength(10 + 1 + 1 + 1 + 1 + 1); // #194 R4' …` = 1 |
+| R3, duodécimo hijo | `11 + 1×3` | `11 + 1 + 1 + 1 + 1` | `grep -cF 'toHaveLength(11 + 1 + 1 + 1 + 1); // #194 R4' …` = 1 |
+| R3, sufijos de #208 en `layout.test.tsx` | 0 | 4 (los cuatro `it` de cuenta; el de `edit-profile` no lo lleva) | `grep -cF '(enmendado por #208 R4)' …layout.test.tsx` = 4 |
+| R3, `edit-profile` último | `at(-1)` | `at(-1)` (sin cambio: `vaccines/new` va antes de `edit-profile`) | `grep -cF 'Children.toArray(group.props.children).at(-1);' …` = 1 |
+| R3, rojo esperado sin enmendar | `Expected length: 14 / Received length: 15` | `Expected length: 15 / Received length: 16` | derivado de las cuatro cuentas |
+| R3, `_layout.tsx` | — | `vaccines/new` entre `meals-history` y `edit-profile` | `grep -cF 'name="pets/[petId]/vaccines/new"' src/app/_layout.tsx` = 1; `'name="nutrition-profile"'` = 0 |
+| R23, último bloque | `R18_DATE_FIELD` | `R19_VACCINE_CREATE` (29 filas) | `grep -cF '...R19_VACCINE_CREATE,' src/__tests__/ui-copy-table.ts` = 1 |
+| R23, línea de `blocks` | `… R18_DATE_FIELD,` | `R16_WELCOME, R17_EDIT_PROFILE, R18_DATE_FIELD, R19_VACCINE_CREATE,` | `grep -cF 'R18_DATE_FIELD, R19_VACCINE_CREATE,' …ui-copy-table.ts` = 1 |
+| R23, nombre de `#194 R5: cuadra ALL_USES…` | `… (enmendado por #220 R16)` | `… (enmendado por #220 R16) (enmendado por #208 R20)` | `grep -cF '(enmendado por #208 R20)' …ui-copy-table.ts` = 1 |
+| R23, import de `ui-language` | `  R18_DATE_FIELD,` | `  R19_VACCINE_CREATE,` tras él | `grep -cF '  R19_VACCINE_CREATE,' src/__tests__/ui-language.test.ts` = 1 |
+| R23, `SCREEN_FILES` | acaba en `+ 1 // #220 R16: …` | acaba en `+ 1 // #208 R20: screens/vaccine-create/index.tsx` | `grep -cF '+ 1 // #208 R20: screens/vaccine-create/index.tsx' …ui-language.test.ts` = 1 |
+| R23, `describe` de #208 | — | `describe('#208 R20: alta de vacuna')` justo tras `#194 R5: la pantalla de edición…`, y es el último del fichero | `grep -cF "describe('#208 R20: alta de vacuna'" …` = 1 |
+| R23, sufijos #208 en `ui-language` | 0 | 2 (`#65 R5` de Salud y `#194 R5: no deja…`) | `grep -cF '(enmendado por #208 R20)' …ui-language.test.ts` = 2 |
+| R23, última línea de la suma de `#194 R1` | `+ 5 - 2, // #220 R16` | `+ 26, // #208 R19` (y `+ 5 - 2 // #220 R16` ya sin coma) | `grep -cF '+ 5 - 2, // #220 R16' src/providers/__tests__/language-provider.test.tsx` = 0; `'+ 5 - 2 // #220 R16'` = 1; `'+ 26, // #208 R19'` = 1 |
+| R23, claves por locale | 458 | 484 | `node -e` sobre `src/i18n/catalog.ts` (claves de `en` y de `es` = 484) |
+| R23, rojo esperado sin enmendar `#194 R1` | `Expected length: 458 / Received length: 535` | `Expected length: 484 / Received length: 561` | 484 + 77 |
+| R23, sufijos #208 en `language-provider` | 0 | 2 (`#194 R1` y `#158 R1`) | `grep -cF '(enmendado por #208 R19)' …` = 2 |
+| R23, claves de #208 | — | 44 `'vaccineCreate.` (22 por locale) | `grep -cF "'vaccineCreate." src/i18n/catalog.ts` = 44 |
+| R24, `#62 R1` | `16 + 1 + 1 + 1` (19) | `16 + 1 + 1 + 1 + 1 + 1); // #208 R21 // #194 R6 // …` (21) | `grep -cF 'toHaveLength(16 + 1 + 1 + 1 + 1 + 1); // #208 R21' src/__tests__/consistency-classnames.test.ts` = 1 |
+| R24, `#62 R12` `textInputs` | `toHaveLength(6)` | `toHaveLength(6 + 1 + 3); // #208 R21` (10) | `grep -cF 'expect(textInputs).toHaveLength(6 + 1 + 3); // #208 R21' …` = 1 |
+| R24, `#62 R12` `withPlaceholder` | `toHaveLength(5)` | `toHaveLength(5 + 3); // #208 R21` (8) | `grep -cF 'expect(withPlaceholder).toHaveLength(5 + 3); // #208 R21' …` = 1 |
+| R24, `#62 R14`, primera fila de `directUses` | `date-field` | `[join('screens', 'vaccine-create', 'index.tsx'), 7], // #208 R21` (la de `reset-password` sigue la última) | `grep -cF "[join('screens', 'reset-password', 'index.tsx'), 1], // #205 R13" …` = 1 |
+| R24, última línea de los agregados `#62 R14` y `#98 R10` | `+ 1 - 1 - 2 // #220 R4; #220 R14; #220 R15` | `+ 2 + 7 // #208 R21` | `grep -cF '+ 2 + 7 // #208 R21' …` = 2; `'+ 1 - 1 - 2 // #220 R4; #220 R14; #220 R15'` = 2 |
+| R24, valor de `#98 R10` | 53 | 62 | suma del literal con `node -e` |
+| R24, valor de `#62 R14` | 55 | 64 | suma del literal (arranca en 2) con `node -e` |
+| R24, `#166 R2` | — | `vaccine-create` y `health` al principio del objeto; `edit-profile` y `map` siguen | `grep -cF "'screens/edit-profile/index.tsx': 1, // #194 R6"` = 1; `"'screens/map/index.tsx': 1, // #201 R13"` = 1 |
+| R24, `#166 R3` | `4 + 1×8` (12) | sin cambio | `grep -cF 'toBe(4 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1); // #189 R13' …` = 1 |
+| R24, `CTA_ROWS` | acaba en `weight-log` | dos filas de #208 al principio; sigue acabando en `weight-log` | `grep -cF "['screens/weight-log/index.tsx', literalId('weight-submit')" src/__tests__/chunky-cta-canvas-fidelity.test.ts` = 1 |
+| R24, `consumers` | `… 'screens/food/index.tsx', 'screens/profile/index.tsx', 'screens/map/index.tsx'].sort(); // #201 R13` | sin cambio | `grep -cF` del literal = 1 |
+| R24, `#177 R6.2` `text-17` | 30 | `8 + 15 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 2 + 1` (33) | `grep -cF 'toBe(8 + 15 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 2 + 1); // #200 R5' …` = 1 |
+| R24, `#177 R6.2` etiqueta 17/800 | 16 | `5 + 11 + 1 + 1 - 1 - 1 + 1 + 1` (18) | `grep -cF 'toBe(5 + 11 + 1 + 1 - 1 - 1 + 1 + 1); // #194 R6' …` = 1 |
+| R24, `#177 R7.1` | `10 + 1 + 1` (12) | sin cambio | `grep -cF 'toBe(10 + 1 + 1); // #189 R13' …` = 1 |
+| R24, `#177 R7.3` cuenta | 42 | `26 + 1 + … + 1` (44) | `grep -cF 'toBe(26 + 1 + 1 + 1 + 2 + 2 + 1 + 1 + 1 + 2 + 1 + 1 + 1 + 1 + 1 + 1); // #204 R9' …` = 1 |
+| R24, `#177 R7.3` `radii` | `food: 2`, acaba en `welcome` | sin cambio en `food` ni en el final (#208 añade `vaccine-create: 1` y `health: 1 + 1` en medio) | `grep -cF "  'screens/food/index.tsx': 2," …` = 1; `"  'screens/welcome/index.tsx': 2,"` = 1 |
+| R24, `#177 R7.5` `neutralCompact` | `{ alerts: 1, meal-schedule: 1 }` | sin cambio | `grep -cF` del literal = 1 |
+| R24, `#178 R13` `rounded-16` | `food: 2, // #200 R9` | sin cambio (#208 añade `health: 1 + 1` y `vaccine-create: 1`) | `grep -cF "'screens/food/index.tsx': 2, // #200 R9" src/__tests__/design-drift.test.ts` = 1 |
+| R24, `#178 R13` `rounded-14` | `meals-history` | sin cambio | `grep -cF "join('screens', 'meals-history', 'index.tsx'), // #179 R13 comparte rounded-14" …` = 1 |
+| R24, `#179 R13` `hitSlop` | `toHaveLength(1)` | sin cambio | `grep -cF` del literal = 1 |
+| R24, `describe` nuevo de #208 en `design-drift` | — | `#208 R21: alta de vacuna sin deriva`, al final del fichero | `grep -cF "describe('#208 R21: alta de vacuna sin deriva'" …` = 1 |
+| R24, sufijos `(enmendado por #208 R21)` | 0 | consistency 8, chunky 9, design-drift 2, alerts 1, profile 2 | `grep -cF '(enmendado por #208 R21)' <fichero>` |
+| R24, `#209` en las guardas | 0 | 0 | `grep -cF '#209' <fichero>` = 0 en los siete ficheros |
+| #218 R3, importadores de `@expo/ui/community/bottom-sheet` | — | 2 (`pairing` y `reminders`) | `grep -rlF '@expo/ui/community/bottom-sheet' src --include='*.tsx'` sin tests = 2 |
+
+### T0 derivado
+
+El T0 no se mide aquí: lo mide Codex antes del primer commit, como en el
+handoff de #214. Se deriva así:
+
+- Comando de R24 (`timeout 580 bunx jest src/__tests__ src/app/__tests__/layout.test.tsx`).
+  - Medido en ronda 2 sobre `8b4cb1bd`: `Tests: 953 passed, 953 total`, 36 suites.
+  - Lo que suma el merge, contado con `git diff 8b4cb1bd 1dbac74f` sobre
+    `it(`, `it.each(` y sus tablas:
+    - `sheet-surface-background.test.ts`: suite nueva con 1 `it` y un
+      `it.each(importers)` de 2 filas, así que +3 tests y +1 suite;
+    - `design-drift`: +1 (`#208 R21`);
+    - `ui-language`: +1 (`#208 R20`);
+    - `layout.test.tsx`: +1 (`#208 R4`);
+    - `chunky-cta-canvas-fidelity`: +4 (dos filas de `CTA_ROWS` en
+      `#177 R3.1` y `R3.2`);
+    - `consistency-classnames`: +2 (una fila de `directUses` y otra de
+      `counters`, `#62 R15`).
+  - Total +12. **T0 derivado: 965 tests, 37 suites.**
+  - Semilla con las enmiendas de #209: 965 + 11 = **976**. El `+ 11` no cambia,
+    porque #208 no toca ninguna tabla de `it.each` a la que #209 sume filas.
+  - Por suite, base → con #209: chunky 84 → 88, consistency 81 → 82 y
+    design-drift 115 → 118.
+- Comando ampliado de R24 (con `language-provider`, `meal-schedule` y `food`):
+  #208, #218 y #219 no tocan `it` en esas tres rutas (sus deltas son solo
+  renombres en `language-provider`). La cifra de la semilla pasa de
+  1220 tests y 39 suites a **1232 tests y 40 suites** (derivada). El T0 del
+  árbol real con ese comando no se midió en ninguna ronda; lo mide Codex.
+
+### Candados nuevos que trae el merge
+
+- `#218 R3` (`sheet-surface-background.test.ts`) exige que solo `pairing` y
+  `reminders` importen `@expo/ui/community/bottom-sheet`. #209 no monta
+  `BottomSheet` (ni R1–R26 lo piden), así que no lo pisa. El handoff lo deja
+  como guarda final (`grep -c` = 0 en los ficheros de #209).
+- `#208 R21` en `design-drift` mira solo los cuatro ficheros de #208.
+- `#208 R4` en `layout.test.tsx` busca `vaccines/new` por `indexOf`. No se
+  mueve con `nutrition-profile` al final.
+- `detail-stack.guard.test.tsx` gana una fila de `it.each` para
+  `vaccines/new`. No es un candado de cuenta, y #209 no añade fila (su spec no
+  lo pide).
+- `#158 R1` lleva el sufijo `(enmendado por #208 R19)` sin cambio de
+  aserción. El review de #208 lo dio por sobrante. #209 no lo toca.
+- Colisiones de `#65 R18`: comparé los 154 valores `en`/`es` de R23 con los
+  literales enteros de `vaccine-create`, `health`, `pairing`, `reminders` y
+  `home` del merge (`node -e`). No hay ninguna coincidencia.
+- `api/types.ts` y `api/query-keys.ts`: #208 añade `VaccineCatalogEntry`,
+  `Vaccine…` y `vaccineCatalog`. No chocan con `NutritionProfileInput` ni
+  con `nutritionKeys.profile`.
+
+### Erratas (ronda 3)
+
+Cada una lleva la marca `(errata ronda 3)` en el fichero.
+
+1. `requirements.md` R3:
+   - la base pasa a `1dbac74f`;
+   - la tabla toma las cuentas de ahora, cada una con `+ 1` más;
+   - el rojo pasa a `Expected length: 15 / Received length: 16`;
+   - los cuatro `it` de cuenta ya llevan ` (enmendado por #208 R4)`, y el de
+     #209 va detrás.
+2. `requirements.md` R23:
+   - la colocación condicional queda resuelta: tras `R19_VACCINE_CREATE` en
+     el bloque, en `ALL_USES`, en `blocks` y en el import, y tras
+     `+ 1 // #208 R20: …` en `SCREEN_FILES`;
+   - el `describe` nuevo va tras `describe('#208 R20: alta de vacuna')`, al
+     final del fichero. Así la entrada de #208 queda antes que la de #209;
+   - `+ 26, // #208 R19` pierde la coma y debajo va `+ 77, // #209 R23`;
+   - el rojo pasa a `484 / 561`;
+   - anclas: `'+ 5 - 2, // #220 R16'` pasa a 0 → 0, `'+ 26, // #208 R19'` a
+     1 → 0, `'+ 26 // #208 R19'` a 0 → 1, y el literal de `blocks` a
+     `R19_VACCINE_CREATE, R20_NUTRITION_QUESTIONNAIRE,`;
+   - `#158 R1` no se toca.
+3. `requirements.md` R24:
+   - base `1dbac74f` y T0 derivado 965 / 37; semilla 976;
+   - comando ampliado: 1232 / 40, derivado;
+   - `#62 R1` pasa a `16 + 1 + 1 + 1 + 1 + 1 + 2` (21 → 23);
+   - `#62 R12` pasa a `6 + 1 + 3 + 2` (10 → 12), y `withPlaceholder` sigue
+     en `5 + 3` (8);
+   - en `#62 R14` y `#98 R10`, `+ 6 // #209 R24` va tras
+     `+ 2 + 7 // #208 R21`. `#98 R10` pasa de 62 a 68, y `#62 R14` de 64 a 70;
+   - `#177 R6.2`: `text-17` pasa de 33 a 35, y la etiqueta de 18 a 20;
+   - `#177 R7.3`: de 44 a 47;
+   - la tabla de anclas lleva `'+ 2 + 7 // #208 R21'` = 2 como ancla de
+     colocación.
+4. `design.md` §Riesgos:
+   - #208, #218 y #219 ya están mergeadas;
+   - la lista «Solo #209» estaba incompleta. #208 también enmendó `#62 R12`
+     (único con cifra compartida), `#166 R2`, `#178 R13`, `#179 R13`
+     (`text-17`), `#174 R12`, `#173 R2` y `#173 R2.4`. En todos menos
+     `#62 R12` son filas de lista o diccionario y sufijos de nombre: ninguna
+     colocación de #209 cambia.
+5. `tasks.md`: el rojo de R3, las colocaciones de R23 y las cifras de R24
+   (2) y (2b).
+
+No cambia ningún delta de #209, ningún literal de copy, ninguna receta y
+ninguna R-id. La aprobación y el `status` no se tocan.
