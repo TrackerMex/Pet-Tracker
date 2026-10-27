@@ -76,6 +76,13 @@ const GENERATING_ROWS = [
   { labelKey: 'nutritionQuestionnaire.generatingMeals' },
 ] as const;
 
+const SAVE_ERRORS = {
+  forbidden: { labelKey: 'mealSchedule.errorForbidden' },
+  unreachable: { labelKey: 'common.cannotReachServer' },
+  weightRequired: { labelKey: 'mealSchedule.registerWeightFirst' },
+  generic: { labelKey: 'common.somethingWentWrong' },
+} as const;
+
 type HealthList = 'allergy' | 'disease';
 type HealthOption = (typeof ALLERGIES)[number] | (typeof DISEASES)[number];
 type ChunkyLip = ReturnType<typeof useChunkyLip>;
@@ -257,9 +264,10 @@ function QuestionnaireForm({ initial, pet }: { initial: NutritionProfile | null;
   const [init] = useState(() => initialFromProfile(initial, t));
   const insets = useSafeAreaInsets();
   const chunkyLip = useChunkyLip();
-  const { token } = useAuth();
+  const { token, signOut } = useAuth();
   const queryClient = useQueryClient();
   const [phase, setPhase] = useState<'form' | 'saving' | 'generating'>('form');
+  const [saveError, setSaveError] = useState<keyof typeof SAVE_ERRORS | null>(null);
   const [step, setStep] = useState<Step>('activity');
   const colors = useThemeColors(['category-blue-strong', 'category-green-strong', 'category-amber-strong', 'accent-foreground', 'muted']);
   const [activity, setActivity] = useState<NutritionProfileInput['activityLevel'] | null>(init.activity);
@@ -283,17 +291,65 @@ function QuestionnaireForm({ initial, pet }: { initial: NutritionProfile | null;
     }
     if (activity === null || food === null) return;
     setPhase('saving');
+    setSaveError(null);
     const baseUrl = process.env.EXPO_PUBLIC_API_URL;
-    const saved = await upsertNutritionProfile(baseUrl, token ?? '', pet.id, buildInput({
-      activity, bcs, target, food, kcal, allergies, allergyOther, diseases, diseaseOther, kept: { allergies: init.allergies.kept, diseases: init.diseases.kept },
-    }, t));
-    if (saved.kind !== 'ok') return;
-    void queryClient.invalidateQueries({ queryKey: nutritionKeys.profile(pet.id) });
-    setPhase('generating');
-    const generated = await generateNutritionPlan(baseUrl, token ?? '', pet.id);
-    if (generated.kind !== 'ok') return;
-    void queryClient.invalidateQueries({ queryKey: nutritionKeys.plan(pet.id) });
-    router.back();
+    // Step stays 'health' while saving, so returning to the form only resets the phase.
+    function backToHealth(error: keyof typeof SAVE_ERRORS | null) {
+      setPhase('form');
+      setSaveError(error);
+    }
+    try {
+      const saved = await upsertNutritionProfile(baseUrl, token ?? '', pet.id, buildInput({
+        activity, bcs, target, food, kcal, allergies, allergyOther, diseases, diseaseOther, kept: { allergies: init.allergies.kept, diseases: init.diseases.kept },
+      }, t));
+      switch (saved.kind) {
+        case 'ok':
+          break;
+        case 'forbidden':
+          backToHealth('forbidden');
+          return;
+        case 'unreachable':
+          backToHealth('unreachable');
+          return;
+        case 'unauthorized':
+          backToHealth(null);
+          await signOut();
+          return;
+        case 'invalid':
+        case 'not-found':
+        case 'error':
+        case 'missing-config':
+          backToHealth('generic');
+          return;
+      }
+      void queryClient.invalidateQueries({ queryKey: nutritionKeys.profile(pet.id) });
+      setPhase('generating');
+      const generated = await generateNutritionPlan(baseUrl, token ?? '', pet.id);
+      switch (generated.kind) {
+        case 'ok':
+          void queryClient.invalidateQueries({ queryKey: nutritionKeys.plan(pet.id) });
+          router.back();
+          return;
+        case 'forbidden':
+          backToHealth('forbidden');
+          return;
+        case 'unprocessable':
+          backToHealth(generated.code === 'PET_WEIGHT_REQUIRED' ? 'weightRequired' : 'generic');
+          return;
+        case 'unreachable':
+          backToHealth('unreachable');
+          return;
+        case 'unauthorized':
+          backToHealth(null);
+          await signOut();
+          return;
+        case 'error':
+        case 'missing-config':
+          backToHealth('generic');
+      }
+    } catch {
+      backToHealth('generic');
+    }
   }
 
   if (phase !== 'form') return <Generating phase={phase} name={pet.name} checkColor={colors[3]} />;
@@ -395,6 +451,7 @@ function QuestionnaireForm({ initial, pet }: { initial: NutritionProfile | null;
           <Text className="text-lg font-black text-foreground">{t('nutritionQuestionnaire.diseasesLegend')}</Text>
           <HealthChips list="disease" options={DISEASES} checked={diseases} onToggle={slug => setDiseases(items => toggle(items, slug))} chunkyLip={chunkyLip} />
           {diseases.includes('otra') ? <OtherField list="disease" value={diseaseOther} onChangeText={setDiseaseOther} /> : null}
+          {saveError ? <Text testID="nutrition-questionnaire-error" className="text-danger">{t(SAVE_ERRORS[saveError].labelKey)}</Text> : null}
         </> : null}
       </ScrollView>
       <View className="bg-background px-5 pt-4" style={{ paddingBottom: Math.max(insets.bottom, 16) }}>
