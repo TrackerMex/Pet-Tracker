@@ -39,6 +39,17 @@ const BCS_ROWS = [
 
 type Step = 'activity' | 'condition' | 'target' | 'food' | 'health';
 
+function stepNumber(step: Step) {
+  return { activity: 1, condition: 2, target: 2, food: 3, health: 4 }[step];
+}
+
+function nextStep(step: Step, bcs: number | null): Step {
+  if (step === 'activity') return 'condition';
+  if (step === 'condition') return bcs !== null && bcs >= 7 ? 'target' : 'food';
+  if (step === 'target') return 'food';
+  return 'health';
+}
+
 function BcsBadge({ n, slot, testID }: { n: number; slot: CategorySlot; testID: string }) {
   return <View testID={testID} className={`size-7.5 items-center justify-center rounded-10 ${CATEGORY_SLOTS[slot].surface}`}>
     <Text className={`text-sm font-black ${CATEGORY_SLOTS[slot].ink}`}>{n}</Text>
@@ -53,10 +64,10 @@ function QuestionnaireForm({ pet }: { initial: NutritionProfile | null; pet: Pet
   const colors = useThemeColors(['category-blue-strong', 'category-green-strong', 'category-amber-strong', 'accent-foreground']);
   const [activity, setActivity] = useState<NutritionProfileInput['activityLevel'] | null>(null);
   const [bcs, setBcs] = useState<number | null>(null);
-  const n = step === 'activity' ? 1 : 2;
-  const canContinue = step === 'activity' ? activity !== null : bcs !== null;
+  const n = stepNumber(step);
+  const canContinue = step === 'activity' ? activity !== null : step === 'condition' ? bcs !== null : true;
   function handleNext() {
-    if (step === 'activity') setStep('condition');
+    if (step !== 'health') setStep(nextStep(step, bcs));
   }
 
   return (
@@ -116,6 +127,8 @@ function QuestionnaireForm({ pet }: { initial: NutritionProfile | null; pet: Pet
             })}
           </View>
         </> : null}
+        {step === 'target' ? <Text className="text-lg font-black text-foreground">{t('nutritionQuestionnaire.targetWeightTitle')}</Text> : null}
+        {step === 'food' ? <Text className="text-lg font-black text-foreground">{t('nutritionQuestionnaire.foodLegend')}</Text> : null}
       </ScrollView>
       <View className="bg-background px-5 pt-4" style={{ paddingBottom: Math.max(insets.bottom, 16) }}>
         <Button testID="nutrition-questionnaire-next" className="h-14 rounded-16 bg-accent" style={chunkyLip.primary} isDisabled={!canContinue} onPress={() => void handleNext()}>
