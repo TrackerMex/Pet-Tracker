@@ -10,7 +10,7 @@ import { listPets, type PetsState } from '../../api/pets';
 import { healthKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
-import { PetSwitcher } from '../../components/pet-switcher';
+import { TabPetHeader, TAB_PET_HEADER_HEIGHT, TAB_PET_HEADER_SCROLL_MIN } from '../../components/tab-pet-header';
 import { RiseIn } from '../../components/rise-in';
 import { WeightChart } from '../../components/weight-chart';
 import { clearVaccineReminderNotice, useVaccineReminderNotice } from '../../hooks/vaccine-reminder-notice';
@@ -101,11 +101,9 @@ export function HealthScreen() {
     ? calendarDaysUntil(nextVaccine.nextDoseAt!, new Date())
     : 0;
 
-  const screenTitle = t('health.health');
-
   return (
     <View testID="health-root" className="flex-1">
-    <View testID="health-heading" accessible accessibilityRole="header" accessibilityLabel={screenTitle} className="absolute size-px" />
+    <View testID="health-heading" accessible accessibilityRole="header" accessibilityLabel={t('health.health')} className="absolute size-px" />
     <ScrollView
       testID="screen-health"
       className="flex-1 bg-background"
@@ -113,23 +111,10 @@ export function HealthScreen() {
       contentContainerStyle={{
         padding: 24,
         gap: 16,
-        paddingTop: insets.top + 12,
+        paddingTop: pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? insets.top + TAB_PET_HEADER_HEIGHT + 16 : insets.top + 12,
         paddingBottom: insets.bottom + 96,
       }}
     >
-      <View testID="health-header" className="flex-row items-center justify-between">
-        <Text testID="health-title" className="text-3xl font-black tracking-title text-foreground">
-          {screenTitle}
-        </Text>
-        {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
-          <PetSwitcher
-            variant="avatars"
-            pets={pets.data.pets}
-            selectedPetId={selectedPetId}
-            onSelect={selectPet}
-          />
-        ) : null}
-      </View>
       {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
           <View testID="health-content" style={{ gap: 16 }}>
             {nextVaccine ? (
@@ -357,6 +342,16 @@ export function HealthScreen() {
         </View>
       )}
     </ScrollView>
+    {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
+      <TabPetHeader
+        testID="health-pet-header"
+        horizontalInset={24}
+        pets={pets.data.pets}
+        selectedPetId={selectedPetId}
+        onSelect={selectPet}
+        scrollHint={pets.data.pets.length >= TAB_PET_HEADER_SCROLL_MIN ? t('tabHeader.petsScroll') : undefined}
+      />
+    ) : null}
     {noticePetId !== null && noticePetId === selectedPetId && (
       <View testID="vaccine-reminder-notice" accessibilityRole="alert" accessibilityLiveRegion="polite"
         className={`absolute left-4 right-4 flex-row items-center gap-2.5 rounded-tile border border-border px-3.5 py-3 ${CATEGORY_SLOTS.amber.surface}`}
