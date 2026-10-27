@@ -157,9 +157,9 @@ it.each(['screens/geofences/index.tsx', 'screens/geofence-editor/index.tsx', 'co
   expect(content).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
 });
 
-it('#202 R25: package.json no añade dependencias (enmendado por #217 R8)', () => {
+it('#202 R25: package.json no añade dependencias (enmendado por #217 R8) (enmendado por #214 R23)', () => {
   const content = readFileSync(join(process.cwd(), 'package.json'), 'utf8');
   const manifest = JSON.parse(content) as { dependencies: Record<string, string> };
   expect(content).not.toContain('expo-linear-gradient');
-  expect(Object.keys(manifest.dependencies)).toHaveLength(42);
+  expect(Object.keys(manifest.dependencies)).toHaveLength(42 + 1); // #214 R23: expo-clipboard
 });

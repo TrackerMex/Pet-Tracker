@@ -1116,7 +1116,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     expect(addReminder).not.toMatch(/uppercase|tracking-widest/);
   });
 
-  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #203 R4) (enmendado por #203 R6) (enmendado por #203 R7) (enmendado por #204 R8) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #196 R5) (enmendado por #201 R5, R13) (enmendado por #205 R13) (enmendado por #208 R21) (enmendado por #213 R22)', () => {
+  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #203 R4) (enmendado por #203 R6) (enmendado por #203 R7) (enmendado por #204 R8) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #196 R5) (enmendado por #201 R5, R13) (enmendado por #205 R13) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R7, R10, R11, R12, R13, R15, R16, R17, R18)', () => {
     for (const [pattern, count] of [
       [/\brounded-14\b/g, 2], [/\brounded-16\b/g, 5 + 2], [/\brounded-22\b/g, 1],
     ] as const) {
@@ -1145,11 +1145,14 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       'screens/geofence-editor/index.tsx': 4, // #189 R13; #202 R18: +1
       'screens/geofences/index.tsx': 2, // #189 R7
       'screens/health/index.tsx': 1 + 1, // #199 R14; #208 R21
-      'screens/home/index.tsx': 1,
+      'screens/home/index.tsx': 1 + 1, // #214 R7
       'screens/home/weekly-activity-chart.tsx': 1, // #198 R9
+      'screens/join-pet/index.tsx': 2, // #214 R18
       'screens/login/index.tsx': 1,
       'screens/map/index.tsx': 1, // #201 R13
       'screens/pairing/index.tsx': 4, // #203 R6; #203 R7
+      'screens/pet-invite/index.tsx': 2, // #214 R15
+      'screens/pet-members/index.tsx': 6, // #214 R11, R13, R16, R17
       'screens/register/index.tsx': 1,
       'screens/reset-password/index.tsx': 1 + 1, // #205 R13
       'screens/vaccine-create/index.tsx': 1, // #208 R21
@@ -1160,10 +1163,12 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       join('components', 'segmented-control.tsx'), // #191 R11
       join('screens', 'geofences', 'index.tsx'), // #189 R5
       join('screens', 'health', 'index.tsx'), // #199 R18
+      join('screens', 'join-pet', 'index.tsx'), // #214 R18
       join('screens', 'map', 'index.tsx'), // #201 R5
       join('screens', 'meal-schedule', 'index.tsx'), // #179 R13 comparte rounded-14
       join('screens', 'meals-history', 'index.tsx'), // #179 R13 comparte rounded-14
       join('screens', 'pairing', 'index.tsx'), // #188 R20 comparte rounded-14
+      join('screens', 'pet-members', 'index.tsx'), // #214 R10, R12
       join('screens', 'profile', 'index.tsx'), // #196 R5
     ]);
   });
@@ -1230,7 +1235,7 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
     expect(schedule.indexOf('testID="meal-schedule-header"')).toBeLessThan(schedule.indexOf('testID="meal-schedule-summary"'));
   });
 
-  it('limita text-22 a Horario y text-17 al inventario de E1.2 (enmendado por #177 R10) (enmendado por #200 R5) (enmendado por #198 R15) (enmendado por #208 R21) (enmendado por #213 R22)', () => {
+  it('limita text-22 a Horario y text-17 al inventario de E1.2 (enmendado por #177 R10) (enmendado por #200 R5) (enmendado por #198 R15) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R13, R15, R18)', () => {
     const productionFilesMatching = (pattern: RegExp) => filesMatching(pattern).filter(path => !/\.test\.tsx?$/.test(path)).sort();
     expect(productionFilesMatching(/\btext-22\b/)).toEqual([
       'components/empty-state.tsx', // #198 R15
@@ -1252,9 +1257,12 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
       'screens/geofences/index.tsx',
       'screens/health/index.tsx', // #208 R21
       'screens/home/index.tsx',
+      'screens/join-pet/index.tsx', // #214 R18
       'screens/login/index.tsx',
       'screens/meal-schedule/index.tsx',
       'screens/pairing/index.tsx',
+      'screens/pet-invite/index.tsx', // #214 R15
+      'screens/pet-members/index.tsx', // #214 R13
       'screens/register/index.tsx',
       'screens/reminders/index.tsx',
       'screens/reset-password/index.tsx',

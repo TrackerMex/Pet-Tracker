@@ -22,6 +22,7 @@ import {
   R17_EDIT_PROFILE,
   R18_DATE_FIELD,
   R19_VACCINE_CREATE,
+  R21_PET_MEMBERS,
   type UseRow,
 } from './ui-copy-table';
 
@@ -506,7 +507,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
     checkUses(ALL_USES);
   });
 
-  it('#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas (enmendado por #200 R1) (enmendado por #199 R1) (enmendado por #220 R16) (enmendado por #208 R20)', () => {
+  it('#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas (enmendado por #200 R1) (enmendado por #199 R1) (enmendado por #220 R16) (enmendado por #208 R20) (enmendado por #214 R22)', () => {
     expect(SCREEN_FILES).toHaveLength(
       19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1 // #100 R10, #41 R10, #146 R10, #105 R5
         + 1 - 1 // #117 R10: sale app/(auth)/forgot.tsx, entra screens/forgot/index.tsx
@@ -523,6 +524,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
         - 1 // #199 R1: sale src/app/_layout.tsx
         + 1 // #220 R16: components/date-field.tsx
         + 1 // #208 R20: screens/vaccine-create/index.tsx
+        + 3 // #214 R22: screens/pet-members, screens/pet-invite y screens/join-pet
     );
 
     for (const file of SCREEN_FILES) {
@@ -576,5 +578,85 @@ describe('#222 R8: Copy tabHeader.petsScroll y filas de la tabla', () => {
   it('#222 R8: la clave tabHeader.petsScroll dice el literal en es y en', () => {
     expect(es['tabHeader.petsScroll' as TranslationKey]).toBe('Mascotas, desliza para ver más');
     expect(en['tabHeader.petsScroll' as TranslationKey]).toBe('Pets, swipe to see more');
+  });
+});
+
+
+describe('#214 R22: copy de Familia', () => {
+  it('R22: resuelve cada fila de R21_PET_MEMBERS', () => {
+    checkUses(R21_PET_MEMBERS);
+  });
+
+  it('R22: cada t( de las tres pantallas nuevas tiene su fila', () => {
+    for (const file of [
+      'src/screens/pet-members/index.tsx',
+      'src/screens/pet-invite/index.tsx',
+      'src/screens/join-pet/index.tsx',
+    ]) {
+      const calls = readFileSync(join(SOURCE_ROOT, file), 'utf8').match(/\bt\(\s*['"][\w.]+['"]/g) ?? [];
+      expect(calls).toHaveLength(R21_PET_MEMBERS.filter((row) => row.file === file).length);
+    }
+  });
+
+  it('R22: cada clave nueva existe en los dos idiomas y se usa', () => {
+    const keys: TranslationKey[] = [
+      'profile.membersLink',
+      'profile.membersSummaryAlone',
+      'profile.membersSummaryOne',
+      'profile.membersSummaryMany',
+      'members.titleOf',
+      'members.ownerIntro',
+      'members.familyIntro',
+      'members.membersHeading',
+      'members.you',
+      'members.roleOwner',
+      'members.roleFamily',
+      'members.remove',
+      'members.removeA11y',
+      'members.invitesHeading',
+      'members.inviteCreated',
+      'members.inviteExpires',
+      'members.revoke',
+      'members.revokeA11y',
+      'members.codeNote',
+      'members.inviteCta',
+      'members.removeTitle',
+      'members.removeBody',
+      'members.removeConfirm',
+      'members.cancel',
+      'members.ownerNote',
+      'members.leaveHint',
+      'members.leave',
+      'members.leaveTitle',
+      'members.leaveBody',
+      'members.leaveBodyNoOwner',
+      'members.leaveConfirm',
+      'members.invitesLimit',
+      'members.membersLimit',
+      'invite.title',
+      'invite.intro',
+      'invite.codeLabel',
+      'invite.expiresOnce',
+      'invite.messageLabel',
+      'invite.shareMessage',
+      'invite.roleNote',
+      'invite.share',
+      'invite.copy',
+      'invite.copied',
+      'joinPet.title',
+      'joinPet.invitedPrompt',
+      'joinPet.note',
+      'joinPet.hint',
+      'joinPet.submit',
+      'joinPet.invalid',
+      'joinPet.alreadyMember',
+      'joinPet.goHome',
+    ];
+    expect(keys).toHaveLength(51);
+    for (const key of keys) {
+      expect(Object.prototype.hasOwnProperty.call(en, key)).toBe(true);
+      expect(Object.prototype.hasOwnProperty.call(es, key)).toBe(true);
+      expect(R21_PET_MEMBERS.some((row) => row.key === key)).toBe(true);
+    }
   });
 });
