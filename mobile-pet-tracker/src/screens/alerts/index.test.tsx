@@ -617,9 +617,10 @@ describe('#78 R7: pinta las abiertas primero y conserva la posición tras el ack
     );
   });
 
-  it('no mueve la fila abierta al pulsar su ack', async () => {
+  it('no mueve la fila abierta al pulsar su ack (enmendado por #223 R18)', async () => {
+    const expectedOpenOrder = ['alert-row-open1', 'alert-row-open2'];
     await renderAlerts();
-    await waitFor(() => expect(rowOrder()).toEqual(expectedOrder));
+    await waitFor(() => expect(rowOrder()).toEqual(expectedOpenOrder));
 
     await fireEvent.press(screen.getByTestId('alert-row-open1-ack'));
 
@@ -628,7 +629,7 @@ describe('#78 R7: pinta las abiertas primero y conserva la posición tras el ack
         es['alerts.statusAcked'],
       ),
     );
-    expect(rowOrder()).toEqual(expectedOrder);
+    expect(rowOrder()).toEqual(expectedOpenOrder);
   });
 });
 
@@ -886,7 +887,7 @@ describe('#78 R9: pagina por nextCursor y se para cuando no hay', () => {
     );
   }
 
-  it('pide el cursor siguiente y conserva las filas de ambas páginas', async () => {
+  it('pide el cursor siguiente y conserva las filas de ambas páginas (enmendado por #223 R18)', async () => {
     mockListAlerts
       .mockResolvedValueOnce({
         kind: 'ok',
@@ -899,9 +900,6 @@ describe('#78 R9: pagina por nextCursor y se para cuando no hay', () => {
         nextCursor: null,
       });
     await renderAlerts();
-    await waitFor(() => expect(rowIds()).toEqual(['p1a', 'p1b']));
-
-    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
 
     await waitFor(() =>
       expect(rowIds()).toEqual(['p1a', 'p1b', 'p2a', 'p2b']),
@@ -915,7 +913,7 @@ describe('#78 R9: pagina por nextCursor y se para cuando no hay', () => {
     );
   });
 
-  it('no pide otra página cuando nextCursor es null', async () => {
+  it('no pide otra página cuando nextCursor es null (enmendado por #223 R18)', async () => {
     mockListAlerts.mockResolvedValue({
       kind: 'ok',
       items: [makeAlert()],
@@ -924,36 +922,25 @@ describe('#78 R9: pagina por nextCursor y se para cuando no hay', () => {
     await renderAlerts();
     await waitFor(() => expect(rowIds()).toEqual(['alert-1']));
 
-    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
-
     expect(mockListAlerts).toHaveBeenCalledTimes(1);
   });
 
-  it('corta el segundo onEndReached mientras la página está en vuelo', async () => {
+  it('no pide otra página mientras la anterior está en vuelo (enmendado por #223 R18)', async () => {
+    let finishSecond!: (page: AlertsState) => void;
     mockListAlerts
-      .mockResolvedValueOnce({
-        kind: 'ok',
-        items: [makeAlert()],
-        nextCursor: 'c1',
-      })
-      .mockReturnValueOnce(pending<AlertsState>());
+      .mockResolvedValueOnce({ kind: 'ok', items: [makeAlert()], nextCursor: 'c1' })
+      .mockReturnValueOnce(new Promise<AlertsState>((resolve) => { finishSecond = resolve; }));
     await renderAlerts();
     await waitFor(() => expect(rowIds()).toEqual(['alert-1']));
-    const firstHandler = screen.getByTestId('alerts-list').props.onEndReached;
-
-    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
-    await waitFor(() => expect(mockListAlerts).toHaveBeenCalledTimes(2));
-    await waitFor(() =>
-      expect(screen.getByTestId('alerts-list').props.onEndReached).not.toBe(
-        firstHandler,
-      ),
-    );
-    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
-
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+    expect(rowIds()).toEqual(['alert-1']);
+    expect(mockListAlerts).toHaveBeenCalledTimes(2);
+    await act(async () => finishSecond({ kind: 'ok', items: [makeAlert({ id: 'second' })], nextCursor: null }));
+    await waitFor(() => expect(rowIds()).toEqual(['alert-1', 'second']));
     expect(mockListAlerts).toHaveBeenCalledTimes(2);
   });
 
-  it('conserva la primera página y muestra error si falla la segunda', async () => {
+  it('conserva la primera página y muestra error si falla la segunda (enmendado por #223 R18)', async () => {
     mockListAlerts
       .mockResolvedValueOnce({
         kind: 'ok',
@@ -964,15 +951,12 @@ describe('#78 R9: pagina por nextCursor y se para cuando no hay', () => {
     await renderAlerts();
     await waitFor(() => expect(rowIds()).toEqual(['p1a', 'p1b']));
 
-    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
-
     await waitFor(() =>
       expect(screen.getByTestId('alerts-action-error')).toHaveTextContent(
         es['common.somethingWentWrong'],
       ),
     );
     expect(rowIds()).toEqual(['p1a', 'p1b']);
-    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
     expect(mockListAlerts).toHaveBeenCalledTimes(2);
   });
 });
@@ -1344,10 +1328,19 @@ describe('#170 R3: agrupa la lista en Hoy, Esta semana y Anteriores', () => {
     else hostProcess.env.TZ = previousTZ;
     jest.restoreAllMocks();
   });
-  it('ordena por sección y, dentro, abiertas primero en el orden del servidor', async () => {
+  it('#223 R4: data contiene solo las abiertas, por sección y en el orden del servidor', async () => {
+    await renderAlerts();
+    await waitFor(() => expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['today-open', 'week-open', 'earlier-open']));
+    for (const section of ['today', 'week', 'earlier']) {
+      expect(screen.getAllByTestId('alerts-section-' + section)).toHaveLength(1);
+    }
+    expect(screen.queryByTestId('alert-row-today-acked')).toBeNull();
+    expect(screen.queryByTestId('alert-row-earlier-closed')).toBeNull();
+  });
+  it('ordena las abiertas por sección y en el orden del servidor (enmendado por #223 R18)', async () => {
     await renderAlerts();
     await screen.findByTestId('alert-row-today-open');
-    expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['today-open', 'today-acked', 'week-open', 'earlier-open', 'earlier-closed']);
+    expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['today-open', 'week-open', 'earlier-open']);
   });
   it('pinta una cabecera por sección con su copy en español (enmendado por #174 R6)', async () => {
     await renderAlerts();
@@ -1387,13 +1380,13 @@ describe('#170 R3: agrupa la lista en Hoy, Esta semana y Anteriores', () => {
     ['today', S.filter((a) => !a.id.startsWith('today'))],
     ['week', S.filter((a) => !a.id.startsWith('week'))],
     ['earlier', S.filter((a) => !a.id.startsWith('earlier'))],
-  ] as const)('omite la cabecera de %s cuando la sección queda vacía', async (section, items) => {
+  ] as const)('omite la cabecera de %s cuando la sección queda vacía (enmendado por #223 R18)', async (section, items) => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items, nextCursor: null });
     await renderAlerts();
-    await screen.findByTestId('alert-row-' + items[0].id);
+    await screen.findByTestId('alert-row-' + items.find((a) => a.status === 'open')!.id);
     expect(screen.queryByTestId('alerts-section-' + section)).toBeNull();
   });
-  it('pinta cada cabecera una sola vez al cargar la página siguiente', async () => {
+  it('pinta cada cabecera una sola vez al cargar la página siguiente (enmendado por #223 R18)', async () => {
     mockListAlerts.mockResolvedValueOnce({ kind: 'ok', items: [
       makeAlert({ id: 'today-1', openedAt: '2027-01-02T14:00:00.000Z' }),
       makeAlert({ id: 'week-1', openedAt: '2026-12-30T12:00:00.000Z' }),
@@ -1403,17 +1396,17 @@ describe('#170 R3: agrupa la lista en Hoy, Esta semana y Anteriores', () => {
     ], nextCursor: null });
     await renderAlerts();
     await screen.findByTestId('alert-row-today-1');
-    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
-    await waitFor(() => expect(screen.getByTestId('alerts-list').props.data).toHaveLength(4));
-    expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['today-1', 'week-1', 'week-2', 'earlier-1']);
+    await waitFor(() => expect(screen.getByTestId('alerts-list').props.data).toHaveLength(3));
+    expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['today-1', 'week-1', 'earlier-1']);
     expect(screen.getAllByTestId('alerts-section-week')).toHaveLength(1);
   });
-  it('no reordena al marcar leída una fila abierta', async () => {
+  it('no reordena al marcar leída una fila abierta (enmendado por #223 R18)', async () => {
     mockAckAlert.mockResolvedValue({ kind: 'ok', alert: { ...S[4], status: 'acked' } });
     await renderAlerts();
+    await waitFor(() => expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['today-open', 'week-open', 'earlier-open']));
     await fireEvent.press(await screen.findByTestId('alert-row-today-open-ack'));
     await screen.findByTestId('alert-row-today-open-status');
-    expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['today-open', 'today-acked', 'week-open', 'earlier-open', 'earlier-closed']);
+    expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['today-open', 'week-open', 'earlier-open']);
   });
 });
 
@@ -1447,12 +1440,10 @@ describe('#170 R4: cuenta las alertas nuevas', () => {
     await renderAlertsInEnglish();
     expect(await screen.findByTestId('alerts-new-count-text')).toHaveTextContent('1 new');
   });
-  it('suma las abiertas de todas las páginas cargadas', async () => {
+  it('suma las abiertas de todas las páginas cargadas (enmendado por #223 R18)', async () => {
     mockListAlerts.mockResolvedValueOnce({ kind: 'ok', items: [makeAlert({ id: 'a' }), makeAlert({ id: 'b' }), makeAlert({ id: 'c', status: 'acked' })], nextCursor: 'c1' })
       .mockResolvedValue({ kind: 'ok', items: [makeAlert({ id: 'd' })], nextCursor: null });
     await renderAlerts();
-    expect(await screen.findByTestId('alerts-new-count-text')).toHaveTextContent('2 nuevas');
-    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
     await waitFor(() => expect(screen.getByTestId('alerts-new-count-text')).toHaveTextContent('3 nuevas'));
   });
   it('pinta «2 new» en inglés', async () => {
