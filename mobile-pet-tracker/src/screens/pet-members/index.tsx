@@ -4,7 +4,7 @@ import { Button, Skeleton } from 'heroui-native';
 import { useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Key } from 'reicon-react-native';
+import { InfoCircle, Key, Logout } from 'reicon-react-native';
 
 import { listPetInvites, listPetMembers, removePetMember, revokePetInvite, type PetMember } from '../../api/pet-members';
 import { getPet } from '../../api/pets';
@@ -29,8 +29,9 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
   const queryClient = useQueryClient();
   const chunkyLip = useChunkyLip();
   const [surface] = useThemeColors(['surface']);
-  const [amberStrong] = useThemeColors(['category-amber-strong']);
+  const [amberStrong, foreground, danger] = useThemeColors(['category-amber-strong', 'foreground', 'danger']);
   const [removing, setRemoving] = useState<{ member: PetMember; slot: CategorySlot } | null>(null);
+  const [, setLeaveOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -51,6 +52,8 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
   const members = membersQuery.data?.kind === 'ok' ? membersQuery.data.members : null;
   const me = meQuery.data?.kind === 'ok' ? meQuery.data.me : null;
   const isOwner = pet?.myRole === 'owner';
+  const owner = members?.find((member) => member.role === 'owner');
+  const ownerName = owner ? `${owner.firstName} ${owner.lastName}`.trim() : null;
   const invitesQuery = useQuery({
     queryKey: inviteKeys.list(petId),
     queryFn: () => listPetInvites(baseUrl, token ?? '', petId),
@@ -124,6 +127,11 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
     }
   }
 
+  function openLeave() {
+    setActionError(null);
+    setLeaveOpen(true);
+  }
+
   let otherIndex = 0;
   return (
     <View testID="screen-pet-members" className="flex-1 bg-background">
@@ -131,6 +139,11 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
         <ScreenHeader
           testID="pet-members-header"
           backFallback="/profile"
+          accessory={pet && !isOwner ? (
+            <View testID="pet-members-pet-avatar" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" className={`size-10 items-center justify-center rounded-full ${CATEGORY_SLOTS.amber.surface}`}>
+              <Text className={`text-base font-black ${CATEGORY_SLOTS.amber.ink}`}>{pet.name.charAt(0).toUpperCase()}</Text>
+            </View>
+          ) : undefined}
           title={pet ? t('members.titleOf', { petName: pet.name }) : undefined}
           titlePlaceholder={pet === null ? <Skeleton testID="pet-members-header-skeleton" className="h-8 w-36 rounded-xl" /> : undefined}
         />
@@ -149,7 +162,7 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
         {actionError ? <Text testID="pet-members-action-error" accessibilityRole="alert" className="text-13 font-bold text-danger" selectable>{actionError}</Text> : null}
         {pet && members && me ? (
           <>
-            {isOwner ? <Text testID="pet-members-intro" className="text-sm leading-note text-muted">{t('members.ownerIntro', { petName: pet.name })}</Text> : null}
+            <Text testID="pet-members-intro" className="text-sm leading-note text-muted">{isOwner ? t('members.ownerIntro', { petName: pet.name }) : t('members.familyIntro', { petName: pet.name })}</Text>
             <Text testID="pet-members-heading" accessibilityRole="header" className="text-sm font-extrabold text-foreground">
               {t('members.membersHeading')}
             </Text>
@@ -207,6 +220,22 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
                     );
                   })}
                 </View>
+              </>
+            ) : null}
+            {!isOwner && ownerName ? (
+              <View testID="pet-members-owner-note" className="flex-row items-center gap-2.5 rounded-tile bg-default px-3.5 py-3">
+                <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><InfoCircle size={20} color={foreground} /></View>
+                <Text className="flex-1 text-13 font-semibold leading-note text-foreground" selectable>{t('members.ownerNote', { ownerName, petName: pet.name })}</Text>
+              </View>
+            ) : null}
+            {!isOwner ? (
+              <>
+                <View style={{ flexGrow: 1 }} />
+                <Text testID="pet-members-leave-hint" className="text-center text-13 font-semibold text-muted">{t('members.leaveHint', { petName: pet.name })}</Text>
+                <Button testID="pet-members-leave" variant="outline" className="w-full h-13.5 rounded-16 border-2 border-danger bg-surface" style={chunkyLip.neutral} onPress={openLeave}>
+                  <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><Logout size={20} color={danger} /></View>
+                  <Text className="text-base font-extrabold text-danger">{t('members.leave')}</Text>
+                </Button>
               </>
             ) : null}
           </>
