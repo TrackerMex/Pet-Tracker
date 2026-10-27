@@ -23,13 +23,7 @@ const FILAS = [
     file: 'src/components/pet-hero-header.tsx',
     literal: 'PET_HERO_MEDIA_HEIGHT = 430',
   },
-  {
-    n: 3,
-    artboard: 'Perfil',
-    canvas: 'font-size: 30px; font-weight: 900; letter-spacing: -0.02em; color: #FFFFFF',
-    file: 'src/screens/profile/index.tsx',
-    literal: 'text-3xl font-black tracking-title text-accent-foreground',
-  },
+
   {
     n: 4,
     artboard: 'Perfil',
@@ -180,15 +174,15 @@ const FILAS = [
 ];
 
 describe('#196 R10: fidelidad de Perfil a los artboards congelados', () => {
-  it.each(FILAS)('#196 R10: fila $n — $artboard lleva el literal del canvas y producción lo cumple', ({ artboard, canvas, file, literal }) => {
+  it.each(FILAS)('#196 R10: fila $n — $artboard lleva el literal del canvas y producción lo cumple (enmendado por #222 R9)', ({ artboard, canvas, file, literal }) => {
     const board = readFileSync(join(process.cwd(), '..', 'specs/mobile-profile-photo-hero-canvas/canvas', `${artboard}.dc.html`), 'utf8');
     const production = readFileSync(join(process.cwd(), file), 'utf8');
     expect(board).toContain(canvas);
     expect(production).toContain(literal);
   });
 
-  it('#196 R10: la tabla cubre los tres artboards', () => {
-    expect(FILAS).toHaveLength(24);
+  it('#196 R10: la tabla cubre los tres artboards (enmendado por #222 R9)', () => {
+    expect(FILAS).toHaveLength(23);
     expect(new Set(FILAS.map((row) => row.artboard)).size).toBe(3);
   });
 });
