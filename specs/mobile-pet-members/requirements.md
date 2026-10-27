@@ -808,4 +808,8 @@ tags: [mobile, spec, pet-members, invites, expo-router, heroui-native]
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-27) ← gate obligatorio antes de implementar
+- [ ] Smoke de #214 en dev build por el humano (fecha: ____), tras el rebuild del dev build por
+      `expo-clipboard`: invitación entre dos cuentas (crear código, «Copiar código», «Compartir»
+      con el Share nativo, unirse con el código, salir y quitar a un miembro). Va en el lote G4 de
+      `progress/smoke_mejoras-producto.md`. No bloquea tareas; bloquea `done`.
