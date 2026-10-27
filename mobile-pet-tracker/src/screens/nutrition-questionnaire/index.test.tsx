@@ -123,8 +123,12 @@ it('#209 R4: esqueleto y error de carga respetan el inset superior y el error ti
   expect(errorScreen.props.style).toEqual({ paddingTop: 52 });
   expect(errorScreen.props.className).toBe('flex-1 gap-4 bg-background px-5 pb-5');
   expect(within(errorScreen).getByTestId('nutrition-questionnaire-load-error')).toHaveTextContent('Algo salió mal', { exact: true });
-  await fireEvent.press(screen.getByTestId('nutrition-questionnaire-back'));
+  expect(within(errorScreen).getAllByTestId(/^nutrition-questionnaire-(back|load-error)$/).map(node => node.props.testID)).toEqual(['nutrition-questionnaire-back', 'nutrition-questionnaire-load-error']);
+  await fireEvent.press(within(errorScreen).getByTestId('nutrition-questionnaire-back'));
   expect(mockRouter.back).toHaveBeenCalled();
+  mockRouter.canGoBack.mockReturnValueOnce(false);
+  await fireEvent.press(within(errorScreen).getByTestId('nutrition-questionnaire-back'));
+  expect(mockRouter.replace).toHaveBeenCalledWith('/food');
 });
 
 it('#209 R5: pinta cabecera, contador «1 de 4» y la barra con un segmento hecho', async () => {
@@ -155,6 +159,14 @@ it('#209 R5: Pingo de la burbuja mide 52 pt y 44 pt en Condición por style', as
   const pingo = screen.getByTestId('nutrition-questionnaire-pingo', { includeHiddenElements: true });
   expect(pingo.props.style).toEqual({ width: 52, height: 52 });
   expect(pingo.props.className).toBeUndefined();
+});
+it('#209 R5: Pingo de la burbuja mide 52 pt en Alimento y en Salud', async () => {
+  await goToFood(5);
+  expect(screen.getByTestId('nutrition-questionnaire-pingo', { includeHiddenElements: true }).props.style).toEqual({ width: 52, height: 52 });
+  await fireEvent.press(screen.getByTestId('food-type-dry'));
+  await fireEvent.press(screen.getByTestId('nutrition-questionnaire-next'));
+  expect(await screen.findByText('Alergias')).toBeVisible();
+  expect(screen.getByTestId('nutrition-questionnaire-pingo', { includeHiddenElements: true }).props.style).toEqual({ width: 52, height: 52 });
 });
 
 it('#209 R7: Actividad pinta las tres opciones con su copy', async () => {

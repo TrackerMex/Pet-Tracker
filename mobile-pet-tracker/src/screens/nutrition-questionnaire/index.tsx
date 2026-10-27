@@ -365,7 +365,7 @@ function QuestionnaireForm({ initial, pet }: { initial: NutritionProfile | null;
       </View>
       <ScrollView key={step} className="flex-1 bg-background" keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16, gap: step === 'condition' ? 14 : 16 }}>
         <View className="flex-row items-center gap-3">
-          <Image testID="nutrition-questionnaire-pingo" source={require('../../../assets/images/pingo-food.webp')} style={step === 'condition' ? { width: 44, height: 44 } : { width: 52, height: 52 }} />
+          <Image testID="nutrition-questionnaire-pingo" source={require('../../../assets/images/pingo-food.webp')} style={step === 'condition' || step === 'food' ? { width: 44, height: 44 } : { width: 52, height: 52 }} />
           <View testID="nutrition-questionnaire-bubble" className="flex-1 rounded-tile bg-surface-secondary px-3 py-2.5" style={CONTINUOUS_CORNER}>
             <View className={step === 'condition' ? 'absolute -left-1.5 top-4.5 size-3 rotate-45 bg-surface-secondary' : 'absolute -left-1.5 top-5.5 size-3 rotate-45 bg-surface-secondary'} />
             <Text className="text-13 font-semibold leading-body text-foreground">{step === 'condition' ? t('nutritionQuestionnaire.bubbleCondition', { name: pet.name }) : step === 'target' ? t('nutritionQuestionnaire.bubbleTargetWeight', { bcs: String(bcs), name: pet.name }) : step === 'food' ? t('nutritionQuestionnaire.bubbleFood', { name: pet.name }) : step === 'health' ? t('nutritionQuestionnaire.bubbleHealth', { name: pet.name }) : t('nutritionQuestionnaire.bubbleActivity', { name: pet.name })}</Text>
@@ -488,10 +488,12 @@ export function NutritionQuestionnaireScreen() {
     </View>;
   }
   if (pet.data?.kind !== 'ok' || profile.data?.kind === 'error' || profile.data?.kind === 'unreachable') {
-    return <View testID="nutrition-questionnaire-load-error-screen" className="flex-1 gap-4 bg-background px-5 pb-5" style={{ paddingTop: insets.top + 12 }}>
+    return <>
       <ScreenHeader testID="nutrition-questionnaire" size={24} backFallback="/food" />
-      <Text testID="nutrition-questionnaire-load-error" className="text-danger">{t('common.somethingWentWrong')}</Text>
-    </View>;
+      <View testID="nutrition-questionnaire-load-error-screen" className="flex-1 gap-4 bg-background px-5 pb-5" style={{ paddingTop: insets.top + 12 }}>
+        <Text testID="nutrition-questionnaire-load-error" className="text-danger">{t('common.somethingWentWrong')}</Text>
+      </View>
+    </>;
   }
   return <QuestionnaireForm initial={profile.data?.kind === 'ok' ? profile.data.profile : null} pet={pet.data.pet} />;
 }
