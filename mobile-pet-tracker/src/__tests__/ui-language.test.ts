@@ -22,6 +22,7 @@ import {
   R17_EDIT_PROFILE,
   R18_DATE_FIELD,
   R19_VACCINE_CREATE,
+  R20_NUTRITION_QUESTIONNAIRE,
   type UseRow,
 } from './ui-copy-table';
 
@@ -503,7 +504,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
     checkUses(ALL_USES);
   });
 
-  it('#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas (enmendado por #200 R1) (enmendado por #199 R1) (enmendado por #220 R16) (enmendado por #208 R20)', () => {
+  it('#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas (enmendado por #200 R1) (enmendado por #199 R1) (enmendado por #220 R16) (enmendado por #208 R20) (enmendado por #209 R23)', () => {
     expect(SCREEN_FILES).toHaveLength(
       19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1 // #100 R10, #41 R10, #146 R10, #105 R5
         + 1 - 1 // #117 R10: sale app/(auth)/forgot.tsx, entra screens/forgot/index.tsx
@@ -520,6 +521,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
         - 1 // #199 R1: sale src/app/_layout.tsx
         + 1 // #220 R16: components/date-field.tsx
         + 1 // #208 R20: screens/vaccine-create/index.tsx
+        + 1 // #209 R23: screens/nutrition-questionnaire/index.tsx
     );
 
     for (const file of SCREEN_FILES) {
@@ -566,5 +568,12 @@ describe('#208 R20: alta de vacuna', () => {
   it('#208 R20: R19_VACCINE_CREATE tiene 29 usos y cuadra con el código', () => {
     expect(R19_VACCINE_CREATE).toHaveLength(29);
     checkUses(R19_VACCINE_CREATE);
+  });
+});
+
+describe('#209 R23: el cuestionario resuelve su copy por clave', () => {
+  it('#209 R23: el bloque del cuestionario tiene 96 filas', () => {
+    expect(R20_NUTRITION_QUESTIONNAIRE).toHaveLength(96);
+    checkUses(R20_NUTRITION_QUESTIONNAIRE);
   });
 });
