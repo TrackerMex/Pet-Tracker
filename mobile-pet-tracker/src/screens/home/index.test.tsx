@@ -6612,3 +6612,38 @@ describe('#216 R2: el tile Recordatorio es solo del dueño', () => {
     expect(mockRouter.push).toHaveBeenCalledTimes(tiles.length);
   });
 });
+
+describe('#216 R3: Vincular collar en Inicio es solo del dueño', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  it.each([
+    ['owner', true],
+    ['family', false],
+    ['walker', false],
+    ['vet', false],
+  ] as const)('#216 R3 con el rol %s el enlace para vincular se pinta: %s', async (role, linkVisible) => {
+    const pet = makePet({ myRole: role, device: null });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    await renderHome();
+
+    await screen.findByTestId('collar-card');
+    expect(screen.queryByTestId('collar-status')).not.toBeNull();
+    if (linkVisible) {
+      await fireEvent.press(screen.getByTestId('collar-pair-link'));
+      expect(mockRouter.push).toHaveBeenCalledWith('/pairing');
+    } else {
+      expect(screen.queryByTestId('collar-pair-link')).toBeNull();
+    }
+  });
+});
