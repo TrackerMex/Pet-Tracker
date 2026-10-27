@@ -281,9 +281,11 @@ it('#208 R10: cambiar la fecha de aplicación recalcula la propuesta', async () 
   expect(screen.getByTestId('vaccine-create-applied-value')).toHaveProp('value', '1 sep 2026');
   expect(screen.getByTestId('vaccine-create-next-value')).toHaveProp('value', '1 sep 2027');
 });
-it('#208 R10: una próxima dosis elegida a mano sobrevive al cambio de aplicación y cae al cambiar de chip', async () => {
+it('#208 R10: una próxima dosis elegida a mano sobrevive al cambio de aplicación y cae al cambiar de chip (enmendado por #208 R10)', async () => {
   await readyVaccineForm();
   await pickVaccineDate('next', new Date(2028, 0, 12, 12));
+  await fireEvent.press(screen.getByTestId('vaccine-chip-cat-lepto'));
+  expect(screen.getByTestId('vaccine-create-next-value')).toHaveProp('value', '12 ene 2028');
   await pickVaccineDate('applied', new Date(2026, 8, 1, 12));
   expect(screen.getByTestId('vaccine-create-next-value')).toHaveProp('value', '12 ene 2028');
   await fireEvent.press(screen.getByTestId('vaccine-chip-cat-rabia'));
