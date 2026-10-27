@@ -256,9 +256,42 @@ busca `vaccines/new` por `indexOf` y no se toca.
 - IF alguna de las dos es `unauthorized`, THEN llama a `signOut()`.
 - En otro caso monta el formulario. Con el perfil `not-found` el formulario
   arranca vacío; con `ok` arranca en modo edición (R15).
+- (errata ronda 6, 2026-10-27) La ruta tiene `headerShown: false`, así que el
+  esqueleto y el error de carga llevan el mismo margen superior que el
+  formulario y el error lleva botón de volver. `NutritionQuestionnaireScreen`
+  llama a `const insets = useSafeAreaInsets();` antes del primer `return`, y:
+  - el esqueleto es
+    `<View testID="nutrition-questionnaire-skeleton" className="flex-1 gap-4 bg-background px-5 pb-5" style={{ paddingTop: insets.top + 12 }}>`,
+    con los mismos dos `Skeleton` de hoy;
+  - el error de carga es
+    `<View testID="nutrition-questionnaire-load-error-screen" className="flex-1 gap-4 bg-background px-5 pb-5" style={{ paddingTop: insets.top + 12 }}>`,
+    con dos hijos en este orden:
+    `<ScreenHeader testID="nutrition-questionnaire" size={24} backFallback="/food" />`
+    (sin `title` ni `accessory`, para no añadir otra llamada a
+    `t('mealSchedule.nutritionProfile')` a los inventarios de copy) y el
+    `<Text testID="nutrition-questionnaire-load-error" className="text-danger">`
+    de hoy.
 - Tests: `src/screens/nutrition-questionnaire/index.test.tsx` ›
   - `it('#209 R4: mientras carga pinta el esqueleto')`
   - `it('#209 R4: si la mascota falla pinta el error de carga')`
+  - (errata ronda 6) `it('#209 R4: esqueleto y error de carga respetan el inset superior y el error tiene volver')`.
+    El fichero ya mockea `useSafeAreaInsets` con `top: 40`, así que
+    `paddingTop` vale `52`. Para el esqueleto (con
+    `mockGetPet.mockReturnValue(new Promise(() => undefined))`, como el `it`
+    del esqueleto) y para el error (con
+    `mockGetPet.mockResolvedValue({ kind: 'error' })`, tras `cleanup` o en
+    un `it` aparte con otro render), con `node` el
+    `nutrition-questionnaire-skeleton` o el
+    `nutrition-questionnaire-load-error-screen`, aserta
+    `expect(node.props.style).toEqual({ paddingTop: 52 })` y
+    `expect(node.props.className).toBe('flex-1 gap-4 bg-background px-5 pb-5')`.
+    En el error aserta además que
+    `within(errorScreen).getByTestId('nutrition-questionnaire-load-error')`
+    tiene el texto «Algo salió mal», y que
+    `await fireEvent.press(screen.getByTestId('nutrition-questionnaire-back'))`
+    llama a `mockRouter.back` (el doble de `router.canGoBack` devuelve
+    `true`; `BackButton` hace `router.back()`). Con el código de hoy (`p-5`
+    sin `style`, `Text` suelto y sin cabecera) sale rojo en las dos ramas.
 
 **R5** — WHILE el formulario está montado, THE SYSTEM SHALL pintar:
 - `ScreenHeader` con `testID="nutrition-questionnaire"`, título «Perfil
@@ -270,9 +303,26 @@ busca `vaccines/new` por `indexOf` y no se toca.
   `h-1.5 flex-1 rounded-full`: `bg-accent` si su índice (de 1 a 4) es ≤ N, y
   `bg-lip-gray` en otro caso.
 - La burbuja de Pingo `nutrition-questionnaire-bubble`, con el texto del paso.
+  (errata ronda 6, 2026-10-27; mismo motivo que en R16) La imagen de Pingo
+  junto a la burbuja es
+  `<Image testID="nutrition-questionnaire-pingo" source={require('../../../assets/images/pingo-food.webp')} style={step === 'condition' ? { width: 44, height: 44 } : { width: 52, height: 52 }} />`,
+  sin `className`.
 
 Valores de N: Actividad 1, Condición 2, Peso objetivo 2, Alimento 3, Salud 4.
 - Test: `it('#209 R5: pinta cabecera, contador «1 de 4» y la barra con un segmento hecho')`.
+- (errata ronda 6) Test:
+  `it('#209 R5: Pingo de la burbuja mide 52 pt y 44 pt en Condición por style')`,
+  justo después del anterior. Empieza por `await goToCondition()` (el helper
+  del fichero: renderiza, elige `activity-option-medium` y pulsa Siguiente) y
+  aserta
+  `expect(screen.getByTestId('nutrition-questionnaire-pingo', { includeHiddenElements: true }).props.style).toEqual({ width: 44, height: 44 })`.
+  Después vuelve a Actividad con `await pressBack()` (el helper del fichero:
+  pulsa Volver y dispara el callback de `usePreventRemove`, que en Condición
+  retrocede un paso, R6), espera `await screen.findByTestId('activity-option-medium')`
+  y aserta
+  `{ width: 52, height: 52 }` y `props.className` `undefined`. Con el código
+  de hoy sale rojo: no existe el `testID` y la imagen solo lleva
+  `className="size-13"` o `"size-11"`.
 
 **R6** — WHEN el usuario pulsa Volver (`nutrition-questionnaire-back`, o el
 gesto o botón del sistema, vía `usePreventRemove`) en un paso distinto de
@@ -490,7 +540,15 @@ enviado (R14.4), aunque no se pintan.
   (`delay={0}`) y `testID="nutrition-generating-ring-1"` (`delay={1000}`); si
   `useReducedMotion()` es verdadero, ningún anillo;
 - `PingoFloat` con `testID="nutrition-generating-pingo"` y `pingo-food.webp`
-  a 112 px (`size-28`);
+  a 112 pt. (errata ronda 6, 2026-10-27) El tamaño va por `style`, no por
+  `className`: Uniwind solo traduce `className` en los componentes de
+  `react-native` y `expo-image` no lo convierte, así que `size-28` deja la
+  imagen en 0×0 en el dispositivo. Todas las `Image` de `expo-image` del repo
+  se dimensionan así (`components/empty-state.tsx`,
+  `screens/home/index.tsx`, `screens/join-pet/index.tsx`). El hijo es
+  `<Image testID="nutrition-generating-pingo-image" source={require('../../../assets/images/pingo-food.webp')} style={{ width: 112, height: 112 }} />`,
+  sin `className` (el asset es cuadrado, 1024×1024, y no hace falta
+  `contentFit`);
 - el título «Preparando el plan de Rocky»;
 - el texto «Estoy calculando sus calorías y el reparto de sus comidas. Tarda
   unos segundos.»;
@@ -515,6 +573,13 @@ Tests:
 - `it('#209 R16: con movimiento reducido no pinta anillos')`. Aserta que
   `nutrition-generating-ring-0` y `-ring-1` no existen y que
   `nutrition-generating-pingo` sí.
+- (errata ronda 6) `it('#209 R16: Pingo de Generando mide 112 pt por style')`.
+  Con el PUT en vuelo (como el primer `it` de R16), aserta
+  `expect(image.props.style).toEqual({ width: 112, height: 112 })` y
+  `expect(image.props.className).toBeUndefined()`, con
+  `image = within(screen.getByTestId('nutrition-generating-pingo', { includeHiddenElements: true })).getByTestId('nutrition-generating-pingo-image', { includeHiddenElements: true })`.
+  Con el código de hoy sale rojo: no existe el `testID` y la imagen solo
+  lleva `className="size-28"`.
 
 El movimiento reducido se simula como en
 `src/components/__tests__/pet-hero-header.test.tsx`: un
@@ -568,7 +633,11 @@ cuyo plan es `not-found`, THE SYSTEM SHALL consultar también
 - Perfil `not-found` y `myRole === 'owner'`: la sección
   `food-profile-empty` (NutricionSinPerfil) en lugar de `food-plan-empty`.
   Contiene:
-  - el escenario con `PingoFloat` y `pingo-food.webp` a 150 px;
+  - el escenario con `PingoFloat` y `pingo-food.webp` a 150 pt. (errata
+    ronda 6, 2026-10-27; mismo motivo que en R16) El hijo de
+    `food-profile-pingo` es
+    `<Image testID="food-profile-pingo-image" source={require('../../../assets/images/pingo-food.webp')} style={{ width: 150, height: 150 }} />`,
+    sin `className`;
   - el título «Aún no hay perfil nutricional»;
   - el texto «Respóndeme unas preguntas sobre Rocky y preparo su plan:
     cuántas calorías necesita y cuántos gramos servir en cada comida.»;
@@ -581,6 +650,13 @@ Tests: `src/screens/food/index.test.tsx` ›
 - `it('#209 R19: owner sin perfil ve Crear perfil nutricional y navega al cuestionario')`
 - `it.each(['family', 'walker', 'vet'])('#209 R19: %s sin perfil ve el vacío actual')`
 - `it('#209 R19: owner con perfil y sin plan ve el vacío actual')`
+- (errata ronda 6) `it('#209 R19: Pingo de NutricionSinPerfil mide 150 pt por style')`.
+  Con el mismo arreglo que el primer `it` de R19 (owner, plan y perfil
+  `not-found`), aserta
+  `expect(image.props.style).toEqual({ width: 150, height: 150 })` y
+  `expect(image.props.className).toBeUndefined()`, con
+  `image = within(screen.getByTestId('food-profile-pingo', { includeHiddenElements: true })).getByTestId('food-profile-pingo-image', { includeHiddenElements: true })`.
+  Con el código de hoy sale rojo (sin `testID`, `className="size-37.5"`).
 
 **R20** — WHILE Horario (`src/screens/meal-schedule/index.tsx`) muestra el
 perfil nutricional, THE SYSTEM SHALL:
@@ -1224,7 +1300,8 @@ Recetas:
   `style={CONTINUOUS_CORNER}`, con texto
   `text-13 font-semibold leading-body text-foreground`. La cola es
   `absolute -left-1.5 top-5.5 size-3 rotate-45 bg-surface-secondary`
-  (`top-4.5` en Condición). Pingo mide `size-13` (`size-11` en Condición).
+  (`top-4.5` en Condición). Pingo mide 52 pt (44 pt en Condición), por
+  `style` y sin `className` (errata ronda 6, ver R5).
 - **Leyendas**: `text-lg font-black text-foreground`.
 - **Error de guardado**: `<Text testID="nutrition-questionnaire-error" className="text-danger">`
   (R17).
@@ -1234,7 +1311,7 @@ Recetas:
   - escenario `size-45 items-center justify-center`, con
     ``{reduceMotion ? null : [0, 1000].map((delay, index) => <PingRing key={delay} testID={`nutrition-generating-ring-${index}`} delay={delay} className="size-45 rounded-full border-3 border-accent" />)}``
     y `<PingoFloat testID="nutrition-generating-pingo">`, cuyo hijo es la
-    imagen de Pingo en `size-28`;
+    imagen de Pingo a 112 pt por `style` (errata ronda 6, ver R16);
   - textos en un `View` `gap-2`: título
     `text-center text-24 font-black tracking-title text-foreground`, cuerpo
     `text-center text-15 font-semibold leading-note text-muted`;
@@ -1261,7 +1338,7 @@ Recetas:
   - escenario `h-50 w-55 items-center justify-center`, con un disco
     `absolute size-47.5 rounded-full bg-surface-secondary` y
     `<PingoFloat testID="food-profile-pingo">`, cuyo hijo es la imagen de
-    Pingo en `size-37.5`;
+    Pingo a 150 pt por `style` (errata ronda 6, ver R19);
   - título `text-center text-24 font-black tracking-title`;
   - texto `text-center text-15 font-medium leading-normal text-muted`;
   - nota `text-center text-13 font-semibold text-muted`.

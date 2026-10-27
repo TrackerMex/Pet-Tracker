@@ -1030,3 +1030,56 @@ Cada una lleva la marca `(errata ronda 3)` en el fichero.
 
 No cambia ningún delta de #209, ningún literal de copy, ninguna receta y
 ninguna R-id. La aprobación y el `status` no se tocan.
+
+## Ronda 6 — errata por la primera revisión (2026-10-27)
+
+El `reviewer` rechazó la implementación sobre `8aec187f`
+(`progress/review_mobile-nutrition-questionnaire.md`). Los dos hallazgos
+vienen de la spec, no de la implementación: la spec prescribía las dos cosas
+que fallan.
+
+### F1 — tamaño de las `Image` de Pingo
+
+La spec dimensionaba las tres `Image` de `expo-image` con `className`
+(`size-28` en R16 y R25, `size-13`/`size-11` en R25, `size-37.5` en R25).
+Uniwind solo traduce `className` en los componentes de `react-native`
+(`node_modules/uniwind/dist/metro/index.cjs:96-104`; el repo no usa
+`withUniwind`), así que en el dispositivo las tres salen a 0×0. Verificado
+contra el árbol: el resto de `Image` de `expo-image` se dimensiona por
+`style` (`components/empty-state.tsx`, `screens/home/index.tsx:513`,
+`screens/join-pet/index.tsx:67`, `screens/pairing/index.tsx:317`,
+`screens/register/index.tsx:144`), con candados `props.style` del tipo
+`expect(image.props.style).toEqual({ width: 160, height: 160 })`
+(`components/__tests__/empty-state.test.tsx:103`).
+
+Errata: R5, R16, R19 y R25 pasan a `style={{ width, height }}` sin
+`className` (52/44, 112 y 150 pt), con un `testID` por imagen
+(`nutrition-questionnaire-pingo`, `nutrition-generating-pingo-image`,
+`food-profile-pingo-image`) y un `it` nuevo por imagen que aserta
+`props.style` y `props.className` `undefined`. El asset es cuadrado
+(1024×1024): no hace falta `contentFit`.
+
+### F2 — esqueleto y error de carga sin inset
+
+R4 prescribía el esqueleto y el texto de error, pero no su contenedor; la
+ruta tiene `headerShown: false`. Errata: los dos ramos usan
+`flex-1 gap-4 bg-background px-5 pb-5` con `paddingTop: insets.top + 12`
+(el mismo que la cabecera del formulario), y el error lleva
+`ScreenHeader` con volver y sin título. Un `it` nuevo de R4 lo candada.
+
+### Checklist (`plan_canvas-parity-2026-10-23.md` §4)
+
+- Cada `it` nuevo nombra su R-id y sale rojo con el código de hoy (sin
+  `testID`, con `className`; `p-5` sin `style`).
+- Guardas medidas contra el árbol `40e640d9` (merge de `dev` con #216):
+  - ninguna guarda de `src/__tests__/` candada `size-28`, `size-37.5`,
+    `size-13`/`size-11` de estas imágenes, ni `p-5` del esqueleto;
+  - `MEALS_BAR_STYLE_ESCAPES` (`#209 R25`) no mira `style={{`;
+  - las cuentas de `style={CONTINUOUS_CORNER}` no cambian;
+  - no se añade ninguna llamada `t(...)`: la cabecera del error va sin
+    `title` (`ScreenHeader.title` es opcional);
+  - no hay selectores por prefijo sobre `nutrition-questionnaire-`,
+    `nutrition-generating-` ni `food-profile-`.
+- No hay copy nuevo, ni dependencias, ni costo, ni recursos AWS.
+- No cambia ninguna R-id ni ningún literal de copy. La aprobación y el
+  `status` no se tocan.
