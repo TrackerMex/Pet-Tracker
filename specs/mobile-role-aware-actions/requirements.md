@@ -1,6 +1,6 @@
 ---
 feature: "mobile-role-aware-actions"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [mobile, roles, spec]
 ---
 
@@ -345,7 +345,7 @@ símbolos se anclan por contenido.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (firma delegada del leader, mandato 2026-10-23 ampliado 2026-10-26; fecha: 2026-10-27) ← gate obligatorio antes de implementar
 - [ ] Smoke de #216 en dev build por el humano (fecha: ____): con una cuenta
       dueña y otra `family` de la misma mascota (la family se une con el flujo
       de #214), la family no ve el formulario de Peso, el tile Recordatorio, el

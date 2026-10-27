@@ -1,6 +1,6 @@
 ---
 feature: "mobile-role-aware-actions"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [mobile, roles, spec]
 ---
 
