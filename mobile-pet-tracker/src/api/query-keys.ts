@@ -55,9 +55,9 @@ export const geofenceKeys = {
 };
 
 export const memberKeys = {
-  list: (petId: string) => ['', petId] as const,
+  list: (petId: string) => ['pet-members', petId] as const,
 };
 
 export const inviteKeys = {
-  list: (petId: string) => ['', petId] as const,
+  list: (petId: string) => ['pet-invites', petId] as const,
 };
