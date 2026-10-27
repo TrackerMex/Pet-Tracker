@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Check, ChevronRight, Clock, Plus, Syringe } from 'reicon-react-native';
+import { BellOff, Check, ChevronRight, Clock, Plus, Syringe } from 'reicon-react-native';
 
 import { listVaccines, listWeights } from '../../api/health-records';
 import { listPets, type PetsState } from '../../api/pets';
@@ -13,6 +13,8 @@ import { EmptyState } from '../../components/empty-state';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { RiseIn } from '../../components/rise-in';
 import { WeightChart } from '../../components/weight-chart';
+import { clearVaccineReminderNotice, useVaccineReminderNotice } from '../../hooks/vaccine-reminder-notice';
+import { useShadows } from '../../theme/shadows';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useLocale, useTranslate } from '../../providers/language-provider';
@@ -51,6 +53,8 @@ function fmtVariation(variation: number | null): string {
 
 export function HealthScreen() {
   const chunkyLip = useChunkyLip();
+  const shadows = useShadows();
+  const noticePetId = useVaccineReminderNotice();
   const [warning, muted, rose, amber, green, accentStrong, accentForeground] = useThemeColors([
     'warning', 'muted', 'category-rose-strong', 'category-amber-strong', 'category-green-strong',
     'accent-strong', 'accent-foreground',
@@ -98,6 +102,7 @@ export function HealthScreen() {
     : 0;
 
   return (
+    <View testID="health-root" className="flex-1">
     <ScrollView
       testID="screen-health"
       className="flex-1 bg-background"
@@ -349,5 +354,17 @@ export function HealthScreen() {
         </View>
       )}
     </ScrollView>
+    {noticePetId !== null && noticePetId === selectedPetId && (
+      <View testID="vaccine-reminder-notice" accessibilityRole="alert" accessibilityLiveRegion="polite"
+        className={`absolute left-4 right-4 flex-row items-center gap-2.5 rounded-tile border border-border px-3.5 py-3 ${CATEGORY_SLOTS.amber.surface}`}
+        style={[{ bottom: 104 }, shadows.toast, CONTINUOUS_CORNER]}>
+        <BellOff size={20} color={amber} />
+        <Text testID="vaccine-reminder-notice-text" className="flex-1 text-13 font-semibold text-foreground">{t('health.vaccineReminderFailed', { name: selectedPet?.name ?? '' })}</Text>
+        <Pressable testID="vaccine-reminder-notice-action" className="min-h-11 justify-center" onPress={() => { clearVaccineReminderNotice(); router.push('/add-reminder'); }}>
+          <Text className={`text-13 font-extrabold ${CATEGORY_SLOTS.amber.ink}`}>{t('health.createReminderNow')}</Text>
+        </Pressable>
+      </View>
+    )}
+    </View>
   );
 }

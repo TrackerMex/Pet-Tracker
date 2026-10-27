@@ -24,6 +24,7 @@ import type { CreateVaccineInput } from '../../api/types';
 import { validateVaccine } from '../../utils/form-rules';
 import { createReminder } from '../../api/reminders';
 import { combineDateAndTime } from '../../utils/reminder-dates';
+import { clearVaccineReminderNotice, showVaccineReminderNotice } from '../../hooks/vaccine-reminder-notice';
 import { ScreenHeader } from '../../components/screen-header';
 import { useAuth } from '../../providers/auth-provider';
 import { useLocale, useTranslate } from '../../providers/language-provider';
@@ -66,12 +67,14 @@ export function VaccineCreateScreen({ petId }: { petId: string }) {
     if (result.kind === 'ok') {
       const vaccine = result.vaccine;
       if (remind && vaccine.nextDoseAt !== null && vaccine.nextDoseAt > civilTodayIso(profileTimeZone)) {
-        await createReminder(baseUrl, token ?? '', petId, {
+        const reminder = await createReminder(baseUrl, token ?? '', petId, {
           type: 'vaccine', title: vaccine.name,
           dueAt: combineDateAndTime(isoToLocalDate(vaccine.nextDoseAt)!, hhmmToLocalDate('09:00')!).toISOString(),
           advanceMinutes: 0,
         });
-      }
+        if (reminder.kind === 'ok') clearVaccineReminderNotice();
+        else showVaccineReminderNotice(petId);
+      } else clearVaccineReminderNotice();
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: healthKeys.vaccines(petId) }),
         queryClient.invalidateQueries({ queryKey: reminderKeys.list(petId) }),
