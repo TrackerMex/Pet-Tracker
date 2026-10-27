@@ -1732,7 +1732,7 @@ describe('#223 R5: la insignia espera al último cursor y suma las abiertas de t
     });
   });
 
-  it('#223 R8: el encabezado alterna la sección y recuerda cuántas filas había', async () => {
+  it('#223 R8: el encabezado alterna la sección y recuerda cuántas filas había (enmendado por #223 R18)', async () => {
     const history = Array.from({ length: 14 }, (_, i) => makeAlert({
       id: `h${String(i + 1).padStart(2, '0')}`, status: i % 2 === 0 ? 'acked' : 'closed',
       openedAt: new Date(Date.parse('2027-01-02T15:00:00.000Z') - i * 60000).toISOString(),
@@ -1752,6 +1752,14 @@ describe('#223 R5: la insignia espera al último cursor y suma las abiertas de t
     expect(screen.queryByTestId('alerts-attended-list')).toBeNull();
     expect(screen.queryByTestId('alert-row-h01')).toBeNull();
     expect(screen.getByTestId('alerts-attended-chevron').props.iconName).toBe('ChevronDown');
+    await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
+    await fireEvent.press(screen.getByTestId('alerts-attended-more'));
+    await screen.findByTestId('alert-row-h14');
+    await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
+    expect(screen.queryByTestId('alerts-attended-list')).toBeNull();
+    await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
+    expect(within(screen.getByTestId('alerts-attended-list')).getAllByTestId(/^alert-row-h\d+$/)).toHaveLength(14);
+    expect(screen.getByTestId('alert-row-h14')).toBeVisible();
   });
 
   it('#223 R9: la fila atendida es compacta, sin ack y abre su detalle', async () => {
@@ -1782,6 +1790,40 @@ describe('#223 R5: la insignia espera al último cursor y suma las abiertas de t
       await fireEvent.press(screen.getByTestId(`${rowId}-link`));
       expect(mockRouterPush).toHaveBeenLastCalledWith({ pathname: '/alerts/[alertId]', params: { alertId: status } });
       await rendered.unmount();
+    }
+  });
+
+  it.each([10, 11, 23])('#223 R10: «Ver más» suma 10 y el pie cuenta N de M', async (total) => {
+    const history = Array.from({ length: total }, (_, i) => makeAlert({ id: `m${i + 1}`, status: i % 2 === 0 ? 'acked' : 'closed' }));
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: history, nextCursor: null });
+    const rendered = await renderAlerts();
+    await waitFor(() => expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent(String(total), { exact: true }));
+    await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
+    const rows = () => within(screen.getByTestId('alerts-attended-list')).getAllByTestId(/^alert-row-m\d+$/);
+    expect(rows()).toHaveLength(10);
+    if (total === 10) {
+      expect(screen.queryByTestId('alerts-attended-more')).toBeNull();
+      expect(screen.queryByTestId('alerts-attended-footer')).toBeNull();
+    } else {
+      expect(screen.getByTestId('alerts-attended-more')).toHaveTextContent('Ver más', { exact: true });
+      expect(screen.getByTestId('alerts-attended-footer')).toHaveTextContent(total === 11 ? 'Mostrando 10 de 11' : 'Mostrando 10 de 23', { exact: true });
+      await fireEvent.press(screen.getByTestId('alerts-attended-more'));
+      expect(rows()).toHaveLength(total === 11 ? 11 : 20);
+      expect(screen.getByTestId('alerts-attended-footer')).toHaveTextContent(total === 11 ? 'Mostrando 11 de 11' : 'Mostrando 20 de 23', { exact: true });
+      if (total === 23) {
+        await fireEvent.press(screen.getByTestId('alerts-attended-more'));
+        expect(rows()).toHaveLength(23);
+        expect(screen.getByTestId('alerts-attended-footer')).toHaveTextContent('Mostrando 23 de 23', { exact: true });
+      }
+      expect(screen.queryByTestId('alerts-attended-more')).toBeNull();
+    }
+    await rendered.unmount();
+    if (total === 23) {
+      await renderAlertsInEnglish();
+      await waitFor(() => expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('23', { exact: true }));
+      await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
+      expect(screen.getByTestId('alerts-attended-more')).toHaveTextContent('Show more', { exact: true });
+      expect(screen.getByTestId('alerts-attended-footer')).toHaveTextContent('Showing 10 of 23', { exact: true });
     }
   });
 });

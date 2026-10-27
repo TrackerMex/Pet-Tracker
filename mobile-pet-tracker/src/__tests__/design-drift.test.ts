@@ -1162,6 +1162,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     });
     expect(outsideReminders(/\brounded-14\b/)).toEqual([
       join('components', 'segmented-control.tsx'), // #191 R11
+      join('screens', 'alerts', 'index.tsx'), // #223 R10
       join('screens', 'geofences', 'index.tsx'), // #189 R5
       join('screens', 'health', 'index.tsx'), // #199 R18
       join('screens', 'join-pet', 'index.tsx'), // #214 R18

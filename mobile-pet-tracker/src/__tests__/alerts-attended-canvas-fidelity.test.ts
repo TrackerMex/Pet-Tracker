@@ -85,3 +85,11 @@ it("#223 R17: la píldora", () => {
   expect(source).toContain("rounded-full bg-default px-2.5 py-1 text-xs font-bold text-muted");
   expect(source).toContain("rounded-full ${CATEGORY_SLOTS.green.surface} px-2.5 py-1 text-xs font-extrabold ${CATEGORY_SLOTS.green.ink}");
 });
+
+it('#223 R17: Ver más', () => {
+  const source = readSource('screens/alerts/index.tsx');
+  for (const literal of ['h-11 rounded-14 border-2 border-lip-gray bg-surface px-5.5', 'style={chunkyLip.neutralCompact}', 'text-sm font-extrabold text-foreground', 'items-center gap-1.5 pt-1.5']) expect(source).toContain(literal);
+});
+it('#223 R17: el pie', () => {
+  expect(readSource('screens/alerts/index.tsx')).toContain('testID="alerts-attended-footer" className="text-xs text-muted"');
+});

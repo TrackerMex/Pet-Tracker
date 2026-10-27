@@ -662,7 +662,7 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
     }
   });
 
-  it('inventaría los cinco secundarios neutros de toda la app (enmendado por #177 R10) (enmendado por #189 R13) (enmendado por #197 R10) (enmendado por #203 R7) (enmendado por #213 R22) (enmendado por #214 R7, R11, R15, R16, R17)', () => {
+  it('inventaría los cinco secundarios neutros de toda la app (enmendado por #177 R10) (enmendado por #189 R13) (enmendado por #197 R10) (enmendado por #203 R7) (enmendado por #213 R22) (enmendado por #214 R7, R11, R15, R16, R17) (enmendado por #223 R18)', () => {
     const testIds = sourceFiles().filter((path) => path.endsWith('.tsx')).flatMap((path) =>
       readFileSync(path, 'utf8').split(/<Button(?=[\s>])/).slice(1).flatMap((part) => {
         const tag = part.split('<')[0];
@@ -679,6 +679,7 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
       '${rowId}-ack', // #174 R8
       'add-meal-time-button', // #179 R7
       'alert-detail-view-map',
+      'alerts-attended-more', // #223 R10
       'docs-upload-cancel',
       'forgot-resend',
       'geofence-editor-delete', // #189 R13
@@ -698,7 +699,7 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
       (total, path) => total + (readFileSync(path, 'utf8').match(pattern) ?? []).length,
       0,
     );
-    expect(count(/border-lip-gray/g)).toBe(4 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 2 + 1 + 4); // #213 R6 (+2); #213 R17 (+1) // #214 R7, R11, R15, R17; #189 R13; #179 R6, R7; #170 R16; #171 R14; #174 R8; #175 R7: borde de la zona de subida; #203 R7
+    expect(count(/border-lip-gray/g)).toBe(4 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 2 + 1 + 4 + 1); // #223 R10 // #213 R6 (+2); #213 R17 (+1) // #214 R7, R11, R15, R17; #189 R13; #179 R6, R7; #170 R16; #171 R14; #174 R8; #175 R7: borde de la zona de subida; #203 R7
     expect(count(/\bborder-b-6\b/g)).toBe(0); // #177 R10
   });
 
