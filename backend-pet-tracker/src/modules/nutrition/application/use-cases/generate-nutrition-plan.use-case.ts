@@ -1,14 +1,13 @@
-import { acceptAiOutput } from '@/modules/nutrition/domain/nutrition-ai-proposal';
+import type { NutritionAiStatus } from '@/modules/nutrition/domain/nutrition-ai-proposal';
+import { NUTRITION_WEIGHT_READER } from '@/modules/nutrition/domain/ports/nutrition-weight-reader';
+import type { NutritionWeightReader } from '@/modules/nutrition/domain/ports/nutrition-weight-reader';
 import { SUBSCRIPTION_REPOSITORY } from '@/modules/subscriptions/domain/repositories/subscription.repository';
 import type { SubscriptionRepository } from '@/modules/subscriptions/domain/repositories/subscription.repository';
 import { NUTRITION_EXPLAINER } from '@/modules/nutrition/domain/ports/nutrition-explainer';
 import type { NutritionExplainer } from '@/modules/nutrition/domain/ports/nutrition-explainer';
 import { Inject, Injectable } from '@nestjs/common';
 import { nutritionInputHash } from '@/modules/nutrition/application/nutrition-input-hash';
-import {
-  carriedSchedule,
-  toPlanResult,
-} from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
+import { carriedSchedule } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
 import type { NutritionPlan } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
 import {
   NutritionProfileRequiredError,
@@ -24,6 +23,11 @@ import { calculateAgeMonths } from '@/modules/pets/domain/entities/pet.entity';
 import { PET_REPOSITORY } from '@/modules/pets/domain/repositories/pet.repository';
 import type { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
 
+export interface GenerateNutritionPlanResult {
+  plan: NutritionPlan;
+  aiStatus: NutritionAiStatus;
+}
+
 @Injectable()
 export class GenerateNutritionPlanUseCase {
   constructor(
@@ -33,9 +37,14 @@ export class GenerateNutritionPlanUseCase {
     @Inject(SUBSCRIPTION_REPOSITORY)
     private readonly subscriptions: SubscriptionRepository,
     @Inject(NUTRITION_EXPLAINER) private readonly explainer: NutritionExplainer,
+    @Inject(NUTRITION_WEIGHT_READER)
+    private readonly weights: NutritionWeightReader,
   ) {}
 
-  async execute(petId: string): Promise<NutritionPlan> {
+  async execute(
+    petId: string,
+    now: Date = new Date(),
+  ): Promise<GenerateNutritionPlanResult> {
     const profile = await this.nutrition.findProfile(petId);
     if (!profile) throw new NutritionProfileRequiredError(petId);
 
@@ -48,7 +57,7 @@ export class GenerateNutritionPlanUseCase {
       species: pet.species,
       weightKg: pet.currentWeightKg,
       targetWeightKg: profile.targetWeightKg,
-      ageMonths: calculateAgeMonths(pet, new Date()),
+      ageMonths: calculateAgeMonths(pet, now),
       sterilized: pet.sterilized === true,
       activityLevel: profile.activityLevel,
       bodyCondition: profile.bodyCondition,
@@ -59,8 +68,7 @@ export class GenerateNutritionPlanUseCase {
     const inputsHash = nutritionInputHash(input, []);
     const latestPlan = await this.nutrition.findLatestPlan(petId);
     if (latestPlan?.inputsHash === inputsHash) {
-      if (latestPlan.aiExplanation !== null) return latestPlan;
-      return this.explainPlan(petId, input, latestPlan);
+      return { plan: latestPlan, aiStatus: 'not_tracked' };
     }
 
     const result = computePlan(input);
@@ -74,30 +82,6 @@ export class GenerateNutritionPlanUseCase {
       aiProposal: null,
       inputsHash,
     });
-    return this.explainPlan(petId, input, plan);
-  }
-
-  private async explainPlan(
-    petId: string,
-    input: NutritionEngineInput,
-    plan: NutritionPlan,
-  ): Promise<NutritionPlan> {
-    if (!(await this.subscriptions.isPetTracked(petId))) return plan;
-    const output = await this.explainer.explain(input, toPlanResult(plan), [], {
-      petId,
-      planId: plan.id,
-    });
-    if (output === null) return plan;
-    const accepted = acceptAiOutput(
-      output,
-      plan,
-      new Date().toISOString().slice(0, 10),
-    );
-    if (accepted === null) return plan;
-    return this.nutrition.setAiResult(
-      plan.id,
-      accepted.explanation,
-      accepted.proposal,
-    );
+    return { plan, aiStatus: 'not_tracked' };
   }
 }

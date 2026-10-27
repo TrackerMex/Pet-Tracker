@@ -85,7 +85,7 @@ export class NutritionController {
   ): Promise<NutritionPlanResponse> {
     try {
       return toNutritionPlanResponse(
-        await this.generatePlan.execute(request.petMembership.petId),
+        (await this.generatePlan.execute(request.petMembership.petId)).plan,
       );
     } catch (error) {
       throw mapNutritionError(error);
