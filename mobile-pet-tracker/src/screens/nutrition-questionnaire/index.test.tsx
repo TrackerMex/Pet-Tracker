@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
+import { act, cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { QueryClient } from '@tanstack/react-query';
 import { usePreventRemove } from 'expo-router/react-navigation';
 import { router } from 'expo-router';
@@ -109,6 +109,22 @@ it('#209 R4: si la mascota falla pinta el error de carga', async () => {
   mockGetPet.mockResolvedValue({ kind: 'error' });
   await renderQuestionnaire();
   expect(await screen.findByTestId('nutrition-questionnaire-load-error')).toHaveTextContent('Algo salió mal', { exact: true });
+});
+it('#209 R4: esqueleto y error de carga respetan el inset superior y el error tiene volver', async () => {
+  mockGetPet.mockReturnValue(new Promise(() => undefined));
+  await renderQuestionnaire();
+  const skeleton = await screen.findByTestId('nutrition-questionnaire-skeleton');
+  expect(skeleton.props.style).toEqual({ paddingTop: 52 });
+  expect(skeleton.props.className).toBe('flex-1 gap-4 bg-background px-5 pb-5');
+  await cleanup();
+  mockGetPet.mockResolvedValue({ kind: 'error' });
+  await renderQuestionnaire();
+  const errorScreen = await screen.findByTestId('nutrition-questionnaire-load-error-screen');
+  expect(errorScreen.props.style).toEqual({ paddingTop: 52 });
+  expect(errorScreen.props.className).toBe('flex-1 gap-4 bg-background px-5 pb-5');
+  expect(within(errorScreen).getByTestId('nutrition-questionnaire-load-error')).toHaveTextContent('Algo salió mal', { exact: true });
+  await fireEvent.press(screen.getByTestId('nutrition-questionnaire-back'));
+  expect(mockRouter.back).toHaveBeenCalled();
 });
 
 it('#209 R5: pinta cabecera, contador «1 de 4» y la barra con un segmento hecho', async () => {
