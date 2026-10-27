@@ -11,11 +11,15 @@ import { renderWithProviders } from '../../../test/render-with-providers';
 import JoinPetScreen from './index';
 
 const mockSignOut = jest.fn().mockResolvedValue(undefined);
+const mockSelectPet = jest.fn();
 const originalApiUrl = process.env.EXPO_PUBLIC_API_URL;
 
 jest.mock('../../api/pet-members', () => ({ acceptInvite: jest.fn() }));
 jest.mock('../../providers/auth-provider', () => ({
   useAuth: () => ({ token: 'token', signOut: mockSignOut }),
+}));
+jest.mock('../../providers/selected-pet-provider', () => ({
+  useSelectedPet: () => ({ selectPet: mockSelectPet }),
 }));
 jest.mock('expo-router', () => ({
   router: { back: jest.fn(), canGoBack: () => true, dismissTo: jest.fn(), replace: jest.fn() },
@@ -38,6 +42,8 @@ async function renderJoin() {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockSelectPet.mockReset();
+  jest.mocked(router.dismissTo).mockReset();
   process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
   jest.mocked(acceptInvite).mockResolvedValue({ kind: 'error' });
 });
@@ -160,4 +166,38 @@ it('R20: editar vuelve al formulario', async () => {
   expect(screen.getByTestId('join-pet-hint')).toBeVisible();
   expect(screen.getByTestId('join-pet-submit')).toBeEnabled();
   expect(screen.getByTestId('join-pet-input').props.className).toContain('border-accent');
+});
+
+it('R21: aceptar invalida las mascotas, selecciona la nueva y vuelve a Inicio en orden', async () => {
+  jest.mocked(acceptInvite).mockResolvedValue({ kind: 'ok', petId: 'pet-2' });
+  const { queryClient } = await renderJoin();
+  const order: unknown[][] = [];
+  const invalidate = queryClient.invalidateQueries.bind(queryClient);
+  jest.spyOn(queryClient, 'invalidateQueries').mockImplementation(async (filters) => {
+    order.push(['invalidateQueries', filters?.queryKey]);
+    await invalidate(filters);
+  });
+  mockSelectPet.mockImplementation((petId) => { order.push(['selectPet', petId]); });
+  jest.mocked(router.dismissTo).mockImplementation((href) => { order.push(['dismissTo', href]); });
+  await fireEvent.changeText(screen.getByTestId('join-pet-input'), 'K7P4Q-2M9XA');
+  await fireEvent.press(screen.getByTestId('join-pet-submit'));
+  await waitFor(() => expect(screen.getByTestId('join-pet-submit')).toBeEnabled());
+  expect(order).toEqual([
+    ['invalidateQueries', ['pets', 'list']],
+    ['selectPet', 'pet-2'],
+    ['dismissTo', '/home'],
+  ]);
+});
+
+it('R21: no selecciona hasta que la invalidación termina', async () => {
+  jest.mocked(acceptInvite).mockResolvedValue({ kind: 'ok', petId: 'pet-2' });
+  const { queryClient } = await renderJoin();
+  let finish!: () => void;
+  jest.spyOn(queryClient, 'invalidateQueries').mockReturnValue(new Promise((resolve) => { finish = resolve; }));
+  await fireEvent.changeText(screen.getByTestId('join-pet-input'), 'K7P4Q-2M9XA');
+  await fireEvent.press(screen.getByTestId('join-pet-submit'));
+  await act(async () => undefined);
+  expect(mockSelectPet).not.toHaveBeenCalled();
+  await act(async () => finish());
+  await waitFor(() => expect(screen.getByTestId('join-pet-submit')).toBeEnabled());
 });
