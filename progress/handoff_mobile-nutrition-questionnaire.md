@@ -604,3 +604,7 @@ R24 (2b) la cifra ampliada no da 1250, para y reporta las dos líneas `Tests:` y
 
 Flake conocido en `food`: `#200 R9: pulsar cada enlace navega como hoy (meals-history-link)`. Puede caer bajo
 carga. Si cae solo ese `it`, repite la corrida una vez antes de parar.
+
+**Base de las comprobaciones finales.** La errata va en `48346f15`, que toca `requirements.md` y `tasks.md`. En
+las tres comprobaciones del Cierre («Ficheros intactos», «Commits» y «Ficheros tocados»), sustituye `001d5ed4`
+por `48346f15`. La lista de 26 rutas no cambia.
