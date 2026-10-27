@@ -101,8 +101,11 @@ export function HealthScreen() {
     ? calendarDaysUntil(nextVaccine.nextDoseAt!, new Date())
     : 0;
 
+  const screenTitle = t('health.health');
+
   return (
     <View testID="health-root" className="flex-1">
+    <View testID="health-heading" accessible accessibilityRole="header" accessibilityLabel={screenTitle} className="absolute size-px" />
     <ScrollView
       testID="screen-health"
       className="flex-1 bg-background"
@@ -116,7 +119,7 @@ export function HealthScreen() {
     >
       <View testID="health-header" className="flex-row items-center justify-between">
         <Text testID="health-title" className="text-3xl font-black tracking-title text-foreground">
-          {t('health.health')}
+          {screenTitle}
         </Text>
         {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
           <PetSwitcher

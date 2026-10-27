@@ -153,7 +153,11 @@ export function FoodScreen() {
     </View>
   );
 
+  const screenTitle = t('food.food');
+
   return (
+    <View testID="food-root" className="flex-1">
+    <View testID="food-heading" accessible accessibilityRole="header" accessibilityLabel={screenTitle} className="absolute size-px" />
     <ScrollView
       testID="screen-food"
       className="flex-1 bg-background"
@@ -167,7 +171,7 @@ export function FoodScreen() {
     >
       <View testID="food-title-row" className="flex-row items-center justify-between">
         <Text testID="food-title" className="text-3xl font-black tracking-title text-foreground">
-          {t('food.food')}
+          {screenTitle}
         </Text>
         {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
           <PetSwitcher
@@ -471,5 +475,6 @@ export function FoodScreen() {
         </View>
       ) : null}
     </ScrollView>
+    </View>
   );
 }

@@ -271,10 +271,12 @@ export function ProfileScreen() {
     />
   );
 
+  const screenTitle = t('profile.profile');
+
   const titleRow = (
   <View className="flex-row items-center justify-between gap-3">
     <Text testID="profile-title" className={showHero ? 'text-3xl font-black tracking-title text-accent-foreground' : 'text-3xl font-black tracking-title text-foreground'}>
-      {t('profile.profile')}
+      {screenTitle}
     </Text>
     <Pressable
       testID="profile-add-pet"
@@ -307,6 +309,7 @@ export function ProfileScreen() {
         paddingBottom: insets.bottom + 96,
       }}
     >
+      <View testID="profile-heading" accessible accessibilityRole="header" accessibilityLabel={screenTitle} className="absolute size-px" />
       {showHero ? (
         <View testID="profile-hero" className="relative">
           <PetHeroHeader
