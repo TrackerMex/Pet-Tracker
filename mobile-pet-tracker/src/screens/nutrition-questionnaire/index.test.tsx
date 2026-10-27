@@ -459,3 +459,43 @@ it('#209 R14: con 21 alergias conservadas envía 20', async () => {
   expect(body.allergies).toEqual(kept.slice(0, 20));
   expect(body.allergies).toHaveLength(20);
 });
+
+async function goToHealthPreloaded() {
+  await renderQuestionnaire();
+  await screen.findByTestId('activity-option-medium');
+  for (const legend of ['¿Cómo está su cuerpo?', 'Peso objetivo', 'Tipo de alimento', 'Alergias']) {
+    await fireEvent.press(screen.getByTestId('nutrition-questionnaire-next'));
+    expect(await screen.findByText(legend)).toBeVisible();
+  }
+}
+
+it('#209 R15: con perfil existente precarga actividad, condición, peso, alimento y kcal', async () => {
+  storedProfile = makeProfile();
+  await renderQuestionnaire();
+  expect(await screen.findByTestId('activity-option-medium')).toHaveProp('accessibilityState', { checked: true });
+  await fireEvent.press(screen.getByTestId('nutrition-questionnaire-next'));
+  expect(await screen.findByTestId('bcs-option-7')).toHaveProp('accessibilityState', { checked: true });
+  await fireEvent.press(screen.getByTestId('nutrition-questionnaire-next'));
+  expect(await screen.findByTestId('target-weight-input')).toHaveProp('value', '10.5');
+  await fireEvent.press(screen.getByTestId('nutrition-questionnaire-next'));
+  expect(await screen.findByTestId('food-type-wet')).toHaveProp('accessibilityState', { checked: true });
+  expect(screen.getByTestId('kcal-input')).toHaveProp('value', '110');
+});
+it('#209 R15: «Pollo» marca su chip y «Maíz» rellena Otra', async () => {
+  storedProfile = makeProfile({ allergies: ['Pollo', 'Maíz'] });
+  await goToHealthPreloaded();
+  expect(screen.getByTestId('allergy-chip-pollo')).toHaveProp('accessibilityState', { checked: true });
+  expect(screen.getByTestId('allergy-chip-otra')).toHaveProp('accessibilityState', { checked: true });
+  expect(screen.getByTestId('allergy-other-input')).toHaveProp('value', 'Maíz');
+  expect(screen.getByTestId('allergy-other-count')).toHaveTextContent('4/40', { exact: true });
+  expect(screen.getByTestId('disease-chip-otra')).toHaveProp('accessibilityState', { checked: false });
+});
+it('#209 R15: con bodyCondition null Siguiente de Condición está desactivado', async () => {
+  storedProfile = makeProfile({ bodyCondition: null, targetWeightKg: null });
+  await renderQuestionnaire();
+  await screen.findByTestId('activity-option-medium');
+  await fireEvent.press(screen.getByTestId('nutrition-questionnaire-next'));
+  expect(await screen.findByText('¿Cómo está su cuerpo?')).toBeVisible();
+  expect(screen.getByTestId('bcs-option-7')).toHaveProp('accessibilityState', { checked: false });
+  expect(screen.getByTestId('nutrition-questionnaire-next')).toBeDisabled();
+});
