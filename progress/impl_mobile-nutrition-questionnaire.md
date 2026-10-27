@@ -1324,3 +1324,62 @@ Cada una sobre el árbol del commit 4, con solo su `it` (`-t`), revertida con `g
   - en R19, `await screen.findByTestId('food-profile-empty')` antes de buscar la imagen.
 
   Ninguna de las dos cambia las aserciones. Las sondas de R5 y R19 salen rojas por el valor, no por la espera.
+
+## Corrección tras la segunda revisión (Adenda 6)
+
+Relevo: subagente `implementer` (fallback de Codex, cuota agotada; ver `progress/current.md`), 2026-10-27. Skill cargada: `expo:expo-overview`. Spec: errata ronda 7 (`dc801dc3`) en R4 y R5, candados copiados literales.
+
+### Punto de partida
+
+- `pwd` = `/home/claude/sites/Pet-Tracker-wt-209`; branch `feature/209-mobile-nutrition-questionnaire`; árbol limpio.
+- `git log --oneline -3`: `fce5984e docs(progress): #209 handoff Adenda 6 (locks for the second review)` / `dc801dc3 docs(spec): #209 errata round 7 for the second review (H1, H2, H3)` / `53de188d docs(review): #209 second review`. **H6 = `fce5984e`**.
+- `progress/impl_mobile-nutrition-questionnaire.done` no existía al empezar.
+- `git diff --quiet f8b7b130 HEAD -- src/screens/nutrition-questionnaire/index.tsx` = 0 antes de empezar.
+
+### Cadena (punto 1)
+
+Los dos pgreps vacíos antes de cada corrida de jest. Cada corrida con los dos ficheros de la Adenda 5 (`src/screens/nutrition-questionnaire/index.test.tsx` y `src/screens/food/index.test.tsx`) en «Jest de un fichero»:
+
+| # | Commit | Corrida | `Tests:` |
+|---|---|---|---|
+| 1 | `520944f4` test(mobile): #209 R4 R5 rojo (errata ronda 7) | `a6-c1-209.log`, exit 1 | `Tests: 2 failed, 204 passed, 206 total` |
+| 2 | `f638cbdd` feat(mobile): #209 R4 R5 revierte las mutaciones (errata ronda 7) | `a6-c2-209.log`, exit 0 | `Tests: 206 passed, 206 total` |
+
+Commit 1 (dos ficheros):
+- test: en el `it` de R4 con inset y volver, las dos últimas líneas pasan a las seis de la errata de R4, literales; el `it('#209 R5: Pingo de la burbuja mide 52 pt en Alimento y en Salud')` de la errata de R5, literal, justo después del `it` de R5 en Condición.
+- producción, las dos mutaciones de la errata: en la rama del error, `<><ScreenHeader …/><View …><Text …/></View></>`; en la `Image` de `nutrition-questionnaire-pingo`, `step === 'condition' || step === 'food'`.
+
+Rojo del commit 1: exactamente los dos `it`, los dos por aserción (ningún `ReferenceError` ni `Unable to find`):
+- `#209 R4: esqueleto y error de carga respetan el inset superior y el error tiene volver`, en el `toEqual` del orden (línea 126): `- "nutrition-questionnaire-back",` (Received solo `["nutrition-questionnaire-load-error"]`).
+- `#209 R5: Pingo de la burbuja mide 52 pt en Alimento y en Salud`, en el `toEqual` de Alimento (línea 165): Expected `{"height": 52, "width": 52}` / Received `{"height": 44, "width": 44}`.
+
+Commit 2: `git checkout f8b7b130 -- src/screens/nutrition-questionnaire/index.tsx`; solo ese fichero. `git diff --quiet f8b7b130 HEAD -- src/screens/nutrition-questionnaire/index.tsx` = 0.
+
+### Sondas (punto 2)
+
+Sobre el árbol del commit 2, sin commitear, cada una con solo su `it` (`-t`), revertida con `git checkout HEAD -- src/screens/nutrition-questionnaire/index.tsx`. Tras cada reversión, `git diff --quiet HEAD -- mobile-pet-tracker` = 0 y `git diff --cached --quiet` = 0. Las cuatro salen rojas, todas en `Tests: 1 failed, 69 skipped, 70 total`:
+
+| Sonda | Mutación | `it` que cae | Salida |
+|---|---|---|---|
+| P2 | rama del error: `Text` antes del `ScreenHeader`, dentro del `View` | `#209 R4: esqueleto y error de carga respetan el inset superior y el error tiene volver` | `toEqual` del orden: `- "nutrition-questionnaire-back",` arriba / `+ "nutrition-questionnaire-back",` abajo (Received `["nutrition-questionnaire-load-error", "nutrition-questionnaire-back"]`) (`a6-p2-209.log`) |
+| P3 | `ScreenHeader` fuera del `View` (la del commit 1) | el mismo | `toEqual` del orden: `- "nutrition-questionnaire-back",` (Received `["nutrition-questionnaire-load-error"]`) (`a6-p3-209.log`) |
+| P9 | `backFallback="/food"` → `"/home"` en el `ScreenHeader` del error | el mismo | `toHaveBeenCalledWith`: Expected `"/food"` / Received `"/home"` (`a6-p9-209.log`) |
+| P5 | `step === 'condition' \|\| step === 'health'` en la `Image` de la burbuja | `#209 R5: Pingo de la burbuja mide 52 pt en Alimento y en Salud` | en el `toEqual` de Salud (línea 169): Expected `{"height": 52, "width": 52}` / Received `{"height": 44, "width": 44}` (`a6-p5-209.log`) |
+
+### Cierre (punto 3)
+
+- Suite completa (`adenda6-test-209.log`), la única de esta adenda: exit=0, `Test Suites: 168 passed, 168 total`, `Tests: 6222 passed, 6222 total` (168 s). SIGKILL = 0, `failed to run` = 0. Son 6221 + 1. Ningún flake.
+- `test ! -e .expo/types/router.d.ts` exit 0; `bunx tsc --noEmit` exit 0; `bunx expo lint --no-cache > ../progress/lint-209.log 2>&1 && test ! -s ../progress/lint-209.log` exit 0.
+- T0 guardas (`a6-guards-209.log`): exit=0, `Test Suites: 37 passed, 37 total`, `Tests: 1010 passed, 1010 total`.
+- T0 ampliado (`a6-ext-209.log`): exit=0, `Test Suites: 40 passed, 40 total`, `Tests: 1351 passed, 1351 total`.
+- Guardas de «Guardas que R1 a R26 cruzan»:
+  - `grep -c '#209'` = 0 en los 9 ficheros de producción;
+  - `grep -cP -- '#209(?! R[0-9])'` = 0 en `nutrition-questionnaire/index.test.tsx`;
+  - `@expo/ui/community/bottom-sheet` = 0 en `nutrition-questionnaire`, `food` y `meal-schedule`;
+  - `StyleSheet` = 0 en `nutrition-questionnaire/index.test.tsx`;
+  - `grep -cF -- '- [ ] Enmienda #209 aprobada por humano' ../docs/ui-guidelines.md` = 1 (la casilla de R26 sigue sin marcar).
+- `traceability.md`: en R4, los dos commits nuevos al final de la columna de commits; en R5, el `it` nuevo al final de la de tests y los dos commits nuevos al final de la de commits. Separador ` / `. Ninguna otra fila ni hash tocado.
+
+### Notas para el reviewer
+
+- Ninguna desviación. Los candados son literales de la errata ronda 7; no se añadió espera ni import (el `it` de R5 usa `goToFood(5)`, que ya observa `Tipo de alimento`, y `findByText('Alergias')` antes de la segunda medida).
