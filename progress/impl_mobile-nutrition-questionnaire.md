@@ -1,4 +1,4 @@
-Estado: PARA en R21 (test): R21 contradice 13 it existentes de Horario que la spec no lista; R19 y R20 cerrados, HEAD 12e0c771
+Estado: COMPLETO
 
 > **Relevo (subagente implementer, 2026-10-27).** Me detuve en una frontera limpia porque el
 > presupuesto de llamadas está casi agotado (unas 340 de 350). HEAD es `f17a05e0` (R18,
@@ -1085,3 +1085,165 @@ Desviaciones abiertas para el reviewer:
 3. I-1 y la incidencia del sed de R23, ambas ya descritas arriba. Ninguna llegó a un commit.
 
 Las dos casillas son del humano y siguen sin marcar: la de `docs/ui-guidelines.md` (R26, G4) y el smoke en dispositivo.
+
+## Merge de dev (Adenda 4)
+
+Subagente `implementer` (fallback de CLAUDE.md §Excepciones), 2026-10-27. HEAD de partida `d59d82ba` (cadena cerrada en `da5e5eef` y dos commits del leader en `progress/`). `origin/dev` = `fe624698`, comprobado con `git rev-parse --short origin/dev` antes del merge. No hubo fetch ni rebase. No se corrió `./init.sh` ni se usó Monitor. Commit del merge: `b81edb2b` (padres `d59d82ba` y `fe624698`).
+
+### Conflictos
+
+`git merge origin/dev` dejó en conflicto exactamente los 13 ficheros de la lista de la adenda, ni uno más ni uno menos. Cada uno se resolvió como la unión de los dos lados. En cada fichero, `git diff fe624698` muestra solo lo que #209 añade y `git diff da5e5eef` solo lo que añade `dev`.
+
+| Fichero | Lo que aporta `dev` | Lo que aporta #209 |
+|---|---|---|
+| `src/__tests__/alerts-canvas-fidelity.test.ts` | `pet-members` en `rounded-10` (#214 R12), `join-pet` en `tracking-title` (#214 R18) y sus sufijos | `nutrition-questionnaire` en las dos listas y ` (enmendado por #209 R24)` al final de la cadena. Además, la fila de `food` en `tracking-title` (ver abajo) |
+| `src/__tests__/chunky-cta-canvas-fidelity.test.ts` | las 4 filas de #214 en `CTA_ROWS`, la línea de `neutralInventory` y los términos de #213 y #214 | las 2 filas de #209 en `CTA_ROWS` (`nutrition-questionnaire-next`, `food-create-profile`), la línea de `consumers` sin `food` y los términos `+ 2`, `+ 5`, `+ 3` y `1 + 2` con `// #209 R24` delante. Sufijo ` (enmendado por #209 R24)` tras la cadena de `dev` en R3.1, R3.2, R3.3, R6.2, R7.1, R7.2, R7.3, R7.4, R7.5 y R8.1 |
+| `src/__tests__/consistency-classnames.test.ts` (12 conflictos) | los términos y sufijos de #213 y #214, `withPlaceholder` `5 + 3 + 1` | los términos `+ 2`, `+ 6` y `+ 5` al final con `// #209 R24`, y el sufijo tras la cadena de `dev` |
+| `src/__tests__/design-drift.test.ts` | la cadena de sufijos de dos `it` | ` (enmendado por #209 R24)` al final de esas dos cadenas. El resto se mezcló solo |
+| `src/__tests__/profile-canvas-fidelity.test.ts` | las rutas y sufijos de #214 (`pet-invite`, `pet-members`, `join-pet`) | `nutrition-questionnaire` en orden alfabético y el sufijo al final |
+| `src/__tests__/ui-copy-table.ts` | `R21_PET_MEMBERS` y su sitio en `ALL_USES` y `blocks` | `R20_NUTRITION_QUESTIONNAIRE` antes de `R21` en la tabla, en `ALL_USES` y en `blocks`. Cadena `(enmendado por #208 R20) (enmendado por #214 R22) (enmendado por #209 R23)` |
+| `src/__tests__/ui-language.test.ts` | el import de `R21`, `+ 3 // #214 R22…` en `SCREEN_FILES` y los describes de #222 R8 y #214 R22 | el import de `R20` antes de `R21`, `+ 1 // #209 R23: screens/nutrition-questionnaire/index.tsx` después del término de #214, el describe de #209 R23 (96 filas) tras los de `dev` y el sufijo |
+| `src/app/__tests__/layout.test.tsx` (8 conflictos) | las rutas `members`, `invite`, `join-pet` (#214) y `edit-profile` (#217), con sus términos | el `Stack.Screen` de `nutrition-profile` (R3) en el orden del `_layout.tsx` mezclado (el último), el término `+ 1` al final con `// #209 R3` delante y el sufijo `(enmendado por #214 R3) (enmendado por #209 R3)` |
+| `src/i18n/catalog.ts` | las claves de #213, #214 y #222, en `es` y en `en` | las claves `nutritionQuestionnaire.*` detrás, en los dos idiomas. Sin claves duplicadas, 658 por idioma, `'nutritionQuestionnaire.` = 154 |
+| `src/providers/__tests__/language-provider.test.tsx` | `+ 54 // #213 R22`, `+ 1 // #222 R8`, `+ 51 // #214 R22` y sus sufijos | `+ 77, // #209 R23` al final y ` (enmendado por #209 R23)` al final de la cadena |
+| `src/screens/food/index.tsx` (solo los imports) | la estructura de #222: `food-root`, `food-heading` oculto, sin fila de título, `TabPetHeader` al final; import de `TabPetHeader` y fuera `PetSwitcher` | el import de `PingoFloat` y el resto de R19, mezclado solo: `Image`, `getNutritionProfile`, `openNutritionProfile` y el bloque `food-profile-empty` justo antes de `food-plan-empty` |
+| `src/screens/food/index.test.tsx` | los describes `#222 R7` y `#222 R4` | los tres `it` de #209 R19 al final, a nivel superior. El mock de `getNutritionProfile` y el helper `foodChild` se mezclaron solos |
+| `progress/current.md` | las secciones de #214 y #212, enteras | la sección de #209, entera, detrás. Nada nuevo |
+
+**Producción = unión de los dos lados.** Para los 9 ficheros de producción de #209 (`http.ts`, `nutrition.ts`, `types.ts`, `_layout.tsx`, `nutrition-profile.tsx`, `catalog.ts`, `food/index.tsx`, `meal-schedule/index.tsx` y `nutrition-questionnaire/index.tsx`), las líneas `+`/`-` de `git diff fe624698 HEAD` coinciden (ordenadas, `md5sum`) con las de `git diff b185ae61 da5e5eef`. Las de `git diff da5e5eef HEAD` en `_layout.tsx`, `catalog.ts` y `food/index.tsx` coinciden con las de `git diff b185ae61 fe624698`. No cambió ni una línea de producción fuera de la unión.
+
+**Nodos de R19 y #222.** #222 envolvió la pantalla en `<View testID="food-root">` y añadió el `food-heading` oculto, pero no tocó el contenido del `ScrollView`. El bloque `food-profile-empty` sigue en el mismo padre, como hermano anterior de `food-plan-empty`. Los cuatro `it` de R19 (con los tres roles del `it.each`) pasan sin cambios. No hubo PARA.
+
+**Cuenta que el merge dejó mal (1).** `alerts-canvas-fidelity.test.ts`, `#174 R12`, inventario de `tracking-title`:
+- En la base, `food` estaba en la lista por su título.
+- #222 R9 quitó ese título y sacó `food` de la lista.
+- #209 R19 había añadido otro `tracking-title` en `food`, el del vacío del perfil (`text-center text-24 font-black tracking-title`).
+
+La unión deja `food` con un `tracking-title` y la lista sin `food`. Las guardas dieron rojo con `+   "screens/food/index.tsx"`. Arreglo, en el commit del merge: la fila `'screens/food/index.tsx', // #209 R24: el título de R19 sigue tras quitar #222 R9 el de la pantalla`, en su sitio alfabético. Es la cifra de `dev` más el delta de #209, solo en el test. Producción no se tocó.
+
+### Instalación y verificación
+
+- `bun install --frozen-lockfile`, exit 0: `+ expo-clipboard@57.0.2`, `1 package installed`.
+- `test ! -e .expo/types/router.d.ts`: no existe. `bunx tsc --noEmit`: exit 0.
+- `bunx expo lint --no-cache > ../progress/lint-209.log 2>&1 && test ! -s ../progress/lint-209.log`: exit 0, log de 0 bytes.
+- Las seis guardas de R24 más layout (comando de R24 (2), con `--testTimeout=30000`):
+  - primera corrida: `Tests: 1 failed, 423 passed, 424 total`. El rojo era la cuenta de `tracking-title` descrita arriba;
+  - tras el arreglo: `Test Suites: 7 passed, 7 total`, `Tests: 424 passed, 424 total`, exit 0.
+- Los ficheros en conflicto con test propio (`food/index.test.tsx`, `ui-language.test.ts` y `language-provider.test.tsx`) más `nutrition-questionnaire/index.test.tsx`: `Test Suites: 4 passed, 4 total`, `Tests: 348 passed, 348 total`, exit 0. Los `● Console` son el `console.warn` de Uniwind (`--color-accent`) y el `console.info` de HeroUI, los mismos de antes.
+- Suite completa, con los dos pgreps vacíos antes de empezar: `bun run test > ../progress/merge-test-209.log 2>&1; echo exit=$?` dio `exit=0`.
+
+```
+Test Suites: 168 passed, 168 total
+Tests:       6183 passed, 6183 total
+Snapshots:   1 passed, 1 total
+Time:        227.537 s
+```
+
+  `SIGKILL` = 0, `failed to run` = 0, `FAIL` = 0, `PASS` = 168. Cuadra con la cifra del leader. No cayó ningún flake, así que no hubo reruns.
+
+### Anclas de R23 a R26, antes y después del merge
+
+Las líneas 184 a 252 del handoff, que incluyen también las de R22 (201 a 205). Se midieron con el mismo `grep -c` en `git show da5e5eef:<ruta>` y en el árbol mezclado. Las rutas son relativas a `mobile-pet-tracker/src/`, salvo `docs/`. La columna «Base → después del handoff» copia el comentario del handoff (`b185ae61` → `da5e5eef`). Las 12 diferencias tienen su causa en `dev` (#213, #214 o #222) o en la cuenta de arriba. Ninguna queda sin explicar.
+
+| Línea del handoff | Fichero | `da5e5eef` | Tras el merge | Base → después del handoff | Causa de la diferencia |
+|---|---|---|---|---|---|
+| 184 | `providers/__tests__/language-provider.test.tsx` | 0 | 0 | R23: 1 → 0 | igual |
+| 185 | `providers/__tests__/language-provider.test.tsx` | 1 | 1 | R23: 0 → 1 | igual |
+| 186 | `providers/__tests__/language-provider.test.tsx` | 1 | 1 | R23: 0 → 1 | igual |
+| 187 | `providers/__tests__/language-provider.test.tsx` | 0 | 0 | R23: 0 → 0 | igual |
+| 188 | `providers/__tests__/language-provider.test.tsx` | 1 | 0 | R23: 0 → 1 | #213 R22, #222 R8 y #214 R22 se meten entre `#208 R19` y `#209 R23`; la cadena tras el merge es `(enmendado por #208 R19) (enmendado por #213 R22) (enmendado por #222 R8) (enmendado por #214 R22) (enmendado por #209 R23)` (1 línea) |
+| 189 | `i18n/catalog.ts` | 154 | 154 | R23: 0 → 154 | igual |
+| 190 | `i18n/catalog.ts` | 0 | 0 | R23: 0 → 0 | igual |
+| 191 | `i18n/catalog.ts` | 10 | 10 | R23: 10 → 10 | igual |
+| 192 | `i18n/catalog.ts` | 2 | 2 | R23: 2 → 2 | igual |
+| 193 | `__tests__/ui-copy-table.ts` | 3 | 3 | R23: 0 → 3 | igual |
+| 194 | `__tests__/ui-copy-table.ts` | 1 | 1 | R23: 1 → 1 | igual |
+| 195 | `__tests__/ui-copy-table.ts` | 1 | 1 | R23: 0 → 1 | igual |
+| 196 | `__tests__/ui-copy-table.ts` | 1 | 0 | R23: 0 → 1 | #214 R22 se mete entre `#208 R20` y `#209 R23`: `(enmendado por #208 R20) (enmendado por #214 R22) (enmendado por #209 R23)` (1 línea) |
+| 197 | `__tests__/ui-language.test.ts` | 3 | 3 | R23: 0 → 3 | igual |
+| 198 | `__tests__/ui-language.test.ts` | 1 | 1 | R23: 1 → 1 | igual |
+| 199 | `__tests__/ui-language.test.ts` | 1 | 1 | R23: 0 → 1 | igual |
+| 200 | `__tests__/ui-language.test.ts` | 1 | 0 | R23: 0 → 1 | igual que 196 en el `it` `#194 R5` (1 línea) |
+| 201 | `screens/meal-schedule/index.test.tsx` | 0 | 0 | R22: 3 → 0 | igual |
+| 202 | `screens/meal-schedule/index.test.tsx` | 0 | 0 | R22: 3 → 0 | igual |
+| 203 | `screens/meal-schedule/index.test.tsx` | 0 | 0 | R22: 1 → 0 | igual |
+| 204 | `screens/meal-schedule/index.test.tsx` | 0 | 0 | R22: 1 → 0 | igual |
+| 205 | `screens/meal-schedule/index.test.tsx` | 4 | 4 | R22: 0 → 4 | igual |
+| 206 | `__tests__/consistency-classnames.test.ts` | 0 | 0 | R24 #62 R1: 1 → 0 | igual |
+| 207 | `__tests__/consistency-classnames.test.ts` | 1 | 0 | R24 #62 R1: 0 → 1 | #214 R13, R15, R18, R20 suman `+ 4` antes del `+ 2` de #209: `toHaveLength(16 + 1 + 1 + 1 + 1 + 1 + 4 + 2); // #209 R24 // #208 R21 // #194 R6 // #191 R11 // #201 R13 // #214 R13, R15, R18, R20` |
+| 208 | `__tests__/consistency-classnames.test.ts` | 0 | 0 | R24 #62 R12: 1 → 0 | igual |
+| 209 | `__tests__/consistency-classnames.test.ts` | 1 | 0 | R24 #62 R12: 0 → 1 | #214 R18 suma `+ 1` antes del `+ 2` de #209: `toHaveLength(6 + 1 + 3 + 1 + 2); // #209 R24 // #208 R21 // #214 R18` |
+| 210 | `__tests__/consistency-classnames.test.ts` | 1 | 1 | R24 #62 R14: 0 → 1 | igual |
+| 211 | `__tests__/consistency-classnames.test.ts` | 1 | 1 | R24: 1 → 1 | igual |
+| 212 | `__tests__/consistency-classnames.test.ts` | 2 | 2 | R24: 2 → 2 | igual |
+| 213 | `__tests__/consistency-classnames.test.ts` | 2 | 2 | R24 #62 R14 y #98 R10: 0 → 2 | igual |
+| 214 | `__tests__/consistency-classnames.test.ts` | 2 | 2 | R24: 2 → 2 | igual |
+| 215 | `__tests__/consistency-classnames.test.ts` | 1 | 1 | R24 #166 R2: 0 → 1 | igual |
+| 216 | `__tests__/consistency-classnames.test.ts` | 1 | 1 | R24 #166 R2: 0 → 1 | igual |
+| 217 | `__tests__/consistency-classnames.test.ts` | 1 | 0 | R24 #166 R3: 0 → 1 | #213 R6 (+2), #213 R17 (+1) y #214 R7, R11, R15, R17 (+4) entran antes del `+ 5` de #209: `toBe(4 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 2 + 1 + 4 + 5); // #209 R24 // #213 R6 (+2); #213 R17 (+1) // #214 R7, R11, R15, R17; #189 R13; …` |
+| 218 | `__tests__/chunky-cta-canvas-fidelity.test.ts` | 1 | 1 | R24 CTA_ROWS: 0 → 1 | igual |
+| 219 | `__tests__/chunky-cta-canvas-fidelity.test.ts` | 1 | 1 | R24 CTA_ROWS: 0 → 1 | igual |
+| 220 | `__tests__/chunky-cta-canvas-fidelity.test.ts` | 0 | 0 | R24 consumers: 1 → 0 | igual |
+| 221 | `__tests__/chunky-cta-canvas-fidelity.test.ts` | 1 | 1 | R24 consumers: 0 → 1 | igual |
+| 222 | `__tests__/chunky-cta-canvas-fidelity.test.ts` | 1 | 1 | R24 radii: 0 → 1 | igual |
+| 223 | `__tests__/chunky-cta-canvas-fidelity.test.ts` | 1 | 1 | R24 radii: 0 → 1 | igual |
+| 224 | `__tests__/chunky-cta-canvas-fidelity.test.ts` | 1 | 0 | R24 #177 R6.2 text-17: 0 → 1 | #213 R17 (+2) y #214 R13, R15, R18, R20 (+4) entran antes del `+ 2` de #209: `toBe(8 + 15 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 2 + 1 + 2 + 4 + 2); // #209 R24 // #200 R5; …` |
+| 225 | `__tests__/chunky-cta-canvas-fidelity.test.ts` | 1 | 0 | R24 #177 R6.2 etiqueta: 0 → 1 | #214 R13, R15, R18, R20 (+4) entran antes del `+ 2` de #209: `toBe(5 + 11 + 1 + 1 - 1 - 1 + 1 + 1 + 4 + 2); // #209 R24 // #194 R6 …` |
+| 226 | `__tests__/chunky-cta-canvas-fidelity.test.ts` | 1 | 0 | R24 #177 R7.1: 0 → 1 | #213 R6, R17 (+2, +1) y #214 R7, R11, R15, R17 (+4) entran antes del `+ 5` de #209: `toBe(10 + 1 + 1 + 2 + 1 + 4 + 5); // #209 R24 // #213 R6 (+2); …` |
+| 227 | `__tests__/chunky-cta-canvas-fidelity.test.ts` | 1 | 0 | R24 #177 R7.3: 0 → 1 | `dev` suma `+ 3` (#213 R6 +1, #213 R17 +2) y `+ 11` (#214 R7, R11, R13, R15, R16, R17, R18, R20) antes del `+ 3` de #209: `toBe(26 + … + 1 + 3 + 11 + 3); // #209 R24 // #214 R7, …`. El `+ 3` final es el de #209 |
+| 228 | `__tests__/chunky-cta-canvas-fidelity.test.ts` | 1 | 1 | R24 #177 R7.5: 0 → 1 | igual |
+| 229 | `__tests__/design-drift.test.ts` | 1 | 1 | R24 #178 R13: 0 → 1 | igual |
+| 230 | `__tests__/design-drift.test.ts` | 1 | 1 | R24 #178 R13: 0 → 1 | igual |
+| 231 | `__tests__/design-drift.test.ts` | 1 | 1 | R24 #178 R13 rounded-14: 0 → 1 | igual |
+| 232 | `__tests__/design-drift.test.ts` | 1 | 1 | R24 #179 R13 text-17: 0 → 1 | igual |
+| 233 | `__tests__/design-drift.test.ts` | 1 | 1 | R24 #179 R13: 0 → 1 | igual |
+| 234 | `__tests__/design-drift.test.ts` | 1 | 1 | R24 #179 R13 etiquetas: 0 → 1 | igual |
+| 235 | `__tests__/design-drift.test.ts` | 1 | 1 | R24 #179 R13 etiquetas: 0 → 1 | igual |
+| 236 | `__tests__/design-drift.test.ts` | 0 | 0 | R24 #179 R13 etiquetas: 1 → 0 | igual |
+| 237 | `__tests__/design-drift.test.ts` | 4 | 4 | R25: 0 → 4 | igual |
+| 238 | `__tests__/legibility-classnames.test.ts` | 1 | 1 | R24 #61 R4: 0 → 1 | igual |
+| 239 | `__tests__/legibility-classnames.test.ts` | 0 | 0 | R24 #61 R4: 1 → 0 | igual |
+| 240 | `__tests__/legibility-classnames.test.ts` | 1 | 1 | R24 #61 R4: 0 → 1 | igual |
+| 241 | `__tests__/legibility-classnames.test.ts` | 1 | 1 | R24 #61 R4: 0 → 1 | igual |
+| 242 | `__tests__/alerts-canvas-fidelity.test.ts` | 1 | 0 | R24 #174 R12 rounded-10: 0 → 1 | #214 R12 añade `screens/pet-members/index.tsx` al final de la lista de `rounded-10` y `#214 R12` al comentario: `…, 'screens/nutrition-questionnaire/index.tsx', 'screens/pet-members/index.tsx'], // #179 R6; #174 R12; #214 R12; #209 R24` |
+| 243 | `__tests__/alerts-canvas-fidelity.test.ts` | 2 | 2 | R24 #174 R12 text-15 y tracking-title: 0 → 2 | igual |
+| 244 | `__tests__/profile-canvas-fidelity.test.ts` | 2 | 2 | R24 #173 R2 y R2.4: 0 → 2 | igual |
+| 245 | `__tests__/consistency-classnames.test.ts` | 15 | 15 | R24: 0 → ≥ 8 (sube uno por cada `it` con sufijo) | igual |
+| 246 | `__tests__/chunky-cta-canvas-fidelity.test.ts` | 22 | 22 | R24: 0 → ≥ 10 | igual |
+| 247 | `__tests__/design-drift.test.ts` | 10 | 10 | R24: 0 → ≥ 7 | igual |
+| 248 | `__tests__/legibility-classnames.test.ts` | 4 | 4 | R24: 0 → ≥ 2 | igual |
+| 249 | `__tests__/alerts-canvas-fidelity.test.ts` | 4 | 5 | R24: 0 → ≥ 3 | +1 por la fila `'screens/food/index.tsx', // #209 R24: …` en `tracking-title` (ver «Cuenta que el merge dejó mal»). Sigue ≥ 3 |
+| 250 | `__tests__/profile-canvas-fidelity.test.ts` | 4 | 4 | R24: 0 → ≥ 2 | igual |
+| 251 | `docs/ui-guidelines.md` | 1 | 1 | R26: 0 → 1 | igual |
+| 252 | `docs/ui-guidelines.md` | 1 | 1 | R26: 0 → 1 | igual |
+
+Cifras reales de los «≥» de R24 tras el merge:
+- `consistency-classnames` 15;
+- `chunky-cta` 22;
+- `design-drift` 10;
+- `legibility` 4;
+- `alerts` 5 (4 en `da5e5eef`; +1 por la fila de `food`);
+- `profile` 4.
+
+### Comprobaciones de cierre (punto 5)
+
+- **Commits.** `git log --oneline --first-parent 48346f15..HEAD -- . ':!progress/handoff_mobile-nutrition-questionnaire.md' ':!specs/mobile-nutrition-questionnaire/requirements.md' ':!specs/mobile-nutrition-questionnaire/tasks.md' ':!progress/current.md'` daba 52 líneas antes del commit de este reporte:
+  - el merge `b81edb2b`;
+  - los 51 commits de la cadena, de `d4204afa` a `da5e5eef`.
+
+  Con el commit de este reporte (`docs(mobile): #209 report after the dev merge`) son 53. Ni uno más.
+- **Ficheros tocados.** `git diff --name-only fe624698 HEAD -- mobile-pet-tracker docs` da 24 rutas, que son exactamente las 24 primeras de la lista del Cierre y en el mismo orden: de `docs/ui-guidelines.md` a `mobile-pet-tracker/src/screens/nutrition-questionnaire/index.tsx`.
+- **Intactos.** `git diff --quiet fe624698 HEAD -- backend-pet-tracker init.sh init.config.sh STATUS.md progress/history.md mobile-pet-tracker/src/theme mobile-pet-tracker/src/components mobile-pet-tracker/src/hooks mobile-pet-tracker/package.json mobile-pet-tracker/bun.lock mobile-pet-tracker/test mobile-pet-tracker/src/__tests__/sheet-surface-background.test.ts mobile-pet-tracker/src/app/__tests__/detail-stack.guard.test.tsx && echo intactos` da `intactos`.
+- **Guardas de «Guardas que R1 a R26 cruzan», sobre el árbol mezclado:**
+  - `grep -c '#209'` = 0 en los 9 ficheros de producción: `http.ts`, `types.ts`, `nutrition.ts`, `nutrition-profile.tsx`, `_layout.tsx`, `nutrition-questionnaire/index.tsx`, `food/index.tsx`, `meal-schedule/index.tsx` y `catalog.ts`;
+  - `grep -cP -- '#209(?! R[0-9])'` = 0 en los 14 ficheros de test tocados (los 13 `*.test.ts(x)` y `ui-copy-table.ts`);
+  - `@expo/ui/community/bottom-sheet` = 0 en `nutrition-questionnaire`, `food` y `meal-schedule`;
+  - `StyleSheet` = 0 en `nutrition-questionnaire/index.test.tsx`;
+  - `grep -cF -- '- [ ] Enmienda #209 aprobada por humano' ../docs/ui-guidelines.md` = 1: la casilla de R26 sigue sin marcar.
+- **`traceability.md`** no se tocó: `git diff --quiet da5e5eef HEAD -- specs/mobile-nutrition-questionnaire/traceability.md`. Los hashes de la cadena siguen valiendo porque no hubo rebase.
+- **`git diff --cached --check`** solo avisa de espacios en tres ficheros que vienen tal cual de `dev`: `tab-pet-header.test.tsx`, `firma_mobile-pet-members.md` y `fix-r21…/c1.patch`. `git diff --cached fe624698 --check` sale limpio.
+
+### Notas para el reviewer
+
+- La única edición fuera de las líneas en conflicto es la fila de `food` en `tracking-title`. Una mutación que borre el `tracking-title` del vacío de R19 en `food/index.tsx` vuelve a poner esa guarda en rojo.
+- Los logs de esta adenda (`progress/lint-209.log`, `guards-209.log`, `conflicted-209.log` y `merge-test-209.log`) están ignorados por `.gitignore` (`*.log`) y no se commitean.
