@@ -1593,3 +1593,40 @@ describe('#213 R4: controles de repetición', () => {
   });
 
 });
+
+
+describe('#213 R13: notas sin nombre de mascota', () => {
+  const hostProcess = process.getBuiltinModule('process');
+  const originalTimezone = hostProcess.env.TZ;
+  beforeEach(() => {
+    hostProcess.env.TZ = 'America/Mexico_City';
+    jest.useFakeTimers({ now: new Date(2026, 11, 20, 10, 0) });
+    jest.clearAllMocks();
+    setPlatform('android');
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() } satisfies AuthContextValue);
+    mockCreateReminder.mockReturnValue(pending());
+  });
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+    setPlatform(originalPlatform);
+    jest.restoreAllMocks();
+    if (originalTimezone === undefined) delete hostProcess.env.TZ;
+    else hostProcess.env.TZ = originalTimezone;
+  });
+
+  it.each(['falla', 'sin la mascota', 'sin resolver'])('#213 R13: sin nombre de mascota (%s) la nota usa la variante sin nombre', async (kind) => {
+    if (kind === 'falla') mockListPets.mockResolvedValue({ kind: 'unreachable', message: 'x' });
+    else if (kind === 'sin la mascota') mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ id: 'pet-2', name: 'Luna' })] });
+    else mockListPets.mockReturnValue(new Promise(() => {}));
+    await renderAddReminder();
+    await fireEvent.press(screen.getByTestId('repeat-chip-hour'));
+    await pickDate(new Date(2026, 11, 31, 12));
+    await pickTime(20, 0);
+    const expected = 'Te aviso en cada toma: 20:00, 04:00 y 12:00.';
+    if (kind === 'sin resolver') expect(screen.getByTestId('add-reminder-preview-text')).toHaveTextContent(expected);
+    else await waitFor(() => expect(screen.getByTestId('add-reminder-preview-text')).toHaveTextContent(expected));
+    expect(screen.queryByTestId('add-reminder-error')).toBeNull();
+  });
+});
