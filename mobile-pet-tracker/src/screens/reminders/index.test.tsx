@@ -13,6 +13,7 @@ import { Text } from 'react-native';
 import { listPets } from '../../api/pets';
 import { petKeys, reminderKeys } from '../../api/query-keys';
 import {
+  cancelReminderSeries,
   deleteReminder,
   listReminders,
   type DeleteReminderState,
@@ -64,6 +65,7 @@ jest.mock('reicon-react-native', () => {
   return {
     ...actual,
     Plus: mockIcon('reminders-icon-plus'),
+    Repeat: mockIcon('reminders-icon-repeat'),
     Trash: mockIcon('reminders-icon-trash'),
     Syringe: mockIcon('reminders-icon-syringe'),
     Drop: mockIcon('reminders-icon-drop'),
@@ -84,6 +86,7 @@ jest.mock('../../api/pets', () => ({
 }));
 
 jest.mock('../../api/reminders', () => ({
+  cancelReminderSeries: jest.fn(),
   deleteReminder: jest.fn(),
   listReminders: jest.fn(),
 }));
@@ -130,6 +133,7 @@ jest.mock('react-native-safe-area-context', () => ({
 const apiUrl = 'http://example.test/v1';
 const mockListPets = jest.mocked(listPets);
 const mockListReminders = jest.mocked(listReminders);
+const mockCancelReminderSeries = jest.mocked(cancelReminderSeries);
 const mockDeleteReminder = jest.mocked(deleteReminder);
 const mockUseAuth = jest.mocked(useAuth);
 const mockRouter = jest.mocked(router);
@@ -1951,5 +1955,62 @@ describe('#204 R9: Eliminar de la hoja', () => {
     expect(within(confirm).getByText('Eliminar').props.className).toBe(
       'text-17 font-extrabold text-danger-foreground',
     );
+  });
+});
+
+
+describe('#213 R14: series en Recordatorios', () => {
+  beforeEach(() => {
+    hostProcess.env.TZ = 'America/Mexico_City';
+    jest.useFakeTimers({ now: new Date(2026, 11, 30, 10, 0) });
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ name: 'Rocky' })] });
+    mockListReminders.mockReset();
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [makeReminder({ id: 'series', title: 'Pipeta antipulgas', dueAt: '2026-12-31T18:00:00.000Z', recurrence: { unit: 'month', every: 1 } })] });
+    mockCancelReminderSeries.mockReset();
+    mockCancelReminderSeries.mockResolvedValue({ kind: 'ok' });
+  });
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+    if (originalTimezone === undefined) delete hostProcess.env.TZ;
+    else hostProcess.env.TZ = originalTimezone;
+  });
+
+  it.each([
+    ["Se repite cada 8 horas · hasta el 31 dic", {"unit": "hour", "every": 8}, "2026-12-31"],
+    ["Se repite cada hora", {"unit": "hour", "every": 1}, null],
+    ["Se repite cada día · hasta ene 2027", {"unit": "day", "every": 1}, "2027-01-02"],
+    ["Se repite cada 3 días", {"unit": "day", "every": 3}, null],
+    ["Se repite cada semana", {"unit": "week", "every": 1}, null],
+    ["Se repite cada 2 semanas", {"unit": "week", "every": 2}, null],
+    ["Se repite cada mes · hasta abr 2027", {"unit": "month", "every": 1}, "2027-04-10"],
+    ["Se repite cada 3 meses", {"unit": "month", "every": 3}, null],
+    ["Se repite cada año", {"unit": "year", "every": 1}, null],
+    ["Se repite cada 2 años", {"unit": "year", "every": 2}, null],
+  ] as const)('#213 R14: la fila recurrente dice «%s»', async (expected, recurrence, recurrenceUntil) => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [makeReminder({ id: 'series', dueAt: '2026-12-31T18:00:00.000Z', recurrence, recurrenceUntil })] });
+    await renderReminders();
+    const row = await screen.findByTestId('reminder-row-series');
+    expect(within(row).queryByTestId('reminder-repeats-series')).not.toBeNull();
+    const line = within(row).getByTestId('reminder-repeats-series');
+    expect(line).toHaveTextContent(expected);
+    const icon = within(line).getByTestId('reminders-icon-repeat', { includeHiddenElements: true });
+    expect(icon.props.size).toBe(14);
+    expect(icon.props.color).toBe('color:accent-strong');
+    expect(within(line).getByText(expected).props.className).toBe('text-13 font-bold text-accent-strong');
+  });
+
+  it('#213 R14: sin línea de repetición si no hay recurrencia o la serie no está programada', async () => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [
+      makeReminder({ id: 'once', recurrence: null }),
+      makeReminder({ id: 'cancelled', recurrence: { unit: 'month', every: 1 }, status: 'cancelled' }),
+      makeReminder({ id: 'sent', recurrence: { unit: 'month', every: 1 }, status: 'sent' }),
+    ] });
+    await renderReminders();
+    await screen.findByTestId('reminder-row-once');
+    for (const id of ['once', 'cancelled', 'sent']) expect(screen.queryByTestId(`reminder-repeats-${id}`)).toBeNull();
   });
 });
