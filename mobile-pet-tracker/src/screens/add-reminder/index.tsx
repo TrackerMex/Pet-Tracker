@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query';
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { router, type Href } from 'expo-router';
 import { Button } from 'heroui-native';
@@ -7,6 +8,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Bell, Minus, Plus, Repeat } from 'reicon-react-native';
 
 import { createReminder } from '../../api/reminders';
+import { listPets } from '../../api/pets';
+import { petKeys } from '../../api/query-keys';
 import type { ReminderType } from '../../api/types';
 import { DateField } from '../../components/date-field';
 import { FieldErrorMessage } from '../../components/field-error-message';
@@ -73,9 +76,10 @@ function summaryText(
   until: Date | null,
   locale: string,
   t: ReturnType<typeof useTranslate>,
+  pet?: string,
 ): string {
   const time = notifyAt.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
-  if (repeat === 'once' || repeat === 'hour') {
+  if (repeat === 'once') {
     return t('addReminder.notifyPreview', {
       date: notifyAt.toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
       time,
@@ -85,6 +89,22 @@ function summaryText(
     date: until.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' }),
   }) : '';
   const params = { time, until: end };
+  if (repeat === 'hour') {
+    if (24 % every === 0 && every >= 6) {
+      const times = Array.from({ length: 24 / every }, (_, index) =>
+        new Date(notifyAt.getTime() + index * every * 3600000).toLocaleTimeString(locale, {
+          hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+        }),
+      );
+      const list = times.slice(0, -1).join(', ');
+      const last = times[times.length - 1];
+      const doses = times.length === 1 ? times[0] : t('addReminder.dosesJoin', { list, last });
+      return t('addReminder.summaryHoursDoses', { ...params, pet: pet ?? '', doses });
+    }
+    return every === 1
+      ? t('addReminder.summaryHourly', params)
+      : t('addReminder.summaryHours', { ...params, count: every });
+  }
   switch (repeat) {
     case 'day': return t('addReminder.summaryDaily', params);
     case 'week': return t('addReminder.summaryWeekly', {
@@ -106,6 +126,11 @@ function AddReminderContent({ petId }: { petId: string }) {
   const locale = useLocale();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
+  const pets = useQuery({
+    queryKey: petKeys.list(),
+    queryFn: () => listPets(baseUrl, token ?? ''),
+  });
+  const petName = pets.data?.kind === 'ok' ? pets.data.pets.find(({ id }) => id === petId)?.name : undefined;
   const [muted, accentStrong, foreground] = useThemeColors(['muted', 'accent-strong', 'foreground']);
   const [repeat, setRepeat] = useState<(typeof REPEAT_OPTIONS)[number]['key']>('once');
   const [hourEvery, setHourEvery] = useState(8);
@@ -426,7 +451,7 @@ function AddReminderContent({ petId }: { petId: string }) {
           >
             {repeat === 'once' ? <Bell size={20} color={accentStrong} /> : <Repeat size={20} color={accentStrong} />}
             <Text testID="add-reminder-preview-text" className="flex-1 text-13 font-semibold text-foreground">
-              {summaryText(repeat, every, notifyAt, until, locale, t)}
+              {summaryText(repeat, every, notifyAt, until, locale, t, petName)}
             </Text>
           </View>
         ) : null}
