@@ -2122,4 +2122,67 @@ describe('#213 R14: series en Recordatorios', () => {
     expect(screen.queryByTestId('reminders-cancel-series-sheet')).toBeNull();
   });
 
+  async function openSeriesSheet() {
+    await renderReminders();
+    await screen.findByTestId('reminder-cancel-series-series');
+    await fireEvent.press(screen.getByTestId('reminder-cancel-series-series'));
+  }
+
+  async function pressSeriesConfirmation() {
+    const button = screen.getByTestId('reminders-cancel-series-confirm');
+    expect(button.props.onPress).toEqual(expect.any(Function));
+    await fireEvent.press(button);
+  }
+
+  it.each(['ok', 'not-found', 'not-editable'] as const)('#213 R18: confirmar cancela la serie e invalida la lista con %s', async (kind) => {
+    mockCancelReminderSeries.mockResolvedValue({ kind });
+    mockListReminders
+      .mockResolvedValueOnce({ kind: 'ok', reminders: [makeReminder({ id: 'series', recurrence: { unit: 'month', every: 1 } })] })
+      .mockResolvedValueOnce({ kind: 'ok', reminders: [] });
+    await openSeriesSheet();
+    await pressSeriesConfirmation();
+    await waitFor(() => expect(screen.queryByTestId('reminder-row-series')).toBeNull());
+    expect(mockListReminders).toHaveBeenCalledTimes(2);
+    expect(mockCancelReminderSeries).toHaveBeenCalledTimes(1);
+    expect(mockCancelReminderSeries).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token', 'series');
+    expect(screen.queryByTestId('reminders-cancel-series-sheet')).toBeNull();
+  });
+
+  it.each([
+    ['forbidden', 'Solo el dueño puede cancelar la serie'],
+    ['unreachable', 'No se pudo conectar con el servidor'],
+    ['error', 'Algo salió mal'],
+    ['missing-config', 'Algo salió mal'],
+    ['throws', 'Algo salió mal'],
+  ] as const)('#213 R18: confirmar con %s muestra su error', async (kind, expected) => {
+    if (kind === 'throws') mockCancelReminderSeries.mockRejectedValue(new Error('x'));
+    else if (kind === 'unreachable') mockCancelReminderSeries.mockResolvedValue({ kind, message: 'x' });
+    else mockCancelReminderSeries.mockResolvedValue({ kind });
+    await openSeriesSheet();
+    await pressSeriesConfirmation();
+    await waitFor(() => expect(screen.getByTestId('reminders-action-error')).toHaveTextContent(expected));
+    expect(screen.queryByTestId('reminders-cancel-series-sheet')).toBeNull();
+  });
+
+  it('#213 R18: confirmar con unauthorized cierra sesión', async () => {
+    mockCancelReminderSeries.mockResolvedValue({ kind: 'unauthorized' });
+    await openSeriesSheet();
+    await pressSeriesConfirmation();
+    await waitFor(() => expect(screen.queryByTestId('reminders-cancel-series-sheet')).toBeNull());
+    expect(mockUseAuth().signOut).toHaveBeenCalledTimes(1);
+  });
+
+  it('#213 R18: Mantener la serie cierra sin llamar a la API', async () => {
+    await openSeriesSheet();
+    const keep = screen.getByTestId('reminders-cancel-series-keep');
+    expect(keep.props.onPress).toEqual(expect.any(Function));
+    await fireEvent.press(keep);
+    await waitFor(() => expect(screen.queryByTestId('reminders-cancel-series-sheet')).toBeNull());
+    expect(mockCancelReminderSeries).not.toHaveBeenCalled();
+    await fireEvent.press(screen.getByTestId('reminder-cancel-series-series'));
+    await fireEvent(screen.getByTestId('community-bottom-sheet'), 'onClose');
+    expect(screen.queryByTestId('reminders-cancel-series-sheet')).toBeNull();
+    expect(mockCancelReminderSeries).not.toHaveBeenCalled();
+  });
+
 });
