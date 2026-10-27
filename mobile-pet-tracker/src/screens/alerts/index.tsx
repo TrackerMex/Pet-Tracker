@@ -15,7 +15,7 @@ import { ScreenHeader } from '../../components/screen-header';
 import { useAlertsList } from '../../hooks/use-alerts-list';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
-import { TABULAR_NUMS } from '../../theme/native-styles';
+import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -54,6 +54,37 @@ function StatusPill({ item, rowId }: { item: Alert; rowId: string }) {
         ? t('alerts.statusAcked')
         : t('alerts.statusClosed')}
     </Text>
+  );
+}
+
+function AttendedRow({ item, now }: { item: Alert; now: Date }) {
+  const t = useTranslate();
+  const [danger, warningStrong, muted] = useThemeColors(['danger', 'warning-strong', 'muted']);
+  const rowId = `alert-row-${item.id}`;
+  const meta = alertTypeMeta(item.type);
+  const Icon = meta.Icon;
+  const color = { danger, 'warning-strong': warningStrong, muted }[meta.ink];
+  return (
+    <View testID={rowId} style={CONTINUOUS_CORNER} className="flex-row items-center gap-3 rounded-16 border border-border bg-surface px-3.5 py-2.5">
+      <View className={`size-9 items-center justify-center rounded-full ${meta.disc}`}>
+        <Icon testID={`${rowId}-icon`} size={18} color={color} />
+      </View>
+      <Pressable
+        testID={`${rowId}-link`}
+        accessibilityRole="button"
+        className="min-h-11 min-w-0 flex-1 justify-center gap-px"
+        style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+        onPress={() => router.push({ pathname: '/alerts/[alertId]', params: { alertId: item.id } })}
+      >
+        <Text testID={`${rowId}-type`} className="text-sm font-extrabold text-foreground">{t(meta.labelKey)}</Text>
+        <Text testID={`${rowId}-subtitle`} className="text-xs font-normal text-muted">
+          <Text testID={`${rowId}-pet`}>{item.petName}</Text>
+          {' · '}
+          <Text testID={`${rowId}-time`}>{fmtOpenedAt(item.openedAt, now, t)}</Text>
+        </Text>
+      </Pressable>
+      <StatusPill item={item} rowId={rowId} />
+    </View>
   );
 }
 
@@ -172,7 +203,76 @@ export function AlertsScreen() {
     />
   ) : null;
 
-  const renderAlertRow = ({ item, index, attendedRow = false }: { item: Alert; index: number; attendedRow?: boolean }) => {
+
+  return (
+    <View testID="screen-alerts" className="flex-1 bg-background">
+      <FlatList<Alert>
+        testID="alerts-list"
+        className="flex-1 bg-background"
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingTop: insets.top + 8,
+          paddingBottom: insets.bottom + 24,
+          gap: 12,
+        }}
+        data={rows}
+        keyExtractor={(item) => item.id}
+        onEndReached={() => {
+          if (!alerts.hasNextPage || alerts.isFetchingNextPage) return;
+          void alerts.fetchNextPage();
+        }}
+        ListHeaderComponent={(
+          <View testID="alerts-header" className="gap-3">
+            <ScreenHeader
+              testID="alerts"
+              backFallback="/"
+              title={t('alerts.title')}
+              accessory={settled && count > 0 ? (
+                <PopIn testID="alerts-new-count" className="rounded-full bg-danger px-2.5 py-1">
+                  <Text testID="alerts-new-count-text" className="text-13 font-extrabold text-danger-foreground" style={TABULAR_NUMS}>
+                    {count === 1 ? t('alerts.newOne') : t('alerts.newMany', { count })}
+                  </Text>
+                </PopIn>
+              ) : undefined}
+            />
+            {displayedActionError ? (
+              <Text testID="alerts-action-error" className="text-danger">
+                {displayedActionError}
+              </Text>
+            ) : null}
+          </View>
+        )}
+        ListEmptyComponent={empty}
+        ListFooterComponent={settled && attended.length > 0 ? (
+          <View testID="alerts-attended">
+            <Pressable
+              testID="alerts-attended-toggle"
+              className="mt-1.5 h-10 w-full flex-row items-center gap-2"
+              accessibilityRole="button"
+              accessibilityState={{ expanded }}
+              hitSlop={TOUCH_SLOP}
+              style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+              onPress={() => setExpanded((current) => !current)}
+            >
+              <View className="flex-1 flex-row items-center gap-2">
+                <Text testID="alerts-attended-label" className="text-13 font-extrabold uppercase tracking-caps text-muted">{t('alerts.attended')}</Text>
+                <Text testID="alerts-attended-count" className="rounded-full bg-default px-2 py-0.5 text-xs font-extrabold text-muted">{attended.length}</Text>
+              </View>
+              <View className="size-8 items-center justify-center rounded-full bg-default">
+                <Chevron testID="alerts-attended-chevron" size={18} color={muted} />
+              </View>
+            </Pressable>
+            {expanded ? (
+              <View testID="alerts-attended-list" className="gap-1.5">
+                {attended.slice(0, visible).map((item) => (
+                  <AttendedRow key={item.id} item={item} now={now} />
+                ))}
+              </View>
+            ) : null}
+          </View>
+        ) : null}
+        renderItem={({ item, index }) => {
           const rowId = `alert-row-${item.id}`;
           const meta = alertTypeMeta(item.type);
           const Icon = meta.Icon;
@@ -237,7 +337,7 @@ export function AlertsScreen() {
             </RiseIn>
           ) : card;
           const section = alertSection(item.openedAt, now);
-          const firstInSection = !attendedRow && (index === 0 || alertSection(rows[index - 1].openedAt, now) !== section);
+          const firstInSection = index === 0 || alertSection(rows[index - 1].openedAt, now) !== section;
           return firstInSection ? (
             <View className="gap-3">
               <Text testID={`alerts-section-${section}`} accessibilityRole="header" className="mt-1.5 text-13 font-extrabold uppercase tracking-caps text-muted">
@@ -246,77 +346,7 @@ export function AlertsScreen() {
               {row}
             </View>
           ) : row;
-  };
-
-  return (
-    <View testID="screen-alerts" className="flex-1 bg-background">
-      <FlatList<Alert>
-        testID="alerts-list"
-        className="flex-1 bg-background"
-        contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingTop: insets.top + 8,
-          paddingBottom: insets.bottom + 24,
-          gap: 12,
         }}
-        data={rows}
-        keyExtractor={(item) => item.id}
-        onEndReached={() => {
-          if (!alerts.hasNextPage || alerts.isFetchingNextPage) return;
-          void alerts.fetchNextPage();
-        }}
-        ListHeaderComponent={(
-          <View testID="alerts-header" className="gap-3">
-            <ScreenHeader
-              testID="alerts"
-              backFallback="/"
-              title={t('alerts.title')}
-              accessory={settled && count > 0 ? (
-                <PopIn testID="alerts-new-count" className="rounded-full bg-danger px-2.5 py-1">
-                  <Text testID="alerts-new-count-text" className="text-13 font-extrabold text-danger-foreground" style={TABULAR_NUMS}>
-                    {count === 1 ? t('alerts.newOne') : t('alerts.newMany', { count })}
-                  </Text>
-                </PopIn>
-              ) : undefined}
-            />
-            {displayedActionError ? (
-              <Text testID="alerts-action-error" className="text-danger">
-                {displayedActionError}
-              </Text>
-            ) : null}
-          </View>
-        )}
-        ListEmptyComponent={empty}
-        ListFooterComponent={settled && attended.length > 0 ? (
-          <View testID="alerts-attended">
-            <Pressable
-              testID="alerts-attended-toggle"
-              className="mt-1.5 h-10 w-full flex-row items-center gap-2"
-              accessibilityRole="button"
-              accessibilityState={{ expanded }}
-              hitSlop={TOUCH_SLOP}
-              style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
-              onPress={() => setExpanded((current) => !current)}
-            >
-              <View className="flex-1 flex-row items-center gap-2">
-                <Text testID="alerts-attended-label" className="text-13 font-extrabold uppercase tracking-caps text-muted">{t('alerts.attended')}</Text>
-                <Text testID="alerts-attended-count" className="rounded-full bg-default px-2 py-0.5 text-xs font-extrabold text-muted">{attended.length}</Text>
-              </View>
-              <View className="size-8 items-center justify-center rounded-full bg-default">
-                <Chevron testID="alerts-attended-chevron" size={18} color={muted} />
-              </View>
-            </Pressable>
-            {expanded ? (
-              <View testID="alerts-attended-list" className="gap-1.5">
-                {attended.slice(0, visible).map((item, index) => (
-                  <View key={item.id}>{renderAlertRow({ item, index, attendedRow: true })}</View>
-                ))}
-              </View>
-            ) : null}
-          </View>
-        ) : null}
-        renderItem={renderAlertRow}
       />
     </View>
   );
