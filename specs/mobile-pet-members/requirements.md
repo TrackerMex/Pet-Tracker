@@ -420,7 +420,7 @@ tags: [mobile, spec, pet-members, invites, expo-router, heroui-native]
 
 - **R13 (crear invitación)**: WHILE `pet.myRole === 'owner'` THE SYSTEM SHALL
   renderizar `pet-members-code-note` (nota `flex-row items-center gap-2.5 rounded-tile bg-default px-3.5 py-3`,
-  icono `InfoCircle`, texto `text-13 font-semibold leading-note text-foreground`)
+  icono `InfoCircle`, texto `flex-1 text-13 font-semibold leading-note text-foreground`)
   = `t('members.codeNote')` y, al pie (tras un espaciador `{ flexGrow: 1 }`), el
   `Button` `pet-members-invite-cta` (className `w-full h-14 rounded-16 bg-accent`,
   `style={chunkyLip.primary}`, icono `Plus` y `Text` `t('members.inviteCta')`
@@ -445,7 +445,10 @@ tags: [mobile, spec, pet-members, invites, expo-router, heroui-native]
   `'R13: invites-limit avisa del máximo de invitaciones'`,
   `'R13: members-limit avisa del máximo de personas'`, `'R13: unreachable avisa'`,
   `'R13: error avisa'`, `'R13: unauthorized cierra sesión'`,
-  `'R13: doble toque crea una sola invitación'`, y
+  `'R13: doble toque crea una sola invitación'`,
+  `'R13: el dueño ve la nota del código'` (enmienda 1: el `Text` dentro de
+  `pet-members-code-note` tiene el texto exacto «Cada código sirve una sola vez. Si nadie lo usa, vence
+  solo.» y su className contiene el token `flex-1`), y
   `it.each([['member-row-user-2-remove'], ['member-remove-sheet-confirm'], ['invite-row-inv-1-revoke'], ['pet-members-invite-cta'], ['pet-members-leave']])('R13: pulsar %s borra el aviso anterior', …)`
   (una fila por botón: cada caso deja primero un `pet-members-action-error`
   visible con una acción que falla —`createPetInvite` `unreachable`—, prepara el
@@ -809,6 +812,9 @@ tags: [mobile, spec, pet-members, invites, expo-router, heroui-native]
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-27) ← gate obligatorio antes de implementar
+- [x] Enmienda 1 aprobada por el leader con la firma delegada (fecha: 2026-10-27). Tras los menores 1 y 2
+      de `progress/review_mobile-pet-members.md`, R13 añade `flex-1` al texto de `pet-members-code-note`,
+      igual que en `pet-members-owner-note` y `join-pet-note`, y su `it` del dueño. Solo cambia R13.
 - [ ] Smoke de #214 en dev build por el humano (fecha: ____), tras el rebuild del dev build por
       `expo-clipboard`: invitación entre dos cuentas (crear código, «Copiar código», «Compartir»
       con el Share nativo, unirse con el código, salir y quitar a un miembro). Va en el lote G4 de

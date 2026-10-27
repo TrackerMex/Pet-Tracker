@@ -319,3 +319,15 @@ fuera de ella cambia.
 - [ ] (2) Ninguna producción nueva: el verde llega con los R-id de la columna
   «Verde con».
 - [ ] (3) Corrida completa `bunx jest`, `bunx tsc --noEmit` y lint en verde.
+
+## Enmienda 1 — R13: nota del código del dueño (tras la review)
+
+Va después del merge de `origin/dev` en la branch.
+
+- [ ] (1) Test rojo: `it('R13: el dueño ve la nota del código', …)` en
+  `src/screens/pet-members/index.test.tsx`, con el mismo montaje de dueño que los demás `it` de R13. Aserta
+  el texto exacto del `Text` dentro de `pet-members-code-note` y que su className contiene el token
+  `flex-1`. Rojo esperado: solo la aserción de `flex-1` (la nota y el texto ya existen).
+- [ ] (2) Verde: `flex-1` delante en el className del `Text` de `pet-members-code-note`, en
+  `src/screens/pet-members/index.tsx`. No cambia nada más.
+- [ ] (3) Sonda: con `{isOwner ? (` cambiado a `{false ? (` en esa nota, el `it` nuevo da rojo.

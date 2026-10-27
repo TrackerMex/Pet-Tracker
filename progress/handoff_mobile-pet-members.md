@@ -773,3 +773,68 @@ Queda autorizado este arreglo y **solo** este:
 - Anota en el reporte el commit nuevo, la causa y el rojo de la sonda. Cualquier otro rojo inesperado: para.
 
 Esta adenda es commit del leader, como las anteriores. El commit de test es tuyo y suma a la cuenta del cierre.
+
+## Adenda 5 (leader, tras la review aprobada: merge de `dev` y enmienda 1 de R13)
+
+La review (`progress/review_mobile-pet-members.md`, sin commitear y que no tocas) aprueba 0a54a98d y deja
+dos trabajos antes de la PR. Los hace el subagente `implementer`, porque a Codex le queda el 3 % de la cuota.
+Va en este orden y **solo** esto:
+
+### A. Merge de `origin/dev` (nunca rebase)
+
+1. `git fetch origin` y `git merge --no-ff origin/dev`. Al escribir esta adenda, `origin/dev` = ca2d0abb, que
+   trae #217 y #213 detrás de H0. Si `origin/dev` ya no es ca2d0abb, anótalo y sigue con el que haya.
+2. Conflictos esperados (17): `_layout.tsx`, `profile/index.tsx`, `test/jest-setup.js`, los guards
+   `alerts-canvas`, `canvas-foundations`, `chunky-cta`, `consistency-classnames`, `design-drift`, `profile-canvas`,
+   `ui-copy-table`, `ui-language`, `zones-canvas`, y los tests de layout, detail-stack, home, profile y
+   language-provider. Cómo resolverlos:
+   - **Quedan los dos lados.** Lo de `dev` se queda tal cual y lo de #214 se suma encima. Nada de
+     comportamiento nuevo.
+   - En los títulos de candados con sufijos `(enmendado por #…)`: primero los de `dev`, después los de #214, en
+     el orden en que entraron.
+   - **Cifras agregadas** (ALL_USES, SCREEN_FILES, el `+ 51`, los consumidores de `useChunkyLip`, los
+     inventarios de `CTA_ROWS` y `radii`, y cualquier recuento de ficheros o filas): la cifra de `dev` más el
+     delta de #214. Lo mide la corrida, no la cuentas a mano. Anota en el reporte cada cifra: la de `dev`, el
+     delta de #214 y el resultado.
+   - Si un conflicto no se resuelve sumando los dos lados (los dos cambian el mismo literal con valores
+     distintos, o una cifra no cuadra con el delta), **PARA** y anótalo.
+3. `cd mobile-pet-tracker && bun install --frozen-lockfile` (`package.json` y `bun.lock` se fusionan solos).
+   Después, `test ! -e .expo/types/router.d.ts`, `bunx tsc --noEmit` y lint con `--no-cache` al log, con
+   `test ! -s`.
+4. La corrida completa de `bunx jest`, en primer plano. Todo verde. Un rojo de los flakes conocidos (Salud
+   `#168 R2`, food `#200 R9/R10`, Inicio `#152 R8`, `#199 R18`, `#190 R5`, Perfil `#173 R5`) se repite una vez
+   con su suite. Si sigue rojo, o sale otro rojo, **PARA**. Anota `Tests:` y el exit.
+5. Commit del merge, solo con los ficheros del merge:
+   `git commit -m "Merge remote-tracking branch 'origin/dev' into feature/214-mobile-pet-members"`, con las
+   dos líneas de atribución al final. Nunca `-a`. `progress/review_mobile-pet-members.md` queda fuera.
+
+### B. Enmienda 1 de R13 (spec ya enmendada y firmada en este mismo commit de la adenda)
+
+Lee R13 en `specs/mobile-pet-members/requirements.md` y la sección «Enmienda 1» al final de
+`specs/mobile-pet-members/tasks.md`.
+
+1. Rojo: `it('R13: el dueño ve la nota del código', …)` en `mobile-pet-tracker/src/screens/pet-members/index.test.tsx`,
+   montado como el resto de los `it` de dueño de R13. Busca el `Text` dentro de `pet-members-code-note` (con
+   `within(...)`; puede hacer falta `includeHiddenElements` si el nodo lo oculta). Aserta dos cosas:
+   - su texto, exacto: `Cada código sirve una sola vez. Si nadie lo usa, vence solo.`;
+   - que su className contiene el token `flex-1`, con `toMatch(/(^| )flex-1( |$)/)`, porque es un `Text` de
+     `react-native` con className.
+   Rojo esperado: solo la aserción de `flex-1`. Si falla otra cosa, **PARA**. Cuenta: la del merge + 1.
+   Commit: `git commit --only mobile-pet-tracker/src/screens/pet-members/index.test.tsx -m "test(mobile): #214 owner sees the code note (R13, amendment 1)"`.
+2. Verde: en `mobile-pet-tracker/src/screens/pet-members/index.tsx`, el className del `Text` de
+   `pet-members-code-note` pasa a `flex-1 text-13 font-semibold leading-note text-foreground`. Nada más.
+   Corre la suite de pet-members y las guardas de carta (`design-drift`, `consistency-classnames`,
+   `profile-canvas-fidelity`, `ui-language`), todo verde, más tsc y lint.
+   Commit: `git commit --only mobile-pet-tracker/src/screens/pet-members/index.tsx -m "feat(mobile): #214 code note text wraps inside its row (R13, amendment 1)"`.
+3. Sonda: cambia `{isOwner ? (` por `{false ? (` en esa nota. El `it` nuevo tiene que dar rojo. Después
+   revierte con `git checkout HEAD -- <fichero>` y comprueba `git diff --quiet HEAD -- <fichero>` y
+   `git diff --cached --quiet`, ambos con exit 0.
+
+### C. Cierre
+
+- En `specs/mobile-pet-members/traceability.md`, añade la fila R13 del `it` nuevo (con su commit de test) y
+  una línea con el hash del merge. Commit: `docs(mobile): #214 traceability for the dev merge and amendment 1`.
+- Añade al reporte una sección «Adenda 5» con el merge, las cifras, las corridas y la sonda. El reporte se
+  commitea en ese mismo commit de traceability.
+- Sin `./init.sh` (lo corre el leader), sin Monitor, sin push ni PR.
+- Última acción: crea `progress/impl_mobile-pet-members.done` con la ruta del reporte.
