@@ -1271,6 +1271,10 @@ describe('#213 R4: controles de repetición', () => {
     hostProcess.env.TZ = 'America/Mexico_City';
     jest.useFakeTimers({ now: new Date(2026, 11, 20, 10, 0) });
     jest.clearAllMocks();
+    const themeColors = jest.requireActual<typeof import('../../theme/use-theme-colors')>('../../theme/use-theme-colors');
+    jest.spyOn(themeColors, 'useThemeColors').mockImplementation(
+      ((tokens: readonly string[]) => tokens.map((token) => `color:${token}`)) as typeof themeColors.useThemeColors,
+    );
     setPlatform('android');
     process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
     mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() } satisfies AuthContextValue);
@@ -1501,10 +1505,6 @@ describe('#213 R4: controles de repetición', () => {
   });
 
   it('#213 R11: la nota usa Repeat con repetición y Bell con Una vez', async () => {
-    const themeColors = jest.requireActual<typeof import('../../theme/use-theme-colors')>('../../theme/use-theme-colors');
-    jest.spyOn(themeColors, 'useThemeColors').mockImplementation(
-      ((tokens: readonly string[]) => tokens.map((token) => `color:${token}`)) as typeof themeColors.useThemeColors,
-    );
     await pickDate(new Date(2026, 11, 31, 12));
     const bell = screen.getByTestId('add-reminder-icon-bell', { includeHiddenElements: true });
     expect(bell.props.size).toBe(20);
