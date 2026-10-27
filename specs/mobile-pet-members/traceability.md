@@ -121,6 +121,7 @@ rojo; `progress/impl_mobile-pet-members.md` los lista uno a uno.
 | R13 | `src/screens/pet-members/index.test.tsx::R13: pulsar invite-row-inv-1-revoke borra el aviso anterior` | `3446fa48 test(mobile): #214 create invite (R13)` |
 | R13 | `src/screens/pet-members/index.test.tsx::R13: pulsar pet-members-invite-cta borra el aviso anterior` | `3446fa48 test(mobile): #214 create invite (R13)` |
 | R13 | `src/screens/pet-members/index.test.tsx::R13: pulsar pet-members-leave borra el aviso anterior` (nace verde: R16 ya borra el aviso) | `3446fa48 test(mobile): #214 create invite (R13)` |
+| R13 | `src/screens/pet-members/index.test.tsx::R13: el dueño ve la nota del código` (enmienda 1; verde en `52f7449b`) | `d06f4f69 test(mobile): #214 owner sees the code note (R13, amendment 1)` |
 | R14 | `src/screens/pet-invite/index.test.tsx::R14: muestra el código partido, el vencimiento y el mensaje literal` | `bd3be0cc test(mobile): #214 invite screen content (R14)` |
 | R14 | `src/screens/pet-invite/index.test.tsx::R14: en inglés el mensaje usa Join with a code` | `bd3be0cc test(mobile): #214 invite screen content (R14)` |
 | R14 | `src/screens/pet-invite/index.test.tsx::R14: sin código no ofrece compartir` (nace verde) | `bd3be0cc test(mobile): #214 invite screen content (R14)` |
@@ -219,6 +220,9 @@ su commit es el que las toca. «Rojo → verde» copia la tabla de R24 de tasks.
 | R24, R22 | fila 48: `src/providers/__tests__/language-provider.test.tsx` · título que termina en «(enmendado por #202 R18) (enmendado por #220 R16) (enmendado por #214 R22)» | R22 (catálogo) → R22 (catálogo) | `bb9f8ab6 test(mobile): #214 pet members catalog keys (R22)` |
 | R24, R17 | fila 49: `src/hooks/use-pet-selection.test.tsx` · título que termina en «solo proveedor, hook y Familia mencionan clearPet en producción (enmendado por #214 R17)» | R17 → R17 | `b650b50a test(mobile): #214 leave pet sheet (R17)` |
 | R24 | corrida completa `bunx jest`, `bunx tsc --noEmit` y lint en verde | — | Sin commit propio (R24); ver registros finales en `progress/impl_mobile-pet-members.md` |
+
+Merge de `origin/dev` (ca2d0abb) en la branch: `91a70ed3 Merge remote-tracking branch 'origin/dev' into feature/214-mobile-pet-members`
+(17 conflictos resueltos sumando los dos lados; los hashes de las filas anteriores no cambian porque no hubo rebase).
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(<scope>): <desc> (R1,R2)`.

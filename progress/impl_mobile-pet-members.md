@@ -1,3 +1,5 @@
+Estado: COMPLETO (Adenda 5)
+
 # Implementación #214 — mobile-pet-members
 
 Estado: implementación y verificación automática completadas: 163 suites, 5773 tests, tipos y lint verdes; 191 anclas sin discrepancias. Rebuild y smoke G4 del humano pendientes. No se ha ejecutado init.sh.
@@ -2274,3 +2276,129 @@ Va en el reporte, tal cual; el humano lo corre en dispositivo tras el rebuild de
     - aceptar deja seleccionada la mascota nueva en Inicio;
     - el teclado no tapa el botón (KAV).
   - Todo lo anterior en en-US.
+
+## Adenda 5 — merge de `origin/dev` y enmienda 1 de R13
+
+Implementador: subagente `implementer` (fallback de CLAUDE.md §Excepciones; a Codex le queda el 3 % de la cuota).
+Arranque: `/home/claude/sites/Pet-Tracker-wt-214`, branch `feature/214-mobile-pet-members`, HEAD 09559c79, único cambio
+`?? progress/review_mobile-pet-members.md` (no se toca ni se commitea).
+Skills cargadas: `expo:expo-overview`, `expo:expo-native-ui` (la carta gana: uniwind/Tailwind, sin estilos inline nuevos).
+
+### A. Merge de `origin/dev`
+
+- `git fetch origin`: `origin/dev` = ca2d0abb (el esperado). 160 commits en `08fe7dab..origin/dev` (#217 y #213).
+- `git merge --no-ff --no-commit origin/dev`: 17 conflictos, los 17 esperados.
+- Los 17 se resolvieron sumando los dos lados; ninguno exigió elegir uno. Método: `git checkout --conflict=diff3` y
+  resolución trozo a trozo, con el lado de `dev` intacto y #214 encima; cada fichero se verificó con
+  `git diff origin/dev -- <fichero>` (solo deben quedar líneas de #214).
+  - Títulos: los sufijos `(enmendado por …)` de `dev` van primero y los de #214 detrás, en todos.
+  - `src/app/_layout.tsx`: `pets/[petId]/vaccines/new` (#208 R4, tras `meals-history`) y después las tres rutas de
+    #214 R3 (`members`, `invite`, `join-pet`), justo antes de `edit-profile`. Los dos tests de orden se cumplen a la vez.
+  - `test/jest-setup.js`: primero el doble de `expo-status-bar` de `dev`, después el de `expo-clipboard` (#214 R23).
+  - `src/screens/profile/index.tsx`: solo los imports chocaban; queda el de `reicon-react-native` de #214
+    (`ChevronRight`, `Key`, `Users`) más `Uniwind, useUniwind` de `dev`.
+  - `home/index.test.tsx`, `profile/index.test.tsx`: los `describe` de #217 de `dev` primero y los de #214 detrás.
+  - `ui-copy-table.ts`, `ui-language.test.ts`: bloque `R19_VACCINE_CREATE` (#208 R20) antes de `R21_PET_MEMBERS`
+    (#214 R22) en la tabla, en `ALL_USES`, en la lista de bloques y en los imports.
+  - `chunky-cta-canvas-fidelity.test.ts` (16 trozos), `consistency-classnames.test.ts` (14): listas e inventarios
+    con las entradas de los dos lados (las listas ordenadas siguen ordenadas) y las cifras abajo.
+  - Única decisión fuera de la suma literal: en `consistency-classnames.test.ts`, título
+    `da color temático a los cinco placeholders`. `dev` añadió su sufijo sin cambiar la palabra; #214 cambió
+    «cinco» por «seis» y añadió el suyo. Queda la fusión de los dos cambios: `a los seis placeholders
+    (enmendado por #208 R21) (enmendado por #214 R18)`. La palabra ya estaba desfasada en `dev` (había 8); no se corrige
+    aquí porque no es de este merge.
+- `feature_list.json` entró de `dev` sin conflicto; frente a `origin/dev` solo difiere la fila 214
+  (`spec_ready`, el estado de esta branch).
+- Cifras agregadas (cifra de `dev` + delta de #214 = resultado):
+
+  | Fichero · aserción | dev | #214 | resultado |
+  |---|---|---|---|
+  | `layout.test.tsx` · hijos de `Stack.Protected` (fila 1) | 15 | +3 | 18 |
+  | `canvas-foundations` y `zones-canvas-fidelity` · dependencias | 42 (#217 R8 quitó nitro: 44 → 42) | +1 | 43 |
+  | `language-provider.test.tsx` · claves del catálogo | 538 | +51 | 589 |
+  | `ui-language.test.ts` · `SCREEN_FILES` | 38 | +3 | 41 |
+  | `design-drift.test.ts` · radios de `screens/home/index.tsx` | 1 | +1 | 2 |
+  | `chunky-cta` · `neutralInventory` | 12 ids | +5 | 17 ids |
+  | `chunky-cta` · radios de `screens/home/index.tsx` | 1 | +1 | 2 |
+  | `chunky-cta` · `text-17` | 35 | +4 | 39 |
+  | `chunky-cta` · `<Text className="text-17 font-extrabold text-accent-foreground">` | 18 | +4 | 22 |
+  | `chunky-cta` · `border-lip-gray` | 15 | +4 | 19 |
+  | `chunky-cta` · `\brounded-16\b` | 47 | +11 | 58 |
+  | `consistency` · `rounded-16 bg-accent` | 21 | +4 | 25 |
+  | `consistency` · `textInputs` / `withPlaceholder` | 10 / 8 | +1 / +1 | 11 / 9 |
+  | `consistency` · `border-lip-gray` | 15 | +4 | 19 |
+  | `consistency` · dos sumas de esquinas (`+ 2 + 7`, `+ 1` de dev) | — | `+ 2` | — |
+
+  Las cifras de `chunky-cta` R7.2, R7.5 y R8.1 (inventarios por fichero) son mapas: llevan la rama de `join-pet`
+  de #214 y las entradas de `dev` (`screens/health/index.tsx` en `primaryCompact`, `reminders` con 2 neutros).
+- Verificación (todo en primer plano, sin `init.sh`, con `pgrep` de jest e `init.sh` vacíos antes de jest):
+  - `bun install --frozen-lockfile`: exit 0, «no changes».
+  - `test ! -e .expo/types/router.d.ts`: exit 0.
+  - `bunx tsc --noEmit`: exit 0, sin salida.
+  - `bunx expo lint --no-cache > ../progress/lint-214.log 2>&1 && test ! -s ../progress/lint-214.log`: exit 0.
+  - `bunx jest --testTimeout=30000` completo: exit 0.
+    ```
+    Test Suites: 166 passed, 166 total
+    Tests:       6035 passed, 6035 total
+    Snapshots:   1 passed, 1 total
+    Time:        263.702 s
+    ```
+    Ningún flake se puso rojo: no hubo que repetir ninguno.
+- Commit del merge: `91a70ed3` («Merge remote-tracking branch 'origin/dev' into feature/214-mobile-pet-members»),
+  padres 09559c79 y ca2d0abb. Sin `-a`: el índice solo tenía el merge; el reporte y
+  `progress/review_mobile-pet-members.md` quedaron fuera.
+
+### B. Enmienda 1 de R13 (menor 2 de la review: falta `flex-1`; menor 1: la nota no tenía candado)
+
+- Rojo: `it('R13: el dueño ve la nota del código', …)` en `src/screens/pet-members/index.test.tsx`, tras
+  `R13: doble toque crea una sola invitación`. Montaje de dueño de los demás `it` de R13 (`renderInviteCta()`).
+  Busca con `within(getByTestId('pet-members-code-note')).getByText(…)` el texto exacto
+  `Cada código sirve una sola vez. Si nadie lo usa, vence solo.`, lo vuelve a asertar con
+  `toHaveTextContent(…, { exact: true })` y aserta `props.className` con `toMatch(/(^| )flex-1( |$)/)`.
+  No hizo falta `includeHiddenElements`: la nota no está oculta a accesibilidad (solo su icono).
+  - Suite `pet-members`: exit 1, `Tests: 1 failed, 54 passed, 55 total` (54 de la base + 1). El único rojo es el
+    esperado:
+    ```
+    Expected pattern: /(^| )flex-1( |$)/
+    Received string:  "text-13 font-semibold leading-note text-foreground"
+    ```
+  - Commit `d06f4f69` `test(mobile): #214 owner sees the code note (R13, amendment 1)` (`--only` el test).
+  - Error de invocación: el `pgrep` previo a esta corrida se lanzó en la misma línea que jest sin cortar la cadena,
+    e imprimió un PID (jest de otro worktree). La corrida salió igual con el rojo esperado; desde aquí el `pgrep`
+    corta la cadena (`test -z … || exit 9`).
+- Verde: en `src/screens/pet-members/index.tsx`, el `Text` de `pet-members-code-note` pasa a
+  `className="flex-1 text-13 font-semibold leading-note text-foreground"`. Nada más cambia (diff de una línea).
+  - `pet-members` + `design-drift` + `consistency-classnames` + `profile-canvas-fidelity` + `ui-language`:
+    exit 0, `Test Suites: 5 passed, 5 total`, `Tests: 320 passed, 320 total`.
+  - `test ! -e .expo/types/router.d.ts` y `bunx tsc --noEmit`: exit 0. Lint `--no-cache` a `../progress/lint-214.log`
+    con `test ! -s`: exit 0.
+  - Commit `52f7449b` `feat(mobile): #214 code note text wraps inside its row (R13, amendment 1)` (`--only` la pantalla).
+- Sonda: `{isOwner ? (` cambiado a `{false ? (` en la nota del código. Se esperó a que acabara un jest de
+  `Pet-Tracker-wt-209` antes de lanzar.
+  - `--testNamePattern='R13: el dueño ve la nota del código'`: exit 1, `Tests: 1 failed, 54 skipped, 55 total`,
+    `Unable to find an element with testID: pet-members-code-note`.
+  - Error de invocación sin efecto: pasé también `index.tsx` a `--runTestsByPath`; jest no lo toma como test y corrió
+    solo la suite de `pet-members`.
+  - Revertida con `git checkout HEAD -- mobile-pet-tracker/src/screens/pet-members/index.tsx`;
+    `git diff --quiet HEAD -- <fichero>` exit 0 y `git diff --cached --quiet` exit 0.
+
+### C. Cierre
+
+- `specs/mobile-pet-members/traceability.md`:
+  - fila R13 nueva para `R13: el dueño ve la nota del código`, con el commit del test `d06f4f69` (verde en `52f7449b`);
+  - línea con el merge: `91a70ed3`, padre de `dev` ca2d0abb.
+  - Ninguna fila «pendiente» (la única aparición de la palabra es la línea «Regla:»).
+- Las casillas de «Enmienda 1» en `specs/mobile-pet-members/tasks.md` no se marcan: el fichero no está en la lista
+  cerrada de esta adenda.
+- Fuera de los commits: `progress/review_mobile-pet-members.md` (sin seguimiento, intacto) y los `progress/*.log`
+  (ignorados por git: `lint-214.log`, `tsc-214.log`, `jest-214-merge.log`, `jest-214-r13-red.log`,
+  `jest-214-r13-green.log`, `jest-214-r13-probe.log`).
+- Commit de cierre: `docs(mobile): #214 traceability for the dev merge and amendment 1`
+  (`traceability.md` y este reporte, con `--only`).
+- Última acción: `progress/impl_mobile-pet-members.done` con la ruta de este reporte.
+- No se ejecutó `init.sh` (lo corre el leader). Sin push, sin PR, sin rebase.
+
+Notas para el reviewer:
+- Mirar el título de `consistency-classnames.test.ts` «da color temático a los seis placeholders»: es la única
+  fusión que no es suma literal (ver A).
+- Ninguno de los flakes conocidos se puso rojo en la corrida completa tras el merge.
