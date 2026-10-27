@@ -52,3 +52,36 @@ it('#223 R17: el disco del chevron', () => {
 it('#223 R17: la lista de atendidas', () => {
   expect(readSource('screens/alerts/index.tsx')).toContain('testID="alerts-attended-list" className="gap-1.5"');
 });
+
+it("#223 R17: la fila atendida", () => {
+  const source = readSource('screens/alerts/index.tsx');
+  expect(source).toContain("flex-row items-center gap-3 rounded-16 border border-border bg-surface px-3.5 py-2.5");
+  expect(source).toContain("style={CONTINUOUS_CORNER}");
+});
+
+it("#223 R17: el disco del icono", () => {
+  const source = readSource('screens/alerts/index.tsx');
+  expect(source).toContain("size-9 items-center justify-center rounded-full ${meta.disc}");
+  expect(source).toContain("size={18}");
+});
+
+it("#223 R17: el enlace", () => {
+  const source = readSource('screens/alerts/index.tsx');
+  expect(source).toContain("min-h-11 min-w-0 flex-1 justify-center gap-px");
+});
+
+it("#223 R17: el título", () => {
+  const source = readSource('screens/alerts/index.tsx');
+  expect(source).toContain("text-sm font-extrabold text-foreground");
+});
+
+it("#223 R17: el subtítulo", () => {
+  const source = readSource('screens/alerts/index.tsx');
+  expect(source).toContain("text-xs font-normal text-muted");
+});
+
+it("#223 R17: la píldora", () => {
+  const source = readSource('screens/alerts/index.tsx');
+  expect(source).toContain("rounded-full bg-default px-2.5 py-1 text-xs font-bold text-muted");
+  expect(source).toContain("rounded-full ${CATEGORY_SLOTS.green.surface} px-2.5 py-1 text-xs font-extrabold ${CATEGORY_SLOTS.green.ink}");
+});

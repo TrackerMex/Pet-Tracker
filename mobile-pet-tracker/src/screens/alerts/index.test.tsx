@@ -473,7 +473,7 @@ describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tr
     },
   );
 
-  it('alterna el tercer hijo entre ack y la píldora traducida (enmendado por #174 R7) (enmendado por #174 R8) (enmendado por #197 R8)', async () => {
+  it('alterna el tercer hijo entre ack y la píldora traducida (enmendado por #174 R7) (enmendado por #174 R8) (enmendado por #197 R8) (enmendado por #223 R18)', async () => {
     const alerts = [
       makeAlert({ id: 'open', status: 'open' }),
       makeAlert({ id: 'acked', status: 'acked' }),
@@ -487,20 +487,23 @@ describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tr
     await renderAlerts();
 
     const list = screen.getByTestId('alerts-list');
-    await waitFor(() => expect(list.props.data).toHaveLength(3));
+    await waitFor(() => expect(list.props.data).toHaveLength(1));
+    await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
+    await screen.findByTestId('alert-row-acked');
     for (const alert of alerts) {
       const rowId = `alert-row-${alert.id}`;
       const row = within(list).getByTestId(rowId);
       expect(row.children).toHaveLength(3);
+      const compact = alert.status !== 'open';
       const classes = row.props.className.split(' ');
-      for (const value of ['flex-row', 'items-center', 'gap-3', 'px-3.5', 'py-3', 'shadow-none']) {
+      for (const value of ['flex-row', 'items-center', 'gap-3', 'px-3.5', compact ? 'py-2.5' : 'py-3', compact ? 'rounded-16' : 'shadow-none']) {
         expect(classes).toContain(value);
       }
       expect(classes).not.toContain('min-h-20');
       expect(classes).not.toContain('shadow-sm');
-      expect(elementChild(row, 0).props.className).toContain('size-11');
+      expect(elementChild(row, 0).props.className).toContain(compact ? 'size-9' : 'size-11');
       expect(elementChild(row, 1).props.className).toBe(
-        'min-h-11 min-w-0 flex-1 justify-center gap-0.5',
+        compact ? 'min-h-11 min-w-0 flex-1 justify-center gap-px' : 'min-h-11 min-w-0 flex-1 justify-center gap-0.5',
       );
     }
 
@@ -1519,10 +1522,13 @@ describe('#170 R5: la fila abierta lleva el borde de su tipo', () => {
     expect(icon.parent?.props.className.split(' ')).toContain(disc);
     expect(within(row).getByTestId('alert-row-alert-1-type')).toHaveTextContent(label);
   });
-  it.each(['acked', 'closed'] as const)('%s: sin borde de severidad', async (status) => {
+  it.each(['acked', 'closed'] as const)('%s: sin borde de severidad (enmendado por #223 R18)', async (status) => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ status })], nextCursor: null });
     await renderAlerts();
+    await waitFor(() => expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('1', { exact: true }));
+    await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
     const row = await screen.findByTestId('alert-row-alert-1');
+    expect(row.props.className).toBe('flex-row items-center gap-3 rounded-16 border border-border bg-surface px-3.5 py-2.5');
     const classes = row.props.className.split(' ');
     expect(classes).toContain('border');
     expect(classes).toContain('border-border');
@@ -1746,5 +1752,36 @@ describe('#223 R5: la insignia espera al último cursor y suma las abiertas de t
     expect(screen.queryByTestId('alerts-attended-list')).toBeNull();
     expect(screen.queryByTestId('alert-row-h01')).toBeNull();
     expect(screen.getByTestId('alerts-attended-chevron').props.iconName).toBe('ChevronDown');
+  });
+
+  it('#223 R9: la fila atendida es compacta, sin ack y abre su detalle', async () => {
+    for (const [status, type, iconName, ink, disc, title, label, pill] of [
+      ['acked', 'battery_low', 'BatteryLow', '--color-warning-strong', 'bg-category-amber', 'Batería baja', 'Leída', 'rounded-full bg-default px-2.5 py-1 text-xs font-bold text-muted'],
+      ['closed', 'geofence_exit', 'LocationSlash', '--color-danger', 'bg-category-rose', 'Salió de la zona', 'Resuelta', 'rounded-full bg-category-green px-2.5 py-1 text-xs font-extrabold text-category-green-strong'],
+    ] as const) {
+      mockListAlerts.mockReset().mockResolvedValue({ kind: 'ok', items: [makeAlert({ id: status, status, type, petName: 'Rocky', openedAt: '2027-01-02T14:00:00.000Z' })], nextCursor: null });
+      const rendered = await renderAlerts();
+      await waitFor(() => expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('1', { exact: true }));
+      await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
+      const rowId = `alert-row-${status}`;
+      const row = await screen.findByTestId(rowId);
+      const icon = within(row).getByTestId(`${rowId}-icon`);
+      expect(icon.props.size).toBe(18);
+      expect(icon.props.iconName).toBe(iconName);
+      expect(icon.props.color).toBe(ink);
+      expect(icon.parent?.props.className).toBe(`size-9 items-center justify-center rounded-full ${disc}`);
+      expect(screen.getByTestId(`${rowId}-type`)).toHaveTextContent(title, { exact: true });
+      expect(screen.getByTestId(`${rowId}-pet`)).toHaveTextContent('Rocky', { exact: true });
+      expect(screen.getByTestId(`${rowId}-time`)).toHaveTextContent('Hace 2 h', { exact: true });
+      expect(screen.getByTestId(`${rowId}-subtitle`)).toHaveTextContent('Rocky · Hace 2 h', { exact: true });
+      expect(screen.getByTestId(`${rowId}-status`)).toHaveTextContent(label, { exact: true });
+      expect(screen.getByTestId(`${rowId}-status`).props.className).toBe(pill);
+      expect(screen.queryByTestId(`${rowId}-ack`)).toBeNull();
+      expect(screen.queryByTestId(`${rowId}-entrance`)).toBeNull();
+      expect(row.props.className).toBe('flex-row items-center gap-3 rounded-16 border border-border bg-surface px-3.5 py-2.5');
+      await fireEvent.press(screen.getByTestId(`${rowId}-link`));
+      expect(mockRouterPush).toHaveBeenLastCalledWith({ pathname: '/alerts/[alertId]', params: { alertId: status } });
+      await rendered.unmount();
+    }
   });
 });
