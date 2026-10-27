@@ -22,6 +22,7 @@ import { getPet } from '../../api/pets';
 import { nutritionKeys, petKeys } from '../../api/query-keys';
 import { ScreenHeader } from '../../components/screen-header';
 import { Card } from '../../components/card';
+import type { TranslationKey } from '../../i18n/catalog';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
@@ -31,6 +32,21 @@ import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { RiseIn } from '../../components/rise-in';
+
+type ProfileLabels = Partial<Record<string, { labelKey: TranslationKey }>>;
+
+const ACTIVITY_LABEL: ProfileLabels = {
+  low: { labelKey: 'nutritionQuestionnaire.activityLow' },
+  medium: { labelKey: 'nutritionQuestionnaire.activityMedium' },
+  high: { labelKey: 'nutritionQuestionnaire.activityHigh' },
+};
+
+const FOOD_LABEL: ProfileLabels = {
+  dry: { labelKey: 'nutritionQuestionnaire.foodDry' },
+  wet: { labelKey: 'nutritionQuestionnaire.foodWet' },
+  mixed: { labelKey: 'nutritionQuestionnaire.foodMixed' },
+  homemade: { labelKey: 'nutritionQuestionnaire.foodHomemade' },
+};
 
 function isPlanError(state: NutritionPlanState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -91,6 +107,11 @@ function MealScheduleContent({ petId }: { petId: string }) {
   function retryAll() {
     plan.refetch();
     profile.refetch();
+  }
+
+  function profileLabel(labels: ProfileLabels, value: string) {
+    const label = labels[value];
+    return label ? t(label.labelKey) : value;
   }
 
   function openNutritionProfile() {
@@ -423,7 +444,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
             <View testID="nutrition-profile-pills" className="flex-row flex-wrap gap-1.5">
               <Text testID="nutrition-profile-activity" className="rounded-full bg-default px-2.5 py-1.5 text-xs font-bold text-foreground">
                 <Text className="text-muted">{`${t('mealSchedule.activity')} `}</Text>
-                {loadedProfile.activityLevel}
+                {profileLabel(ACTIVITY_LABEL, loadedProfile.activityLevel)}
               </Text>
               {loadedProfile.bodyCondition !== null ? (
                 <Text testID="nutrition-profile-condition" className="rounded-full bg-default px-2.5 py-1.5 text-xs font-bold text-foreground">
@@ -433,7 +454,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
               ) : null}
               <Text testID="nutrition-profile-food" className="rounded-full bg-default px-2.5 py-1.5 text-xs font-bold text-foreground">
                 <Text className="text-muted">{`${t('mealSchedule.food')} `}</Text>
-                {`${loadedProfile.foodType} ${loadedProfile.kcalPer100g} kcal/100 g`}
+                {`${profileLabel(FOOD_LABEL, loadedProfile.foodType)} ${loadedProfile.kcalPer100g} kcal/100 g`}
               </Text>
             </View>
             {loadedProfile.allergies.length > 0 ? (
