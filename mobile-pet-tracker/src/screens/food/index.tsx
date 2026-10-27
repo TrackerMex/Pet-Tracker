@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
 import { router, type Href } from 'expo-router';
 import { Button, Skeleton, Spinner } from 'heroui-native';
 import { useEffect, useState } from 'react';
@@ -11,6 +12,7 @@ import Svg, { Circle } from 'react-native-svg';
 
 import {
   getNutritionPlan,
+  getNutritionProfile,
   serveMeal,
   unserveMeal,
 } from '../../api/nutrition';
@@ -19,6 +21,7 @@ import { nutritionKeys, petKeys } from '../../api/query-keys';
 import { RiseIn } from '../../components/rise-in';
 import { EmptyState } from '../../components/empty-state';
 import { PetSwitcher } from '../../components/pet-switcher';
+import { PingoFloat } from '../../components/pingo-float';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
@@ -64,13 +67,23 @@ export function FoodScreen() {
     enabled: selectedPetId !== null,
   });
   const loadedPlan = plan.data?.kind === 'ok' ? plan.data.plan : null;
+  const planNotFound = plan.data?.kind === 'not-found';
+  const profile = useQuery({
+    queryKey: nutritionKeys.profile(selectedPetId ?? ''),
+    queryFn: () => getNutritionProfile(baseUrl, token ?? '', selectedPetId!),
+    enabled: planNotFound,
+  });
+  const activePet = pets.data?.kind === 'ok' ? pets.data.pets.find((pet) => pet.id === selectedPetId) : undefined;
+  const profilePending = planNotFound && profile.data === undefined;
+  const showProfileEmpty = planNotFound && profile.data?.kind === 'not-found' && activePet?.myRole === 'owner';
   const waitingForPetSelection =
     selectedPetId === null &&
     (pets.data === undefined ||
       (pets.data.kind === 'ok' && pets.data.pets.length > 0));
   const showPlanSkeletons =
     waitingForPetSelection ||
-    (selectedPetId !== null && plan.data === undefined);
+    (selectedPetId !== null && plan.data === undefined) ||
+    profilePending;
   const servedMeals = loadedPlan?.servedToday.length ?? 0;
   const kcalPct =
     loadedPlan !== null && loadedPlan.merKcal > 0
@@ -116,6 +129,10 @@ export function FoodScreen() {
     } finally {
       setPendingMealTime(null);
     }
+  }
+
+  function openNutritionProfile() {
+    router.push({ pathname: '/nutrition-profile', params: { petId: selectedPetId! } });
   }
 
   const links = (
@@ -442,7 +459,30 @@ export function FoodScreen() {
             </>
           ) : null}
 
-          {plan.data?.kind === 'not-found' ? (
+          {showProfileEmpty ? (
+            <View testID="food-profile-empty" className="items-center gap-3">
+              <View className="h-50 w-55 items-center justify-center">
+                <View className="absolute size-47.5 rounded-full bg-surface-secondary" />
+                <PingoFloat testID="food-profile-pingo">
+                  <Image source={require('../../../assets/images/pingo-food.webp')} className="size-37.5" />
+                </PingoFloat>
+              </View>
+              <Text className="text-center text-24 font-black tracking-title">
+                {t('mealSchedule.noNutritionProfileYet')}
+              </Text>
+              <Text className="text-center text-15 font-medium leading-normal text-muted">
+                {t('nutritionQuestionnaire.profileEmptyBody', { name: activePet.name })}
+              </Text>
+              <Button testID="food-create-profile" className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary} onPress={openNutritionProfile}>
+                <Text className="text-17 font-extrabold text-accent-foreground">{t('nutritionQuestionnaire.createProfile')}</Text>
+              </Button>
+              <Text className="text-center text-13 font-semibold text-muted">
+                {t('nutritionQuestionnaire.profileEmptyNote')}
+              </Text>
+            </View>
+          ) : null}
+
+          {planNotFound && !profilePending && !showProfileEmpty ? (
             <EmptyState
               testID="food-plan-empty"
               pose="food"
