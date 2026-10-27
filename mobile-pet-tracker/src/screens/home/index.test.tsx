@@ -6502,7 +6502,7 @@ describe('#214 R7: Unirme con código en Inicio vacío', () => {
     const join = await screen.findByTestId('home-join-pet');
     expect(screen.getByTestId('home-no-pets-screen').children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['home-empty', 'home-join-pet']);
     expect(join.props.className).toBe('w-full items-center gap-3.5 pt-5');
-    expect(screen.getByTestId('home-empty')).toHaveTextContent('Añadir mascota');
+    expect(screen.getByTestId('home-empty-action')).toHaveTextContent('Añadir mascota');
     expect(screen.getByTestId('home-join-pet-prompt')).toHaveTextContent('¿Te invitaron a cuidar una mascota?');
     expect(screen.getByTestId('home-join-pet-prompt').props.className).toBe('text-sm font-semibold text-muted');
     expect(screen.getByTestId('home-join-pet-button')).toHaveTextContent('Unirme con código');
