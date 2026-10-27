@@ -582,3 +582,25 @@ Smoke del humano. Va en el reporte, tal cual. Lo corre el humano en el dev build
   - Errores: sin red, el error vuelve a Salud con las respuestas intactas.
   - en-US: el copy y las píldoras de Horario («Activity Medium», «Food Dry 350 kcal/100 g»).
   - Casillas del humano: la de smoke en dispositivo y `- [ ] Enmienda #209 aprobada por humano` de docs/ui-guidelines.md (R26).
+
+## Adenda 1 (leader, tras la parada en T0 ampliado)
+
+Paraste bien. Tu medida es la buena y la cifra del handoff estaba mal. El leader la derivó de la semilla de
+ronda 2, que no tenía los 21 `it` nuevos de Horario (16) y Nutrición (5). El leader volvió a medir las tres
+suites fuera de guardas sobre `21d43079`: `language-provider` 54, `meal-schedule` 80 y `food` 122. Suman 256,
+y 965 + 256 = 1221.
+
+Las cifras del T0 ampliado quedan así. Sustituyen a las del cuerpo; las de guardas no cambian:
+
+- **T0 ampliado:** 40 suites y `Tests: 1221 passed, 1221 total`. Ya lo tienes medido, no lo repitas.
+- **R24 (2b), ampliado:** 40 suites y `Tests: 1250 passed, 1250 total`. Es 1253 menos los tres `it` de R25.
+- **Tras R25 y en la verificación final, ampliado:** `Tests: 1253 passed, 1253 total`.
+
+La spec ya está corregida: `requirements.md` §R24 y `tasks.md` R24 (2b), errata ronda 4.
+
+Retoma la cadena con la T0 completa (`bun run test > ../progress/full-209-t0.log`) y sigue desde ahí. Si en
+R24 (2b) la cifra ampliada no da 1250, para y reporta las dos líneas `Tests:` y el recuento por suite de
+`language-provider`, `meal-schedule` y `food` (con `--json`).
+
+Flake conocido en `food`: `#200 R9: pulsar cada enlace navega como hoy (meals-history-link)`. Puede caer bajo
+carga. Si cae solo ese `it`, repite la corrida una vez antes de parar.

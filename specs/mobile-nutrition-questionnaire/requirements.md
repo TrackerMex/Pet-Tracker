@@ -928,9 +928,13 @@ de jest): `timeout 580 bunx jest src/__tests__ src/app/__tests__/layout.test.tsx
   ampliados (por ejemplo, las dos filas de `CTA_ROWS` suman 4 en chunky).
 - Con las suites que también enmienda esta spec (R22 y R23), el comando es
   `timeout 580 bunx jest src/__tests__ src/app/__tests__/layout.test.tsx src/providers/__tests__/language-provider.test.tsx src/screens/meal-schedule src/screens/food`.
-  Con todas las enmiendas (errata ronda 3, derivada): exit 0, 40 suites,
-  1232 tests en verde (1220 y 39 en ronda 2, más los 12 tests y la suite del
-  merge).
+  Con todas las enmiendas y los `it` nuevos (errata ronda 4, 2026-10-27):
+  exit 0, 40 suites, **1253** tests en verde. T0 medido por Codex sobre
+  `21d43079`: 1221 (965 de guardas, más 54 de `language-provider`, 80 de
+  `meal-schedule` y 122 de `food`). Final: 1221 + 32 `it` nuevos (11 de
+  guardas, 16 de Horario y 5 de Nutrición). La cifra de ronda 3 (1232) salía
+  de la semilla de ronda 2, que no tenía los 21 `it` nuevos de Horario y
+  Nutrición.
 
 La cifra de cada enmienda depende de la **forma** que fija R25 (componentes
 locales, `.map` sobre constantes y ternarios con literales completos). Si

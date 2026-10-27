@@ -155,7 +155,7 @@ Prohibido correr `./init.sh` y e2e.
 ## R24 — guardas de carta
 - [ ] (1) Correr las siete suites: `design-drift`, `consistency-classnames`, `chunky-cta-canvas-fidelity`, `legibility-classnames`, `alerts-canvas-fidelity` y `profile-canvas-fidelity` (en `src/__tests__/`), más `src/app/__tests__/layout.test.tsx`. Se esperan rojas por los inventarios.
 - [ ] (2) Las enmiendas mecánicas que lista R24, con `+ delta // #209 R24` y el sufijo ` (enmendado por #209 R24)` en cada `it` tocado. El `+ 6 // #209 R24` de `#62 R14` y `#98 R10` va justo después de `+ 2 + 7 // #208 R21` (errata ronda 3; `#98 R10`: 62 → 68, `#62 R14`: 64 → 70). Van en un commit `test(mobile): #209 R24 enmiendas de carta`, que deja las siete en verde.
-- [ ] (2b) Verificación final, desde `mobile-pet-tracker/` y sin `| tail`: `timeout 580 bunx jest src/__tests__ src/app/__tests__/layout.test.tsx src/providers/__tests__/language-provider.test.tsx src/screens/meal-schedule src/screens/food` con exit 0. Cifra derivada (errata ronda 3): 40 suites, 1232 tests en verde (39 y 1220 en la semilla de ronda 2, más la suite y los 12 tests del merge de `1dbac74f`).
+- [ ] (2b) Verificación final, desde `mobile-pet-tracker/` y sin `| tail`: `timeout 580 bunx jest src/__tests__ src/app/__tests__/layout.test.tsx src/providers/__tests__/language-provider.test.tsx src/screens/meal-schedule src/screens/food` con exit 0. Cifra (errata ronda 4, 2026-10-27): 40 suites, 1253 tests en verde (T0 medido 1221, más los 32 `it` nuevos del alcance; ver requirements.md §R24).
 - [ ] (3) Sin refactor.
 
 ## R25 — recetas de carta
