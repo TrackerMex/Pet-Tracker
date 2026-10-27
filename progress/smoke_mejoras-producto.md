@@ -183,3 +183,39 @@ En el dev build de Android (no Expo Go):
     la barra de estado, sin solaparse con ella, y con el botón de volver, que funciona.
 
 - [ ] Smoke de #209 recorrido por el humano (fecha: ____)
+
+## #215 mobile-nutrition-ai-plan
+
+Spec: `specs/mobile-nutrition-ai-plan/requirements.md` (§Smoke G4 y §Aprobación, erratas E1 y E2).
+Reviewer APROBADO sobre `bfdbb6d1` (`progress/review_mobile-nutrition-ai-plan.md`).
+Como en #208, la spec dice que su smoke **bloquea `done`**.
+
+No necesita rebuild propio: #215 no añade módulos nativos.
+
+Hace falta una cuenta dueña con una mascota con perfil nutricional y un peso registrado (flujo de
+#209). Para el paso 4, una mascota sin collar vinculado.
+
+**Los pasos 3 y 5 necesitan una propuesta real de la IA.** El backend local sin clave
+(`ANTHROPIC_ENABLED=false`) no genera ninguna. Recórrelos en la misma sesión que la prueba R20 de
+#212 (sección de arriba), con la clave puesta y la mascota con collar. Esa prueba cuesta dinero y
+la decide el humano. El resto del recorrido no necesita la clave.
+
+En el dev build de Android (no Expo Go):
+
+1. En Horario, «Generar plan» abre «Plan de <nombre>».
+2. Volver lleva a Horario.
+3. Con collar y propuesta se ven la insignia violeta, las filas con «antes», «Por qué…», las
+   recomendaciones, la revisión y el aviso.
+4. Sin collar se ve la nota, y «Vincular collar» abre Vincular.
+5. Horario y Nutrición muestran los gramos de la IA.
+6. Con la navegación por gestos, el pie no tapa el contenido.
+7. El botón violeta tonal «Pedir otro plan» se lee bien en claro y en oscuro.
+
+Decisiones que quedan para el humano, fuera de este smoke:
+
+- D1: el contador «Te quedan N de 3» no se pinta; pide un campo de backend.
+- D6: el botón violeta es tonal y no sólido como en el artboard; el sólido pide un token oscuro
+  que pase AA, que es una enmienda de `docs/ui-guidelines.md`.
+- D7: el copy «que está bien para él» supone una mascota macho.
+
+- [ ] Smoke de #215 recorrido por el humano (fecha: ____)
