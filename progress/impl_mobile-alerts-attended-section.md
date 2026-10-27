@@ -1,64 +1,103 @@
 # Implementación #223 — mobile-alerts-attended-section
 
-Fecha: 2026-10-27. **C0–C26 completados; parada obligatoria antes de C27.**
-El único fallo de la corrida completa está en un fichero de navegación fuera
-de la lista autorizada. R18 y el cierre C30 siguen pendientes. **Sin `.done`.**
-Este reporte sustituye los informes de parada de `ab390003` y `7f5a5d50`.
+Fecha: 2026-10-27. **R1–R18 implementados y verificados; cadena C0–C30 y E4 entregada.**
+Este commit C30 entrega trazabilidad, casillas y reporte. R19 queda pendiente de G4.
 
-## Bloqueo actual: navegación de detalle (#100 R8)
-
-Comando, desde `mobile-pet-tracker`, con ambos pgrep vacíos antes de arrancar:
-
-```sh
-bun run test > ../progress/full-223-c27.log 2>&1
-```
-
-Salida real, **exit 1**, sin pipe ni suites omitidas:
+Corrida final **exit 0**, sin pipe, sin suites omitidas, guardada en
+`progress/final-test-223.log` (copia íntegra también en `progress/full-223-c30.log`;
+es la misma ejecución, no dos corridas distintas):
 
 ```text
-Test Suites: 1 failed, 168 passed, 169 total
-Tests:       1 failed, 6119 passed, 6120 total
+Test Suites: 169 passed, 169 total
+Tests:       6121 passed, 6121 total
 Snapshots:   1 passed, 1 total
-Time:        166.775 s, estimated 347 s
+Time:        180.175 s
 ```
 
-Fichero: `mobile-pet-tracker/src/app/__tests__/alert-detail.navigation.test.tsx`.
-Describe: `#100 R8: fila, detalle y vuelta al centro con la alerta leída`.
-It: `abre la fila de la segunda página, la marca leída y la ve leída al volver`.
+Resultado: **N = 6077; N + 44 = 6121**, sin regresiones. Typecheck y lint
+finales también terminaron con exit 0. R19 queda pendiente de G4 y el smoke G2
+sigue reservado al humano; no se ejecutó init.
 
-El fallo medido está en la línea 143:
+Alertas descarga todas las páginas, conserva solo las abiertas en data y
+cuenta el total tras asentarse. «Atendidas» empieza colapsada, muestra diez
+filas compactas al abrirse y suma diez con «Ver más», conservando cuántas había
+al colapsar. Sin abiertas muestra «Todo en calma» con la mascota de la primera
+atendida del servidor; sin alertas mantiene Pingo. El ack conserva su overlay
+hasta el refetch. Copy es/en, medidas, navegación, estados parciales y accesibilidad
+quedan cubiertos por los tests de R1–R18.
 
-```text
-expect(received).toHaveLength(expected)
-Expected length: 1
-Received length: 2
-```
+## Verificación de cierre
 
-Los dos elementos recibidos son las abiertas `alert-1` y `alert-2`: la pantalla
-ya ha drenado las dos páginas. El test conserva la secuencia antigua:
+- Typecheck: **exit 0**, `progress/final-types-223.log`, precedido por
+  `test ! -e .expo/types/router.d.ts`. La guarda también pasó en cada feat.
+- Lint: **exit 0 y log de 0 bytes**, con `bunx expo lint --no-cache`, redirect
+  sin pipe y `test ! -s ../progress/lint-223.log`. Log: `progress/lint-223.log`.
+- Corrida completa previa a C27 tras E4: **169 suites, 6120 tests, exit 0**,
+  `progress/full-223-c27-e4.log` (181.546 s).
+- R18: **22/22** en `progress/c27-223.log`; sonda roja y revertida en
+  `progress/c27-223-mutation.log`. Revisa una lista literal de 31 títulos,
+  incluidos E2, E3/#203, E4/navegación y la ampliación diferida del test R8.
+- Graphify: `graphify update .`, **exit 0**, extracción AST sin LLM. Resultado:
+  31629 nodos, 40794 aristas y 2037 comunidades (`progress/graphify-223.log`).
+  Limitación registrada por la herramienta: omitió 23 archivos SQL por no tener
+  tree_sitter_sql. No se instalaron dependencias adicionales para ese parser.
+- No se ejecutó `./init.sh`: queda al leader. Tampoco eas build, despliegues,
+  push ni PR. No se cambió feature_list, STATUS, progress/current o history.
 
-```tsx
-await waitFor(() => expect(screen.getByTestId('alerts-list').props.data).toHaveLength(1));
-await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
-await waitFor(() => expect(screen.getByTestId('alerts-list').props.data).toHaveLength(2));
-```
+Los siguientes guards y suites constan como PASS en la corrida final:
 
-Por lectura, ese mismo caso también espera al volver del detalle la fila
-`alert-row-alert-2-status` sin expandir «Atendidas» (líneas 156–160), y conserva
-un `renderRouter` sin await. **Estos puntos posteriores no se ejecutaron hasta
-el final ni se presentan como fallos adicionales medidos.** Deben revisarse en
-la adenda que autorice el fichero; no se tocó ninguna línea de `app/`.
+- `src/__tests__/design-drift.test.ts`
+- `src/__tests__/consistency-classnames.test.ts`
+- `src/__tests__/legibility-classnames.test.ts`
+- `src/__tests__/ui-language.test.ts`
+- `src/providers/__tests__/language-provider.test.tsx`
+- `src/__tests__/alerts-canvas-fidelity.test.ts`
+- `src/__tests__/alerts-attended-canvas-fidelity.test.ts`
+- `src/__tests__/chunky-cta-canvas-fidelity.test.ts`
+- `src/__tests__/canvas-foundations.test.ts`
+- `src/__tests__/collar-alerts-canvas-fidelity.test.ts`
+- `src/__tests__/profile-canvas-fidelity.test.ts`
+- `src/components/__tests__/empty-state.test.tsx`
+- `src/screens/alerts/index.test.tsx`
+- `src/screens/alert-detail/index.test.tsx`
+- `src/app/__tests__/alert-detail.navigation.test.tsx`
 
-El handoff prohíbe expresamente `app/ entero` y manda: «Si al correr la suite
-aparece en rojo un `it` que no está en la ventana, ni en la tabla de enmiendas
-ni en E2, PARA y anótalo con el diff medido; no lo enmiendes por tu cuenta».
-Este caso no es uno de los flakes autorizados. Se detuvo la cadena, sin rerun
-para disimular la incompatibilidad ni modificaciones fuera de alcance.
+## Gates humanos y documentación
 
-El leader debe autorizar una enmienda de este test de navegación. Se retomará
-antes de C27, desde `f1526efa`, conservando todos los commits C0–C26. No hace
-falta reaplicar producción: todos los cambios de producción están commiteados.
-No se escribió todavía el test de R18, ni se ejecutaron C28/C30.
+G4 se volvió a medir antes de C28: **0**. No se creó test R19 ni it.skip, ni
+se tocó `docs/ui-guidelines.md`. Trazabilidad deja explícito `pendiente: G4`.
+G2 queda al humano: smoke de sección colapsada, expandida con «Ver más», sin
+abiertas y en tema claro y oscuro. No se marcaron G2 ni G4.
+
+En tasks se marcaron las tareas satisfechas de T0 y R1–R18. T0(1) se satisface
+por la provisión previa del leader indicada en el handoff: no se ejecutaron cp
+ni bun install, ni se regeneró entorno. Los refactors innecesarios no generaron
+código ni commits artificiales. R19 conserva sus tres casillas sin marcar.
+Trazabilidad, casillas y este reporte se entregan juntos en C30. Los estados
+frontmatter draft los conserva el leader; no se cambiaron.
+
+## Incidencias resueltas y autorizaciones
+
+Los informes de parada `ab390003`, `7f5a5d50` y `8c3984d8` quedan superados por
+las adendas del leader. Se conservó la evidencia y no se amplió el alcance sin permiso:
+
+1. T0: dos anclas erróneas, corregidas en `11b2cbaf` (adenda 3). Se repitieron
+   con los valores correctos; la fila TABULAR_NUMS #170 R16 no se tocó.
+2. C6: un test #203 R8 esperaba una fila atendida. Adenda 4, `71d65ffe` / E3,
+   autorizó solo cambiar la espera al contenedor visible y añadir el sufijo.
+   Aserciones de cabecera intactas; enmienda incluida en el feat de R4.
+3. Primera corrida completa antes de C27: **1 failed, 6119 passed, 6120 total**
+   (`progress/full-223-c27.log`). #100 R8 en navegación esperaba una página y
+   recibía dos por el drenado. Se paró porque app/ estaba fuera de alcance.
+4. Adenda 5, `f2904940` / E4, autorizó ese it: sin onEndReached, espera dos
+   filas, expande Atendidas al volver y conserva las demás aserciones.
+   Se añadió `await app` después de restaurar timers reales para cumplir RNTL 14.
+5. La primera verificación E4 dio error de componente undefined (`e4-223.log`):
+   el mock de iconos no exportaba los chevrons. Como estaba fuera del it,
+   se consultó antes de tocarlo. El humano autorizó expresamente añadir Check,
+   ChevronDown y ChevronUp; propuesta en `e4-223-proposed-icons.log`.
+   El test aislado pasó 1/1 (`e4-223-icons.log`) y se commiteó como `e6063116`.
+   Solo se modificaron ese it y el retorno del mock autorizado, sin app de producción.
 
 ## Continuidad, ruta y adendas
 
@@ -79,8 +118,13 @@ No se escribió todavía el test de R18, ni se ejecutaron C28/C30.
   Se añadió el sufijo de enmienda y se conservaron sus aserciones intactas.
 - No se hizo pull, merge, rebase, push ni PR. No se ejecutó `./init.sh`, EAS
   ni ningún comando de AWS. No se instalaron ni regeneraron entorno o deps.
-- Se retiró el `.done` de la primera parada al retomar; no se volvió a crear.
+- Se retiró el `.done` de la primera parada al retomar; no se volvió a crear antes de C30.
   `progress/draft_handoff-223.md` ya existía sin seguimiento y no se tocó.
+
+- La última reanudación confirmó `f2904940`, adenda 5 / E4. El humano autorizó
+  después expresamente ampliar el mock de ese mismo test con Check, ChevronDown
+  y ChevronUp. Esa autorización de conversación amplía el límite «solo ese it».
+- E4 quedó en `e6063116`; R18, en `71c41948`. App de producción intacto.
 
 ## T0: salida íntegra de las anclas corregidas
 
@@ -255,13 +299,16 @@ completa en cada paso. No se eliminó ningún caso. Los it.each cuentan sus fila
 | C25 | `cb7a45f9 feat(mobile): remove onEndReached from the alerts list (R15)` | `1297 passed, 1297 total` | 6118 + 0 - 0 = 6118 |
 | C26 | `f1526efa test(mobile): attended section classes are clean and targets reach 44 pt (R17)` | `21 passed, 21 total` | 6118 + 2 - 0 = 6120 |
 
-C26 deja **N + 43 = 6120** casos. Falta el único it de R18: con G4 = 0, el
-objetivo final sigue siendo N + 44 = 6121. La corrida completa previa a C27
-midió exactamente 6120, sin SIGKILL ni suites perdidas.
+| E4 (adenda 5) | `e6063116 test(mobile): detail navigation reaches attended alerts (R18)` | `1 passed, 1 total` | 6120 + 0 - 0 = 6120 |
+| C27 | `71c41948 test(mobile): amended locks name their amendment (R18)` | `22 passed, 22 total` | 6120 + 1 - 0 = 6121 |
+| C28 | Sin commit: G4 = 0, R19 no se implementa | No se crea ningún it.skip | 6121 + 0 - 0 = 6121 |
+| C30 | `docs(mobile): traceability and report (R1-R18)` (este commit documental) | Corrida completa final indicada arriba | 6121 + 0 - 0 = 6121 |
 
-C0 nació verde porque solo amplía el mock de iconos, sin aserciones nuevas.
-C6 es la excepción expresamente autorizada que incluye en su feat la enmienda
-mínima de espera de #203 R8; el test rojo de R4 ya estaba en C5.
+Total: **N + 44 = 6121**, sin casos eliminados. Los +2 externos son las nuevas
+filas de it.each de directUses (C14) y del ancla de «Ver más» (C16). No se
+crearon commits feat artificiales para tests que nacieron verdes.
+C0 solo amplía el mock sin aserciones nuevas. C6 incluye la enmienda mínima
+#203 R8 expresamente autorizada por adenda 4; el rojo de R4 ya estaba en C5.
 
 ## Rojos medidos por paso (ventana y tests nuevos)
 
@@ -446,7 +493,7 @@ en sus corridas normales (sin las sondas).
 C6 anterior a la adenda 4 tuvo además el rojo de #203 R8, documentado en
 `c6-223.log`; fue resuelto con la firma del leader, no por autoampliar alcance.
 Desde C19 no quedó ningún rojo en el alcance de Alertas/hooks/providers/guards.
-El nuevo rojo global de navegación aparece únicamente al correr todo antes de C27.
+El rojo global de navegación de la primera corrida previa a C27 quedó resuelto por E4; se conserva como incidencia histórica, no como bloqueo actual.
 
 ## Sondas y tests que nacen verdes
 
@@ -473,32 +520,24 @@ cuando podían dejar cambios de producción en un commit de tests.
 | C23 / R14 | Nace verde. Ocultar la insignia con laterPageFailed rompe la aserción: `c23-223-mutation.log`. |
 | C24–C25 / R15 | Rojo por recibir Function onEndReached en vez de undefined; verde al retirar la prop. |
 | C26 / R17 | Grep-limpio y dianas nacen verdes. Hex, corchetes, StyleSheet.create y h-9 producen dos rojos: hex detectado y diana 36 < 44 (`c26-223-mutation.log`). |
-| C27 / R18 | No iniciado: la corrida previa obligó a parar. No se atribuye una sonda inexistente. |
+| C27 / R18 | Nace verde (22/22 en la suite, con 31 títulos cerrados). Quitar el sufijo de «no mueve la fila abierta al pulsar su ack» provoca 1 failed, 21 skipped (`c27-223-mutation.log`). Se restauró antes del commit y el diff del test de pantalla quedó vacío. |
 
-## Verificaciones y límites
+## Disciplina de pruebas
 
-- Última verificación de producción, C25: **46 suites, 1297 tests, exit 0**;
-  `c25-223.log`. C26: **21/21** de fidelidad, exit 0 (`c26-223.log`).
-- La corrida completa posterior incluye los 21 tests de fidelidad y deja
-  168/169 suites verdes. La suite de Alertas, la de detalle y los guards
-  requeridos pasan; falla únicamente el test de navegación fuera de alcance.
-- Typecheck con guarda `test ! -e .expo/types/router.d.ts`: verde en cada feat
-  (C2/C6/C8/C10/C13/C15/C17/C19/C22/C25). Logs `cNN-223-types.log`, salvo C6
-  con `c6-223-adenda4-types.log`. Solo C1 va rojo por la excepción citada.
-- Antes de cada Jest se midieron los pgrep exigidos. Se esperó por worktrees
-  209/216/224 y corridas auxiliares. En T0 otro worktree arrancó después de
-  nuestro check; el flake autorizado se repitió aislado.
-- RNTL: await en renderHook/renderAlerts/fireEvent/act/rerender/unmount nuevos;
-  las esperas de pantalla observan el nodo o data que se aserta. Las ausencias
-  se anclan en una observación positiva. No se añadieron esperas sobre contadores
-  de mocks. Los tests nuevos de pantalla fijan Date.now y TZ con el patrón de
-  #170 R3 y process.getBuiltinModule('process').
-- No se ejecutaron lint final, graphify ni la corrida de C30: la instrucción
-  de parada se activó antes de C27. No se produjo `final-test-223.log` como
-  evidencia final verde, ni se declara el cierre completo.
-- No se tocaron tasks ni traceability: ambos están reservados al C30, todavía
-  no alcanzado. Tampoco feature_list, STATUS, current, history, theme,
-  components, utils, API, dependencias, app/ ni backend.
+Todas las llamadas nuevas de RNTL a render/renderHook/renderAlerts/fireEvent/act/
+rerender/unmount llevan await; E4 espera también renderRouter mediante await app.
+Las esperas observan el árbol, data o resultado del hook que se aserta, no el
+contador de un mock. Las ausencias se anclan a un nodo positivo del escenario.
+Fecha y TZ de los nuevos tests de pantalla siguen #170 R3, con Date.now fijo
+mediante spy y process.getBuiltinModule('process'). Los valores esperados de
+copy, clases y límites son literales de tests, sin importarlos de producción.
+
+La cifra global se verifica como anterior + añadidos - eliminados. Los it.each
+aportan una prueba por fila; C16 tiene tres casos de R10, con dos títulos rojos
+idénticos para 11/23. No hubo SIGKILL ni suites omitidas en las corridas completas.
+Las guardas de pantalla pasaron antes de cada feat: sin lógica nueva de ack/cache,
+una settleAlertAck, una ackAlert, tres somethingWentWrong y un retry. Se conserva
+padding insets.top + 8, una TABULAR_NUMS y RiseIn solo en las cinco primeras abiertas.
 
 ## Skills y decisiones de proceso
 
@@ -523,41 +562,34 @@ No se ejecutó prettier ni se reindentó la pantalla en bloque: el renderer
 se reutilizó temporalmente en C13 y volvió a quedar inline en C15 al crear la
 fila compacta local. No quedaron helpers provisionales de ese renderer.
 
-## Trazabilidad provisional R1–R19
+## Tabla R1–R19 a test y commit
 
-Esta tabla es el reporte; no sustituye la actualización pendiente de la spec
-al completar C30. No se marca la feature como done.
-
-| R | Test y commits | Estado |
+| Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | `hooks/use-alerts-list.test.tsx::#223 R1; test 9c2af9ee, feat 71145acb` | Implementado y verificado |
-| R2 | `hooks/use-alerts-list.test.tsx::#223 R2; test 32e74712, feat previo 71145acb` | Nace verde; sonda probada |
-| R3 | `hooks/use-alerts-list.test.tsx::#223 R3 (4 casos); test 32e74712, corte preexistente H0` | Nacen verdes; sondas probadas |
-| R4 | `screens/alerts/index.test.tsx::#223 R4; test 35724cfb, feat b37242bc` | Implementado y verificado en alcance |
-| R5 | `screens/alerts/index.test.tsx::#223 R5; test a35ad7e3, feat 78b56b5b` | Implementado y verificado |
-| R6 | `screens/alerts/index.test.tsx::#223 R6; test bb171825; implementación b37242bc / 2a5b6b46` | Nace verde; sonda probada |
-| R7 | `screens/alerts/index.test.tsx::#223 R7; test 77223d02, feat 2a5b6b46` | Implementado y verificado |
-| R8 | `screens/alerts/index.test.tsx::#223 R8; test fda15bf1 y faf1da24, feat db84de64 / d1019fe5` | Implementado y verificado |
-| R9 | `screens/alerts/index.test.tsx::#223 R9; test 438f7a13, feat ab097e6b` | Implementado y verificado |
-| R10 | `screens/alerts/index.test.tsx::#223 R10 (3 casos); test faf1da24, feat d1019fe5` | Implementado y verificado |
-| R11 | `screens/alerts/index.test.tsx::#223 R11; test c829a943, feat fa521ba4` | Implementado y verificado |
-| R12 | `screens/alerts/index.test.tsx::#223 R12; test c7ac09a1; conducta de H0 / fa521ba4` | Nace verde; sonda probada |
-| R13 | `screens/alerts/index.test.tsx::#223 R13; test 6ab0dd22, feat 3dcf1d53` | Implementado y verificado |
-| R14 | `screens/alerts/index.test.tsx::#223 R14; test 33b2db81; H0 / 78b56b5b / 2a5b6b46` | Nace verde; sonda probada |
-| R15 | `screens/alerts/index.test.tsx::#223 R15; test 5c45080a, feat cb7a45f9` | Implementado y verificado |
-| R16 | `__tests__/alerts-attended-canvas-fidelity.test.ts::#223 R16; test 95f7aa9a, feats 2a5b6b46 / d1019fe5 / fa521ba4` | Verde desde C19 |
-| R17 | `__tests__/alerts-attended-canvas-fidelity.test.ts::#223 R17 (20 casos); tests 77223d02 / fda15bf1 / 438f7a13 / faf1da24 / c829a943 / f1526efa; feats C10–C19` | Implementado; 21/21 con R16 en C26 |
-| R18 | `Enmiendas distribuidas en C5/C6/C9/C12/C14/C16/C18; test propio C27 aún ausente` | Pendiente: bloqueo de navegación fuera de alcance |
-| R19 | `Sin test ni cambio de docs; G4 medida 0 en T0` | Pendiente de firma humana G4 |
+| R1 | `hooks/use-alerts-list.test.tsx::#223 R1: con drain pide cada página con su cursor, de una en una, hasta nextCursor null` | test `9c2af9ee` — test(mobile): drain option fetches each page with its cursor (R1); feat / comportamiento existente `71145acb` — feat(mobile): drain option fetches each page with its cursor (R1) |
+| R2 | `hooks/use-alerts-list.test.tsx::#223 R2: sin drain pide una sola página aunque haya nextCursor y usa la clave ['alerts','list']` | test `32e74712` — test(mobile): hook without drain and non-ok pages stop the drain (R2, R3); feat / comportamiento existente `71145acb` — feat(mobile): drain option fetches each page with its cursor (R1); test nacido verde, sonda de mutación documentada en el reporte |
+| R3 | `hooks/use-alerts-list.test.tsx::#223 R3: %s corta el drenado y conserva las páginas previas` | test `32e74712` — test(mobile): hook without drain and non-ok pages stop the drain (R2, R3); feat / comportamiento existente `71145acb` — feat(mobile): drain option fetches each page with its cursor (R1); el corte de páginas no-ok ya existía en H0 |
+| R4 | `screens/alerts/index.test.tsx::#223 R4: data contiene solo las abiertas, por sección y en el orden del servidor` | test `35724cfb` — test(mobile): alerts data holds only open alerts, by section (R4); feat / comportamiento existente `b37242bc` — feat(mobile): alerts screen lists only open alerts and drains the list (R4) |
+| R5 | `screens/alerts/index.test.tsx::#223 R5: la insignia espera al último cursor y suma las abiertas de todas las páginas` | test `a35ad7e3` — test(mobile): badge waits for the last cursor and sums every page (R5); feat / comportamiento existente `78b56b5b` — feat(mobile): badge appears only once the list is settled (R5) |
+| R6 | `screens/alerts/index.test.tsx::#223 R6: la fila marcada leída conserva su sitio y pasa a Atendidas en el siguiente refetch` | test `bb171825` — test(mobile): marking read keeps the row and moves it to Attended after refetch (R6); feat / comportamiento existente `2a5b6b46` — feat(mobile): collapsed Attended section with total count (R7); test nacido verde, sonda de mutación documentada en el reporte |
+| R7 | `screens/alerts/index.test.tsx::#223 R7: pinta «Atendidas» colapsada con su contador solo asentada y con atendidas` | test `77223d02` — test(mobile): collapsed Attended section with total count (R7); feat / comportamiento existente `2a5b6b46` — feat(mobile): collapsed Attended section with total count (R7) |
+| R8 | `screens/alerts/index.test.tsx::#223 R8: el encabezado alterna la sección y recuerda cuántas filas había (enmendado por #223 R18)` | test `faf1da24` — test(mobile): Show more adds ten rows and the footer counts shown of total (R10); feat / comportamiento existente `d1019fe5` — feat(mobile): Show more adds ten rows and the footer counts shown of total (R10) |
+| R9 | `screens/alerts/index.test.tsx::#223 R9: la fila atendida es compacta, sin ack y abre su detalle` | test `438f7a13` — test(mobile): compact attended row without ack that opens the detail (R9); feat / comportamiento existente `ab097e6b` — feat(mobile): compact attended row without ack that opens the detail (R9) |
+| R10 | `screens/alerts/index.test.tsx::#223 R10: «Ver más» suma 10 y el pie cuenta N de M` | test `faf1da24` — test(mobile): Show more adds ten rows and the footer counts shown of total (R10); feat / comportamiento existente `d1019fe5` — feat(mobile): Show more adds ten rows and the footer counts shown of total (R10) |
+| R11 | `screens/alerts/index.test.tsx::#223 R11: sin abiertas pinta «Todo en calma» con el nombre de la mascota más reciente` | test `c829a943` — test(mobile): all-calm card when there are no open alerts (R11); feat / comportamiento existente `fa521ba4` — feat(mobile): all-calm card when there are no open alerts (R11) |
+| R12 | `screens/alerts/index.test.tsx::#223 R12: sin alertas conserva el vacío de Pingo y el error de la primera página conserva el reintento` | test `c7ac09a1` — test(mobile): no alerts keeps the Pingo empty state and the first-page error keeps the retry (R12); feat / comportamiento existente `fa521ba4` — feat(mobile): all-calm card when there are no open alerts (R11); test nacido verde, sonda de mutación documentada en el reporte |
+| R13 | `screens/alerts/index.test.tsx::#223 R13: mientras drena sin abiertas pinta el esqueleto, no el vacío ni la tarjeta de calma` | test `6ab0dd22` — test(mobile): skeleton while draining with no open alerts yet (R13); feat / comportamiento existente `3dcf1d53` — feat(mobile): skeleton while the list drains with no open alerts yet (R13) |
+| R14 | `screens/alerts/index.test.tsx::#223 R14: si falla la segunda página conserva lo descargado, muestra el error y no pide más` | test `33b2db81` — test(mobile): a late page failure keeps the downloaded alerts and shows the error (R14); feat / comportamiento existente `2a5b6b46` — feat(mobile): collapsed Attended section with total count (R7); test nacido verde, sonda de mutación documentada en el reporte |
+| R15 | `screens/alerts/index.test.tsx::#223 R15: la lista no declara onEndReached y el drenado pide las páginas` | test `5c45080a` — test(mobile): the alerts list no longer declares onEndReached (R15); feat / comportamiento existente `cb7a45f9` — feat(mobile): remove onEndReached from the alerts list (R15) |
+| R16 | `__tests__/alerts-attended-canvas-fidelity.test.ts::#223 R16: las seis claves existen en es y en con el literal fijado y una sola invocación cada una` | test `95f7aa9a` — test(mobile): attended-section copy keys exist in both languages (R16); feat / comportamiento existente `fa521ba4` — feat(mobile): all-calm card when there are no open alerts (R11) |
+| R17 | `__tests__/alerts-attended-canvas-fidelity.test.ts::#223 R17: grep-limpio` y `#223 R17: las dianas táctiles llegan a 44 pt`, más los 18 tests de clases de R17 del mismo archivo | test `f1526efa` — test(mobile): attended section classes are clean and targets reach 44 pt (R17); feat / comportamiento existente `fa521ba4` — feat(mobile): all-calm card when there are no open alerts (R11) |
+| R18 | `suite completa verde + __tests__/alerts-attended-canvas-fidelity.test.ts::#223 R18: los candados enmendados nombran su enmienda` | test `71c41948` — test(mobile): amended locks name their amendment (R18); enmienda `e6063116` — test(mobile): detail navigation reaches attended alerts (R18) |
+| R19 | pendiente: G4; no se creó el test ni se enmendó la carta | pendiente: G4 |
 
-G2 queda al humano: smoke de sección colapsada, expandida con «Ver más», sin
-abiertas y en temas claro/oscuro. G4 también es humano y no se marcó.
-`docs/ui-guidelines.md` no se tocó. No se lanzó eas build.
+## Ficheros desde H0 y alcance
 
-## Ficheros y cierre de esta ejecución
-
-Ficheros cambiados desde H0 (antes del commit documental de este reporte,
-que no añade rutas nuevas):
+Lista medida con git diff contra H0, incluyendo los cambios de documentación
+que se commitean en C30:
 
 ```text
 mobile-pet-tracker/src/__tests__/alerts-attended-canvas-fidelity.test.ts
@@ -566,6 +598,7 @@ mobile-pet-tracker/src/__tests__/chunky-cta-canvas-fidelity.test.ts
 mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
 mobile-pet-tracker/src/__tests__/design-drift.test.ts
 mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/app/__tests__/alert-detail.navigation.test.tsx
 mobile-pet-tracker/src/hooks/use-alerts-list.test.tsx
 mobile-pet-tracker/src/hooks/use-alerts-list.ts
 mobile-pet-tracker/src/i18n/catalog.ts
@@ -575,13 +608,17 @@ mobile-pet-tracker/src/screens/alerts/index.tsx
 progress/handoff_mobile-alerts-attended-section.md
 progress/impl_mobile-alerts-attended-section.md
 specs/mobile-alerts-attended-section/requirements.md
+specs/mobile-alerts-attended-section/tasks.md
+specs/mobile-alerts-attended-section/traceability.md
 ```
 
-Handoff y requirements corresponden a commits del leader, no a mi
-implementación. El resto está dentro de la lista cerrada. Los logs son
-ignorados. El código y los tests quedan commiteados; el único archivo ajeno
-sin seguimiento sigue siendo `progress/draft_handoff-223.md`, preexistente.
-El commit de este reporte solo documenta la parada: **no es C30**.
+Handoff y requirements son commits del leader. Los cambios propios corresponden
+a la lista cerrada más la excepción E4 de navegación y su mock autorizada por el
+humano. Package.json, bun.lock, componentes compartidos, theme, API, backend y app
+de producción permanecen intactos. Los artefactos de graphify y logs son ignorados.
+El archivo previo sin seguimiento `progress/draft_handoff-223.md` se conserva.
 
-No se creó `.done`. Faltan autorización para el candado de navegación, R18,
-las verificaciones finales y el C30 de trazabilidad/tasks/reporte.
+El marcador `progress/impl_mobile-alerts-attended-section.done` se crea como
+última acción, después de commitear C30 y comprobar el árbol limpio del alcance.
+Apunta a la ruta absoluta de este reporte y no se commitea. El smoke G2, la firma
+G4, el init y la integración posterior corresponden al humano/leader.
