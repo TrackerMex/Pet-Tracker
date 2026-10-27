@@ -1,6 +1,6 @@
 ---
 feature: "mobile-nutrition-ai-plan"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, mobile, nutrition]
 ---
 
@@ -1320,6 +1320,6 @@ la IA.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-27) ← gate obligatorio antes de implementar
 - [ ] Smoke de #215 en dev build por el humano (fecha: ____): ver §Smoke G4. Va en el lote
       G4 de `progress/smoke_mejoras-producto.md`. No bloquea tareas; bloquea `done`.
