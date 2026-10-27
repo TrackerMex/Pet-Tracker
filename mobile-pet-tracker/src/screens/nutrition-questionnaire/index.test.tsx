@@ -336,3 +336,52 @@ it.each([['79', true], ['80', false], ['600', false], ['601', true], ['', true]]
   if (disabled) expect(screen.getByTestId('nutrition-questionnaire-next')).toBeDisabled();
   else expect(screen.getByTestId('nutrition-questionnaire-next')).toBeEnabled();
 });
+
+const ALLERGY_CHIPS = [
+  ['pollo', 'Pollo'], ['carne-de-res', 'Carne de res'], ['lacteos', 'Lácteos'], ['trigo', 'Trigo'],
+  ['huevo', 'Huevo'], ['soya', 'Soya'], ['pescado', 'Pescado'], ['otra', 'Otra'],
+] as const;
+const DISEASE_CHIPS = [
+  ['diabetes', 'Diabetes'], ['enfermedad-renal', 'Enfermedad renal'], ['pancreatitis', 'Pancreatitis'],
+  ['enfermedad-hepatica', 'Enfermedad hepática'], ['problemas-digestivos', 'Problemas digestivos'],
+  ['problemas-articulares', 'Problemas articulares'], ['otra', 'Otra'],
+] as const;
+
+async function goToHealth() {
+  await goToFood(5);
+  await fireEvent.press(screen.getByTestId('food-type-dry'));
+  await fireEvent.press(screen.getByTestId('nutrition-questionnaire-next'));
+  expect(await screen.findByText('Alergias')).toBeVisible();
+}
+
+it('#209 R13: Salud pinta las dos listas con su copy y orden', async () => {
+  await goToHealth();
+  expect(screen.getByTestId('nutrition-questionnaire-bubble')).toHaveTextContent('¿Rocky tiene alguna alergia o enfermedad? Si no tiene ninguna, déjalo todo sin marcar.', { exact: true });
+  expect(screen.getByText('Enfermedades')).toBeVisible();
+  for (const [list, rows] of [['allergy', ALLERGY_CHIPS], ['disease', DISEASE_CHIPS]] as const) {
+    const chips = screen.getAllByTestId(new RegExp(`^${list}-chip-`));
+    expect(chips.map(chip => chip.props.testID)).toEqual(rows.map(([slug]) => `${list}-chip-${slug}`));
+    rows.forEach(([, label], index) => {
+      expect(chips[index]).toHaveProp('accessibilityRole', 'checkbox');
+      expect(chips[index]).toHaveProp('accessibilityState', { checked: false });
+      expect(within(chips[index]).getByText(label)).toBeVisible();
+    });
+  }
+  expect(screen.getByTestId('nutrition-questionnaire-next')).toHaveTextContent('Guardar y generar plan');
+  expect(screen.getByTestId('nutrition-questionnaire-step-label')).toHaveTextContent('4 de 4', { exact: true });
+  await fireEvent.press(screen.getByTestId('allergy-chip-pollo'));
+  expect(screen.getByTestId('allergy-chip-pollo')).toHaveProp('accessibilityState', { checked: true });
+  await fireEvent.press(screen.getByTestId('allergy-chip-pollo'));
+  expect(screen.getByTestId('allergy-chip-pollo')).toHaveProp('accessibilityState', { checked: false });
+});
+it.each(['allergy', 'disease'] as const)('#209 R13: marcar Otra en %s muestra ¿Cuál? y el contador pasa de 0/40 a 7/40', async list => {
+  await goToHealth();
+  expect(screen.queryByTestId(`${list}-other-input`)).toBeNull();
+  expect(screen.queryByText('¿Cuál?')).toBeNull();
+  await fireEvent.press(screen.getByTestId(`${list}-chip-otra`));
+  expect(screen.getByText('¿Cuál?')).toBeVisible();
+  expect(screen.getByTestId(`${list}-other-count`)).toHaveTextContent('0/40', { exact: true });
+  expect(screen.getByTestId(`${list}-other-input`)).toHaveProp('maxLength', 40);
+  await fireEvent.changeText(screen.getByTestId(`${list}-other-input`), 'Maíz ok');
+  expect(screen.getByTestId(`${list}-other-count`)).toHaveTextContent('7/40', { exact: true });
+});
