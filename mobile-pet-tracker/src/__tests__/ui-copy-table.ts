@@ -666,6 +666,83 @@ export const R18_DATE_FIELD: UseRow[] = [
   { file: 'src/components/date-field.tsx', key: 'dateField.clear' },
 ];
 
+export const R21_PET_MEMBERS: UseRow[] = [ // #214 R22
+  { file: 'src/screens/pet-members/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'common.cannotReachServer' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'common.cannotReachServer' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.invitesLimit' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.membersLimit' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'common.cannotReachServer' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'common.cannotReachServer' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.titleOf' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'common.cannotReachServer' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'common.retry' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.ownerIntro' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.familyIntro' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.membersHeading' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.roleOwner' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.roleFamily' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.you' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.removeA11y' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.remove' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.invitesHeading' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.inviteCreated' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.inviteExpires' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.revokeA11y' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.revoke' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.codeNote' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.ownerNote' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.inviteCta' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.leaveHint' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.leave' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.removeTitle' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.removeBody' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.removeConfirm' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.cancel' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.leaveTitle' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.leaveBody' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.leaveBodyNoOwner' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.leaveConfirm' },
+  { file: 'src/screens/pet-members/index.tsx', key: 'members.cancel' },
+  { file: 'src/screens/pet-invite/index.tsx', key: 'invite.shareMessage' },
+  { file: 'src/screens/pet-invite/index.tsx', key: 'invite.title' },
+  { file: 'src/screens/pet-invite/index.tsx', key: 'invite.intro' },
+  { file: 'src/screens/pet-invite/index.tsx', key: 'invite.codeLabel' },
+  { file: 'src/screens/pet-invite/index.tsx', key: 'invite.codeLabel' },
+  { file: 'src/screens/pet-invite/index.tsx', key: 'invite.expiresOnce' },
+  { file: 'src/screens/pet-invite/index.tsx', key: 'invite.messageLabel' },
+  { file: 'src/screens/pet-invite/index.tsx', key: 'invite.roleNote' },
+  { file: 'src/screens/pet-invite/index.tsx', key: 'invite.share' },
+  { file: 'src/screens/pet-invite/index.tsx', key: 'invite.copied' },
+  { file: 'src/screens/pet-invite/index.tsx', key: 'invite.copy' },
+  { file: 'src/screens/pet-invite/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/join-pet/index.tsx', key: 'joinPet.title' },
+  { file: 'src/screens/join-pet/index.tsx', key: 'joinPet.note' },
+  { file: 'src/screens/join-pet/index.tsx', key: 'invite.codeLabel' },
+  { file: 'src/screens/join-pet/index.tsx', key: 'invite.codeLabel' },
+  { file: 'src/screens/join-pet/index.tsx', key: 'joinPet.invalid' },
+  { file: 'src/screens/join-pet/index.tsx', key: 'forgot.tooManyAttempts' },
+  { file: 'src/screens/join-pet/index.tsx', key: 'common.cannotReachServer' },
+  { file: 'src/screens/join-pet/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/join-pet/index.tsx', key: 'joinPet.alreadyMember' },
+  { file: 'src/screens/join-pet/index.tsx', key: 'joinPet.hint' },
+  { file: 'src/screens/join-pet/index.tsx', key: 'joinPet.goHome' },
+  { file: 'src/screens/join-pet/index.tsx', key: 'joinPet.submit' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.membersSummaryAlone' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.membersSummaryOne' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.membersSummaryMany' },
+  { file: 'src/screens/profile/index.tsx', key: 'joinPet.title' },
+  { file: 'src/screens/profile/index.tsx', key: 'joinPet.invitedPrompt' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.membersLink' },
+  { file: 'src/screens/home/index.tsx', key: 'joinPet.invitedPrompt' },
+  { file: 'src/screens/home/index.tsx', key: 'joinPet.title' },
+];
+
 export const ALL_USES: UseRow[] = [
   ...R1_AUTH,
   ...R2_TABS,
@@ -685,6 +762,7 @@ export const ALL_USES: UseRow[] = [
   ...R16_WELCOME,
   ...R17_EDIT_PROFILE,
   ...R18_DATE_FIELD,
+  ...R21_PET_MEMBERS, // #214 R22
 ];
 
 describe('#65: la tabla de uso de copy está disponible al runner', () => {
@@ -694,12 +772,12 @@ describe('#65: la tabla de uso de copy está disponible al runner', () => {
 
   // Enmienda (3): el candado es la consistencia interna, no una constante
   // escrita a mano — es la tercera vez que una cifra congelada envejece.
-  it('#194 R5: cuadra ALL_USES con la suma de sus bloques (enmendado por #220 R16)', () => {
+  it('#194 R5: cuadra ALL_USES con la suma de sus bloques (enmendado por #220 R16) (enmendado por #214 R22)', () => {
     const blocks = [
       R1_AUTH, R2_TABS, R3_HOME, R4_MAP, R5_HEALTH, R6_FOOD,
       R7_PROFILE, R8_REMINDERS, R9_ADD_PET, R10_PAIRING, R11_RESET,
       R12_ALERTS, R13_ALERT_DETAIL, R14_GEOFENCES, R15_GEOFENCE_EDITOR,
-      R16_WELCOME, R17_EDIT_PROFILE, R18_DATE_FIELD,
+      R16_WELCOME, R17_EDIT_PROFILE, R18_DATE_FIELD, R21_PET_MEMBERS, // #214 R22
     ];
 
     expect(ALL_USES).toHaveLength(
