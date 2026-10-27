@@ -618,6 +618,9 @@ export const R12_ALERTS: UseRow[] = [
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.attended' }, // #223 R16
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.attendedMore' }, // #223 R16
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.attendedShowing' }, // #223 R16
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.sectionOpen' }, // #223 R16
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.calmTitle' }, // #223 R16
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.calmBody' }, // #223 R16
 ];
 
 export const R13_ALERT_DETAIL: UseRow[] = [

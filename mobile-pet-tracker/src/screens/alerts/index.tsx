@@ -3,7 +3,7 @@ import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useRef, useState } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronDown, ChevronUp } from 'reicon-react-native';
+import { Check, ChevronDown, ChevronUp } from 'reicon-react-native';
 
 import { ackAlert } from '../../api/alerts';
 import type { Alert } from '../../api/types';
@@ -94,10 +94,11 @@ export function AlertsScreen() {
   const { signOut, token } = useAuth();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
-  const [danger, warningStrong, muted] = useThemeColors([
+  const [danger, warningStrong, muted, categoryGreenStrong] = useThemeColors([
     'danger',
     'warning-strong',
     'muted',
+    'category-green-strong',
   ]);
   const [expanded, setExpanded] = useState(false);
   const [visible, setVisible] = useState(10);
@@ -194,7 +195,20 @@ export function AlertsScreen() {
         <Button.Label>{t('common.retry')}</Button.Label>
       </Button>
     </View>
-  ) : firstPage?.kind === 'ok' && rows.length === 0 ? (
+  ) : settled && rows.length === 0 && attended.length > 0 ? (
+    <View className="gap-3">
+      <Text testID="alerts-open-heading" accessibilityRole="header" className="mt-1.5 text-13 font-extrabold uppercase tracking-caps text-muted">{t('alerts.sectionOpen')}</Text>
+      <Card testID="alerts-calm" variant="secondary" className="flex-row items-center gap-3.5 border-0 px-4 py-4.5">
+        <View className="size-11 items-center justify-center rounded-full bg-surface">
+          <Check testID="alerts-calm-icon" size={22} strokeWidth={2.2} color={categoryGreenStrong} />
+        </View>
+        <View className="min-w-0 flex-1 gap-1">
+          <Text testID="alerts-calm-title" className="text-base font-extrabold text-foreground">{t('alerts.calmTitle')}</Text>
+          <Text testID="alerts-calm-body" className="text-13 text-muted">{t('alerts.calmBody', { petName: attended[0].petName })}</Text>
+        </View>
+      </Card>
+    </View>
+  ) : settled && firstPage?.kind === 'ok' && rows.length === 0 ? (
     <EmptyState
       testID="alerts-empty"
       pose="sleep"
