@@ -229,3 +229,78 @@ En los tres hallazgos el código ya es correcto. Por C4, punto 5, el rojo de cad
 3. **H3 — BAJA (P9).** El `ScreenHeader` del error lleva `backFallback="/food"`, y ningún test lo vigila: el doble de `router.canGoBack` siempre devuelve `true`. Con `"/home"` la suite sigue verde. Arreglo: en el `it` de R4, con `mockRouter.canGoBack.mockReturnValueOnce(false)`, pulsar el volver de `errorScreen` y asertar `expect(mockRouter.replace).toHaveBeenCalledWith('/food')`. Va en la misma errata porque cuesta una línea.
 
 Lo demás está conforme: la suite, tsc, lint, la trazabilidad, el merge `40e640d9` y el historial test-primero. En la tercera revisión mediré la lista cerrada (los 2 tests, el reporte y la trazabilidad) contra el HEAD de la errata ronda 7, y volveré a correr P2, P3, P5 y P9.
+
+---
+
+## Tercera revisión (HEAD 9c52c7d2)
+Fecha: 2026-10-27
+Veredicto: APROBADO
+Reviewer: subagente `reviewer` (tercera revisión). Mismo modelo que el `implementer` de reserva de la Adenda 6.
+Alcance: `git log --first-parent 53de188d..HEAD` (5 commits: errata `dc801dc3`, Adenda 6 `fce5984e`, `520944f4`, `f638cbdd`, `9c52c7d2`).
+
+### Bitácora
+- Punto de partida: worktree en `feature/209-mobile-nutrition-questionnaire`, HEAD `9c52c7d2`, árbol limpio. Cadena lineal `53de188d → dc801dc3 → fce5984e → 520944f4 → f638cbdd → 9c52c7d2` (un padre cada uno).
+- Candados contra la errata literal: las seis líneas nuevas del `it('#209 R4: esqueleto y error de carga …')` (líneas 126–131 del test) y el `it('#209 R5: Pingo de la burbuja mide 52 pt en Alimento y en Salud')` (163–170, justo después del de Condición) son copia literal de los bloques de la errata ronda 7 en `requirements.md` R4 y R5. Las dos líneas de antes (`press` en `screen` y `mockRouter.back`) se sustituyen, no se duplican. `goToFood(5)` deja observado «Tipo de alimento» (línea 257) y los tres pasos siguientes son los de `goToHealth()` (390–395).
+- Mutaciones de `520944f4` en producción: exactamente las dos de la errata, el `ScreenHeader` del error fuera del `View` dentro de un fragmento, y `step === 'condition' || step === 'food'` en la `Image` de la burbuja.
+- Historial, en el árbol de wt-209 (`git checkout 520944f4 -- <index.tsx>`, el test de `520944f4` es idéntico al de HEAD; vuelta con `git checkout HEAD --`; después `git diff --quiet HEAD -- mobile-pet-tracker` = 0 y `git diff --cached --quiet` = 0). Los dos tests de la Adenda 5 con `--runTestsByPath`:
+  - `520944f4`: `Tests: 2 failed, 204 passed, 206 total`, exit 1. Rojos exactamente `#209 R4: esqueleto y error de carga …`, en el `toEqual` del orden (línea 126: falta `"nutrition-questionnaire-back"`), y `#209 R5: Pingo de la burbuja mide 52 pt en Alimento y en Salud`, en el `toEqual` de Alimento (línea 165: `52/52` esperado, `44/44` recibido). Los dos por aserción, sin `ReferenceError` ni `Unable to find`.
+  - `f638cbdd`: `git diff --quiet f638cbdd HEAD -- mobile-pet-tracker` = 0, así que su verde es el de la suite de HEAD de abajo.
+  - Producción de HEAD igual a la de la segunda revisión: `git diff --quiet f8b7b130 HEAD -- mobile-pet-tracker/src/screens/nutrition-questionnaire/index.tsx` = 0. De `f8b7b130` a HEAD, en `mobile-pet-tracker/` solo cambia `src/screens/nutrition-questionnaire/index.test.tsx`.
+  - `520944f4` toca solo el test y la pantalla (la mutación de producción va en el `test`, como manda C4 y la errata); `f638cbdd` solo la pantalla; `9c52c7d2` solo reporte y trazabilidad. Los tres llevan los dos trailers.
+- Sondas sobre HEAD, aplicadas con un script de reemplazo exacto (una sola ocurrencia), el fichero entero (`--runTestsByPath`, 70 tests), una a una, revertidas con `git checkout HEAD --`. Tras cada una, `git diff --quiet HEAD -- mobile-pet-tracker` = 0 y `git diff --cached --quiet` = 0. Los pgreps, vacíos antes de cada corrida:
+
+  | # | Mutación | `it` que cae | Resultado |
+  |---|---|---|---|
+  | P2 | error: `Text` antes del `ScreenHeader`, dentro del `View` | `#209 R4: esqueleto y error …` | **rojo**, `1 failed, 69 passed`; `toEqual` del orden (línea 126), orden invertido |
+  | P3 | error: `<><ScreenHeader …/><View …><Text …/></View></>` | el mismo | **rojo**, `1 failed, 69 passed`; línea 126, falta `-back` (la 125 pasa: el `Text` sigue dentro) |
+  | P5 | `step === 'condition' \|\| step === 'health'` en la burbuja | `#209 R5: … en Alimento y en Salud` | **rojo**, `1 failed, 69 passed`; línea 169 (Salud), `52/52` vs `44/44` |
+  | P9 | error: `backFallback="/food"` → `"/home"` | `#209 R4: esqueleto y error …` | **rojo**, `1 failed, 69 passed`; línea 131, `Expected: "/food"` / `Received: "/home"` |
+  | P10 (nueva) | `step === 'condition' \|\| bcs === 5` en la burbuja: depende del estado, no del paso | `#209 R5: … en Alimento y en Salud` | **rojo**, `1 failed, 69 passed`; línea 165 (Alimento, `goToFood(5)`), `52/52` vs `44/44` |
+  | P12 (nueva) | `step === 'condition' \|\| step === 'target'` en la burbuja | ninguno | verde, `70 passed`. Ver la nota 1 |
+
+  H1 (P2, P3), H2 (P5) y H3 (P9) quedan cerrados. Además, P10 demuestra que la muestra de Alimento ve una mutación que no depende del paso y que el `it` de Condición no veía (con `goToCondition` `bcs` es `null`).
+- Suite móvil completa, con los dos pgreps vacíos antes: `bun run test > ../progress/rr3-test-209.log 2>&1` → exit 0, `Test Suites: 168 passed, 168 total`, `Tests: 6222 passed, 6222 total` (6221 de la segunda revisión más el `it` nuevo de R5), 0 `SIGKILL`, 0 `failed to run`.
+- `test ! -e .expo/types/router.d.ts` = 0. `bunx tsc --noEmit` → exit 0, log vacío. `bunx expo lint --no-cache` → exit 0, log vacío, sin `SIGKILL`.
+- Lista cerrada: `git diff --name-only fce5984e HEAD` = exactamente las 3 rutas de la Adenda 6 §3 (`…/nutrition-questionnaire/index.test.tsx`, `progress/impl_mobile-nutrition-questionnaire.md`, `specs/mobile-nutrition-questionnaire/traceability.md`). En todo el alcance (`53de188d..HEAD`) se suman la spec, la firma y el handoff de `dc801dc3` y `fce5984e`. `docs/`, `feature_list.json` y `progress/current.md` no cambian.
+- Trazabilidad: la fila R4 añade `520944f4` y `f638cbdd`. La fila R5 añade el `it` nuevo y los mismos dos commits, con el separador ` / `. Ninguna otra fila cambia. Los 56 hashes resuelven y todos son ancestros de HEAD. 0 filas «pendiente».
+- Guardas sobre el delta: `#209` suelto (sin `R<n>`) en el test = 0; `StyleSheet` en el test = 0; `#209` en la pantalla = 0. `it('#209 R` en el test: 31 → 32, el único `it` añadido. El resto de guardas de producción no se mueven, porque la producción es la de `f8b7b130`.
+- Casillas del humano sin marcar, como deben: `- [ ] Enmienda #209 aprobada por humano` (`docs/ui-guidelines.md:987`, R26, G4) y `- [ ] Smoke de #209 en dev build …` (`requirements.md:1465`). Bloquean `done`, no este veredicto.
+- `./init.sh` no lo corrí, por orden del leader («NO ./init.sh (lo corren leader y CI)»).
+
+### Checklist C2 — Estado coherente
+- [x] 0 features `in_progress`; #209 sigue `spec_ready` en `feature_list.json`
+- [x] `progress/current.md` describe la sesión de #209 con el fallback al `implementer` (ver la nota 2)
+
+### Checklist C3 — Arquitectura
+- [x] El delta solo toca un test. La producción es la de `f8b7b130`, ya revisada.
+
+### Checklist C4 — TDD
+- [x] Los candados nuevos nombran `#209 R4` y `#209 R5`
+- [x] Test primero: `520944f4` rojo en exactamente los dos `it`, por aserción y con mutación de producción, y `f638cbdd` verde, que la revierte byte a byte
+- [x] Los candados cubren la cláusula entera: P2, P3, P5 y P9 salen rojas, y también la sonda nueva P10
+
+### Checklist C5 — Trazabilidad
+- [x] 0 filas «pendiente», con los hashes resueltos y ancestros de HEAD
+- [x] Formato `test(mobile): #209 R4 R5 …` / `feat(mobile): #209 R4 R5 …`, con los dos trailers
+
+### Checklist C6 — Spec aprobada
+- [x] `status: approved`, con la casilla de la línea 1464 marcada. La errata ronda 7 (`dc801dc3`) y su firma (`progress/firma_mobile-nutrition-questionnaire.md` §Ronda 7) van antes de la Adenda 6 y de los commits de código.
+
+### Checklist C7 — Sin código huérfano
+- [x] N/A. La errata añade candados y no reemplaza nada.
+
+### Checklist C8 — UI móvil
+- [x] La producción no cambia. Lint, `design-drift` y `consistency-classnames` siguen verdes dentro de la suite.
+- [x] F1 y F2 siguen cerrados en el código (los cerró la segunda revisión), y ahora con candados que cubren la cláusula entera.
+
+### Notas (sin hallazgo)
+1. **P12 verde: techo residual, no es hueco.** Con `step === 'condition' || step === 'target'`, Pingo mide 44 pt en Peso objetivo y la suite sigue verde. En R5, «52 pt en el resto de pasos» es un cuantificador abierto con la misma salida para todos. Según la regla de barrido (`progress/review_mobile-meal-schedule-editing.md` §Pre-verificación, §2, punto 3), con un representante basta, y hay tres: Actividad, Alimento y Salud. Solo una mutación que aísle justo Peso objetivo escapa.
+2. **`progress/current.md`.** La sección del fallback de #209 termina en el rechazo de la primera revisión (15:18 UTC). No recoge la segunda revisión, ni la errata ronda 7, ni la Adenda 6. El fichero es del leader y queda fuera de la lista cerrada de la Adenda 6, así que el implementer hizo bien en no tocarlo. Conviene añadir esa línea al cerrar.
+3. **El veredicto cubre la feature entera.** Lo que la primera y la segunda revisión dieron por conforme sigue en pie, porque la producción de HEAD es byte a byte la de `f8b7b130`:
+   - el merge `b81edb2b` y el merge `40e640d9`;
+   - el historial test-primero de R1–R26;
+   - R26, literal en `docs/ui-guidelines.md`;
+   - F1 y F2 cerrados en el código;
+   - las guardas.
+
+   Los únicos huecos abiertos eran H1–H3, y ya están cerrados. Para `done` faltan las casillas del humano (R26/G4 y el smoke) y el `verify` del CI.
