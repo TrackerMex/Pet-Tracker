@@ -26,6 +26,17 @@ type NutritionPlanRow = typeof nutritionPlans.$inferSelect;
 export class NutritionDrizzleRepository implements NutritionRepository {
   constructor(@Inject(DRIZZLE) private readonly db: NodePgDatabase) {}
 
+  consumeAiGeneration(
+    petId: string,
+    localDay: string,
+    limit: number,
+  ): Promise<boolean> {
+    void petId;
+    void localDay;
+    void limit;
+    return Promise.resolve(false);
+  }
+
   async setAiExplanation(
     planId: string,
     explanation: string,

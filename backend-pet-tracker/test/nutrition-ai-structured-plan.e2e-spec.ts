@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
 import { App } from 'supertest/types';
@@ -17,6 +17,10 @@ import {
 } from '@/modules/nutrition/domain/ports/nutrition-explainer';
 import { SUBSCRIPTION_REPOSITORY } from '@/modules/subscriptions/domain/repositories/subscription.repository';
 import {
+  NUTRITION_REPOSITORY,
+  type NutritionRepository,
+} from '@/modules/nutrition/domain/repositories/nutrition.repository';
+import {
   NUTRITION_WEIGHT_READER,
   type NutritionWeightReader,
 } from '@/modules/nutrition/domain/ports/nutrition-weight-reader';
@@ -28,6 +32,7 @@ describe('Nutrition AI structured plan (e2e HTTP y Postgres)', () => {
   let app: INestApplication<App>;
   let db: NodePgDatabase;
   let tokens: TokenService;
+  let nutrition: NutritionRepository;
   const userIds: string[] = [];
   const petIds: string[] = [];
   const explain = jest
@@ -51,6 +56,7 @@ describe('Nutrition AI structured plan (e2e HTTP y Postgres)', () => {
     await app.init();
     db = app.get<NodePgDatabase>(DRIZZLE);
     tokens = app.get<TokenService>(TOKEN_SERVICE);
+    nutrition = app.get<NutritionRepository>(NUTRITION_REPOSITORY);
   });
 
   beforeEach(() => {
@@ -172,6 +178,58 @@ describe('Nutrition AI structured plan (e2e HTTP y Postgres)', () => {
       const f = await fixture();
       const reader = app.get<NutritionWeightReader>(NUTRITION_WEIGHT_READER);
       expect(await reader.listRecent(f.petId, 5)).toStrictEqual([]);
+    });
+  });
+
+  describe('R12 (nutrition-ai-structured-plan #212): contador diario atomico', () => {
+    async function storedCount(petId: string, day: string) {
+      const result = await db.execute<{ count: number }>(sql`
+        SELECT count FROM nutrition_ai_generations
+        WHERE pet_id = ${petId} AND local_day = ${day}
+      `);
+      expect(result.rows).toHaveLength(1);
+      return result.rows[0].count;
+    }
+
+    it('R12: concede tres consumos por dia y niega el cuarto sin pasar de 3', async () => {
+      const f = await fixture();
+      const results: boolean[] = [];
+      for (let attempt = 0; attempt < 4; attempt++) {
+        results.push(
+          await nutrition.consumeAiGeneration(f.petId, '2026-10-25', 3),
+        );
+      }
+      expect(results).toStrictEqual([true, true, true, false]);
+      expect(await storedCount(f.petId, '2026-10-25')).toBe(3);
+    });
+
+    it('R12: otro dia y otra mascota tienen su propio contador', async () => {
+      const a = await fixture();
+      const b = await fixture();
+      for (let attempt = 0; attempt < 3; attempt++) {
+        expect(
+          await nutrition.consumeAiGeneration(a.petId, '2026-10-25', 3),
+        ).toBe(true);
+      }
+      expect(
+        await nutrition.consumeAiGeneration(a.petId, '2026-10-26', 3),
+      ).toBe(true);
+      expect(
+        await nutrition.consumeAiGeneration(b.petId, '2026-10-25', 3),
+      ).toBe(true);
+      expect(await storedCount(a.petId, '2026-10-26')).toBe(1);
+      expect(await storedCount(b.petId, '2026-10-25')).toBe(1);
+    });
+
+    it('R12: cinco consumos concurrentes conceden exactamente tres', async () => {
+      const f = await fixture();
+      const results = await Promise.all(
+        Array.from({ length: 5 }, () =>
+          nutrition.consumeAiGeneration(f.petId, '2026-10-25', 3),
+        ),
+      );
+      expect(results.filter(Boolean)).toHaveLength(3);
+      expect(await storedCount(f.petId, '2026-10-25')).toBe(3);
     });
   });
 });
