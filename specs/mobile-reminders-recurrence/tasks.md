@@ -98,14 +98,14 @@ tags: [mobile, reminders, recurrence, spec]
 
 ## R12 — tomas de «Cada N horas»
 
-- [ ] (1) Test rojo `#213 R12: con %i horas la nota dice «%s»` (tabla a–h; `it.each(...)(name, fn, 15000)`; espera con `waitFor` sobre `add-reminder-preview-text`).
-- [ ] (2) Regla N ∈ {6, 8, 12, 24} y frases de intervalo; unión con `t('addReminder.dosesJoin', { list, last })` en forma corta (`design.md` §Formulario). Ancla: `grep -cE "\b(last|first|odd|even):" src/screens/add-reminder/index.tsx` = 0, y `#62 R6 … variantes de posición` de `src/__tests__/consistency-classnames.test.ts` sigue verde sin tocarlo.
+- [ ] (1) Test rojo `#213 R12: con %i horas la nota dice «%s»` (tabla a–h; `it.each(...)(name, fn, 15000)`; espera con `waitFor` sobre `add-reminder-preview-text`). El render del fichero gana `QueryClientProvider` y el doble de `listPets` con `beforeEach` de nivel superior (resuelve con la mascota «Rocky»); los tests existentes del fichero siguen verdes (errata E2 del leader: la tabla de R12 ya nombra a «Rocky»).
+- [ ] (2) `useQuery(petKeys.list())` para el nombre de la mascota (errata E2), regla N ∈ {6, 8, 12, 24} y frases de intervalo; unión con `t('addReminder.dosesJoin', { list, last })` en forma corta (`design.md` §Formulario). Ancla: `grep -cE "\b(last|first|odd|even):" src/screens/add-reminder/index.tsx` = 0, y `#62 R6 … variantes de posición` de `src/__tests__/consistency-classnames.test.ts` sigue verde sin tocarlo.
 - [ ] (3) Refactor.
 
 ## R13 — nombre de la mascota
 
-- [ ] (1) Test rojo `#213 R13: sin nombre de mascota (%s) la nota usa la variante sin nombre`, it.each de las tres filas de `requirements.md` R13 (`falla`, `sin la mascota`, `sin resolver`); las dos primeras esperan con `waitFor` sobre `add-reminder-preview-text`, la tercera aserta síncrono con `listPets` en `mockReturnValue(new Promise(() => {}))`. El render del fichero gana `QueryClientProvider` y el doble de `listPets` con `beforeEach` de nivel superior; los tests existentes del fichero siguen verdes.
-- [ ] (2) `useQuery(petKeys.list())` y variante `summaryHoursDosesNoPet`.
+- [ ] (1) Test rojo `#213 R13: sin nombre de mascota (%s) la nota usa la variante sin nombre`, it.each de las tres filas de `requirements.md` R13 (`falla`, `sin la mascota`, `sin resolver`); las dos primeras esperan con `waitFor` sobre `add-reminder-preview-text`, la tercera aserta síncrono con `listPets` en `mockReturnValue(new Promise(() => {}))`. El `QueryClientProvider` y el doble de `listPets` ya llegaron en R12 (errata E2 del leader); R13 solo sobrescribe el doble en cada fila.
+- [ ] (2) Variante `summaryHoursDosesNoPet` (el `useQuery(petKeys.list())` ya llegó en R12, errata E2).
 - [ ] (3) Refactor.
 
 ## R14 — línea «Se repite …»

@@ -488,3 +488,9 @@ nombre de la mascota `pet-1` que devuelve el doble de `listPets` (R13).
   La fila nueva (`'screens/add-reminder/index.tsx', // #213 R6`), su sitio y el
   delta no cambian. La intención no cambia. Lo detectó Codex en R6
   (`progress/impl_mobile-reminders-recurrence.md` §Discrepancia de R22 punto 9).
+- **E2 — Orden de la consulta de mascotas en `tasks.md` §R12 y §R13.** La tabla
+  de R12 ya pinta «Rocky», así que su verde necesita el nombre de la mascota.
+  El `QueryClientProvider`, el doble de `listPets` con `beforeEach` de nivel
+  superior y `useQuery(petKeys.list())` pasan de R13 a R12. R13 conserva su
+  `it.each` de tres filas y la variante `summaryHoursDosesNoPet`. Ningún
+  requisito, literal ni candado cambia. Lo preguntó Codex antes de R12.
