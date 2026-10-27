@@ -347,3 +347,37 @@ it('R12: family no pide invitaciones', async () => {
   await waitFor(() => expect(screen.getByTestId('pet-members-list')).toBeVisible());
   expect(listPetInvites).not.toHaveBeenCalled();
 });
+
+function familyView() {
+  jest.mocked(getPet).mockResolvedValue({ kind: 'ok', pet: { ...pet, myRole: 'family' } });
+  jest.mocked(getMe).mockResolvedValue({ kind: 'ok', me: { ...me, id: 'user-2', firstName: 'Luis', lastName: 'Ortega', email: 'luis@correo.com' } });
+}
+
+it('R16: family ve la nota del dueño y Salir de esta mascota', async () => {
+  familyView();
+  await renderMembers();
+  await waitFor(() => expect(screen.getByTestId('pet-members-intro')).toHaveTextContent('Ves a Rocky y recibes sus avisos porque formas parte de su familia.'));
+  expect(screen.getByTestId('pet-members-owner-note')).toHaveTextContent('Ana García administra a Rocky y es quien puede invitar o quitar personas.');
+  expect(screen.getByTestId('pet-members-leave-hint')).toHaveTextContent('Si sales, dejarás de ver a Rocky y de recibir sus avisos.');
+  expect(screen.getByTestId('pet-members-leave')).toHaveTextContent('Salir de esta mascota');
+  const avatar = screen.getByTestId('pet-members-pet-avatar', { includeHiddenElements: true });
+  expect(avatar).toHaveTextContent('R');
+  expect(avatar.props.className).toContain('bg-category-amber');
+});
+
+it('R16: sin dueño en la lista no hay nota', async () => {
+  familyView();
+  jest.mocked(listPetMembers).mockResolvedValue({ kind: 'ok', members: [members[1]] });
+  await renderMembers();
+  await waitFor(() => expect(screen.getByTestId('pet-members-list')).toBeVisible());
+  expect(screen.queryByTestId('pet-members-owner-note')).toBeNull();
+});
+
+it('R16: el dueño no ve Salir', async () => {
+  await renderMembers();
+  await waitFor(() => expect(screen.getByTestId('pet-members-list')).toBeVisible());
+  expect(screen.queryByTestId('pet-members-pet-avatar', { includeHiddenElements: true })).toBeNull();
+  expect(screen.queryByTestId('pet-members-owner-note')).toBeNull();
+  expect(screen.queryByTestId('pet-members-leave-hint')).toBeNull();
+  expect(screen.queryByTestId('pet-members-leave')).toBeNull();
+});
