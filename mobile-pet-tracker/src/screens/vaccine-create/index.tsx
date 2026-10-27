@@ -111,6 +111,7 @@ export function VaccineCreateScreen({ petId }: { petId: string }) {
   }
 
   function selectVaccine(id: string) {
+    if (id === selectedId) return;
     setSelectedDraft(id);
     setNextDoseDraft(undefined);
   }
