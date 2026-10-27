@@ -605,3 +605,12 @@ it.each(ERROR_ROWS)('#209 R17: %s %s pinta «%s»', async (request, _result, tex
   expect(mockRouter.back).not.toHaveBeenCalled();
   invalidate.mockRestore();
 });
+
+it('#209 R18: la raíz es un KAV con behavior padding y el scroll persiste taps', async () => {
+  await renderQuestionnaire();
+  const root = await screen.findByTestId('screen-nutrition-questionnaire');
+  expect(root).toContainElement(screen.getByTestId('nutrition-questionnaire-next'));
+  const source = readFileSync('src/screens/nutrition-questionnaire/index.tsx', 'utf8');
+  expect(source).toContain('<KeyboardAvoidingView testID="screen-nutrition-questionnaire" className="flex-1" behavior="padding" keyboardVerticalOffset={0}>');
+  expect(source).toMatch(/<ScrollView key=\{step\}[^>]*keyboardShouldPersistTaps="handled"/);
+});
