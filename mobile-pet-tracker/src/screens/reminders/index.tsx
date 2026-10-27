@@ -3,7 +3,7 @@ import {
   BottomSheet,
   BottomSheetView,
 } from '@expo/ui/community/bottom-sheet';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, type Href, useFocusEffect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -14,6 +14,7 @@ import { Plus, Repeat, Trash } from 'reicon-react-native';
 import { listPets } from '../../api/pets';
 import { petKeys, reminderKeys } from '../../api/query-keys';
 import {
+  cancelReminderSeries,
   deleteReminder,
   listReminders,
   type RemindersState,
@@ -61,6 +62,7 @@ function cadenceText(recurrence: Recurrence, t: ReturnType<typeof useTranslate>)
 
 export function RemindersScreen() {
   const chunkyLip = useChunkyLip();
+  const queryClient = useQueryClient();
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const locale = useLocale();
@@ -151,6 +153,47 @@ export function RemindersScreen() {
       }
     }, [baseUrl, refetchReminders, selectedPetId, signOut, t, token],
   );
+
+  const handleCancelSeries = useCallback(
+    async (reminderId: string) => {
+      if (!selectedPetId) return;
+      setDeletingId(reminderId);
+      setActionError(null);
+      try {
+        const result = await cancelReminderSeries(baseUrl, token ?? '', reminderId);
+        switch (result.kind) {
+          case 'ok':
+          case 'not-found':
+          case 'not-editable':
+            await queryClient.invalidateQueries({ queryKey: reminderKeys.list(selectedPetId) });
+            return;
+          case 'forbidden':
+            setActionError(t('reminders.errorCancelForbidden'));
+            return;
+          case 'unreachable':
+            setActionError(t('common.cannotReachServer'));
+            return;
+          case 'unauthorized':
+            await signOut();
+            return;
+          case 'error':
+          case 'missing-config':
+            setActionError(t('common.somethingWentWrong'));
+        }
+      } catch {
+        setActionError(t('common.somethingWentWrong'));
+      } finally {
+        setDeletingId(null);
+      }
+    }, [baseUrl, queryClient, selectedPetId, signOut, t, token],
+  );
+
+  const cancelSelectedReminder = useCallback(() => {
+    if (!cancelCandidate) return;
+    const reminderId = cancelCandidate.id;
+    setCancelCandidate(null);
+    void handleCancelSeries(reminderId);
+  }, [cancelCandidate, handleCancelSeries]);
 
   const confirmDelete = useCallback((reminder: Reminder) => {
     setActionError(null);
@@ -476,10 +519,10 @@ export function RemindersScreen() {
                     : t('reminders.cancelSeriesBodyNoPet', { title: cancelCandidate.title })}
                 </Text>
                 <View className="w-full gap-3">
-                  <Button testID="reminders-cancel-series-confirm" className="h-14 w-full rounded-16 bg-danger" style={chunkyLip.danger} variant="danger">
+                  <Button testID="reminders-cancel-series-confirm" className="h-14 w-full rounded-16 bg-danger" style={chunkyLip.danger} variant="danger" onPress={cancelSelectedReminder}>
                     <Text className="text-17 font-extrabold text-danger-foreground">{t('reminders.cancelSeriesConfirm')}</Text>
                   </Button>
-                  <Button testID="reminders-cancel-series-keep" className="w-full h-14 rounded-16 border-2 border-lip-gray bg-surface" style={chunkyLip.neutral} variant="outline">
+                  <Button testID="reminders-cancel-series-keep" className="w-full h-14 rounded-16 border-2 border-lip-gray bg-surface" style={chunkyLip.neutral} variant="outline" onPress={dismissDeleteSheet}>
                     <Text className="text-17 font-extrabold text-foreground">{t('reminders.keepSeries')}</Text>
                   </Button>
                 </View>

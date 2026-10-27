@@ -599,7 +599,7 @@ describe('#87 R19: use-' + 'api no deja huella', () => {
     'screens/pairing/index.tsx': 2,
     'screens/profile/index.tsx': 2,
     'screens/edit-profile/index.tsx': 1, // #194 R8
-    'screens/reminders/index.tsx': 1,
+    'screens/reminders/index.tsx': 1 + 1, // #213 R18
   };
 
   it('removes both legacy hook files', () => {
@@ -651,7 +651,7 @@ describe('#87 R19: use-' + 'api no deja huella', () => {
     expect(violations).toEqual([]);
   });
 
-  it('preserves every mutation sign-out with zero delta (enmendado por #200 R1)', () => {
+  it('preserves every mutation sign-out with zero delta (enmendado por #200 R1) (enmendado por #213 R22)', () => {
     const actual = Object.fromEntries(
       Object.keys(screenSignOutCalls).map((relativePath) => {
         const contents = readFileSync(
