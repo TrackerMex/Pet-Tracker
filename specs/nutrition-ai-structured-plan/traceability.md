@@ -8,26 +8,28 @@ tags: [harness, spec, backend, nutrition, ai]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | pendiente | pendiente |
-| R2 | pendiente | pendiente |
-| R3 | pendiente | pendiente |
-| R4 | pendiente | pendiente |
-| R5 | pendiente | pendiente |
-| R6 | pendiente | pendiente |
-| R7 | pendiente | pendiente |
-| R8 | pendiente | pendiente |
-| R9 | pendiente | pendiente |
-| R10 | pendiente | pendiente |
-| R11 | pendiente | pendiente |
-| R12 | pendiente | pendiente |
-| R13 | pendiente | pendiente |
-| R14 | pendiente | pendiente |
-| R15 | pendiente | pendiente |
-| R16 | pendiente | pendiente |
-| R17 | pendiente | pendiente |
-| R18 | pendiente (locks de documentación en [[tasks]] §R18) | pendiente |
-| R19 | pendiente (locks de documentación en [[tasks]] §R19) | pendiente |
-| R20 | pendiente (prueba de humo humana, casilla en [[requirements]]) | no aplica |
+| R1 | `src/modules/nutrition/application/dto/nutrition-profile.dto.spec.ts::R1: rechaza allergies con 21 elementos`, `::R1: rechaza diseases con 21 elementos`, `::R1: rechaza un elemento de allergies de 101 caracteres`, `::R1: rechaza un elemento de diseases de 101 caracteres`, `::R1: acepta 20 elementos de 100 caracteres en ambos campos`; `test/nutrition-ai-structured-plan.e2e-spec.ts::R1: PUT con 21 alergias responde 400 y no cambia el perfil` | `3f899be9` feat(nutrition-ai-structured-plan): bound allergies and diseases in the profile DTO (R1) |
+| R2 | `test/nutrition-ai-structured-plan.e2e-spec.ts::R2: devuelve los cinco pesos mas recientes de la mascota del mas antiguo al mas reciente`, `::R2: sin pesos devuelve una lista vacia` | `cc3d893d` feat(nutrition-ai-structured-plan): read the latest five weights per pet (R2) |
+| R3 | `src/modules/nutrition/application/nutrition-input-hash.spec.ts::R3: fija el hash literal con weightTrend vacio`, `::R3: fija el hash literal con dos pesos`, `::R3: cambia si cambia un peso de la tendencia`, `::R3: cambia si cambia una fecha de la tendencia`, `::R3: cambia si cambia el orden de la tendencia`, `::R3: difiere del hash de #17 sin tendencia` | `97f58d10` feat(nutrition-ai-structured-plan): weight trend enters the inputs hash (R3) |
+| R4 | `src/modules/nutrition/infrastructure/ai/nutrition-prompt.spec.ts::R4: envia el texto aprobado en G2 sin cambios`, `::R4: versiona la fecha y el gate en la fuente` | `6f8e89a9` feat(nutrition-ai-structured-plan): G2 system prompt literal (R4) |
+| R5 | `src/modules/nutrition/infrastructure/ai/nutrition-prompt.spec.ts::R5: serializa exactamente input, result y weightTrend en ese orden`, `::R5: weightTrend conserva el orden y solo measuredAt y weightKg`, `::R5: weightTrend vacio se serializa como lista vacia`, `::R5: tiene tres parametros y no recibe ctx` | `bb4b4f49` feat(nutrition-ai-structured-plan): weight trend in the user prompt (R5) |
+| R6 | `src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts::R6: fija timeout, reintentos y tope de tokens`, `::R6: llama una vez con exactamente model, max_tokens, system, messages, thinking y output_config`, `::R6: el esquema JSON es el literal de la spec`, `::R6: construye el cliente perezoso con clave explicita y constantes` | `2782b7ed` feat(nutrition-ai-structured-plan): structured output call parameters (R6) |
+| R7 | `src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts::R7: descarta %s` (18 filas de la tabla §R7), `::R7: devuelve la salida valida con strings recortados`, `::R7: acepta los bordes de la tabla`, `::R7: descarta stop_reason refusal`, `::R7: descarta stop_reason max_tokens`, `::R7: descarta sin stop_reason con stopReason null en el warn`, `::R7: descarta texto vacio`, `::R7: descarta texto que no es JSON`, `::R7: descarta content que no es un array`, `::R7: ignora bloques que no son text` | `c41c4e7c` feat(nutrition-ai-structured-plan): validate the structured output with zod (R7) |
+| R8 | `src/modules/nutrition/domain/nutrition-ai-proposal.spec.ts::R8: rechaza una franja de menos`, `::R8: rechaza una franja de mas`, `::R8: rechaza una hora que no esta en el plan`, `::R8: rechaza una hora duplicada`, `::R8: acepta las mismas horas en otro orden y devuelve mealGrams en el orden del plan` | `d73e401d` feat(nutrition-ai-structured-plan): proposal slots must match the plan (R8) |
+| R9 | `src/modules/nutrition/domain/nutrition-ai-proposal.spec.ts::R9: con dailyGrams %i y suma %i acepta %s` (8 casos), `::R9: la tolerancia es del 10 por ciento` | `36776c90` feat(nutrition-ai-structured-plan): grams total within 10 percent of the engine (R9) |
+| R10 | `src/modules/nutrition/domain/nutrition-toxic-foods.spec.ts::R10: la lista es exactamente la aprobada en G2`, `::R10: detecta %s` (6 casos), `::R10: no detecta %s` (3 casos), `::R10: detecta cada termino de la lista dentro de una frase` | `e4fab9b9` feat(nutrition-ai-structured-plan): toxic food list and token matcher (R10) |
+| R11 | `src/modules/nutrition/domain/nutrition-ai-proposal.spec.ts::R11: descarta solo la recomendacion toxica, conserva el orden y la explicacion`, `::R11: todas toxicas deja recomendaciones vacias y acepta la propuesta`, `::R11: desde %s con %i dias revisa el %s` (4 casos) | `2a645fc1` feat(nutrition-ai-structured-plan): drop toxic recommendations and set the review date (R11) |
+| R12 | `test/nutrition-ai-structured-plan.e2e-spec.ts::R12: concede tres consumos por dia y niega el cuarto sin pasar de 3`, `::R12: otro dia y otra mascota tienen su propio contador`, `::R12: cinco consumos concurrentes conceden exactamente tres` | `a558e248` feat(nutrition-ai-structured-plan): atomic daily AI generation counter (R12,R16) |
+| R13 | `src/modules/nutrition/application/use-cases/generate-nutrition-plan.use-case.spec.ts::R13: sin collar devuelve not_tracked sin consumir, llamar a la IA, actualizar, avisar ni fallar`, `::R13: limite agotado devuelve limit_reached sin llamar a la IA`, `::R13: IA null devuelve unavailable sin UPDATE`, `::R13: propuesta fuera de cota devuelve rejected con un warn y sin UPDATE`, `::R13: propuesta valida devuelve proposed y la fila actualizada`, `::R13: orden INSERT, collar, consumo, IA y UPDATE` | `6380af9c` feat(nutrition-ai-structured-plan): AI phase statuses in generate (R13) |
+| R14 | `src/modules/nutrition/application/use-cases/generate-nutrition-plan.use-case.spec.ts::R14: consume con la mascota, el dia local del dueno y el limite 3`, `::R14: lee cinco pesos y los pasa a la IA y al hash`, `::R14: la fecha de revision parte del dia local del dueno` | `0f65a3bb` feat(nutrition-ai-structured-plan): weight trend, owner local day and limit (R14) |
+| R15 | `src/modules/nutrition/application/use-cases/generate-nutrition-plan.use-case.spec.ts::R15: hash igual con propuesta devuelve proposed sin collar, consumo, IA, INSERT ni UPDATE`, `::R15: hash igual sin propuesta reintenta sobre la misma fila con su horario editado y sin INSERT`, `::R15: hash igual sin propuesta y sin collar devuelve not_tracked sin INSERT` | `19612305` feat(nutrition-ai-structured-plan): cache hit with a proposal skips the AI and the limit (R15) |
+| R16 | `src/modules/nutrition/infrastructure/repositories/nutrition.drizzle.repository.spec.ts::R16: setAiResult actualiza explicacion y propuesta solo en el plan indicado`; `src/modules/nutrition/infrastructure/mappers/nutrition.mapper.spec.ts::R16: la respuesta incluye aiProposal y doce claves`, `::R16: la respuesta de generate incluye aiStatus y trece claves`; `test/nutrition-ai-structured-plan.e2e-spec.ts::R16: generate con propuesta valida devuelve proposed, la persiste y GET la devuelve`, `::R16: propuesta fuera de cota devuelve rejected y deja ai_explanation y ai_proposal en NULL`, `::R16: IA null devuelve unavailable con el plan del motor`, `::R16: sin collar devuelve not_tracked sin llamar a la IA ni crear contador`, `::R16: el cuarto generate del dia devuelve limit_reached sin llamar a la IA` | `c305e884` feat(nutrition-ai-structured-plan): persist the proposal and expose it in responses (R16); columna `ai_proposal` en `a558e248` (R12,R16); e2e en `34183895` test(nutrition-ai-structured-plan): end-to-end proposal contract (R16,R17) |
+| R17 | `src/modules/nutrition/domain/entities/nutrition-plan.entity.spec.ts::R17: la copia por cambio de horario descarta la propuesta y conserva la explicacion`; `test/nutrition-ai-structured-plan.e2e-spec.ts::R17: mover una franja descarta la propuesta y el siguiente generate propone sobre la hora editada` | `f99ec7b8` feat(nutrition-ai-structured-plan): meal time edits drop the AI proposal (R17); e2e en `34183895` test(nutrition-ai-structured-plan): end-to-end proposal contract (R16,R17) |
+| R18 | sin test automatizado; locks `grep -cF` de [[tasks]] §R18 (viejo 0, nuevo 1) en `docs/brief.md` y `plans/009-alimentacion-ia.md` | `941eaec9` docs(nutrition-ai-structured-plan): amend brief and plan 009 for the hybrid AI (R18) |
+| R19 | sin test automatizado; locks `grep -cF` de [[tasks]] §R19 en `docs/data-model.md` y `docs/verification.md` | `a42b5c89` docs(nutrition-ai-structured-plan): data model and smoke test for the hybrid AI (R19) |
+| R20 | pendiente (humano): prueba de humo con clave real, casilla en [[requirements]] | no aplica |
+
+Rutas de test relativas a `backend-pet-tracker/`; `::` sin archivo repite el de la cita anterior.
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente". R20 la cierra
 solo el humano, al marcar su casilla; hasta entonces la feature no pasa a `done`.
