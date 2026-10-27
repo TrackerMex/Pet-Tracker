@@ -543,3 +543,71 @@ Ran all test suites.
 Tras el commit documental se ejecuta `graphify update .` desde la raíz y se
 escribe `progress/impl_mobile-reminders-recurrence.merge.done` con el hash
 corto del HEAD de cierre. El smoke Android continúa reservado al humano.
+
+
+## Arreglo de B1 (R21)
+
+H0 de esta tarea: `28404225`, padre `44644e48`. Se leyó E3 y se verificó el
+parche del leader con hash `dcd9540eb3981d08ed4de2855e60ad6e0de1fa1e` antes
+de aplicarlo sin cambios. El review sin seguimiento no se editó, añadió ni
+commiteó; su hash permanece `dca9c4509bf709f6b336570e21992ba89391d70d`.
+Las observaciones N1–N5 quedan como deuda, sin cambios en esta tarea.
+
+| Paso | Commit | Asunto |
+|---|---|---|
+| c1, test rojo | 839fb5db | test(mobile): #213 keep pet chips selectable after a route petId (R21) |
+| c2, arreglo | 8efff787 | fix(mobile): #213 apply the route petId once per value (R21) |
+| c3, trazabilidad | e840b631 | docs(specs): #213 trace the R21 route petId fix |
+
+El efecto registra en `appliedRoutePetIdRef` el último parámetro aplicado y
+solo llama a selectPet cuando llega un petId distinto, con pets.data ok y la
+mascota presente. Ni su condición ni sus dependencias usan selectedPetId,
+para que los cambios de chip y los refetch no vuelvan a imponer la ruta;
+un petId desconocido no actualiza la selección ni la ref.
+
+Evidencia TDD y sonda, con Jest por ruta exacta y sin pipes, tras esperar a que
+pgrep de Jest/init quedase vacío:
+
+| Corrida | Resultado | Log |
+|---|---|---|
+| c1, solo R21, antes del arreglo | exit 1; 1 failed, 111 skipped, 2 passed, 114 total | progress/r21-c1.log |
+| c2, solo R21, con el arreglo | exit 0; 111 skipped, 3 passed, 114 total | progress/r21-c2-focused.log |
+| Mutación de B1 | exit 1; 1 failed, 111 skipped, 2 passed, 114 total | progress/r21-mutation.log |
+| c2, archivo entero, sonda revertida | exit 0; 114 passed, 114 total | progress/r21-c2.log |
+
+El único rojo de c1 y de la sonda es
+`#213 R21: tras abrir con petId se puede elegir otra mascota`, en el waitFor
+de pet-chip-pet-1, línea 2219: esperaba selected:true y obtuvo selected:false.
+La sonda sustituyó temporalmente la comparación con la ref por
+`petId !== selectedPetId` y añadió selectedPetId a las deps, restaurando la
+causa de B1. Se revirtió antes del verde del archivo y del commit c2; el hash
+de producción antes y después de la sonda fue idéntico:
+`134ee34893650ce2a9c4f0281d1694bd59b7fc99`.
+
+La fila R21 de traceability conserva 26d54072 y 2dd6966c y añade el test nuevo,
+839fb5db y 8efff787 con sus asuntos. No se tocaron otros tests ni producción.
+
+| Verificación completa | Resultado | Log |
+|---|---|---|
+| Ausencia de .expo/types/router.d.ts + bunx tsc --noEmit + log vacío | exit 0 | progress/typecheck-213-fix.log |
+| bunx expo lint --no-cache + log vacío | exit 0 | progress/lint-213-fix.log |
+| bun run test completo | exit 0; 160 suites, 5864 tests, 1 snapshot; 182.557 s | progress/test-213-fix.log |
+
+Cuenta reconciliada: 5863 tests del merge +1 de c1 = 5864, con 160 suites.
+No hubo fallo de carga, SIGKILL, timeout ni reintento; permanece el aviso
+preexistente de worker force-exit, con salida final 0.
+
+```text
+Test Suites: 160 passed, 160 total
+Tests:       5864 passed, 5864 total
+Snapshots:   1 passed, 1 total
+Time:        182.557 s, estimated 183 s
+Ran all test suites.
+```
+
+El diff contra H0 se limita a los cuatro ficheros del handoff: el test y la
+pantalla de Recordatorios, traceability.md y este reporte. No se ejecutaron
+init.sh, fetch, merge, rebase, push, PR ni despliegue, ni se enviaron señales
+a procesos ajenos. Después del commit del reporte se ejecuta graphify desde
+la raíz y se escribe impl_mobile-reminders-recurrence.fix.done con el hash
+corto del HEAD de cierre. El smoke Android sigue reservado al humano.
