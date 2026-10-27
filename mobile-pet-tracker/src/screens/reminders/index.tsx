@@ -72,7 +72,7 @@ export function RemindersScreen() {
     'category-blue-strong', 'category-amber-strong', 'category-green-strong',
     'category-violet-strong', 'category-rose-strong', 'muted', 'accent-foreground', 'danger', 'accent-strong',
   ]);
-  const [now] = useState(Date.now);
+  const [now, setNow] = useState(Date.now);
   const [surface] = useThemeColors(['surface']);
   const categoryInk = {
     blue: blueInk, amber: amberInk, green: greenInk,
@@ -100,6 +100,7 @@ export function RemindersScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      setNow(Date.now());
       if (selectedPetIdRef.current !== null) {
         refetchReminders();
       }
@@ -303,7 +304,7 @@ export function RemindersScreen() {
                 {
                   reminders.data.reminders.filter((reminder) => {
                     const days = daysUntil(
-                      new Date(),
+                      new Date(now),
                       new Date(reminder.dueAt),
                     );
                     return (
@@ -343,7 +344,7 @@ export function RemindersScreen() {
             {reminders.data.reminders.map((reminder, i) => {
               const meta = REMINDER_TYPE_META[reminder.type];
               const due = new Date(reminder.dueAt);
-              const days = daysUntil(new Date(), due);
+              const days = daysUntil(new Date(now), due);
               const inactive = reminder.status !== 'scheduled';
               const recurrence = inactive ? null : reminder.recurrence;
               const isSeries = Boolean(recurrence);
@@ -353,7 +354,7 @@ export function RemindersScreen() {
                   ? t('reminders.untilDay', { date: until.toLocaleDateString(locale, { day: 'numeric', month: 'short' }) })
                   : t('reminders.untilMonth', { date: new Intl.DateTimeFormat(locale, { month: 'short', year: 'numeric' }).format(until) })
                 : '';
-              const upcoming = !inactive && days >= 0 && days <= 10;
+              const upcoming = !inactive && days === 0;
               const slot = CATEGORY_SLOTS[meta.category];
               const date = due.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
               const time = due.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
