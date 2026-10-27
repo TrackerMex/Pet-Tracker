@@ -1,4 +1,6 @@
-import { fireEvent, screen, within } from '@testing-library/react-native';
+import { act, fireEvent, screen, within } from '@testing-library/react-native';
+import { usePreventRemove } from 'expo-router/react-navigation';
+import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import { renderWithProviders } from '../../../test/render-with-providers';
 import { getPet } from '../../api/pets';
@@ -35,6 +37,8 @@ jest.mock('react-native-reanimated', () => ({
 const mockSignOut = jest.fn();
 const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
 const mockGetPet = jest.mocked(getPet);
+const mockRouter = jest.mocked(router);
+const mockPreventRemove = jest.mocked(usePreventRemove);
 const apiUrl = 'http://example.test/v1';
 let fetchSpy: jest.SpyInstance;
 let storedProfile: NutritionProfile | null = null;
@@ -203,4 +207,38 @@ it.each([[1, 'Alimento'], [6, 'Alimento'], [7, 'Peso objetivo'], [9, 'Peso objet
   const other = { Alimento: 'Peso objetivo', 'Peso objetivo': 'Tipo de alimento' }[destination];
   expect(await screen.findByText(legend)).toBeVisible();
   expect(screen.queryByText(other)).toBeNull();
+});
+
+async function goToFood(n: number) {
+  await goToCondition();
+  await fireEvent.press(await screen.findByTestId(`bcs-option-${n}`));
+  await fireEvent.press(screen.getByTestId('nutrition-questionnaire-next'));
+  if (n >= 7) await fireEvent.press(await screen.findByTestId('nutrition-questionnaire-next'));
+  expect(await screen.findByText('Tipo de alimento')).toBeVisible();
+}
+async function pressBack() {
+  await fireEvent.press(screen.getByTestId('nutrition-questionnaire-back'));
+  expect(mockRouter.back).toHaveBeenCalled();
+  const call = mockPreventRemove.mock.lastCall;
+  expect(call?.[0]).toBe(true);
+  await act(async () => call?.[1]({ data: { action: { type: 'GO_BACK' } } }));
+}
+
+it('#209 R6: Volver desde Alimento con condición 6 vuelve a Condición', async () => {
+  await goToFood(6);
+  await pressBack();
+  expect(await screen.findByText('¿Cómo está su cuerpo?')).toBeVisible();
+  expect(screen.queryByText('Tipo de alimento')).toBeNull();
+  expect(screen.getByTestId('bcs-option-6')).toHaveProp('accessibilityState', { checked: true });
+});
+it('#209 R6: Volver desde Alimento con condición 7 vuelve a Peso objetivo', async () => {
+  await goToFood(7);
+  await pressBack();
+  expect(await screen.findByText('Peso objetivo')).toBeVisible();
+  expect(screen.queryByText('Tipo de alimento')).toBeNull();
+  await pressBack();
+  expect(await screen.findByText('¿Cómo está su cuerpo?')).toBeVisible();
+  await pressBack();
+  expect(await screen.findByText('¿Cuánto se mueve Rocky?')).toBeVisible();
+  expect(mockPreventRemove.mock.lastCall?.[0]).toBe(false);
 });
