@@ -1070,7 +1070,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
 
   it('importa exactamente los iconos prescritos desde un único import de reicon (enmendado por #220 R15) (enmendado por #213 R22)', () => {
     const expected: Record<string, string[]> = {
-      'screens/reminders/index.tsx': ['Plus', 'Trash'],
+      'screens/reminders/index.tsx': ['Plus', 'Repeat', 'Trash'],
       'screens/add-reminder/index.tsx': ['Bell', 'Minus', 'Plus', 'Repeat'], // #220 R15; #213 R22
       'utils/reminder-meta.ts': ['Drop', 'ForkKnife', 'Pill', 'PinTack', 'Stethoscope', 'Syringe', 'Weight'],
     };

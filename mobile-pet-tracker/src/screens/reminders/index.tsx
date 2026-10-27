@@ -9,7 +9,7 @@ import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Plus, Trash } from 'reicon-react-native';
+import { Plus, Repeat, Trash } from 'reicon-react-native';
 
 import { listPets } from '../../api/pets';
 import { petKeys, reminderKeys } from '../../api/query-keys';
@@ -18,7 +18,8 @@ import {
   listReminders,
   type RemindersState,
 } from '../../api/reminders';
-import type { Reminder } from '../../api/types';
+import type { Recurrence, Reminder } from '../../api/types';
+import { isoToLocalDate } from '../../utils/civil-date';
 import { EmptyState } from '../../components/empty-state';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { PopIn } from '../../components/pop-in';
@@ -47,6 +48,17 @@ function isRemindersError(state: RemindersState): boolean {
   );
 }
 
+function cadenceText(recurrence: Recurrence, t: ReturnType<typeof useTranslate>): string {
+  const { unit, every } = recurrence;
+  switch (unit) {
+    case 'hour': return every === 1 ? t('reminders.cadenceHour') : t('reminders.cadenceHours', { count: every });
+    case 'day': return every === 1 ? t('reminders.cadenceDay') : t('reminders.cadenceDays', { count: every });
+    case 'week': return every === 1 ? t('reminders.cadenceWeek') : t('reminders.cadenceWeeks', { count: every });
+    case 'month': return every === 1 ? t('reminders.cadenceMonth') : t('reminders.cadenceMonths', { count: every });
+    case 'year': return every === 1 ? t('reminders.cadenceYear') : t('reminders.cadenceYears', { count: every });
+  }
+}
+
 export function RemindersScreen() {
   const chunkyLip = useChunkyLip();
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
@@ -56,10 +68,11 @@ export function RemindersScreen() {
   const { selectedPetId, selectPet } = useSelectedPet();
   const selectedPetIdRef = useRef<string | null>(selectedPetId);
   const insets = useSafeAreaInsets();
-  const [blueInk, amberInk, greenInk, violetInk, roseInk, muted, accentForeground, danger] = useThemeColors([
+  const [blueInk, amberInk, greenInk, violetInk, roseInk, muted, accentForeground, danger, accentStrong] = useThemeColors([
     'category-blue-strong', 'category-amber-strong', 'category-green-strong',
-    'category-violet-strong', 'category-rose-strong', 'muted', 'accent-foreground', 'danger',
+    'category-violet-strong', 'category-rose-strong', 'muted', 'accent-foreground', 'danger', 'accent-strong',
   ]);
+  const [now] = useState(Date.now);
   const [surface] = useThemeColors(['surface']);
   const categoryInk = {
     blue: blueInk, amber: amberInk, green: greenInk,
@@ -331,6 +344,13 @@ export function RemindersScreen() {
               const due = new Date(reminder.dueAt);
               const days = daysUntil(new Date(), due);
               const inactive = reminder.status !== 'scheduled';
+              const recurrence = inactive ? null : reminder.recurrence;
+              const until = reminder.recurrenceUntil ? isoToLocalDate(reminder.recurrenceUntil) : null;
+              const repeatUntil = until
+                ? until.getFullYear() === new Date(now).getFullYear()
+                  ? t('reminders.untilDay', { date: until.toLocaleDateString(locale, { day: 'numeric', month: 'short' }) })
+                  : t('reminders.untilMonth', { date: new Intl.DateTimeFormat(locale, { month: 'short', year: 'numeric' }).format(until) })
+                : '';
               const upcoming = !inactive && days >= 0 && days <= 10;
               const slot = CATEGORY_SLOTS[meta.category];
               const date = due.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
@@ -388,6 +408,14 @@ export function RemindersScreen() {
                           </Text>
                         )}
                       </View>
+                      {recurrence ? (
+                        <View testID={`reminder-repeats-${reminder.id}`} className="flex-row items-center gap-1">
+                          <Repeat size={14} color={accentStrong} />
+                          <Text className="text-13 font-bold text-accent-strong">
+                            {t('reminders.repeatsEvery', { cadence: cadenceText(recurrence, t), until: repeatUntil })}
+                          </Text>
+                        </View>
+                      ) : null}
                     </View>
                     <Button
                       testID={`reminder-delete-${reminder.id}`}
