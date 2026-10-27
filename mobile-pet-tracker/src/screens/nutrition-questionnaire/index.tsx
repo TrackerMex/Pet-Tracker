@@ -132,6 +132,37 @@ function buildInput(form: Form, label: Label): NutritionProfileInput {
   };
 }
 
+function initialHealth(options: readonly HealthOption[], texts: string[], label: Label) {
+  const checked: string[] = [];
+  const kept: string[] = [];
+  let other = '';
+  for (const text of texts) {
+    const option = options.find(item => item.slug !== 'otra' && label(item.labelKey) === text);
+    if (option) {
+      if (!checked.includes(option.slug)) checked.push(option.slug);
+    } else if (!checked.includes('otra') && text.length <= 40) {
+      checked.push('otra');
+      other = text;
+    } else {
+      kept.push(text);
+    }
+  }
+  return { checked, other, kept };
+}
+
+function initialFromProfile(profile: NutritionProfile | null, label: Label) {
+  const allergies = initialHealth(ALLERGIES, profile?.allergies ?? [], label);
+  const diseases = initialHealth(DISEASES, profile?.diseases ?? [], label);
+  return {
+    activity: ACTIVITY_OPTIONS.find(option => option.value === profile?.activityLevel)?.value ?? null,
+    bcs: profile?.bodyCondition ?? null,
+    target: String(profile?.targetWeightKg ?? ''),
+    food: FOOD_TYPES.find(option => option.value === profile?.foodType)?.value ?? null,
+    kcal: profile ? String(profile.kcalPer100g) : '',
+    allergies, diseases,
+  };
+}
+
 function NumberField({ kind, testID, unit, value, onChangeText }: { kind: 'weight' | 'kcal'; testID: string; unit: string; value: string; onChangeText: (value: string) => void }) {
   const [focused, setFocused] = useState(false);
   return <View className={focused ? 'h-16 flex-row items-center gap-2 rounded-14 border-2 border-accent bg-default px-4' : 'h-16 flex-row items-center gap-2 rounded-14 border-2 border-transparent bg-default px-4'} style={CONTINUOUS_CORNER}>
@@ -186,23 +217,24 @@ function BcsBadge({ n, slot, testID }: { n: number; slot: CategorySlot; testID: 
   </View>;
 }
 
-function QuestionnaireForm({ pet }: { initial: NutritionProfile | null; pet: PetProfile }) {
+function QuestionnaireForm({ initial, pet }: { initial: NutritionProfile | null; pet: PetProfile }) {
   const t = useTranslate();
+  const [init] = useState(() => initialFromProfile(initial, t));
   const insets = useSafeAreaInsets();
   const chunkyLip = useChunkyLip();
   const { token } = useAuth();
   const [phase, setPhase] = useState<'form' | 'saving'>('form');
   const [step, setStep] = useState<Step>('activity');
   const colors = useThemeColors(['category-blue-strong', 'category-green-strong', 'category-amber-strong', 'accent-foreground', 'muted']);
-  const [activity, setActivity] = useState<NutritionProfileInput['activityLevel'] | null>(null);
-  const [bcs, setBcs] = useState<number | null>(null);
-  const [target, setTarget] = useState('');
-  const [food, setFood] = useState<NutritionProfileInput['foodType'] | null>(null);
-  const [kcal, setKcal] = useState('');
-  const [allergies, setAllergies] = useState<string[]>([]);
-  const [allergyOther, setAllergyOther] = useState('');
-  const [diseases, setDiseases] = useState<string[]>([]);
-  const [diseaseOther, setDiseaseOther] = useState('');
+  const [activity, setActivity] = useState<NutritionProfileInput['activityLevel'] | null>(init.activity);
+  const [bcs, setBcs] = useState<number | null>(init.bcs);
+  const [target, setTarget] = useState(init.target);
+  const [food, setFood] = useState<NutritionProfileInput['foodType'] | null>(init.food);
+  const [kcal, setKcal] = useState(init.kcal);
+  const [allergies, setAllergies] = useState(init.allergies.checked);
+  const [allergyOther, setAllergyOther] = useState(init.allergies.other);
+  const [diseases, setDiseases] = useState(init.diseases.checked);
+  const [diseaseOther, setDiseaseOther] = useState(init.diseases.other);
   const bcsRow = BCS_ROWS.find(row => row.n === bcs);
   const foodRow = FOOD_TYPES.find(option => option.value === food);
   const n = stepNumber(step);
@@ -216,7 +248,7 @@ function QuestionnaireForm({ pet }: { initial: NutritionProfile | null; pet: Pet
     if (activity === null || food === null) return;
     setPhase('saving');
     await upsertNutritionProfile(process.env.EXPO_PUBLIC_API_URL, token ?? '', pet.id, buildInput({
-      activity, bcs, target, food, kcal, allergies, allergyOther, diseases, diseaseOther, kept: { allergies: [], diseases: [] },
+      activity, bcs, target, food, kcal, allergies, allergyOther, diseases, diseaseOther, kept: { allergies: init.allergies.kept, diseases: init.diseases.kept },
     }, t));
   }
 
