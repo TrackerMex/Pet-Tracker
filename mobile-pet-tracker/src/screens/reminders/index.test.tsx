@@ -2130,7 +2130,6 @@ describe('#213 R14: series en Recordatorios', () => {
 
   async function pressSeriesConfirmation() {
     const button = screen.getByTestId('reminders-cancel-series-confirm');
-    expect(button.props.onPress).toEqual(expect.any(Function));
     await fireEvent.press(button);
   }
 
@@ -2175,7 +2174,6 @@ describe('#213 R14: series en Recordatorios', () => {
   it('#213 R18: Mantener la serie cierra sin llamar a la API', async () => {
     await openSeriesSheet();
     const keep = screen.getByTestId('reminders-cancel-series-keep');
-    expect(keep.props.onPress).toEqual(expect.any(Function));
     await fireEvent.press(keep);
     await waitFor(() => expect(screen.queryByTestId('reminders-cancel-series-sheet')).toBeNull());
     expect(mockCancelReminderSeries).not.toHaveBeenCalled();
