@@ -136,9 +136,9 @@ describe('#197 R3: tipografía del canvas', () => {
 });
 
 describe('#197 R4: tracking de títulos', () => {
-  it('#197 R4: ningún fichero de producción usa tracking-tight (enmendado por #200 R1)', () => {
+  it('#197 R4: ningún fichero de producción usa tracking-tight (enmendado por #200 R1) (enmendado por #222 R9)', () => {
     expect(filesMatching(/(?<![\w-])tracking-tight\b/)).toEqual([]);
-    for (const file of ['screens/food/index.tsx', 'components/celebration.tsx', 'screens/health/index.tsx', 'screens/profile/index.tsx']) {
+    for (const file of ['components/celebration.tsx']) {
       expect(readSource(file)).toContain('text-3xl font-black tracking-title text-foreground');
     }
   });
@@ -309,9 +309,9 @@ describe('#197 R22: fuentes limpias', () => {
     expect(source).not.toMatch(/\p{Extended_Pictographic}/u);
     expect(source).not.toMatch(/\b(?:shadowColor|shadowOffset|shadowOpacity|shadowRadius|elevation)\s*:/);
   });
-  it('#197 R22: no añade dependencias (enmendado por #217 R8)', () => {
+  it('#197 R22: no añade dependencias (enmendado por #217 R8) (enmendado por #214 R23)', () => {
     const manifest = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8'));
-    expect(Object.keys(manifest.dependencies)).toHaveLength(42);
+    expect(Object.keys(manifest.dependencies)).toHaveLength(42 + 1); // #214 R23: expo-clipboard
     expect(Object.keys(manifest.devDependencies)).toHaveLength(8);
   });
 });

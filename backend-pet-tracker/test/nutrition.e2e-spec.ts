@@ -306,6 +306,8 @@ describe('Nutrition profile and plans (e2e)', () => {
           'objective',
           'warnings',
           'aiExplanation',
+          'aiProposal',
+          'aiStatus',
           'generatedAt',
         ].sort(),
       );
@@ -479,6 +481,7 @@ describe('Nutrition profile and plans (e2e)', () => {
         .expect(200);
       expect(latest.body).toEqual({
         ...second.body,
+        aiStatus: undefined,
         servedToday: [],
         kcalConsumedToday: 0,
       });
@@ -611,7 +614,7 @@ describe('Nutrition profile and plans (e2e)', () => {
       const response = await generatePlan(owner, pet.id).expect(200);
       return { owner, pet, planId: (response.body as { id: string }).id };
     }
-    it('GET devuelve texto sembrado y trece claves aunque no haya collar', async () => {
+    it('GET devuelve texto sembrado y catorce claves aunque no haya collar', async () => {
       const { owner, pet, planId } = await fixture('get');
       await db
         .update(nutritionPlans)
@@ -634,6 +637,7 @@ describe('Nutrition profile and plans (e2e)', () => {
           'objective',
           'warnings',
           'aiExplanation',
+          'aiProposal',
           'generatedAt',
           'servedToday',
           'kcalConsumedToday',

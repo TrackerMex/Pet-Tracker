@@ -40,14 +40,24 @@ describe('#218 R3: todo BottomSheet de la app pasa el token surface', () => {
     .map((path) => path.slice(sourceRoot.length + 1))
     .sort();
 
-  it('#218 R3: solo Recordatorios y Vinculación montan un BottomSheet', () => {
-    expect(importers).toEqual(['screens/pairing/index.tsx', 'screens/reminders/index.tsx']);
+  it('#218 R3: solo Recordatorios, Vinculación y Familia montan un BottomSheet (enmendado por #214 R11, R17)', () => {
+    expect(importers).toEqual([
+      'screens/pairing/index.tsx',
+      'screens/pet-members/index.tsx', // #214 R11, R17
+      'screens/reminders/index.tsx',
+    ]);
   });
 
-  it.each(importers)('#218 R3: %s monta un BottomSheet con backgroundStyle surface', (path) => {
+  const SHEETS: Record<string, number> = {
+    'screens/pairing/index.tsx': 1,
+    'screens/pet-members/index.tsx': 2, // #214 R11, R17
+    'screens/reminders/index.tsx': 1,
+  };
+
+  it.each(importers)('#218 R3: %s monta un BottomSheet con backgroundStyle surface (enmendado por #214 R11, R17)', (path) => {
     const source = readFileSync(join(sourceRoot, path), 'utf8');
-    expect(source.match(/<BottomSheet(?![A-Za-z])/g)).toHaveLength(1);
-    expect(source.split('backgroundStyle={{ backgroundColor: surface }}')).toHaveLength(2);
+    expect(source.match(/<BottomSheet(?![A-Za-z])/g)).toHaveLength(SHEETS[path]);
+    expect(source.split('backgroundStyle={{ backgroundColor: surface }}')).toHaveLength(SHEETS[path] + 1);
     expect(source).toContain("const [surface] = useThemeColors(['surface']);");
   });
 });

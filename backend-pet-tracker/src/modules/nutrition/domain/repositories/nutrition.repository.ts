@@ -1,3 +1,4 @@
+import type { NutritionAiProposal } from '@/modules/nutrition/domain/nutrition-ai-proposal';
 import type {
   NutritionProfile,
   NutritionProfileData,
@@ -16,7 +17,16 @@ export interface MealTimeMove {
 }
 
 export interface NutritionRepository {
-  setAiExplanation(planId: string, explanation: string): Promise<NutritionPlan>;
+  setAiResult(
+    planId: string,
+    explanation: string,
+    proposal: NutritionAiProposal,
+  ): Promise<NutritionPlan>;
+  consumeAiGeneration(
+    petId: string,
+    localDay: string,
+    limit: number,
+  ): Promise<boolean>;
   findProfile(petId: string): Promise<NutritionProfile | null>;
   upsertProfile(
     petId: string,
