@@ -57,3 +57,22 @@ Requiere el rebuild G3 (dev build sin nitro).
 2. La burbuja no corta el texto.
 
 - [ ] Smoke de #221 recorrido por el humano (fecha: ____)
+
+## #223 mobile-alerts-attended-section (en dev, PR #279; R19/G4 abierto)
+
+1. Con alertas atendidas, la lista muestra primero las abiertas y debajo la sección «Atendidas» colapsada, con su contador.
+2. «Ver más» expande las atendidas y vuelve a colapsarlas.
+3. Sin alertas abiertas, la sección de atendidas se ve sola y la pantalla no queda vacía.
+4. Tema claro y oscuro: la sección y su cabecera se leen bien.
+
+- [ ] Smoke de #223 recorrido por el humano (fecha: ____)
+
+## #224 mobile-nutrition-ai-format (PR a `dev`)
+
+1. Con un plan real y una explicación larga, el texto se recorta en unas seis líneas con el degradado sobre el borde.
+2. «Ver más» expande y «Ver menos» vuelve; la zona táctil del botón es de 44 de alto.
+3. TalkBack lee el texto como un párrafo continuo y el botón por separado.
+4. Tema oscuro: el degradado no deja banda visible.
+5. Si el recorte de 122 o el degradado de 36 no calzan, se ajustan `AI_CLAMP_HEIGHT` / `AI_FADE_HEIGHT` en una enmienda.
+
+- [ ] Smoke de #224 recorrido por el humano (fecha: ____)
