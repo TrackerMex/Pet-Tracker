@@ -1,17 +1,20 @@
-import { useQuery } from '@tanstack/react-query';
-import { useLocalSearchParams } from 'expo-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { router, useLocalSearchParams } from 'expo-router';
 import { usePreventRemove } from 'expo-router/react-navigation';
 import { Button, Skeleton } from 'heroui-native';
 import { Image } from 'expo-image';
 import { Check, InfoCircle, Location, TrendDown, TrendUp } from 'reicon-react-native';
 import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { getNutritionProfile, upsertNutritionProfile } from '../../api/nutrition';
+import { generateNutritionPlan, getNutritionProfile, upsertNutritionProfile } from '../../api/nutrition';
 import { getPet } from '../../api/pets';
 import { nutritionKeys, petKeys } from '../../api/query-keys';
 import type { NutritionProfile, NutritionProfileInput, PetProfile } from '../../api/types';
+import { PingRing } from '../../components/ping-ring';
+import { PingoFloat } from '../../components/pingo-float';
 import { ScreenHeader } from '../../components/screen-header';
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
@@ -65,6 +68,12 @@ const DISEASES = [
   { slug: 'problemas-digestivos', labelKey: 'nutritionQuestionnaire.diseaseDigestive' },
   { slug: 'problemas-articulares', labelKey: 'nutritionQuestionnaire.diseaseJoints' },
   { slug: 'otra', labelKey: 'nutritionQuestionnaire.other' },
+] as const;
+
+const GENERATING_ROWS = [
+  { labelKey: 'nutritionQuestionnaire.generatingSaved' },
+  { labelKey: 'nutritionQuestionnaire.generatingCalories' },
+  { labelKey: 'nutritionQuestionnaire.generatingMeals' },
 ] as const;
 
 type HealthList = 'allergy' | 'disease';
@@ -217,13 +226,40 @@ function BcsBadge({ n, slot, testID }: { n: number; slot: CategorySlot; testID: 
   </View>;
 }
 
+function Generating({ phase, name, checkColor }: { phase: 'saving' | 'generating'; name: string; checkColor: string }) {
+  const t = useTranslate();
+  const reduceMotion = useReducedMotion();
+  const active = phase === 'saving' ? 0 : 1;
+  return <View testID="nutrition-generating" className="flex-1 items-center justify-center gap-5 bg-background px-5">
+    <View className="size-45 items-center justify-center">
+      {reduceMotion ? null : [0, 1000].map((delay, index) => <PingRing key={delay} testID={`nutrition-generating-ring-${index}`} delay={delay} className="size-45 rounded-full border-3 border-accent" />)}
+      <PingoFloat testID="nutrition-generating-pingo">
+        <Image source={require('../../../assets/images/pingo-food.webp')} className="size-28" />
+      </PingoFloat>
+    </View>
+    <View className="gap-2">
+      <Text className="text-center text-24 font-black tracking-title text-foreground">{t('nutritionQuestionnaire.generatingTitle', { name })}</Text>
+      <Text className="text-center text-15 font-semibold leading-note text-muted">{t('nutritionQuestionnaire.generatingBody')}</Text>
+    </View>
+    <View testID="nutrition-generating-steps" accessibilityLiveRegion="polite" className="gap-3 self-stretch rounded-tile bg-default px-4 py-3.5" style={CONTINUOUS_CORNER}>
+      {GENERATING_ROWS.map((row, index) => <View key={row.labelKey} className="flex-row items-center gap-3">
+        {index < active
+          ? <View className="size-6.5 items-center justify-center rounded-full bg-accent"><Check size={16} color={checkColor} /></View>
+          : <View className={index === active ? 'size-6.5 rounded-full border-3 border-lip-gray border-t-accent' : 'size-6.5 rounded-full border-2 border-lip-gray'} />}
+        <Text className={index < active ? 'text-15 font-bold text-foreground' : index === active ? 'text-15 font-extrabold text-foreground' : 'text-15 font-semibold text-muted'}>{t(row.labelKey)}</Text>
+      </View>)}
+    </View>
+  </View>;
+}
+
 function QuestionnaireForm({ initial, pet }: { initial: NutritionProfile | null; pet: PetProfile }) {
   const t = useTranslate();
   const [init] = useState(() => initialFromProfile(initial, t));
   const insets = useSafeAreaInsets();
   const chunkyLip = useChunkyLip();
   const { token } = useAuth();
-  const [phase, setPhase] = useState<'form' | 'saving'>('form');
+  const queryClient = useQueryClient();
+  const [phase, setPhase] = useState<'form' | 'saving' | 'generating'>('form');
   const [step, setStep] = useState<Step>('activity');
   const colors = useThemeColors(['category-blue-strong', 'category-green-strong', 'category-amber-strong', 'accent-foreground', 'muted']);
   const [activity, setActivity] = useState<NutritionProfileInput['activityLevel'] | null>(init.activity);
@@ -239,7 +275,7 @@ function QuestionnaireForm({ initial, pet }: { initial: NutritionProfile | null;
   const foodRow = FOOD_TYPES.find(option => option.value === food);
   const n = stepNumber(step);
   const canContinue = step === 'activity' ? activity !== null : step === 'condition' ? bcs !== null : step === 'target' ? target === '' || isWeight(target) : step === 'food' ? food !== null && isKcal(kcal) : true;
-  usePreventRemove(step !== 'activity', () => setStep(prevStep(step, bcs)));
+  usePreventRemove(phase === 'form' && step !== 'activity', () => setStep(prevStep(step, bcs)));
   async function handleNext() {
     if (step !== 'health') {
       setStep(nextStep(step, bcs));
@@ -247,10 +283,20 @@ function QuestionnaireForm({ initial, pet }: { initial: NutritionProfile | null;
     }
     if (activity === null || food === null) return;
     setPhase('saving');
-    await upsertNutritionProfile(process.env.EXPO_PUBLIC_API_URL, token ?? '', pet.id, buildInput({
+    const baseUrl = process.env.EXPO_PUBLIC_API_URL;
+    const saved = await upsertNutritionProfile(baseUrl, token ?? '', pet.id, buildInput({
       activity, bcs, target, food, kcal, allergies, allergyOther, diseases, diseaseOther, kept: { allergies: init.allergies.kept, diseases: init.diseases.kept },
     }, t));
+    if (saved.kind !== 'ok') return;
+    void queryClient.invalidateQueries({ queryKey: nutritionKeys.profile(pet.id) });
+    setPhase('generating');
+    const generated = await generateNutritionPlan(baseUrl, token ?? '', pet.id);
+    if (generated.kind !== 'ok') return;
+    void queryClient.invalidateQueries({ queryKey: nutritionKeys.plan(pet.id) });
+    router.back();
   }
+
+  if (phase !== 'form') return <Generating phase={phase} name={pet.name} checkColor={colors[3]} />;
 
   return (
     <KeyboardAvoidingView testID="screen-nutrition-questionnaire" className="flex-1" behavior="padding" keyboardVerticalOffset={0}>
@@ -352,7 +398,7 @@ function QuestionnaireForm({ initial, pet }: { initial: NutritionProfile | null;
         </> : null}
       </ScrollView>
       <View className="bg-background px-5 pt-4" style={{ paddingBottom: Math.max(insets.bottom, 16) }}>
-        <Button testID="nutrition-questionnaire-next" className="h-14 rounded-16 bg-accent" style={chunkyLip.primary} isDisabled={!canContinue || phase !== 'form'} onPress={() => void handleNext()}>
+        <Button testID="nutrition-questionnaire-next" className="h-14 rounded-16 bg-accent" style={chunkyLip.primary} isDisabled={!canContinue} onPress={() => void handleNext()}>
           <Text className="text-17 font-extrabold text-accent-foreground">{step === 'health' ? t('nutritionQuestionnaire.saveAndGenerate') : t('nutritionQuestionnaire.next')}</Text>
         </Button>
       </View>
