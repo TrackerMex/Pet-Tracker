@@ -1632,3 +1632,39 @@ describe('#203 R8: cabecera de Alertas', () => {
     });
   });
 });
+
+
+describe('#223 R5: la insignia espera al último cursor y suma las abiertas de todas las páginas', () => {
+  const hostProcess = process.getBuiltinModule('process');
+  let previousTZ: string | undefined;
+  beforeEach(() => {
+    previousTZ = hostProcess.env.TZ;
+    hostProcess.env.TZ = 'America/Mexico_City';
+    jest.spyOn(Date, 'now').mockReturnValue(Date.parse('2027-01-02T16:00:00.000Z'));
+    jest.clearAllMocks();
+    mockListAlerts.mockReset();
+    mockAckAlert.mockReset();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+  });
+  afterEach(() => {
+    if (previousTZ === undefined) delete hostProcess.env.TZ;
+    else hostProcess.env.TZ = previousTZ;
+    jest.restoreAllMocks();
+  });
+
+  it('#223 R5: la insignia espera al último cursor y suma las abiertas de todas las páginas', async () => {
+    for (const language of ['es', 'en']) {
+      let finishSecond!: (page: AlertsState) => void;
+      mockListAlerts.mockReset().mockResolvedValueOnce({ kind: 'ok', items: [
+        makeAlert({ id: 'a' }), makeAlert({ id: 'b' }), makeAlert({ id: 'c', status: 'acked' }),
+      ], nextCursor: 'c1' }).mockReturnValueOnce(new Promise<AlertsState>((resolve) => { finishSecond = resolve; }));
+      const rendered = await (language === 'es' ? renderAlerts() : renderAlertsInEnglish());
+      await waitFor(() => expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['a', 'b']));
+      expect(screen.queryByTestId('alerts-new-count')).toBeNull();
+      await act(async () => finishSecond({ kind: 'ok', items: [makeAlert({ id: 'd' })], nextCursor: null }));
+      await waitFor(() => expect(screen.getByTestId('alerts-new-count-text')).toHaveTextContent(language === 'es' ? '3 nuevas' : '3 new', { exact: true }));
+      await rendered.unmount();
+    }
+  });
+});
