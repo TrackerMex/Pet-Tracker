@@ -1,3 +1,5 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
@@ -49,7 +51,8 @@ it('R18: el formulario admite 11 caracteres con el placeholder del artboard', as
   const input = screen.getByTestId('join-pet-input');
   expect(input.props).toMatchObject({ placeholder: 'XXXXX-XXXXX', placeholderTextColor: 'color:muted', maxLength: 11, autoCapitalize: 'characters', autoCorrect: false, autoComplete: 'off' });
   expect(input.props.className).toContain('border-accent');
-  expect(screen.getByTestId('screen-join-pet').props.behavior).toBe('padding');
+  const source = readFileSync(join(process.cwd(), 'src/screens/join-pet/index.tsx'), 'utf8');
+  expect(source).toContain('<KeyboardAvoidingView testID="screen-join-pet" behavior="padding"');
   expect(screen.getByTestId('join-pet-title')).toHaveTextContent('Unirme con código');
   expect(screen.getByTestId('join-pet-label')).toHaveTextContent('Código de invitación');
   expect(screen.getByTestId('join-pet-hint')).toHaveTextContent('Son 10 letras y números');
