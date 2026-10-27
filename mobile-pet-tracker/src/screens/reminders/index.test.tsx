@@ -1396,6 +1396,30 @@ describe('#178 R8: sheet de borrado del canvas', () => {
   });
 });
 
+describe('#218 R1: el cajón de borrar pinta su contenedor con el token surface', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: canvasReminders });
+  });
+
+  it('#218 R1: backgroundStyle del BottomSheet de borrar es exactamente el token surface', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-a');
+    await fireEvent.press(screen.getByTestId('reminder-delete-a'));
+    const sheet = within(screen.getByTestId('reminders-delete-host')).getByTestId('community-bottom-sheet');
+    expect(flat(sheet.props.backgroundStyle)).toEqual({ backgroundColor: 'color:surface' });
+    expect(sheet.props.snapPoints).toEqual(['50%', '100%']);
+  });
+});
+
 describe('#178 R9: el vacío ofrece crear', () => {
   beforeEach(async () => {
     jest.clearAllMocks();

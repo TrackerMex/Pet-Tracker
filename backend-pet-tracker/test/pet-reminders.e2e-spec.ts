@@ -5,7 +5,7 @@ import {
 } from '@aws-sdk/client-sqs';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
 import { App } from 'supertest/types';
@@ -19,6 +19,10 @@ import { users } from '@/db/schema/users.schema';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
+import {
+  REMINDER_REPOSITORY,
+  type ReminderRepository,
+} from '@/modules/reminders/domain/repositories/reminder.repository';
 import { RemindersDispatchService } from '@/modules/reminders/infrastructure/reminders-dispatch.service';
 import { NotifierConsumerService } from '@/workers/notifier/notifier-consumer.service';
 import { PUSH_SENDER } from '@/workers/notifier/push-sender';
@@ -335,6 +339,8 @@ describe('Pet reminders (e2e)', () => {
           'title',
           'dueAt',
           'advanceMinutes',
+          'recurrence',
+          'recurrenceUntil',
           'status',
         ].sort(),
       );
@@ -498,7 +504,7 @@ describe('Pet reminders (e2e)', () => {
       expect(sendPush).toHaveBeenCalledTimes(1);
       expect(sendPush).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: { petId: pet.id, reminderId },
+          data: { petId: pet.id, reminderId, kind: 'reminder' },
         }),
       );
       const [row] = await db
@@ -775,6 +781,440 @@ describe('Pet reminders (e2e)', () => {
         .from(reminders)
         .where(eq(reminders.id, reminderId));
       expect(after).toEqual(before);
+    });
+  });
+
+  describe('#210 R1: CHECKs de recurrencia en Postgres', () => {
+    let owner: UserFixture;
+    let pet: { id: string };
+    beforeAll(async () => {
+      owner = await seedUser('210-r1');
+      pet = await seedPet(owner);
+    });
+    const limits = [
+      ['hour', 24],
+      ['day', 365],
+      ['week', 52],
+      ['month', 12],
+      ['year', 10],
+    ] as const;
+    const cases: [
+      string,
+      string | null,
+      number | null,
+      boolean,
+      string | null,
+      string | null,
+    ][] = [
+      ['unidad desconocida', 'min', 1, true, null, 'unit'],
+      ...limits.map(
+        ([unit]): [string, string, number, boolean, null, string] => [
+          `${unit} bajo minimo`,
+          unit,
+          0,
+          true,
+          null,
+          'every',
+        ],
+      ),
+      ...limits.map(
+        ([unit, max]): [string, string, number, boolean, null, string] => [
+          `${unit} sobre maximo`,
+          unit,
+          max + 1,
+          true,
+          null,
+          'every',
+        ],
+      ),
+      ...limits.flatMap(
+        ([unit, max]): [string, string, number, boolean, null, null][] => [
+          [`${unit} minimo`, unit, 1, true, null, null],
+          [`${unit} maximo`, unit, max, true, null, null],
+        ],
+      ),
+      ['serie sin ancla', 'day', 1, false, null, 'shape'],
+      ['until sin serie', null, null, false, '2027-01-01', 'shape'],
+      ['every sin unidad', null, 3, true, null, 'shape'],
+      ['unidad sin every', 'week', null, true, null, 'shape'],
+      ['serie completa con until', 'month', 6, true, '2027-01-01', null],
+    ];
+    it.each(cases)(
+      '#210 R1: CHECK %s',
+      async (_label, unit, every, anchor, until, check) => {
+        const insert = db.execute(sql`insert into reminders
+        (id, pet_id, type, title, due_at, created_by, recurrence_unit, recurrence_every, recurrence_anchor_at, recurrence_until)
+        values (${uuidv7()}, ${pet.id}, 'custom', 'CHECK recurrence', now(), ${owner.id}, ${unit}, ${every}, ${anchor ? sql`now()` : sql`null`}, ${until})`);
+        if (check) {
+          await expect(insert).rejects.toMatchObject({
+            cause: {
+              code: '23514',
+              constraint: `reminders_recurrence_${check}_check`,
+            },
+          });
+        } else {
+          await expect(insert).resolves.toBeDefined();
+        }
+      },
+    );
+  });
+
+  describe('#210 R4: persistencia de recurrencia', () => {
+    it('#210 R4: POST con recurrence guarda las cuatro columnas', async () => {
+      const owner = await seedUser('210-r4');
+      const pet = await seedPet(owner);
+      const dueAt = new Date(Date.now() + 3 * 86_400_000);
+      const response = await api()
+        .post(`/v1/pets/${pet.id}/reminders`)
+        .set(auth(owner.token))
+        .send({
+          type: 'custom',
+          title: 'Serie R4',
+          dueAt: dueAt.toISOString(),
+          recurrence: { unit: 'week', every: 2 },
+          recurrenceUntil: '2031-01-01',
+        })
+        .expect(201);
+      const { id } = response.body as { id: string };
+      const [row] = await db
+        .select()
+        .from(reminders)
+        .where(eq(reminders.id, id));
+      expect(row).toMatchObject({
+        recurrenceUnit: 'week',
+        recurrenceEvery: 2,
+        recurrenceUntil: '2031-01-01',
+        recurrenceAnchorAt: dueAt,
+        status: 'scheduled',
+        scheduleName: expect.stringMatching(
+          /^reminder-[0-9a-f-]{36}$/,
+        ) as unknown,
+        enqueuedAt: null,
+      });
+    });
+  });
+
+  describe('#210 R5: respuesta publica de las series', () => {
+    it('#210 R5: GET POST y PATCH devuelven recurrence y recurrenceUntil sin el ancla', async () => {
+      const owner = await seedUser('210-r5');
+      const pet = await seedPet(owner);
+      const expectedRows: Record<string, unknown>[] = [];
+      for (const [offset, recurrence, recurrenceUntil] of [
+        [3, { unit: 'month', every: 6 }, '2031-01-01'],
+        [4, null, null],
+      ] as const) {
+        const dueAt = new Date(Date.now() + offset * 86_400_000).toISOString();
+        const created = await api()
+          .post(`/v1/pets/${pet.id}/reminders`)
+          .set(auth(owner.token))
+          .send({
+            type: 'custom',
+            title: 'Shape',
+            dueAt,
+            recurrence,
+            recurrenceUntil,
+          })
+          .expect(201);
+        const { id } = created.body as { id: string };
+        const expected = {
+          id,
+          petId: pet.id,
+          type: 'custom',
+          title: 'Shape',
+          dueAt,
+          advanceMinutes: 60,
+          status: 'scheduled',
+          recurrence,
+          recurrenceUntil,
+        };
+        expect(created.body).toEqual(expected);
+        const patched = await api()
+          .patch(`/v1/reminders/${id}`)
+          .set(auth(owner.token))
+          .send({ title: 'Cambio' })
+          .expect(200);
+        expected.title = 'Cambio';
+        expect(patched.body).toEqual(expected);
+        expectedRows.push(expected);
+        const listed = await api()
+          .get(`/v1/pets/${pet.id}/reminders`)
+          .set(auth(owner.token))
+          .expect(200);
+        expect(listed.body).toEqual(expectedRows);
+      }
+    });
+  });
+
+  describe('#210 R3: reglas cruzadas en HTTP', () => {
+    it('#210 R3: POST con recurrenceUntil sin recurrence responde 400 sin insertar', async () => {
+      const owner = await seedUser('210-r3-post');
+      const pet = await seedPet(owner);
+      const response = await api()
+        .post(`/v1/pets/${pet.id}/reminders`)
+        .set(auth(owner.token))
+        .send({
+          type: 'custom',
+          title: 'Invalido',
+          dueAt: new Date(Date.now() + 3 * 86_400_000).toISOString(),
+          recurrenceUntil: '2031-01-01',
+        })
+        .expect(400);
+      expect(response.body).toEqual({
+        statusCode: 400,
+        message: 'Invalid recurrence',
+      });
+      expect(
+        await db.select().from(reminders).where(eq(reminders.petId, pet.id)),
+      ).toHaveLength(0);
+    });
+    it('#210 R3: PATCH que deja until antes de dueAt responde 400 sin cambiar la fila', async () => {
+      const owner = await seedUser('210-r3-patch');
+      const pet = await seedPet(owner);
+      const created = await api()
+        .post(`/v1/pets/${pet.id}/reminders`)
+        .set(auth(owner.token))
+        .send({
+          type: 'custom',
+          title: 'Serie',
+          dueAt: new Date(Date.now() + 3 * 86_400_000).toISOString(),
+          recurrence: { unit: 'day', every: 1 },
+        })
+        .expect(201);
+      const { id } = created.body as { id: string };
+      const [before] = await db
+        .select()
+        .from(reminders)
+        .where(eq(reminders.id, id));
+      const response = await api()
+        .patch(`/v1/reminders/${id}`)
+        .set(auth(owner.token))
+        .send({ recurrenceUntil: new Date().toISOString().slice(0, 10) })
+        .expect(400);
+      expect(response.body).toEqual({
+        statusCode: 400,
+        message: 'Invalid recurrence',
+      });
+      const [after] = await db
+        .select()
+        .from(reminders)
+        .where(eq(reminders.id, id));
+      expect(after).toEqual(before);
+    });
+  });
+  describe('#210 R6: PATCH de las columnas de recurrencia', () => {
+    it('#210 R6: PATCH reancla, conserva y limpia columnas de la serie', async () => {
+      const owner = await seedUser('210-r6');
+      const pet = await seedPet(owner);
+      const until = new Date(Date.now() + 30 * 86_400_000)
+        .toISOString()
+        .slice(0, 10);
+      const created = await api()
+        .post(`/v1/pets/${pet.id}/reminders`)
+        .set(auth(owner.token))
+        .send({
+          type: 'custom',
+          title: 'Serie',
+          dueAt: new Date(Date.now() + 3 * 86_400_000).toISOString(),
+          recurrence: { unit: 'week', every: 2 },
+          recurrenceUntil: until,
+        })
+        .expect(201);
+      const { id } = created.body as { id: string };
+      const dueAt = new Date(Date.now() + 4 * 86_400_000);
+      await api()
+        .patch(`/v1/reminders/${id}`)
+        .set(auth(owner.token))
+        .send({ dueAt: dueAt.toISOString() })
+        .expect(200);
+      let [row] = await db.select().from(reminders).where(eq(reminders.id, id));
+      expect(row).toMatchObject({
+        dueAt,
+        recurrenceUnit: 'week',
+        recurrenceEvery: 2,
+        recurrenceAnchorAt: dueAt,
+        recurrenceUntil: until,
+      });
+      await api()
+        .patch(`/v1/reminders/${id}`)
+        .set(auth(owner.token))
+        .send({ recurrenceUntil: null })
+        .expect(200);
+      [row] = await db.select().from(reminders).where(eq(reminders.id, id));
+      expect(row).toMatchObject({
+        recurrenceUnit: 'week',
+        recurrenceEvery: 2,
+        recurrenceAnchorAt: dueAt,
+        recurrenceUntil: null,
+      });
+      await api()
+        .patch(`/v1/reminders/${id}`)
+        .set(auth(owner.token))
+        .send({ recurrence: null })
+        .expect(200);
+      [row] = await db.select().from(reminders).where(eq(reminders.id, id));
+      expect(row).toMatchObject({
+        recurrenceUnit: null,
+        recurrenceEvery: null,
+        recurrenceAnchorAt: null,
+        recurrenceUntil: null,
+      });
+    });
+  });
+
+  describe('#210 R13: escrituras condicionadas al schedule', () => {
+    it('#210 R13: markEnqueued con scheduleName viejo no toca enqueued_at', async () => {
+      const owner = await seedUser('210-r13-enqueue');
+      const pet = await seedPet(owner);
+      const id = await seedReminder(pet.id, owner.id, {
+        dueAt: new Date(Date.now() + 3 * 86_400_000),
+      });
+      const repository = app.get<ReminderRepository>(REMINDER_REPOSITORY);
+      const at = new Date();
+      await repository.markEnqueued(id, 'reminder-old', at);
+      const [afterOld] = await db
+        .select()
+        .from(reminders)
+        .where(eq(reminders.id, id));
+      await repository.markEnqueued(id, `reminder-${id}`, at);
+      const [afterCurrent] = await db
+        .select()
+        .from(reminders)
+        .where(eq(reminders.id, id));
+      expect(afterCurrent.enqueuedAt).toEqual(at);
+      expect(afterOld.enqueuedAt).toBeNull();
+    });
+    it('#210 R13: advanceOccurrence solo avanza la fila con su scheduleName y scheduled', async () => {
+      const owner = await seedUser('210-r13-advance');
+      const pet = await seedPet(owner);
+      const repository = app.get<ReminderRepository>(REMINDER_REPOSITORY);
+      const next = new Date(Date.now() + 4 * 86_400_000);
+      for (const mode of ['old', 'cancelled', 'current'] as const) {
+        const id = await seedReminder(pet.id, owner.id, {
+          dueAt: new Date(Date.now() + 3 * 86_400_000),
+          status: mode === 'cancelled' ? 'cancelled' : 'scheduled',
+        });
+        await db
+          .update(reminders)
+          .set({ enqueuedAt: new Date() })
+          .where(eq(reminders.id, id));
+        const [before] = await db
+          .select()
+          .from(reminders)
+          .where(eq(reminders.id, id));
+        const newScheduleName = `reminder-${uuidv7()}`;
+        const advanced = await repository.advanceOccurrence(
+          id,
+          mode === 'old' ? 'reminder-old' : before.scheduleName!,
+          next,
+          newScheduleName,
+        );
+        const [after] = await db
+          .select()
+          .from(reminders)
+          .where(eq(reminders.id, id));
+        expect(advanced).toBe(mode === 'current');
+        expect(after).toEqual(
+          mode === 'current'
+            ? {
+                ...before,
+                dueAt: next,
+                scheduleName: newScheduleName,
+                enqueuedAt: null,
+              }
+            : before,
+        );
+      }
+    });
+  });
+
+  describe('#210 R11: avance de series en la cadena real', () => {
+    async function createSeries(label: string, endsToday: boolean) {
+      sendPush.mockClear();
+      await sqs.send(new PurgeQueueCommand({ QueueUrl: notificationsUrl }));
+      const owner = await seedUser(`210-r11-${label}`);
+      const pet = await seedPet(owner);
+      await api()
+        .post('/v1/me/push-tokens')
+        .set(auth(owner.token))
+        .send({
+          expoToken: `ExponentPushToken[210-${label}-${runId}]`,
+          platform: 'android',
+        })
+        .expect(200);
+      const dueAt = new Date(Date.now() + 2 * 3_600_000);
+      const created = await api()
+        .post(`/v1/pets/${pet.id}/reminders`)
+        .set(auth(owner.token))
+        .send({
+          type: 'custom',
+          title: 'Serie diaria',
+          dueAt: dueAt.toISOString(),
+          advanceMinutes: 180,
+          recurrence: { unit: 'day', every: 1 },
+          recurrenceUntil: endsToday ? dueAt.toISOString().slice(0, 10) : null,
+        })
+        .expect(201);
+      const { id } = created.body as { id: string };
+      const [before] = await db
+        .select()
+        .from(reminders)
+        .where(eq(reminders.id, id));
+      return { id, dueAt, before };
+    }
+    it('#210 R11: una serie diaria vuelve a scheduled en la siguiente ocurrencia sin duplicar push', async () => {
+      const { id, dueAt, before } = await createSeries('daily', false);
+      await dispatcher.dispatchOnce();
+      await notifier.drainOnce();
+      await dispatcher.dispatchOnce();
+      await notifier.drainOnce();
+      const delivered = sendPush.mock.calls.filter(
+        (call: unknown[]) =>
+          (call[0] as { data: { reminderId?: string } }).data.reminderId === id,
+      );
+      expect(delivered).toHaveLength(1);
+      const [row] = await db
+        .select()
+        .from(reminders)
+        .where(eq(reminders.id, id));
+      expect(row).toMatchObject({
+        status: 'scheduled',
+        dueAt: new Date(dueAt.getTime() + 86_400_000),
+        enqueuedAt: null,
+      });
+      expect(row.scheduleName).not.toBe(before.scheduleName);
+    });
+    it('#210 R11: una serie con until en su dia termina en sent', async () => {
+      const { id } = await createSeries('until', true);
+      await dispatcher.dispatchOnce();
+      await notifier.drainOnce();
+      const [row] = await db
+        .select()
+        .from(reminders)
+        .where(eq(reminders.id, id));
+      expect(row.status).toBe('sent');
+    });
+  });
+
+  describe('#210 R14: autorizacion opaca de recurrencia', () => {
+    it('#210 R14: PATCH con recurrenceUntil invalido sobre reminder ajeno responde el mismo 404', async () => {
+      const owner = await seedUser('210-r14-owner');
+      const outsider = await seedUser('210-r14-outsider');
+      const pet = await seedPet(owner);
+      const id = await seedReminder(pet.id, owner.id, {
+        dueAt: new Date(Date.now() + 3 * 86_400_000),
+      });
+      const body = { recurrenceUntil: '2031-01-01' };
+      const foreign = await api()
+        .patch(`/v1/reminders/${id}`)
+        .set(auth(outsider.token))
+        .send(body);
+      const missing = await api()
+        .patch(`/v1/reminders/${uuidv7()}`)
+        .set(auth(outsider.token))
+        .send(body);
+      expect(missing.status).toBe(404);
+      expect(foreign.status).toBe(missing.status);
+      expect(foreign.body).toEqual(missing.body);
     });
   });
 });
