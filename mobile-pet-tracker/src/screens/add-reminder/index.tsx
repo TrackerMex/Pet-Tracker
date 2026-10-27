@@ -73,8 +73,9 @@ function AddReminderContent({ petId }: { petId: string }) {
   const locale = useLocale();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
-  const [muted, accentStrong] = useThemeColors(['muted', 'accent-strong']);
+  const [muted, accentStrong, foreground] = useThemeColors(['muted', 'accent-strong', 'foreground']);
   const [repeat, setRepeat] = useState<(typeof REPEAT_OPTIONS)[number]['key']>('once');
+  const [hourEvery, setHourEvery] = useState(8);
   const [type, setType] = useState<ReminderType>('vaccine');
   const [title, setTitle] = useState('');
   const [titleFocused, setTitleFocused] = useState(false);
@@ -274,6 +275,42 @@ function AddReminderContent({ petId }: { petId: string }) {
             })}
           </View>
         </View>
+
+        {repeat !== 'once' ? (
+          <View className="gap-2">
+            <View testID="repeat-stepper" className="flex-row items-center gap-3 rounded-16 bg-default p-2" style={CONTINUOUS_CORNER}>
+              <Text className="text-15 font-extrabold text-foreground">{t('addReminder.every')}</Text>
+              <Pressable
+                testID="repeat-every-less"
+                accessibilityRole="button"
+                accessibilityLabel={t('addReminder.hourLess')}
+                accessibilityState={{ disabled: hourEvery === 1 }}
+                disabled={hourEvery === 1}
+                hitSlop={TOUCH_SLOP}
+                className={`size-11 items-center justify-center rounded-full border-2 border-lip-gray bg-surface${hourEvery === 1 ? ' opacity-50' : ''}`}
+                onPress={() => setHourEvery((value) => Math.max(1, value - 1))}
+              >
+                <Minus size={20} color={foreground} />
+              </Pressable>
+              <Text testID="repeat-every-value" accessibilityLiveRegion="polite" className="min-w-21 text-center text-22 font-black text-foreground">
+                {hourEvery === 1 ? t('addReminder.hoursValueOne') : t('addReminder.hoursValue', { count: hourEvery })}
+              </Text>
+              <Pressable
+                testID="repeat-every-more"
+                accessibilityRole="button"
+                accessibilityLabel={t('addReminder.hourMore')}
+                accessibilityState={{ disabled: hourEvery === 24 }}
+                disabled={hourEvery === 24}
+                hitSlop={TOUCH_SLOP}
+                className={`size-11 items-center justify-center rounded-full border-2 border-lip-gray bg-surface${hourEvery === 24 ? ' opacity-50' : ''}`}
+                onPress={() => setHourEvery((value) => Math.min(24, value + 1))}
+              >
+                <Plus size={20} color={foreground} />
+              </Pressable>
+            </View>
+            <Text testID="repeat-every-help" className="text-13 font-semibold text-muted">{t('addReminder.hoursRange')}</Text>
+          </View>
+        ) : null}
 
         <View className="gap-2">
           <Text className="text-sm font-extrabold text-foreground">
