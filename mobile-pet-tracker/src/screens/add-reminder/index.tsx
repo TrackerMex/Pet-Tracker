@@ -77,6 +77,7 @@ function AddReminderContent({ petId }: { petId: string }) {
   const [repeat, setRepeat] = useState<(typeof REPEAT_OPTIONS)[number]['key']>('once');
   const [hourEvery, setHourEvery] = useState(8);
   const [monthEvery, setMonthEvery] = useState(1);
+  const [until, setUntil] = useState<Date | null>(null);
   const [type, setType] = useState<ReminderType>('vaccine');
   const [title, setTitle] = useState('');
   const [titleFocused, setTitleFocused] = useState(false);
@@ -231,8 +232,13 @@ function AddReminderContent({ petId }: { petId: string }) {
               testID="date-field"
               pickerTestID="date-picker"
               value={date === null ? null : localDateToIso(date)}
-              onChange={(next) => { setDate(next === null ? null : isoToLocalDate(next)); setNow(Date.now()); }}
-              minDate={localDateToIso(new Date())}
+              onChange={(next) => {
+                const picked = next === null ? null : isoToLocalDate(next);
+                setDate(picked);
+                if (picked && until && picked.getTime() > until.getTime()) setUntil(null);
+                setNow(Date.now());
+              }}
+              minDate={localDateToIso(new Date(now))}
               placeholder={t('addReminder.selectDate')}
             />
             <FieldErrorMessage testID="date-field" issue={fieldErrors.date} />
@@ -315,6 +321,24 @@ function AddReminderContent({ petId }: { petId: string }) {
               </Pressable>
             </View>
             <Text testID="repeat-every-help" className="text-13 font-semibold text-muted">{repeat === 'month' ? t('addReminder.monthsRange') : t('addReminder.hoursRange')}</Text>
+          </View>
+        ) : null}
+
+        {repeat !== 'once' ? (
+          <View className="gap-2">
+            <View className="flex-row items-center justify-between">
+              <Text className="text-sm font-extrabold text-foreground">{t('addReminder.until')}</Text>
+              <Text className="text-13 font-semibold text-muted">{t('addReminder.optional')}</Text>
+            </View>
+            <DateField
+              testID="until-field"
+              pickerTestID="until-picker"
+              allowClear
+              value={until === null ? null : localDateToIso(until)}
+              onChange={(next) => setUntil(next === null ? null : isoToLocalDate(next))}
+              minDate={localDateToIso(date ?? new Date(now))}
+              placeholder={t('addReminder.untilPlaceholder')}
+            />
           </View>
         ) : null}
 
