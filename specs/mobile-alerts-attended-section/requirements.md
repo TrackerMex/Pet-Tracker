@@ -339,6 +339,13 @@ Claves **existentes que se reutilizan sin cambio**: `alerts.title`,
     `#78 R12: el centro de alertas resuelve su copy por clave`
     (`checkUses(R12_ALERTS)`) y `#194 R5: cuadra ALL_USES…` (autoconsistente;
     no hay cifra fija de `R12_ALERTS`).
+  - **Fe de erratas E1 del leader (2026-10-27):** `providers/__tests__/language-provider.test.tsx`
+    (`#194 R1: mantiene la base más las claves de #68…`) lleva un recuento manual
+    de claves del catálogo (`toHaveLength` con suma `+ 26, // #208 R19`). Las seis
+    claves lo ponen en rojo (+6): ese `it` SÍ se toca, solo para añadir al final de la
+    suma `+ 6 // #223 R16` y el sufijo ` (enmendado por #223 R16)` al título. Va en un
+    paso rojo propio antes del verde que añade las claves. Descubierto en #222 (misma
+    clase de candado). Si #222 llegó antes a `dev`, suma sobre su `+ 1, // #222 R8`.
 
 - **R17**: THE SYSTEM SHALL pintar los elementos nuevos con las clases fijadas
   por el canvas (tabla abajo), sin hex, sin corchetes en `className`, sin
@@ -415,6 +422,7 @@ Ficheros de producción (relativos a `mobile-pet-tracker/src/`):
 | `hooks/use-alerts-list.ts` | opción `{ drain }` y efecto de drenado (R1-R3) |
 | `screens/alerts/index.tsx` | partición, sección, calma, componente local `StatusPill`, sin `onEndReached` (R4-R17) |
 | `i18n/catalog.ts` | seis claves en `es` y `en` (R16) |
+| `providers/__tests__/language-provider.test.tsx` | solo el recuento de claves `+ 6` (R16, fe de erratas E1) |
 
 Candados en `screens/alerts/index.test.tsx` (el mock de
 `reicon-react-native` suma `Check`, `ChevronDown` y `ChevronUp`):
