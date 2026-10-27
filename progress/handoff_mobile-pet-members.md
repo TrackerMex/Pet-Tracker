@@ -747,3 +747,29 @@ Quedan autorizados estos dos arreglos y **solo** estos.
 
 Esta adenda es commit del leader con `#214` en el asunto, como las Adendas 1 y 2. Los dos commits de test de
 A y B son tuyos y suman a la cuenta de commits del cierre: anótalos.
+
+## Adenda 4 (leader, tras la segunda parada en R7 (2))
+
+Paraste bien otra vez. El rojo viene de tu test, no de la producción. El `Button` de HeroUI antepone sus
+clases internas (`pressable-feedback__root button__root …`) a la `className` que recibe, así que `toBe` con
+la receta de la spec no puede ponerse verde. La spec fija la receta, no la cadena entera, y la `Received` de tu
+log termina exactamente en esa receta.
+
+Queda autorizado este arreglo y **solo** este:
+
+- En `mobile-pet-tracker/src/screens/home/index.test.tsx`, dentro de
+  `it('R7: el vacío ofrece Unirme con código bajo Añadir mascota', …)`, cambia
+  `expect(screen.getByTestId('home-join-pet-button').props.className).toBe('w-full h-13.5 rounded-16 border-2 border-lip-gray bg-surface');` por
+  `expect(screen.getByTestId('home-join-pet-button').props.className).toMatch(/ w-full h-13\.5 rounded-16 border-2 border-lip-gray bg-surface$/);`.
+- No cambies nada más del test ni de la producción que ya tienes sin commit. Las demás `toBe` de `className`
+  de ese `it` (`home-join-pet`, `home-join-pet-prompt`) son de nodos que no son de HeroUI y se quedan.
+- Commit aparte, solo del test (la producción de R7 sigue sin commit):
+  `git commit --only mobile-pet-tracker/src/screens/home/index.test.tsx -m "test(mobile): #214 match the join button recipe as a className suffix (R7)"`.
+- Retoma R7 (2) desde la primera corrida del paso verde, con tu producción tal cual. La cuenta no cambia
+  (`5770`).
+- En la sonda de R7, planta además `rounded-14` en lugar de `rounded-16` en `home-join-pet-button`: este `it`
+  tiene que dar rojo. Revierte con `git checkout HEAD --` del fichero y comprueba diff e índice vacíos.
+- Después, la parte B de la Adenda 3 y el resto de la cadena, sin cambios.
+- Anota en el reporte el commit nuevo, la causa y el rojo de la sonda. Cualquier otro rojo inesperado: para.
+
+Esta adenda es commit del leader, como las anteriores. El commit de test es tuyo y suma a la cuenta del cierre.
