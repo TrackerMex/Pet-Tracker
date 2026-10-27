@@ -12,6 +12,7 @@ import { renderWithProviders } from '../../../../test/render-with-providers';
 
 jest.mock('../../../api/pets', () => ({ getPet: jest.fn(), listPets: jest.fn() }));
 jest.mock('../../../api/users', () => ({ getMe: jest.fn() }));
+jest.mock('../../../api/pet-members', () => ({ listPetMembers: jest.fn() })); // #214 R5
 jest.mock('../../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
 }));

@@ -18,6 +18,7 @@ import { withThemeTransition } from 'react-native-nitro-theme-transition';
 
 import { requestPhotoUploadUrl, uploadPhotoToUrl } from '../../api/media';
 import { getPet, listPets, type PetState, type PetsState } from '../../api/pets';
+import { listPetMembers } from '../../api/pet-members';
 import { petKeys, userKeys } from '../../api/query-keys';
 import type { PetProfile } from '../../api/types';
 import { getMe, type MeState } from '../../api/users';
@@ -91,6 +92,8 @@ jest.mock('../../api/pets', () => ({
   getPet: jest.fn(),
   listPets: jest.fn(),
 }));
+
+jest.mock('../../api/pet-members', () => ({ listPetMembers: jest.fn() }));
 
 jest.mock('../../api/media', () => ({
   ...jest.requireActual('../../api/media'),
@@ -221,6 +224,7 @@ let selectPetFromTest: ((petId: string) => void) | undefined;
 beforeEach(() => {
   mockLaunchImageLibrary.mockReset();
   mockLaunchImageLibrary.mockResolvedValue({ canceled: true, assets: null });
+  jest.mocked(listPetMembers).mockResolvedValue({ kind: 'error' }); // #214 R5
 });
 
 function pending<T>(): Promise<T> {
@@ -2572,5 +2576,73 @@ describe('#214 R4: tarjeta de Familia', () => {
     await renderProfile();
     await screen.findByTestId('profile-pets-empty');
     expect(screen.queryByTestId('members-link')).toBeNull();
+  });
+});
+
+
+function familyMembers214(count: number) {
+  return Array.from({ length: count }, (_, index) => ({
+    userId: `user-${index + 1}`, firstName: 'Ana', lastName: 'García',
+    role: index === 0 ? 'owner' as const : 'family' as const,
+    joinedAt: '2026-10-06T09:05:00.000Z',
+  }));
+}
+
+describe('#214 R5: subtítulo de Familia', () => {
+  beforeEach(() => {
+    setupProfile168();
+    const pet = makePet({ name: 'Rocky' });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+  });
+
+  it('R5: con un solo miembro dice Solo tú cuidas a Rocky', async () => {
+    jest.mocked(listPetMembers).mockResolvedValue({ kind: 'ok', members: familyMembers214(1) });
+    await renderProfile();
+    expect(await screen.findByTestId('members-link-subtitle')).toHaveTextContent('Solo tú cuidas a Rocky');
+  });
+
+  it('R5: con dos miembros usa el singular', async () => {
+    jest.mocked(listPetMembers).mockResolvedValue({ kind: 'ok', members: familyMembers214(2) });
+    await renderProfile();
+    expect(await screen.findByTestId('members-link-subtitle')).toHaveTextContent('Tú y 1 persona más cuidan a Rocky');
+  });
+
+  it('R5: con tres miembros dice Tú y 2 personas más cuidan a Rocky', async () => {
+    jest.mocked(listPetMembers).mockResolvedValue({ kind: 'ok', members: familyMembers214(3) });
+    const { queryClient } = await renderProfile();
+    expect(await screen.findByTestId('members-link-subtitle')).toHaveTextContent('Tú y 2 personas más cuidan a Rocky');
+    expect(listPetMembers).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1');
+    expect(queryClient.getQueryData(['pet-members', 'pet-1'])).toEqual({ kind: 'ok', members: familyMembers214(3) });
+  });
+
+  it('R5: oculta el subtítulo mientras carga', async () => {
+    jest.mocked(listPetMembers).mockReturnValue(pending());
+    await renderProfile();
+    await screen.findByTestId('members-link');
+    expect(screen.queryByTestId('members-link-subtitle')).toBeNull();
+  });
+
+  it('R5: oculta el subtítulo si la lista falla', async () => {
+    const failures: Awaited<ReturnType<typeof listPetMembers>>[] = [
+      { kind: 'error' }, { kind: 'unreachable', message: 'x' }, { kind: 'unauthorized' },
+    ];
+    for (const result of failures) {
+      jest.mocked(listPetMembers).mockResolvedValue(result);
+      const { unmount } = await renderWithProviders(<ProfileScreen />, { wrapper: ProfileWrapper, onUnauthorized: mockSignOut });
+      await screen.findByTestId('members-link');
+      await act(async () => undefined);
+      expect(screen.queryByTestId('members-link-subtitle')).toBeNull();
+      expect(mockSignOut).not.toHaveBeenCalled();
+      await unmount();
+    }
+  });
+
+  it('R5: en inglés dice You and 2 more people care for Rocky', async () => {
+    jest.mocked(listPetMembers).mockResolvedValue({ kind: 'ok', members: familyMembers214(3) });
+    await renderProfile();
+    await screen.findByTestId('members-link');
+    await fireEvent.press(screen.getByTestId('language-toggle'));
+    await waitFor(() => expect(screen.getByTestId('members-link-subtitle')).toHaveTextContent('You and 2 more people care for Rocky'));
   });
 });
