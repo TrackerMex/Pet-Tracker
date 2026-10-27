@@ -1452,4 +1452,31 @@ describe('#213 R4: controles de repetición', () => {
     expect(mockCreateReminder.mock.calls[0][3].advanceMinutes).toBe(0);
   });
 
+  it.each([
+    ['Una vez', 'once', 1, false, { type: 'vaccine', title: 'Rabies', dueAt: '2026-12-31T15:00:00.000Z', advanceMinutes: 10080 }],
+    ['Diario', 'day', 1, false, { type: 'vaccine', title: 'Rabies', dueAt: '2026-12-31T15:00:00.000Z', advanceMinutes: 10080, recurrence: { unit: 'day', every: 1 } }],
+    ['Semanal', 'week', 1, false, { type: 'vaccine', title: 'Rabies', dueAt: '2026-12-31T15:00:00.000Z', advanceMinutes: 10080, recurrence: { unit: 'week', every: 1 } }],
+    ['Mensual', 'month', 3, false, { type: 'vaccine', title: 'Rabies', dueAt: '2026-12-31T15:00:00.000Z', advanceMinutes: 10080, recurrence: { unit: 'month', every: 3 } }],
+    ['Anual', 'year', 1, false, { type: 'vaccine', title: 'Rabies', dueAt: '2026-12-31T15:00:00.000Z', advanceMinutes: 10080, recurrence: { unit: 'year', every: 1 } }],
+    ['Cada N horas', 'hour', 12, false, { type: 'vaccine', title: 'Rabies', dueAt: '2026-12-31T15:00:00.000Z', advanceMinutes: 0, recurrence: { unit: 'hour', every: 12 } }],
+    ['Diario con Hasta', 'day', 1, true, { type: 'vaccine', title: 'Rabies', dueAt: '2026-12-31T15:00:00.000Z', advanceMinutes: 10080, recurrence: { unit: 'day', every: 1 }, recurrenceUntil: '2027-01-02' }],
+  ] as const)('#213 R10: guarda %s con su cuerpo exacto', async (_label, key, count, hasUntil, expected) => {
+    await pickDate(new Date(2026, 11, 31, 12));
+    await pickTime(9, 0);
+    if (key === 'once') {
+      await fireEvent.press(screen.getByTestId('repeat-chip-day'));
+      await pickUntil(new Date(2027, 0, 2, 12));
+    }
+    await fireEvent.press(screen.getByTestId(`repeat-chip-${key}`));
+    if (key === 'month' || key === 'hour') {
+      for (let i = key === 'hour' ? 8 : 1; i < count; i++) await fireEvent.press(screen.getByTestId('repeat-every-more'));
+    }
+    if (hasUntil) await pickUntil(new Date(2027, 0, 2, 12));
+    await fireEvent.changeText(screen.getByTestId('title-input'), ' Rabies ');
+    await fireEvent.press(screen.getByTestId('add-reminder-submit'));
+    await waitFor(() => expect(screen.getByTestId('add-reminder-submit')).toBeDisabled());
+    expect(mockCreateReminder).toHaveBeenCalledTimes(1);
+    expect(mockCreateReminder).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token', 'pet-1', expected);
+  });
+
 });
