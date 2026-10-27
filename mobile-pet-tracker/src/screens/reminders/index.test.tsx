@@ -2183,4 +2183,10 @@ describe('#213 R14: series en Recordatorios', () => {
     expect(mockCancelReminderSeries).not.toHaveBeenCalled();
   });
 
+  it('#213 R19: la hoja Cancelar serie hereda el fondo surface de #218', async () => {
+    await openSeriesSheet();
+    const sheet = within(screen.getByTestId('reminders-delete-host')).getByTestId('community-bottom-sheet');
+    expect(flat(sheet.props.backgroundStyle)).toEqual({ backgroundColor: 'color:surface' });
+  });
+
 });
