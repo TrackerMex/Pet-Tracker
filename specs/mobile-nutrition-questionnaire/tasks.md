@@ -129,8 +129,11 @@ Prohibido correr `./init.sh` y e2e.
 - [ ] (3) Sin refactor.
 
 ## R21 — «Generar plan» solo para owner
-- [ ] (1) Los `it` R21.
-- [ ] (2) Envolver `generate-plan-button` en `isOwner`.
+- [ ] (1) En un mismo commit rojo (errata ronda 5):
+  - los `it` R21;
+  - las enmiendas de los seis `it` existentes de `src/screens/meal-schedule/index.test.tsx` que lista la tabla «Tests existentes que R21 contradice», cada uno con el sufijo ` (enmendado por #209 R21)`.
+  Rojo: los tres `it` R21 de no-owner y el `it` invertido del familiar. Anclas: `grep -cF '(enmendado por #209 R21)'` pasa de 0 a 6 y `grep -cF 'el familiar solo ve Generar ocupando el ancho disponible'` de 1 a 0, en ese fichero.
+- [ ] (2) `canGenerate` exige `isOwner`: sin owner no se pinta el bloque con `generate-plan-error` y `meal-schedule-actions` (errata ronda 5).
 - [ ] (3) Sin refactor.
 
 ## R22 — píldoras en español

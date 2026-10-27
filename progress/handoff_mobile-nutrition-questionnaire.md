@@ -628,3 +628,39 @@ Después retoma la cadena en R9 (test). El resto de las sondas no cambia. Si otr
 para igual que ahora.
 
 Esta adenda es commit del leader con `#209` en el asunto, como la Adenda 1, y solo toca este fichero.
+
+## Adenda 3 (leader, tras la parada en R21)
+
+Paraste bien. La spec no listaba los 13 casos de Horario que R21 contradice. Ya los lista: requirements.md
+§R21, tabla «Tests existentes que R21 contradice», y tasks.md R21, errata ronda 5. Léelas enteras antes de
+seguir.
+
+Lo que cambia en la cadena:
+
+- **R21 test.** En el mismo commit rojo van los `it` R21 y las enmiendas de los seis `it` existentes de la
+  tabla, cada uno con el sufijo ` (enmendado por #209 R21)`. Corre el fichero de Horario.
+  - Rojos: los tres `#209 R21: %s no ve Generar plan` y `el familiar no ve ni Añadir ni Generar (enmendado
+    por #209 R21)`.
+  - Nace verde `#209 R21: owner ve Generar plan`, como ya decía el cuerpo.
+  - Los otros cinco `it` enmendados (11 casos) pasan antes y después. No son `it` nuevos: no van en la lista
+    de «Nacen verdes» ni disparan su PARA.
+  - Anclas antes del commit, desde `mobile-pet-tracker/`, en `src/screens/meal-schedule/index.test.tsx`:
+    `grep -cF '(enmendado por #209 R21)'` = 6 y `grep -cF 'el familiar solo ve Generar ocupando el ancho
+    disponible'` = 0.
+  - Mensaje: `test(mobile): #209 R21 rojo`.
+- **R21 feat.** No basta con envolver `generate-plan-button`: `canGenerate` exige `isOwner`. Así, sin owner
+  no se pintan `generate-plan-error` ni `meal-schedule-actions`. Corre el fichero de Horario: verde entero.
+  Mensaje: `feat(mobile): #209 R21 generar plan solo owner`.
+- **Sonda R21.** Sustituye a la del cuerpo: quitar el `isOwner` de `canGenerate`. Rojo: las filas de roles de
+  `#209 R21:` y el `it` invertido del familiar. Pasos de siempre, y revierte.
+
+Si sale otro rojo en Horario, PARA y reporta el nombre del `it` y su `Expected`/`Received`.
+
+**Comprobaciones finales.** La errata ronda 5 va en un commit del leader que toca `requirements.md`,
+`tasks.md` y este fichero. En «Commits» y «Ficheros tocados» del Cierre, con la base `48346f15` de la
+Adenda 1, añade al final del comando dos exclusiones más:
+`':!specs/mobile-nutrition-questionnaire/requirements.md' ':!specs/mobile-nutrition-questionnaire/tasks.md'`.
+La lista de 26 rutas no cambia. «Ficheros intactos» no cambia.
+
+Retoma la cadena en R21 (test) y sigue hasta el commit final. El merge de `origin/dev` es del leader, después
+del commit final: no lo hagas tú.

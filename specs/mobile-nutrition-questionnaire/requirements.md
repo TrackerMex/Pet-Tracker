@@ -626,9 +626,47 @@ Es una decisión del leader del 2026-10-26, no una desviación del canvas.
 
 **R21** — WHILE el rol de la mascota no es `owner`, THE SYSTEM SHALL no pintar
 `generate-plan-button` en Horario. Con owner se pinta como hoy.
+(errata ronda 5, 2026-10-27) Sin owner tampoco se pinta el bloque que lo
+contiene: ni `meal-schedule-actions` ni `generate-plan-error`. En código,
+`canGenerate` exige `isOwner`. Sin ese cambio, el familiar vería una fila de
+acciones vacía, porque «Añadir comida» ya es solo de owner (#147 R4). Los `it`
+R21 de no-owner asertan que `generate-plan-button` y `meal-schedule-actions`
+son `null`, después de `await screen.findByTestId('meal-time-row-1')` con un
+plan `ok`.
 - Tests: `src/screens/meal-schedule/index.test.tsx` ›
   - `it.each(['family', 'walker', 'vet'])('#209 R21: %s no ve Generar plan')`
   - `it('#209 R21: owner ve Generar plan')`
+
+**Tests existentes que R21 contradice** (errata ronda 5, 2026-10-27). El
+`beforeEach` de nivel superior pone `petState('family')`. Los `it` que pulsan o
+asertan `generate-plan-button` sin fijar rol corren como familiar. Medido con
+R21 plantado: `Tests: 13 failed, 72 passed, 85 total` en el fichero de Horario.
+Todos están en `src/screens/meal-schedule/index.test.tsx` y cada `it` tocado
+suma ` (enmendado por #209 R21)` al final de su nombre. El resto del nombre no
+se toca:
+
+| `it` | Enmienda |
+|---|---|
+| `describe('R8: generar plan con degradación por kind')`, sus cuatro `it`: `shows the generate button with a $kind plan`, `maps $result.kind to "$message"`, `clears a prior error and refetches the generated plan on success` y `disables the generate button while the request is pending` (11 casos) | Una línea `mockGetPet.mockResolvedValue(petState('owner'));` al final del `beforeEach` de ese `describe`, tras su `mockGetNutritionProfile.mockResolvedValue({ kind: 'not-found' });`. En los dos `it.each` el sufijo va dentro del literal del nombre, tras `$kind plan` y tras `"$message"` |
+| `el error de generar precede a las acciones como hermano` (`describe('#179 R7: acciones del artboard')`) | Primera línea del cuerpo: `mockGetPet.mockResolvedValue(petState('owner'));` |
+| `el familiar solo ve Generar ocupando el ancho disponible` (mismo `describe`) | Se invierte, porque contradice R21 en su enunciado. Nombre nuevo: `el familiar no ve ni Añadir ni Generar (enmendado por #209 R21)`. Cuerpo: conserva sus tres primeras líneas (`petState('family')`, `renderMealSchedule()` y `findByTestId('meal-time-row-1')`), y luego aserta que `meal-schedule-actions`, `add-meal-time-button` y `generate-plan-button` dan `null` con `screen.queryByTestId`. Sin `expectGenerate` |
+
+Van en el commit rojo de R21, junto a los `it` R21, como en R22. En ese commit
+el único rojo de las enmiendas es el `it` invertido: la producción aún pinta
+Generar al familiar. Los otros cinco pasan antes y después. Anclas, desde
+`mobile-pet-tracker/`, en `src/screens/meal-schedule/index.test.tsx`, medidas
+en `12e0c771`:
+- `grep -cF '(enmendado por #209 R21)'` pasa de `0` a `6`;
+- `grep -cF "mockGetPet.mockResolvedValue(petState('owner'));"` pasa de `11` a
+  `13`, más las que sumen los `it` R21 nuevos;
+- `grep -cF 'el familiar solo ve Generar ocupando el ancho disponible'` pasa de
+  `1` a `0`.
+
+Ningún otro `it` del fichero aserta `meal-schedule-actions` ni
+`generate-plan-error` con rol por defecto. Las anclas de fuente de
+`src/__tests__/design-drift.test.ts` (`testID="generate-plan-error"` antes de
+`testID="meal-schedule-actions"`) no cambian. Si con todo esto sale otro rojo,
+el implementador para y lo reporta.
 
 **R22** — WHILE Horario pinta las píldoras del perfil, THE SYSTEM SHALL
 mostrar las etiquetas en español en lugar de los enums crudos:
