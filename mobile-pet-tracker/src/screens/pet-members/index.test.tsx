@@ -146,3 +146,38 @@ it('R9: ningún texto de la pantalla contiene el correo de getMe', async () => {
     expect(text).not.toHaveTextContent('@');
   }
 });
+
+it('R10: el dueño ve Quitar en los demás y no en sí mismo', async () => {
+  jest.mocked(listPetMembers).mockResolvedValue({ kind: 'ok', members: [
+    { ...members[0], role: 'family' },
+    members[1],
+    { ...members[0], userId: 'user-3' },
+  ] });
+  await renderMembers();
+  await waitFor(() => expect(screen.getByTestId('member-row-user-2-remove')).toBeVisible());
+  expect(screen.getByTestId('member-row-user-2-remove')).toHaveTextContent('Quitar');
+  expect(screen.getByLabelText('Quitar a Luis Ortega')).toBeVisible();
+  expect(screen.queryByTestId('member-row-user-1-remove')).toBeNull();
+  expect(screen.queryByTestId('member-row-user-3-remove')).toBeNull();
+  expect(screen.getByTestId('pet-members-intro')).toHaveTextContent('Quienes estén aquí ven a Rocky y reciben sus avisos. Solo tú puedes invitar o quitar a alguien.');
+});
+
+it('R10: family no ve Quitar, invitaciones ni CTA', async () => {
+  jest.mocked(getPet).mockResolvedValue({ kind: 'ok', pet: { ...pet, myRole: 'family' } });
+  await renderMembers();
+  await waitFor(() => expect(screen.getByTestId('pet-members-list')).toBeVisible());
+  expect(screen.queryAllByTestId(/^member-row-.*-remove$/)).toHaveLength(0);
+  expect(screen.queryAllByTestId(/^pet-invites-/)).toHaveLength(0);
+  expect(screen.queryByTestId('pet-members-code-note')).toBeNull();
+  expect(screen.queryByTestId('pet-members-invite-cta')).toBeNull();
+});
+
+it('R10: walker tampoco ve acciones de dueño', async () => {
+  jest.mocked(getPet).mockResolvedValue({ kind: 'ok', pet: { ...pet, myRole: 'walker' } });
+  await renderMembers();
+  await waitFor(() => expect(screen.getByTestId('pet-members-list')).toBeVisible());
+  expect(screen.queryAllByTestId(/^member-row-.*-remove$/)).toHaveLength(0);
+  expect(screen.queryAllByTestId(/^pet-invites-/)).toHaveLength(0);
+  expect(screen.queryByTestId('pet-members-code-note')).toBeNull();
+  expect(screen.queryByTestId('pet-members-invite-cta')).toBeNull();
+});
