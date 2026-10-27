@@ -131,6 +131,7 @@ export function PairingScreen() {
     pets.data?.kind === 'ok'
       ? pets.data.pets.find(({ id }) => id === selectedPetId)
       : undefined;
+  const isOwner = selectedPet?.myRole === 'owner';
   const hasSelectedDevice = selectedPet?.device != null;
   const isLinking = phase === 'idle' && selectedPet?.device === null;
   const connectivityKey = connectivityLabelKey(
@@ -390,61 +391,67 @@ export function PairingScreen() {
         ) : null}
 
         {phase === 'idle' && selectedPet?.device === null ? (
-          <View className="gap-4" style={{ flexGrow: 1 }}>
-            <RiseIn delayMs={80} testID="pairing-plan-rise">
-              <View className="flex-row items-start gap-2.5 rounded-tile bg-default px-3.5 py-3">
-                <View testID="pairing-plan-icon" className="mt-px">
-                  <InfoCircle size={20} color={muted} />
-                </View>
-                <Text
-                  testID="pairing-plan-free"
-                  className="flex-1 text-13 font-normal leading-4.75 text-muted"
-                  selectable
-                >
-                  <Text className="font-bold text-foreground">{t('pairing.freePlanPairLead')}</Text>
-                  {' '}
-                  {t('pairing.freePlanPairBody')}
-                </Text>
-              </View>
-            </RiseIn>
-
-            <RiseIn delayMs={140} testID="pairing-code-rise">
-              <View className="gap-1.5">
-                <Text testID="pairing-activation-code-label" className="text-sm font-extrabold text-foreground">
-                  {t('pairing.activationCode')}
-                </Text>
-                <TextInput
-                  testID="activation-code-input"
-                  className="h-15 rounded-14 border-2 border-accent bg-default px-4 font-mono text-24 tracking-code text-foreground"
-                  style={CONTINUOUS_CORNER}
-                  autoCapitalize="characters"
-                  autoCorrect={false}
-                  maxLength={64}
-                  value={code}
-                  onChangeText={setCode}
-                />
-                <View testID="pairing-code-hint" className="flex-row items-center gap-1.5">
-                  <Package size={14} color={muted} />
-                  <Text className="text-xs font-semibold text-muted">
-                    {t('pairing.printedOnCollarBox')}
+          isOwner ? (
+            <View className="gap-4" style={{ flexGrow: 1 }}>
+              <RiseIn delayMs={80} testID="pairing-plan-rise">
+                <View className="flex-row items-start gap-2.5 rounded-tile bg-default px-3.5 py-3">
+                  <View testID="pairing-plan-icon" className="mt-px">
+                    <InfoCircle size={20} color={muted} />
+                  </View>
+                  <Text
+                    testID="pairing-plan-free"
+                    className="flex-1 text-13 font-normal leading-4.75 text-muted"
+                    selectable
+                  >
+                    <Text className="font-bold text-foreground">{t('pairing.freePlanPairLead')}</Text>
+                    {' '}
+                    {t('pairing.freePlanPairBody')}
                   </Text>
                 </View>
-              </View>
-            </RiseIn>
+              </RiseIn>
 
-            <View testID="pairing-submit-spacer" style={{ flexGrow: 1 }} />
+              <RiseIn delayMs={140} testID="pairing-code-rise">
+                <View className="gap-1.5">
+                  <Text testID="pairing-activation-code-label" className="text-sm font-extrabold text-foreground">
+                    {t('pairing.activationCode')}
+                  </Text>
+                  <TextInput
+                    testID="activation-code-input"
+                    className="h-15 rounded-14 border-2 border-accent bg-default px-4 font-mono text-24 tracking-code text-foreground"
+                    style={CONTINUOUS_CORNER}
+                    autoCapitalize="characters"
+                    autoCorrect={false}
+                    maxLength={64}
+                    value={code}
+                    onChangeText={setCode}
+                  />
+                  <View testID="pairing-code-hint" className="flex-row items-center gap-1.5">
+                    <Package size={14} color={muted} />
+                    <Text className="text-xs font-semibold text-muted">
+                      {t('pairing.printedOnCollarBox')}
+                    </Text>
+                  </View>
+                </View>
+              </RiseIn>
 
-            <Button
-              testID="pairing-submit"
-              className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary}
-              isDisabled={code.trim() === '' || claiming}
-              onPress={() => void handleClaim()}
-            >
-              <Text className="text-17 font-extrabold text-accent-foreground">
-                {t('pairing.pairCollar')}
-              </Text>
-            </Button>
-          </View>
+              <View testID="pairing-submit-spacer" style={{ flexGrow: 1 }} />
+
+              <Button
+                testID="pairing-submit"
+                className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary}
+                isDisabled={code.trim() === '' || claiming}
+                onPress={() => void handleClaim()}
+              >
+                <Text className="text-17 font-extrabold text-accent-foreground">
+                  {t('pairing.pairCollar')}
+                </Text>
+              </Button>
+            </View>
+          ) : (
+            <Text testID="pairing-owner-only" className="text-center text-sm font-normal leading-body text-muted">
+              {t('pairing.errorForbiddenClaim')}
+            </Text>
+          )
         ) : null}
 
         {phase === 'idle' && selectedPet?.device ? (
