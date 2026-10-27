@@ -19,6 +19,7 @@ import type { PetProfile } from '../../api/types';
 import { getMe } from '../../api/users';
 import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
+import { HeroStatusBar } from '../../components/hero-status-bar';
 import { PetHeroHeader } from '../../components/pet-hero-header';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { ToggleSwitch } from '../../components/toggle-switch';
@@ -307,6 +308,7 @@ export function ProfileScreen() {
         paddingBottom: insets.bottom + 96,
       }}
     >
+      {showHero ? <HeroStatusBar /> : null}
       {showHero ? (
         <View testID="profile-hero" className="relative">
           <PetHeroHeader
