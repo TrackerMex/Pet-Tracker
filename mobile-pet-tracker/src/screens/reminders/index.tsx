@@ -91,6 +91,7 @@ export function RemindersScreen() {
   const refetchReminders = reminders.refetch;
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteCandidate, setDeleteCandidate] = useState<Reminder | null>(null);
+  const [cancelCandidate, setCancelCandidate] = useState<Reminder | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -345,6 +346,7 @@ export function RemindersScreen() {
               const days = daysUntil(new Date(), due);
               const inactive = reminder.status !== 'scheduled';
               const recurrence = inactive ? null : reminder.recurrence;
+              const isSeries = Boolean(recurrence);
               const until = reminder.recurrenceUntil ? isoToLocalDate(reminder.recurrenceUntil) : null;
               const repeatUntil = until
                 ? until.getFullYear() === new Date(now).getFullYear()
@@ -418,14 +420,24 @@ export function RemindersScreen() {
                       ) : null}
                     </View>
                     <Button
-                      testID={`reminder-delete-${reminder.id}`}
+                      testID={isSeries ? `reminder-cancel-series-${reminder.id}` : `reminder-delete-${reminder.id}`}
+                      accessibilityLabel={isSeries ? t('reminders.cancelSeriesA11y', { title: reminder.title }) : undefined}
                       className={`h-11 rounded-14 px-2.5 ${CATEGORY_SLOTS.rose.surface}`}
                       isDisabled={deletingId === reminder.id}
                       variant="danger-soft"
-                      onPress={() => confirmDelete(reminder)}
+                      onPress={() => {
+                        if (isSeries) {
+                          setActionError(null);
+                          setDeleteCandidate(null);
+                          setCancelCandidate(reminder);
+                        } else {
+                          setCancelCandidate(null);
+                          confirmDelete(reminder);
+                        }
+                      }}
                     >
                       <Text className="text-13 font-extrabold text-danger">
-                        {t('reminders.delete')}
+                        {isSeries ? t('reminders.cancelSeries') : t('reminders.delete')}
                       </Text>
                     </Button>
                   </View>
