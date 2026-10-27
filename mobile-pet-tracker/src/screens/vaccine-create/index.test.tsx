@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import { renderWithProviders } from '../../../test/render-with-providers';
 import { listPets } from '../../api/pets';
-import { createVaccine, getVaccineCatalog } from '../../api/health-records';
+import { createVaccine, getVaccineCatalog, type CreateVaccineState } from '../../api/health-records';
 import { createReminder } from '../../api/reminders';
 import { getMe } from '../../api/users';
 import type { PetProfile, Vaccine, VaccineCatalogEntry } from '../../api/types';
@@ -473,4 +473,52 @@ it('#208 R16: si el recordatorio se crea limpia un aviso anterior', async () => 
   await fireEvent.press(screen.getByTestId('vaccine-create-submit'));
   await screen.findByTestId('vaccine-create-returned');
   expect(screen.getByTestId('vaccine-create-notice-probe').children).toEqual([]);
+});
+
+async function fillCustomVaccine() {
+  await fireEvent.press(screen.getByTestId('vaccine-chip-other'));
+  await fireEvent.changeText(screen.getByTestId('vaccine-create-name'), 'Leishmaniasis');
+  await pickVaccineDate('applied', new Date(2026, 8, 1, 12));
+  await pickVaccineDate('next', new Date(2027, 8, 1, 12));
+  await fireEvent.changeText(screen.getByTestId('vaccine-create-vet'), 'Ana');
+  await fireEvent.changeText(screen.getByTestId('vaccine-create-clinic'), 'Centro Vet');
+  await fireEvent.changeText(screen.getByTestId('vaccine-create-notes'), 'Sin reacción');
+}
+it.each(['error', 'unreachable', 'forbidden', 'unauthorized', 'missing-config'] as const)('#208 R17: %s pinta la alerta literal y conserva el formulario', async kind => {
+  mockCreateVaccine.mockResolvedValue(kind === 'unreachable' ? { kind, message: 'offline' } : { kind });
+  await readyVaccineForm();
+  await fillCustomVaccine();
+  await fireEvent.press(screen.getByTestId('vaccine-create-submit'));
+  const error = await screen.findByTestId('vaccine-create-error');
+  expect(error.props.accessibilityRole).toBe('alert');
+  expect(error.props.className).toBe('flex-row items-center gap-2.5 rounded-tile px-3.5 py-3 bg-category-rose');
+  expect(error.props.style).toEqual({ borderCurve: 'continuous' });
+  expect(error.parent).toBe(screen.getByTestId('vaccine-create-bar'));
+  expect(screen.getByTestId('vaccine-create-error-text').props.className).toBe('flex-1 text-13 font-bold text-danger');
+  expect(screen.getByText('No pude guardar la vacuna. Tus datos siguen aquí; revisa tu conexión y vuelve a intentarlo.', { exact: true })).toBeVisible();
+  const icon = within(error).getByTestId('vaccine-create-alert-icon', { includeHiddenElements: true });
+  expect([icon.props.size, icon.props.color]).toEqual([20, 'token:danger']);
+  expect(screen.getByTestId('vaccine-chip-other').props.accessibilityState).toEqual({ selected: true });
+  expect(screen.getByTestId('vaccine-create-name')).toHaveProp('value', 'Leishmaniasis');
+  expect(screen.getByTestId('vaccine-create-applied-value')).toHaveProp('value', '1 sep 2026');
+  expect(screen.getByTestId('vaccine-create-next-value')).toHaveProp('value', '1 sep 2027');
+  expect(screen.getByTestId('vaccine-create-vet')).toHaveProp('value', 'Ana');
+  expect(screen.getByTestId('vaccine-create-clinic')).toHaveProp('value', 'Centro Vet');
+  expect(screen.getByTestId('vaccine-create-notes')).toHaveProp('value', 'Sin reacción');
+  expect(mockRouter.back).not.toHaveBeenCalled();
+  expect(mockCreateReminder).not.toHaveBeenCalled();
+});
+it('#208 R17: reintentar con éxito vuelve a Salud', async () => {
+  let finish: (value: CreateVaccineState) => void = () => undefined;
+  const retry = new Promise<CreateVaccineState>(resolve => { finish = resolve; });
+  mockCreateVaccine.mockResolvedValueOnce({ kind: 'error' }).mockReturnValueOnce(retry);
+  await readyVaccineForm();
+  await fireEvent.press(screen.getByTestId('vaccine-create-submit'));
+  await screen.findByTestId('vaccine-create-error');
+  await fireEvent.press(screen.getByTestId('vaccine-create-submit'));
+  await waitFor(() => expect(screen.getByTestId('vaccine-create-submit')).toBeDisabled());
+  expect(screen.queryByTestId('vaccine-create-error')).toBeNull();
+  await act(async () => { finish({ kind: 'ok', vaccine: makeVaccine() }); });
+  await screen.findByTestId('vaccine-create-returned');
+  expect(mockCreateVaccine).toHaveBeenCalledTimes(2);
 });
