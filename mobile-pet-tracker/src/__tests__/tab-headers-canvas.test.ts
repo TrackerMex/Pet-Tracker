@@ -61,7 +61,7 @@ const TAB_TITLE_168 = 'text-3xl font-black tracking-title text-foreground';
 
 describe('#168 R1: el título grande vive en las tres pestañas', () => {
   it('pinta una ocurrencia del literal en cada fichero de pestaña (enmendado por #197 R4) (enmendado por #200 R1) (enmendado por #222 R9)', () => {
-    const expectedOccurrences: Record<string, number> = { 'screens/health/index.tsx': 0, 'screens/food/index.tsx': 0, 'screens/profile/index.tsx': 1 };
+    const expectedOccurrences: Record<string, number> = { 'screens/health/index.tsx': 0, 'screens/food/index.tsx': 0, 'screens/profile/index.tsx': 0 };
     for (const file of TAB_SCREENS_168) {
       expect({ file, occurrences: readSource(file).split(TAB_TITLE_168).length - 1 })
         .toEqual({ file, occurrences: expectedOccurrences[file] });
@@ -71,7 +71,6 @@ describe('#168 R1: el título grande vive en las tres pestañas', () => {
   it('limita el literal a las tres pestañas y a la celebración (enmendado por #197 R4) (enmendado por #200 R1) (enmendado por #222 R9)', () => {
     expect(filesMatching(/text-3xl font-black tracking-title text-foreground/).sort()).toEqual([
       'components/celebration.tsx',
-      'screens/profile/index.tsx',
     ]);
   });
 });

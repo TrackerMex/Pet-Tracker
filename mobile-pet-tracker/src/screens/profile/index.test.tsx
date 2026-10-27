@@ -310,32 +310,7 @@ function renderProfile() {
 describe('#173 R5: cápsula de añadir mascota', () => {
   beforeEach(setupProfile168);
 
-  it('pinta la cápsula tras el título con icono oculto y texto en español (enmendado por #196 R2)', async () => {
-    await renderProfile();
-    await screen.findByTestId('pet-info-card');
-    const capsule = screen.getByTestId('profile-add-pet');
 
-    expect(capsule.props.className).toBe('h-11 flex-row items-center gap-1.5 rounded-full bg-glass-surface-strong px-4');
-    expect(capsule.props.accessibilityRole).toBe('button');
-    expect(capsule.props.hitSlop).toEqual(TOUCH_SLOP);
-    expect(capsule.props.style?.borderCurve).toBeUndefined();
-    expect(profileChild(capsule.parent!, 0)).toBe(screen.getByTestId('profile-title'));
-    expect(profileChild(capsule.parent!, 1)).toBe(capsule);
-    expect(capsule.children).toHaveLength(2);
-    const icon = within(capsule).getByTestId('profile-add-pet-icon', { includeHiddenElements: true });
-    expect(profileChild(capsule, 0)).toBe(icon);
-    expect(icon.props.accessibilityElementsHidden).toBe(true);
-    expect(icon.props.importantForAccessibility).toBe('no-hide-descendants');
-    expect(icon.children).toHaveLength(1);
-    const glyph = within(icon).getByTestId('profile-icon-plus', { includeHiddenElements: true });
-    expect(profileChild(icon, 0)).toBe(glyph);
-    expect(glyph.props.size).toBe(16);
-    expect(glyph.props.strokeWidth).toBe(2.6);
-    expect(glyph.props.style).toEqual({ color: 'accent-strong' });
-    const label = within(capsule).getByText('Añadir mascota');
-    expect(profileChild(capsule, 1)).toBe(label);
-    expect(label.props.className).toBe('text-sm font-extrabold text-accent-strong');
-  });
 
   it('pinta Add pet en inglés con la misma receta', async () => {
     await renderProfile();
@@ -361,11 +336,12 @@ describe('#173 R5: cápsula de añadir mascota', () => {
 describe('#173 R4: Perfil pide la variante avatars', () => {
   beforeEach(setupProfile168);
 
-  it('pasa avatars al selector compartido cuando carga la mascota (enmendado por #196 R2)', async () => {
+  it('pasa glass al selector compartido cuando carga la mascota (enmendado por #196 R2) (enmendado por #222 R9)', async () => {
     await renderProfile();
     await screen.findByTestId('pet-info-card');
 
     expect(mockPetSwitcher.mock.lastCall?.[0].variant).toBe('glass');
+    expect(readFileSync('src/screens/profile/index.tsx', 'utf8')).not.toContain('variant="avatars"');
     expect(mockPetSwitcher.mock.lastCall?.[0].trailing).toBeUndefined();
   });
 });
@@ -693,10 +669,10 @@ describe('#65 R14 (enmendado por #173 R11): Profile cambia el idioma y repinta s
     mockSetStoredLanguage.mockResolvedValue();
   });
 
-  it('shows the current endonym and changes the live Profile copy (enmendado por #196 R2)', async () => {
+  it('shows the current endonym and changes the live Profile copy (enmendado por #196 R2) (enmendado por #222 R9)', async () => {
     await renderProfile();
 
-    expect(screen.getByText('Perfil')).toBeOnTheScreen();
+    expect(screen.getByRole('header', { name: 'Perfil' })).toBeOnTheScreen();
     expect(screen.getByTestId('language-value')).toHaveTextContent('Español');
     expect(screen.getByTestId('theme-toggle')).toBeVisible();
 
@@ -705,7 +681,8 @@ describe('#65 R14 (enmendado por #173 R11): Profile cambia el idioma y repinta s
       await Promise.resolve();
     });
 
-    await waitFor(() => expect(screen.getByText('Profile')).toBeOnTheScreen());
+    // docs/conventions.md §Esperas: observar el idioma en el encabezado.
+    await waitFor(() => expect(screen.getByRole('header', { name: 'Profile' })).toBeOnTheScreen());
     expect(screen.getByTestId('language-value')).toHaveTextContent('English');
     expect(mockSetStoredLanguage).toHaveBeenCalledWith('en');
   });
@@ -1338,6 +1315,7 @@ describe('#168 R1: Perfil pinta el título grande en todas sus ramas', () => {
     if (name === 'detalle pendiente') await screen.findByTestId('pet-chip-pet-1');
     await screen.findByTestId(branch);
     expect(screen.getByTestId('profile-heading')).toBeOnTheScreen();
+    expect(screen.queryByTestId('profile-title')).toBeNull();
   });
 });
 
@@ -2309,38 +2287,17 @@ describe('#196 R4: cámara flotante sobre la foto', () => {
 describe('#196 R2: título y selector en el slot fotográfico', () => {
   beforeEach(setupProfile168);
 
-  it('#196 R2: con hero pinta título blanco, píldora de vidrio y selector glass en el slot', async () => {
-    await renderProfile();
-    await screen.findByTestId('profile-pet-card');
-    const top = screen.getByTestId('profile-hero-top');
-    expect(top.parent).toBe(screen.getByTestId('pet-hero-slot'));
-    expect(top.props.className).toBe('gap-3 px-1');
-    expect(top.children).toHaveLength(2);
-    const row = profileChild(top, 0);
-    expect(row.props.className).toBe('flex-row items-center justify-between gap-3');
-    expect(profileChild(row, 0)).toBe(screen.getByTestId('profile-title'));
-    expect(screen.getByTestId('profile-title').props.className).toBe('text-3xl font-black tracking-title text-accent-foreground');
-    expect(screen.getByTestId('profile-title')).toHaveTextContent('Perfil');
-    const capsule = screen.getByTestId('profile-add-pet');
-    expect(profileChild(row, 1)).toBe(capsule);
-    expect(capsule.props.className).toBe('h-11 flex-row items-center gap-1.5 rounded-full bg-glass-surface-strong px-4');
-    expect(profileChild(top, 1)).toBe(screen.getByTestId('pet-chip-pet-1').parent);
-    const props = mockPetSwitcher.mock.lastCall?.[0];
-    expect(props?.variant).toBe('glass');
-    expect(props?.trailing).toBeUndefined();
-    expect(props?.pets.map(({ id }) => id)).toEqual(['pet-1']);
-    expect(props?.selectedPetId).toBe('pet-1');
-    await fireEvent.press(capsule);
-    expect(mockRouter.push).toHaveBeenCalledWith('/pets/add');
-  });
 
-  it('#196 R2: con la lista pendiente el slot no monta el selector', async () => {
+
+  it('#196 R2: con la lista pendiente el slot no monta el selector (enmendado por #222 R9)', async () => {
     mockListPets.mockReturnValue(pending<PetsState>());
     await renderProfile();
     const top = await screen.findByTestId('profile-hero-top');
     expect(top.parent).toBe(screen.getByTestId('pet-hero-slot'));
-    expect(top.children).toHaveLength(1);
-    expect(screen.getByTestId('profile-title')).toHaveTextContent('Perfil');
+    expect(top.children).toHaveLength(2);
+    expect(profileChild(top, 0).props.testID).toBe('profile-hero-selector');
+    expect(profileChild(top, 0).children).toEqual([]);
+    expect(screen.queryByTestId('profile-title')).toBeNull();
     expect(mockPetSwitcher).not.toHaveBeenCalled();
   });
 
@@ -2624,6 +2581,90 @@ describe('#222 R6: Perfil sin hero', () => {
       // docs/conventions.md §Esperas: las métricas se leen de la rama final.
       await screen.findByTestId(state.branch);
       expect(screen.getByTestId('profile-content').props.style).toEqual({ paddingTop: 52 });
+      await cleanup();
+    }
+  });
+});
+
+
+describe('#222 R5: Perfil con hero', () => {
+  beforeEach(setupProfile168);
+
+  it('#222 R5: profile-hero-top es una fila con el selector a la izquierda y la cápsula a la derecha', async () => {
+    await renderProfile();
+    // docs/conventions.md §Esperas: el hero cargado fija la rama inspeccionada.
+    await screen.findByTestId('profile-pet-card');
+    const top = screen.getByTestId('profile-hero-top');
+    expect(top.parent!.props.testID).toBe('pet-hero-slot');
+    expect(top.props.className).toBe('flex-row items-center justify-between gap-3 px-1');
+    expect(top.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-hero-selector', 'profile-add-pet']);
+  });
+
+  it('#222 R5: el selector glass vive en profile-hero-selector', async () => {
+    for (const loading of [true, false]) {
+      setupProfile168();
+      if (loading) mockListPets.mockReturnValue(pending<PetsState>());
+      await renderProfile();
+      // docs/conventions.md §Esperas: esperar al slot asertado, no a mocks.
+      await screen.findByTestId(loading ? 'profile-hero-top' : 'profile-pet-card');
+      expect(screen.queryByTestId('profile-hero-selector')).not.toBeNull();
+      const selector = screen.getByTestId('profile-hero-selector');
+      expect(selector.props.className).toBe('min-w-0 flex-1');
+      if (loading) {
+        expect(selector.children).toEqual([]);
+        expect(within(selector).queryAllByTestId(/^pet-chip-/)).toEqual([]);
+      } else {
+        expect(within(selector).getAllByTestId(/^pet-chip-/).map(node => node.props.testID)).toEqual(['pet-chip-pet-1']);
+        const props = mockPetSwitcher.mock.lastCall?.[0];
+        expect(props?.variant).toBe('glass');
+        expect(props?.trailing).toBeUndefined();
+        expect(props?.pets.map(({ id }) => id)).toEqual(['pet-1']);
+        expect(props?.selectedPetId).toBe('pet-1');
+      }
+      await cleanup();
+    }
+  });
+
+  it('#222 R5: la cápsula conserva su receta y su ruta', async () => {
+    await renderProfile();
+    await screen.findByTestId('pet-info-card');
+    const capsule = screen.getByTestId('profile-add-pet');
+
+    expect(capsule.props.className).toBe('h-11 flex-row items-center gap-1.5 rounded-full bg-glass-surface-strong px-4');
+    expect(capsule.props.accessibilityRole).toBe('button');
+    expect(capsule.props.hitSlop).toEqual(TOUCH_SLOP);
+    expect(capsule.props.style?.borderCurve).toBeUndefined();
+    expect(capsule.parent!.props.testID).toBe('profile-hero-top');
+    expect(profileChild(capsule.parent!, 1)).toBe(capsule);
+    expect(capsule.children).toHaveLength(2);
+    const icon = within(capsule).getByTestId('profile-add-pet-icon', { includeHiddenElements: true });
+    expect(profileChild(capsule, 0)).toBe(icon);
+    expect(icon.props.accessibilityElementsHidden).toBe(true);
+    expect(icon.props.importantForAccessibility).toBe('no-hide-descendants');
+    expect(icon.children).toHaveLength(1);
+    const glyph = within(icon).getByTestId('profile-icon-plus', { includeHiddenElements: true });
+    expect(profileChild(icon, 0)).toBe(glyph);
+    expect(glyph.props.size).toBe(16);
+    expect(glyph.props.strokeWidth).toBe(2.6);
+    expect(glyph.props.style).toEqual({ color: 'accent-strong' });
+    const label = within(capsule).getByText('Añadir mascota');
+    expect(profileChild(capsule, 1)).toBe(label);
+    expect(label.props.className).toBe('text-sm font-extrabold text-accent-strong');
+    await fireEvent.press(capsule);
+    expect(mockRouter.push).toHaveBeenCalledWith('/pets/add');
+  });
+
+  it('#222 R5: no hay título visible en ninguna rama', async () => {
+    for (const state of PROFILE_BRANCHES_168) {
+      setupProfile168();
+      mockListPets.mockImplementation(async () => state.pets);
+      mockGetPet.mockImplementation(async () => state.detail);
+      await renderProfile();
+      if (state.name === 'detalle pendiente') await screen.findByTestId('pet-chip-pet-1');
+      // docs/conventions.md §Esperas: anclar ausencias a cada rama final.
+      await screen.findByTestId(state.branch);
+      expect(screen.queryByTestId('profile-title')).toBeNull();
+      expect(screen.queryByText('Perfil')).toBeNull();
       await cleanup();
     }
   });
