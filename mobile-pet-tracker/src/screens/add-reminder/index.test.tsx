@@ -144,6 +144,12 @@ async function pickDate(date: Date) {
   );
 }
 
+async function pickUntil(date: Date) {
+  expect(screen.queryByTestId('until-field')).not.toBeNull();
+  await fireEvent.press(screen.getByTestId('until-field'));
+  await fireEvent(screen.getByTestId('until-picker'), 'onValueChange', {}, date);
+}
+
 function makeReminder(overrides: Partial<Reminder> = {}): Reminder {
   return {
     id: 'reminder-1',
@@ -1384,6 +1390,54 @@ describe('#213 R4: controles de repetición', () => {
     expect(screen.getByTestId('repeat-every-value')).toHaveTextContent('9 horas');
     await fireEvent.press(screen.getByTestId('repeat-chip-month'));
     expect(screen.getByTestId('repeat-every-value')).toHaveTextContent('2 meses');
+  });
+
+  it.each([
+    { key: 'day', name: 'Hasta aparece con la repetición y es opcional' },
+    { key: 'once', name: 'Hasta no aparece con Una vez' },
+  ])('#213 R8: $name', async ({ key }) => {
+    await fireEvent.press(screen.getByTestId(`repeat-chip-${key}`));
+    if (key === 'once') {
+      expect(screen.queryByTestId('until-field')).toBeNull();
+      return;
+    }
+    expect(screen.queryByTestId('until-field')).not.toBeNull();
+    expect(screen.getByText('Hasta')).toBeVisible();
+    expect(screen.getByText('Opcional')).toBeVisible();
+    expect(screen.getByTestId('until-field-value').props.placeholder).toBe('Sin fecha de fin');
+    await fireEvent.press(screen.getByTestId('until-field'));
+    expect(screen.getByTestId('until-picker').props.minimumDate).toEqual(new Date(2026, 11, 20, 12));
+    await fireEvent(screen.getByTestId('until-picker'), 'onDismiss');
+    await pickDate(new Date(2026, 11, 31, 12));
+    await fireEvent.press(screen.getByTestId('until-field'));
+    expect(screen.getByTestId('until-picker').props.minimumDate).toEqual(new Date(2026, 11, 31, 12));
+    await fireEvent(screen.getByTestId('until-picker'), 'onDismiss');
+    for (const unit of ['day', 'week', 'month', 'year', 'hour']) {
+      await fireEvent.press(screen.getByTestId(`repeat-chip-${unit}`));
+      expect(screen.getByTestId('until-field')).toBeVisible();
+    }
+  });
+
+  it('#213 R8: mover la fecha más allá de Hasta lo vacía', async () => {
+    await fireEvent.press(screen.getByTestId('repeat-chip-day'));
+    await pickDate(new Date(2026, 11, 31, 12));
+    await pickUntil(new Date(2027, 0, 2, 12));
+    expect(screen.getByTestId('until-field-value').props.value).toBe('2 ene 2027');
+    await pickDate(new Date(2027, 0, 3, 12));
+    expect(screen.getByTestId('until-field-value').props.value).toBe('');
+  });
+
+  it('#213 R8: borrar Hasta lo quita del cuerpo y de la nota', async () => {
+    await fireEvent.press(screen.getByTestId('repeat-chip-day'));
+    await pickDate(new Date(2026, 11, 31, 12));
+    await pickUntil(new Date(2027, 0, 2, 12));
+    await fireEvent.press(screen.getByTestId('until-field-clear'), { stopPropagation: jest.fn() });
+    expect(screen.getByTestId('until-field-value').props.value).toBe('');
+    expect(screen.getByTestId('add-reminder-preview-text')).not.toHaveTextContent('hasta el');
+    await fireEvent.changeText(screen.getByTestId('title-input'), 'Rabies');
+    await fireEvent.press(screen.getByTestId('add-reminder-submit'));
+    await waitFor(() => expect(screen.getByTestId('add-reminder-submit')).toBeDisabled());
+    expect(mockCreateReminder.mock.calls[0][3]).not.toHaveProperty('recurrenceUntil');
   });
 
 });
