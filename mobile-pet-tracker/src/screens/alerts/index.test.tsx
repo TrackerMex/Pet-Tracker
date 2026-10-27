@@ -1876,4 +1876,16 @@ describe('#223 R5: la insignia espera al último cursor y suma las abiertas de t
     await screen.findByTestId('alert-row-arriving-open');
     expect(screen.queryByTestId('alerts-loading')).toBeNull();
   });
+
+  it('#223 R14: si falla la segunda página conserva lo descargado, muestra el error y no pide más', async () => {
+    mockListAlerts.mockResolvedValueOnce({ kind: 'ok', items: [makeAlert({ id: 'p1a' }), makeAlert({ id: 'p1b', status: 'acked' })], nextCursor: 'c1' })
+      .mockResolvedValueOnce({ kind: 'error' });
+    await renderAlerts();
+    await waitFor(() => expect(screen.getByTestId('alerts-action-error')).toHaveTextContent('Algo salió mal', { exact: true }));
+    expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['p1a']);
+    expect(screen.queryByTestId('alerts-new-count-text')).not.toBeNull();
+    expect(screen.getByTestId('alerts-new-count-text')).toHaveTextContent('1 nueva', { exact: true });
+    expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('1', { exact: true });
+    expect(mockListAlerts).toHaveBeenCalledTimes(2);
+  });
 });
