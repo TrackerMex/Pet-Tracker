@@ -49,3 +49,34 @@ En el dev build de Android (no Expo Go), con una mascota propia (owner):
    - al confirmar, la serie sale de la lista.
 
 - [ ] Smoke de #213 recorrido por el humano (fecha: ____)
+
+## #214 mobile-pet-members
+
+Spec: `specs/mobile-pet-members/requirements.md` (§Aprobación). Reviewer APROBADO sobre `7c079da8`
+tras el merge de `dev` y la enmienda 1 de R13 (`progress/review_mobile-pet-members.md`, §Segunda
+revisión). Como en #208, la spec dice que su smoke **bloquea `done`**.
+
+Necesita el **rebuild del dev build**: #214 añade `expo-clipboard`, un módulo nativo. Sin rebuild,
+«Copiar código» rompe con «Cannot find module». Hacen falta dos cuentas, A (dueña de la mascota) y
+B (sin esa mascota), cada una en su teléfono o una tras otra.
+
+En el dev build de Android (no Expo Go):
+
+1. Cuenta A, Perfil: la tarjeta «Familia» dice «Solo tú cuidas a <mascota>». Al tocarla se abre
+   Familia, con A en la fila «Dueño».
+2. «Invitar a alguien» crea el código y abre la pantalla de invitación, con el código (10 letras y
+   números con guion), la línea «Vence el … · sirve una sola vez» y el mensaje que se enviará.
+3. «Copiar código» muestra «Código copiado». Pegar en otra app da el código exacto.
+4. «Compartir» abre la hoja nativa de Android con el mensaje y el código.
+5. De vuelta en Familia, la invitación sale en «Invitaciones pendientes». La nota «Cada código sirve
+   una sola vez. Si nadie lo usa, vence solo.» parte la línea dentro de su caja, sin salirse
+   (menor 4 de la segunda revisión).
+6. Cuenta B: «Unirme con código» desde Perfil o desde Inicio. Al escribir el código y pulsar
+   «Unirme», B entra en la mascota y la ve en Inicio.
+7. Cuenta B, Familia: ve la vista de familia, sin acciones de dueño. «Salir de esta mascota» pide
+   confirmación y, al confirmar, la mascota sale de su lista.
+8. Invita y une otra vez a B. Cuenta A, Familia: «Quitar» en la fila de B pide «¿Quitar a <B>?».
+   Al confirmar, B sale de la lista y el subtítulo de la tarjeta vuelve a «Solo tú cuidas a …».
+9. Revocar una invitación pendiente la quita de «Invitaciones pendientes».
+
+- [ ] Smoke de #214 recorrido por el humano (fecha: ____)

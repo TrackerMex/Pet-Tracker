@@ -838,3 +838,48 @@ Lee R13 en `specs/mobile-pet-members/requirements.md` y la sección «Enmienda 1
   commitea en ese mismo commit de traceability.
 - Sin `./init.sh` (lo corre el leader), sin Monitor, sin push ni PR.
 - Última acción: crea `progress/impl_mobile-pet-members.done` con la ruta del reporte.
+
+## Adenda 6 (leader, tras la segunda review aprobada: merge de `dev` con #222)
+
+La segunda review (`progress/review_mobile-pet-members.md`, sin commitear y que no tocas) aprueba 7c079da8.
+Mientras tanto entró #222 en `dev` (PR #274, 2c103bb4), y la branch vuelve a tener conflicto con `dev`. La
+PR no se puede abrir así. Lo hace el subagente `implementer`, por la cuota de Codex. Va en este orden y
+**solo** esto:
+
+### A. Merge de `origin/dev` (nunca rebase)
+
+1. `git fetch origin` y `git merge --no-ff origin/dev`. Al escribir esta adenda, `origin/dev` = 2c103bb4
+   (merge-base ca2d0abb), que trae #222. No trae cambios en `package.json`, `bun.lock` ni el backend. Si
+   `origin/dev` ya no es 2c103bb4, anótalo y sigue con el que haya.
+2. Conflictos esperados (3), medidos con `git merge-tree --write-tree --name-only HEAD origin/dev`:
+   - `mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts`;
+   - `mobile-pet-tracker/src/__tests__/ui-language.test.ts`;
+   - `mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx`.
+   Se auto-fusionan, y también hay que mirarlos, porque llevan cifras agregadas: `canvas-foundations.test.ts`,
+   `profile-canvas-fidelity.test.ts`, `ui-copy-table.ts`, `app/(tabs)/__tests__/screens.test.tsx`,
+   `i18n/catalog.ts`, `screens/profile/index.test.tsx` y `screens/profile/index.tsx`.
+   Las reglas son las mismas que en la Adenda 5 §A.2:
+   - quedan los dos lados;
+   - sufijos `(enmendado por #…)` en orden de entrada;
+   - cada cifra agregada es la de `dev` más el delta de #214. La mide la corrida y va anotada en el
+     reporte: la de `dev`, el delta y el resultado;
+   - **PARA** si un conflicto no se resuelve sumando los dos lados.
+   Un fichero auto-fusionado puede quedar con una cifra que no cuadra aunque git no marque conflicto.
+   Lo destapa la corrida del paso 4.
+3. `cd mobile-pet-tracker && bun install --frozen-lockfile` (no debe cambiar nada). Después,
+   `test ! -e .expo/types/router.d.ts`, `bunx tsc --noEmit` y lint con `--no-cache` al log, con `test ! -s`.
+4. La corrida completa de `bunx jest`, en primer plano. Todo verde. Un rojo de los flakes conocidos (Salud
+   `#168 R2`, food `#200 R9/R10`, Inicio `#152 R8`, `#199 R18`, `#190 R5`, Perfil `#173 R5`) se repite una vez
+   con su suite. Si sigue rojo, o sale otro rojo, **PARA**. Anota `Tests:` y el exit.
+5. Commit del merge, solo con los ficheros del merge:
+   `git commit -m "Merge remote-tracking branch 'origin/dev' into feature/214-mobile-pet-members"`, con las
+   dos líneas de atribución al final. Nunca `-a`. `progress/review_mobile-pet-members.md` queda fuera.
+
+### B. Cierre
+
+- En `specs/mobile-pet-members/traceability.md`, una línea con el hash del merge, igual que la de la
+  Adenda 5. No cambia ninguna fila de R-id. Commit: `docs(mobile): #214 traceability for the second dev merge`,
+  con el reporte en ese mismo commit.
+- En el reporte, una sección «Adenda 6» con el merge, cada conflicto y cómo se resolvió, las cifras y las corridas.
+- Sin `./init.sh` (lo corre el leader), sin Monitor, sin push ni PR. No toques nada fuera del merge.
+- Última acción: crea `progress/impl_mobile-pet-members.done` con la ruta del reporte.
