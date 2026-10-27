@@ -35,8 +35,8 @@ function filesMatching(pattern: RegExp): string[] {
 }
 
 describe('#173 R4: avatars solo en Perfil', () => {
-  it('limita la variante nueva al consumidor Perfil (enmendado por #200 R2) (enmendado por #199 R13) (enmendado por #196 R2)', () => {
-    expect(filesMatching(/variant="avatars"/)).toEqual(['screens/food/index.tsx', 'screens/health/index.tsx']); // #200 R2; #199 R13; #196 R2: Perfil sale
+  it('limita la variante nueva al consumidor Perfil (enmendado por #200 R2) (enmendado por #199 R13) (enmendado por #196 R2) (enmendado por #222 R9)', () => {
+    expect(filesMatching(/variant="avatars"/)).toEqual(['components/tab-pet-header.tsx', 'screens/food/index.tsx', 'screens/health/index.tsx']); // #200 R2; #199 R13; #196 R2: Perfil sale
   });
 });
 
