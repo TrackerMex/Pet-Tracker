@@ -128,3 +128,26 @@ it('#209 R5: pinta cabecera, contador «1 de 4» y la barra con un segmento hech
   ]);
   expect(screen.getByTestId('nutrition-questionnaire-bubble')).toHaveTextContent('Cuéntame cómo es un día normal de Rocky. Con eso calculo cuánta energía necesita.', { exact: true });
 });
+
+it('#209 R7: Actividad pinta las tres opciones con su copy', async () => {
+  await renderQuestionnaire();
+  expect(await screen.findByText('¿Cuánto se mueve Rocky?')).toBeVisible();
+  for (const [value, title, description] of [
+    ['low', 'Baja', 'Paseos cortos y mucho descanso.'],
+    ['medium', 'Media', 'Uno o dos paseos al día y algo de juego.'],
+    ['high', 'Alta', 'Corre, entrena o juega con intensidad cada día.'],
+  ]) {
+    const card = screen.getByTestId(`activity-option-${value}`);
+    expect(card).toHaveProp('accessibilityRole', 'radio');
+    expect(card).toHaveProp('accessibilityState', { checked: false });
+    expect(within(card).getByText(title)).toBeVisible();
+    expect(within(card).getByText(description)).toBeVisible();
+  }
+});
+it('#209 R7: Siguiente está desactivado hasta elegir actividad', async () => {
+  await renderQuestionnaire();
+  expect(await screen.findByTestId('nutrition-questionnaire-next')).toBeDisabled();
+  await fireEvent.press(screen.getByTestId('activity-option-medium'));
+  expect(screen.getByTestId('nutrition-questionnaire-next')).toBeEnabled();
+  expect(screen.getByTestId('activity-option-medium')).toHaveProp('accessibilityState', { checked: true });
+});
