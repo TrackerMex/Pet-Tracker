@@ -1,6 +1,6 @@
 ---
 feature: "mobile-pet-members"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [mobile, spec, pet-members, invites, expo-router, heroui-native]
 ---
 
