@@ -80,3 +80,20 @@ nada. Hay otros dos Codex corriendo jest en esta máquina.
 2. Haz commit de ese reporte con `git commit --only progress/impl_mobile-reminders-recurrence.md -m "docs(mobile): #213 merge of dev in the implementation report"`.
 3. Ejecuta `graphify update .` desde la raíz del worktree.
 4. Escribe el marcador: `printf '%s\n' "$(git rev-parse --short HEAD)" > progress/impl_mobile-reminders-recurrence.merge.done`.
+
+## Adenda 1 (leader, tras la parada en typecheck)
+
+Paraste bien. El rojo de `tsc` es mecánico: #213 añadió a `Reminder` (`src/api/types.ts`) los campos
+obligatorios `recurrence` y `recurrenceUntil`, y el fixture de #208 en
+`mobile-pet-tracker/src/screens/vaccine-create/index.test.tsx` (el `mockCreateReminder.mockResolvedValue`
+del `beforeEach`) se escribió antes y no los tiene. Queda autorizado este arreglo y **solo** este:
+
+- En ese literal `reminder: { … status: 'scheduled' }` añade `recurrence: null, recurrenceUntil: null`
+  después de `status: 'scheduled'`. Un recordatorio de vacuna creado por #208 no se repite, así que `null`
+  es el valor correcto. No toques ningún otro fichero de producción ni de test por esta adenda.
+- Commit aparte, antes del de re-cuenta si lo hay:
+  `git commit --only mobile-pet-tracker/src/screens/vaccine-create/index.test.tsx -m "test(mobile): #213 complete the #208 reminder fixture with recurrence fields after merging dev"`
+- Después retoma la cadena desde typecheck (typecheck, lint y completo, mismos logs). Si sale otro rojo
+  de tipos en un fixture de `Reminder`, aplica la misma regla en el mismo commit (enmiéndalo con
+  `--amend` solo si aún no hay commits detrás) y nómbralo en el reporte. Cualquier otro rojo: para.
+- Cierre igual que arriba; en el reporte, añade el commit del fixture a la sección del merge.
