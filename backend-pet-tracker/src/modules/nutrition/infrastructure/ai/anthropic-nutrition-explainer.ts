@@ -4,6 +4,7 @@ import {
   NUTRITION_AI_SCOPE,
   buildUserPrompt,
   NUTRITION_AI_SYSTEM_PROMPT,
+  NUTRITION_AI_OUTPUT_JSON_SCHEMA,
 } from './nutrition-prompt';
 import type {
   NutritionEngineInput,
@@ -16,12 +17,16 @@ import type {
 
 export const NUTRITION_AI_TIMEOUT_MS = 15_000;
 export const NUTRITION_AI_MAX_RETRIES = 0;
-export const NUTRITION_AI_MAX_OUTPUT_TOKENS = 1_200;
+export const NUTRITION_AI_MAX_OUTPUT_TOKENS = 2_000;
 export interface AnthropicMessageParams {
   model: string;
   max_tokens: number;
   system: string;
   messages: { role: 'user'; content: string }[];
+  thinking: { type: 'disabled' };
+  output_config: {
+    format: { type: 'json_schema'; schema: Record<string, unknown> };
+  };
 }
 export interface AnthropicMessageResponse {
   content: unknown;
@@ -69,6 +74,13 @@ export class AnthropicNutritionExplainer implements NutritionExplainer {
         model: this.model,
         max_tokens: NUTRITION_AI_MAX_OUTPUT_TOKENS,
         system: NUTRITION_AI_SYSTEM_PROMPT,
+        thinking: { type: 'disabled' },
+        output_config: {
+          format: {
+            type: 'json_schema',
+            schema: NUTRITION_AI_OUTPUT_JSON_SCHEMA,
+          },
+        },
         messages: [
           {
             role: 'user',

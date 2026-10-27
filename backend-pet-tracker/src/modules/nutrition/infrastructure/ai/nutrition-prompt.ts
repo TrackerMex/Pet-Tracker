@@ -57,4 +57,25 @@ export const NUTRITION_AI_MAX_ITEM_CHARS = 100;
 
 export const NUTRITION_AI_SCOPE = 'nutrition-ai';
 
-export const NUTRITION_AI_OUTPUT_JSON_SCHEMA = {};
+export const NUTRITION_AI_OUTPUT_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    mealGrams: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          mealTime: { type: 'string' },
+          grams: { type: 'integer' },
+        },
+        required: ['mealTime', 'grams'],
+        additionalProperties: false,
+      },
+    },
+    recommendations: { type: 'array', items: { type: 'string' } },
+    reviewInDays: { type: 'integer' },
+    explanation: { type: 'string' },
+  },
+  required: ['mealGrams', 'recommendations', 'reviewInDays', 'explanation'],
+  additionalProperties: false,
+};
