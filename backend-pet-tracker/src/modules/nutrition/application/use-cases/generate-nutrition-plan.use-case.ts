@@ -1,3 +1,7 @@
+import {
+  acceptAiOutput,
+  NUTRITION_AI_DAILY_LIMIT,
+} from '@/modules/nutrition/domain/nutrition-ai-proposal';
 import type { NutritionAiStatus } from '@/modules/nutrition/domain/nutrition-ai-proposal';
 import { NUTRITION_WEIGHT_READER } from '@/modules/nutrition/domain/ports/nutrition-weight-reader';
 import type { NutritionWeightReader } from '@/modules/nutrition/domain/ports/nutrition-weight-reader';
@@ -5,9 +9,12 @@ import { SUBSCRIPTION_REPOSITORY } from '@/modules/subscriptions/domain/reposito
 import type { SubscriptionRepository } from '@/modules/subscriptions/domain/repositories/subscription.repository';
 import { NUTRITION_EXPLAINER } from '@/modules/nutrition/domain/ports/nutrition-explainer';
 import type { NutritionExplainer } from '@/modules/nutrition/domain/ports/nutrition-explainer';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { nutritionInputHash } from '@/modules/nutrition/application/nutrition-input-hash';
-import { carriedSchedule } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
+import {
+  carriedSchedule,
+  toPlanResult,
+} from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
 import type { NutritionPlan } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
 import {
   NutritionProfileRequiredError,
@@ -30,6 +37,8 @@ export interface GenerateNutritionPlanResult {
 
 @Injectable()
 export class GenerateNutritionPlanUseCase {
+  private readonly logger = new Logger(GenerateNutritionPlanUseCase.name);
+
   constructor(
     @Inject(NUTRITION_REPOSITORY)
     private readonly nutrition: NutritionRepository,
@@ -68,7 +77,7 @@ export class GenerateNutritionPlanUseCase {
     const inputsHash = nutritionInputHash(input, []);
     const latestPlan = await this.nutrition.findLatestPlan(petId);
     if (latestPlan?.inputsHash === inputsHash) {
-      return { plan: latestPlan, aiStatus: 'not_tracked' };
+      return this.aiPhase(petId, input, latestPlan, now);
     }
 
     const result = computePlan(input);
@@ -82,6 +91,48 @@ export class GenerateNutritionPlanUseCase {
       aiProposal: null,
       inputsHash,
     });
-    return { plan, aiStatus: 'not_tracked' };
+    return this.aiPhase(petId, input, plan, now);
+  }
+
+  private async aiPhase(
+    petId: string,
+    input: NutritionEngineInput,
+    plan: NutritionPlan,
+    now: Date,
+  ): Promise<GenerateNutritionPlanResult> {
+    if (!(await this.subscriptions.isPetTracked(petId))) {
+      return { plan, aiStatus: 'not_tracked' };
+    }
+    const day = now.toISOString().slice(0, 10);
+    if (
+      !(await this.nutrition.consumeAiGeneration(
+        petId,
+        day,
+        NUTRITION_AI_DAILY_LIMIT,
+      ))
+    ) {
+      return { plan, aiStatus: 'limit_reached' };
+    }
+    const output = await this.explainer.explain(input, toPlanResult(plan), [], {
+      petId,
+      planId: plan.id,
+    });
+    if (output === null) return { plan, aiStatus: 'unavailable' };
+    const accepted = acceptAiOutput(output, plan, day);
+    if (accepted === null) {
+      this.logger.warn({
+        scope: 'nutrition-ai',
+        petId,
+        planId: plan.id,
+        message: 'ai proposal out of bounds',
+      });
+      return { plan, aiStatus: 'rejected' };
+    }
+    const updated = await this.nutrition.setAiResult(
+      plan.id,
+      accepted.explanation,
+      accepted.proposal,
+    );
+    return { plan: updated, aiStatus: 'proposed' };
   }
 }

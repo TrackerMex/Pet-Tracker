@@ -27,9 +27,11 @@ import { GetNutritionPlanUseCase } from '@/modules/nutrition/application/use-cas
 import { mapNutritionError } from '@/modules/nutrition/infrastructure/mappers/nutrition-error.mapper';
 import {
   NutritionProfileResponse,
+  NutritionPlanGenerateResponse,
   NutritionPlanResponse,
   NutritionPlanTodayResponse,
   toNutritionProfileResponse,
+  toNutritionPlanGenerateResponse,
   toNutritionPlanResponse,
   toNutritionPlanTodayResponse,
 } from '@/modules/nutrition/infrastructure/mappers/nutrition.mapper';
@@ -82,10 +84,10 @@ export class NutritionController {
   @RequirePetRole('owner')
   async generate(
     @Req() request: PetAccessRequest,
-  ): Promise<NutritionPlanResponse> {
+  ): Promise<NutritionPlanGenerateResponse> {
     try {
-      return toNutritionPlanResponse(
-        (await this.generatePlan.execute(request.petMembership.petId)).plan,
+      return toNutritionPlanGenerateResponse(
+        await this.generatePlan.execute(request.petMembership.petId),
       );
     } catch (error) {
       throw mapNutritionError(error);
