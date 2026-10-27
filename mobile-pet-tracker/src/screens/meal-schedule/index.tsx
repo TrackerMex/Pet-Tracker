@@ -85,7 +85,8 @@ function MealScheduleContent({ petId }: { petId: string }) {
     (profile.data !== undefined && isProfileError(profile.data));
   const loading =
     !hasError && (plan.data === undefined || profile.data === undefined);
-  const canGenerate = loadedPlan !== null || plan.data?.kind === 'not-found';
+  const canGenerate =
+    isOwner && (loadedPlan !== null || plan.data?.kind === 'not-found');
 
   function retryAll() {
     plan.refetch();
