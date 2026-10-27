@@ -46,6 +46,31 @@ const FOOD_TYPES = [
   { value: 'homemade', kcal: '130', labelKey: 'nutritionQuestionnaire.foodHomemade', note: { labelKey: 'nutritionQuestionnaire.kcalNoteHomemade' } },
 ] as const;
 
+const ALLERGIES = [
+  { slug: 'pollo', labelKey: 'nutritionQuestionnaire.allergyChicken' },
+  { slug: 'carne-de-res', labelKey: 'nutritionQuestionnaire.allergyBeef' },
+  { slug: 'lacteos', labelKey: 'nutritionQuestionnaire.allergyDairy' },
+  { slug: 'trigo', labelKey: 'nutritionQuestionnaire.allergyWheat' },
+  { slug: 'huevo', labelKey: 'nutritionQuestionnaire.allergyEgg' },
+  { slug: 'soya', labelKey: 'nutritionQuestionnaire.allergySoy' },
+  { slug: 'pescado', labelKey: 'nutritionQuestionnaire.allergyFish' },
+  { slug: 'otra', labelKey: 'nutritionQuestionnaire.other' },
+] as const;
+
+const DISEASES = [
+  { slug: 'diabetes', labelKey: 'nutritionQuestionnaire.diseaseDiabetes' },
+  { slug: 'enfermedad-renal', labelKey: 'nutritionQuestionnaire.diseaseKidney' },
+  { slug: 'pancreatitis', labelKey: 'nutritionQuestionnaire.diseasePancreatitis' },
+  { slug: 'enfermedad-hepatica', labelKey: 'nutritionQuestionnaire.diseaseLiver' },
+  { slug: 'problemas-digestivos', labelKey: 'nutritionQuestionnaire.diseaseDigestive' },
+  { slug: 'problemas-articulares', labelKey: 'nutritionQuestionnaire.diseaseJoints' },
+  { slug: 'otra', labelKey: 'nutritionQuestionnaire.other' },
+] as const;
+
+type HealthList = 'allergy' | 'disease';
+type HealthOption = (typeof ALLERGIES)[number] | (typeof DISEASES)[number];
+type ChunkyLip = ReturnType<typeof useChunkyLip>;
+
 type Step = 'activity' | 'condition' | 'target' | 'food' | 'health';
 
 function stepNumber(step: Step) {
@@ -91,6 +116,38 @@ function NoteRow({ testID, text, color }: { testID: string; text: string; color:
   </View>;
 }
 
+function toggle(items: string[], slug: string) {
+  return items.includes(slug) ? items.filter(item => item !== slug) : [...items, slug];
+}
+
+function HealthChips({ list, options, checked, onToggle, chunkyLip }: { list: HealthList; options: readonly HealthOption[]; checked: string[]; onToggle: (slug: string) => void; chunkyLip: ChunkyLip }) {
+  const t = useTranslate();
+  return <View className="flex-row flex-wrap gap-2">
+    {options.map(option => {
+      const isChecked = checked.includes(option.slug);
+      return <Pressable key={option.slug} testID={`${list}-chip-${option.slug}`} accessibilityRole="checkbox" accessibilityState={{ checked: isChecked }} hitSlop={TOUCH_SLOP}
+        className={isChecked ? 'h-9 justify-center rounded-full bg-accent px-3' : 'h-9 justify-center rounded-full bg-default px-3'}
+        style={isChecked ? chunkyLip.primaryCompact : undefined} onPress={() => onToggle(option.slug)}>
+        <Text className={isChecked ? 'text-sm font-extrabold text-accent-foreground' : 'text-sm font-extrabold text-foreground'}>{t(option.labelKey)}</Text>
+      </Pressable>;
+    })}
+  </View>;
+}
+
+function OtherField({ list, value, onChangeText }: { list: HealthList; value: string; onChangeText: (value: string) => void }) {
+  const t = useTranslate();
+  const [focused, setFocused] = useState(false);
+  return <View className="gap-1.5">
+    <View className="flex-row justify-between">
+      <Text className="text-13 font-semibold text-muted">{t('nutritionQuestionnaire.otherLabel')}</Text>
+      <Text testID={`${list}-other-count`} className="text-13 font-semibold text-muted">{t('nutritionQuestionnaire.otherCount', { count: value.length })}</Text>
+    </View>
+    <TextInput testID={`${list}-other-input`} maxLength={40} value={value} onChangeText={onChangeText} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+      className={focused ? 'h-12 rounded-xl border-2 border-accent bg-default px-3.5 text-15 font-semibold text-foreground' : 'h-12 rounded-xl border-2 border-transparent bg-default px-3.5 text-15 font-semibold text-foreground'}
+      style={CONTINUOUS_CORNER} />
+  </View>;
+}
+
 function BcsBadge({ n, slot, testID }: { n: number; slot: CategorySlot; testID: string }) {
   return <View testID={testID} className={`size-7.5 items-center justify-center rounded-10 ${CATEGORY_SLOTS[slot].surface}`}>
     <Text className={`text-sm font-black ${CATEGORY_SLOTS[slot].ink}`}>{n}</Text>
@@ -108,6 +165,10 @@ function QuestionnaireForm({ pet }: { initial: NutritionProfile | null; pet: Pet
   const [target, setTarget] = useState('');
   const [food, setFood] = useState<NutritionProfileInput['foodType'] | null>(null);
   const [kcal, setKcal] = useState('');
+  const [allergies, setAllergies] = useState<string[]>([]);
+  const [allergyOther, setAllergyOther] = useState('');
+  const [diseases, setDiseases] = useState<string[]>([]);
+  const [diseaseOther, setDiseaseOther] = useState('');
   const bcsRow = BCS_ROWS.find(row => row.n === bcs);
   const foodRow = FOOD_TYPES.find(option => option.value === food);
   const n = stepNumber(step);
@@ -131,7 +192,7 @@ function QuestionnaireForm({ pet }: { initial: NutritionProfile | null; pet: Pet
           <Image source={require('../../../assets/images/pingo-food.webp')} className={step === 'condition' ? 'size-11' : 'size-13'} />
           <View testID="nutrition-questionnaire-bubble" className="flex-1 rounded-tile bg-surface-secondary px-3 py-2.5" style={CONTINUOUS_CORNER}>
             <View className={step === 'condition' ? 'absolute -left-1.5 top-4.5 size-3 rotate-45 bg-surface-secondary' : 'absolute -left-1.5 top-5.5 size-3 rotate-45 bg-surface-secondary'} />
-            <Text className="text-13 font-semibold leading-body text-foreground">{step === 'condition' ? t('nutritionQuestionnaire.bubbleCondition', { name: pet.name }) : step === 'target' ? t('nutritionQuestionnaire.bubbleTargetWeight', { bcs: String(bcs), name: pet.name }) : step === 'food' ? t('nutritionQuestionnaire.bubbleFood', { name: pet.name }) : t('nutritionQuestionnaire.bubbleActivity', { name: pet.name })}</Text>
+            <Text className="text-13 font-semibold leading-body text-foreground">{step === 'condition' ? t('nutritionQuestionnaire.bubbleCondition', { name: pet.name }) : step === 'target' ? t('nutritionQuestionnaire.bubbleTargetWeight', { bcs: String(bcs), name: pet.name }) : step === 'food' ? t('nutritionQuestionnaire.bubbleFood', { name: pet.name }) : step === 'health' ? t('nutritionQuestionnaire.bubbleHealth', { name: pet.name }) : t('nutritionQuestionnaire.bubbleActivity', { name: pet.name })}</Text>
           </View>
         </View>
         {step === 'activity' ? <>
@@ -206,6 +267,14 @@ function QuestionnaireForm({ pet }: { initial: NutritionProfile | null; pet: Pet
           <NumberField kind="kcal" testID="kcal-input" unit={t('nutritionQuestionnaire.unitKcal')} value={kcal} onChangeText={setKcal} />
           <Text className="text-13 font-semibold text-muted">{t('nutritionQuestionnaire.kcalHelp')}</Text>
           {foodRow ? <NoteRow testID="kcal-note" text={t(foodRow.note.labelKey)} color={colors[4]} /> : null}
+        </> : null}
+        {step === 'health' ? <>
+          <Text className="text-lg font-black text-foreground">{t('nutritionQuestionnaire.allergiesLegend')}</Text>
+          <HealthChips list="allergy" options={ALLERGIES} checked={allergies} onToggle={slug => setAllergies(items => toggle(items, slug))} chunkyLip={chunkyLip} />
+          {allergies.includes('otra') ? <OtherField list="allergy" value={allergyOther} onChangeText={setAllergyOther} /> : null}
+          <Text className="text-lg font-black text-foreground">{t('nutritionQuestionnaire.diseasesLegend')}</Text>
+          <HealthChips list="disease" options={DISEASES} checked={diseases} onToggle={slug => setDiseases(items => toggle(items, slug))} chunkyLip={chunkyLip} />
+          {diseases.includes('otra') ? <OtherField list="disease" value={diseaseOther} onChangeText={setDiseaseOther} /> : null}
         </> : null}
       </ScrollView>
       <View className="bg-background px-5 pt-4" style={{ paddingBottom: Math.max(insets.bottom, 16) }}>
