@@ -95,6 +95,8 @@ export function AlertsScreen() {
     alert.status === 'open' ? (acked[alert.id] ?? alert) : alert,
   );
   const count = rows.filter((alert) => alert.status === 'open').length;
+  const draining = alerts.data !== undefined && alerts.hasNextPage && !alerts.isError;
+  const settled = alerts.data !== undefined && !draining;
   const firstPage = alerts.data?.pages[0];
   const firstPageFailed =
     firstPage !== undefined &&
@@ -189,7 +191,7 @@ export function AlertsScreen() {
               testID="alerts"
               backFallback="/"
               title={t('alerts.title')}
-              accessory={count > 0 ? (
+              accessory={settled && count > 0 ? (
                 <PopIn testID="alerts-new-count" className="rounded-full bg-danger px-2.5 py-1">
                   <Text testID="alerts-new-count-text" className="text-13 font-extrabold text-danger-foreground" style={TABULAR_NUMS}>
                     {count === 1 ? t('alerts.newOne') : t('alerts.newMany', { count })}
