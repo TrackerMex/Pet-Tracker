@@ -142,3 +142,44 @@ formulario de Peso, «Nuevo», los botones de las filas, el formulario de vincul
 «Desvincular»).
 
 - [ ] Smoke de #216 recorrido por el humano (fecha: ____)
+
+## #209 mobile-nutrition-questionnaire
+
+Spec: `specs/mobile-nutrition-questionnaire/requirements.md` (§Aprobación, errata hasta la ronda
+7). Reviewer APROBADO en la tercera revisión, sobre `9c52c7d2`
+(`progress/review_mobile-nutrition-questionnaire.md`). Como en #208, la spec dice que su smoke
+**bloquea `done`**. Aparte queda la casilla de la enmienda de la carta (#209 R26) en
+`docs/ui-guidelines.md`, que también es del humano.
+
+No necesita rebuild propio: #209 no añade módulos nativos.
+
+Hace falta una cuenta dueña con una mascota **sin perfil nutricional** y con al menos un peso
+registrado (sin peso, generate responde «registra un peso primero»). Para el paso 7, otra cuenta
+`family` de la misma mascota (flujo de #214).
+
+En el dev build de Android (no Expo Go):
+
+1. Nutrición: sale el vacío del perfil con Pingo y «Crear perfil nutricional». Al tocarlo se abre
+   el cuestionario en «1 de 4», Actividad.
+2. Actividad y Condición: Siguiente se activa solo tras elegir. En Condición, una condición de 7 o
+   más abre el subpaso Peso objetivo, con el contador todavía en «2 de 4».
+3. Peso objetivo y Alimento: al enfocar el campo numérico (peso objetivo, kcal/100 g) el teclado
+   no tapa el campo ni el botón Siguiente (KAV). Elegir un tipo de alimento sobrescribe las kcal con
+   su precarga (Seco 350, Húmedo 90, Mixto 220, Casero 130).
+4. Salud: «Otra» abre un campo de texto que el teclado tampoco tapa. El chip nuevo sale con el
+   texto escrito.
+5. «Guardar y generar plan»: sale la pantalla Generando con los anillos de ping animados y, cuando
+   el plan está listo, vuelve sola a Nutrición, que ya muestra el plan.
+6. Horario: salen las píldoras del perfil y «Editar perfil». Al tocarlo, el cuestionario se abre
+   con los datos guardados. Cambiar uno y guardar regenera el plan.
+7. Cuenta `family`: Nutrición y Horario no muestran «Crear perfil nutricional», «Generar plan» ni
+   «Editar perfil». Sale el texto de solo lectura.
+8. A mitad del cuestionario, el botón atrás del sistema (o el gesto) retrocede un paso sin salir
+   de la pantalla: de Alimento vuelve a Peso objetivo si la condición es 7 o más, o a Condición si
+   es menor. Solo desde Actividad sale de la pantalla.
+9. Pingo (F1 de la primera revisión): se ve, y no deja un hueco vacío, en el vacío de Nutrición (grande),
+   junto a la burbuja del cuestionario (más pequeño en Condición) y en Generando.
+10. Error de carga (F2): con el teléfono sin red, al abrir el cuestionario sale «Algo salió mal» bajo
+    la barra de estado, sin solaparse con ella, y con el botón de volver, que funciona.
+
+- [ ] Smoke de #209 recorrido por el humano (fecha: ____)

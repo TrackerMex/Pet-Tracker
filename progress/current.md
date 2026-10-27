@@ -46,6 +46,11 @@
 - 2026-10-27 15:18 UTC: el `reviewer` rechazó la primera revisión (F1: tres `Image` de `expo-image` con tamaño
   solo por `className`; F2: esqueleto y error de carga sin insets ni cabecera). La errata ronda 6 de la spec y
   la Adenda 5 del handoff las corrigen; las implementa otro `implementer`, con la cuota de Codex aún al 3 %.
+- 2026-10-27 16:05 UTC: la segunda revisión dio F1 y F2 por cerrados en el código, pero la rechazó por
+  candados que dejaban verdes cuatro mutaciones (H1 a H3). La errata ronda 7 (`dc801dc3`) y la Adenda 6
+  (`fce5984e`) las corrigen. Las implementó otro `implementer` (`520944f4`, `f638cbdd`, `9c52c7d2`).
+- 2026-10-27: la tercera revisión salió APROBADO sobre `9c52c7d2` (`9e3f3dcc`). #209 sigue en `spec_ready`:
+  la casilla de R26 y el smoke son del humano.
 
 ## Fallback al subagente `implementer` (#216, 2026-10-27)
 
