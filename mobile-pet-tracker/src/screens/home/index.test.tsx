@@ -6546,3 +6546,69 @@ describe('#214 R7: Unirme con código en Inicio vacío', () => {
     expect(mockRouter.push).toHaveBeenCalledWith('/join-pet');
   });
 });
+
+describe('#216 R2: el tile Recordatorio es solo del dueño', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetDailyActivity.mockResolvedValue({
+      kind: 'ok',
+      days: [makeDay()],
+      weekComparison: { distanceM: 5, activeMinutes: 10, walkCount: 20 },
+    });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  const bindings = {
+    'quick-action-weight': ['icon-weight', '--color-category-violet-strong', 'Peso', 'text-category-violet-strong', 'bg-category-violet', '/weight-log'],
+    'quick-action-reminder': ['icon-calendar-plus', '--color-category-amber-strong', 'Recordatorio', 'text-category-amber-strong', 'bg-category-amber', '/add-reminder'],
+    'quick-action-documents': ['icon-file-text', '--color-category-blue-strong', 'Documentos', 'text-category-blue-strong', 'bg-category-blue', '/pets/pet-1/docs'],
+  } as const;
+
+  it.each([
+    ['owner', ['quick-action-weight', 'quick-action-reminder', 'quick-action-documents']],
+    ['family', ['quick-action-weight', 'quick-action-documents']],
+    ['walker', ['quick-action-weight', 'quick-action-documents']],
+    ['vet', ['quick-action-weight', 'quick-action-documents']],
+  ] as const)('#216 R2 con el rol %s los tiles son %j', async (role, tiles) => {
+    jest
+      .spyOn(Uniwind, 'getCSSVariable')
+      .mockImplementation((token) => token);
+    const pet = makePet({ myRole: role });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    await renderHome();
+    await screen.findByTestId('quick-action-weight');
+
+    const row = screen.getByTestId('quick-actions-row');
+    expect(within(row).getAllByTestId(/^quick-action-/).map(({ props }) => props.testID)).toEqual(tiles);
+    expect(row.children).toHaveLength(tiles.length);
+
+    for (const testID of tiles) {
+      const [iconTestID, ink, label, labelColor, surface, href] = bindings[testID];
+      const tile = screen.getByTestId(testID);
+      const tileQueries = within(tile);
+      const icon = tileQueries.getByTestId(iconTestID);
+      const labelNode = tileQueries.getByText(label);
+
+      expect(icon).toBeVisible();
+      expect(icon.props.color).toBe(ink);
+      expect(labelNode).toBeVisible();
+      expect(labelNode.props.className).toContain(labelColor);
+      expect(tile.props.className).toContain(surface);
+      await fireEvent.press(tile);
+      expect(mockRouter.push).toHaveBeenLastCalledWith(href);
+    }
+
+    expect(mockRouter.push).toHaveBeenCalledTimes(tiles.length);
+  });
+});
