@@ -641,6 +641,8 @@ compite con `bun.lock`. `init.sh` ya corre la parte móvil con
 
   **Excepción nombrada (fidelidad al canvas, 2026-10-13)**: una pantalla llevada al canvas aprobado (directiva del humano «el diseño final debe de quedar como el artifact») usa las métricas de su artboard: padding lateral 20 en vez de 24 y el `gap` que el artboard dibuja. El resto de reglas de esta viñeta se mantiene; la spec de cada pantalla nombra sus valores.
 
+  **Excepción nombrada (enmienda #222, 2026-10-27)**: una pestaña con cabecera fija de avatares (hoy Salud y Nutrición, vía src/components/tab-pet-header.tsx) sustituye el paddingTop: insets.top + 12 del scroll por insets.top + TAB_PET_HEADER_HEIGHT + gap de la pantalla mientras la cabecera esté pintada (65 más el gap: 16 en Salud, 14 en Nutrición); sin cabecera (lista pendiente, en error o vacía) vuelve a insets.top + 12. La cabecera es absoluta, se pinta tras el scroll y no lleva padding horizontal propio. El resto de la viñeta se mantiene.
+
   **Excepción nombrada (enmienda A20 de #181, 2026-10-16)**: el estado sin mascotas
   de una pantalla (`EmptyState` de `common.noPetsYet`) no lleva las métricas de
   scroll de esta viñeta: se pinta, en lugar del scroll, en un contenedor

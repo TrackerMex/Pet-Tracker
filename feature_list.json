@@ -3635,7 +3635,7 @@
   {
     "id": 222,
     "name": "mobile-tab-avatar-header",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 2, gate G1). Quitar los títulos de Salud, Nutrición y Perfil a favor del selector de mascotas, con cabecera fija en Salud y Nutrición y encabezado oculto para lectores de pantalla. Enmienda N1 de #168. Evidencia en progress/explore_ui-titulos-scroll-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },

@@ -1,5 +1,6 @@
 import {
   act,
+  cleanup,
   fireEvent,
   renderHook,
   screen,
@@ -304,32 +305,7 @@ function renderProfile() {
 describe('#173 R5: cápsula de añadir mascota', () => {
   beforeEach(setupProfile168);
 
-  it('pinta la cápsula tras el título con icono oculto y texto en español (enmendado por #196 R2)', async () => {
-    await renderProfile();
-    await screen.findByTestId('pet-info-card');
-    const capsule = screen.getByTestId('profile-add-pet');
 
-    expect(capsule.props.className).toBe('h-11 flex-row items-center gap-1.5 rounded-full bg-glass-surface-strong px-4');
-    expect(capsule.props.accessibilityRole).toBe('button');
-    expect(capsule.props.hitSlop).toEqual(TOUCH_SLOP);
-    expect(capsule.props.style?.borderCurve).toBeUndefined();
-    expect(profileChild(capsule.parent!, 0)).toBe(screen.getByTestId('profile-title'));
-    expect(profileChild(capsule.parent!, 1)).toBe(capsule);
-    expect(capsule.children).toHaveLength(2);
-    const icon = within(capsule).getByTestId('profile-add-pet-icon', { includeHiddenElements: true });
-    expect(profileChild(capsule, 0)).toBe(icon);
-    expect(icon.props.accessibilityElementsHidden).toBe(true);
-    expect(icon.props.importantForAccessibility).toBe('no-hide-descendants');
-    expect(icon.children).toHaveLength(1);
-    const glyph = within(icon).getByTestId('profile-icon-plus', { includeHiddenElements: true });
-    expect(profileChild(icon, 0)).toBe(glyph);
-    expect(glyph.props.size).toBe(16);
-    expect(glyph.props.strokeWidth).toBe(2.6);
-    expect(glyph.props.style).toEqual({ color: 'accent-strong' });
-    const label = within(capsule).getByText('Añadir mascota');
-    expect(profileChild(capsule, 1)).toBe(label);
-    expect(label.props.className).toBe('text-sm font-extrabold text-accent-strong');
-  });
 
   it('pinta Add pet en inglés con la misma receta', async () => {
     await renderProfile();
@@ -355,11 +331,12 @@ describe('#173 R5: cápsula de añadir mascota', () => {
 describe('#173 R4: Perfil pide la variante avatars', () => {
   beforeEach(setupProfile168);
 
-  it('pasa avatars al selector compartido cuando carga la mascota (enmendado por #196 R2)', async () => {
+  it('pasa glass al selector compartido cuando carga la mascota (enmendado por #196 R2) (enmendado por #222 R9)', async () => {
     await renderProfile();
     await screen.findByTestId('pet-info-card');
 
     expect(mockPetSwitcher.mock.lastCall?.[0].variant).toBe('glass');
+    expect(readFileSync('src/screens/profile/index.tsx', 'utf8')).not.toContain('variant="avatars"');
     expect(mockPetSwitcher.mock.lastCall?.[0].trailing).toBeUndefined();
   });
 });
@@ -679,10 +656,10 @@ describe('#65 R14 (enmendado por #173 R11): Profile cambia el idioma y repinta s
     mockSetStoredLanguage.mockResolvedValue();
   });
 
-  it('shows the current endonym and changes the live Profile copy (enmendado por #196 R2)', async () => {
+  it('shows the current endonym and changes the live Profile copy (enmendado por #196 R2) (enmendado por #222 R9)', async () => {
     await renderProfile();
 
-    expect(screen.getByText('Perfil')).toBeOnTheScreen();
+    expect(screen.getByRole('header', { name: 'Perfil' })).toBeOnTheScreen();
     expect(screen.getByTestId('language-value')).toHaveTextContent('Español');
     expect(screen.getByTestId('theme-toggle')).toBeVisible();
 
@@ -691,7 +668,8 @@ describe('#65 R14 (enmendado por #173 R11): Profile cambia el idioma y repinta s
       await Promise.resolve();
     });
 
-    await waitFor(() => expect(screen.getByText('Profile')).toBeOnTheScreen());
+    // docs/conventions.md §Esperas: observar el idioma en el encabezado.
+    await waitFor(() => expect(screen.getByRole('header', { name: 'Profile' })).toBeOnTheScreen());
     expect(screen.getByTestId('language-value')).toHaveTextContent('English');
     expect(mockSetStoredLanguage).toHaveBeenCalledWith('en');
   });
@@ -1318,17 +1296,14 @@ const PROFILE_BRANCHES_168 = [
 describe('#168 R1: Perfil pinta el título grande en todas sus ramas', () => {
   beforeEach(setupProfile168);
 
-  it.each(PROFILE_BRANCHES_168)('pinta el título grande ($name) (enmendado por #197 R4) (enmendado por #196 R2)', async ({ name, pets, detail, branch, hero }) => {
+  it.each(PROFILE_BRANCHES_168)('pinta el encabezado oculto ($name) (enmendado por #197 R4) (enmendado por #196 R2) (enmendado por #222 R9)', async ({ name, pets, detail, branch }) => {
     mockListPets.mockImplementation(async () => pets);
     mockGetPet.mockImplementation(async () => detail);
     await renderProfile();
     if (name === 'detalle pendiente') await screen.findByTestId('pet-chip-pet-1');
     await screen.findByTestId(branch);
-    const title = screen.getByTestId('profile-title');
-    expect(title.props.className).toBe(hero ? 'text-3xl font-black tracking-title text-accent-foreground' : 'text-3xl font-black tracking-title text-foreground');
-    expect(title).toHaveTextContent('Perfil');
-    expect(profileChild(title.parent!, 0)).toBe(title);
-    expect(profileChild(title.parent!.parent!, 0)).toBe(title.parent);
+    expect(screen.getByTestId('profile-heading')).toBeOnTheScreen();
+    expect(screen.queryByTestId('profile-title')).toBeNull();
   });
 });
 
@@ -1948,13 +1923,14 @@ describe('#181 R5: Perfil conserva la cuenta y compone el vacío ilustrado', () 
     expect(mockRouter.push).toHaveBeenCalledWith('/pets/add');
   });
 
-  it('R5.2 R5.3: centra en horizontal dentro del scroll y mantiene las acciones de cuenta (enmendado por #196 R1)', async () => {
-    const { queryClient } = await renderProfile();
+  it('R5.2 R5.3: centra en horizontal dentro del scroll y mantiene las acciones de cuenta (enmendado por #196 R1) (enmendado por #222 R9)', async () => {
+    await renderProfile();
     const empty = await screen.findByTestId('profile-pets-empty-title');
-    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    // docs/conventions.md §Esperas: observar la cuenta final, no la caché.
+    expect(await screen.findByTestId('me-card-state')).toBeVisible();
     expect(empty.parent).toBe(screen.getByTestId('profile-pets-empty'));
     expect(empty.parent?.props.className).toBe('items-center gap-3 py-8');
-    for (const id of ['screen-profile', 'profile-title', 'profile-add-pet', 'reminders-link', 'me-card', 'profile-sign-out']) {
+    for (const id of ['screen-profile', 'profile-heading', 'profile-add-pet', 'reminders-link', 'me-card', 'profile-sign-out']) {
       expect(screen.getByTestId(id)).toBeVisible();
     }
     for (const id of ['profile-pet-error', 'profile-pet-retry', 'pet-hero-skeleton', 'profile-hero', 'pet-info-skeleton']) {
@@ -2196,7 +2172,7 @@ describe('#194 R9: profile links to the editor and observes saved changes', () =
 describe('#196 R1: hero a sangre y contenido por rama', () => {
   beforeEach(setupProfile168);
 
-  it.each(PROFILE_BRANCHES_168)('#196 R1: en la rama $name monta el hero = $hero', async ({ name, pets, detail, branch, hero }) => {
+  it.each(PROFILE_BRANCHES_168)('#196 R1: en la rama $name monta el hero = $hero (enmendado por #222 R9)', async ({ name, pets, detail, branch, hero }) => {
     mockListPets.mockImplementation(async () => pets);
     mockGetPet.mockImplementation(async () => detail);
     await renderProfile();
@@ -2211,7 +2187,7 @@ describe('#196 R1: hero a sangre y contenido por rama', () => {
     expect(content.props.style).toEqual(hero ? undefined : { paddingTop: 52 });
     if (hero) {
       const header = screen.getByTestId('profile-hero');
-      expect(profileChild(scrollContent, 0)).toBe(header);
+      expect(profileChild(scrollContent, 1).props.testID).toBe('profile-hero');
       expect(header.props.className).toBe('relative');
       const shared = screen.getByTestId('pet-hero');
       expect(profileChild(header, 0)).toBe(shared);
@@ -2227,7 +2203,7 @@ describe('#196 R1: hero a sangre y contenido por rama', () => {
     } else {
       expect(screen.queryByTestId('profile-hero')).toBeNull();
       expect(screen.queryByTestId('pet-hero')).toBeNull();
-      expect(profileChild(content, 0)).toBe(screen.getByTestId('profile-title').parent);
+      expect(profileChild(content, 0).props.testID).toBe('profile-top-row');
     }
   });
 
@@ -2299,55 +2275,35 @@ describe('#196 R4: cámara flotante sobre la foto', () => {
 describe('#196 R2: título y selector en el slot fotográfico', () => {
   beforeEach(setupProfile168);
 
-  it('#196 R2: con hero pinta título blanco, píldora de vidrio y selector glass en el slot', async () => {
-    await renderProfile();
-    await screen.findByTestId('profile-pet-card');
-    const top = screen.getByTestId('profile-hero-top');
-    expect(top.parent).toBe(screen.getByTestId('pet-hero-slot'));
-    expect(top.props.className).toBe('gap-3 px-1');
-    expect(top.children).toHaveLength(2);
-    const row = profileChild(top, 0);
-    expect(row.props.className).toBe('flex-row items-center justify-between gap-3');
-    expect(profileChild(row, 0)).toBe(screen.getByTestId('profile-title'));
-    expect(screen.getByTestId('profile-title').props.className).toBe('text-3xl font-black tracking-title text-accent-foreground');
-    expect(screen.getByTestId('profile-title')).toHaveTextContent('Perfil');
-    const capsule = screen.getByTestId('profile-add-pet');
-    expect(profileChild(row, 1)).toBe(capsule);
-    expect(capsule.props.className).toBe('h-11 flex-row items-center gap-1.5 rounded-full bg-glass-surface-strong px-4');
-    expect(profileChild(top, 1)).toBe(screen.getByTestId('pet-chip-pet-1').parent);
-    const props = mockPetSwitcher.mock.lastCall?.[0];
-    expect(props?.variant).toBe('glass');
-    expect(props?.trailing).toBeUndefined();
-    expect(props?.pets.map(({ id }) => id)).toEqual(['pet-1']);
-    expect(props?.selectedPetId).toBe('pet-1');
-    await fireEvent.press(capsule);
-    expect(mockRouter.push).toHaveBeenCalledWith('/pets/add');
-  });
 
-  it('#196 R2: con la lista pendiente el slot no monta el selector', async () => {
+
+  it('#196 R2: con la lista pendiente el slot no monta el selector (enmendado por #222 R9)', async () => {
     mockListPets.mockReturnValue(pending<PetsState>());
     await renderProfile();
     const top = await screen.findByTestId('profile-hero-top');
     expect(top.parent).toBe(screen.getByTestId('pet-hero-slot'));
-    expect(top.children).toHaveLength(1);
-    expect(screen.getByTestId('profile-title')).toHaveTextContent('Perfil');
+    expect(top.children).toHaveLength(2);
+    expect(profileChild(top, 0).props.testID).toBe('profile-hero-selector');
+    expect(profileChild(top, 0).children).toEqual([]);
+    expect(screen.queryByTestId('profile-title')).toBeNull();
     expect(mockPetSwitcher).not.toHaveBeenCalled();
   });
 
   it.each([
     { name: 'vacía', pets: { kind: 'ok', pets: [] } as PetsState, branch: 'profile-pets-empty' },
     { name: 'error de lista', pets: { kind: 'error' } as PetsState, branch: 'profile-pets-error' },
-  ])('#196 R2: sin hero ($name) pinta la fila clara al principio del contenido', async ({ pets, branch }) => {
+  ])('#196 R2: sin hero ($name) pinta la fila clara al principio del contenido (enmendado por #222 R9)', async ({ pets, branch }) => {
     mockListPets.mockResolvedValue(pets);
     await renderProfile();
     await screen.findByTestId(branch);
     const content = screen.getByTestId('profile-content');
     const row = profileChild(content, 0);
-    expect(row.props.className).toBe('flex-row items-center justify-between gap-3');
-    expect(profileChild(row, 0)).toBe(screen.getByTestId('profile-title'));
-    expect(screen.getByTestId('profile-title').props.className).toBe('text-3xl font-black tracking-title text-foreground');
+    expect(row.props.testID).toBe('profile-top-row');
+    expect(row.props.className).toBe('flex-row justify-end');
+    expect(row.children).toHaveLength(1);
+    expect(screen.queryByTestId('profile-title')).toBeNull();
     const capsule = screen.getByTestId('profile-add-pet');
-    expect(profileChild(row, 1)).toBe(capsule);
+    expect(profileChild(row, 0)).toBe(capsule);
     expect(capsule.props.className).toBe('h-9 flex-row items-center gap-1.5 rounded-full bg-tab-pill px-3.5');
     expect(screen.queryByTestId('profile-hero-top')).toBeNull();
     expect(mockPetSwitcher).not.toHaveBeenCalled();
@@ -2392,12 +2348,12 @@ describe('#196 R5: aviso ámbar de notificaciones bloqueadas', () => {
     expect(profileChild(notice, 1)).toBe(screen.getByTestId('notifications-open-settings'));
   });
 
-  it('#196 R5: con el permiso bloqueado y sin hero el aviso va tras el título', async () => {
+  it('#196 R5: con el permiso bloqueado y sin hero el aviso va tras profile-top-row (enmendado por #222 R9)', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
     await renderProfile();
     await screen.findByTestId('profile-pets-empty');
     const content = screen.getByTestId('profile-content');
-    expect(profileChild(content, 0)).toBe(screen.getByTestId('profile-title').parent);
+    expect(profileChild(content, 0).props.testID).toBe('profile-top-row');
     expect(profileChild(content, 1)).toBe(screen.getByTestId('profile-entrance-notice'));
     expect(profileChild(screen.getByTestId('profile-entrance-notice'), 0)).toBe(screen.getByTestId('notifications-blocked-notice'));
   });
@@ -2528,6 +2484,177 @@ describe('#196 R9: índices de entrada fijos por rama', () => {
     expect(entrance.props.index).toBe(0);
     expect(mockHomeEntrance.mock.calls.filter(([props]) => props.testID === 'profile-entrance-notice').map(([props]) => props.index)).toEqual(expect.arrayContaining([0]));
     expect(screen.queryByTestId('profile-entrance-hero')).toBeNull();
+  });
+});
+
+
+describe('#222 R7: Encabezado solo para lectores de pantalla', () => {
+  beforeEach(setupProfile168);
+
+  it('#222 R7: Perfil anuncia su encabezado sin texto visible', async () => {
+    await renderProfile();
+    // docs/conventions.md §Esperas: esperar al mismo nodo que se aserta.
+    await waitFor(() => expect(screen.queryByRole('header', { name: 'Perfil' })).not.toBeNull());
+    const heading = screen.getByTestId('profile-heading');
+    expect(screen.getByRole('header', { name: 'Perfil' })).toBe(heading);
+    expect(heading.props.accessible).toBe(true);
+    expect(heading.props.className).toBe('absolute size-px');
+    expect(heading.children).toEqual([]);
+  });
+
+  it('#222 R7: el encabezado sale en inglés', async () => {
+    await renderProfile();
+    await fireEvent.press(await screen.findByTestId('language-toggle'));
+    // docs/conventions.md §Esperas: el idioma se observa en el encabezado.
+    await waitFor(() => expect(screen.queryByRole('header', { name: 'Profile' })).not.toBeNull());
+    expect(screen.getByRole('header', { name: 'Profile' })).toBe(screen.getByTestId('profile-heading'));
+  });
+
+  it('#222 R7: el encabezado existe en todos los estados', async () => {
+    for (const state of PROFILE_BRANCHES_168) {
+      setupProfile168();
+      mockListPets.mockImplementation(async () => state.pets);
+      mockGetPet.mockImplementation(async () => state.detail);
+      await renderProfile();
+      if (state.name === 'detalle pendiente') await screen.findByTestId('pet-chip-pet-1');
+      await screen.findByTestId(state.branch);
+      // docs/conventions.md §Esperas: se espera al encabezado de esta rama.
+      await waitFor(() => expect(screen.queryByTestId('profile-heading')).not.toBeNull());
+      expect(screen.getByRole('header', { name: 'Perfil' })).toBe(screen.getByTestId('profile-heading'));
+      await cleanup();
+    }
+  });
+
+  it('#222 R7: el encabezado es el primer hijo', async () => {
+    await renderProfile();
+    // docs/conventions.md §Esperas: la posición se aserta tras montar el nodo.
+    await waitFor(() => expect(screen.queryByTestId('profile-heading')).not.toBeNull());
+    const heading = screen.getByTestId('profile-heading');
+    expect(profileChild(screen.getByTestId('screen-profile'), 0).children[0]).toBe(heading);
+  });
+});
+
+
+describe('#222 R6: Perfil sin hero', () => {
+  beforeEach(setupProfile168);
+
+  it('#222 R6: sin hero, profile-top-row lleva solo la cápsula pastilla a la derecha', async () => {
+    for (const state of PROFILE_BRANCHES_168.filter(({ hero }) => !hero)) {
+      setupProfile168();
+      mockListPets.mockImplementation(async () => state.pets);
+      mockGetPet.mockImplementation(async () => state.detail);
+      await renderProfile();
+      // docs/conventions.md §Esperas: observar la rama antes del orden.
+      await screen.findByTestId(state.branch);
+      const row = profileChild(screen.getByTestId('profile-content'), 0);
+      expect(row.props.testID).toBe('profile-top-row');
+      expect(row.props.className).toBe('flex-row justify-end');
+      expect(row.children).toHaveLength(1);
+      const capsule = profileChild(row, 0);
+      expect(capsule.props.testID).toBe('profile-add-pet');
+      expect(capsule.props.className).toBe('h-9 flex-row items-center gap-1.5 rounded-full bg-tab-pill px-3.5');
+      expect(screen.queryByTestId('profile-title')).toBeNull();
+      expect(screen.queryByText('Perfil')).toBeNull();
+      expect(screen.queryAllByTestId(/^pet-chip-/)).toEqual([]);
+      await cleanup();
+    }
+  });
+
+  it('#222 R6: sin hero, profile-content conserva paddingTop 52', async () => {
+    for (const state of PROFILE_BRANCHES_168.filter(({ hero }) => !hero)) {
+      setupProfile168();
+      mockListPets.mockImplementation(async () => state.pets);
+      mockGetPet.mockImplementation(async () => state.detail);
+      await renderProfile();
+      // docs/conventions.md §Esperas: las métricas se leen de la rama final.
+      await screen.findByTestId(state.branch);
+      expect(screen.getByTestId('profile-content').props.style).toEqual({ paddingTop: 52 });
+      await cleanup();
+    }
+  });
+});
+
+
+describe('#222 R5: Perfil con hero', () => {
+  beforeEach(setupProfile168);
+
+  it('#222 R5: profile-hero-top es una fila con el selector a la izquierda y la cápsula a la derecha', async () => {
+    await renderProfile();
+    // docs/conventions.md §Esperas: el hero cargado fija la rama inspeccionada.
+    await screen.findByTestId('profile-pet-card');
+    const top = screen.getByTestId('profile-hero-top');
+    expect(top.parent!.props.testID).toBe('pet-hero-slot');
+    expect(top.props.className).toBe('flex-row items-center justify-between gap-3 px-1');
+    expect(top.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-hero-selector', 'profile-add-pet']);
+  });
+
+  it('#222 R5: el selector glass vive en profile-hero-selector', async () => {
+    for (const loading of [true, false]) {
+      setupProfile168();
+      if (loading) mockListPets.mockReturnValue(pending<PetsState>());
+      await renderProfile();
+      // docs/conventions.md §Esperas: esperar al slot asertado, no a mocks.
+      await screen.findByTestId(loading ? 'profile-hero-top' : 'profile-pet-card');
+      expect(screen.queryByTestId('profile-hero-selector')).not.toBeNull();
+      const selector = screen.getByTestId('profile-hero-selector');
+      expect(selector.props.className).toBe('min-w-0 flex-1');
+      if (loading) {
+        expect(selector.children).toEqual([]);
+        expect(within(selector).queryAllByTestId(/^pet-chip-/)).toEqual([]);
+      } else {
+        expect(within(selector).getAllByTestId(/^pet-chip-/).map(node => node.props.testID)).toEqual(['pet-chip-pet-1']);
+        const props = mockPetSwitcher.mock.lastCall?.[0];
+        expect(props?.variant).toBe('glass');
+        expect(props?.trailing).toBeUndefined();
+        expect(props?.pets.map(({ id }) => id)).toEqual(['pet-1']);
+        expect(props?.selectedPetId).toBe('pet-1');
+      }
+      await cleanup();
+    }
+  });
+
+  it('#222 R5: la cápsula conserva su receta y su ruta', async () => {
+    await renderProfile();
+    await screen.findByTestId('pet-info-card');
+    const capsule = screen.getByTestId('profile-add-pet');
+
+    expect(capsule.props.className).toBe('h-11 flex-row items-center gap-1.5 rounded-full bg-glass-surface-strong px-4');
+    expect(capsule.props.accessibilityRole).toBe('button');
+    expect(capsule.props.hitSlop).toEqual(TOUCH_SLOP);
+    expect(capsule.props.style?.borderCurve).toBeUndefined();
+    expect(capsule.parent!.props.testID).toBe('profile-hero-top');
+    expect(profileChild(capsule.parent!, 1)).toBe(capsule);
+    expect(capsule.children).toHaveLength(2);
+    const icon = within(capsule).getByTestId('profile-add-pet-icon', { includeHiddenElements: true });
+    expect(profileChild(capsule, 0)).toBe(icon);
+    expect(icon.props.accessibilityElementsHidden).toBe(true);
+    expect(icon.props.importantForAccessibility).toBe('no-hide-descendants');
+    expect(icon.children).toHaveLength(1);
+    const glyph = within(icon).getByTestId('profile-icon-plus', { includeHiddenElements: true });
+    expect(profileChild(icon, 0)).toBe(glyph);
+    expect(glyph.props.size).toBe(16);
+    expect(glyph.props.strokeWidth).toBe(2.6);
+    expect(glyph.props.style).toEqual({ color: 'accent-strong' });
+    const label = within(capsule).getByText('Añadir mascota');
+    expect(profileChild(capsule, 1)).toBe(label);
+    expect(label.props.className).toBe('text-sm font-extrabold text-accent-strong');
+    await fireEvent.press(capsule);
+    expect(mockRouter.push).toHaveBeenCalledWith('/pets/add');
+  });
+
+  it('#222 R5: no hay título visible en ninguna rama', async () => {
+    for (const state of PROFILE_BRANCHES_168) {
+      setupProfile168();
+      mockListPets.mockImplementation(async () => state.pets);
+      mockGetPet.mockImplementation(async () => state.detail);
+      await renderProfile();
+      if (state.name === 'detalle pendiente') await screen.findByTestId('pet-chip-pet-1');
+      // docs/conventions.md §Esperas: anclar ausencias a cada rama final.
+      await screen.findByTestId(state.branch);
+      expect(screen.queryByTestId('profile-title')).toBeNull();
+      expect(screen.queryByText('Perfil')).toBeNull();
+      await cleanup();
+    }
   });
 });
 

@@ -40,6 +40,17 @@ Requiere el rebuild G3 (dev build sin nitro).
 
 - [ ] Smoke de #217 recorrido por el humano (fecha: ____)
 
+## #222 mobile-tab-avatar-header (PR a `dev`; R12/G4 abierto)
+
+1. Salud y Nutrición no muestran título: arriba queda la fila de avatares de mascotas, fija mientras el contenido se desplaza.
+2. El vidrio de la cabecera se lee bien en tema claro y oscuro, con la barra de estado y con el contenido pasando por debajo.
+3. Pulsar un avatar cambia de mascota en la pestaña (Salud y Nutrición) y mantiene la selección al cambiar de pestaña.
+4. Con 7 o más mascotas la fila se desplaza en horizontal.
+5. Perfil no muestra título visible; TalkBack anuncia «Perfil» como encabezado.
+6. Sin mascotas no aparece la fila.
+
+- [ ] Smoke de #222 recorrido por el humano (fecha: ____)
+
 ## #221 mobile-orbit-rename-copy (pendiente)
 
 1. Con idioma español la burbuja de la bienvenida dice «Hola, soy Orbit.»; con inglés, «Hi, I'm Orbit.».
