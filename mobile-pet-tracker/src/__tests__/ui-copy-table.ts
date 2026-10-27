@@ -276,6 +276,9 @@ export const R6_FOOD: UseRow[] = [
   { file: 'src/screens/meals-history/index.tsx', key: 'common.somethingWentWrong' }, // #105 R5
   { file: 'src/screens/meals-history/index.tsx', key: 'common.retry' }, // #105 R5
   { file: 'src/screens/food/index.tsx', key: 'tabHeader.petsScroll' }, // #222 R8
+  { file: 'src/screens/food/ai-explanation.tsx', key: 'food.aiShowMore' }, // #224 R4
+  { file: 'src/screens/food/ai-explanation.tsx', key: 'food.aiShowLess' }, // #224 R4
+  { file: 'src/screens/food/ai-explanation.tsx', key: 'food.aiDisclaimer' }, // #224 R4
 ];
 
 export const R7_PROFILE: UseRow[] = [
@@ -616,6 +619,12 @@ export const R12_ALERTS: UseRow[] = [
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.sectionEarlier' }, // #170 R16
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.newOne' }, // #170 R16
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.newMany' }, // #170 R16
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.attended' }, // #223 R16
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.attendedMore' }, // #223 R16
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.attendedShowing' }, // #223 R16
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.sectionOpen' }, // #223 R16
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.calmTitle' }, // #223 R16
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.calmBody' }, // #223 R16
 ];
 
 export const R13_ALERT_DETAIL: UseRow[] = [

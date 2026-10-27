@@ -145,8 +145,8 @@ describe('#65 R5: Health resuelve su copy por clave', () => {
 });
 
 describe('#65 R6: Food resuelve su copy por clave', () => {
-  it('resuelve las 51 ocurrencias normativas (enmendado por #222 R8)', () => {
-    expect(R6_FOOD).toHaveLength(35 + 3 + 1 - 2 + 1 + 3 + 9 + 11 + 2 + 1 + 3 + 1); // #222 R8 // #105 R5; +1 #95 R4, -2 #95 R5, +1 #113 R3, +3 #147 R8, +9 #147 R9, +2 #155 R4, +1 #155 R9, +3 #179 R8
+  it('resuelve las 51 ocurrencias normativas (enmendado por #222 R8) (enmendado por #224 R4)', () => {
+    expect(R6_FOOD).toHaveLength(35 + 3 + 1 - 2 + 1 + 3 + 9 + 11 + 2 + 1 + 3 + 1 + 3); // #224 R4 // #222 R8 // #105 R5; +1 #95 R4, -2 #95 R5, +1 #113 R3, +3 #147 R8, +9 #147 R9, +2 #155 R4, +1 #155 R9, +3 #179 R8
     checkUses(R6_FOOD);
   });
 });
@@ -508,7 +508,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
     checkUses(ALL_USES);
   });
 
-  it('#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas (enmendado por #200 R1) (enmendado por #199 R1) (enmendado por #220 R16) (enmendado por #208 R20) (enmendado por #214 R22) (enmendado por #209 R23)', () => {
+  it('#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas (enmendado por #200 R1) (enmendado por #199 R1) (enmendado por #220 R16) (enmendado por #208 R20) (enmendado por #214 R22) (enmendado por #209 R23) (enmendado por #224 R4)', () => {
     expect(SCREEN_FILES).toHaveLength(
       19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1 // #100 R10, #41 R10, #146 R10, #105 R5
         + 1 - 1 // #117 R10: sale app/(auth)/forgot.tsx, entra screens/forgot/index.tsx
@@ -527,6 +527,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
         + 1 // #208 R20: screens/vaccine-create/index.tsx
         + 3 // #214 R22: screens/pet-members, screens/pet-invite y screens/join-pet
         + 1 // #209 R23: screens/nutrition-questionnaire/index.tsx
+        + 1 // #224 R4: screens/food/ai-explanation.tsx
     );
 
     for (const file of SCREEN_FILES) {

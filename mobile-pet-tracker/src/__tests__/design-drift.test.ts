@@ -1139,7 +1139,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     expect(addReminder).not.toMatch(/uppercase|tracking-widest/);
   });
 
-  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #203 R4) (enmendado por #203 R6) (enmendado por #203 R7) (enmendado por #204 R8) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #196 R5) (enmendado por #201 R5, R13) (enmendado por #205 R13) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R7, R10, R11, R12, R13, R15, R16, R17, R18) (enmendado por #209 R24)', () => {
+  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #203 R4) (enmendado por #203 R6) (enmendado por #203 R7) (enmendado por #204 R8) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #196 R5) (enmendado por #201 R5, R13) (enmendado por #205 R13) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R7, R10, R11, R12, R13, R15, R16, R17, R18) (enmendado por #209 R24) (enmendado por #223 R18)', () => {
     for (const [pattern, count] of [
       [/\brounded-14\b/g, 2], [/\brounded-16\b/g, 5 + 2], [/\brounded-22\b/g, 1],
     ] as const) {
@@ -1161,6 +1161,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       'screens/add-pet/index.tsx': 2, // #191 R11
       'screens/add-reminder/index.tsx': 1 + 1, // #213 R6
       'screens/alert-detail/index.tsx': 2,
+      'screens/alerts/index.tsx': 1, // #223 R9
       'screens/docs-upload-form/index.tsx': 2,
       'screens/edit-profile/index.tsx': 1, // #194 R6
       'screens/food/index.tsx': 2 + 1, // #200 R9 // #209 R24
@@ -1185,6 +1186,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     });
     expect(outsideReminders(/\brounded-14\b/)).toEqual([
       join('components', 'segmented-control.tsx'), // #191 R11
+      join('screens', 'alerts', 'index.tsx'), // #223 R10
       join('screens', 'geofences', 'index.tsx'), // #189 R5
       join('screens', 'health', 'index.tsx'), // #199 R18
       join('screens', 'join-pet', 'index.tsx'), // #214 R18

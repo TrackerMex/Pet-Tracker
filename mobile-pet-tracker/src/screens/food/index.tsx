@@ -31,6 +31,8 @@ import { MOTION_RING_DELAY_MS, MOTION_RING_TIMING } from '../../theme/motion';
 import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
+import { AiExplanation } from './ai-explanation';
+import { parseAiExplanation } from './parse-ai-explanation';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const KCAL_RING_CIRCUMFERENCE = 2 * Math.PI * 44;
@@ -425,22 +427,20 @@ export function FoodScreen() {
                 </View>
               ) : null}
 
-              {loadedPlan.aiExplanation !== null ? (
+              {parseAiExplanation(loadedPlan.aiExplanation).length > 0 ? (
                 <RiseIn delayMs={140}>
                   <View
                     testID="food-ai-card"
-                    className={`flex-row gap-3 rounded-card ${CATEGORY_SLOTS.violet.surface} p-3.5`}
+                    className={`gap-2 rounded-card ${CATEGORY_SLOTS.violet.surface} p-3.5`}
                     style={CONTINUOUS_CORNER}
                   >
-                    <Sparkles size={22} strokeWidth={2.2} color={violetStrong} />
-                    <View className="flex-1 gap-0.5">
+                    <View testID="food-ai-header" className="flex-row items-center gap-2">
+                      <Sparkles size={20} strokeWidth={2.2} color={violetStrong} />
                       <Text testID="food-ai-title" className={`text-sm font-extrabold ${CATEGORY_SLOTS.violet.ink}`}>
                         {t('food.aiRecommendation')}
                       </Text>
-                      <Text testID="food-ai-body" className="text-13 leading-body text-foreground">
-                        {loadedPlan.aiExplanation}
-                      </Text>
                     </View>
+                    <AiExplanation text={loadedPlan.aiExplanation ?? ''} />
                   </View>
                 </RiseIn>
 
