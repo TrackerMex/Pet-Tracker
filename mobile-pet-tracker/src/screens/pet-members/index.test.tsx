@@ -536,6 +536,13 @@ it('R13: doble toque crea una sola invitación', async () => {
   await waitFor(() => expect(screen.getByTestId('pet-members-invite-cta')).toBeEnabled());
 });
 
+it('R13: el dueño ve la nota del código', async () => {
+  await renderInviteCta();
+  const text = within(screen.getByTestId('pet-members-code-note')).getByText('Cada código sirve una sola vez. Si nadie lo usa, vence solo.');
+  expect(text).toHaveTextContent('Cada código sirve una sola vez. Si nadie lo usa, vence solo.', { exact: true });
+  expect(text.props.className).toMatch(/(^| )flex-1( |$)/);
+});
+
 it.each([
   ['member-row-user-2-remove'],
   ['member-remove-sheet-confirm'],
