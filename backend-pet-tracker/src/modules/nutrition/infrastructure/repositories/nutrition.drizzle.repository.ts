@@ -1,10 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, notExists } from 'drizzle-orm';
+import { and, desc, eq, notExists, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import {
   mealServings,
+  nutritionAiGenerations,
   nutritionPlans,
   nutritionProfiles,
 } from '@/db/schema/nutrition.schema';
@@ -26,15 +27,22 @@ type NutritionPlanRow = typeof nutritionPlans.$inferSelect;
 export class NutritionDrizzleRepository implements NutritionRepository {
   constructor(@Inject(DRIZZLE) private readonly db: NodePgDatabase) {}
 
-  consumeAiGeneration(
+  async consumeAiGeneration(
     petId: string,
     localDay: string,
     limit: number,
   ): Promise<boolean> {
-    void petId;
-    void localDay;
-    void limit;
-    return Promise.resolve(false);
+    const t = nutritionAiGenerations;
+    const rows = await this.db
+      .insert(t)
+      .values({ petId, localDay, count: 1 })
+      .onConflictDoUpdate({
+        target: [t.petId, t.localDay],
+        set: { count: sql`${t.count} + 1` },
+        setWhere: sql`${t.count} < ${limit}`,
+      })
+      .returning({ count: t.count });
+    return rows.length === 1;
   }
 
   async setAiExplanation(
@@ -171,6 +179,7 @@ function toPlan(row: NutritionPlanRow): NutritionPlan {
     objective: row.objective,
     warnings: row.warnings,
     aiExplanation: row.aiExplanation ?? null,
+    ...{ aiProposal: row.aiProposal ?? null },
     inputsHash: row.inputsHash,
     generatedAt: row.generatedAt,
   });
