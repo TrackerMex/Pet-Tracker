@@ -1,5 +1,6 @@
 import {
   act,
+  cleanup,
   fireEvent,
   renderHook,
   screen,
@@ -1330,17 +1331,13 @@ const PROFILE_BRANCHES_168 = [
 describe('#168 R1: Perfil pinta el título grande en todas sus ramas', () => {
   beforeEach(setupProfile168);
 
-  it.each(PROFILE_BRANCHES_168)('pinta el título grande ($name) (enmendado por #197 R4) (enmendado por #196 R2)', async ({ name, pets, detail, branch, hero }) => {
+  it.each(PROFILE_BRANCHES_168)('pinta el encabezado oculto ($name) (enmendado por #197 R4) (enmendado por #196 R2) (enmendado por #222 R9)', async ({ name, pets, detail, branch }) => {
     mockListPets.mockImplementation(async () => pets);
     mockGetPet.mockImplementation(async () => detail);
     await renderProfile();
     if (name === 'detalle pendiente') await screen.findByTestId('pet-chip-pet-1');
     await screen.findByTestId(branch);
-    const title = screen.getByTestId('profile-title');
-    expect(title.props.className).toBe(hero ? 'text-3xl font-black tracking-title text-accent-foreground' : 'text-3xl font-black tracking-title text-foreground');
-    expect(title).toHaveTextContent('Perfil');
-    expect(profileChild(title.parent!, 0)).toBe(title);
-    expect(profileChild(title.parent!.parent!, 0)).toBe(title.parent);
+    expect(screen.getByTestId('profile-heading')).toBeOnTheScreen();
   });
 });
 
@@ -2208,7 +2205,7 @@ describe('#194 R9: profile links to the editor and observes saved changes', () =
 describe('#196 R1: hero a sangre y contenido por rama', () => {
   beforeEach(setupProfile168);
 
-  it.each(PROFILE_BRANCHES_168)('#196 R1: en la rama $name monta el hero = $hero', async ({ name, pets, detail, branch, hero }) => {
+  it.each(PROFILE_BRANCHES_168)('#196 R1: en la rama $name monta el hero = $hero (enmendado por #222 R9)', async ({ name, pets, detail, branch, hero }) => {
     mockListPets.mockImplementation(async () => pets);
     mockGetPet.mockImplementation(async () => detail);
     await renderProfile();
@@ -2223,7 +2220,7 @@ describe('#196 R1: hero a sangre y contenido por rama', () => {
     expect(content.props.style).toEqual(hero ? undefined : { paddingTop: 52 });
     if (hero) {
       const header = screen.getByTestId('profile-hero');
-      expect(profileChild(scrollContent, 0)).toBe(header);
+      expect(profileChild(scrollContent, 1).props.testID).toBe('profile-hero');
       expect(header.props.className).toBe('relative');
       const shared = screen.getByTestId('pet-hero');
       expect(profileChild(header, 0)).toBe(shared);
@@ -2540,5 +2537,52 @@ describe('#196 R9: índices de entrada fijos por rama', () => {
     expect(entrance.props.index).toBe(0);
     expect(mockHomeEntrance.mock.calls.filter(([props]) => props.testID === 'profile-entrance-notice').map(([props]) => props.index)).toEqual(expect.arrayContaining([0]));
     expect(screen.queryByTestId('profile-entrance-hero')).toBeNull();
+  });
+});
+
+
+describe('#222 R7: Encabezado solo para lectores de pantalla', () => {
+  beforeEach(setupProfile168);
+
+  it('#222 R7: Perfil anuncia su encabezado sin texto visible', async () => {
+    await renderProfile();
+    // docs/conventions.md §Esperas: esperar al mismo nodo que se aserta.
+    await waitFor(() => expect(screen.queryByRole('header', { name: 'Perfil' })).not.toBeNull());
+    const heading = screen.getByTestId('profile-heading');
+    expect(screen.getByRole('header', { name: 'Perfil' })).toBe(heading);
+    expect(heading.props.accessible).toBe(true);
+    expect(heading.props.className).toBe('absolute size-px');
+    expect(heading.children).toEqual([]);
+  });
+
+  it('#222 R7: el encabezado sale en inglés', async () => {
+    await renderProfile();
+    await fireEvent.press(await screen.findByTestId('language-toggle'));
+    // docs/conventions.md §Esperas: el idioma se observa en el encabezado.
+    await waitFor(() => expect(screen.queryByRole('header', { name: 'Profile' })).not.toBeNull());
+    expect(screen.getByRole('header', { name: 'Profile' })).toBe(screen.getByTestId('profile-heading'));
+  });
+
+  it('#222 R7: el encabezado existe en todos los estados', async () => {
+    for (const state of PROFILE_BRANCHES_168) {
+      setupProfile168();
+      mockListPets.mockImplementation(async () => state.pets);
+      mockGetPet.mockImplementation(async () => state.detail);
+      await renderProfile();
+      if (state.name === 'detalle pendiente') await screen.findByTestId('pet-chip-pet-1');
+      await screen.findByTestId(state.branch);
+      // docs/conventions.md §Esperas: se espera al encabezado de esta rama.
+      await waitFor(() => expect(screen.queryByTestId('profile-heading')).not.toBeNull());
+      expect(screen.getByRole('header', { name: 'Perfil' })).toBe(screen.getByTestId('profile-heading'));
+      await cleanup();
+    }
+  });
+
+  it('#222 R7: el encabezado es el primer hijo', async () => {
+    await renderProfile();
+    // docs/conventions.md §Esperas: la posición se aserta tras montar el nodo.
+    await waitFor(() => expect(screen.queryByTestId('profile-heading')).not.toBeNull());
+    const heading = screen.getByTestId('profile-heading');
+    expect(profileChild(screen.getByTestId('screen-profile'), 0).children[0]).toBe(heading);
   });
 });

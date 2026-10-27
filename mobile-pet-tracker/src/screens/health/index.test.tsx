@@ -1,5 +1,6 @@
 import {
   act,
+  cleanup,
   fireEvent,
   screen,
   waitFor,
@@ -1004,14 +1005,11 @@ function setupHealth168() {
 describe('#168 R1: Salud pinta el título grande en todas sus ramas', () => {
   beforeEach(setupHealth168);
 
-  it.each(HEALTH_BRANCHES_168)('pinta el título grande ($name) (enmendado por #197 R4)', async ({ state, branch }) => {
+  it.each(HEALTH_BRANCHES_168)('pinta el encabezado oculto ($name) (enmendado por #197 R4) (enmendado por #222 R9)', async ({ state, branch }) => {
     mockListPets.mockImplementation(async () => state);
     await renderHealth();
     await screen.findByTestId(branch);
-    const title = screen.getByTestId('health-title');
-    expect(title.props.className).toBe('text-3xl font-black tracking-title text-foreground');
-    expect(title).toHaveTextContent('Salud');
-    expect(elementChild(title.parent!, 0)).toBe(title);
+    expect(screen.getByTestId('health-heading')).toBeOnTheScreen();
   });
 });
 
@@ -1617,5 +1615,49 @@ describe('#208 R16: aviso de recordatorio pendiente en Salud', () => {
     await renderHealth();
     await screen.findByTestId('vaccines-section');
     expect(screen.queryByTestId('vaccine-reminder-notice')).toBeNull();
+  });
+});
+
+
+describe('#222 R7: Encabezado solo para lectores de pantalla', () => {
+  beforeEach(setupHealth168);
+
+  it('#222 R7: Salud anuncia su encabezado sin texto visible', async () => {
+    await renderHealth();
+    // docs/conventions.md §Esperas: esperar al mismo nodo que se aserta.
+    await waitFor(() => expect(screen.queryByRole('header', { name: 'Salud' })).not.toBeNull());
+    const heading = screen.getByTestId('health-heading');
+    expect(screen.getByRole('header', { name: 'Salud' })).toBe(heading);
+    expect(heading.props.accessible).toBe(true);
+    expect(heading.props.className).toBe('absolute size-px');
+    expect(heading.children).toEqual([]);
+  });
+
+  it('#222 R7: el encabezado sale en inglés', async () => {
+    await renderHealth('en');
+    // docs/conventions.md §Esperas: el idioma se observa en el encabezado.
+    await waitFor(() => expect(screen.queryByRole('header', { name: 'Health' })).not.toBeNull());
+    expect(screen.getByRole('header', { name: 'Health' })).toBe(screen.getByTestId('health-heading'));
+  });
+
+  it('#222 R7: el encabezado existe en todos los estados', async () => {
+    for (const state of HEALTH_BRANCHES_168) {
+      setupHealth168();
+      mockListPets.mockImplementation(async () => state.state);
+      await renderHealth();
+      await screen.findByTestId(state.branch);
+      // docs/conventions.md §Esperas: se espera al encabezado de esta rama.
+      await waitFor(() => expect(screen.queryByTestId('health-heading')).not.toBeNull());
+      expect(screen.getByRole('header', { name: 'Salud' })).toBe(screen.getByTestId('health-heading'));
+      await cleanup();
+    }
+  });
+
+  it('#222 R7: el encabezado es el primer hijo', async () => {
+    await renderHealth();
+    // docs/conventions.md §Esperas: la posición se aserta tras montar el nodo.
+    await waitFor(() => expect(screen.queryByTestId('health-heading')).not.toBeNull());
+    const heading = screen.getByTestId('health-heading');
+    expect(screen.getByTestId('health-root').children[0]).toBe(heading);
   });
 });

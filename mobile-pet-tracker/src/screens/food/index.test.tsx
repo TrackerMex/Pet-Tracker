@@ -1,5 +1,6 @@
 import {
   act,
+  cleanup,
   fireEvent,
   renderHook,
   screen,
@@ -1245,15 +1246,12 @@ const FOOD_BRANCHES_168 = [
 describe('#168 R1: Nutrición pinta el título grande en todas sus ramas', () => {
   beforeEach(setupFood168);
 
-  it.each(FOOD_BRANCHES_168)('pinta el título grande ($name) (enmendado por #197 R4)', async ({ pets, plan, branch }) => {
+  it.each(FOOD_BRANCHES_168)('pinta el encabezado oculto ($name) (enmendado por #197 R4) (enmendado por #222 R9)', async ({ pets, plan, branch }) => {
     mockListPets.mockImplementation(async () => pets);
     mockGetNutritionPlan.mockImplementation(async () => plan);
     await renderFood();
     await screen.findByTestId(branch);
-    const title = screen.getByTestId('food-title');
-    expect(title.props.className).toBe('text-3xl font-black tracking-title text-foreground');
-    expect(title).toHaveTextContent('Nutrición');
-    expect(title.parent!.children[0]).toBe(title);
+    expect(screen.getByTestId('food-heading')).toBeOnTheScreen();
   });
 });
 
@@ -1806,5 +1804,52 @@ describe('#200 R10: entrada escalonada de Nutrición', () => {
     await renderFood();
     await screen.findByTestId('food-plan-empty');
     expect(riseDelayOf(screen.getByTestId('food-links'))).toBeUndefined();
+  });
+});
+
+
+describe('#222 R7: Encabezado solo para lectores de pantalla', () => {
+  beforeEach(setupFood168);
+
+  it('#222 R7: Nutrición anuncia su encabezado sin texto visible', async () => {
+    await renderFood();
+    // docs/conventions.md §Esperas: esperar al mismo nodo que se aserta.
+    await waitFor(() => expect(screen.queryByRole('header', { name: 'Nutrición' })).not.toBeNull());
+    const heading = screen.getByTestId('food-heading');
+    expect(screen.getByRole('header', { name: 'Nutrición' })).toBe(heading);
+    expect(heading.props.accessible).toBe(true);
+    expect(heading.props.className).toBe('absolute size-px');
+    expect(heading.children).toEqual([]);
+  });
+
+  it('#222 R7: el encabezado sale en inglés', async () => {
+    await renderWithProviders(<FoodScreen />, {
+      wrapper: ({ children }) => <HeroUINativeProvider><LanguageProvider initial="en"><SelectedPetProvider>{children}</SelectedPetProvider></LanguageProvider></HeroUINativeProvider>,
+    });
+    // docs/conventions.md §Esperas: el idioma se observa en el encabezado.
+    await waitFor(() => expect(screen.queryByRole('header', { name: 'Food' })).not.toBeNull());
+    expect(screen.getByRole('header', { name: 'Food' })).toBe(screen.getByTestId('food-heading'));
+  });
+
+  it('#222 R7: el encabezado existe en todos los estados', async () => {
+    for (const state of FOOD_BRANCHES_168) {
+      setupFood168();
+      mockListPets.mockImplementation(async () => state.pets);
+      mockGetNutritionPlan.mockImplementation(async () => state.plan);
+      await renderFood();
+      await screen.findByTestId(state.branch);
+      // docs/conventions.md §Esperas: se espera al encabezado de esta rama.
+      await waitFor(() => expect(screen.queryByTestId('food-heading')).not.toBeNull());
+      expect(screen.getByRole('header', { name: 'Nutrición' })).toBe(screen.getByTestId('food-heading'));
+      await cleanup();
+    }
+  });
+
+  it('#222 R7: el encabezado es el primer hijo', async () => {
+    await renderFood();
+    // docs/conventions.md §Esperas: la posición se aserta tras montar el nodo.
+    await waitFor(() => expect(screen.queryByTestId('food-heading')).not.toBeNull());
+    const heading = screen.getByTestId('food-heading');
+    expect(screen.getByTestId('food-root').children[0]).toBe(heading);
   });
 });
