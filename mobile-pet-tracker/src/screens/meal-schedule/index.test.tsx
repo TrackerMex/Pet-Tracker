@@ -294,7 +294,7 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
 
   });
 
-  it('renders the plan summary, ordered portions, and complete profile', async () => {
+  it('renders the plan summary, ordered portions, and complete profile (enmendado por #209 R22)', async () => {
     mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
     mockGetNutritionProfile.mockResolvedValue({
       kind: 'ok',
@@ -319,9 +319,9 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
 
     const profile = within(screen.getByTestId('nutrition-profile-section'));
     expect(profile.getByText('Perfil nutricional')).toBeVisible();
-    expect(profile.getByTestId('nutrition-profile-food')).toHaveTextContent('Alimento dry 350 kcal/100 g');
+    expect(profile.getByTestId('nutrition-profile-food')).toHaveTextContent('Alimento Seco 350 kcal/100 g');
     expect(profile.getByTestId('nutrition-profile-condition')).toHaveTextContent('Condición 5/9');
-    expect(profile.getByTestId('nutrition-profile-activity')).toHaveTextContent('Actividad medium');
+    expect(profile.getByTestId('nutrition-profile-activity')).toHaveTextContent('Actividad Media');
     expect(screen.getByTestId('profile-allergies')).toHaveTextContent(
       'chicken, soy',
     );
@@ -1341,13 +1341,13 @@ describe('#179 R8: perfil en píldoras', () => {
     return pills;
   }
 
-  it('muestra las tres píldoras con condición, prefijos y valores crudos', async () => {
+  it('muestra las tres píldoras con condición, prefijos y valores crudos (enmendado por #209 R22)', async () => {
     await renderMealSchedule();
     await screen.findByTestId('nutrition-profile-section');
     expectPills([
-      ['nutrition-profile-activity', 'Actividad medium', 'Actividad '],
+      ['nutrition-profile-activity', 'Actividad Media', 'Actividad '],
       ['nutrition-profile-condition', 'Condición 5/9', 'Condición '],
-      ['nutrition-profile-food', 'Alimento dry 350 kcal/100 g', 'Alimento '],
+      ['nutrition-profile-food', 'Alimento Seco 350 kcal/100 g', 'Alimento '],
     ]);
     expect(screen.getByTestId('profile-allergies')).toHaveTextContent('chicken, soy');
     expect(screen.getByTestId('profile-diseases')).toHaveTextContent('arthritis');
@@ -1355,24 +1355,24 @@ describe('#179 R8: perfil en píldoras', () => {
     expect(screen.queryByText('Edad')).toBeNull();
   });
 
-  it('omite condición nula y conserva las otras dos píldoras', async () => {
+  it('omite condición nula y conserva las otras dos píldoras (enmendado por #209 R22)', async () => {
     mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile({ bodyCondition: null }) });
     await renderMealSchedule();
     await screen.findByTestId('nutrition-profile-section');
     const pills = expectPills([
-      ['nutrition-profile-activity', 'Actividad medium', 'Actividad '],
-      ['nutrition-profile-food', 'Alimento dry 350 kcal/100 g', 'Alimento '],
+      ['nutrition-profile-activity', 'Actividad Media', 'Actividad '],
+      ['nutrition-profile-food', 'Alimento Seco 350 kcal/100 g', 'Alimento '],
     ]);
     expect(within(pills).queryByTestId('nutrition-profile-condition')).toBeNull();
   });
 
-  it('traduce los prefijos al inglés sin traducir los valores del perfil', async () => {
+  it('traduce los prefijos al inglés sin traducir los valores del perfil (enmendado por #209 R22)', async () => {
     await renderMealSchedule(true, 'en');
     await screen.findByTestId('nutrition-profile-section');
     expectPills([
-      ['nutrition-profile-activity', 'Activity medium', 'Activity '],
+      ['nutrition-profile-activity', 'Activity Medium', 'Activity '],
       ['nutrition-profile-condition', 'Condition 5/9', 'Condition '],
-      ['nutrition-profile-food', 'Food dry 350 kcal/100 g', 'Food '],
+      ['nutrition-profile-food', 'Food Dry 350 kcal/100 g', 'Food '],
     ]);
   });
 });
@@ -1485,4 +1485,31 @@ it('#209 R21: owner ve Generar plan', async () => {
   await screen.findByTestId('meal-time-row-1');
   const actions = await screen.findByTestId('meal-schedule-actions');
   expect(within(actions).getByTestId('generate-plan-button')).toBeOnTheScreen();
+});
+
+const THREE_ACTIVITIES = [
+  ['low', 'Actividad Baja'],
+  ['medium', 'Actividad Media'],
+  ['high', 'Actividad Alta'],
+] as const;
+
+const FOUR_FOODS = [
+  ['dry', 'Alimento Seco 380 kcal/100 g'],
+  ['wet', 'Alimento Húmedo 380 kcal/100 g'],
+  ['mixed', 'Alimento Mixto 380 kcal/100 g'],
+  ['homemade', 'Alimento Casero 380 kcal/100 g'],
+] as const;
+
+it.each(THREE_ACTIVITIES)('#209 R22: actividad %s se lee «%s»', async (activityLevel, text) => {
+  mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+  mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile({ activityLevel }) });
+  await renderMealSchedule();
+  expect(await screen.findByTestId('nutrition-profile-activity')).toHaveTextContent(text);
+});
+
+it.each(FOUR_FOODS)('#209 R22: alimento %s se lee «%s»', async (foodType, text) => {
+  mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+  mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile({ foodType, kcalPer100g: 380 }) });
+  await renderMealSchedule();
+  expect(await screen.findByTestId('nutrition-profile-food')).toHaveTextContent(text);
 });
