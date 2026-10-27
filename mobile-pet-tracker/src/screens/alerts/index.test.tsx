@@ -1846,4 +1846,19 @@ describe('#223 R5: la insignia espera al último cursor y suma las abiertas de t
       await rendered.unmount();
     }
   });
+
+  it('#223 R12: sin alertas conserva el vacío de Pingo y el error de la primera página conserva el reintento', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [], nextCursor: null });
+    const rendered = await renderAlerts();
+    await waitFor(() => expect(screen.queryByTestId('alerts-empty')).not.toBeNull());
+    expect(screen.queryByTestId('alerts-attended')).toBeNull();
+    expect(screen.queryByTestId('alerts-calm')).toBeNull();
+    expect(screen.queryByTestId('alerts-open-heading')).toBeNull();
+    await rendered.unmount();
+    mockListAlerts.mockReset().mockResolvedValue({ kind: 'error' });
+    await renderAlerts();
+    await waitFor(() => expect(screen.getByTestId('alerts-error')).toHaveTextContent('Algo salió mal', { exact: true }));
+    expect(screen.getByTestId('alerts-retry')).toBeVisible();
+    expect(screen.queryByTestId('alerts-attended')).toBeNull();
+  });
 });
