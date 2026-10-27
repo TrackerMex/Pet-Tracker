@@ -3,6 +3,7 @@ import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useRef, useState } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ChevronDown, ChevronUp } from 'reicon-react-native';
 
 import { ackAlert } from '../../api/alerts';
 import type { Alert } from '../../api/types';
@@ -67,6 +68,7 @@ export function AlertsScreen() {
     'warning-strong',
     'muted',
   ]);
+  const [expanded, setExpanded] = useState(false);
   const [acked, setAcked] = useState<Record<string, Alert>>({});
   const [ackingId, setAckingId] = useState<string | null>(null);
   const ackingIdRef = useRef<string | null>(null);
@@ -87,6 +89,8 @@ export function AlertsScreen() {
     alerts.data?.pages.flatMap((page) =>
       page.kind === 'ok' ? page.items : [],
     ) ?? [];
+  const attended = fetched.filter((alert) => alert.status === 'acked' || alert.status === 'closed');
+  const Chevron = expanded ? ChevronUp : ChevronDown;
   const now = new Date(alerts.dataUpdatedAt);
   const ordered = (['today', 'week', 'earlier'] as const).flatMap((section) => {
     return fetched.filter((alert) => alert.status === 'open' && alertSection(alert.openedAt, now) === section);
@@ -207,6 +211,27 @@ export function AlertsScreen() {
           </View>
         )}
         ListEmptyComponent={empty}
+        ListFooterComponent={settled && attended.length > 0 ? (
+          <View testID="alerts-attended">
+            <Pressable
+              testID="alerts-attended-toggle"
+              className="mt-1.5 h-10 w-full flex-row items-center gap-2"
+              accessibilityRole="button"
+              accessibilityState={{ expanded }}
+              hitSlop={TOUCH_SLOP}
+              style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+              onPress={() => setExpanded((current) => !current)}
+            >
+              <View className="flex-1 flex-row items-center gap-2">
+                <Text testID="alerts-attended-label" className="text-13 font-extrabold uppercase tracking-caps text-muted">{t('alerts.attended')}</Text>
+                <Text testID="alerts-attended-count" className="rounded-full bg-default px-2 py-0.5 text-xs font-extrabold text-muted">{attended.length}</Text>
+              </View>
+              <View className="size-8 items-center justify-center rounded-full bg-default">
+                <Chevron testID="alerts-attended-chevron" size={18} color={muted} />
+              </View>
+            </Pressable>
+          </View>
+        ) : null}
         renderItem={({ item, index }) => {
           const rowId = `alert-row-${item.id}`;
           const meta = alertTypeMeta(item.type);
