@@ -11,6 +11,7 @@ export const nutritionKeys = {
 };
 
 export const healthKeys = {
+  vaccineCatalog: (species: 'dog' | 'cat') => ['health', 'vaccine-catalog', species] as const,
   vaccines: (petId: string) => ['health', 'vaccines', petId] as const,
   weights: (petId: string, limit: number | undefined) =>
     ['health', 'weights', petId, { limit }] as const,
@@ -52,4 +53,12 @@ export const mediaKeys = {
 
 export const geofenceKeys = {
   list: (petId: string) => ['geofences', 'list', petId] as const,
+};
+
+export const memberKeys = {
+  list: (petId: string) => ['pet-members', petId] as const,
+};
+
+export const inviteKeys = {
+  list: (petId: string) => ['pet-invites', petId] as const,
 };

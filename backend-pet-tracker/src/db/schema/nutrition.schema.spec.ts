@@ -84,6 +84,7 @@ describe('R15 (nutrition-profile-engine #17): tablas de nutricion y migracion 00
         'objective',
         'warnings',
         'ai_explanation',
+        'ai_proposal',
         'inputs_hash',
         'generated_at',
       ].sort(),

@@ -3,16 +3,18 @@ import { router } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Check, ChevronRight, Clock, Syringe } from 'reicon-react-native';
+import { BellOff, Check, ChevronRight, Clock, Plus, Syringe } from 'reicon-react-native';
 
 import { listVaccines, listWeights } from '../../api/health-records';
 import { listPets, type PetsState } from '../../api/pets';
 import { healthKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
-import { PetSwitcher } from '../../components/pet-switcher';
+import { TabPetHeader, TAB_PET_HEADER_HEIGHT, TAB_PET_HEADER_SCROLL_MIN } from '../../components/tab-pet-header';
 import { RiseIn } from '../../components/rise-in';
 import { WeightChart } from '../../components/weight-chart';
+import { clearVaccineReminderNotice, useVaccineReminderNotice } from '../../hooks/vaccine-reminder-notice';
+import { useShadows } from '../../theme/shadows';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useLocale, useTranslate } from '../../providers/language-provider';
@@ -22,6 +24,7 @@ import {
   TABULAR_NUMS,
 } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
+import { useChunkyLip } from '../../theme/chunky-lip';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { calendarDaysUntil, fmtDate, fmtDayMonthLong } from '../home/format';
@@ -49,8 +52,12 @@ function fmtVariation(variation: number | null): string {
 }
 
 export function HealthScreen() {
-  const [warning, muted, rose, amber, green] = useThemeColors([
+  const chunkyLip = useChunkyLip();
+  const shadows = useShadows();
+  const noticePetId = useVaccineReminderNotice();
+  const [warning, muted, rose, amber, green, accentStrong, accentForeground] = useThemeColors([
     'warning', 'muted', 'category-rose-strong', 'category-amber-strong', 'category-green-strong',
+    'accent-strong', 'accent-foreground',
   ]);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
@@ -63,6 +70,10 @@ export function HealthScreen() {
     queryFn: () => listPets(baseUrl, token ?? ''),
   });
   usePetSelection({ data: pets.data, isRefreshing: pets.isRefetching });
+  const selectedPet = pets.data?.kind === 'ok' ? pets.data.pets.find(p => p.id === selectedPetId) : undefined;
+  function openVaccineCreate() {
+    if (selectedPetId) router.push({ pathname: '/pets/[petId]/vaccines/new', params: { petId: selectedPetId } });
+  }
   const vaccines = useQuery({
     queryKey: healthKeys.vaccines(selectedPetId ?? ''),
     queryFn: () => listVaccines(baseUrl, token ?? '', selectedPetId!),
@@ -91,6 +102,8 @@ export function HealthScreen() {
     : 0;
 
   return (
+    <View testID="health-root" className="flex-1">
+    <View testID="health-heading" accessible accessibilityRole="header" accessibilityLabel={t('health.health')} className="absolute size-px" />
     <ScrollView
       testID="screen-health"
       className="flex-1 bg-background"
@@ -98,23 +111,10 @@ export function HealthScreen() {
       contentContainerStyle={{
         padding: 24,
         gap: 16,
-        paddingTop: insets.top + 12,
+        paddingTop: pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? insets.top + TAB_PET_HEADER_HEIGHT + 16 : insets.top + 12,
         paddingBottom: insets.bottom + 96,
       }}
     >
-      <View testID="health-header" className="flex-row items-center justify-between">
-        <Text testID="health-title" className="text-3xl font-black tracking-title text-foreground">
-          {t('health.health')}
-        </Text>
-        {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
-          <PetSwitcher
-            variant="avatars"
-            pets={pets.data.pets}
-            selectedPetId={selectedPetId}
-            onSelect={selectPet}
-          />
-        ) : null}
-      </View>
       {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
           <View testID="health-content" style={{ gap: 16 }}>
             {nextVaccine ? (
@@ -141,9 +141,17 @@ export function HealthScreen() {
 
             {selectedPetId ? (
               <View testID="vaccines-section" className="gap-2.5">
-                <Text testID="vaccines-title" accessibilityRole="header" className="mt-1 text-lg font-extrabold text-foreground">
-                  {t('health.vaccines')}
-                </Text>
+                <View testID="vaccines-header" className="flex-row items-center justify-between">
+                  <Text testID="vaccines-title" accessibilityRole="header" className="mt-1 text-lg font-extrabold text-foreground">
+                    {t('health.vaccines')}
+                  </Text>
+                  {selectedPet?.myRole === 'owner' ? (
+                    <Button testID="vaccines-add" className="rounded-xl bg-accent h-10 gap-1.5 px-3.5" style={chunkyLip.primaryCompact} onPress={openVaccineCreate}>
+                      <Plus size={16} color={accentForeground} />
+                      <Button.Label className="text-sm font-extrabold text-accent-foreground">{t('health.addVaccine')}</Button.Label>
+                    </Button>
+                  ) : null}
+                </View>
 
                 {vaccines.data === undefined || vaccines.isRefetching ? (
                   <Card testID="vaccines-skeleton" variant="flat" className="flex-row items-center gap-3 py-3.5">
@@ -156,9 +164,23 @@ export function HealthScreen() {
                 ) : null}
 
                 {vaccines.data?.kind === 'ok' && vaccines.data.vaccines.length === 0 ? (
+                  selectedPet?.myRole === 'owner' ? (
+                    <View testID="vaccines-empty-card" className="items-center gap-2.5 rounded-24 bg-surface-secondary px-4.5 pb-4.5 pt-5.5" style={CONTINUOUS_CORNER}>
+                      <View testID="vaccines-empty-tile" className="size-14 items-center justify-center rounded-tile bg-surface" style={CONTINUOUS_CORNER} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+                        <Syringe size={28} color={accentStrong} />
+                      </View>
+                      <Text testID="vaccines-empty-card-title" className="text-17 font-black text-foreground text-center">{t('health.noVaccinesYet')}</Text>
+                      <Text testID="vaccines-empty-card-body" className="text-sm font-medium leading-note text-muted text-center">{t('health.vaccinesEmptyBody', { name: selectedPet.name })}</Text>
+                      <Button testID="vaccines-empty-action" className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary} onPress={openVaccineCreate}>
+                        <Plus size={20} color={accentForeground} />
+                        <Text className="text-17 font-extrabold text-accent-foreground">{t('health.addVaccine')}</Text>
+                      </Button>
+                    </View>
+                  ) : (
                   <Text testID="vaccines-empty" className="text-15 leading-body text-muted">
                     {t('health.noVaccinesYet')}
                   </Text>
+                  )
                 ) : null}
 
                 {vaccines.data?.kind === 'error' ||
@@ -320,5 +342,27 @@ export function HealthScreen() {
         </View>
       )}
     </ScrollView>
+    {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
+      <TabPetHeader
+        testID="health-pet-header"
+        horizontalInset={24}
+        pets={pets.data.pets}
+        selectedPetId={selectedPetId}
+        onSelect={selectPet}
+        scrollHint={pets.data.pets.length >= TAB_PET_HEADER_SCROLL_MIN ? t('tabHeader.petsScroll') : undefined}
+      />
+    ) : null}
+    {noticePetId !== null && noticePetId === selectedPetId && (
+      <View testID="vaccine-reminder-notice" accessibilityRole="alert" accessibilityLiveRegion="polite"
+        className={`absolute left-4 right-4 flex-row items-center gap-2.5 rounded-tile border border-border px-3.5 py-3 ${CATEGORY_SLOTS.amber.surface}`}
+        style={[{ bottom: 104 }, shadows.toast, CONTINUOUS_CORNER]}>
+        <BellOff size={20} color={amber} />
+        <Text testID="vaccine-reminder-notice-text" className="flex-1 text-13 font-semibold text-foreground">{t('health.vaccineReminderFailed', { name: selectedPet?.name ?? '' })}</Text>
+        <Pressable testID="vaccine-reminder-notice-action" className="min-h-11 justify-center" onPress={() => { clearVaccineReminderNotice(); router.push('/add-reminder'); }}>
+          <Text className={`text-13 font-extrabold ${CATEGORY_SLOTS.amber.ink}`}>{t('health.createReminderNow')}</Text>
+        </Pressable>
+      </View>
+    )}
+    </View>
   );
 }

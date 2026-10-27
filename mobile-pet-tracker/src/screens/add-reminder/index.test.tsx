@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import {
   act,
@@ -16,7 +17,8 @@ import {
   createReminder,
   type CreateReminderState,
 } from '../../api/reminders';
-import type { Reminder } from '../../api/types';
+import type { PetProfile, Reminder } from '../../api/types';
+import { listPets } from '../../api/pets';
 import { es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
@@ -38,6 +40,9 @@ jest.mock('reicon-react-native', () => {
   return {
     ...actual,
     Bell: mockIcon('add-reminder-icon-bell'),
+    Repeat: mockIcon('add-reminder-icon-repeat'),
+    Minus: mockIcon('add-reminder-icon-minus'),
+    Plus: mockIcon('add-reminder-icon-plus'),
     Calendar: mockIcon('add-reminder-icon-calendar'),
     Clock: mockIcon('add-reminder-icon-clock'),
   };
@@ -49,6 +54,8 @@ const mockChunkyLip = {
 };
 
 jest.mock('../../theme/chunky-lip', () => ({ useChunkyLip: () => mockChunkyLip }));
+
+jest.mock('../../api/pets', () => ({ listPets: jest.fn() }));
 
 jest.mock('../../api/reminders', () => ({
   createReminder: jest.fn(),
@@ -98,6 +105,9 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
 
+const mockListPets = jest.mocked(listPets);
+beforeEach(() => { mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ name: 'Rocky' })] }); });
+
 const mockCreateReminder = jest.mocked(createReminder);
 const mockUseAuth = jest.mocked(useAuth);
 const mockRouter = jest.mocked(router);
@@ -117,7 +127,9 @@ function SelectionProbe() {
 }
 
 async function renderAddReminder(selected = true, language: 'en' | 'es' = 'es') {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
   return render(
+    <QueryClientProvider client={queryClient}>
     <HeroUINativeProvider>
       <LanguageProvider initial={language}>
         <SelectedPetProvider>
@@ -127,7 +139,8 @@ async function renderAddReminder(selected = true, language: 'en' | 'es' = 'es') 
           </HeaderHeightContext.Provider>
         </SelectedPetProvider>
       </LanguageProvider>
-    </HeroUINativeProvider>,
+    </HeroUINativeProvider>
+    </QueryClientProvider>,
   );
 }
 
@@ -141,6 +154,43 @@ async function pickDate(date: Date) {
   );
 }
 
+async function pickUntil(date: Date) {
+  expect(screen.queryByTestId('until-field')).not.toBeNull();
+  await fireEvent.press(screen.getByTestId('until-field'));
+  await fireEvent(screen.getByTestId('until-picker'), 'onValueChange', {}, date);
+}
+
+function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
+  return {
+    id: 'pet-1',
+    name: 'Luna',
+    species: 'dog',
+    breed: 'Mixed',
+    sex: 'female',
+    birthDate: null,
+    approxAgeMonths: 30,
+    ageMonths: 30,
+    currentWeightKg: 12,
+    size: 'medium',
+    color: 'black',
+    sterilized: true,
+    microchip: null,
+    photoUrl: null,
+    lostMode: false,
+    lastPosition: null,
+    lastCommunicationAt: null,
+    myRole: 'owner',
+    device: null,
+    nextVaccine: null,
+    nextReminder: null,
+    activitySummary: null,
+    mealsToday: null,
+    createdAt: '2026-08-20T00:00:00.000Z',
+    updatedAt: '2026-08-21T00:00:00.000Z',
+    ...overrides,
+  };
+}
+
 function makeReminder(overrides: Partial<Reminder> = {}): Reminder {
   return {
     id: 'reminder-1',
@@ -150,6 +200,8 @@ function makeReminder(overrides: Partial<Reminder> = {}): Reminder {
     dueAt: '2026-08-25T09:00:00.000Z',
     advanceMinutes: 10080,
     status: 'scheduled',
+    recurrence: null,
+    recurrenceUntil: null,
     ...overrides,
   };
 }
@@ -1248,5 +1300,333 @@ describe('#220 R15: Recordatorio usa DateField para fecha y hora', () => {
     await fireEvent.press(screen.getByTestId('add-reminder-submit'));
     await waitFor(() => expect(screen.getByTestId('add-reminder-submit')).toBeDisabled());
     expect(mockCreateReminder).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token', 'pet-1', { type: 'vaccine', title: 'Rabies', dueAt: '2026-09-25T09:05:00.000Z', advanceMinutes: 0 });
+  });
+});
+
+
+describe('#213 R4: controles de repetición', () => {
+  const hostProcess = process.getBuiltinModule('process');
+  const originalTimezone = hostProcess.env.TZ;
+
+  beforeEach(async () => {
+    hostProcess.env.TZ = 'America/Mexico_City';
+    jest.useFakeTimers({ now: new Date(2026, 11, 20, 10, 0) });
+    jest.clearAllMocks();
+    const themeColors = jest.requireActual<typeof import('../../theme/use-theme-colors')>('../../theme/use-theme-colors');
+    jest.spyOn(themeColors, 'useThemeColors').mockImplementation(
+      ((tokens: readonly string[]) => tokens.map((token) => `color:${token}`)) as typeof themeColors.useThemeColors,
+    );
+    setPlatform('android');
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() } satisfies AuthContextValue);
+    mockCreateReminder.mockReturnValue(pending());
+    await renderAddReminder();
+    await screen.findByTestId('title-input');
+  });
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+    setPlatform(originalPlatform);
+    jest.restoreAllMocks();
+    if (originalTimezone === undefined) delete hostProcess.env.TZ;
+    else hostProcess.env.TZ = originalTimezone;
+  });
+
+  it('#213 R4: Repetición ofrece seis chips con Una vez seleccionado', () => {
+    const options = [['once', 'Una vez'], ['day', 'Diario'], ['week', 'Semanal'], ['month', 'Mensual'], ['year', 'Anual'], ['hour', 'Cada N horas']];
+    expect(screen.getAllByTestId(/^repeat-chip-/)).toHaveLength(6);
+    for (const [key, label] of options) {
+      const chip = screen.getByTestId(`repeat-chip-${key}`);
+      expect(chip).toHaveTextContent(label);
+      expect(chip.props.accessibilityState).toEqual({ selected: key === 'once' });
+      expect(chip.props.className).toBe(key === 'once'
+        ? 'h-9.5 items-center justify-center rounded-full px-3.5 bg-accent'
+        : 'h-9.5 items-center justify-center rounded-full px-3.5 bg-default');
+      if (key === 'once') expect(chip.props.style).toEqual(mockChunkyLip.primaryCompact);
+      else expect(chip.props.style).toBeUndefined();
+    }
+    const row = screen.getByTestId('repeat-chip-once').parent!;
+    expect(row.props.className).toBe('flex-row flex-wrap gap-2');
+    expect(row.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(options.map(([key]) => `repeat-chip-${key}`));
+  });
+
+  it('#213 R4: pulsar un chip de repetición mueve la selección', async () => {
+    await fireEvent.press(screen.getByTestId('repeat-chip-week'));
+    expect(screen.getByTestId('repeat-chip-week').props.accessibilityState).toEqual({ selected: true });
+    expect(screen.getByTestId('repeat-chip-once').props.accessibilityState).toEqual({ selected: false });
+  });
+
+  it('#213 R4: Repetición va después de Hora y antes de Aviso', () => {
+    const tree = JSON.stringify(screen.toJSON());
+    expect(tree.indexOf('Repetición')).toBeGreaterThan(tree.indexOf('Hora'));
+    expect(tree.indexOf('Repetición')).toBeLessThan(tree.indexOf('Aviso'));
+  });
+
+  it('#213 R5: Tipo y Aviso son filas horizontales sin salto de línea', () => {
+    for (const [id, pattern, count] of [
+      ['type-chips-row', /^type-chip-/, 7],
+      ['advance-chips-row', /^advance-chip-/, 4],
+    ] as const) {
+      const row = screen.getByTestId(id);
+      expect(row.props.horizontal).toBe(true);
+      expect(row.props.showsHorizontalScrollIndicator).toBe(false);
+      expect(row.props.className).toBe('-mr-5');
+      expect(row.props.className).not.toContain('flex-wrap');
+      expect(row.props.contentContainerStyle).toEqual({ gap: 8, paddingRight: 20 });
+      expect(within(row).getAllByTestId(pattern)).toHaveLength(count);
+    }
+  });
+
+
+  it('#213 R6: el stepper de horas nace en 8 y muestra su ayuda', async () => {
+    await fireEvent.press(screen.getByTestId('repeat-chip-hour'));
+    const stepper = screen.getByTestId('repeat-stepper');
+    expect(stepper.props.className).toBe('flex-row items-center gap-3 rounded-16 bg-default p-2');
+    expect(stepper).toHaveStyle({ borderCurve: 'continuous' });
+    expect(within(stepper).getByText('Cada').props.className).toBe('text-15 font-extrabold text-foreground');
+    expect(screen.getByTestId('repeat-every-value')).toHaveTextContent('8 horas');
+    expect(screen.getByTestId('repeat-every-value').props.className).toBe('min-w-21 text-center text-22 font-black text-foreground');
+    expect(screen.getByTestId('repeat-every-value').props.accessibilityLiveRegion).toBe('polite');
+    expect(screen.getByTestId('repeat-every-help')).toHaveTextContent('De 1 a 24 horas.');
+    expect(screen.getByTestId('repeat-every-less').props.accessibilityLabel).toBe('Una hora menos');
+    expect(screen.getByTestId('repeat-every-more').props.accessibilityLabel).toBe('Una hora más');
+  });
+
+  it('#213 R6: el stepper de horas se detiene en 1 con «1 hora» y deshabilita menos', async () => {
+    await fireEvent.press(screen.getByTestId('repeat-chip-hour'));
+    for (let i = 0; i < 10; i++) await fireEvent.press(screen.getByTestId('repeat-every-less'));
+    expect(screen.getByTestId('repeat-every-value')).toHaveTextContent('1 hora');
+    expect(screen.getByTestId('repeat-every-less').props.accessibilityState.disabled).toBe(true);
+    expect(screen.getByTestId('repeat-every-less').props.className).toContain('opacity-50');
+  });
+
+  it('#213 R6: el stepper de horas se detiene en 24 y deshabilita más', async () => {
+    await fireEvent.press(screen.getByTestId('repeat-chip-hour'));
+    for (let i = 0; i < 20; i++) await fireEvent.press(screen.getByTestId('repeat-every-more'));
+    expect(screen.getByTestId('repeat-every-value')).toHaveTextContent('24 horas');
+    expect(screen.getByTestId('repeat-every-more').props.accessibilityState.disabled).toBe(true);
+  });
+
+  it('#213 R7: el stepper de meses nace en 1 mes y se detiene en 12', async () => {
+    await fireEvent.press(screen.getByTestId('repeat-chip-month'));
+    expect(screen.getByTestId('repeat-every-value')).toHaveTextContent('1 mes');
+    expect(screen.getByTestId('repeat-every-help')).toHaveTextContent('De 1 a 12 meses.');
+    expect(screen.getByTestId('repeat-every-less').props.accessibilityLabel).toBe('Un mes menos');
+    expect(screen.getByTestId('repeat-every-more').props.accessibilityLabel).toBe('Un mes más');
+    expect(screen.getByTestId('repeat-every-less').props.accessibilityState.disabled).toBe(true);
+    for (let i = 0; i < 14; i++) await fireEvent.press(screen.getByTestId('repeat-every-more'));
+    expect(screen.getByTestId('repeat-every-value')).toHaveTextContent('12 meses');
+    expect(screen.getByTestId('repeat-every-more').props.accessibilityState.disabled).toBe(true);
+    for (let i = 0; i < 14; i++) await fireEvent.press(screen.getByTestId('repeat-every-less'));
+    expect(screen.getByTestId('repeat-every-value')).toHaveTextContent('1 mes');
+  });
+
+  it.each(['once', 'day', 'week', 'year'])('#213 R7: sin stepper con %s', async (key) => {
+    await fireEvent.press(screen.getByTestId(`repeat-chip-${key}`));
+    expect(screen.queryByTestId('repeat-stepper')).toBeNull();
+  });
+
+  it('#213 R7: cada unidad conserva su valor al cambiar de chip', async () => {
+    await fireEvent.press(screen.getByTestId('repeat-chip-hour'));
+    await fireEvent.press(screen.getByTestId('repeat-every-more'));
+    await fireEvent.press(screen.getByTestId('repeat-chip-month'));
+    await fireEvent.press(screen.getByTestId('repeat-every-more'));
+    await fireEvent.press(screen.getByTestId('repeat-chip-hour'));
+    expect(screen.getByTestId('repeat-every-value')).toHaveTextContent('9 horas');
+    await fireEvent.press(screen.getByTestId('repeat-chip-month'));
+    expect(screen.getByTestId('repeat-every-value')).toHaveTextContent('2 meses');
+  });
+
+  it.each([
+    { key: 'day', name: 'Hasta aparece con la repetición y es opcional' },
+    { key: 'once', name: 'Hasta no aparece con Una vez' },
+  ])('#213 R8: $name', async ({ key }) => {
+    await fireEvent.press(screen.getByTestId(`repeat-chip-${key}`));
+    if (key === 'once') {
+      expect(screen.queryByTestId('until-field')).toBeNull();
+      return;
+    }
+    expect(screen.queryByTestId('until-field')).not.toBeNull();
+    expect(screen.getByText('Hasta')).toBeVisible();
+    expect(screen.getByText('Opcional')).toBeVisible();
+    expect(screen.getByTestId('until-field-value').props.placeholder).toBe('Sin fecha de fin');
+    await fireEvent.press(screen.getByTestId('until-field'));
+    expect(screen.getByTestId('until-picker').props.minimumDate).toEqual(new Date(2026, 11, 20, 12));
+    await fireEvent(screen.getByTestId('until-picker'), 'onDismiss');
+    await pickDate(new Date(2026, 11, 31, 12));
+    await fireEvent.press(screen.getByTestId('until-field'));
+    expect(screen.getByTestId('until-picker').props.minimumDate).toEqual(new Date(2026, 11, 31, 12));
+    await fireEvent(screen.getByTestId('until-picker'), 'onDismiss');
+    for (const unit of ['day', 'week', 'month', 'year', 'hour']) {
+      await fireEvent.press(screen.getByTestId(`repeat-chip-${unit}`));
+      expect(screen.getByTestId('until-field')).toBeVisible();
+    }
+  });
+
+  it('#213 R8: mover la fecha más allá de Hasta lo vacía', async () => {
+    await fireEvent.press(screen.getByTestId('repeat-chip-day'));
+    await pickDate(new Date(2026, 11, 31, 12));
+    await pickUntil(new Date(2027, 0, 2, 12));
+    expect(screen.getByTestId('until-field-value').props.value).toBe('2 ene 2027');
+    await pickDate(new Date(2027, 0, 3, 12));
+    expect(screen.getByTestId('until-field-value').props.value).toBe('');
+  });
+
+  it('#213 R8: borrar Hasta lo quita del cuerpo y de la nota', async () => {
+    await fireEvent.press(screen.getByTestId('repeat-chip-day'));
+    await pickDate(new Date(2026, 11, 31, 12));
+    await pickUntil(new Date(2027, 0, 2, 12));
+    await fireEvent.press(screen.getByTestId('until-field-clear'), { stopPropagation: jest.fn() });
+    expect(screen.getByTestId('until-field-value').props.value).toBe('');
+    expect(screen.getByTestId('add-reminder-preview-text')).not.toHaveTextContent('hasta el');
+    await fireEvent.changeText(screen.getByTestId('title-input'), 'Rabies');
+    await fireEvent.press(screen.getByTestId('add-reminder-submit'));
+    await waitFor(() => expect(screen.getByTestId('add-reminder-submit')).toBeDisabled());
+    expect(mockCreateReminder.mock.calls[0][3]).not.toHaveProperty('recurrenceUntil');
+  });
+
+  it('#213 R9: Cada N horas oculta Aviso y envía advanceMinutes 0', async () => {
+    await pickDate(new Date(2026, 11, 31, 12));
+    await fireEvent.press(screen.getByTestId('advance-chip-1440'));
+    await fireEvent.press(screen.getByTestId('repeat-chip-hour'));
+    expect(screen.queryByText('Aviso')).toBeNull();
+    expect(screen.queryAllByTestId(/^advance-chip-/)).toHaveLength(0);
+    await fireEvent.changeText(screen.getByTestId('title-input'), 'Rabies');
+    await fireEvent.press(screen.getByTestId('add-reminder-submit'));
+    await waitFor(() => expect(screen.getByTestId('add-reminder-submit')).toBeDisabled());
+    expect(mockCreateReminder.mock.calls[0][3].advanceMinutes).toBe(0);
+  });
+
+  it.each([
+    ['Una vez', 'once', 1, false, { type: 'vaccine', title: 'Rabies', dueAt: '2026-12-31T15:00:00.000Z', advanceMinutes: 10080 }],
+    ['Diario', 'day', 1, false, { type: 'vaccine', title: 'Rabies', dueAt: '2026-12-31T15:00:00.000Z', advanceMinutes: 10080, recurrence: { unit: 'day', every: 1 } }],
+    ['Semanal', 'week', 1, false, { type: 'vaccine', title: 'Rabies', dueAt: '2026-12-31T15:00:00.000Z', advanceMinutes: 10080, recurrence: { unit: 'week', every: 1 } }],
+    ['Mensual', 'month', 3, false, { type: 'vaccine', title: 'Rabies', dueAt: '2026-12-31T15:00:00.000Z', advanceMinutes: 10080, recurrence: { unit: 'month', every: 3 } }],
+    ['Anual', 'year', 1, false, { type: 'vaccine', title: 'Rabies', dueAt: '2026-12-31T15:00:00.000Z', advanceMinutes: 10080, recurrence: { unit: 'year', every: 1 } }],
+    ['Cada N horas', 'hour', 12, false, { type: 'vaccine', title: 'Rabies', dueAt: '2026-12-31T15:00:00.000Z', advanceMinutes: 0, recurrence: { unit: 'hour', every: 12 } }],
+    ['Diario con Hasta', 'day', 1, true, { type: 'vaccine', title: 'Rabies', dueAt: '2026-12-31T15:00:00.000Z', advanceMinutes: 10080, recurrence: { unit: 'day', every: 1 }, recurrenceUntil: '2027-01-02' }],
+  ] as const)('#213 R10: guarda %s con su cuerpo exacto', async (_label, key, count, hasUntil, expected) => {
+    await pickDate(new Date(2026, 11, 31, 12));
+    await pickTime(9, 0);
+    if (key === 'once') {
+      await fireEvent.press(screen.getByTestId('repeat-chip-day'));
+      await pickUntil(new Date(2027, 0, 2, 12));
+    }
+    await fireEvent.press(screen.getByTestId(`repeat-chip-${key}`));
+    if (key === 'month' || key === 'hour') {
+      for (let i = key === 'hour' ? 8 : 1; i < count; i++) await fireEvent.press(screen.getByTestId('repeat-every-more'));
+    }
+    if (hasUntil) await pickUntil(new Date(2027, 0, 2, 12));
+    await fireEvent.changeText(screen.getByTestId('title-input'), ' Rabies ');
+    await fireEvent.press(screen.getByTestId('add-reminder-submit'));
+    await waitFor(() => expect(screen.getByTestId('add-reminder-submit')).toBeDisabled());
+    expect(mockCreateReminder).toHaveBeenCalledTimes(1);
+    expect(mockCreateReminder).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token', 'pet-1', expected);
+  });
+
+  it.each([
+    ["Diario", "Te aviso cada día a las 09:00.", "day", 1, 2026, 11, 31, 0, null],
+    ["Diario con Hasta", "Te aviso cada día a las 09:00, hasta el 2 ene 2027.", "day", 1, 2026, 11, 31, 0, [2027, 0, 2]],
+    ["Semanal", "Te aviso cada miércoles a las 09:00.", "week", 1, 2026, 11, 30, 0, null],
+    ["Semanal con Hasta", "Te aviso cada miércoles a las 09:00, hasta el 6 ene 2027.", "week", 1, 2026, 11, 30, 0, [2027, 0, 6]],
+    ["Mensual", "Te aviso el día 31 de cada mes a las 09:00.", "month", 1, 2026, 11, 31, 0, null],
+    ["Mensual con aviso y Hasta", "Te aviso el día 31 de cada mes a las 09:00, hasta el 31 ene 2027.", "month", 1, 2027, 0, 1, 1440, [2027, 0, 31]],
+    ["Mensual 3", "Te aviso el día 31 cada 3 meses a las 09:00.", "month", 3, 2026, 11, 31, 0, null],
+    ["Mensual 3 con Hasta", "Te aviso el día 31 cada 3 meses a las 09:00, hasta el 30 jun 2027.", "month", 3, 2026, 11, 31, 0, [2027, 5, 30]],
+    ["Anual", "Te aviso cada año el 2 ene a las 09:00.", "year", 1, 2027, 0, 2, 0, null],
+    ["Anual con Hasta", "Te aviso cada año el 2 ene a las 09:00, hasta el 2 ene 2030.", "year", 1, 2027, 0, 2, 0, [2030, 0, 2]],
+  ] as const)('#213 R11: la nota de %s dice «%s»', async (_label, expected, key, count, year, month, day, advance, until) => {
+    await fireEvent.press(screen.getByTestId(`repeat-chip-${key}`));
+    if (key === 'month') for (let i = 1; i < count; i++) await fireEvent.press(screen.getByTestId('repeat-every-more'));
+    await pickDate(new Date(year, month, day, 12));
+    await pickTime(9, 0);
+    await fireEvent.press(screen.getByTestId(`advance-chip-${advance}`));
+    if (until) await pickUntil(new Date(until[0], until[1], until[2], 12));
+    expect(screen.getByTestId('add-reminder-preview-text')).toHaveTextContent(expected);
+  });
+
+  it('#213 R11: la nota usa Repeat con repetición y Bell con Una vez', async () => {
+    await pickDate(new Date(2026, 11, 31, 12));
+    const bell = screen.getByTestId('add-reminder-icon-bell', { includeHiddenElements: true });
+    expect(bell.props.size).toBe(20);
+    expect(bell.props.color).toBe('color:accent-strong');
+    await fireEvent.press(screen.getByTestId('repeat-chip-day'));
+    expect(screen.queryByTestId('add-reminder-icon-bell', { includeHiddenElements: true })).toBeNull();
+    const repeat = screen.getByTestId('add-reminder-icon-repeat', { includeHiddenElements: true });
+    expect(repeat.props.size).toBe(20);
+    expect(repeat.props.color).toBe('color:accent-strong');
+  });
+
+  it('#213 R11: la nota semanal usa el día local al cruzar medianoche UTC', async () => {
+    await fireEvent.press(screen.getByTestId('repeat-chip-week'));
+    await pickDate(new Date(2026, 11, 30, 12));
+    await pickTime(23, 30);
+    await fireEvent.press(screen.getByTestId('advance-chip-0'));
+    expect(screen.getByTestId('add-reminder-preview-text')).toHaveTextContent('Te aviso cada miércoles a las 23:30.');
+  });
+
+  it.each([
+    [8, "Te aviso en cada toma de Rocky: 20:00, 04:00 y 12:00.", false],
+    [8, "Te aviso en cada toma de Rocky: 20:00, 04:00 y 12:00, hasta el 2 ene 2027.", true],
+    [6, "Te aviso en cada toma de Rocky: 20:00, 02:00, 08:00 y 14:00.", false],
+    [12, "Te aviso en cada toma de Rocky: 20:00 y 08:00.", false],
+    [24, "Te aviso en cada toma de Rocky: 20:00.", false],
+    [5, "Te aviso cada 5 horas desde las 20:00.", false],
+    [7, "Te aviso cada 7 horas desde las 20:00, hasta el 2 ene 2027.", true],
+    [1, "Te aviso cada hora desde las 20:00.", false],
+  ] as const)('#213 R12: con %i horas la nota dice «%s»', async (count, expected, hasUntil) => {
+    await fireEvent.press(screen.getByTestId('repeat-chip-hour'));
+    for (let i = 8; i > count; i--) await fireEvent.press(screen.getByTestId('repeat-every-less'));
+    for (let i = 8; i < count; i++) await fireEvent.press(screen.getByTestId('repeat-every-more'));
+    await pickDate(new Date(2026, 11, 31, 12));
+    await pickTime(20, 0);
+    if (hasUntil) await pickUntil(new Date(2027, 0, 2, 12));
+    await waitFor(() => expect(screen.getByTestId('add-reminder-preview-text')).toHaveTextContent(expected));
+  }, 15000);
+
+  it('#213 R12: cuatro horas usa intervalo y no lista tomas', async () => {
+    await fireEvent.press(screen.getByTestId('repeat-chip-hour'));
+    for (let i = 0; i < 4; i++) await fireEvent.press(screen.getByTestId('repeat-every-less'));
+    await pickDate(new Date(2026, 11, 31, 12));
+    await pickTime(20, 0);
+    await waitFor(() => expect(screen.getByTestId('add-reminder-preview-text')).toHaveTextContent('Te aviso cada 4 horas desde las 20:00.'));
+  });
+
+});
+
+
+describe('#213 R13: notas sin nombre de mascota', () => {
+  const hostProcess = process.getBuiltinModule('process');
+  const originalTimezone = hostProcess.env.TZ;
+  beforeEach(() => {
+    hostProcess.env.TZ = 'America/Mexico_City';
+    jest.useFakeTimers({ now: new Date(2026, 11, 20, 10, 0) });
+    jest.clearAllMocks();
+    setPlatform('android');
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() } satisfies AuthContextValue);
+    mockCreateReminder.mockReturnValue(pending());
+  });
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+    setPlatform(originalPlatform);
+    jest.restoreAllMocks();
+    if (originalTimezone === undefined) delete hostProcess.env.TZ;
+    else hostProcess.env.TZ = originalTimezone;
+  });
+
+  it.each(['falla', 'sin la mascota', 'sin resolver'])('#213 R13: sin nombre de mascota (%s) la nota usa la variante sin nombre', async (kind) => {
+    if (kind === 'falla') mockListPets.mockResolvedValue({ kind: 'unreachable', message: 'x' });
+    else if (kind === 'sin la mascota') mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ id: 'pet-2', name: 'Luna' })] });
+    else mockListPets.mockReturnValue(new Promise(() => {}));
+    await renderAddReminder();
+    await fireEvent.press(screen.getByTestId('repeat-chip-hour'));
+    await pickDate(new Date(2026, 11, 31, 12));
+    await pickTime(20, 0);
+    const expected = 'Te aviso en cada toma: 20:00, 04:00 y 12:00.';
+    if (kind === 'sin resolver') expect(screen.getByTestId('add-reminder-preview-text')).toHaveTextContent(expected);
+    else await waitFor(() => expect(screen.getByTestId('add-reminder-preview-text')).toHaveTextContent(expected));
+    expect(screen.queryByTestId('add-reminder-error')).toBeNull();
   });
 });

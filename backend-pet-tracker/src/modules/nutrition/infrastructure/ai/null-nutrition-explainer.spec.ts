@@ -40,7 +40,7 @@ describe('R5 (nutrition-ai-explainer #18): el nulo explica por que esta apagado'
       .spyOn(Logger.prototype, 'warn')
       .mockImplementation(() => undefined);
     await expect(
-      new NullNutritionExplainer(reason).explain(input, result, ctx),
+      new NullNutritionExplainer(reason).explain(input, result, [], ctx),
     ).resolves.toBeNull();
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn.mock.calls[0][0]).toEqual({

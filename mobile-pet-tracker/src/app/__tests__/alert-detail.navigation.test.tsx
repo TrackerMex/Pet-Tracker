@@ -78,7 +78,7 @@ jest.mock('reicon-react-native', () => {
   const icon = () => function MockIcon(props: Record<string, unknown>) {
     return React.createElement(View, props);
   };
-  return { BatteryLow: icon(), Bell: icon(), ChevronLeft: icon(), LocationSlash: icon(), Map: icon() };
+  return { BatteryLow: icon(), Bell: icon(), Check: icon(), ChevronDown: icon(), ChevronLeft: icon(), ChevronUp: icon(), LocationSlash: icon(), Map: icon() };
 });
 jest.mock('../../theme/use-theme-colors', () => ({
   useThemeColors: (tokens: readonly string[]) => tokens.map((token) => `--color-${token}`),
@@ -123,7 +123,7 @@ function rootStack(app: ReturnType<typeof renderRouter>) {
 describe('#100 R8: fila, detalle y vuelta al centro con la alerta leída', () => {
   afterEach(() => jest.useRealTimers());
 
-  it('abre la fila de la segunda página, la marca leída y la ve leída al volver', async () => {
+  it('abre la fila de la segunda página, la marca leída y la ve leída al volver (enmendado por #223 R18)', async () => {
     jest.clearAllMocks();
     process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
     let serverAcked = false;
@@ -137,11 +137,11 @@ describe('#100 R8: fila, detalle y vuelta al centro con la alerta leída', () =>
 
     const app = renderRouter(routes(), { initialUrl: '/home' });
     jest.useRealTimers();
+    await app;
     await waitFor(() => expect(app.getPathname()).toBe('/home'));
     await act(async () => router.push('/alerts'));
     await waitFor(() => expect(app.getPathname()).toBe('/alerts'));
-    await waitFor(() => expect(screen.getByTestId('alerts-list').props.data).toHaveLength(1));
-    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
+    await waitFor(() => expect(screen.getByTestId('alerts-list').props.data).toHaveLength(2));
     await waitFor(() => expect(screen.getByTestId('alerts-list').props.data).toHaveLength(2));
     await fireEvent.press(screen.getByTestId('alert-row-alert-2-link'));
     await waitFor(() => expect(app.getPathname()).toBe('/alerts/alert-2'));
@@ -154,6 +154,7 @@ describe('#100 R8: fila, detalle y vuelta al centro con la alerta leída', () =>
 
     await act(async () => router.back());
     await waitFor(() => expect(app.getPathname()).toBe('/alerts'));
+    await fireEvent.press(await screen.findByTestId('alerts-attended-toggle'));
     await waitFor(() => {
       expect(screen.getByTestId('alert-row-alert-2-status')).toHaveTextContent('Leída');
       expect(screen.queryByTestId('alert-row-alert-2-ack')).toBeNull();

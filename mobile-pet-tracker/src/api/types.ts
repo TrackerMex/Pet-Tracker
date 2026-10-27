@@ -152,6 +152,23 @@ export interface TripDetail extends TripSummary {
   path: TripPoint[];
 }
 
+export interface VaccineCatalogEntry {
+  id: string;
+  species: 'dog' | 'cat';
+  name: string;
+  scheme: { firstDoseMonths: number; series?: number; boosterMonths: number };
+}
+
+export interface CreateVaccineInput {
+  catalogId?: string;
+  name?: string;
+  appliedAt: string;
+  nextDoseAt?: string;
+  vetName?: string;
+  clinic?: string;
+  notes?: string;
+}
+
 export interface Vaccine {
   id: string;
   petId: string;
@@ -172,6 +189,16 @@ export interface WeightEntry {
   measuredAt: string;
   bodyCondition: number | null;
   variation: number | null;
+}
+
+export interface NutritionProfileInput {
+  activityLevel: 'low' | 'medium' | 'high';
+  bodyCondition?: number;
+  targetWeightKg?: number;
+  foodType: 'dry' | 'wet' | 'mixed' | 'homemade';
+  kcalPer100g: number;
+  allergies: string[];
+  diseases: string[];
 }
 
 export interface NutritionProfile {
@@ -218,6 +245,8 @@ export type ReminderType =
 
 export type ReminderStatus = 'scheduled' | 'sent' | 'cancelled';
 
+export type Recurrence = { unit: 'hour' | 'day' | 'week' | 'month' | 'year'; every: number };
+
 export interface Reminder {
   id: string;
   petId: string;
@@ -226,6 +255,8 @@ export interface Reminder {
   dueAt: string;
   advanceMinutes: number;
   status: ReminderStatus;
+  recurrence: Recurrence | null;
+  recurrenceUntil: string | null;
 }
 
 export type AlertType = 'geofence_exit' | 'battery_low';

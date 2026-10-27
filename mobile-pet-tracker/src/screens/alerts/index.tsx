@@ -3,6 +3,7 @@ import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useRef, useState } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Check, ChevronDown, ChevronUp } from 'reicon-react-native';
 
 import { ackAlert } from '../../api/alerts';
 import type { Alert } from '../../api/types';
@@ -14,7 +15,7 @@ import { ScreenHeader } from '../../components/screen-header';
 import { useAlertsList } from '../../hooks/use-alerts-list';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
-import { TABULAR_NUMS } from '../../theme/native-styles';
+import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -40,22 +41,72 @@ function fmtOpenedAt(
   return days === 1 ? t('alerts.dayAgo') : t('alerts.daysAgo', { days });
 }
 
+function StatusPill({ item, rowId }: { item: Alert; rowId: string }) {
+  const t = useTranslate();
+  return (
+    <Text
+      testID={`${rowId}-status`}
+      className={item.status === 'acked'
+        ? 'rounded-full bg-default px-2.5 py-1 text-xs font-bold text-muted'
+        : `rounded-full ${CATEGORY_SLOTS.green.surface} px-2.5 py-1 text-xs font-extrabold ${CATEGORY_SLOTS.green.ink}`}
+    >
+      {item.status === 'acked'
+        ? t('alerts.statusAcked')
+        : t('alerts.statusClosed')}
+    </Text>
+  );
+}
+
+function AttendedRow({ item, now }: { item: Alert; now: Date }) {
+  const t = useTranslate();
+  const [danger, warningStrong, muted] = useThemeColors(['danger', 'warning-strong', 'muted']);
+  const rowId = `alert-row-${item.id}`;
+  const meta = alertTypeMeta(item.type);
+  const Icon = meta.Icon;
+  const color = { danger, 'warning-strong': warningStrong, muted }[meta.ink];
+  return (
+    <View testID={rowId} style={CONTINUOUS_CORNER} className="flex-row items-center gap-3 rounded-16 border border-border bg-surface px-3.5 py-2.5">
+      <View className={`size-9 items-center justify-center rounded-full ${meta.disc}`}>
+        <Icon testID={`${rowId}-icon`} size={18} color={color} />
+      </View>
+      <Pressable
+        testID={`${rowId}-link`}
+        accessibilityRole="button"
+        className="min-h-11 min-w-0 flex-1 justify-center gap-px"
+        style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+        onPress={() => router.push({ pathname: '/alerts/[alertId]', params: { alertId: item.id } })}
+      >
+        <Text testID={`${rowId}-type`} className="text-sm font-extrabold text-foreground">{t(meta.labelKey)}</Text>
+        <Text testID={`${rowId}-subtitle`} className="text-xs font-normal text-muted">
+          <Text testID={`${rowId}-pet`}>{item.petName}</Text>
+          {' · '}
+          <Text testID={`${rowId}-time`}>{fmtOpenedAt(item.openedAt, now, t)}</Text>
+        </Text>
+      </Pressable>
+      <StatusPill item={item} rowId={rowId} />
+    </View>
+  );
+}
+
 export function AlertsScreen() {
   const chunkyLip = useChunkyLip();
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
-  const [danger, warningStrong, muted] = useThemeColors([
+  const [danger, warningStrong, muted, categoryGreenStrong] = useThemeColors([
     'danger',
     'warning-strong',
     'muted',
+    'category-green-strong',
   ]);
+  const [expanded, setExpanded] = useState(false);
+  const [visible, setVisible] = useState(10);
   const [acked, setAcked] = useState<Record<string, Alert>>({});
   const [ackingId, setAckingId] = useState<string | null>(null);
   const ackingIdRef = useRef<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
-  const alerts = useAlertsList();
+  const alerts = useAlertsList({ drain: true });
   const refetchAlerts = alerts.refetch;
 
   useFocusEffect(
@@ -71,18 +122,18 @@ export function AlertsScreen() {
     alerts.data?.pages.flatMap((page) =>
       page.kind === 'ok' ? page.items : [],
     ) ?? [];
+  const attended = fetched.filter((alert) => alert.status === 'acked' || alert.status === 'closed');
+  const Chevron = expanded ? ChevronUp : ChevronDown;
   const now = new Date(alerts.dataUpdatedAt);
   const ordered = (['today', 'week', 'earlier'] as const).flatMap((section) => {
-    const sectionRows = fetched.filter((alert) => alertSection(alert.openedAt, now) === section);
-    return [
-      ...sectionRows.filter((alert) => alert.status === 'open'),
-      ...sectionRows.filter((alert) => alert.status !== 'open'),
-    ];
+    return fetched.filter((alert) => alert.status === 'open' && alertSection(alert.openedAt, now) === section);
   });
   const rows = ordered.map((alert) =>
     alert.status === 'open' ? (acked[alert.id] ?? alert) : alert,
   );
   const count = rows.filter((alert) => alert.status === 'open').length;
+  const draining = alerts.data !== undefined && alerts.hasNextPage && !alerts.isError;
+  const settled = alerts.data !== undefined && !draining;
   const firstPage = alerts.data?.pages[0];
   const firstPageFailed =
     firstPage !== undefined &&
@@ -125,7 +176,7 @@ export function AlertsScreen() {
     }
   }
 
-  const empty = alerts.isPending ? (
+  const empty = alerts.isPending || (draining && rows.length === 0) ? (
     <View testID="alerts-loading" className="gap-3">
       {[1, 2, 3].map((number) => (
         <Skeleton
@@ -144,7 +195,20 @@ export function AlertsScreen() {
         <Button.Label>{t('common.retry')}</Button.Label>
       </Button>
     </View>
-  ) : firstPage?.kind === 'ok' && rows.length === 0 ? (
+  ) : settled && rows.length === 0 && attended.length > 0 ? (
+    <View className="gap-3">
+      <Text testID="alerts-open-heading" accessibilityRole="header" className="mt-1.5 text-13 font-extrabold uppercase tracking-caps text-muted">{t('alerts.sectionOpen')}</Text>
+      <Card testID="alerts-calm" variant="secondary" className="flex-row items-center gap-3.5 border-0 px-4 py-4.5">
+        <View className="size-11 items-center justify-center rounded-full bg-surface">
+          <Check testID="alerts-calm-icon" size={22} strokeWidth={2.2} color={categoryGreenStrong} />
+        </View>
+        <View className="min-w-0 flex-1 gap-1">
+          <Text testID="alerts-calm-title" className="text-base font-extrabold text-foreground">{t('alerts.calmTitle')}</Text>
+          <Text testID="alerts-calm-body" className="text-13 text-muted">{t('alerts.calmBody', { petName: attended[0].petName })}</Text>
+        </View>
+      </Card>
+    </View>
+  ) : settled && firstPage?.kind === 'ok' && rows.length === 0 ? (
     <EmptyState
       testID="alerts-empty"
       pose="sleep"
@@ -152,6 +216,7 @@ export function AlertsScreen() {
       body={t('alerts.emptyBody')}
     />
   ) : null;
+
 
   return (
     <View testID="screen-alerts" className="flex-1 bg-background">
@@ -167,17 +232,13 @@ export function AlertsScreen() {
         }}
         data={rows}
         keyExtractor={(item) => item.id}
-        onEndReached={() => {
-          if (!alerts.hasNextPage || alerts.isFetchingNextPage) return;
-          void alerts.fetchNextPage();
-        }}
         ListHeaderComponent={(
           <View testID="alerts-header" className="gap-3">
             <ScreenHeader
               testID="alerts"
               backFallback="/"
               title={t('alerts.title')}
-              accessory={count > 0 ? (
+              accessory={settled && count > 0 ? (
                 <PopIn testID="alerts-new-count" className="rounded-full bg-danger px-2.5 py-1">
                   <Text testID="alerts-new-count-text" className="text-13 font-extrabold text-danger-foreground" style={TABULAR_NUMS}>
                     {count === 1 ? t('alerts.newOne') : t('alerts.newMany', { count })}
@@ -193,6 +254,50 @@ export function AlertsScreen() {
           </View>
         )}
         ListEmptyComponent={empty}
+        ListFooterComponent={settled && attended.length > 0 ? (
+          <View testID="alerts-attended">
+            <Pressable
+              testID="alerts-attended-toggle"
+              className="mt-1.5 h-10 w-full flex-row items-center gap-2"
+              accessibilityRole="button"
+              accessibilityState={{ expanded }}
+              hitSlop={TOUCH_SLOP}
+              style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+              onPress={() => setExpanded((current) => !current)}
+            >
+              <View className="flex-1 flex-row items-center gap-2">
+                <Text testID="alerts-attended-label" className="text-13 font-extrabold uppercase tracking-caps text-muted">{t('alerts.attended')}</Text>
+                <Text testID="alerts-attended-count" className="rounded-full bg-default px-2 py-0.5 text-xs font-extrabold text-muted">{attended.length}</Text>
+              </View>
+              <View className="size-8 items-center justify-center rounded-full bg-default">
+                <Chevron testID="alerts-attended-chevron" size={18} color={muted} />
+              </View>
+            </Pressable>
+            {expanded ? (
+              <View testID="alerts-attended-list" className="gap-1.5">
+                {attended.slice(0, visible).map((item) => (
+                  <AttendedRow key={item.id} item={item} now={now} />
+                ))}
+                {attended.length > 10 ? (
+                  <View className="items-center gap-1.5 pt-1.5">
+                    {visible < attended.length ? (
+                      <Button
+                        testID="alerts-attended-more"
+                        variant="secondary"
+                        className="h-11 rounded-14 border-2 border-lip-gray bg-surface px-5.5"
+                        style={chunkyLip.neutralCompact}
+                        onPress={() => setVisible((current) => Math.min(current + 10, attended.length))}
+                      >
+                        <Button.Label className="text-sm font-extrabold text-foreground">{t('alerts.attendedMore')}</Button.Label>
+                      </Button>
+                    ) : null}
+                    <Text testID="alerts-attended-footer" className="text-xs text-muted">{t('alerts.attendedShowing', { shown: Math.min(visible, attended.length), total: attended.length })}</Text>
+                  </View>
+                ) : null}
+              </View>
+            ) : null}
+          </View>
+        ) : null}
         renderItem={({ item, index }) => {
           const rowId = `alert-row-${item.id}`;
           const meta = alertTypeMeta(item.type);
@@ -248,16 +353,7 @@ export function AlertsScreen() {
                   <Button.Label className="text-xs font-extrabold text-foreground">{t('alerts.ack')}</Button.Label>
                 </Button>
               ) : (
-                <Text
-                  testID={`${rowId}-status`}
-                  className={item.status === 'acked'
-                    ? 'rounded-full bg-default px-2.5 py-1 text-xs font-bold text-muted'
-                    : `rounded-full ${CATEGORY_SLOTS.green.surface} px-2.5 py-1 text-xs font-extrabold ${CATEGORY_SLOTS.green.ink}`}
-                >
-                  {item.status === 'acked'
-                    ? t('alerts.statusAcked')
-                    : t('alerts.statusClosed')}
-                </Text>
+                <StatusPill item={item} rowId={rowId} />
               )}
             </Card>
           );

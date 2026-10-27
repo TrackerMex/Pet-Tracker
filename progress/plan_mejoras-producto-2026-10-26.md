@@ -94,7 +94,8 @@ relativas a `mobile-pet-tracker/src/` y las de backend a `backend-pet-tracker/sr
   `PUT /v1/pets/:petId/nutrition-profile` que ya existe.
 - Preguntas = campos del perfil actual: actividad, condición corporal (BCS 1-9,
   con descripción), peso objetivo (si BCS ≥ 7), tipo de alimento y kcal/100 g
-  (precarga 350 para seco y 100 para húmedo), alergias y enfermedades.
+  (precarga 350 para seco y 90 para húmedo, según la respuesta a Q1 de
+  `progress/design_ola0-mejoras-2026-10-26.md`), alergias y enfermedades.
 - Alergias y enfermedades: chips de lista cerrada más «otra» con límite de
   longitud. El texto libre es superficie de inyección de prompt.
 - `putJson` nuevo en `api/http.ts`. Al guardar se llama a

@@ -11,7 +11,14 @@ import { useAuth } from '../providers/auth-provider';
 type NotificationsModule = typeof import('expo-notifications');
 
 function notificationHref(response: NotificationResponse): Href {
-  const alertId = response.notification?.request.content.data?.alertId;
+  const data = response.notification?.request.content.data;
+  if (data?.kind === 'reminder') {
+    const petId = data.petId;
+    return typeof petId === 'string' && petId.length > 0
+      ? { pathname: '/reminders', params: { petId } }
+      : '/reminders';
+  }
+  const alertId = data?.alertId;
   return typeof alertId === 'string' && alertId.length > 0
     ? { pathname: '/alerts/[alertId]', params: { alertId } }
     : '/alerts';

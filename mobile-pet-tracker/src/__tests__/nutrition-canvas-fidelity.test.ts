@@ -4,6 +4,8 @@ import { join } from 'path';
 import { MOTION_RING_DELAY_MS, MOTION_RING_TIMING } from '../theme/motion';
 
 const FOOD = 'screens/food/index.tsx';
+const AI_EXPLANATION = 'screens/food/ai-explanation.tsx';
+const AI_PARSER = 'screens/food/parse-ai-explanation.ts';
 const SCHEDULE = 'screens/meal-schedule/index.tsx';
 const HISTORY = 'screens/meals-history/index.tsx';
 const MOTION = 'theme/motion.ts';
@@ -21,7 +23,7 @@ const canvasRows: [string, string, string, string[]][] = [
   ['Nutricion', 'box-shadow: 0 6px 0 var(--lip)', FOOD, ['chunkyLip.hero']],
   ['Nutricion', 'box-shadow: 0 3px 0 var(--lip)', FOOD, ['chunkyLip.primaryCompact']],
   ['Nutricion', 'rgba(255,255,255,0.22)', FOOD, ['strokeOpacity={0.22}']],
-  ['Nutricion', 'line-height: 1.4', FOOD, ['leading-body']],
+  ['Nutricion', 'line-height: 1.4', AI_EXPLANATION, ['leading-body']],
   ['NutricionAvisos', 'animation: rise 400ms ease-out 110ms both', FOOD, ['110 + 30 * index']],
   ['NutricionAvisos', 'line-height: 1.45', FOOD, ['leading-note']],
   ['HorarioComidas', 'padding: 56px 20px 32px', SCHEDULE, ['paddingBottom: insets.bottom + 32']],
@@ -72,6 +74,13 @@ it.each(screenFiles)('#200 R17: %s no usa StyleSheet ni corchetes', file => {
 
 it.each(productionFiles)('#200 R17: %s no usa hex salvo #NNN R<n>', file => {
   expect(source(file)).not.toMatch(/#[0-9a-fA-F]{3,8}\b(?!\s+R\d)/);
+});
+
+it.each([AI_EXPLANATION, AI_PARSER])('#224 R13: %s no usa StyleSheet ni corchetes ni hex salvo #NNN R<n>', file => {
+  const code = source(file);
+  expect(code).not.toContain('StyleSheet');
+  expect(code).not.toMatch(/\b[\w-]+-\[/);
+  expect(code).not.toMatch(/#[0-9a-fA-F]{3,8}\b(?!\s+R\d)/);
 });
 
 it('#200 R17: Nutrición no importa Card', () => {

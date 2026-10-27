@@ -1,5 +1,6 @@
 import {
   act,
+  cleanup,
   fireEvent,
   screen,
   waitFor,
@@ -87,6 +88,8 @@ jest.mock('reicon-react-native', () => {
     Clock: icon('health-icon-clock'),
     HeartPulse: icon('health-icon-heart-pulse'),
     Syringe: icon('health-icon-syringe'),
+    Plus: icon('health-icon-plus'),
+    BellOff: icon('health-icon-bell-off'),
   };
 });
 
@@ -210,6 +213,7 @@ async function renderHealth(language: 'es' | 'en' = 'es') {
 }
 
 beforeEach(() => {
+  clearVaccineReminderNotice();
   mockTheme = 'light';
   mockSemanticColors = false;
 });
@@ -228,13 +232,13 @@ describe('R4: health resuelve la mascota seleccionada', () => {
     mockListWeights.mockReturnValue(pending<WeightsState>());
   });
 
-  it('shows the hub and a loading state while pets are pending', async () => {
+  it('shows the hub and a loading state while pets are pending (enmendado por #222 R9)', async () => {
     mockListPets.mockReturnValue(pending<PetsState>());
 
     await renderHealth();
 
     expect(screen.getByTestId('screen-health')).toBeVisible();
-    expect(screen.getByText('Salud')).toBeVisible();
+    expect(screen.getByRole('header', { name: 'Salud' })).toBeVisible();
     expect(screen.getByTestId('health-loading')).toBeVisible();
     expect(screen.getByTestId('screen-health').props.contentContainerStyle).toEqual(
       { padding: 24, gap: 16, paddingTop: 52, paddingBottom: 120 },
@@ -440,7 +444,8 @@ describe('R5: vacunas con la próxima destacada', () => {
     expect(overdueDate.props.className).toContain('text-danger');
   });
 
-  it('shows the vaccines empty state', async () => {
+  it('shows the vaccines empty state (enmendado por #208 R6)', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: 'family' })] });
     mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [] });
 
     await renderHealth();
@@ -455,7 +460,8 @@ describe('R5: vacunas con la próxima destacada', () => {
   it.each([
     { kind: 'error' } as const,
     { kind: 'unreachable', message: 'network down' } as const,
-  ])('shows and retries a $kind vaccine error', async (state) => {
+  ])('shows and retries a $kind vaccine error (enmendado por #208 R6)', async (state) => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: 'family' })] });
     mockListVaccines
       .mockResolvedValueOnce(state)
       .mockResolvedValueOnce({ kind: 'ok', vaccines: [] });
@@ -999,66 +1005,56 @@ function setupHealth168() {
 describe('#168 R1: Salud pinta el título grande en todas sus ramas', () => {
   beforeEach(setupHealth168);
 
-  it.each(HEALTH_BRANCHES_168)('pinta el título grande ($name) (enmendado por #197 R4)', async ({ state, branch }) => {
+  it.each(HEALTH_BRANCHES_168)('pinta el encabezado oculto ($name) (enmendado por #197 R4) (enmendado por #222 R9)', async ({ state, branch }) => {
     mockListPets.mockImplementation(async () => state);
     await renderHealth();
     await screen.findByTestId(branch);
-    const title = screen.getByTestId('health-title');
-    expect(title.props.className).toBe('text-3xl font-black tracking-title text-foreground');
-    expect(title).toHaveTextContent('Salud');
-    expect(elementChild(title.parent!, 0)).toBe(title);
+    expect(screen.getByTestId('health-heading')).toBeOnTheScreen();
+    expect(screen.queryByTestId('health-title')).toBeNull();
   });
 });
 
 describe('#168 R2: Salud sin hero y con métricas estándar', () => {
   beforeEach(setupHealth168);
 
-  it('con mascotas, health-title y health-content son los únicos hijos del scroll, en ese orden (enmendado por #199 R12)', async () => {
+  it('aplica las métricas estándar al scroll y gap a health-content (enmendado por #222 R9)', async () => {
     await renderHealth();
     const content = await screen.findByTestId('health-content');
-    expect(content.parent!.parent).toBe(screen.getByTestId('screen-health'));
-    expect(content.parent!.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['health-header', 'health-content']);
-    expect(screen.queryByTestId('pet-hero')).toBeNull();
-  });
-
-  it('aplica las métricas estándar al scroll y gap a health-content', async () => {
-    await renderHealth();
-    const content = await screen.findByTestId('health-content');
-    expect(screen.getByTestId('screen-health').props.contentContainerStyle).toEqual({ padding: 24, gap: 16, paddingTop: 52, paddingBottom: 120 });
+    expect(screen.getByTestId('screen-health').props.contentContainerStyle).toEqual({ padding: 24, gap: 16, paddingTop: 121, paddingBottom: 120 });
     expect(content.props.style).toEqual({ gap: 16 });
   });
 
-  it('pone el PetSwitcher como primer hijo de health-content (enmendado por #199 R13) (enmendado por #199 R14) (enmendado por #199 R18)', async () => {
+  it('pone el PetSwitcher como primer hijo de health-content (enmendado por #199 R13) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #222 R9)', async () => {
     await renderHealth();
     const content = await screen.findByTestId('health-content');
-    const header = screen.getByTestId('health-header');
-    expect(header.children).toHaveLength(2);
-    const switcher = within(elementChild(header, 1));
+    const header = screen.getByTestId('health-pet-header');
+    expect(header.children).toHaveLength(1);
+    const switcher = within(header);
     expect(switcher.getByTestId('pet-chip-pet-1')).toBeVisible();
     expect(switcher.getByTestId('pet-chip-pet-2')).toBeVisible();
     expect(elementChild(content, 1).props.testID).toBe('vaccines-section');
     expect(within(elementChild(content, 2)).getByTestId('weight-card').props.testID).toBe('weight-card');
   });
 
-  it('cambia vacunas y peso al pulsar otra mascota (enmendado por #199 R13)', async () => {
+  it('cambia vacunas y peso al pulsar otra mascota (enmendado por #199 R13) (enmendado por #222 R9)', async () => {
     mockListWeights.mockImplementation(async (_url, _token, petId) => ({ kind: 'ok', weights: [makeWeight({ weightKg: petId === 'pet-2' ? 20 : 12 })] }));
     await renderHealth();
     await within(await screen.findByTestId('vaccine-row-vaccine-1')).findByText('Vacuna de Luna');
-    const header = screen.getByTestId('health-header');
-    expect(header.children).toHaveLength(2);
-    const switcher = within(elementChild(header, 1));
+    const header = screen.getByTestId('health-pet-header');
+    expect(header.children).toHaveLength(1);
+    const switcher = within(header);
     await fireEvent.press(switcher.getByTestId('pet-chip-pet-2'));
     await waitFor(() => expect(within(screen.getByTestId('vaccine-row-vaccine-1')).getByText('Vacuna de Max')).toBeVisible());
     await waitFor(() => expect(screen.getByTestId('weight-current')).toHaveTextContent('20 kg'));
     expect(screen.queryByText('Vacuna de Luna')).toBeNull();
   });
 
-  it.each(HEALTH_BRANCHES_168.slice(0, 5))('sin contenido ($name), health-title precede a health-states (enmendado por #199 R12)', async ({ state, branch }) => {
+  it.each(HEALTH_BRANCHES_168.slice(0, 5))('sin contenido ($name), health-states es el primer hijo del scroll (enmendado por #199 R12) (enmendado por #222 R9)', async ({ state, branch }) => {
     mockListPets.mockImplementation(async () => state);
     await renderHealth();
     await screen.findByTestId(branch);
     const states = screen.getByTestId('health-states');
-    expect(states.parent!.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['health-header', 'health-states']);
+    expect(states.parent!.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['health-states']);
     expect(states.props.style).toEqual({ gap: 16 });
     expect(within(states).queryByTestId('health-title')).toBeNull();
     expect(screen.queryByTestId('pet-hero')).toBeNull();
@@ -1149,37 +1145,22 @@ describe('#181 R6: health hereda la limpieza de selección', () => {
 });
 
 
-describe('#199 R12: cabecera de Salud', () => {
-  beforeEach(setupHealth168);
-  it('#199 R12 con mascotas, health-header y health-content son los únicos hijos del scroll', async () => {
-    await renderHealth();
-    const content = await screen.findByTestId('health-content');
-    expect(content.parent!.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['health-header', 'health-content']);
-  });
-  it('#199 R12 health-header es una fila justify-between que empieza por health-title', async () => {
-    await renderHealth();
-    const header = await screen.findByTestId('health-header');
-    expect(header.type).toBe('View');
-    expect(header.props.className).toBe('flex-row items-center justify-between');
-    expect(elementChild(header, 0).props.testID).toBe('health-title');
-    expect(elementChild(header, 0)).toHaveTextContent('Salud', { exact: true });
-  });
-});
-
-
 describe('#199 R13: avatares de Salud', () => {
   beforeEach(setupHealth168);
-  it('#199 R13 el selector va en health-header tras health-title en su variante avatars', async () => {
+  it('#222 R3: el selector vive solo en health-pet-header (enmendado por #222 R9)', async () => {
     await renderHealth();
     const content = await screen.findByTestId('health-content');
-    const header = screen.getByTestId('health-header');
-    expect(header.children).toHaveLength(2);
-    expect(elementChild(header, 0).props.testID).toBe('health-title');
-    const switcher = within(elementChild(header, 1));
+    // docs/conventions.md §Esperas: esperar a la cabecera que se aserta.
+    await waitFor(() => expect(screen.queryByTestId('health-pet-header')).not.toBeNull());
+    const selector = within(screen.getByTestId('health-pet-header'));
+    expect(selector.getAllByTestId(/^pet-chip-/).map(node => node.props.testID)).toEqual(['pet-chip-pet-1', 'pet-chip-pet-2']);
     for (const id of ['pet-1', 'pet-2']) {
-      expect(switcher.getByTestId(`pet-avatar-fallback-${id}`).props.className.split(' ').slice(0, 2)).toEqual(['text-sm', 'font-extrabold']);
+      expect(selector.getByTestId(`pet-avatar-fallback-${id}`).props.className.split(' ').slice(0, 2)).toEqual(['text-sm', 'font-extrabold']);
     }
     expect(within(content).queryAllByTestId(/^pet-chip-/)).toHaveLength(0);
+    await fireEvent.press(selector.getByTestId('pet-chip-pet-2'));
+    // docs/conventions.md §Esperas: observar los datos de la mascota pulsada.
+    await within(await screen.findByTestId('vaccine-row-vaccine-1')).findByText('Vacuna de Max');
   });
 });
 
@@ -1253,14 +1234,15 @@ describe('#199 R14: panel de la próxima dosis', () => {
 
 describe('#199 R15: título de Vacunas', () => {
   beforeEach(setupHealth168);
-  it('#199 R15 Vacunas es un h2 de text-lg font-extrabold sin icono', async () => {
+  it('#199 R15 Vacunas es un h2 de text-lg font-extrabold sin icono (enmendado por #208 R5)', async () => {
     await renderHealth();
     const title = await screen.findByTestId('vaccines-title');
     expect(title.type).toBe('Text');
     expect(title.props.accessibilityRole).toBe('header');
     expect(title.props.className).toBe('mt-1 text-lg font-extrabold text-foreground');
     expect(title).toHaveTextContent('Vacunas', { exact: true });
-    expect(elementChild(screen.getByTestId('vaccines-section'), 0).props.testID).toBe('vaccines-title');
+    expect(elementChild(screen.getByTestId('vaccines-section'), 0).props.testID).toBe('vaccines-header');
+    expect(elementChild(screen.getByTestId('vaccines-header'), 0).props.testID).toBe('vaccines-title');
     expect(within(screen.getByTestId('vaccines-section')).queryByTestId('health-icon-heart-pulse')).toBeNull();
   });
   it('#199 R15 vaccines-section separa sus hijos con gap-2.5', async () => {
@@ -1406,7 +1388,8 @@ describe('#199 R19: estados de vacunas', () => {
     expect(column.props.className).toBe('flex-1 gap-1.5');
     expect(column.children.filter((child): child is TestInstance => typeof child !== 'string').map(child => child.props.className)).toEqual(['skeleton__root h-3.5 w-1/3 rounded-full', 'skeleton__root h-2.5 w-2/3 rounded-full']);
   });
-  it('#199 R19 sin vacunas pinta el aviso en text-15 leading-body text-muted', async () => {
+  it('#199 R19 sin vacunas pinta el aviso en text-15 leading-body text-muted (enmendado por #208 R6)', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: 'family' })] });
     mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [] });
     await renderHealth();
     const empty = await screen.findByTestId('vaccines-empty');
@@ -1486,5 +1469,238 @@ describe('#199 R21: estados de mascotas', () => {
     expect(error.props.accessibilityRole).toBe('alert');
     expect(error).toHaveTextContent('Algo salió mal', { exact: true });
     expect(screen.getByTestId('health-retry')).toHaveTextContent('Reintentar');
+  });
+});
+
+
+const flatVaccineStyle = (style: unknown) => Object.assign({}, ...[style].flat(Infinity));
+
+describe('#208 R5: acceso al alta desde Salud', () => {
+  beforeEach(setupHealth168);
+  it('#208 R5: el owner ve «Agregar vacuna» con la receta compacta y abre el alta de su mascota', async () => {
+    mockSemanticColors = true;
+    await renderHealth();
+    const add = await screen.findByTestId('vaccines-add');
+    expect(screen.getByTestId('vaccines-header').props.className).toBe('flex-row items-center justify-between');
+    expect(elementChild(screen.getByTestId('vaccines-header'), 0).props.testID).toBe('vaccines-title');
+    expect(add.props.className).toContain('rounded-xl bg-accent h-10 gap-1.5 px-3.5');
+    expect(flatVaccineStyle(add.props.style)).toMatchObject({ boxShadow: [{ offsetX: 0, offsetY: 3, blurRadius: 0, spreadDistance: 0, color: 'lip' }] });
+    const label = within(add).getByText('Agregar vacuna', { exact: true });
+    expect(label.props.className).toContain('text-sm font-extrabold text-accent-foreground');
+    const icon = within(add).getByTestId('health-icon-plus', { includeHiddenElements: true });
+    expect(icon.props.size).toBe(16);
+    expect(icon.props.style.color).toBe('accent-foreground');
+    await fireEvent.press(add);
+    expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/pets/[petId]/vaccines/new', params: { petId: 'pet-1' } });
+  });
+  it.each(['family', 'walker', 'vet'] as const)('#208 R5: %s no ve «Agregar vacuna»', async myRole => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole })] });
+    await renderHealth();
+    const header = await screen.findByTestId('vaccines-header');
+    expect(header.children).toHaveLength(1);
+    expect(screen.queryByTestId('vaccines-add')).toBeNull();
+  });
+});
+
+
+describe('#208 R6: vacío de vacunas por rol', () => {
+  beforeEach(() => {
+    setupHealth168();
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [] });
+  });
+  it('#208 R6: el owner sin vacunas ve la tarjeta del canvas con sus cuatro hijos y copy literal', async () => {
+    mockSemanticColors = true;
+    await renderHealth();
+    const card = await screen.findByTestId('vaccines-empty-card');
+    expect(card.props.className).toBe('items-center gap-2.5 rounded-24 bg-surface-secondary px-4.5 pb-4.5 pt-5.5');
+    expect(card.props.style).toEqual({ borderCurve: 'continuous' });
+    expect(card.children).toHaveLength(4);
+    expect(card.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['vaccines-empty-tile', 'vaccines-empty-card-title', 'vaccines-empty-card-body', 'vaccines-empty-action']);
+    const tile = screen.getByTestId('vaccines-empty-tile', { includeHiddenElements: true });
+    expect(tile.props.className).toBe('size-14 items-center justify-center rounded-tile bg-surface');
+    expect(tile.props.style).toEqual({ borderCurve: 'continuous' });
+    const icon = within(tile).getByTestId('health-icon-syringe', { includeHiddenElements: true });
+    expect(icon.props.size).toBe(28);
+    expect(icon.props.style.color).toBe('accent-strong');
+    expect(screen.getByTestId('vaccines-empty-card-title').props.className).toBe('text-17 font-black text-foreground text-center');
+    expect(screen.getByTestId('vaccines-empty-card-title')).toHaveTextContent('Aún no hay vacunas', { exact: true });
+    expect(screen.getByTestId('vaccines-empty-card-body').props.className).toBe('text-sm font-medium leading-note text-muted text-center');
+    expect(screen.getByText('Registra la primera vacuna de Luna y te aviso antes de cada próxima dosis.', { exact: true })).toBeVisible();
+    const action = screen.getByTestId('vaccines-empty-action');
+    expect(action.props.className).toContain('w-full h-14 rounded-16 bg-accent');
+    expect(flatVaccineStyle(action.props.style)).toMatchObject({ boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: 'lip' }] });
+    expect(within(action).getByText('Agregar vacuna', { exact: true }).props.className).toBe('text-17 font-extrabold text-accent-foreground');
+    const plus = within(action).getByTestId('health-icon-plus', { includeHiddenElements: true });
+    expect(plus.props.size).toBe(20);
+    expect(plus.props.style.color).toBe('accent-foreground');
+    expect(screen.queryByTestId('vaccines-empty')).toBeNull();
+  });
+  it('#208 R6: el CTA del vacío abre el alta de vacuna de la mascota', async () => {
+    await renderHealth();
+    await fireEvent.press(await screen.findByTestId('vaccines-empty-action'));
+    expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/pets/[petId]/vaccines/new', params: { petId: 'pet-1' } });
+  });
+  it.each(['family', 'walker', 'vet'] as const)('#208 R6: %s sin vacunas ve el aviso plano sin CTA', async myRole => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole })] });
+    await renderHealth();
+    const empty = await screen.findByTestId('vaccines-empty');
+    expect(empty.props.className).toBe('text-15 leading-body text-muted');
+    expect(empty).toHaveTextContent('Aún no hay vacunas', { exact: true });
+    expect(screen.queryByTestId('vaccines-empty-card')).toBeNull();
+    expect(screen.queryByTestId('vaccines-empty-action')).toBeNull();
+  });
+});
+
+
+const { existsSync: vaccineNoticeExists } = jest.requireActual<typeof import('fs')>('fs');
+function healthNoticeApi() {
+  expect(vaccineNoticeExists('src/hooks/vaccine-reminder-notice.ts')).toBe(true);
+  return jest.requireActual<typeof import('../../hooks/vaccine-reminder-notice')>('../../hooks/vaccine-reminder-notice');
+}
+function clearVaccineReminderNotice() {
+  if (vaccineNoticeExists('src/hooks/vaccine-reminder-notice.ts')) healthNoticeApi().clearVaccineReminderNotice();
+}
+describe('#208 R16: aviso de recordatorio pendiente en Salud', () => {
+  beforeEach(setupHealth168);
+  it('#208 R16: con aviso pendiente de la mascota seleccionada pinta el aviso ámbar literal', async () => {
+    healthNoticeApi().showVaccineReminderNotice('pet-1');
+    mockSemanticColors = true;
+    await renderHealth();
+    const notice = await screen.findByTestId('vaccine-reminder-notice');
+    expect(screen.getByTestId('health-root').props.className).toBe('flex-1');
+    expect(notice.parent).toBe(screen.getByTestId('screen-health').parent);
+    expect(notice.props.className).toBe('absolute left-4 right-4 flex-row items-center gap-2.5 rounded-tile border border-border px-3.5 py-3 bg-category-amber');
+    expect(notice.props.accessibilityRole).toBe('alert');
+    expect(notice.props.accessibilityLiveRegion).toBe('polite');
+    expect(flatVaccineStyle(notice.props.style)).toMatchObject({ bottom: 104, borderCurve: 'continuous', boxShadow: expect.any(Array) });
+    expect(screen.getByTestId('vaccine-reminder-notice-text').props.className).toBe('flex-1 text-13 font-semibold text-foreground');
+    expect(screen.getByText('Guardé la vacuna de Luna, pero no pude crear su recordatorio.', { exact: true })).toBeVisible();
+    const action = screen.getByTestId('vaccine-reminder-notice-action');
+    expect(action.props.className).toBe('min-h-11 justify-center');
+    expect(within(action).getByText('Crear ahora', { exact: true }).props.className).toBe('text-13 font-extrabold text-category-amber-strong');
+    const icon = within(notice).getByTestId('health-icon-bell-off', { includeHiddenElements: true });
+    expect([icon.props.size, icon.props.style.color]).toEqual([20, 'category-amber-strong']);
+  });
+  it('#208 R16: «Crear ahora» limpia el aviso y abre Agregar recordatorio', async () => {
+    healthNoticeApi().showVaccineReminderNotice('pet-1');
+    await renderHealth();
+    await fireEvent.press(await screen.findByTestId('vaccine-reminder-notice-action'));
+    await waitFor(() => expect(screen.queryByTestId('vaccine-reminder-notice')).toBeNull());
+    expect(mockRouter.push).toHaveBeenCalledWith('/add-reminder');
+  });
+  it('#208 R16: un aviso de otra mascota no se pinta', async () => {
+    healthNoticeApi().showVaccineReminderNotice('pet-2');
+    await renderHealth();
+    await screen.findByTestId('vaccines-section');
+    expect(screen.queryByTestId('vaccine-reminder-notice')).toBeNull();
+  });
+});
+
+
+describe('#222 R7: Encabezado solo para lectores de pantalla', () => {
+  beforeEach(setupHealth168);
+
+  it('#222 R7: Salud anuncia su encabezado sin texto visible', async () => {
+    await renderHealth();
+    // docs/conventions.md §Esperas: esperar al mismo nodo que se aserta.
+    await waitFor(() => expect(screen.queryByRole('header', { name: 'Salud' })).not.toBeNull());
+    const heading = screen.getByTestId('health-heading');
+    expect(screen.getByRole('header', { name: 'Salud' })).toBe(heading);
+    expect(heading.props.accessible).toBe(true);
+    expect(heading.props.className).toBe('absolute size-px');
+    expect(heading.children).toEqual([]);
+  });
+
+  it('#222 R7: el encabezado sale en inglés', async () => {
+    await renderHealth('en');
+    // docs/conventions.md §Esperas: el idioma se observa en el encabezado.
+    await waitFor(() => expect(screen.queryByRole('header', { name: 'Health' })).not.toBeNull());
+    expect(screen.getByRole('header', { name: 'Health' })).toBe(screen.getByTestId('health-heading'));
+  });
+
+  it('#222 R7: el encabezado existe en todos los estados', async () => {
+    for (const state of HEALTH_BRANCHES_168) {
+      setupHealth168();
+      mockListPets.mockImplementation(async () => state.state);
+      await renderHealth();
+      await screen.findByTestId(state.branch);
+      // docs/conventions.md §Esperas: se espera al encabezado de esta rama.
+      await waitFor(() => expect(screen.queryByTestId('health-heading')).not.toBeNull());
+      expect(screen.getByRole('header', { name: 'Salud' })).toBe(screen.getByTestId('health-heading'));
+      await cleanup();
+    }
+  });
+
+  it('#222 R7: el encabezado es el primer hijo', async () => {
+    await renderHealth();
+    // docs/conventions.md §Esperas: la posición se aserta tras montar el nodo.
+    await waitFor(() => expect(screen.queryByTestId('health-heading')).not.toBeNull());
+    const heading = screen.getByTestId('health-heading');
+    expect(screen.getByTestId('health-root').children[0]).toBe(heading);
+  });
+});
+
+
+describe('#222 R3: Salud', () => {
+  beforeEach(setupHealth168);
+
+  it('#222 R3: sin título visible y sin health-header', async () => {
+    await renderHealth();
+    // docs/conventions.md §Esperas: anclar ausencias al contenido cargado.
+    await screen.findByTestId('health-content');
+    expect(screen.queryByTestId('health-title')).toBeNull();
+    expect(screen.queryByTestId('health-header')).toBeNull();
+    expect(screen.queryByText('Salud')).toBeNull();
+  });
+
+  it('#222 R3: con mascotas la cabecera fija va tras el scroll', async () => {
+    for (const notice of [false, true]) {
+      setupHealth168();
+      clearVaccineReminderNotice();
+      if (notice) healthNoticeApi().showVaccineReminderNotice('pet-1');
+      await renderHealth();
+      // docs/conventions.md §Esperas: observar la rama antes del orden.
+      await screen.findByTestId(notice ? 'vaccine-reminder-notice' : 'health-content');
+      expect(screen.getByTestId('health-root').children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(notice
+        ? ['health-heading', 'screen-health', 'health-pet-header', 'vaccine-reminder-notice']
+        : ['health-heading', 'screen-health', 'health-pet-header']);
+      await cleanup();
+    }
+  });
+
+  it('#222 R3: el scroll arranca bajo la cabecera con mascotas y arriba sin ellas', async () => {
+    for (const state of HEALTH_BRANCHES_168) {
+      setupHealth168();
+      mockListPets.mockImplementation(async () => state.state);
+      await renderHealth();
+      // docs/conventions.md §Esperas: la rama confirma el estado final.
+      await screen.findByTestId(state.branch);
+      expect(screen.getByTestId('screen-health').props.contentContainerStyle).toEqual({ padding: 24, gap: 16, paddingTop: state.name === 'con mascotas' ? 121 : 52, paddingBottom: 120 });
+      if (state.name === 'con mascotas') expect(screen.queryByTestId('health-pet-header')).not.toBeNull();
+      else expect(screen.queryByTestId('health-pet-header')).toBeNull();
+      await cleanup();
+    }
+  });
+
+  it('#222 R3: health-content es el único hijo del scroll', async () => {
+    await renderHealth();
+    // docs/conventions.md §Esperas: el contenido es el nodo asertado.
+    const content = await screen.findByTestId('health-content');
+    expect(content.parent!.parent).toBe(screen.getByTestId('screen-health'));
+    expect(content.parent!.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['health-content']);
+    expect(screen.queryByTestId('pet-hero')).toBeNull();
+  });
+
+  it('#222 R3: seis mascotas sin pista, siete con ella', async () => {
+    for (const count of [6, 7]) {
+      setupHealth168();
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: Array.from({ length: count }, (_, index) => makePet({ id: `pet-${index + 1}` })) });
+      await renderHealth();
+      // docs/conventions.md §Esperas: esperar al selector que lleva la pista.
+      await screen.findByTestId('pet-switcher-scroll');
+      expect(screen.queryByTestId('health-pet-header')).not.toBeNull();
+      expect(screen.getByTestId('pet-switcher-scroll').props.accessibilityLabel).toBe(count === 6 ? undefined : 'Mascotas, desliza para ver más');
+      await cleanup();
+    }
   });
 });
