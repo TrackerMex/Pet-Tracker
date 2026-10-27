@@ -14,7 +14,13 @@ tags: [mobile, spec, pet-members, invites, expo-router, heroui-native]
 > salvo que empiecen por `specs/`, `docs/` o `backend-pet-tracker/`.
 > Contrato de backend: feature #211 (ya en `dev`), resumido en design.md §1.
 > Artboards: `specs/mobile-pet-members/canvas/*.dc.html` (G1 aprobado sobre el
-> canvas v140; ver design.md §2 sobre la versión congelada).
+> canvas v140 el 2026-10-26 a las 22:47 UTC; los nueve ficheros coinciden por
+> sha256 con la copia local v140 `1793036268-d302`, ver design.md §2).
+>
+> Orden de merge: #214 va **detrás de #218** (`mobile-sheet-surface`). La rama de
+> #214 empieza con el Paso 0 de tasks.md (merge de `dev` con #218 dentro y
+> re-medida de las anclas de design.md §7). Las recetas de sheet de R11 y R17
+> son las que #218 deja en `src/screens/pairing/index.tsx`.
 >
 > Regla de copy: todo texto visible sale del catálogo `src/i18n/catalog.ts`
 > por `t('<clave>'…)` (`useTranslate()` de `src/providers/language-provider.tsx`).
@@ -88,15 +94,28 @@ tags: [mobile, spec, pet-members, invites, expo-router, heroui-native]
 
   En `src/app/_layout.tsx`, dentro de `Stack.Protected guard={status === 'authenticated'}`,
   tres `<Stack.Screen name="…" options={{ headerShown: false }} />` en este orden
-  — `pets/[petId]/members`, `pets/[petId]/invite`, `join-pet` — entre
-  `meals-history` y `edit-profile`. `edit-profile` sigue siendo el último hijo.
+  — `pets/[petId]/members`, `pets/[petId]/invite`, `join-pet` — **justo antes
+  de** `<Stack.Screen name="edit-profile" …>`. Sobre la base `8b4cb1bd` eso las
+  deja entre `meals-history` y `edit-profile`; si #208 entra antes, su
+  `pets/[petId]/vaccines/new` sigue justo tras `meals-history` y las tres de
+  #214 van detrás de ella; si #209 entra antes, su `nutrition-profile` sigue
+  justo tras `edit-profile`. Ninguna aserción de #214 fija un índice absoluto.
   Test: `src/app/__tests__/layout.test.tsx`,
-  `it('R3: registra members, invite y join-pet antes de edit-profile sin cabecera nativa', …)`
-  (aserta `name` y `options` de los hijos de índice base 0 13, 14 y 15 del grupo
-  protegido, que el anterior a ellos es `meals-history` y que el de índice 16, el
-  último, es `edit-profile`), más las enmiendas de design.md §7; y
-  `src/app/__tests__/detail-stack.guard.test.tsx`: las tres hrefs nuevas en el
-  `it.each` `'#194 R4: cierra sesión en %s, aterriza en welcome y no reabre el detalle'`.
+  `it('R3: registra members, invite y join-pet justo antes de edit-profile sin cabecera nativa', …)`,
+  con el mismo arnés que `'#194 R4: edit-profile es la última pantalla protegida'`
+  (grupo `Children.toArray(stack?.children)[4]`, `names` = los `props.name` de
+  sus hijos): aserta
+  `names.slice(names.indexOf('edit-profile') - 3, names.indexOf('edit-profile'))`
+  `toEqual(['pets/[petId]/members', 'pets/[petId]/invite', 'join-pet'])` y que
+  cada uno de esos tres hijos tiene `options` `toEqual({ headerShown: false })`.
+  Que `edit-profile` sea el último lo sigue asertando el `it` `#194 R4` con
+  `.at(-1)`, que #214 no toca. Más las enmiendas de design.md §7.1 (filas
+  `layout.test.tsx` y `detail-stack.guard.test.tsx`); y
+  `src/app/__tests__/detail-stack.guard.test.tsx`: las tres hrefs nuevas
+  `'/pets/pet-1/members', '/pets/pet-1/invite', '/join-pet', // #214 R3` en una
+  línea propia justo antes de `'/edit-profile', // #194 R4` en la tabla del `it.each`
+  `'#194 R4: cierra sesión en %s, aterriza en welcome y no reabre el detalle'`,
+  cuyo título pasa a terminar en `(enmendado por #214 R3)`.
 
 ## Perfil
 
@@ -104,24 +123,52 @@ tags: [mobile, spec, pet-members, invites, expo-router, heroui-native]
   THE SYSTEM SHALL renderizar en `profile-links` una tercera fila
   `profile-links-row-2` (className `flex-row gap-2`) con un único hijo, el
   Pressable `members-link`, que es una instancia de un componente local nuevo
-  `ProfileWideTile` de `src/screens/profile/index.tsx`:
-  - className exacto `flex-row items-center gap-2.5 rounded-tile p-3 bg-category-rose`
-    (compuesto con `` `… ${CATEGORY_SLOTS[slot].surface}` ``),
-    `style={CONTINUOUS_CORNER}`, `hitSlop={TOUCH_SLOP}`, `accessibilityRole="button"`;
-  - hijos en orden: `members-link-icon` (View oculta a accesibilidad con `Users`
-    de `reicon-react-native`, size 22, color `category-rose-strong` de
-    `useThemeColors`), `members-link-text` (View `flex-1 gap-0.5`) con
-    `members-link-label` = `t('profile.membersLink')` («Familia»,
-    `text-sm font-extrabold text-category-rose-strong`) y, cuando R5 lo pide,
-    `members-link-subtitle` (`text-xs font-semibold text-category-rose-strong`),
-    y por último `members-link-chevron` (View oculta a accesibilidad con
-    `ChevronRight`, size 18, strokeWidth 2.4, mismo color);
-  - al pulsarlo, `router.push(`/pets/${pet.id}/members`)`.
+  `ProfileWideTile` de `src/screens/profile/index.tsx` con las props
+  `{ testID, slot, icon, label, subtitle, color, onPress }` (`slot: CategorySlot`,
+  `icon: ReactNode`, `subtitle: string | null`, `color: string`):
+  - Pressable con `testID={testID}`, `accessibilityRole="button"`,
+    `hitSlop={TOUCH_SLOP}`, `style={CONTINUOUS_CORNER}` y
+    `` className={`flex-row items-center gap-2.5 rounded-tile p-3 ${CATEGORY_SLOTS[slot].surface}`} ``
+    (#64 R9 deja las clases de categoría como literal solo en
+    `src/utils/category-palette.ts`: el fichero de Perfil no escribe
+    `bg-category-rose` ni `text-category-rose-strong`; para `slot="rose"` la
+    clase resuelta es `bg-category-rose`);
+  - hijos en orden: `` `${testID}-icon` `` (View con `accessibilityElementsHidden`
+    e `importantForAccessibility="no-hide-descendants"` que envuelve `icon`),
+    `` `${testID}-text` `` (View `flex-1 gap-0.5`) con `` `${testID}-label` ``
+    (`` className={`text-sm font-extrabold ${CATEGORY_SLOTS[slot].ink}`} ``) y,
+    solo si `subtitle !== null`, `` `${testID}-subtitle` ``
+    (`` className={`text-xs font-semibold ${CATEGORY_SLOTS[slot].ink}`} ``), y
+    por último `` `${testID}-chevron` `` (View oculta a accesibilidad como la del
+    icono, con `<ChevronRight size={18} strokeWidth={2.4} color={color} />`);
+  - `members-link` es
+    `<ProfileWideTile testID="members-link" slot="rose" icon={<Users size={22} strokeWidth={2.2} color={rose} />} label={t('profile.membersLink')} subtitle={membersSummary} color={rose} onPress={() => router.push(`/pets/${pet.id}/members` as Href)} />`,
+    con `membersSummary` el texto de R5 o `null`, y `rose` el color
+    `'category-rose-strong'` añadido a la llamada a `useThemeColors` existente,
+    que pasa de
+    `const [blue, green, amber, violet, accentStrong, accentForeground] = useThemeColors(['category-blue-strong', 'category-green-strong', 'category-amber-strong', 'category-violet-strong', 'accent-strong', 'accent-foreground']);`
+    a
+    `const [blue, green, amber, violet, rose, accentStrong, accentForeground] = useThemeColors(['category-blue-strong', 'category-green-strong', 'category-amber-strong', 'category-violet-strong', 'category-rose-strong', 'accent-strong', 'accent-foreground']);`.
+
+  La línea de import de `reicon-react-native` de Perfil pasa de
+  `import { Bell, Camera, FileText, Map as MapIcon, Plus, Wifi } from 'reicon-react-native';`
+  a, literal y en este orden,
+  `import { Bell, Camera, ChevronRight, FileText, Key, Map as MapIcon, Plus, Users, Wifi } from 'reicon-react-native';`
+  (R4 añade `ChevronRight` y `Users`; R6, `Key`). Perfil importa además
+  `import { listPetMembers } from '../../api/pet-members';` y suma `memberKeys`
+  a su import de `../../api/query-keys`. Ningún comentario nuevo de
+  `src/screens/profile/index.tsx` cita `#214` (ver R24).
 
   WHILE Perfil no tiene mascota THE SYSTEM SHALL no renderizar `members-link`.
   Test: `src/screens/profile/index.test.tsx`,
   `it('R4: con mascota añade la fila de Familia a ancho completo y navega a members', …)`
-  y `it('R4: sin mascota no hay tarjeta de Familia', …)`.
+  (aserta que `profile-links-row-2` tiene un solo hijo, `members-link`, que
+  `members-link` tiene la className resuelta
+  `` `flex-row items-center gap-2.5 rounded-tile p-3 ${CATEGORY_SLOTS.rose.surface}` ``,
+  que `members-link-label` tiene `` `text-sm font-extrabold ${CATEGORY_SLOTS.rose.ink}` ``,
+  y que al pulsar se llama a `router.push('/pets/pet-1/members')`; las clases se
+  escriben con `CATEGORY_SLOTS` importado de `../../utils/category-palette`,
+  nunca como literal) y `it('R4: sin mascota no hay tarjeta de Familia', …)`.
 
 - **R5 (subtítulo de Familia)**: WHEN la query `memberKeys.list(pet.id)` de
   Perfil (`listPetMembers`, `enabled` solo con `pet`) resuelve `ok` con
@@ -145,17 +192,23 @@ tags: [mobile, spec, pet-members, invites, expo-router, heroui-native]
 - **R6 (entrada «Unirme con código» en Perfil)**: THE SYSTEM SHALL renderizar
   siempre, con o sin mascota, como última fila de `profile-links` una fila de un
   hijo — `profile-links-row-3` con mascota, `profile-links-row-1` sin ella — con
-  el `ProfileWideTile` `join-pet-link` en el hueco ámbar: className
-  `flex-row items-center gap-2.5 rounded-tile p-3 bg-category-amber`, icono
-  `join-pet-link-icon` (`Key`, size 22, `category-amber-strong`), label
-  `join-pet-link-label` = `t('joinPet.title')` («Unirme con código»), subtítulo
-  `join-pet-link-subtitle` = `t('joinPet.invitedPrompt')`
-  («¿Te invitaron a cuidar una mascota?»), ambos `text-category-amber-strong`, y
-  chevron `join-pet-link-chevron`. Al pulsarlo, `router.push('/join-pet')`. La
-  me-card y el resto de Perfil no cambian.
+  el `ProfileWideTile` (R4) `join-pet-link` en el hueco ámbar:
+  `<ProfileWideTile testID="join-pet-link" slot="amber" icon={<Key size={22} strokeWidth={2.2} color={amber} />} label={t('joinPet.title')} subtitle={t('joinPet.invitedPrompt')} color={amber} onPress={() => router.push('/join-pet' as Href)} />`,
+  con `amber` el color `'category-amber-strong'` que Perfil ya pide a
+  `useThemeColors`. Label `join-pet-link-label` = «Unirme con código»; subtítulo
+  `join-pet-link-subtitle` = «¿Te invitaron a cuidar una mascota?»; clases
+  resueltas `` `… ${CATEGORY_SLOTS.amber.surface}` `` para el Pressable y
+  `` `${CATEGORY_SLOTS.amber.ink}` `` para los dos textos (ninguna escrita como
+  literal en Perfil, #64 R9). La misma instancia (constante local `joinPetLink`)
+  se usa en las dos ramas. La me-card y el resto de Perfil no cambian.
   Test: `src/screens/profile/index.test.tsx`,
   `it('R6: con mascota la cuarta fila es Unirme con código y navega a join-pet', …)`
-  y `it('R6: sin mascota la segunda fila es Unirme con código', …)`.
+  (aserta que `profile-links-row-3` tiene un solo hijo, `join-pet-link`, con la
+  className `` `flex-row items-center gap-2.5 rounded-tile p-3 ${CATEGORY_SLOTS.amber.surface}` ``,
+  que `join-pet-link-subtitle` tiene `` `text-xs font-semibold ${CATEGORY_SLOTS.amber.ink}` ``
+  y que al pulsar se llama a `router.push('/join-pet')`) y
+  `it('R6: sin mascota la segunda fila es Unirme con código', …)` (aserta
+  `profile-links-row-1` con `join-pet-link` como único hijo).
 
 ## Inicio sin mascotas
 
@@ -183,26 +236,43 @@ tags: [mobile, spec, pet-members, invites, expo-router, heroui-native]
 - **R8 (carga y error)**: THE SYSTEM SHALL cargar en `PetMembersScreen` tres
   queries — `petKeys.detail(petId)` con `getPet`, `memberKeys.list(petId)` con
   `listPetMembers` y `userKeys.me()` con `getMe` — y:
-  - WHILE alguna está pendiente: renderizar `pet-members-loading` (`Skeleton` de
-    HeroUI) y ningún `member-row-*`;
+  - WHILE alguna está pendiente: renderizar
+    `<Skeleton testID="pet-members-loading" className="h-40 w-full rounded-card" />`
+    (`Skeleton` de `heroui-native`) y ningún `member-row-*`;
   - IF alguna resuelve `unauthorized` THEN llamar a `signOut()`;
   - IF alguna resuelve `unreachable` THEN renderizar `pet-members-error` con
     `pet-members-error-text` = `t('common.cannotReachServer')`;
   - IF alguna resuelve `error` o `missing-config` y ninguna `unreachable` THEN
     `pet-members-error-text` = `t('common.somethingWentWrong')`;
-  - en los dos casos de error, el botón `pet-members-retry` (`t('common.retry')`)
-    llama a `refetch()` de cada query que no es `ok`.
+  - en los dos casos de error, el botón `pet-members-retry` copia el reintento de
+    `src/screens/meal-schedule/index.tsx`: una función local `retryAll()` que
+    llama a `refetch()` de cada una de las tres queries cuyo `data?.kind` no es
+    `'ok'`, y el botón
+    `<Button testID="pet-members-retry" onPress={retryAll}>` con
+    `{t('common.retry')}` como único hijo y sin `className`, `style` ni
+    `variant` (sin labio: lo exige `#177 R8.4` de
+    `src/__tests__/chunky-cta-canvas-fidelity.test.ts`, que veta `chunkyLip` y
+    `border-b-` en todo `-retry`).
 
   Raíz: View `screen-pet-members` con ScrollView (`contentContainerStyle`
   `{ paddingHorizontal: 20, paddingTop: insets.top + 8, paddingBottom: insets.bottom + 24, gap: 12, flexGrow: 1 }`);
   cabecera `ScreenHeader testID="pet-members-header" backFallback="/profile"`
   con `title={t('members.titleOf', { petName: pet.name })}` (tamaño por defecto 26)
-  y `titlePlaceholder` mientras `pet` no está.
+  y
+  `titlePlaceholder={pet === null ? <Skeleton testID="pet-members-header-skeleton" className="h-8 w-36 rounded-xl" /> : undefined}`.
   Test: `src/screens/pet-members/index.test.tsx`,
-  `it('R8: muestra el skeleton mientras carga', …)`,
-  `it('R8: unreachable dice No se pudo conectar con el servidor y Reintentar repite la carga', …)`,
-  `it('R8: error dice Algo salió mal', …)`,
-  `it('R8: unauthorized cierra sesión', …)`,
+  `it('R8: muestra el skeleton mientras carga', …)` (las tres queries con
+  promesa pendiente: `pet-members-loading` y `pet-members-header-skeleton`
+  visibles, ningún `member-row-*`);
+  `it.each(['pet', 'members', 'me'] as const)('R8: %s unreachable dice No se pudo conectar con el servidor y Reintentar repite solo esa carga', …)`:
+  la query nombrada (`pet` = `getPet`, `members` = `listPetMembers`,
+  `me` = `getMe`) resuelve `{ kind: 'unreachable', message: 'x' }` y las otras dos
+  `ok`; aserta el texto, pulsa `pet-members-retry` y aserta que el doble de la
+  query nombrada tiene 2 llamadas y los otros dos, 1;
+  `it.each(['pet', 'members', 'me'] as const)('R8: %s error dice Algo salió mal', …)`
+  (misma tabla, `{ kind: 'error' }`);
+  `it.each(['pet', 'members', 'me'] as const)('R8: %s unauthorized cierra sesión', …)`
+  (misma tabla, `{ kind: 'unauthorized' }`; aserta una llamada a `signOut`);
   `it('R8: el título es Familia de Rocky', …)`.
 
 - **R9 (filas de miembros)**: WHEN las tres queries de R8 son `ok` THE SYSTEM
@@ -218,9 +288,16 @@ tags: [mobile, spec, pet-members, invites, expo-router, heroui-native]
     vuelta a empezar (constante `MEMBER_AVATAR_SLOTS` del fichero de la pantalla);
   - `member-row-<userId>-name` = `` `${firstName} ${lastName}`.trim() ``;
   - `member-row-<userId>-you` = `t('members.you')` («Tú») solo en la fila de `me.id`;
-  - `member-row-<userId>-role`: píldora `rounded-full px-2 py-0.75` con
-    `t('members.roleOwner')` («Dueño», hueco `green`) si `role === 'owner'`, o
-    `t('members.roleFamily')` («Familia», hueco `rose`) para `family`, `walker` y `vet`.
+  - `member-row-<userId>-role`: píldora View
+    `` className={`rounded-full px-2 py-0.75 ${CATEGORY_SLOTS[member.role === 'owner' ? 'green' : 'rose'].surface}`} ``
+    con un `Text`
+    `` className={`text-xs font-extrabold ${CATEGORY_SLOTS[member.role === 'owner' ? 'green' : 'rose'].ink}`} ``
+    cuyo hijo es, literal,
+    `{member.role === 'owner' ? t('members.roleOwner') : t('members.roleFamily')}`
+    («Dueño» para `owner`; «Familia» para `family`, `walker` y `vet`). Las dos
+    llamadas son `t('<clave>'` directas: `checkUses` de
+    `src/__tests__/ui-language.test.ts` solo ve llamadas directas, así que no
+    vale una clave calculada (`t(roleKey)`) ni un mapa de claves.
 
   THE SYSTEM SHALL no mostrar en ninguna parte de la pantalla un correo
   electrónico: la API no lo envía y la pantalla no lo pide a otra fuente
@@ -255,16 +332,31 @@ tags: [mobile, spec, pet-members, invites, expo-router, heroui-native]
   `it('R10: walker tampoco ve acciones de dueño', …)`.
 
 - **R11 (quitar miembro)**: WHEN el dueño pulsa `member-row-<userId>-remove` THE
-  SYSTEM SHALL abrir el `BottomSheet` `member-remove-sheet` (de
-  `@expo/ui/community/bottom-sheet`, `index` 0, como el de desvincular de
-  `src/screens/pairing/index.tsx`) con, en orden: `member-remove-sheet-avatar`
-  (círculo `size-14` con las iniciales y el hueco de la fila),
-  `member-remove-sheet-title` = `t('members.removeTitle', { name })`
-  («¿Quitar a Luis Ortega?», `accessibilityRole="header"`),
-  `member-remove-sheet-body` = `t('members.removeBody', { firstName, petName })`,
-  `member-remove-sheet-confirm` (`bg-danger`, `chunkyLip.danger`, texto
-  `t('members.removeConfirm', { firstName })` «Quitar a Luis») y
-  `member-remove-sheet-cancel` (`t('members.cancel')` «Cancelar»).
+  SYSTEM SHALL abrir el sheet de quitar, que sigue la receta que #218 deja en
+  `src/screens/pairing/index.tsx` (design.md §3, «Sheets»):
+  - `BottomSheet` de `@expo/ui/community/bottom-sheet` con
+    `index={removing ? 0 : -1}`, `enablePanDownToClose`,
+    `onClose={() => setRemoving(null)}`, `snapPoints={['50%', '100%']}` y
+    `backgroundStyle={{ backgroundColor: surface }}`, donde `surface` sale de
+    `const [surface] = useThemeColors(['surface']);` (una sola llamada para los
+    dos sheets de la pantalla);
+  - dentro, `BottomSheetView` y la View `member-remove-sheet` con className
+    `items-center gap-3 bg-surface px-5 pb-9 pt-3`, que contiene, en orden:
+    `member-remove-sheet-avatar` (círculo `size-14 items-center justify-center rounded-full`
+    con el `surface` del hueco de la fila y las iniciales en `text-xl font-black`
+    con su `ink`), `member-remove-sheet-title` = `t('members.removeTitle', { name })`
+    («¿Quitar a Luis Ortega?», `accessibilityRole="header"`,
+    `text-center text-xl font-black text-foreground`),
+    `member-remove-sheet-body` = `t('members.removeBody', { firstName, petName })`
+    (`max-w-80 text-center text-sm leading-note text-muted`),
+    `member-remove-sheet-confirm` (Button `w-full h-13.5 rounded-16 bg-danger`,
+    `style={chunkyLip.danger}`, `isDisabled={busy}`, con un `Text`
+    `text-base font-extrabold text-danger-foreground` =
+    `t('members.removeConfirm', { firstName })` «Quitar a Luis») y
+    `member-remove-sheet-cancel` (Button `variant="outline"`,
+    `w-full h-13.5 rounded-16 border-2 border-lip-gray bg-surface`,
+    `style={chunkyLip.neutral}`, con un `Text` `text-base font-extrabold text-foreground`
+    = `t('members.cancel')` «Cancelar»).
   - WHEN se pulsa cancelar THE SYSTEM SHALL cerrar el sheet (`index` -1) sin
     llamar a `removePetMember`.
   - WHEN se pulsa confirmar THE SYSTEM SHALL llamar una sola vez a
@@ -343,16 +435,29 @@ tags: [mobile, spec, pet-members, invites, expo-router, heroui-native]
   - `error`/`missing-config` → `t('common.somethingWentWrong')`;
   - `unauthorized` → `signOut()`.
 
-  WHEN se pulsa cualquier botón de acción de la pantalla (Quitar, confirmar,
-  Revocar, Invitar, Salir) THE SYSTEM SHALL borrar `pet-members-action-error`
-  antes de la nueva llamada.
+  WHEN se pulsa cualquiera de los cinco botones de acción de la pantalla
+  (`member-row-<userId>-remove`, `member-remove-sheet-confirm`,
+  `invite-row-<id>-revoke`, `pet-members-invite-cta`, `pet-members-leave`) THE
+  SYSTEM SHALL borrar `pet-members-action-error` antes de abrir el sheet o de
+  la nueva llamada.
   Test: `src/screens/pet-members/index.test.tsx`:
   `'R13: ok invalida invitaciones y abre invite con sus parámetros'`,
   `'R13: invites-limit avisa del máximo de invitaciones'`,
   `'R13: members-limit avisa del máximo de personas'`, `'R13: unreachable avisa'`,
   `'R13: error avisa'`, `'R13: unauthorized cierra sesión'`,
-  `'R13: doble toque crea una sola invitación'`,
-  `'R13: un toque nuevo borra el aviso anterior'`.
+  `'R13: doble toque crea una sola invitación'`, y
+  `it.each([['member-row-user-2-remove'], ['member-remove-sheet-confirm'], ['invite-row-inv-1-revoke'], ['pet-members-invite-cta'], ['pet-members-leave']])('R13: pulsar %s borra el aviso anterior', …)`
+  (una fila por botón: cada caso deja primero un `pet-members-action-error`
+  visible con una acción que falla —`createPetInvite` `unreachable`—, prepara el
+  estado que el botón necesita —dueño para los cuatro primeros, con el sheet de
+  quitar abierto para `member-remove-sheet-confirm`; family para
+  `pet-members-leave`, donde el aviso previo sale de un confirmar de salir
+  `unreachable`—, pulsa el botón y aserta
+  `screen.queryByTestId('pet-members-action-error')` `null`; para los tres
+  botones que llaman a la API, el doble de esa llamada devuelve en el caso una
+  promesa que no se resuelve, de modo que el aviso desaparece por el toque y no
+  por la respuesta). Los dobles del fichero usan `userId: 'user-2'` para el
+  miembro no dueño (Luis Ortega) e `id: 'inv-1'` para la invitación pendiente.
 
 ## Pantalla Invitar (`PetInviteScreen`)
 
@@ -395,7 +500,10 @@ tags: [mobile, spec, pet-members, invites, expo-router, heroui-native]
   `it('R14: formatInviteCode deja igual cualquier otra longitud', …)`.
 
 - **R15 (Compartir y Copiar)**: THE SYSTEM SHALL renderizar `pet-invite-share`
-  (Button `w-full h-14 rounded-16 bg-accent`, `chunkyLip.primary`, icono `Share`,
+  (Button `w-full h-14 rounded-16 bg-accent`, `chunkyLip.primary`, icono `Share`
+  de `reicon-react-native` importado como
+  `import { Copy, Lock, Share as ShareIcon } from 'reicon-react-native';` para no
+  chocar con `Share` de `react-native`,
   texto `t('invite.share')` «Compartir», `text-17 font-extrabold text-accent-foreground`)
   y debajo `pet-invite-copy` (Button `variant="outline"`,
   `w-full h-13.5 rounded-16 border-2 border-lip-gray bg-surface`,
@@ -405,7 +513,8 @@ tags: [mobile, spec, pet-members, invites, expo-router, heroui-native]
     `Share.share({ message: shareText })` de `react-native` una vez por toque; un
     rechazo de la promesa no muestra error ni rompe la pantalla.
   - WHEN se pulsa `pet-invite-copy` THE SYSTEM SHALL llamar a
-    `Clipboard.setStringAsync(formatInviteCode(code))` de `expo-clipboard` y, cuando
+    `Clipboard.setStringAsync(formatInviteCode(code))` de
+    `import * as Clipboard from 'expo-clipboard';` y, cuando
     la promesa resuelve, cambiar `pet-invite-copy-label` de `t('invite.copy')`
     («Copiar código») a `t('invite.copied')` («Código copiado») hasta que la
     pantalla se desmonte; si rechaza, la etiqueta no cambia.
@@ -432,7 +541,11 @@ tags: [mobile, spec, pet-members, invites, expo-router, heroui-native]
     y el Button `pet-members-leave` (`variant="outline"`,
     `w-full h-13.5 rounded-16 border-2 border-danger bg-surface`,
     `style={chunkyLip.neutral}`, icono `Logout` color `danger`, texto
-    `t('members.leave')` «Salir de esta mascota», `text-base font-extrabold text-danger`).
+    `t('members.leave')` «Salir de esta mascota», `text-base font-extrabold text-danger`),
+    cuyo `onPress` borra `pet-members-action-error` (R13) y abre el sheet de R17.
+
+  El mismo `ownerName` (o su ausencia) decide el cuerpo del sheet de salir
+  (R17).
 
   WHILE `pet.myRole === 'owner'` THE SYSTEM SHALL no renderizar
   `pet-members-pet-avatar`, `pet-members-owner-note`, `pet-members-leave-hint` ni
@@ -443,11 +556,36 @@ tags: [mobile, spec, pet-members, invites, expo-router, heroui-native]
   `it('R16: el dueño no ve Salir', …)`.
 
 - **R17 (salir)**: WHEN se pulsa `pet-members-leave` THE SYSTEM SHALL abrir el
-  BottomSheet `member-leave-sheet` con `member-leave-sheet-title` =
-  `t('members.leaveTitle', { petName })` (`accessibilityRole="header"`),
-  `member-leave-sheet-body` = `t('members.leaveBody')`,
-  `member-leave-sheet-confirm` (`bg-danger`, `t('members.leaveConfirm')` «Salir»)
-  y `member-leave-sheet-cancel` (`t('members.cancel')`).
+  sheet de salir, con la misma receta que el de R11:
+  - `BottomSheet` con `index={leaveOpen ? 0 : -1}`, `enablePanDownToClose`,
+    `onClose={() => setLeaveOpen(false)}`, `snapPoints={['50%', '100%']}` y
+    `backgroundStyle={{ backgroundColor: surface }}` (el mismo `surface` de R11);
+  - dentro, `BottomSheetView` y la View `member-leave-sheet` con className
+    `items-center gap-3 bg-surface px-5 pb-9 pt-3`, que contiene, en orden:
+    - `member-leave-sheet-title` = `t('members.leaveTitle', { petName })`
+      («¿Salir de la familia de Rocky?», `accessibilityRole="header"`,
+      `text-center text-xl font-black text-foreground`);
+    - `member-leave-sheet-body` (`max-w-80 text-center text-sm leading-note text-muted`):
+      con dueño en la lista (el `ownerName` de R16),
+      `t('members.leaveBody', { petName, ownerName })` («Dejarás de ver a Rocky y
+      de recibir sus avisos. Para volver, Ana García tendrá que invitarte otra
+      vez.»); sin ningún miembro `owner` en la lista,
+      `t('members.leaveBodyNoOwner', { petName })` («Dejarás de ver a Rocky y de
+      recibir sus avisos. Para volver, necesitarás una invitación nueva.»; variante
+      **sin artboard**, ver design.md §5.1). Las dos son llamadas `t('<clave>'`
+      directas en un ternario;
+    - `member-leave-sheet-confirm` (Button `w-full h-13.5 rounded-16 bg-danger`,
+      `style={chunkyLip.danger}`, `isDisabled={busy}`, con un `Text`
+      `text-base font-extrabold text-danger-foreground` =
+      `t('members.leaveConfirm')` «Salir de esta mascota»);
+    - `member-leave-sheet-cancel` (Button `variant="outline"`,
+      `w-full h-13.5 rounded-16 border-2 border-lip-gray bg-surface`,
+      `style={chunkyLip.neutral}`, con un `Text` `text-base font-extrabold text-foreground`
+      = `t('members.cancel')` «Cancelar»).
+
+  `members.leave` (el botón de R16) y `members.leaveConfirm` tienen el mismo
+  literal es-MX; los tests de R16 y R17 localizan cada botón por `testID`, nunca
+  por texto.
   - Cancelar cierra sin llamar a la API.
   - Confirmar llama una vez a `removePetMember(baseUrl, token, petId, me.id)` y:
     - `ok` → `queryClient.removeQueries({ queryKey: petKeys.detail(petId) })`,
@@ -459,7 +597,13 @@ tags: [mobile, spec, pet-members, invites, expo-router, heroui-native]
     - `rejected`, `error` o `missing-config` → sheet abierto y `t('common.somethingWentWrong')`;
     - `unauthorized` → `signOut()`.
   Test: `src/screens/pet-members/index.test.tsx`,
-  `it('R17: el sheet de salir nombra a la mascota', …)`,
+  `it('R17: el sheet de salir nombra a la mascota y al dueño', …)` (aserta el
+  título y el cuerpo es-MX completos de arriba; en la vista de familia, los
+  dobles son `pet.myRole: 'family'`, `getMe` = `user-2` Luis Ortega y la lista
+  `[user-1 Ana García owner, user-2 Luis Ortega family]`, con mascota Rocky),
+  `it('R17: sin dueño en la lista el cuerpo usa la variante sin nombre', …)`
+  (la lista no tiene ningún `owner`; aserta el cuerpo es-MX de
+  `members.leaveBodyNoOwner`),
   `it('R17: Cancelar no llama a la API', …)`,
   `it('R17: salir limpia la mascota, invalida la lista y vuelve a Inicio en orden', …)`
   (registra las cinco llamadas en un array y lo compara entero),
@@ -485,15 +629,26 @@ tags: [mobile, spec, pet-members, invites, expo-router, heroui-native]
   - `join-pet-label` = `t('invite.codeLabel')` («Código de invitación»,
     `text-sm font-extrabold text-foreground`);
   - `join-pet-input`: `TextInput` con `placeholder="XXXXX-XXXXX"`,
-    `maxLength={11}`, `autoCapitalize="characters"`, `autoCorrect={false}`,
-    `autoComplete="off"`, `accessibilityLabel={t('invite.codeLabel')}`, className
-    `h-15 rounded-14 border-2 border-accent bg-default px-4 font-mono text-24 tracking-code text-foreground`
-    y `style={CONTINUOUS_CORNER}`;
+    `placeholderTextColor={muted}` (lo exige `#62 R12` de
+    `src/__tests__/consistency-classnames.test.ts`: todo `TextInput` con
+    placeholder lleva color temático), `maxLength={11}`,
+    `autoCapitalize="characters"`, `autoCorrect={false}`,
+    `autoComplete="off"`, `accessibilityLabel={t('invite.codeLabel')}`,
+    `` className={`h-15 rounded-14 border-2 ${border} bg-default px-4 font-mono text-24 tracking-code text-foreground`} ``
+    con `border` = `'border-accent'` en el formulario (R19 y R20 lo cambian), y
+    `style={CONTINUOUS_CORNER}`. Los colores de la pantalla salen de una sola
+    llamada
+    `const [foreground, muted, accentStrong] = useThemeColors(['foreground', 'muted', 'accent-strong']);`
+    (`foreground` para el icono `InfoCircle` de la nota, `muted` para el
+    placeholder, `accentStrong` para el `CheckCircle` de R20; nunca
+    `useThemeColors(['accent'])`, que veta `#61 R4`);
   - `join-pet-hint` = `t('joinPet.hint')` («Son 10 letras y números»,
     `text-13 font-semibold text-muted`);
   - un espaciador `{ flexGrow: 1 }` y el Button `join-pet-submit`
-    (`w-full h-14 rounded-16 bg-accent`, `chunkyLip.primary`, texto
-    `t('joinPet.submit')` «Unirme», `text-17 font-extrabold text-accent-foreground`).
+    (`className="w-full h-14 rounded-16 bg-accent"` y `style={chunkyLip.primary}`
+    estáticos —sin el ternario `KEEP_OPACITY` de `disabledCtas`—,
+    `isDisabled={input.trim() === '' || busy}`, con un `Text`
+    `text-17 font-extrabold text-accent-foreground` = `t('joinPet.submit')` «Unirme»).
 
   WHILE `input.trim()` está vacío o la llamada está en vuelo THE SYSTEM SHALL
   dejar `join-pet-submit` deshabilitado. WHEN se pulsa con texto THE SYSTEM SHALL
@@ -515,6 +670,14 @@ tags: [mobile, spec, pet-members, invites, expo-router, heroui-native]
   - `error` y `missing-config` → `t('common.somethingWentWrong')`;
   - `unauthorized` → `signOut()` y ningún `join-pet-error`.
 
+  El estado de error es
+  `type JoinError = 'not-acceptable' | 'rate-limited' | 'unreachable' | 'error' | 'missing-config';`
+  (en `useState<JoinError | 'already-member' | null>(null)`) y el texto de
+  `join-pet-error` es, literal, un ternario de llamadas `t('<clave>'` directas
+  (las únicas que `checkUses` ve):
+  `{state === 'not-acceptable' ? t('joinPet.invalid') : state === 'rate-limited' ? t('forgot.tooManyAttempts') : state === 'unreachable' ? t('common.cannotReachServer') : t('common.somethingWentWrong')}`.
+  No vale un mapa `kind → clave` ni `t(errorKey)`.
+
   WHEN el usuario edita el input tras un error THE SYSTEM SHALL quitar
   `join-pet-error` y volver a `border-accent`. Ningún mensaje distingue un código
   inexistente de uno vencido, usado o mal formado (404 y 400 dan el mismo texto).
@@ -532,10 +695,16 @@ tags: [mobile, spec, pet-members, invites, expo-router, heroui-native]
   cambiar `border-accent` del input por `border-transparent`, renderizar
   `join-pet-already-member` (`accessibilityLiveRegion="polite"`, caja
   `flex-row items-center gap-2.5 rounded-tile bg-surface-secondary p-3.5`, icono
-  `CheckCircle`, texto `text-sm font-bold text-foreground`) =
+  `<CheckCircle size={20} color={accentStrong} />` con el `accentStrong` de R18,
+  texto `text-sm font-bold text-foreground`) =
   `t('joinPet.alreadyMember')` y, en lugar de `join-pet-submit`, el Button
-  `join-pet-go-home` (mismo estilo, `t('joinPet.goHome')` «Ir a Inicio»), que llama
-  a `router.dismissTo('/home')`. Editar el input vuelve al formulario de R18.
+  `join-pet-go-home` (mismo estilo que `join-pet-submit`:
+  `className="w-full h-14 rounded-16 bg-accent"`, `style={chunkyLip.primary}`,
+  `Text` `text-17 font-extrabold text-accent-foreground` =
+  `t('joinPet.goHome')` «Ir a Inicio»), con
+  `onPress={() => router.dismissTo('/home')}` escrito así, literal (es la
+  condición que la fila de `CTA_ROWS` de design.md §7.1 busca en la etiqueta).
+  Editar el input vuelve al formulario de R18.
   Test: `src/screens/join-pet/index.test.tsx`,
   `it('R20: ya miembro sustituye la nota y el botón por Ir a Inicio', …)`,
   `it('R20: Ir a Inicio vuelve a Inicio', …)`,
@@ -555,26 +724,40 @@ tags: [mobile, spec, pet-members, invites, expo-router, heroui-native]
 
 - **R22 (catálogo y tabla de copy)**: THE SYSTEM SHALL añadir a
   `src/i18n/catalog.ts`, al final de cada bloque (`en` y `es`, tras
-  `'welcome.pingoGreeting'`), las 50 claves de design.md §5 con sus literales
-  exactos, y a `src/__tests__/ui-copy-table.ts` el bloque
-  `export const R21_PET_MEMBERS: UseRow[]` con una fila por cada `t('<clave>'` de
-  `src/screens/pet-members/index.tsx`, `src/screens/pet-invite/index.tsx` y
-  `src/screens/join-pet/index.tsx`, y por cada `t('<clave>'` que #214 añade a
-  `src/screens/profile/index.tsx` y `src/screens/home/index.tsx`. El bloque entra
-  en `ALL_USES` y en el array `blocks` del `it`
+  `'welcome.pingoGreeting'`), las **51** claves de design.md §5 (4 + 29 + 10 + 8)
+  con sus literales exactos y en el orden de esa tabla, y a
+  `src/__tests__/ui-copy-table.ts`, justo después del bloque `R18_DATE_FIELD`, el
+  bloque `export const R21_PET_MEMBERS: UseRow[] = [ // #214 R22` con una fila
+  `{ file, key }` por cada `t('<clave>'` de `src/screens/pet-members/index.tsx`,
+  `src/screens/pet-invite/index.tsx` y `src/screens/join-pet/index.tsx` (en el
+  orden del fuente, repetidas incluidas), y por cada `t('<clave>'` que #214
+  añade a `src/screens/profile/index.tsx` (seis: `profile.membersLink`, las tres
+  `profile.membersSummary*`, `joinPet.title`, `joinPet.invitedPrompt`) y a
+  `src/screens/home/index.tsx` (dos: `joinPet.invitedPrompt`, `joinPet.title`).
+  El bloque entra en `ALL_USES` con la línea `  ...R21_PET_MEMBERS, // #214 R22`
+  justo después de `  ...R18_DATE_FIELD,`, y en el array `blocks` del `it`
   `'#194 R5: cuadra ALL_USES con la suma de sus bloques (enmendado por #220 R16)'`
-  (que pasa a terminar en `(enmendado por #214 R22)`).
-  En `src/__tests__/ui-language.test.ts`, la fórmula de `SCREEN_FILES` suma
+  de ese mismo fichero, cuya línea
+  `      R16_WELCOME, R17_EDIT_PROFILE, R18_DATE_FIELD,` pasa a
+  `      R16_WELCOME, R17_EDIT_PROFILE, R18_DATE_FIELD, R21_PET_MEMBERS, // #214 R22`
+  y cuyo título pasa a terminar en `(enmendado por #220 R16) (enmendado por #214 R22)`.
+  En `src/__tests__/ui-language.test.ts`: `R21_PET_MEMBERS` se suma al import de
+  `./ui-copy-table`; la fórmula de `SCREEN_FILES` del `it`
+  `'#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas …'`
+  suma, en una línea propia tras `+ 1 // #220 R16: components/date-field.tsx`,
   `+ 3 // #214 R22: screens/pet-members, screens/pet-invite y screens/join-pet`
-  (título del `it` con `(enmendado por #214 R22)`) y un `describe` nuevo
-  `'#214 R22: copy de Familia'` contiene:
+  (profile y home ya están en `SCREEN_FILES`), y su título pasa a terminar en
+  `(enmendado por #220 R16) (enmendado por #214 R22)`; y un `describe` nuevo al
+  final del fichero, `'#214 R22: copy de Familia'`, contiene:
   - `it('R22: resuelve cada fila de R21_PET_MEMBERS', …)` → `checkUses(R21_PET_MEMBERS)`;
   - `it('R22: cada t( de las tres pantallas nuevas tiene su fila', …)`: para cada
-    fichero nuevo, el número de coincidencias de `/\bt\(\s*['"][\w.]+['"]/g` en el
-    fuente es igual al número de filas de `R21_PET_MEMBERS` con ese `file`;
-  - `it('R22: cada clave nueva existe en los dos idiomas y se usa', …)`: cada una de
-    las 50 claves de design.md §5 (lista literal en el test) existe en `en` y en
-    `es` y aparece en al menos una fila de `R21_PET_MEMBERS`.
+    fichero nuevo, el número de coincidencias de `/\bt\(\s*['"][\w.]+['"]/g` en
+    `readFileSync(join(SOURCE_ROOT, file), 'utf8')` es igual al número de filas
+    de `R21_PET_MEMBERS` con ese `file`;
+  - `it('R22: cada clave nueva existe en los dos idiomas y se usa', …)`: la lista
+    literal de las 51 claves de design.md §5 tiene `toHaveLength(51)`, y cada
+    clave existe en `en` y en `es` y aparece en al menos una fila de
+    `R21_PET_MEMBERS`.
   Ninguno de los cinco ficheros contiene como literal entero un valor fijo del
   catálogo (lo verifica el `it` `#194 R5: no deja ningún valor fijo …` existente,
   que con la fórmula enmendada ya recorre los tres ficheros nuevos).
@@ -582,19 +765,31 @@ tags: [mobile, spec, pet-members, invites, expo-router, heroui-native]
 - **R23 (expo-clipboard)**: THE SYSTEM SHALL declarar `expo-clipboard` en
   `dependencies` de `package.json`, instalado con `bunx expo install expo-clipboard`
   (versión que fije la CLI para el SDK del proyecto, con `bun.lock` actualizado), y
-  `test/jest-setup.js` lo sustituye para todas las suites con
-  `jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn() }))` (detalle en
-  design.md §6).
-  Test: `src/screens/pet-invite/index.test.tsx`,
-  `it('R23: expo-clipboard es dependencia declarada', …)` (lee `package.json` y
-  aserta que `dependencies['expo-clipboard']` es un string que empieza por `~`).
+  `test/jest-setup.js` lo sustituye para todas las suites con el único doble del
+  módulo, **sin** la opción `virtual` (detalle y dueño en design.md §6). La
+  instalación y el doble entran en el mismo commit verde: un `jest.mock` con
+  factoría de un módulo que no está instalado tumba todas las suites.
+  Test: `src/utils/__tests__/pet-members.test.ts`,
+  `it('R23: expo-clipboard es dependencia declarada', …)`: lee `package.json`
+  con `readFileSync(join(process.cwd(), 'package.json'), 'utf8')` y aserta que
+  `dependencies['expo-clipboard']` es un string que empieza por `~`. El fichero
+  no importa ninguna pantalla ni `expo-clipboard`, para que el rojo de R23 sea
+  la aserción y no un «Cannot find module» de la importación.
 
 - **R24 (candados existentes)**: THE SYSTEM SHALL enmendar exactamente los
-  candados de design.md §7.1, cada uno con `(enmendado por #214 R<n>)` en el
-  título del `it` o `// #214 R<n>` en la línea del término, y SHALL dejar
-  intactos los de design.md §7.2. Todo comentario nuevo de
-  `src/screens/home/index.tsx` y `src/screens/profile/index.tsx` que cite una
-  feature usa la forma `#214 R<n>` (lo exige `src/__tests__/no-pets-states.test.ts` #181 R8.3).
+  candados de la lista cerrada de design.md §7.1 (una fila por candado, con su
+  ancla `grep -cF`, su cifra base → nueva, el comentario `// #214 R<n>` en la
+  línea del término y el sufijo `(enmendado por #214 R<n>)` en el título del
+  `it`), y SHALL dejar intactos los de design.md §7.2. Ningún candado fuera de
+  esa lista cambia en el diff de #214.
+  En **producción**, `src/screens/home/index.tsx` y
+  `src/screens/profile/index.tsx` no llevan ningún comentario que cite una
+  feature: `#190 R12` de `src/__tests__/home-pingo-phrase.test.ts` y `#173 R15`
+  de `src/__tests__/profile-canvas-fidelity.test.ts` cuentan todo `#` seguido de
+  tres dígitos como literal hex en esos ficheros. Anclas, desde
+  `mobile-pet-tracker/`: `grep -cF '#214' src/screens/home/index.tsx` = 0 → 0 y
+  `grep -cF '#214' src/screens/profile/index.tsx` = 0 → 0. Los ficheros de test
+  sí llevan `// #214 R<n>`.
   Test: los `it` enmendados de design.md §7.1 y la corrida completa
   `bunx jest` de `mobile-pet-tracker/` en verde.
 
