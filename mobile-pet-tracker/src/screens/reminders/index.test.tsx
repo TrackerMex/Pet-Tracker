@@ -2013,4 +2013,33 @@ describe('#213 R14: series en Recordatorios', () => {
     await screen.findByTestId('reminder-row-once');
     for (const id of ['once', 'cancelled', 'sent']) expect(screen.queryByTestId(`reminder-repeats-${id}`)).toBeNull();
   });
+  it('#213 R15: la serie programada ofrece Cancelar serie y el puntual Eliminar', async () => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [
+      makeReminder({ id: 'series', title: 'Pipeta antipulgas', recurrence: { unit: 'month', every: 1 } }),
+      makeReminder({ id: 'once' }),
+    ] });
+    await renderReminders();
+    const row = await screen.findByTestId('reminder-row-series');
+    expect(within(row).queryByTestId('reminder-cancel-series-series')).not.toBeNull();
+    const button = within(row).getByTestId('reminder-cancel-series-series');
+    expect(button.props.accessibilityLabel).toBe('Cancelar la serie Pipeta antipulgas');
+    expect(button.props.className).toContain('button__root--variant-danger-soft');
+    expect(button.props.className).toContain('h-11 rounded-14 px-2.5 bg-category-rose');
+    const label = within(button).getByText('Cancelar serie');
+    expect(label.props.children).toBe('Cancelar\nserie');
+    expect(label.props.className).toBe('text-13 font-extrabold text-danger');
+    expect(within(row).queryByTestId('reminder-delete-series')).toBeNull();
+    expect(within(row).getAllByRole('button')).toHaveLength(1);
+    expect(screen.getByTestId('reminder-delete-once')).toHaveTextContent('Eliminar');
+    expect(screen.queryByTestId('reminder-cancel-series-once')).toBeNull();
+  });
+
+  it.each(['cancelled', 'sent'] as const)('#213 R15: una serie cancelada o enviada conserva Eliminar (%s)', async (status) => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [makeReminder({ id: 'series', status, recurrence: { unit: 'month', every: 1 } })] });
+    await renderReminders();
+    await screen.findByTestId('reminder-row-series');
+    expect(screen.getByTestId('reminder-delete-series')).toHaveTextContent('Eliminar');
+    expect(screen.queryByTestId('reminder-cancel-series-series')).toBeNull();
+  });
+
 });
