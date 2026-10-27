@@ -70,3 +70,43 @@ it('#223 R1: con drain pide cada página con su cursor, de una en una, hasta nex
   });
   expect(mockListAlerts).toHaveBeenCalledTimes(3);
 });
+
+it("#223 R2: sin drain pide una sola página aunque haya nextCursor y usa la clave ['alerts','list']", async () => {
+  for (const options of [undefined, { drain: false }]) {
+    mockListAlerts.mockReset()
+      .mockResolvedValueOnce({ kind: 'ok', items: [], nextCursor: 'c1' })
+      .mockResolvedValueOnce({ kind: 'ok', items: [], nextCursor: null });
+    const { queryClient, wrapper } = queryWrapper();
+    const { result, unmount } = await renderHook(() => useAlertsList(options), { wrapper });
+    await waitFor(() => expect(result.current.data?.pages).toHaveLength(1));
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+    expect(mockListAlerts).toHaveBeenCalledTimes(1);
+    expect(queryClient.getQueryData(['alerts', 'list'])).toBeDefined();
+    await unmount();
+  }
+});
+
+it.each(['error', 'unreachable', 'missing-config', 'unauthorized'] as const)(
+  '#223 R3: %s corta el drenado y conserva las páginas previas', async (kind) => {
+    const first: AlertsState = { kind: 'ok', items: [], nextCursor: 'c1' };
+    const failure: AlertsState = kind === 'unreachable' ? { kind, message: 'offline' } : { kind };
+    const second = deferred();
+    mockListAlerts.mockReturnValue(deferred().promise)
+      .mockResolvedValueOnce(first).mockReturnValueOnce(second.promise);
+    const { wrapper } = queryWrapper();
+    const { result, rerender } = await renderHook(() => useAlertsList({ drain: true }), { wrapper });
+    await waitFor(() => {
+      expect(result.current.data?.pages).toEqual([first]);
+      expect(result.current.isFetchingNextPage).toBe(true);
+    });
+    await act(async () => second.resolve(failure));
+    await waitFor(() => {
+      expect(result.current.data?.pages).toEqual([first, failure]);
+      expect(result.current.isFetching).toBe(false);
+    });
+    await rerender(undefined);
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+    expect(result.current.data?.pages).toHaveLength(2);
+    expect(mockListAlerts).toHaveBeenCalledTimes(2);
+  },
+);
