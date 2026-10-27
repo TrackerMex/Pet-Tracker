@@ -152,6 +152,23 @@ export interface TripDetail extends TripSummary {
   path: TripPoint[];
 }
 
+export interface VaccineCatalogEntry {
+  id: string;
+  species: 'dog' | 'cat';
+  name: string;
+  scheme: { firstDoseMonths: number; series?: number; boosterMonths: number };
+}
+
+export interface CreateVaccineInput {
+  catalogId?: string;
+  name?: string;
+  appliedAt: string;
+  nextDoseAt?: string;
+  vetName?: string;
+  clinic?: string;
+  notes?: string;
+}
+
 export interface Vaccine {
   id: string;
   petId: string;

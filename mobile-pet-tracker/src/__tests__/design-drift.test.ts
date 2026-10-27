@@ -1116,7 +1116,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     expect(addReminder).not.toMatch(/uppercase|tracking-widest/);
   });
 
-  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #203 R4) (enmendado por #203 R6) (enmendado por #203 R7) (enmendado por #204 R8) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #196 R5) (enmendado por #201 R5, R13) (enmendado por #205 R13) (enmendado por #213 R22)', () => {
+  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #203 R4) (enmendado por #203 R6) (enmendado por #203 R7) (enmendado por #204 R8) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #196 R5) (enmendado por #201 R5, R13) (enmendado por #205 R13) (enmendado por #208 R21) (enmendado por #213 R22)', () => {
     for (const [pattern, count] of [
       [/\brounded-14\b/g, 2], [/\brounded-16\b/g, 5 + 2], [/\brounded-22\b/g, 1],
     ] as const) {
@@ -1144,7 +1144,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       'screens/forgot/index.tsx': 3,
       'screens/geofence-editor/index.tsx': 4, // #189 R13; #202 R18: +1
       'screens/geofences/index.tsx': 2, // #189 R7
-      'screens/health/index.tsx': 1, // #199 R14
+      'screens/health/index.tsx': 1 + 1, // #199 R14; #208 R21
       'screens/home/index.tsx': 1,
       'screens/home/weekly-activity-chart.tsx': 1, // #198 R9
       'screens/login/index.tsx': 1,
@@ -1152,6 +1152,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       'screens/pairing/index.tsx': 4, // #203 R6; #203 R7
       'screens/register/index.tsx': 1,
       'screens/reset-password/index.tsx': 1 + 1, // #205 R13
+      'screens/vaccine-create/index.tsx': 1, // #208 R21
       'screens/weight-log/index.tsx': 1,
       'screens/welcome/index.tsx': 2,
     });
@@ -1229,7 +1230,7 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
     expect(schedule.indexOf('testID="meal-schedule-header"')).toBeLessThan(schedule.indexOf('testID="meal-schedule-summary"'));
   });
 
-  it('limita text-22 a Horario y text-17 al inventario de E1.2 (enmendado por #177 R10) (enmendado por #200 R5) (enmendado por #198 R15) (enmendado por #213 R22)', () => {
+  it('limita text-22 a Horario y text-17 al inventario de E1.2 (enmendado por #177 R10) (enmendado por #200 R5) (enmendado por #198 R15) (enmendado por #208 R21) (enmendado por #213 R22)', () => {
     const productionFilesMatching = (pattern: RegExp) => filesMatching(pattern).filter(path => !/\.test\.tsx?$/.test(path)).sort();
     expect(productionFilesMatching(/\btext-22\b/)).toEqual([
       'components/empty-state.tsx', // #198 R15
@@ -1249,6 +1250,7 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
       'screens/forgot/index.tsx',
       'screens/geofence-editor/index.tsx',
       'screens/geofences/index.tsx',
+      'screens/health/index.tsx', // #208 R21
       'screens/home/index.tsx',
       'screens/login/index.tsx',
       'screens/meal-schedule/index.tsx',
@@ -1256,6 +1258,7 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
       'screens/register/index.tsx',
       'screens/reminders/index.tsx',
       'screens/reset-password/index.tsx',
+      'screens/vaccine-create/index.tsx', // #208 R21
       'screens/weight-log/index.tsx',
       'screens/welcome/index.tsx',
     ]);
@@ -1294,5 +1297,30 @@ describe('#185 R10: el formulario pertenece a la lista A11', () => {
     const end = source.indexOf('Su', start);
     expect(start).toBeGreaterThan(-1);
     expect(source.slice(start, end)).toContain('`pets/[petId]/docs-upload`');
+  });
+});
+
+describe('#208 R21: alta de vacuna sin deriva', () => {
+  it('#208 R21: los cuatro ficheros nuevos no tienen deriva de estilo', () => {
+    const files = [
+      'screens/vaccine-create/index.tsx', // #208 R21
+      'app/pets/[petId]/vaccines/new.tsx', // #208 R21
+      'utils/vaccine-dates.ts', // #208 R21
+      'hooks/vaccine-reminder-notice.ts', // #208 R21
+    ];
+    const forbidden = [
+      ['estilos', PAIRING_STYLE_ESCAPES],
+      ['clases arbitrarias', new RegExp(ARBITRARY_CLASS, 'g')],
+      ['tinta accent', /\btext-accent\b(?!-)/g],
+      ['tinta warning', /\btext-warning\b/g],
+      ['token accent', /useThemeColors\s*\(\s*\[[^\]]*['"]accent['"]/g],
+      ['comentario de feature sin requisito', /#208(?! R\d)/g],
+    ] as const;
+    for (const file of files) {
+      const source = readFileSync(join(sourceRoot, file), 'utf8');
+      for (const [rule, pattern] of forbidden) {
+        expect({ file, rule, count: (source.match(pattern) ?? []).length }).toEqual({ file, rule, count: 0 });
+      }
+    }
   });
 });
