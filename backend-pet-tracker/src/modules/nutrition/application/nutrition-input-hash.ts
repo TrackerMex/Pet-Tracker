@@ -6,7 +6,6 @@ export function nutritionInputHash(
   input: NutritionEngineInput,
   weightTrend: NutritionWeightPoint[],
 ): string {
-  void weightTrend;
   const canonicalInput = {
     species: input.species,
     weightKg: Number(input.weightKg),
@@ -20,6 +19,10 @@ export function nutritionInputHash(
     kcalPer100g: Number(input.kcalPer100g),
     allergies: [...input.allergies].sort(),
     diseases: [...input.diseases].sort(),
+    weightTrend: weightTrend.map((p) => ({
+      measuredAt: p.measuredAt,
+      weightKg: Number(p.weightKg),
+    })),
   };
 
   return createHash('sha256')
