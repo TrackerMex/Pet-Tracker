@@ -139,7 +139,7 @@ Anclas de la base (T0): corre cada una tal cual antes del primer test, desde /ho
   grep -cF 'cada tracking-* va con su text-*' __tests__/alerts-canvas-fidelity.test.ts    # 1
   grep -cF 'reserva los radios 14, 16 y 22 a Recordatorios' __tests__/design-drift.test.ts   # 1
   grep -cF '+ 2 // #214 R4, R18' __tests__/consistency-classnames.test.ts                 # 2
-  grep -cF "[join('screens', 'alerts', 'index.tsx')" __tests__/consistency-classnames.test.ts   # 0
+  grep -cF "[join('screens', 'alerts', 'index.tsx'), 1], // #223 R9" __tests__/consistency-classnames.test.ts   # 0   (adenda 3: la fila `// #170 R16` de `counters` TABULAR_NUMS ya existe y NO es la de `directUses`; esa cuenta no se toca)
   grep -cF "'alert-detail-view-map'" __tests__/consistency-classnames.test.ts             # 2
   # Docs y gates (B27-B29)
   grep -cF 'por fidelidad al canvas (#199): `rounded-24`' ../../docs/ui-guidelines.md     # 1
@@ -147,7 +147,7 @@ Anclas de la base (T0): corre cada una tal cual antes del primer test, desde /ho
   grep -cF 'E2' ../../specs/mobile-alerts-attended-section/requirements.md                # >= 1   (la fe de erratas E2 del leader; si da 0, PARA)
   # Conteo de `it(` por fichero tocado (línea de base para las cuentas; mídelo, no lo supongas)
   grep -c '^\s*it(' screens/alerts/index.test.tsx                                         # 55
-  grep -c 'it\(\.each\)\?(' screens/alerts/index.test.tsx                                 # 83
+  grep -c 'it\(\.each\)\?(' screens/alerts/index.test.tsx                                 # 78   (adenda 3: cuenta líneas, no casos expandidos; 83 era un error del leader)
   (desde mobile-pet-tracker/) test ! -e .expo/types/router.d.ts && echo sin-router-d-ts   # sin-router-d-ts
 
 Base de tests (T0): mídela tú antes del primer commit, con `pgrep` vacíos: `cd /home/claude/sites/Pet-Tracker-wt-223/mobile-pet-tracker && bun run test > ../progress/t0-223.log 2>&1; echo exit=$?` y pega las líneas `Test Suites:` y `Tests:` en el reporte. Debe ser exit 0 y cero `FAIL`. Llama N a la cifra de `Tests:` de T0. Después, T0 (3) de tasks.md: corre jest con rutas por prefijo `src/screens/alerts`, `src/hooks`, `src/__tests__` guardando el log entero en `../progress/t0-223-scoped.log` y RECOMPUTA las cifras de los guards de la tabla de enmiendas (todas son de después de #214; las de requirements.md son de la base 73922b10). La cifra de tests de cada commit = anterior + sus `it` añadidos - los eliminados (anótalo como `total anterior + añadidos - eliminados`); un `it.each` cuenta una por fila. Las cifras de la cadena son el esperado; si tu cuenta real difiere, comprueba el diff `it` por `it`: una diferencia explicada se anota y se sigue, una sin explicar es PARA.
