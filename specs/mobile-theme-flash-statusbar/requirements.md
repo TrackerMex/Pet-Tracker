@@ -214,7 +214,8 @@ el foco (R5, R6). `app/(tabs)/_layout.tsx` queda sin cambio (R7).
   estilo ni ningún literal de color: los candados de copy (`ui-language`,
   `ui-copy-table`, `language-provider.test.tsx`), de clases (`consistency-classnames`,
   `legibility-classnames`) y `design-drift` pasan **sin edición** salvo las adiciones de
-  esta spec, y los dos ficheros nuevos de producción (`theme/navigation-theme.ts`,
+  esta spec (una: `theme/navigation-theme.ts` entra en la lista de huellas que piden
+  `accent` de `legibility-classnames`, porque R1 exige `accent`; enmienda del 2026-10-27), y los dos ficheros nuevos de producción (`theme/navigation-theme.ts`,
   `components/hero-status-bar.tsx`) no contienen hex, `StyleSheet` ni clases con
   corchetes.
   - Test: `src/__tests__/design-drift.test.ts`, `describe('#217 R12: los ficheros
@@ -226,8 +227,8 @@ el foco (R5, R6). `app/(tabs)/_layout.tsx` queda sin cambio (R7).
     mobile-pet-tracker/src/__tests__/ui-copy-table.ts
     mobile-pet-tracker/src/__tests__/ui-language.test.ts
     mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
-    mobile-pet-tracker/src/__tests__/legibility-classnames.test.ts
-    mobile-pet-tracker/src/providers/__tests__` vacío; y el jest completo, sin pipe, verde.
+    mobile-pet-tracker/src/providers/__tests__` vacío, y el diff de
+    `legibility-classnames.test.ts` es exactamente la línea de `navigation-theme.ts`; y el jest completo, sin pipe, verde.
 
 ## Fuera de alcance
 
