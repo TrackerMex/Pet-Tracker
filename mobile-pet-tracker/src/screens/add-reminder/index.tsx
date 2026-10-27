@@ -105,6 +105,10 @@ function AddReminderContent({ petId }: { petId: string }) {
         title: trimmedTitle,
         dueAt: dueAt.toISOString(),
         advanceMinutes: repeat === 'hour' ? 0 : effectiveAdvance(dueAt, advanceMinutes, Date.now()),
+        ...(repeat === 'once' ? {} : {
+          recurrence: { unit: repeat, every: repeat === 'month' ? monthEvery : repeat === 'hour' ? hourEvery : 1 },
+          ...(until === null ? {} : { recurrenceUntil: localDateToIso(until) }),
+        }),
       });
 
       switch (result.kind) {
