@@ -2,19 +2,28 @@ import { useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { Image } from 'expo-image';
+import { Check, Location, TrendDown, TrendUp } from 'reicon-react-native';
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { getNutritionProfile } from '../../api/nutrition';
 import { getPet } from '../../api/pets';
 import { nutritionKeys, petKeys } from '../../api/query-keys';
-import type { NutritionProfile, PetProfile } from '../../api/types';
+import type { NutritionProfile, NutritionProfileInput, PetProfile } from '../../api/types';
 import { ScreenHeader } from '../../components/screen-header';
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import { useThemeColors } from '../../theme/use-theme-colors';
+import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
+
+const ACTIVITY_OPTIONS = [
+  { value: 'low', slot: 'blue', icon: TrendDown, title: { labelKey: 'nutritionQuestionnaire.activityLow' }, description: { labelKey: 'nutritionQuestionnaire.activityLowDescription' } },
+  { value: 'medium', slot: 'green', icon: Location, title: { labelKey: 'nutritionQuestionnaire.activityMedium' }, description: { labelKey: 'nutritionQuestionnaire.activityMediumDescription' } },
+  { value: 'high', slot: 'amber', icon: TrendUp, title: { labelKey: 'nutritionQuestionnaire.activityHigh' }, description: { labelKey: 'nutritionQuestionnaire.activityHighDescription' } },
+] as const;
 
 type Step = 'activity' | 'condition' | 'target' | 'food' | 'health';
 
@@ -23,8 +32,10 @@ function QuestionnaireForm({ pet }: { initial: NutritionProfile | null; pet: Pet
   const insets = useSafeAreaInsets();
   const chunkyLip = useChunkyLip();
   const [step] = useState<Step>('activity');
+  const colors = useThemeColors(['category-blue-strong', 'category-green-strong', 'category-amber-strong', 'accent-foreground']);
+  const [activity, setActivity] = useState<NutritionProfileInput['activityLevel'] | null>(null);
   const n = 1;
-  const canContinue = false;
+  const canContinue = activity !== null;
   function handleNext() {}
 
   return (
@@ -43,6 +54,27 @@ function QuestionnaireForm({ pet }: { initial: NutritionProfile | null; pet: Pet
             <View className={step === 'condition' ? 'absolute -left-1.5 top-4.5 size-3 rotate-45 bg-surface-secondary' : 'absolute -left-1.5 top-5.5 size-3 rotate-45 bg-surface-secondary'} />
             <Text className="text-13 font-semibold leading-body text-foreground">{t('nutritionQuestionnaire.bubbleActivity', { name: pet.name })}</Text>
           </View>
+        </View>
+        <Text className="text-lg font-black text-foreground">{t('nutritionQuestionnaire.activityLegend', { name: pet.name })}</Text>
+        <View className="gap-3">
+          {ACTIVITY_OPTIONS.map((option, index) => {
+            const selected = activity === option.value;
+            const Icon = option.icon;
+            return <Pressable key={option.value} testID={`activity-option-${option.value}`} accessibilityRole="radio" accessibilityState={{ checked: selected }}
+              className={selected ? 'flex-row items-center gap-3 rounded-tile border-2 p-3.5 border-accent bg-tab-pill' : 'flex-row items-center gap-3 rounded-tile border-2 p-3.5 border-border bg-surface'}
+              style={CONTINUOUS_CORNER} onPress={() => setActivity(option.value)}>
+              <View className={selected ? 'size-11 items-center justify-center rounded-14 bg-surface' : `size-11 items-center justify-center rounded-14 ${CATEGORY_SLOTS[option.slot].surface}`}>
+                <Icon size={24} color={colors[index]} />
+              </View>
+              <View className="flex-1 gap-0.5">
+                <Text className="text-base font-extrabold text-foreground">{t(option.title.labelKey)}</Text>
+                <Text className="text-13 text-muted">{t(option.description.labelKey)}</Text>
+              </View>
+              <View className={selected ? 'size-6 rounded-full items-center justify-center bg-accent' : 'size-6 rounded-full border-2 border-lip-gray'}>
+                {selected ? <Check size={16} color={colors[3]} /> : null}
+              </View>
+            </Pressable>;
+          })}
         </View>
       </ScrollView>
       <View className="bg-background px-5 pt-4" style={{ paddingBottom: Math.max(insets.bottom, 16) }}>
