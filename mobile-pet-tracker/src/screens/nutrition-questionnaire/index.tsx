@@ -3,9 +3,9 @@ import { useLocalSearchParams } from 'expo-router';
 import { usePreventRemove } from 'expo-router/react-navigation';
 import { Button, Skeleton } from 'heroui-native';
 import { Image } from 'expo-image';
-import { Check, Location, TrendDown, TrendUp } from 'reicon-react-native';
+import { Check, InfoCircle, Location, TrendDown, TrendUp } from 'reicon-react-native';
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Pressable, ScrollView, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { getNutritionProfile } from '../../api/nutrition';
@@ -15,6 +15,7 @@ import type { NutritionProfile, NutritionProfileInput, PetProfile } from '../../
 import { ScreenHeader } from '../../components/screen-header';
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS, type CategorySlot } from '../../utils/category-palette';
 import { useAuth } from '../../providers/auth-provider';
@@ -58,6 +59,27 @@ function prevStep(step: Step, bcs: number | null): Step {
   return 'activity';
 }
 
+function isWeight(value: string) {
+  const normalized = value.replace(',', '.');
+  return /^\d*\.?\d{0,2}$/.test(normalized) && Number(normalized) > 0 && Number(normalized) <= 999.99;
+}
+
+function NumberField({ kind, testID, unit, value, onChangeText }: { kind: 'weight' | 'kcal'; testID: string; unit: string; value: string; onChangeText: (value: string) => void }) {
+  const [focused, setFocused] = useState(false);
+  return <View className={focused ? 'h-16 flex-row items-center gap-2 rounded-14 border-2 border-accent bg-default px-4' : 'h-16 flex-row items-center gap-2 rounded-14 border-2 border-transparent bg-default px-4'} style={CONTINUOUS_CORNER}>
+    <TextInput testID={testID} className="flex-1 text-28 font-black text-foreground" keyboardType={kind === 'weight' ? 'decimal-pad' : 'number-pad'} maxLength={kind === 'weight' ? 6 : 3}
+      value={value} onChangeText={onChangeText} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} />
+    <Text className={kind === 'weight' ? 'text-lg font-extrabold text-muted' : 'text-15 font-extrabold text-muted'}>{unit}</Text>
+  </View>;
+}
+
+function NoteRow({ testID, text, color }: { testID: string; text: string; color: string }) {
+  return <View testID={testID} className="flex-row gap-2.5 rounded-tile bg-default px-3.5 py-3" style={CONTINUOUS_CORNER}>
+    <InfoCircle size={20} color={color} />
+    <Text className="flex-1 text-13 font-semibold leading-body text-foreground">{text}</Text>
+  </View>;
+}
+
 function BcsBadge({ n, slot, testID }: { n: number; slot: CategorySlot; testID: string }) {
   return <View testID={testID} className={`size-7.5 items-center justify-center rounded-10 ${CATEGORY_SLOTS[slot].surface}`}>
     <Text className={`text-sm font-black ${CATEGORY_SLOTS[slot].ink}`}>{n}</Text>
@@ -69,11 +91,13 @@ function QuestionnaireForm({ pet }: { initial: NutritionProfile | null; pet: Pet
   const insets = useSafeAreaInsets();
   const chunkyLip = useChunkyLip();
   const [step, setStep] = useState<Step>('activity');
-  const colors = useThemeColors(['category-blue-strong', 'category-green-strong', 'category-amber-strong', 'accent-foreground']);
+  const colors = useThemeColors(['category-blue-strong', 'category-green-strong', 'category-amber-strong', 'accent-foreground', 'muted']);
   const [activity, setActivity] = useState<NutritionProfileInput['activityLevel'] | null>(null);
   const [bcs, setBcs] = useState<number | null>(null);
+  const [target, setTarget] = useState('');
+  const bcsRow = BCS_ROWS.find(row => row.n === bcs);
   const n = stepNumber(step);
-  const canContinue = step === 'activity' ? activity !== null : step === 'condition' ? bcs !== null : true;
+  const canContinue = step === 'activity' ? activity !== null : step === 'condition' ? bcs !== null : step === 'target' ? target === '' || isWeight(target) : true;
   usePreventRemove(step !== 'activity', () => setStep(prevStep(step, bcs)));
   function handleNext() {
     if (step !== 'health') setStep(nextStep(step, bcs));
@@ -93,7 +117,7 @@ function QuestionnaireForm({ pet }: { initial: NutritionProfile | null; pet: Pet
           <Image source={require('../../../assets/images/pingo-food.webp')} className={step === 'condition' ? 'size-11' : 'size-13'} />
           <View testID="nutrition-questionnaire-bubble" className="flex-1 rounded-tile bg-surface-secondary px-3 py-2.5" style={CONTINUOUS_CORNER}>
             <View className={step === 'condition' ? 'absolute -left-1.5 top-4.5 size-3 rotate-45 bg-surface-secondary' : 'absolute -left-1.5 top-5.5 size-3 rotate-45 bg-surface-secondary'} />
-            <Text className="text-13 font-semibold leading-body text-foreground">{step === 'condition' ? t('nutritionQuestionnaire.bubbleCondition', { name: pet.name }) : t('nutritionQuestionnaire.bubbleActivity', { name: pet.name })}</Text>
+            <Text className="text-13 font-semibold leading-body text-foreground">{step === 'condition' ? t('nutritionQuestionnaire.bubbleCondition', { name: pet.name }) : step === 'target' ? t('nutritionQuestionnaire.bubbleTargetWeight', { bcs: String(bcs), name: pet.name }) : t('nutritionQuestionnaire.bubbleActivity', { name: pet.name })}</Text>
           </View>
         </View>
         {step === 'activity' ? <>
@@ -136,7 +160,22 @@ function QuestionnaireForm({ pet }: { initial: NutritionProfile | null; pet: Pet
             })}
           </View>
         </> : null}
-        {step === 'target' ? <Text className="text-lg font-black text-foreground">{t('nutritionQuestionnaire.targetWeightTitle')}</Text> : null}
+        {step === 'target' && bcsRow ? <>
+          <View testID="target-weight-summary" className="flex-row items-center gap-2.5 rounded-16 bg-default px-3 py-2.5">
+            <BcsBadge n={bcsRow.n} slot={bcsRow.slot} testID="bcs-badge-summary" />
+            <Text className="flex-1 text-sm font-extrabold text-foreground">{t('nutritionQuestionnaire.conditionSummary', { bcs: bcsRow.n, label: t(bcsRow.title.labelKey) })}</Text>
+            <Pressable testID="target-weight-change" accessibilityRole="button" hitSlop={TOUCH_SLOP} className="h-11 justify-center" onPress={() => setStep('condition')}>
+              <Text className="text-13 font-extrabold text-accent-strong">{t('nutritionQuestionnaire.change')}</Text>
+            </Pressable>
+          </View>
+          <View className="flex-row items-center justify-between">
+            <Text className="text-lg font-black text-foreground">{t('nutritionQuestionnaire.targetWeightTitle')}</Text>
+            <Text className="text-13 font-semibold text-muted">{t('addPet.optional')}</Text>
+          </View>
+          <NumberField kind="weight" testID="target-weight-input" unit="kg" value={target} onChangeText={setTarget} />
+          {pet.currentWeightKg !== null ? <Text testID="target-weight-current" className="text-13 font-semibold text-muted">{t('nutritionQuestionnaire.currentWeight', { name: pet.name, weight: pet.currentWeightKg })}</Text> : null}
+          <NoteRow testID="target-weight-note" text={t('nutritionQuestionnaire.targetWeightNote')} color={colors[4]} />
+        </> : null}
         {step === 'food' ? <Text className="text-lg font-black text-foreground">{t('nutritionQuestionnaire.foodLegend')}</Text> : null}
       </ScrollView>
       <View className="bg-background px-5 pt-4" style={{ paddingBottom: Math.max(insets.bottom, 16) }}>
