@@ -19,3 +19,5 @@
   Horario que la spec no listaba. El leader los listó (errata ronda 5, `8431339f`) y escribió la Adenda 3 del
   handoff. El fallback sigue: un `implementer` nuevo retoma en R21 (test) con el mismo handoff y el mismo
   reporte. La cuota de Codex sigue al 3 %.
+- 2026-10-27 14:45 UTC: la cadena cerró en `da5e5eef` (R21 a R26). El merge de `dev` tiene 13 conflictos de
+  código, así que lo resuelve otro `implementer`, con la Adenda 4 del handoff (`6a837c0f`), no el leader.
