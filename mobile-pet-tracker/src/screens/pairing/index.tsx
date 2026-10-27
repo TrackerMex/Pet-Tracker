@@ -562,19 +562,23 @@ export function PairingScreen() {
               ) : null}
             </RiseIn>
 
-            <View testID="device-unpair-spacer" className="flex-1" />
+            {isOwner ? (
+              <>
+                <View testID="device-unpair-spacer" className="flex-1" />
 
-            <Button
-              testID="device-unpair"
-              className="h-13.5 w-full rounded-16 bg-danger"
-              style={chunkyLip.danger}
-              isDisabled={releasing}
-              onPress={openUnpair}
-            >
-              <Button.Label className="text-base font-extrabold text-accent-foreground">
-                {t('pairing.unpairCollar')}
-              </Button.Label>
-            </Button>
+                <Button
+                  testID="device-unpair"
+                  className="h-13.5 w-full rounded-16 bg-danger"
+                  style={chunkyLip.danger}
+                  isDisabled={releasing}
+                  onPress={openUnpair}
+                >
+                  <Button.Label className="text-base font-extrabold text-accent-foreground">
+                    {t('pairing.unpairCollar')}
+                  </Button.Label>
+                </Button>
+              </>
+            ) : null}
           </View>
         ) : null}
       </ScrollView>
