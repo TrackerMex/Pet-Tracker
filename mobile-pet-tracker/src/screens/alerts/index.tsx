@@ -232,10 +232,6 @@ export function AlertsScreen() {
         }}
         data={rows}
         keyExtractor={(item) => item.id}
-        onEndReached={() => {
-          if (!alerts.hasNextPage || alerts.isFetchingNextPage) return;
-          void alerts.fetchNextPage();
-        }}
         ListHeaderComponent={(
           <View testID="alerts-header" className="gap-3">
             <ScreenHeader
