@@ -273,11 +273,7 @@ export function ProfileScreen() {
 
   const screenTitle = t('profile.profile');
 
-  const titleRow = (
-  <View className="flex-row items-center justify-between gap-3">
-    <Text testID="profile-title" className={showHero ? 'text-3xl font-black tracking-title text-accent-foreground' : 'text-3xl font-black tracking-title text-foreground'}>
-      {screenTitle}
-    </Text>
+  const addPetCapsule = (
     <Pressable
       testID="profile-add-pet"
       accessibilityRole="button"
@@ -296,6 +292,14 @@ export function ProfileScreen() {
         {t('profile.addPet')}
       </Text>
     </Pressable>
+  );
+
+  const titleRow = (
+  <View className="flex-row items-center justify-between gap-3">
+    <Text testID="profile-title" className={showHero ? 'text-3xl font-black tracking-title text-accent-foreground' : 'text-3xl font-black tracking-title text-foreground'}>
+      {screenTitle}
+    </Text>
+    {addPetCapsule}
   </View>
   );
 
@@ -356,7 +360,7 @@ export function ProfileScreen() {
         </View>
       ) : null}
       <View testID="profile-content" className="gap-3.5 px-5" style={showHero ? undefined : { paddingTop: insets.top + 12 }}>
-      {!showHero ? titleRow : null}
+      {!showHero ? <View testID="profile-top-row" className="flex-row justify-end">{addPetCapsule}</View> : null}
 
       {notificationsBlocked ? (
         <HomeEntrance index={0} testID="profile-entrance-notice"><View testID="notifications-blocked-notice" className={`items-start gap-3 rounded-card p-3.5 ${CATEGORY_SLOTS.amber.surface}`}>
