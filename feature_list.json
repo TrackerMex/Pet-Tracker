@@ -3537,7 +3537,7 @@
   {
     "id": 208,
     "name": "mobile-vaccine-create",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P1",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 2). Alta de vacuna desde la app: hoy solo existe POST /v1/pets/:petId/vaccines (owner) y Salud es de solo lectura, así que en la app real nunca hay vacunas. Ruta delgada app/pets/[petId]/vaccines/new.tsx más pantalla en src/screens/; clientes getVaccineCatalog y createVaccine en src/api/health-records.ts; catálogo por especie o nombre libre (exactamente uno), appliedAt no futuro, nextDoseAt opcional, veterinario, clínica y notas. Toggle «Recordarme la próxima dosis» encendido por defecto, que tras el 201 crea un recordatorio type vaccine con el endpoint existente si nextDoseAt es futuro (hora por defecto la fija la spec). CTA solo para owner. init.sh pasa a correr seed:vaccines (idempotente). Fuera: editar y borrar vacunas. Depende del gate G1 (artboard AltaVacuna). Evidencia en progress/explore_vaccines-reminders-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },

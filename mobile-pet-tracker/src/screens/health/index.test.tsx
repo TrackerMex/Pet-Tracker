@@ -87,6 +87,8 @@ jest.mock('reicon-react-native', () => {
     Clock: icon('health-icon-clock'),
     HeartPulse: icon('health-icon-heart-pulse'),
     Syringe: icon('health-icon-syringe'),
+    Plus: icon('health-icon-plus'),
+    BellOff: icon('health-icon-bell-off'),
   };
 });
 
@@ -210,6 +212,7 @@ async function renderHealth(language: 'es' | 'en' = 'es') {
 }
 
 beforeEach(() => {
+  clearVaccineReminderNotice();
   mockTheme = 'light';
   mockSemanticColors = false;
 });
@@ -440,7 +443,8 @@ describe('R5: vacunas con la próxima destacada', () => {
     expect(overdueDate.props.className).toContain('text-danger');
   });
 
-  it('shows the vaccines empty state', async () => {
+  it('shows the vaccines empty state (enmendado por #208 R6)', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: 'family' })] });
     mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [] });
 
     await renderHealth();
@@ -455,7 +459,8 @@ describe('R5: vacunas con la próxima destacada', () => {
   it.each([
     { kind: 'error' } as const,
     { kind: 'unreachable', message: 'network down' } as const,
-  ])('shows and retries a $kind vaccine error', async (state) => {
+  ])('shows and retries a $kind vaccine error (enmendado por #208 R6)', async (state) => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: 'family' })] });
     mockListVaccines
       .mockResolvedValueOnce(state)
       .mockResolvedValueOnce({ kind: 'ok', vaccines: [] });
@@ -1253,14 +1258,15 @@ describe('#199 R14: panel de la próxima dosis', () => {
 
 describe('#199 R15: título de Vacunas', () => {
   beforeEach(setupHealth168);
-  it('#199 R15 Vacunas es un h2 de text-lg font-extrabold sin icono', async () => {
+  it('#199 R15 Vacunas es un h2 de text-lg font-extrabold sin icono (enmendado por #208 R5)', async () => {
     await renderHealth();
     const title = await screen.findByTestId('vaccines-title');
     expect(title.type).toBe('Text');
     expect(title.props.accessibilityRole).toBe('header');
     expect(title.props.className).toBe('mt-1 text-lg font-extrabold text-foreground');
     expect(title).toHaveTextContent('Vacunas', { exact: true });
-    expect(elementChild(screen.getByTestId('vaccines-section'), 0).props.testID).toBe('vaccines-title');
+    expect(elementChild(screen.getByTestId('vaccines-section'), 0).props.testID).toBe('vaccines-header');
+    expect(elementChild(screen.getByTestId('vaccines-header'), 0).props.testID).toBe('vaccines-title');
     expect(within(screen.getByTestId('vaccines-section')).queryByTestId('health-icon-heart-pulse')).toBeNull();
   });
   it('#199 R15 vaccines-section separa sus hijos con gap-2.5', async () => {
@@ -1406,7 +1412,8 @@ describe('#199 R19: estados de vacunas', () => {
     expect(column.props.className).toBe('flex-1 gap-1.5');
     expect(column.children.filter((child): child is TestInstance => typeof child !== 'string').map(child => child.props.className)).toEqual(['skeleton__root h-3.5 w-1/3 rounded-full', 'skeleton__root h-2.5 w-2/3 rounded-full']);
   });
-  it('#199 R19 sin vacunas pinta el aviso en text-15 leading-body text-muted', async () => {
+  it('#199 R19 sin vacunas pinta el aviso en text-15 leading-body text-muted (enmendado por #208 R6)', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: 'family' })] });
     mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [] });
     await renderHealth();
     const empty = await screen.findByTestId('vaccines-empty');
@@ -1486,5 +1493,129 @@ describe('#199 R21: estados de mascotas', () => {
     expect(error.props.accessibilityRole).toBe('alert');
     expect(error).toHaveTextContent('Algo salió mal', { exact: true });
     expect(screen.getByTestId('health-retry')).toHaveTextContent('Reintentar');
+  });
+});
+
+
+const flatVaccineStyle = (style: unknown) => Object.assign({}, ...[style].flat(Infinity));
+
+describe('#208 R5: acceso al alta desde Salud', () => {
+  beforeEach(setupHealth168);
+  it('#208 R5: el owner ve «Agregar vacuna» con la receta compacta y abre el alta de su mascota', async () => {
+    mockSemanticColors = true;
+    await renderHealth();
+    const add = await screen.findByTestId('vaccines-add');
+    expect(screen.getByTestId('vaccines-header').props.className).toBe('flex-row items-center justify-between');
+    expect(elementChild(screen.getByTestId('vaccines-header'), 0).props.testID).toBe('vaccines-title');
+    expect(add.props.className).toContain('rounded-xl bg-accent h-10 gap-1.5 px-3.5');
+    expect(flatVaccineStyle(add.props.style)).toMatchObject({ boxShadow: [{ offsetX: 0, offsetY: 3, blurRadius: 0, spreadDistance: 0, color: 'lip' }] });
+    const label = within(add).getByText('Agregar vacuna', { exact: true });
+    expect(label.props.className).toContain('text-sm font-extrabold text-accent-foreground');
+    const icon = within(add).getByTestId('health-icon-plus', { includeHiddenElements: true });
+    expect(icon.props.size).toBe(16);
+    expect(icon.props.style.color).toBe('accent-foreground');
+    await fireEvent.press(add);
+    expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/pets/[petId]/vaccines/new', params: { petId: 'pet-1' } });
+  });
+  it.each(['family', 'walker', 'vet'] as const)('#208 R5: %s no ve «Agregar vacuna»', async myRole => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole })] });
+    await renderHealth();
+    const header = await screen.findByTestId('vaccines-header');
+    expect(header.children).toHaveLength(1);
+    expect(screen.queryByTestId('vaccines-add')).toBeNull();
+  });
+});
+
+
+describe('#208 R6: vacío de vacunas por rol', () => {
+  beforeEach(() => {
+    setupHealth168();
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [] });
+  });
+  it('#208 R6: el owner sin vacunas ve la tarjeta del canvas con sus cuatro hijos y copy literal', async () => {
+    mockSemanticColors = true;
+    await renderHealth();
+    const card = await screen.findByTestId('vaccines-empty-card');
+    expect(card.props.className).toBe('items-center gap-2.5 rounded-24 bg-surface-secondary px-4.5 pb-4.5 pt-5.5');
+    expect(card.props.style).toEqual({ borderCurve: 'continuous' });
+    expect(card.children).toHaveLength(4);
+    expect(card.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['vaccines-empty-tile', 'vaccines-empty-card-title', 'vaccines-empty-card-body', 'vaccines-empty-action']);
+    const tile = screen.getByTestId('vaccines-empty-tile', { includeHiddenElements: true });
+    expect(tile.props.className).toBe('size-14 items-center justify-center rounded-tile bg-surface');
+    expect(tile.props.style).toEqual({ borderCurve: 'continuous' });
+    const icon = within(tile).getByTestId('health-icon-syringe', { includeHiddenElements: true });
+    expect(icon.props.size).toBe(28);
+    expect(icon.props.style.color).toBe('accent-strong');
+    expect(screen.getByTestId('vaccines-empty-card-title').props.className).toBe('text-17 font-black text-foreground text-center');
+    expect(screen.getByTestId('vaccines-empty-card-title')).toHaveTextContent('Aún no hay vacunas', { exact: true });
+    expect(screen.getByTestId('vaccines-empty-card-body').props.className).toBe('text-sm font-medium leading-note text-muted text-center');
+    expect(screen.getByText('Registra la primera vacuna de Luna y te aviso antes de cada próxima dosis.', { exact: true })).toBeVisible();
+    const action = screen.getByTestId('vaccines-empty-action');
+    expect(action.props.className).toContain('w-full h-14 rounded-16 bg-accent');
+    expect(flatVaccineStyle(action.props.style)).toMatchObject({ boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: 'lip' }] });
+    expect(within(action).getByText('Agregar vacuna', { exact: true }).props.className).toBe('text-17 font-extrabold text-accent-foreground');
+    const plus = within(action).getByTestId('health-icon-plus', { includeHiddenElements: true });
+    expect(plus.props.size).toBe(20);
+    expect(plus.props.style.color).toBe('accent-foreground');
+    expect(screen.queryByTestId('vaccines-empty')).toBeNull();
+  });
+  it('#208 R6: el CTA del vacío abre el alta de vacuna de la mascota', async () => {
+    await renderHealth();
+    await fireEvent.press(await screen.findByTestId('vaccines-empty-action'));
+    expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/pets/[petId]/vaccines/new', params: { petId: 'pet-1' } });
+  });
+  it.each(['family', 'walker', 'vet'] as const)('#208 R6: %s sin vacunas ve el aviso plano sin CTA', async myRole => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole })] });
+    await renderHealth();
+    const empty = await screen.findByTestId('vaccines-empty');
+    expect(empty.props.className).toBe('text-15 leading-body text-muted');
+    expect(empty).toHaveTextContent('Aún no hay vacunas', { exact: true });
+    expect(screen.queryByTestId('vaccines-empty-card')).toBeNull();
+    expect(screen.queryByTestId('vaccines-empty-action')).toBeNull();
+  });
+});
+
+
+const { existsSync: vaccineNoticeExists } = jest.requireActual<typeof import('fs')>('fs');
+function healthNoticeApi() {
+  expect(vaccineNoticeExists('src/hooks/vaccine-reminder-notice.ts')).toBe(true);
+  return jest.requireActual<typeof import('../../hooks/vaccine-reminder-notice')>('../../hooks/vaccine-reminder-notice');
+}
+function clearVaccineReminderNotice() {
+  if (vaccineNoticeExists('src/hooks/vaccine-reminder-notice.ts')) healthNoticeApi().clearVaccineReminderNotice();
+}
+describe('#208 R16: aviso de recordatorio pendiente en Salud', () => {
+  beforeEach(setupHealth168);
+  it('#208 R16: con aviso pendiente de la mascota seleccionada pinta el aviso ámbar literal', async () => {
+    healthNoticeApi().showVaccineReminderNotice('pet-1');
+    mockSemanticColors = true;
+    await renderHealth();
+    const notice = await screen.findByTestId('vaccine-reminder-notice');
+    expect(screen.getByTestId('health-root').props.className).toBe('flex-1');
+    expect(notice.parent).toBe(screen.getByTestId('screen-health').parent);
+    expect(notice.props.className).toBe('absolute left-4 right-4 flex-row items-center gap-2.5 rounded-tile border border-border px-3.5 py-3 bg-category-amber');
+    expect(notice.props.accessibilityRole).toBe('alert');
+    expect(notice.props.accessibilityLiveRegion).toBe('polite');
+    expect(flatVaccineStyle(notice.props.style)).toMatchObject({ bottom: 104, borderCurve: 'continuous', boxShadow: expect.any(Array) });
+    expect(screen.getByTestId('vaccine-reminder-notice-text').props.className).toBe('flex-1 text-13 font-semibold text-foreground');
+    expect(screen.getByText('Guardé la vacuna de Luna, pero no pude crear su recordatorio.', { exact: true })).toBeVisible();
+    const action = screen.getByTestId('vaccine-reminder-notice-action');
+    expect(action.props.className).toBe('min-h-11 justify-center');
+    expect(within(action).getByText('Crear ahora', { exact: true }).props.className).toBe('text-13 font-extrabold text-category-amber-strong');
+    const icon = within(notice).getByTestId('health-icon-bell-off', { includeHiddenElements: true });
+    expect([icon.props.size, icon.props.style.color]).toEqual([20, 'category-amber-strong']);
+  });
+  it('#208 R16: «Crear ahora» limpia el aviso y abre Agregar recordatorio', async () => {
+    healthNoticeApi().showVaccineReminderNotice('pet-1');
+    await renderHealth();
+    await fireEvent.press(await screen.findByTestId('vaccine-reminder-notice-action'));
+    await waitFor(() => expect(screen.queryByTestId('vaccine-reminder-notice')).toBeNull());
+    expect(mockRouter.push).toHaveBeenCalledWith('/add-reminder');
+  });
+  it('#208 R16: un aviso de otra mascota no se pinta', async () => {
+    healthNoticeApi().showVaccineReminderNotice('pet-2');
+    await renderHealth();
+    await screen.findByTestId('vaccines-section');
+    expect(screen.queryByTestId('vaccine-reminder-notice')).toBeNull();
   });
 });
