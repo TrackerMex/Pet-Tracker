@@ -1,6 +1,8 @@
 import { useLocalSearchParams } from 'expo-router';
+import * as Clipboard from 'expo-clipboard';
 import { Button } from 'heroui-native';
-import { ScrollView, Text, View } from 'react-native';
+import { useState } from 'react';
+import { ScrollView, Share, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Copy, Lock, Share as ShareIcon } from 'reicon-react-native';
 
@@ -16,11 +18,21 @@ export default function PetInviteScreen() {
   const locale = useLocale();
   const insets = useSafeAreaInsets();
   const chunkyLip = useChunkyLip();
+  const [copied, setCopied] = useState(false);
   const [foreground, muted, accentForeground] = useThemeColors(['foreground', 'muted', 'accent-foreground']);
   const valid = Boolean(code && expiresAt && !Number.isNaN(new Date(expiresAt).getTime()));
   const dates = valid ? inviteDateParts(expiresAt, locale) : { date: '', time: '' };
   const formattedCode = formatInviteCode(code ?? '');
   const shareText = t('invite.shareMessage', { inviterName, petName, code: formattedCode, ...dates });
+
+  async function copyCode() {
+    try {
+      await Clipboard.setStringAsync(formatInviteCode(code));
+      setCopied(true);
+    } catch {
+      // #214 R15: leave the copy label unchanged when the native call rejects.
+    }
+  }
 
   return (
     <View testID="screen-pet-invite" className="flex-1 bg-background">
@@ -43,13 +55,13 @@ export default function PetInviteScreen() {
               <Text testID="pet-invite-role-note" className="flex-1 text-13 font-semibold text-muted">{t('invite.roleNote', { petName })}</Text>
             </View>
             <View style={{ flexGrow: 1 }} />
-            <Button testID="pet-invite-share" className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary}>
+            <Button testID="pet-invite-share" className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary} onPress={() => { void Share.share({ message: shareText }).catch(() => undefined); }}>
               <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><ShareIcon size={20} color={accentForeground} /></View>
               <Text className="text-17 font-extrabold text-accent-foreground">{t('invite.share')}</Text>
             </Button>
-            <Button testID="pet-invite-copy" variant="outline" className="w-full h-13.5 rounded-16 border-2 border-lip-gray bg-surface" style={chunkyLip.neutral}>
+            <Button testID="pet-invite-copy" variant="outline" className="w-full h-13.5 rounded-16 border-2 border-lip-gray bg-surface" style={chunkyLip.neutral} onPress={() => void copyCode()}>
               <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><Copy size={20} color={foreground} /></View>
-              <Text testID="pet-invite-copy-label" className="text-base font-extrabold text-foreground">{t('invite.copy')}</Text>
+              <Text testID="pet-invite-copy-label" className="text-base font-extrabold text-foreground">{copied ? t('invite.copied') : t('invite.copy')}</Text>
             </Button>
           </>
         ) : <Text testID="pet-invite-invalid" className="text-sm font-semibold text-danger">{t('common.somethingWentWrong')}</Text>}
