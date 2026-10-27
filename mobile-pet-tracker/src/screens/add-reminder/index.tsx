@@ -66,6 +66,39 @@ function initialTime(): Date {
   return time;
 }
 
+function summaryText(
+  repeat: (typeof REPEAT_OPTIONS)[number]['key'],
+  every: number,
+  notifyAt: Date,
+  until: Date | null,
+  locale: string,
+  t: ReturnType<typeof useTranslate>,
+): string {
+  const time = notifyAt.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+  if (repeat === 'once' || repeat === 'hour') {
+    return t('addReminder.notifyPreview', {
+      date: notifyAt.toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
+      time,
+    });
+  }
+  const end = until ? t('addReminder.summaryUntil', {
+    date: until.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' }),
+  }) : '';
+  const params = { time, until: end };
+  switch (repeat) {
+    case 'day': return t('addReminder.summaryDaily', params);
+    case 'week': return t('addReminder.summaryWeekly', {
+      ...params, weekday: notifyAt.toLocaleDateString(locale, { weekday: 'long' }),
+    });
+    case 'month': return every === 1
+      ? t('addReminder.summaryMonthly', { ...params, day: notifyAt.getDate() })
+      : t('addReminder.summaryMonthlyN', { ...params, day: notifyAt.getDate(), count: every });
+    case 'year': return t('addReminder.summaryYearly', {
+      ...params, date: notifyAt.toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
+    });
+  }
+}
+
 function AddReminderContent({ petId }: { petId: string }) {
   const chunkyLip = useChunkyLip();
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
@@ -391,12 +424,9 @@ function AddReminderContent({ petId }: { petId: string }) {
             className="flex-row items-center gap-2.5 rounded-tile bg-surface-secondary px-3.5 py-3"
             style={CONTINUOUS_CORNER}
           >
-            <Bell size={20} color={accentStrong} />
+            {repeat === 'once' ? <Bell size={20} color={accentStrong} /> : <Repeat size={20} color={accentStrong} />}
             <Text testID="add-reminder-preview-text" className="flex-1 text-13 font-semibold text-foreground">
-              {t('addReminder.notifyPreview', {
-                date: notifyAt.toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
-                time: notifyAt.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }),
-              })}
+              {summaryText(repeat, every, notifyAt, until, locale, t)}
             </Text>
           </View>
         ) : null}
