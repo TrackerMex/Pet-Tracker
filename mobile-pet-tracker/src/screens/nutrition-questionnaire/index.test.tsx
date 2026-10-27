@@ -571,3 +571,37 @@ it('#209 R16: con movimiento reducido no pinta anillos', async () => {
   expect(screen.queryByTestId('nutrition-generating-ring-1', { includeHiddenElements: true })).toBeNull();
   expect(screen.getByTestId('nutrition-generating-pingo', { includeHiddenElements: true })).toBeOnTheScreen();
 });
+
+// [petición, resultado, texto es literal ('' = signOut sin texto), status (null = fetch rechaza), cuerpo]
+const ERROR_ROWS: [string, string, string, number | null, unknown][] = [
+  ['PUT', 'invalid', 'Algo salió mal', 400, {}],
+  ['PUT', 'forbidden', 'Solo el dueño puede generar el plan', 403, {}],
+  ['PUT', 'unreachable', 'No se pudo conectar con el servidor', null, null],
+  ['PUT', 'error', 'Algo salió mal', 500, {}],
+  ['generate', 'forbidden', 'Solo el dueño puede generar el plan', 403, {}],
+  ['generate', 'unprocessable PET_WEIGHT_REQUIRED', 'Primero registra un peso', 422, { code: 'PET_WEIGHT_REQUIRED' }],
+  ['generate', 'unprocessable NUTRITION_PROFILE_REQUIRED', 'Algo salió mal', 422, { code: 'NUTRITION_PROFILE_REQUIRED' }],
+  ['generate', 'unreachable', 'No se pudo conectar con el servidor', null, null],
+  ['PUT', 'unauthorized', '', 401, {}],
+];
+
+it.each(ERROR_ROWS)('#209 R17: %s %s pinta «%s»', async (request, _result, text, status, body) => {
+  const invalidate = jest.spyOn(QueryClient.prototype, 'invalidateQueries');
+  await goToHealth();
+  await fireEvent.press(screen.getByTestId('allergy-chip-pollo'));
+  const base = fetchSpy.getMockImplementation() as typeof fetch;
+  fetchSpy.mockImplementation((input: RequestInfo | URL, init?: RequestInit) => {
+    const target = init?.method === 'PUT' ? 'PUT' : String(input).endsWith('/nutrition-plan/generate') ? 'generate' : null;
+    if (target !== request) return base(input, init);
+    return status === null ? Promise.reject(new TypeError('Network request failed')) : Promise.resolve(response(status, body));
+  });
+  await fireEvent.press(screen.getByTestId('nutrition-questionnaire-next'));
+  expect(await screen.findByTestId('nutrition-questionnaire-next')).toBeVisible();
+  expect(screen.getByTestId('nutrition-questionnaire-step-label')).toHaveTextContent('4 de 4', { exact: true });
+  expect(screen.getByTestId('allergy-chip-pollo')).toHaveProp('accessibilityState', { checked: true });
+  expect(screen.queryAllByTestId('nutrition-questionnaire-error').map(node => [node.props.className, node.props.children])).toEqual(text === '' ? [] : [['text-danger', text]]);
+  expect(mockSignOut).toHaveBeenCalledTimes(text === '' ? 1 : 0);
+  expect(invalidate.mock.calls.some(([filters]) => JSON.stringify(filters?.queryKey) === '["nutrition","profile","pet-1"]')).toBe(request === 'generate');
+  expect(mockRouter.back).not.toHaveBeenCalled();
+  invalidate.mockRestore();
+});
