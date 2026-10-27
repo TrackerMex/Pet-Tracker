@@ -12,6 +12,8 @@ tags: [harness, spec, backend, nutrition, ai]
 > están en [[../../docs/architecture|architecture]].
 >
 > Base medida: `origin/main` en `1316410f`, con el mismo contenido que `dev`.
+> Re-medida en `4cf5846d` (merge de `origin/dev`, 2026-10-27): solo cambian A23 y el número
+> de la migración; ver `progress/firma_nutrition-ai-structured-plan.md` §Ronda 2.
 > La branch es `feature/212-nutrition-ai-structured-plan` y la PR va contra `dev`.
 > Capa: solo backend (`backend-pet-tracker/`). La app móvil es la #215 y el
 > cuestionario es la #209.
@@ -165,7 +167,7 @@ grep -cF '## Notas para el implementer' docs/verification.md                    
 grep -cE "^\s+'aiExplanation',$" backend-pet-tracker/test/nutrition.e2e-spec.ts backend-pet-tracker/test/meal-times.e2e-spec.ts $N/infrastructure/mappers/nutrition.mapper.spec.ts
 # A21: 2, 2 y 2 (las seis listas de claves de respuesta, regla M3 de design)
 grep -cF '"tag": "0019_pet_documents_uploaded_at"' backend-pet-tracker/src/db/migrations/meta/_journal.json            # A22: 1
-grep -cF '"tag": "0020_' backend-pet-tracker/src/db/migrations/meta/_journal.json                                       # A23: 0
+grep -cF '"tag": "0020_' backend-pet-tracker/src/db/migrations/meta/_journal.json                                       # A23: 0 en 1316410f; 1 en 4cf5846d (0020_pet_invites, de #211)
 ```
 
 ## Requisitos funcionales

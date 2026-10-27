@@ -353,3 +353,58 @@ Commit `99c70cc9` (`docs(spec): #212 apply signature audit errata`). Anclas por 
 - **V9.** tasks.md §Reglas, «Its que nacen verdes»: «Excepción: el bloque R16/R17 (e2e)…».
 - **V10.** tasks.md §Reglas, viñeta «**Directorio de los locks.**». Riesgo anexo: el e2e no controla el `now` del
   servidor (el controlador llama a `execute` sin `now`), así que va como «Riesgo conocido» en tasks.md §R16 y R17 (e2e).
+
+## Ronda 2 — re-medida sobre dev (merge 4cf5846d) y G2 aprobado
+
+Fecha: 2026-10-27. HEAD medido: `4cf5846d`, merge de `origin/dev` sobre `b3c5a370` (aprobación humana de G2).
+El merge trae 188 commits de dev: #208, #210, #211, #218, #219, #220 y docs. Todo se midió con `grep`/`git` de
+solo lectura desde la raíz del worktree. No se corrió `./init.sh`, ni jest, ni e2e, ni migraciones.
+
+Ficheros que cambia el merge (`git diff --name-only b3c5a370 4cf5846d -- backend-pet-tracker docs plans`, 60) y que la spec
+cita por nombre: `src/db/migrations/meta/_journal.json`, `src/pipeline/local-day.ts` y `docs/data-model.md`. Se re-midió
+todo lo que toca esos tres y, por si acaso, el resto de §Anclas.
+
+| Ancla | Antes (`1316410f` / `383885db`) | Ahora (`4cf5846d`) | Comando |
+|---|---|---|---|
+| A1–A20, A22 | 1 cada una | 1 cada una, sin cambio | las de requirements.md §Anclas |
+| A21 | 2, 2 y 2 | 2, 2 y 2 | la de requirements.md §Anclas |
+| A16 (`shiftDay`) | 1 | 1. #210 añade cosas a `local-day.ts`, pero la firma no cambia | `grep -cF 'export function shiftDay(day: string, days: number): string {' backend-pet-tracker/src/pipeline/local-day.ts` |
+| A23 (`"tag": "0020_`) | 0 | **1** (`0020_pet_invites`, de #211) | `grep -cF '"tag": "0020_' backend-pet-tracker/src/db/migrations/meta/_journal.json` |
+| Tags del journal | 20 | **22**, la última `0021_reminders_recurrence` (#210). Igual en `origin/dev` | `grep -cF '"tag"' backend-pet-tracker/src/db/migrations/meta/_journal.json` y `git show origin/dev:backend-pet-tracker/src/db/migrations/meta/_journal.json \| grep -cF '"tag"'` |
+| Número de la migración de #212 | `0020_nutrition_ai_structured_plan.sql` | **`0022_nutrition_ai_structured_plan.sql`** (derivado: drizzle-kit numera por el índice siguiente). El journal pasa de 22 a 23 tags | derivado de la fila anterior |
+| tasks.md §R12, lock `"tag": "0019_pet_documents_uploaded_at"` | 1 | 1 | `grep -cF '"tag": "0019_pet_documents_uploaded_at"' backend-pet-tracker/src/db/migrations/meta/_journal.json` |
+| D2: `pets \|\|--o{ meal_servings : "has"` | 1 | 1. El merge solo añade la fila de `pet_invites` y su línea ER | `grep -cF 'pets \|\|--o{ meal_servings : "has"' docs/data-model.md` |
+| D2: fila `` `nutrition_ai_generations` `` | 0 | 0 | `` grep -cF '\| `nutrition_ai_generations` \|' docs/data-model.md `` |
+| D2: párrafo de las tablas de nutrición | 1 (línea 72) | 1 | `grep -cE '\(#103\)\.$' docs/data-model.md` |
+| D3: `### Feature 212` en verification.md | 0 | 0 (el merge no toca el fichero) | `grep -cF '### Feature 212' docs/verification.md` |
+| D3: `## Notas para el implementer` | 1 | 1 | `grep -cF '## Notas para el implementer' docs/verification.md` |
+| `ownerLocalDay` | `ownerLocalDay(pets: PetRepository, petId: string, now: Date): Promise<string>` | igual. #210 añade `ownerTimeZone` en el mismo fichero | `grep -rnF 'export async function ownerLocalDay(' backend-pet-tracker/src` |
+| `package.json` y `pnpm-lock.yaml` del backend | — | sin cambio en el merge: el handoff no pide `pnpm install` | `git diff --quiet b3c5a370 4cf5846d -- backend-pet-tracker/package.json backend-pet-tracker/pnpm-lock.yaml` (exit 0) |
+| Términos de §G2.2 | 50 | **51** (`cebollin` tras `cebollino`, `b3c5a370`) | R10, el título de §G2.2 y tasks.md §R10 (1) ya dicen 51 (cambio del leader) |
+| T0 unitario | 187 suites / 1474 tests (`1316410f`) | **195 suites / 1595 tests (derivado)** | ver abajo |
+| T0 e2e | sin cifra en la spec | **34 suites (31 pasan, 3 se saltan) / 588 tests (580 pasan, 8 se saltan) (derivado)** | ver abajo |
+
+**T0 es derivado.** `git diff --stat origin/dev 4cf5846d -- backend-pet-tracker` y `git diff --stat e6a4251f 4cf5846d -- backend-pet-tracker`
+salen vacíos: el backend de este HEAD es byte a byte el de `e6a4251f`. Sobre `e6a4251f` corrió el `./init.sh` del leader con
+`exit=0` (`progress/review_reminders-recurrence.md`, «Output de ./init.sh», líneas 182 y 185). Esos totales son 187/1474 de la base,
++6/+22 de #211 y +2/+99 de #210. Las features móviles del merge (#208, #218–#220) no tocan el backend. Codex mide T0 antes de su
+primer commit. Si no da estas cifras, PARA.
+
+**Comprobación de «50».** `grep -nE '(^|[^0-9.])50([^0-9]|$)' specs/nutrition-ai-structured-plan/*.md` da tres líneas:
+- el texto de la enmienda de G2 («pasa de 50 a 51», requirements.md:112);
+- `grams: 50` en un fixture fuera de cota (design.md:238);
+- un precio, «0,50 USD» (design.md:415).
+
+Nada más presupone 50 términos.
+
+**El disparador del merge sigue valiendo.** Lo usan tasks.md §Cierre y design.md §Migración: «`git ls-tree origin/dev …` muestra una 0020 o
+posterior que esta branch no tiene». La branch ya tiene `0020_pet_invites` y `0021_reminders_recurrence`, así que no dispara hoy. Una
+migración futura de dev (0022 o más) sí lo haría. No se toca.
+
+### Erratas de la ronda 2 (commit H0)
+
+- **E1.** requirements.md, cabecera: tras «Base medida: `origin/main` en `1316410f`…» se añade la línea de la re-medida en `4cf5846d`, que remite a esta sección.
+- **E2.** requirements.md §Anclas, comentario de A23: `# A23: 0 en 1316410f; 1 en 4cf5846d (0020_pet_invites, de #211)`. El comando no cambia.
+- **E3.** design.md §Migración: «En la base medida sale `0020_…`» pasa a decir que en `4cf5846d` sale `0022_nutrition_ai_structured_plan.sql`, con el journal de 22 a 23 tags. Sigue citándose por nombre.
+
+No se tocan §G2.1, §G2.2, la casilla de G2, las casillas de aprobación ni el `status` del frontmatter.

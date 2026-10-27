@@ -289,7 +289,9 @@ Hay **una** migración, que genera drizzle-kit en el commit verde de R12:
 cd backend-pet-tracker && pnpm exec drizzle-kit generate --name nutrition_ai_structured_plan
 ```
 
-En la base medida sale `0020_nutrition_ai_structured_plan.sql`. Debe contener
+En la base medida (`1316410f`) salía `0020_…`. En `4cf5846d`, con `0020_pet_invites` y
+`0021_reminders_recurrence` ya mergeadas desde dev, sale `0022_nutrition_ai_structured_plan.sql`
+y el journal pasa de 22 a 23 tags. Debe contener
 `ALTER TABLE "nutrition_plans" ADD COLUMN "ai_proposal" jsonb;` y
 `CREATE TABLE "nutrition_ai_generations"`. El SQL generado no se edita a mano.
 La migración se cita **por nombre**, no por número.
