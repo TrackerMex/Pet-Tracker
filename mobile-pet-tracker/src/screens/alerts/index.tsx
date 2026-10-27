@@ -100,7 +100,7 @@ export function AlertsScreen() {
     'muted',
   ]);
   const [expanded, setExpanded] = useState(false);
-  const [visible] = useState(10);
+  const [visible, setVisible] = useState(10);
   const [acked, setAcked] = useState<Record<string, Alert>>({});
   const [ackingId, setAckingId] = useState<string | null>(null);
   const ackingIdRef = useRef<string | null>(null);
@@ -268,6 +268,22 @@ export function AlertsScreen() {
                 {attended.slice(0, visible).map((item) => (
                   <AttendedRow key={item.id} item={item} now={now} />
                 ))}
+                {attended.length > 10 ? (
+                  <View className="items-center gap-1.5 pt-1.5">
+                    {visible < attended.length ? (
+                      <Button
+                        testID="alerts-attended-more"
+                        variant="secondary"
+                        className="h-11 rounded-14 border-2 border-lip-gray bg-surface px-5.5"
+                        style={chunkyLip.neutralCompact}
+                        onPress={() => setVisible((current) => Math.min(current + 10, attended.length))}
+                      >
+                        <Button.Label className="text-sm font-extrabold text-foreground">{t('alerts.attendedMore')}</Button.Label>
+                      </Button>
+                    ) : null}
+                    <Text testID="alerts-attended-footer" className="text-xs text-muted">{t('alerts.attendedShowing', { shown: Math.min(visible, attended.length), total: attended.length })}</Text>
+                  </View>
+                ) : null}
               </View>
             ) : null}
           </View>

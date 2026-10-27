@@ -616,6 +616,8 @@ export const R12_ALERTS: UseRow[] = [
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.newOne' }, // #170 R16
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.newMany' }, // #170 R16
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.attended' }, // #223 R16
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.attendedMore' }, // #223 R16
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.attendedShowing' }, // #223 R16
 ];
 
 export const R13_ALERT_DETAIL: UseRow[] = [
