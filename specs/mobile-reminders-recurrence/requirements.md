@@ -475,3 +475,16 @@ nombre de la mascota `pet-1` que devuelve el doble de `listPets` (R13).
       recibir el push real de dos ocurrencias seguidas (`PUSH_ENABLED=true`), deslizar las filas
       de chips de tipo y de aviso, y cancelar la serie desde la hoja de Recordatorios.
       Va en el lote G4 de `progress/smoke_mejoras-producto.md`. No bloquea tareas; bloquea `done`.
+
+## Errata del leader tras la parada en R6 (2026-10-27)
+
+- **E1 — Nombre del `it` del punto 9 de `tasks.md` §R22.** La lista de `text-15`
+  no vive en `declara el secundario compacto y el reintento sin labio …`
+  (`alerts-canvas-fidelity.test.ts`, que solo comprueba la carta), sino en el
+  `it.each` `limita $token a su inventario de producción …` del `describe`
+  `#174 R12`, caso `token: 'text-15'`. Ancla:
+  `grep -cF "])('limita \$token a su inventario de producción" __tests__/alerts-canvas-fidelity.test.ts` → 1.
+  El sufijo ` (enmendado por #213 R22)` va al final del título del `it.each`.
+  La fila nueva (`'screens/add-reminder/index.tsx', // #213 R6`), su sitio y el
+  delta no cambian. La intención no cambia. Lo detectó Codex en R6
+  (`progress/impl_mobile-reminders-recurrence.md` §Discrepancia de R22 punto 9).

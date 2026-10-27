@@ -198,7 +198,7 @@ tags: [mobile, reminders, recurrence, spec]
   8. `limita text-22 a Horario y text-17 al inventario de E1.2 (enmendado por #177 R10) (enmendado por #200 R5) (enmendado por #198 R15)`, lista de `text-22`: después de `      'components/empty-state.tsx', // #198 R15` se inserta `      join('screens', 'add-reminder', 'index.tsx'), // #213 R6` (valor del stepper).
 
   **alerts-canvas-fidelity** (`src/__tests__/alerts-canvas-fidelity.test.ts`)
-  9. `declara el secundario compacto y el reintento sin labio (enmendado por #180 R12) (enmendado por #197 R21)`, lista de `text-15` (`#174 R12`): después de `        'screens/add-pet/index.tsx', // #191 R11` se inserta `        'screens/add-reminder/index.tsx', // #213 R6` («Cada» del stepper).
+  9. `it.each` `limita $token a su inventario de producción …` del `describe` `#174 R12`, caso `token: 'text-15'` (errata E1 del leader; el título del `it.each` gana ` (enmendado por #213 R22)` al final, tras `(enmendado por #205 R16)`): después de `        'screens/add-pet/index.tsx', // #191 R11` se inserta `        'screens/add-reminder/index.tsx', // #213 R6` («Cada» del stepper).
 
   **consistency-classnames** (`src/__tests__/consistency-classnames.test.ts`)
   10. `directUses` del `describe` `#62 R14`: `[join('screens', 'add-reminder', 'index.tsx'), 3 + 1 - 2], // #178 R12; #220 R15` → `[join('screens', 'add-reminder', 'index.tsx'), 3 + 1 - 2 + 1], // #178 R12; #220 R15; #213 R6` (2 → 3; el `it.each` `%s importa y aplica sus %i esquinas` cambia solo de caso).
