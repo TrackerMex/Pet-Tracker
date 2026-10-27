@@ -4,6 +4,7 @@ import { join } from 'path';
 import { DefaultTheme, useTheme } from 'expo-router';
 import { renderRouter } from 'expo-router/testing-library';
 import { screen } from '@testing-library/react-native';
+import { useEffect } from 'react';
 import { Text } from 'react-native';
 
 import AuthLayout from '../(auth)/_layout';
@@ -44,7 +45,9 @@ jest.mock('uniwind', () => ({
 
 function ThemeProbe() {
   const theme = useTheme();
-  sceneTheme = theme;
+  useEffect(() => {
+    sceneTheme = theme;
+  }, [theme]);
   return <Text testID="theme-scene-background">{String(theme.colors.background)}</Text>;
 }
 
