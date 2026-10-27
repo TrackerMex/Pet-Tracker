@@ -1,25 +1,36 @@
-import { useQuery } from '@tanstack/react-query';
+import { BottomSheet, BottomSheetView } from '@expo/ui/community/bottom-sheet';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Skeleton } from 'heroui-native';
+import { useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { listPetMembers } from '../../api/pet-members';
+import { listPetMembers, removePetMember, type PetMember } from '../../api/pet-members';
 import { getPet } from '../../api/pets';
 import { memberKeys, petKeys, userKeys } from '../../api/query-keys';
 import { getMe } from '../../api/users';
 import { ScreenHeader } from '../../components/screen-header';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
-import { CATEGORY_SLOTS } from '../../utils/category-palette';
+import { useChunkyLip } from '../../theme/chunky-lip';
+import { useThemeColors } from '../../theme/use-theme-colors';
+import { CATEGORY_SLOTS, type CategorySlot } from '../../utils/category-palette';
 import { memberInitials } from '../../utils/pet-members';
 
 const MEMBER_AVATAR_SLOTS = ['blue', 'violet', 'amber', 'green', 'rose'] as const;
 
 export default function PetMembersScreen({ petId }: { petId: string }) {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
-  const { token } = useAuth();
+  const { token, signOut } = useAuth();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
+  const chunkyLip = useChunkyLip();
+  const [surface] = useThemeColors(['surface']);
+  const [removing, setRemoving] = useState<{ member: PetMember; slot: CategorySlot } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const busyRef = useRef(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const petQuery = useQuery({
     queryKey: petKeys.detail(petId),
     queryFn: () => getPet(baseUrl, token ?? '', petId),
@@ -47,6 +58,37 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
     if (meQuery.data?.kind !== 'ok') void meQuery.refetch();
   }
 
+  async function handleRemove() {
+    if (!removing || busyRef.current) return;
+    busyRef.current = true;
+    setBusy(true);
+    try {
+      const result = await removePetMember(baseUrl, token ?? '', petId, removing.member.userId);
+      switch (result.kind) {
+        case 'ok':
+          setRemoving(null);
+          await queryClient.invalidateQueries({ queryKey: memberKeys.list(petId) });
+          break;
+        case 'rejected':
+          setRemoving(null);
+          await queryClient.invalidateQueries({ queryKey: memberKeys.list(petId) });
+          setActionError(t('common.somethingWentWrong'));
+          break;
+        case 'unauthorized':
+          await signOut();
+          break;
+        case 'unreachable':
+          setActionError(t('common.cannotReachServer'));
+          break;
+        default:
+          setActionError(t('common.somethingWentWrong'));
+      }
+    } finally {
+      busyRef.current = false;
+      setBusy(false);
+    }
+  }
+
   let otherIndex = 0;
   return (
     <View testID="screen-pet-members" className="flex-1 bg-background">
@@ -69,6 +111,7 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
             </Button>
           </View>
         ) : null}
+        {actionError ? <Text testID="pet-members-action-error" accessibilityRole="alert" className="text-13 font-bold text-danger" selectable>{actionError}</Text> : null}
         {pet && members && me ? (
           <>
             {isOwner ? <Text testID="pet-members-intro" className="text-sm leading-note text-muted">{t('members.ownerIntro', { petName: pet.name })}</Text> : null}
@@ -98,7 +141,7 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
                       {canRemove ? rolePill : null}
                     </View>
                     {canRemove ? (
-                      <Button testID={`member-row-${member.userId}-remove`} variant="danger-soft" className={`h-11 rounded-14 px-3 ${CATEGORY_SLOTS.rose.surface}`} accessibilityLabel={t('members.removeA11y', { name })}>
+                      <Button testID={`member-row-${member.userId}-remove`} variant="danger-soft" className={`h-11 rounded-14 px-3 ${CATEGORY_SLOTS.rose.surface}`} accessibilityLabel={t('members.removeA11y', { name })} isDisabled={busy} onPress={() => setRemoving({ member, slot })}>
                         <Text className="text-13 font-extrabold text-danger">{t('members.remove')}</Text>
                       </Button>
                     ) : rolePill}
@@ -109,6 +152,29 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
           </>
         ) : null}
       </ScrollView>
+      <BottomSheet index={removing ? 0 : -1} enablePanDownToClose onClose={() => setRemoving(null)} snapPoints={['50%', '100%']} backgroundStyle={{ backgroundColor: surface }}>
+        <BottomSheetView>
+          {removing && pet ? (
+            <View testID="member-remove-sheet" className="items-center gap-3 bg-surface px-5 pb-9 pt-3">
+              <View testID="member-remove-sheet-avatar" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" className={`size-14 items-center justify-center rounded-full ${CATEGORY_SLOTS[removing.slot].surface}`}>
+                <Text className={`text-xl font-black ${CATEGORY_SLOTS[removing.slot].ink}`}>{memberInitials(removing.member.firstName, removing.member.lastName)}</Text>
+              </View>
+              <Text testID="member-remove-sheet-title" accessibilityRole="header" className="text-center text-xl font-black text-foreground">
+                {t('members.removeTitle', { name: `${removing.member.firstName} ${removing.member.lastName}`.trim() })}
+              </Text>
+              <Text testID="member-remove-sheet-body" className="max-w-80 text-center text-sm leading-note text-muted">
+                {t('members.removeBody', { firstName: removing.member.firstName, petName: pet.name })}
+              </Text>
+              <Button testID="member-remove-sheet-confirm" className="w-full h-13.5 rounded-16 bg-danger" style={chunkyLip.danger} isDisabled={busy} onPress={() => void handleRemove()}>
+                <Text className="text-base font-extrabold text-danger-foreground">{t('members.removeConfirm', { firstName: removing.member.firstName })}</Text>
+              </Button>
+              <Button testID="member-remove-sheet-cancel" variant="outline" className="w-full h-13.5 rounded-16 border-2 border-lip-gray bg-surface" style={chunkyLip.neutral} onPress={() => setRemoving(null)}>
+                <Text className="text-base font-extrabold text-foreground">{t('members.cancel')}</Text>
+              </Button>
+            </View>
+          ) : null}
+        </BottomSheetView>
+      </BottomSheet>
     </View>
   );
 }
