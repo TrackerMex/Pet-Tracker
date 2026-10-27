@@ -1479,4 +1479,49 @@ describe('#213 R4: controles de repetición', () => {
     expect(mockCreateReminder).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token', 'pet-1', expected);
   });
 
+  it.each([
+    ["Diario", "Te aviso cada día a las 09:00.", "day", 1, 2026, 11, 31, 0, null],
+    ["Diario con Hasta", "Te aviso cada día a las 09:00, hasta el 2 ene 2027.", "day", 1, 2026, 11, 31, 0, [2027, 0, 2]],
+    ["Semanal", "Te aviso cada miércoles a las 09:00.", "week", 1, 2026, 11, 30, 0, null],
+    ["Semanal con Hasta", "Te aviso cada miércoles a las 09:00, hasta el 6 ene 2027.", "week", 1, 2026, 11, 30, 0, [2027, 0, 6]],
+    ["Mensual", "Te aviso el día 31 de cada mes a las 09:00.", "month", 1, 2026, 11, 31, 0, null],
+    ["Mensual con aviso y Hasta", "Te aviso el día 31 de cada mes a las 09:00, hasta el 31 ene 2027.", "month", 1, 2027, 0, 1, 1440, [2027, 0, 31]],
+    ["Mensual 3", "Te aviso el día 31 cada 3 meses a las 09:00.", "month", 3, 2026, 11, 31, 0, null],
+    ["Mensual 3 con Hasta", "Te aviso el día 31 cada 3 meses a las 09:00, hasta el 30 jun 2027.", "month", 3, 2026, 11, 31, 0, [2027, 5, 30]],
+    ["Anual", "Te aviso cada año el 2 ene a las 09:00.", "year", 1, 2027, 0, 2, 0, null],
+    ["Anual con Hasta", "Te aviso cada año el 2 ene a las 09:00, hasta el 2 ene 2030.", "year", 1, 2027, 0, 2, 0, [2030, 0, 2]],
+  ] as const)('#213 R11: la nota de %s dice «%s»', async (_label, expected, key, count, year, month, day, advance, until) => {
+    await fireEvent.press(screen.getByTestId(`repeat-chip-${key}`));
+    if (key === 'month') for (let i = 1; i < count; i++) await fireEvent.press(screen.getByTestId('repeat-every-more'));
+    await pickDate(new Date(year, month, day, 12));
+    await pickTime(9, 0);
+    await fireEvent.press(screen.getByTestId(`advance-chip-${advance}`));
+    if (until) await pickUntil(new Date(until[0], until[1], until[2], 12));
+    expect(screen.getByTestId('add-reminder-preview-text')).toHaveTextContent(expected);
+  });
+
+  it('#213 R11: la nota usa Repeat con repetición y Bell con Una vez', async () => {
+    const themeColors = jest.requireActual<typeof import('../../theme/use-theme-colors')>('../../theme/use-theme-colors');
+    jest.spyOn(themeColors, 'useThemeColors').mockImplementation(
+      ((tokens: readonly string[]) => tokens.map((token) => `color:${token}`)) as typeof themeColors.useThemeColors,
+    );
+    await pickDate(new Date(2026, 11, 31, 12));
+    const bell = screen.getByTestId('add-reminder-icon-bell', { includeHiddenElements: true });
+    expect(bell.props.size).toBe(20);
+    expect(bell.props.color).toBe('color:accent-strong');
+    await fireEvent.press(screen.getByTestId('repeat-chip-day'));
+    expect(screen.queryByTestId('add-reminder-icon-bell', { includeHiddenElements: true })).toBeNull();
+    const repeat = screen.getByTestId('add-reminder-icon-repeat', { includeHiddenElements: true });
+    expect(repeat.props.size).toBe(20);
+    expect(repeat.props.color).toBe('color:accent-strong');
+  });
+
+  it('#213 R11: la nota semanal usa el día local al cruzar medianoche UTC', async () => {
+    await fireEvent.press(screen.getByTestId('repeat-chip-week'));
+    await pickDate(new Date(2026, 11, 30, 12));
+    await pickTime(23, 30);
+    await fireEvent.press(screen.getByTestId('advance-chip-0'));
+    expect(screen.getByTestId('add-reminder-preview-text')).toHaveTextContent('Te aviso cada miércoles a las 23:30.');
+  });
+
 });
