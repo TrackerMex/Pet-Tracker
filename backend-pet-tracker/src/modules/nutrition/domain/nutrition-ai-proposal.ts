@@ -36,6 +36,13 @@ export function acceptAiOutput(
   ) {
     return null;
   }
+  const sum = output.mealGrams.reduce((total, meal) => total + meal.grams, 0);
+  if (
+    Math.abs(sum - plan.dailyGrams) * 100 >
+    plan.dailyGrams * NUTRITION_AI_GRAMS_TOLERANCE_PERCENT
+  ) {
+    return null;
+  }
   return {
     explanation: output.explanation,
     proposal: {
