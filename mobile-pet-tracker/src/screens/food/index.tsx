@@ -453,7 +453,7 @@ export function FoodScreen() {
               <View className="h-50 w-55 items-center justify-center">
                 <View className="absolute size-47.5 rounded-full bg-surface-secondary" />
                 <PingoFloat testID="food-profile-pingo">
-                  <Image source={require('../../../assets/images/pingo-food.webp')} className="size-37.5" />
+                  <Image testID="food-profile-pingo-image" source={require('../../../assets/images/pingo-food.webp')} style={{ width: 150, height: 150 }} />
                 </PingoFloat>
               </View>
               <Text className="text-center text-24 font-black tracking-title">
