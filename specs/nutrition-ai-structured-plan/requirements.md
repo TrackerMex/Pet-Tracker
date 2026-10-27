@@ -59,7 +59,7 @@ Por eso el texto nuevo y la lista de tóxicos se aprueban aquí, literalmente, e
 una casilla propia. Sin esa casilla marcada no hay handoff.
 
 Si al aprobar G2 el humano cambia algún término de §G2.2, en el mismo acto se
-enmiendan los 50 literales del test de R10 (y la cifra 50 donde aparezca) y, si
+enmiendan los 51 literales del test de R10 (y la cifra 51 donde aparezca) y, si
 el término es uno de los dos, los locks `'nuez moscada',` y `'raw dough'` de
 [[tasks]] §R10. Si cambia §G2.1, el literal del test de R4 y el lock del
 comentario de [[tasks]] §R4 se enmiendan igual.
@@ -84,7 +84,7 @@ La línea inmediatamente anterior a la constante, en la fuente, es este literal:
 /** Producto, 2026-10-26 (#212, gate G2). Cambiarlo es decisión del humano, no del implementador. */
 ```
 
-### G2.2 — `NUTRITION_TOXIC_FOODS` (literal, 50 términos, en este orden)
+### G2.2 — `NUTRITION_TOXIC_FOODS` (literal, 51 términos, en este orden)
 
 Una sola lista sirve para perro y gato; todos sus términos son tóxicos para los dos.
 Los términos están normalizados (minúsculas, sin tildes y con un solo espacio)
@@ -93,7 +93,7 @@ inglés porque el modelo puede contestar en inglés, aunque se le pida español.
 
 ```text
 chocolate, cacao, cafe, cafeina, xilitol, edulcorante, chicle, uva, uvas, pasas,
-sultanas, cebolla, cebollas, ajo, ajos, puerro, puerros, cebollino, aguacate, aguacates,
+sultanas, cebolla, cebollas, ajo, ajos, puerro, puerros, cebollino, cebollin, aguacate, aguacates,
 palta, macadamia, nuez moscada, alcohol, cerveza, vino, levadura, masa cruda, hueso cocido, huesos cocidos,
 cocoa, coffee, caffeine, xylitol, grape, grapes, raisin, raisins, onion, onions,
 garlic, leek, leeks, chives, avocado, nutmeg, beer, wine, yeast, raw dough
@@ -108,7 +108,11 @@ el filtro deja una propuesta sin recomendaciones, se acepta igual (R11).
 
 Falso positivo que el diseño evita: el filtro compara tokens enteros, así que «ajo» no se encuentra dentro de «trabajo» (R10).
 
-- [ ] G2 aprobado por humano: system prompt y lista de tóxicos
+Enmienda del humano al aprobar G2 (2026-10-27): se añade `cebollin` (cebollín,
+como se dice en México) tras `cebollino`. La lista pasa de 50 a 51 términos; el
+prompt de §G2.1 no cambia.
+
+- [x] G2 aprobado por humano: system prompt y lista de tóxicos (fecha: 2026-10-27; en la sesión de Claude Code del leader, opción «Aprobar + «cebollin»»)
 
 ## Decisiones técnicas cerradas por el `spec_author`
 
@@ -329,15 +333,15 @@ Función pura `acceptAiOutput(output, plan, localDay)` en
   - Además, `R9: la tolerancia es del 10 por ciento` comprueba que `NUTRITION_AI_GRAMS_TOLERANCE_PERCENT` vale `10`.
 
 - **R10**: THE SYSTEM SHALL definir `NUTRITION_TOXIC_FOODS` igual a la lista de
-  §G2.2, con el mismo orden y 50 términos.
+  §G2.2, con el mismo orden y 51 términos.
   - `mentionsToxicFood(text)` devuelve `true` si y solo si la secuencia de tokens
     normalizada del texto contiene un término como secuencia de tokens completos.
   - Normalizar es: `normalize('NFD')`, quitar `\p{M}`, `toLowerCase()`, partir por `/[^a-z0-9]+/` sin vacíos y unir con un espacio.
   - Test: `src/modules/nutrition/domain/nutrition-toxic-foods.spec.ts` (nuevo):
-    - `R10: la lista es exactamente la aprobada en G2`: `toEqual` contra los 50 literales, escritos en el test.
+    - `R10: la lista es exactamente la aprobada en G2`: `toEqual` contra los 51 literales, escritos en el test.
     - `it.each('R10: detecta %s', …)` con `'Evita darle chocolate.'`, `'Nada de Café ni té.'`, `'No le ofrezcas UVAS como premio.'`, `'Evita la nuez de macadamia.'`, `'Avoid grapes and raisins.'` y `'Nunca le des masa  cruda.'` (dos espacios).
     - `it.each('R10: no detecta %s', …)` con `'Pésala cada semana, también en días de trabajo.'`, `'Observa su condición corporal cada mes.'` y `'Consulta al veterinario si deja de comer.'`.
-    - `R10: detecta cada termino de la lista dentro de una frase`: recorre los 50 literales del test con `` `Evita ${term} hoy.` ``.
+    - `R10: detecta cada termino de la lista dentro de una frase`: recorre los 51 literales del test con `` `Evita ${term} hoy.` ``.
 
 - **R11**: WHEN la salida cumple R8 y R9 THE SYSTEM SHALL devolver
   `{ explanation: output.explanation, proposal: { mealGrams, recommendations, reviewDate } }`:

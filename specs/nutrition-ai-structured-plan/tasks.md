@@ -75,7 +75,7 @@ pnpm exec tsc --noEmit -p tsconfig.json
 
 Va antes que R8, porque R11 la usa.
 
-- [ ] (1) Rojo: crear `src/modules/nutrition/domain/nutrition-toxic-foods.spec.ts` con los its de R10. Los 50 literales de §G2.2 se escriben en el test.
+- [ ] (1) Rojo: crear `src/modules/nutrition/domain/nutrition-toxic-foods.spec.ts` con los its de R10. Los 51 literales de §G2.2 se escriben en el test.
   - Stub: `NUTRITION_TOXIC_FOODS = []` y `mentionsToxicFood` devolviendo `false`.
   - Nacen verdes: las tres filas de `R10: no detecta %s`.
   - Commit: `test(nutrition-ai-structured-plan): toxic food list and token matcher (R10, stub)`.
