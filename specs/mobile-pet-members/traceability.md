@@ -224,6 +224,9 @@ su commit es el que las toca. «Rojo → verde» copia la tabla de R24 de tasks.
 Merge de `origin/dev` (ca2d0abb) en la branch: `91a70ed3 Merge remote-tracking branch 'origin/dev' into feature/214-mobile-pet-members`
 (17 conflictos resueltos sumando los dos lados; los hashes de las filas anteriores no cambian porque no hubo rebase).
 
+Segundo merge de `origin/dev` (2c103bb4, trae #222) en la branch: `d97d498b Merge remote-tracking branch 'origin/dev' into feature/214-mobile-pet-members`
+(3 conflictos resueltos sumando los dos lados; los hashes de las filas anteriores no cambian porque no hubo rebase).
+
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(<scope>): <desc> (R1,R2)`.
 El implementer actualiza esta tabla tras cada commit; el reviewer la valida

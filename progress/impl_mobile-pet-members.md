@@ -2402,3 +2402,87 @@ Notas para el reviewer:
 - Mirar el título de `consistency-classnames.test.ts` «da color temático a los seis placeholders»: es la única
   fusión que no es suma literal (ver A).
 - Ninguno de los flakes conocidos se puso rojo en la corrida completa tras el merge.
+
+## Adenda 6 — segundo merge de `origin/dev` (#222)
+
+Implementador: subagente `implementer` (fallback de CLAUDE.md §Excepciones, declarado en `progress/current.md` en d233ea22;
+Codex sin cuota). Arranque: `/home/claude/sites/Pet-Tracker-wt-214`, branch `feature/214-mobile-pet-members`, HEAD d233ea22,
+único cambio `?? progress/review_mobile-pet-members.md` (no se toca ni se commitea).
+Skills cargadas: `expo:expo-overview` (trabajo de merge en tests de guardas; ninguna pantalla nueva).
+
+### A. Merge de `origin/dev`
+
+- `git fetch origin`: `origin/dev` = 2c103bb4 (el esperado), merge-base ca2d0abb.
+- `git merge-tree --write-tree --name-only HEAD origin/dev`: 3 conflictos, los 3 esperados
+  (`alerts-canvas-fidelity.test.ts`, `ui-language.test.ts`, `language-provider.test.tsx`).
+- `git merge --no-ff --no-commit origin/dev`: 3 conflictos (los 3 esperados), 35 commits en `ca2d0abb..origin/dev`.
+  Sin cambios de `dev` en `package.json`, `bun.lock` ni el backend.
+- Los 3 se resolvieron sumando los dos lados; ninguno exigió elegir uno. Método igual que en la Adenda 5:
+  `git checkout --conflict=diff3`, cada trozo comprobado contra la base (cada lado es la base más su propio
+  añadido), lado de `dev` intacto y #214 encima; después `git diff origin/dev -- <fichero>` solo deja líneas de #214.
+  - `alerts-canvas-fidelity.test.ts` (1 trozo, título del `it.each` de inventarios): `… (enmendado por #213 R22)
+    (enmendado por #222 R9) (enmendado por #214 R12, R18)`. Las listas de ficheros se auto-fusionaron
+    (`screens/join-pet/index.tsx` de #214 en `tracking-title` y en la lista de `segmented-control`).
+  - `language-provider.test.tsx` (2 trozos): título `… (enmendado por #213 R22) (enmendado por #222 R8)
+    (enmendado por #214 R22)`; suma de claves `+ 54 // #213 R22`, `+ 1 // #222 R8`, `+ 51, // #214 R22`.
+  - `ui-language.test.ts` (1 trozo, base vacía: los dos añaden un `describe` al final): primero
+    `#222 R8: Copy tabHeader.petsScroll y filas de la tabla` de `dev`, después `#214 R22: copy de Familia`.
+    Las cifras de `R5_HEALTH` y `R6_FOOD` (+1 cada una por #222 R8) se auto-fusionaron; #214 no las toca.
+- Auto-fusionados con cifras, revisados uno a uno: en todos, `git diff --numstat origin/dev` = `git diff --numstat
+  ca2d0abb HEAD` (el delta de #214 entra entero y no toca líneas de `dev`):
+  `canvas-foundations.test.ts` 2/2, `profile-canvas-fidelity.test.ts` 8/2, `ui-copy-table.ts` 80/2,
+  `app/(tabs)/__tests__/screens.test.tsx` 1/0, `i18n/catalog.ts` 102/0, `screens/profile/index.test.tsx` 141/5,
+  `feature_list.json` 1/1 (fila 214 en `spec_ready`). `screens/profile/index.tsx`: los cambios de #222 R9
+  (fila superior con `addPetCapsule`, `profile-heading` oculto) y los de #214 (imports, `ProfileWideTile`,
+  `membersQuery`, filas 1–3 de enlaces) no se solapan.
+- Cifras agregadas (cifra de `dev` + delta de #214 = resultado; todas medidas por la corrida en verde):
+
+  | Fichero · aserción | dev | #214 | resultado |
+  |---|---|---|---|
+  | `language-provider.test.tsx` · claves del catálogo (`+ 54` #213, `+ 1` #222 R8, `+ 51` #214) | 539 | +51 | 590 |
+  | `ui-language.test.ts` · `R5_HEALTH` / `R6_FOOD` (#222 R8: +1 cada uno) | sin cambio por #214 | 0 | igual que `dev` |
+  | `ui-language.test.ts` · `SCREEN_FILES` (#222 no lo toca) | 38 | +3 | 41 |
+  | `ui-copy-table.ts` · `ALL_USES` (bloques de `dev` + `R21_PET_MEMBERS`) | suma de `dev` | +`R21_PET_MEMBERS` | suma de bloques (candado verde) |
+  | `canvas-foundations` · dependencias (#222 no toca `package.json`) | 42 | +1 | 43 |
+  | `alerts-canvas-fidelity` · inventario `tracking-title` | lista de `dev` | +`screens/join-pet/index.tsx` | lista de `dev` + join-pet |
+  | `profile-canvas-fidelity` · `rounded-tile` / `text-13` | listas de `dev` | +3 / +3 ficheros | listas de `dev` + los de #214 |
+  | `profile-canvas-fidelity` · `variant="avatars"` (#222 R9: pasa a `components/tab-pet-header.tsx`) | 1 fichero | 0 | 1 fichero |
+  | `canvas-foundations` · `tracking-tight` (#222 R9: la lista baja a `celebration.tsx`) | 1 fichero | 0 | 1 fichero |
+
+  El 539 de `dev` es la suma de su expresión (590 − 51), evaluada con node sobre el fichero fusionado.
+- Verificación (todo en primer plano, sin `init.sh`; `pgrep` previo: ningún jest ni `init.sh` vivo, solo un
+  typecheck de `Pet-Tracker-wt-221`):
+  - `bun install --frozen-lockfile`: exit 0, «no changes».
+  - `test ! -e .expo/types/router.d.ts`: exit 0.
+  - `bunx tsc --noEmit > ../progress/tsc-214.log 2>&1`: exit 0, log vacío.
+  - `bunx expo lint --no-cache > ../progress/lint-214.log 2>&1 && test ! -s ../progress/lint-214.log`: exit 0.
+  - `bunx jest --testTimeout=30000 > ../progress/jest-214-merge2.log 2>&1`: exit 0.
+    ```
+    Test Suites: 167 passed, 167 total
+    Tests:       6077 passed, 6077 total
+    Snapshots:   1 passed, 1 total
+    Time:        174.122 s
+    ```
+    Los 53 `●` del log son todos `● Console`; ningún fallo. Ningún flake se puso rojo: no hubo que repetir ninguno.
+    Frente a la Adenda 5 (6035 + 1 de la enmienda = 6036, 166 suites): +41 tests y +1 suite, todo de #222.
+- Commit del merge: `d97d498b` («Merge remote-tracking branch 'origin/dev' into feature/214-mobile-pet-members»),
+  padres d233ea22 y 2c103bb4. Sin `-a`: el índice solo tenía los 44 ficheros de `ca2d0abb..origin/dev`; este reporte
+  y `progress/review_mobile-pet-members.md` quedaron fuera. `git merge-base --is-ancestor origin/dev HEAD`: exit 0.
+
+### B. Cierre
+
+- `specs/mobile-pet-members/traceability.md`: línea nueva con el segundo merge (`d97d498b`, padre de `dev` 2c103bb4),
+  detrás de la del primero. Ninguna fila de R-id cambia.
+- Fuera de los commits: `progress/review_mobile-pet-members.md` (sin seguimiento, intacto) y los `progress/*.log`
+  (ignorados por git: `tsc-214.log`, `lint-214.log`, `jest-214-merge2.log`).
+- Commit de cierre: `docs(mobile): #214 traceability for the second dev merge` (`traceability.md` y este reporte,
+  con `--only`).
+- Última acción: `progress/impl_mobile-pet-members.done` con la ruta de este reporte.
+- No se ejecutó `init.sh` (lo corre el leader). Sin push, sin PR, sin rebase.
+
+Notas para el reviewer:
+- Los tres conflictos son solo títulos de candados, una suma y dos `describe` al final de fichero; ninguno toca
+  comportamiento.
+- Las anclas de las filas 28 y 48 de `traceability.md` («título que termina en …») citan el final del título de
+  antes de los merges; ahora llevan delante los sufijos de `dev` (#213 R22, #222 R9 / #222 R8). La adenda prohíbe
+  cambiar filas de R-id, así que no se reescribieron: el sufijo de #214 sigue siendo el último de cada título.
