@@ -78,7 +78,7 @@ export function copyWithMealTimes(
     objective: plan.objective,
     warnings: plan.warnings,
     aiExplanation: plan.aiExplanation,
-    aiProposal: plan.aiProposal,
+    aiProposal: null,
     inputsHash: plan.inputsHash,
   };
 }
