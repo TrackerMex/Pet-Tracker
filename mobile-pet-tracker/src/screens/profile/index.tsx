@@ -297,6 +297,10 @@ export function ProfileScreen() {
     }
   }
 
+  const joinPetLink = (
+    <ProfileWideTile testID="join-pet-link" slot="amber" icon={<Key size={22} strokeWidth={2.2} color={amber} />} label={t('joinPet.title')} subtitle={t('joinPet.invitedPrompt')} color={amber} onPress={() => router.push('/join-pet' as Href)} />
+  );
+
   const remindersLink = (
     <ProfileTile
       testID="reminders-link"
@@ -501,11 +505,19 @@ export function ProfileScreen() {
             <View testID="profile-links-row-2" className="flex-row gap-2">
               <ProfileWideTile testID="members-link" slot="rose" icon={<Users size={22} strokeWidth={2.2} color={rose} />} label={t('profile.membersLink')} subtitle={membersSummary} color={rose} onPress={() => router.push(`/pets/${pet.id}/members` as Href)} />
             </View>
+            <View testID="profile-links-row-3" className="flex-row gap-2">
+              {joinPetLink}
+            </View>
           </>
         ) : (
-          <View testID="profile-links-row-0" className="flex-row gap-2">
-            {remindersLink}
-          </View>
+          <>
+            <View testID="profile-links-row-0" className="flex-row gap-2">
+              {remindersLink}
+            </View>
+            <View testID="profile-links-row-1" className="flex-row gap-2">
+              {joinPetLink}
+            </View>
+          </>
         )}
       </View></HomeEntrance>
 
