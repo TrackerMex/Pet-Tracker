@@ -494,3 +494,19 @@ nombre de la mascota `pet-1` que devuelve el doble de `listPets` (R13).
   superior y `useQuery(petKeys.list())` pasan de R13 a R12. R13 conserva su
   `it.each` de tres filas y la variante `summaryHoursDosesNoPet`. Ningún
   requisito, literal ni candado cambia. Lo preguntó Codex antes de R12.
+
+## Errata del leader tras el rechazo del reviewer (2026-10-27)
+
+- **E3 — R21 aplica el parámetro una vez por valor.** La revisión de `44644e48`
+  (`progress/review_mobile-reminders-recurrence.md`, B1) mostró que el efecto de
+  R21 vuelve a llamar a `selectPet(petId)` cada vez que cambia `selectedPetId`.
+  Con `petId` en la ruta, el usuario no puede cambiar de mascota. La intención
+  de R21 no cambia: seleccionar la mascota del parámetro cuando llega, no
+  fijarla. Se añade un tercer test a R21:
+  `#213 R21: tras abrir con petId se puede elegir otra mascota` (mascotas
+  `pet-1` «Luna» y `pet-2` «Rocky», params `{petId:'pet-2'}`: misma espera a
+  `pet-chip-pet-2` seleccionada, `await fireEvent.press` sobre `pet-chip-pet-1`,
+  espera a `pet-chip-pet-1` con `accessibilityState` `{ selected: true }` y
+  aserta que la última llamada a `listReminders` recibe `'pet-1'`). El efecto
+  no depende de `selectedPetId`, y un `petId` desconocido no provoca un bucle
+  de render.
