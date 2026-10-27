@@ -26,6 +26,15 @@ const requests = {
   acceptInvite: (url: string | undefined, fetchFn: typeof fetch) => acceptInvite(url, 'token', 'K7P4Q-2M9XA', fetchFn),
 };
 
+it('R19: acceptInvite da el mismo kind con 404 y con 400', async () => {
+  const notFound = jest.fn().mockResolvedValue(response(404, { code: 'INVITE_NOT_ACCEPTABLE' }));
+  const malformed = jest.fn().mockResolvedValue(response(400, {}));
+  const first = await acceptInvite(baseUrl, 'token', 'K7P4Q-2M9XA', notFound);
+  const second = await acceptInvite(baseUrl, 'token', 'malformado', malformed);
+  expect(first).toEqual({ kind: 'not-acceptable' });
+  expect(second).toEqual(first);
+});
+
 type Branch = [string, keyof typeof requests, number, unknown, Record<string, unknown>];
 
 it.each<Branch>([

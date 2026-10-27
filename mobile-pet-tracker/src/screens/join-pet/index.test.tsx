@@ -80,3 +80,53 @@ it('R18: envía el código recortado una sola vez', async () => {
   await act(async () => finish({ kind: 'error' }));
   await waitFor(() => expect(screen.getByTestId('join-pet-submit')).toBeEnabled());
 });
+
+async function attempt(result: AcceptInviteState) {
+  jest.mocked(acceptInvite).mockResolvedValue(result);
+  const app = await renderJoin();
+  await fireEvent.changeText(screen.getByTestId('join-pet-input'), 'K7P4Q-2M9XA');
+  await fireEvent.press(screen.getByTestId('join-pet-submit'));
+  return app;
+}
+
+it('R19: not-acceptable dice Este código no funciona y marca el borde', async () => {
+  await attempt({ kind: 'not-acceptable' });
+  await waitFor(() => expect(screen.getByTestId('join-pet-error')).toHaveTextContent('Este código no funciona. Puede que haya vencido o que ya se haya usado. Pide uno nuevo a quien te invitó.'));
+  expect(screen.getByTestId('join-pet-error').props.accessibilityRole).toBe('alert');
+  expect(screen.getByTestId('join-pet-input').props.className).toContain('border-danger');
+});
+
+it('R19: rate-limited dice Demasiados intentos', async () => {
+  await attempt({ kind: 'rate-limited' });
+  await waitFor(() => expect(screen.getByTestId('join-pet-error')).toHaveTextContent('Demasiados intentos. Inténtalo más tarde.'));
+});
+
+it('R19: unreachable dice No se pudo conectar con el servidor', async () => {
+  await attempt({ kind: 'unreachable', message: 'x' });
+  await waitFor(() => expect(screen.getByTestId('join-pet-error')).toHaveTextContent('No se pudo conectar con el servidor'));
+});
+
+it('R19: error dice Algo salió mal', async () => {
+  await attempt({ kind: 'error' });
+  await waitFor(() => expect(screen.getByTestId('join-pet-error')).toHaveTextContent('Algo salió mal'));
+});
+
+it('R19: missing-config dice Algo salió mal', async () => {
+  await attempt({ kind: 'missing-config' });
+  await waitFor(() => expect(screen.getByTestId('join-pet-error')).toHaveTextContent('Algo salió mal'));
+});
+
+it('R19: unauthorized cierra sesión sin aviso', async () => {
+  await attempt({ kind: 'unauthorized' });
+  await waitFor(() => expect(screen.getByTestId('join-pet-submit')).toBeEnabled());
+  expect(mockSignOut).toHaveBeenCalledTimes(1);
+  expect(screen.queryByTestId('join-pet-error')).toBeNull();
+});
+
+it('R19: editar borra el error', async () => {
+  await attempt({ kind: 'not-acceptable' });
+  await waitFor(() => expect(screen.getByTestId('join-pet-error')).toBeVisible());
+  await fireEvent.changeText(screen.getByTestId('join-pet-input'), 'OTRO');
+  expect(screen.queryByTestId('join-pet-error')).toBeNull();
+  expect(screen.getByTestId('join-pet-input').props.className).toContain('border-accent');
+});
