@@ -4,18 +4,19 @@ import { Button, Skeleton } from 'heroui-native';
 import { useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Key } from 'reicon-react-native';
 
-import { listPetMembers, removePetMember, type PetMember } from '../../api/pet-members';
+import { listPetInvites, listPetMembers, removePetMember, revokePetInvite, type PetMember } from '../../api/pet-members';
 import { getPet } from '../../api/pets';
-import { memberKeys, petKeys, userKeys } from '../../api/query-keys';
+import { inviteKeys, memberKeys, petKeys, userKeys } from '../../api/query-keys';
 import { getMe } from '../../api/users';
 import { ScreenHeader } from '../../components/screen-header';
 import { useAuth } from '../../providers/auth-provider';
-import { useTranslate } from '../../providers/language-provider';
+import { useLocale, useTranslate } from '../../providers/language-provider';
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS, type CategorySlot } from '../../utils/category-palette';
-import { memberInitials } from '../../utils/pet-members';
+import { inviteDateParts, memberInitials } from '../../utils/pet-members';
 
 const MEMBER_AVATAR_SLOTS = ['blue', 'violet', 'amber', 'green', 'rose'] as const;
 
@@ -23,10 +24,12 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token, signOut } = useAuth();
   const t = useTranslate();
+  const locale = useLocale();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const chunkyLip = useChunkyLip();
   const [surface] = useThemeColors(['surface']);
+  const [amberStrong] = useThemeColors(['category-amber-strong']);
   const [removing, setRemoving] = useState<{ member: PetMember; slot: CategorySlot } | null>(null);
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
@@ -48,6 +51,12 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
   const members = membersQuery.data?.kind === 'ok' ? membersQuery.data.members : null;
   const me = meQuery.data?.kind === 'ok' ? meQuery.data.me : null;
   const isOwner = pet?.myRole === 'owner';
+  const invitesQuery = useQuery({
+    queryKey: inviteKeys.list(petId),
+    queryFn: () => listPetInvites(baseUrl, token ?? '', petId),
+    enabled: isOwner,
+  });
+  const invites = invitesQuery.data?.kind === 'ok' ? invitesQuery.data.invites : [];
   const loading = queries.some((query) => query.data === undefined);
   const hasError = queries.some((query) => query.data && ['error', 'missing-config', 'unreachable'].includes(query.data.kind));
   const unreachable = queries.some((query) => query.data?.kind === 'unreachable');
@@ -73,6 +82,32 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
           setRemoving(null);
           await queryClient.invalidateQueries({ queryKey: memberKeys.list(petId) });
           setActionError(t('common.somethingWentWrong'));
+          break;
+        case 'unauthorized':
+          await signOut();
+          break;
+        case 'unreachable':
+          setActionError(t('common.cannotReachServer'));
+          break;
+        default:
+          setActionError(t('common.somethingWentWrong'));
+      }
+    } finally {
+      busyRef.current = false;
+      setBusy(false);
+    }
+  }
+
+  async function handleRevoke(inviteId: string) {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setBusy(true);
+    try {
+      const result = await revokePetInvite(baseUrl, token ?? '', petId, inviteId);
+      switch (result.kind) {
+        case 'ok':
+        case 'not-found':
+          await queryClient.invalidateQueries({ queryKey: inviteKeys.list(petId) });
           break;
         case 'unauthorized':
           await signOut();
@@ -149,6 +184,31 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
                 );
               })}
             </View>
+            {isOwner && invites.length > 0 ? (
+              <>
+                <Text testID="pet-invites-heading" accessibilityRole="header" className="text-sm font-extrabold text-foreground">{t('members.invitesHeading')}</Text>
+                <View testID="pet-invites-list" className="rounded-card bg-surface border border-border px-3.5">
+                  {invites.map((invite) => {
+                    const created = inviteDateParts(invite.createdAt, locale);
+                    const expires = inviteDateParts(invite.expiresAt, locale);
+                    return (
+                      <View key={invite.id} testID={`invite-row-${invite.id}`} className="flex-row items-center gap-2.5 py-3">
+                        <View testID={`invite-row-${invite.id}-icon`} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" className={`size-9.5 items-center justify-center rounded-10 ${CATEGORY_SLOTS.amber.surface}`}>
+                          <Key size={18} color={amberStrong} />
+                        </View>
+                        <View className="flex-1 gap-1">
+                          <Text testID={`invite-row-${invite.id}-created`} className="text-13 font-extrabold text-foreground">{t('members.inviteCreated', { date: created.date })}</Text>
+                          <Text testID={`invite-row-${invite.id}-expires`} className="text-xs font-semibold text-muted">{t('members.inviteExpires', expires)}</Text>
+                        </View>
+                        <Button testID={`invite-row-${invite.id}-revoke`} variant="danger-soft" className={`h-11 rounded-14 px-3 ${CATEGORY_SLOTS.rose.surface}`} accessibilityLabel={t('members.revokeA11y', { date: created.date })} isDisabled={busy} onPress={() => void handleRevoke(invite.id)}>
+                          <Text className="text-13 font-extrabold text-danger">{t('members.revoke')}</Text>
+                        </Button>
+                      </View>
+                    );
+                  })}
+                </View>
+              </>
+            ) : null}
           </>
         ) : null}
       </ScrollView>
