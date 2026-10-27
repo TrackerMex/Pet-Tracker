@@ -139,3 +139,36 @@ Va en el reporte, tal cual; el humano lo corre en dispositivo (lote G4 de `progr
     - Vincular collar: sin collar, sale la nota «Solo el dueño puede vincular un collar.» en lugar del formulario; con collar, no hay «Desvincular».
   - Con la cuenta dueña: todo lo anterior sigue igual que hoy.
   - Cambiar de una mascota propia a una ajena y volver: las acciones desaparecen y vuelven.
+
+## Adenda 1 (leader, 2026-10-27, tras el merge de `dev` con #212 y #214)
+
+Esta adenda manda sobre el texto de arriba donde lo contradiga.
+
+- Implementador: el subagente `implementer`, no Codex. La cuota semanal de Codex está al 3 % (se renueva el
+  2 de noviembre a las 14:37); el fallback está declarado en `progress/current.md`. Las reglas de arriba valen
+  igual. Las skills son las de Claude Code (`expo:expo-overview` y las que nombra la carta), no el catálogo de
+  Codex. La regla «NO lances ./init.sh» sigue en pie, y no uses Monitor: espera a jest con `pgrep` como dice la
+  regla de «Jest de un fichero».
+- H0 nuevo: `abdd87c8`, el merge de `origin/dev` (`fe624698`, con #212 y #214) sobre el commit del handoff. El
+  leader ya corrió `bun install --frozen-lockfile` (entró `expo-clipboard`). No hagas `git fetch`, `git merge`,
+  `git rebase` ni `bun install`.
+- Primer comando (línea 3): el mismo. Los dos commits de `git log --oneline -2` son ahora, de arriba abajo, el de
+  esta adenda (`docs(progress): #216 handoff addendum 1 after the dev merge`) y `abdd87c8`.
+- Cuenta de commits al cierre (sustituye a la de arriba): `git log --oneline abdd87c8..HEAD` da, de abajo arriba,
+  el de esta adenda, los 14 de la cadena (7 `test` + 7 `feat`, más los `refactor` que haya) y el final. Cualquier
+  otro, PARA.
+- El diff final se mide desde `abdd87c8`: `git diff --name-only abdd87c8..HEAD` es la lista cerrada de ficheros
+  de arriba más `progress/impl_mobile-role-aware-actions.md` y `specs/mobile-role-aware-actions/traceability.md`,
+  ni uno más.
+- Anclas T0: el leader las midió de nuevo en `abdd87c8` y todas coinciden con la cifra «base», sin ninguna
+  discrepancia. Tú las corres igual antes del primer test.
+- Lo que trajo el merge en tus ficheros, y por qué no cambia nada:
+  - `src/screens/home/index.tsx` y su test: #214 R7 añade `home-join-pet` («Unirme con código») a la rama sin
+    mascotas. R2 y R3 tocan la rama con mascota (el `map` de `QUICK_ACTIONS` y `collar-pair-link`): no se cruzan.
+  - `src/__tests__/ui-copy-table.ts`: filas nuevas en `R5_HEALTH`, `R6_FOOD` y la tabla nueva `R21_PET_MEMBERS`.
+    `R10_PAIRING` no cambia; tu fila `// #216 R6` va en `R10_PAIRING` como dice la spec.
+  - `src/__tests__/ui-language.test.ts`: enmiendas de #222 R8 y #214 R22 en otros `it`. El de `#65 R10` sigue
+    con `42 + 2 + 1 + 4 - 1 + 1); //` (ancla 1): la cifra de llegada de R6 no cambia.
+- Flakes de carga: a los conocidos de arriba se suma Perfil `#173 R5`. Mismo trato: rojo en la suite completa y
+  verde aislado se anota y se sigue.
+- Devuélvele al leader solo la ruta del reporte y la línea `Estado:`. El contenido vive en el reporte.
