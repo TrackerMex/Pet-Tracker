@@ -397,12 +397,13 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
 describe('R8: generar plan con degradación por kind', () => {
   beforeEach(() => {
     mockGetNutritionProfile.mockResolvedValue({ kind: 'not-found' });
+    mockGetPet.mockResolvedValue(petState('owner'));
   });
 
   it.each([
     { kind: 'not-found' } as const,
     { kind: 'ok', plan: makePlan() } as const,
-  ])('shows the generate button with a $kind plan', async (state) => {
+  ])('shows the generate button with a $kind plan (enmendado por #209 R21)', async (state) => {
     mockGetNutritionPlan.mockResolvedValue(state);
 
     await renderMealSchedule();
@@ -442,7 +443,7 @@ describe('R8: generar plan con degradación por kind', () => {
       result: { kind: 'unreachable', message: 'network down' },
       message: 'No se pudo conectar con el servidor',
     },
-  ])('maps $result.kind to "$message"', async ({ result, message }) => {
+  ])('maps $result.kind to "$message" (enmendado por #209 R21)', async ({ result, message }) => {
     mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
     mockGenerateNutritionPlan.mockResolvedValue(result);
 
@@ -464,7 +465,7 @@ describe('R8: generar plan con degradación por kind', () => {
     );
   });
 
-  it('clears a prior error and refetches the generated plan on success', async () => {
+  it('clears a prior error and refetches the generated plan on success (enmendado por #209 R21)', async () => {
     const generatedPlan = makePlan({ dailyGrams: 200 });
     mockGetNutritionPlan
       .mockResolvedValueOnce({ kind: 'not-found' })
@@ -492,7 +493,7 @@ describe('R8: generar plan con degradación por kind', () => {
     expect(mockGenerateNutritionPlan).toHaveBeenCalledTimes(2);
   });
 
-  it('disables the generate button while the request is pending', async () => {
+  it('disables the generate button while the request is pending (enmendado por #209 R21)', async () => {
     mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
     mockGenerateNutritionPlan.mockReturnValue(pending<GeneratePlanState>());
 
@@ -1281,15 +1282,13 @@ describe('#179 R7: acciones del artboard', () => {
     expectGenerate(actions);
   });
 
-  it('el familiar solo ve Generar ocupando el ancho disponible', async () => {
+  it('el familiar no ve ni Añadir ni Generar (enmendado por #209 R21)', async () => {
     mockGetPet.mockResolvedValue(petState('family'));
     await renderMealSchedule();
     await screen.findByTestId('meal-time-row-1');
-    const actions = screen.getByTestId('meal-schedule-actions');
-    expect(childTestIds(actions)).toEqual(['generate-plan-button']);
-    expect(within(actions).queryByTestId('add-meal-time-button')).toBeNull();
-    expect(within(screen.getByTestId('meal-times-section')).queryByTestId('add-meal-time-button')).toBeNull();
-    expectGenerate(actions);
+    expect(screen.queryByTestId('meal-schedule-actions')).toBeNull();
+    expect(screen.queryByTestId('add-meal-time-button')).toBeNull();
+    expect(screen.queryByTestId('generate-plan-button')).toBeNull();
   });
 
   it('el dueño sin plan solo ve Generar', async () => {
@@ -1303,7 +1302,8 @@ describe('#179 R7: acciones del artboard', () => {
     expectGenerate(actions);
   });
 
-  it('el error de generar precede a las acciones como hermano', async () => {
+  it('el error de generar precede a las acciones como hermano (enmendado por #209 R21)', async () => {
+    mockGetPet.mockResolvedValue(petState('owner'));
     mockGenerateNutritionPlan.mockResolvedValue({ kind: 'forbidden' });
     await renderMealSchedule();
     await fireEvent.press(await screen.findByTestId('generate-plan-button'));
@@ -1462,4 +1462,27 @@ describe('#209 R20: enlaces de perfil en Horario', () => {
       expect(screen.queryByTestId('nutrition-profile-create')).toBeNull();
     });
   });
+});
+
+it.each(['family', 'walker', 'vet'] as const)('#209 R21: %s no ve Generar plan', async (role) => {
+  mockGetPet.mockResolvedValue(petState(role));
+  mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+  mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
+  const { queryClient } = await renderMealSchedule();
+  await screen.findByTestId('meal-time-row-1');
+  await waitFor(() => {
+    expect(queryClient.getQueryData(['pets', 'detail', 'pet-1'])).toEqual(petState(role));
+    expect(screen.queryByTestId('generate-plan-button')).toBeNull();
+    expect(screen.queryByTestId('meal-schedule-actions')).toBeNull();
+  });
+});
+
+it('#209 R21: owner ve Generar plan', async () => {
+  mockGetPet.mockResolvedValue(petState('owner'));
+  mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+  mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
+  await renderMealSchedule();
+  await screen.findByTestId('meal-time-row-1');
+  const actions = await screen.findByTestId('meal-schedule-actions');
+  expect(within(actions).getByTestId('generate-plan-button')).toBeOnTheScreen();
 });
