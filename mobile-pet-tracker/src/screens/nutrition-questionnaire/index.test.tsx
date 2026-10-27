@@ -1,4 +1,5 @@
-import { act, fireEvent, screen, within } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
+import { QueryClient } from '@tanstack/react-query';
 import { usePreventRemove } from 'expo-router/react-navigation';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
@@ -498,4 +499,75 @@ it('#209 R15: con bodyCondition null Siguiente de Condición está desactivado',
   expect(await screen.findByText('¿Cómo está su cuerpo?')).toBeVisible();
   expect(screen.getByTestId('bcs-option-7')).toHaveProp('accessibilityState', { checked: false });
   expect(screen.getByTestId('nutrition-questionnaire-next')).toBeDisabled();
+});
+
+function deferred() {
+  let resolve!: (value: Response) => void;
+  const promise = new Promise<Response>(done => { resolve = done; });
+  return { promise, resolve };
+}
+function holdRequests() {
+  const put = deferred();
+  const generate = deferred();
+  const base = fetchSpy.getMockImplementation() as typeof fetch;
+  fetchSpy.mockImplementation((input: RequestInfo | URL, init?: RequestInit) => {
+    if (init?.method === 'PUT') return put.promise;
+    if (String(input).endsWith('/nutrition-plan/generate')) return generate.promise;
+    return base(input, init);
+  });
+  return { put, generate };
+}
+async function saveFromHealth() {
+  await goToHealth();
+  const held = holdRequests();
+  await fireEvent.press(screen.getByTestId('nutrition-questionnaire-next'));
+  expect(await screen.findByTestId('nutrition-generating')).toBeVisible();
+  return held;
+}
+const ROW_IN_PROGRESS = 'text-15 font-extrabold text-foreground';
+const ROW_DONE = 'text-15 font-bold text-foreground';
+const ROW_PENDING = 'text-15 font-semibold text-muted';
+function rowClass(label: string) {
+  return within(screen.getByTestId('nutrition-generating-steps')).getByText(label).props.className as string;
+}
+
+it('#209 R16: con PUT en vuelo pinta Generando con Perfil guardado en curso', async () => {
+  await saveFromHealth();
+  expect(screen.queryByTestId('nutrition-questionnaire-next')).toBeNull();
+  expect(screen.getByTestId('nutrition-generating-ring-0', { includeHiddenElements: true })).toBeOnTheScreen();
+  expect(screen.getByTestId('nutrition-generating-ring-1', { includeHiddenElements: true })).toBeOnTheScreen();
+  expect(screen.getByTestId('nutrition-generating-pingo', { includeHiddenElements: true })).toBeOnTheScreen();
+  expect(screen.getByText('Preparando el plan de Rocky')).toBeVisible();
+  expect(screen.getByText('Estoy calculando sus calorías y el reparto de sus comidas. Tarda unos segundos.')).toBeVisible();
+  expect(screen.getByTestId('nutrition-generating-steps')).toHaveProp('accessibilityLiveRegion', 'polite');
+  expect(rowClass('Perfil guardado')).toBe(ROW_IN_PROGRESS);
+  expect(rowClass('Calculando calorías')).toBe(ROW_PENDING);
+  expect(rowClass('Repartiendo comidas')).toBe(ROW_PENDING);
+});
+it('#209 R16: tras PUT ok marca Perfil guardado hecho y Calculando en curso', async () => {
+  const { put } = await saveFromHealth();
+  await act(async () => { put.resolve(response(200, makeProfile())); });
+  await waitFor(() => expect(rowClass('Perfil guardado')).toBe(ROW_DONE));
+  expect(rowClass('Calculando calorías')).toBe(ROW_IN_PROGRESS);
+  expect(rowClass('Repartiendo comidas')).toBe(ROW_PENDING);
+  expect(mockRouter.back).not.toHaveBeenCalled();
+});
+it('#209 R16: generate ok invalida perfil y plan y vuelve atrás', async () => {
+  const invalidate = jest.spyOn(QueryClient.prototype, 'invalidateQueries');
+  const { put, generate } = await saveFromHealth();
+  await act(async () => { put.resolve(response(200, makeProfile())); });
+  await waitFor(() => expect(rowClass('Calculando calorías')).toBe(ROW_IN_PROGRESS));
+  expect(mockRouter.back).not.toHaveBeenCalled();
+  await act(async () => { generate.resolve(response(200, { id: 'plan-1', petId: 'pet-1' })); });
+  await waitFor(() => expect(mockRouter.back).toHaveBeenCalledTimes(1));
+  expect(invalidate).toHaveBeenCalledWith({ queryKey: ['nutrition', 'profile', 'pet-1'] });
+  expect(invalidate).toHaveBeenCalledWith({ queryKey: ['nutrition', 'plan', 'pet-1'] });
+  invalidate.mockRestore();
+});
+it('#209 R16: con movimiento reducido no pinta anillos', async () => {
+  mockUseReducedMotion.mockReturnValue(true);
+  await saveFromHealth();
+  expect(screen.queryByTestId('nutrition-generating-ring-0', { includeHiddenElements: true })).toBeNull();
+  expect(screen.queryByTestId('nutrition-generating-ring-1', { includeHiddenElements: true })).toBeNull();
+  expect(screen.getByTestId('nutrition-generating-pingo', { includeHiddenElements: true })).toBeOnTheScreen();
 });
