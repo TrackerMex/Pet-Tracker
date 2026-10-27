@@ -25,6 +25,7 @@ DERIVA SPEC VS ÁRBOL (léela antes de tocar nada). Medido por el redactor del h
   - P13. El ancla de `text-13` (= 2) y la de `text-17` (= 2) de `index.tsx` son de H0. Si el leader te pide más tarde un `git merge origin/dev` y #222 toca esas líneas, se recomputan.
   - P14 (observación sin acción). El `it.each` `#200 R16` de nutrition-canvas-fidelity cambia una fila (R13(b)) y la spec NO manda sufijo en su título: NO se lo pongas (la spec manda «estas enmiendas exactas y ninguna otra»). Sí lo llevan los títulos de Perfil, `R6_FOOD`, `SCREEN_FILES`, `#194 R1` y `#200 R8`.
 
+RESUELTO POR EL LEADER (commit cbbf08cd): L1 a L6 confirmados. E1 en requirements.md y tasks.md recoge P3, P4 y las cifras P5 a P8; H0 no cambia (el merge con #215 lo hará quien mergee segundo); G4 no bloquea. Los commits cbbf08cd y este no cuentan como trabajo tuyo.
 PENDIENTE DEL LEADER (antes de lanzar Codex; este handoff NO lo resuelve):
   - L1. Confirmar P3 (la lista de Perfil conserva `'screens/food/index.tsx'`; la ancla post-C5 de `text-13` es 1). Sin esa confirmación, el handoff y la spec se contradicen en R13(a) y en tasks.md.
   - L2. Confirmar P4, P5, P6, P7 y P8 (rutas relativas a `src`, cifras 68 a 71, 42 a 43, 667 a 670 y colocación de líneas). Trasladarlas a requirements.md R4/R13 y a design.md §Candados si quiere que la spec y el handoff coincidan.
