@@ -141,3 +141,60 @@ describe('R9 (nutrition-ai-structured-plan #212): tolerancia de gramos', () => {
     expect(NUTRITION_AI_GRAMS_TOLERANCE_PERCENT).toBe(10);
   });
 });
+
+describe('R11 (nutrition-ai-structured-plan #212): recomendaciones y revision', () => {
+  it('R11: descarta solo la recomendacion toxica, conserva el orden y la explicacion', () => {
+    const result = acceptAiOutput(
+      {
+        ...VALID_OUTPUT,
+        recommendations: [
+          'Pésala cada dos semanas.',
+          'Evita darle chocolate.',
+          'Observa su condición corporal.',
+        ],
+      },
+      PLAN_300,
+      localDay,
+    );
+    expect(result).toStrictEqual({
+      explanation: 'Explicación de prueba.',
+      proposal: {
+        mealGrams: [
+          { mealTime: '07:30', grams: 90 },
+          { mealTime: '12:00', grams: 100 },
+          { mealTime: '19:30', grams: 110 },
+        ],
+        recommendations: [
+          'Pésala cada dos semanas.',
+          'Observa su condición corporal.',
+        ],
+        reviewDate: '2026-11-25',
+      },
+    });
+  });
+
+  it('R11: todas toxicas deja recomendaciones vacias y acepta la propuesta', () => {
+    const result = acceptAiOutput(
+      { ...VALID_OUTPUT, recommendations: ['Evita las uvas.', 'Nada de ajo.'] },
+      PLAN_300,
+      localDay,
+    );
+    expect(result).not.toBeNull();
+    expect(result?.proposal.recommendations).toStrictEqual([]);
+  });
+
+  it.each<[string, number, string]>([
+    ['2026-12-28', 7, '2027-01-04'],
+    ['2026-10-26', 90, '2027-01-24'],
+    ['2026-02-25', 7, '2026-03-04'],
+    ['2026-10-25', 30, '2026-11-24'],
+  ])(
+    'R11: desde %s con %i dias revisa el %s',
+    (day, reviewInDays, reviewDate) => {
+      expect(
+        acceptAiOutput({ ...VALID_OUTPUT, reviewInDays }, PLAN_300, day)
+          ?.proposal.reviewDate,
+      ).toBe(reviewDate);
+    },
+  );
+});
