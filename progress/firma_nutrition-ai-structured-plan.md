@@ -408,3 +408,15 @@ migración futura de dev (0022 o más) sí lo haría. No se toca.
 - **E3.** design.md §Migración: «En la base medida sale `0020_…`» pasa a decir que en `4cf5846d` sale `0022_nutrition_ai_structured_plan.sql`, con el journal de 22 a 23 tags. Sigue citándose por nombre.
 
 No se tocan §G2.1, §G2.2, la casilla de G2, las casillas de aprobación ni el `status` del frontmatter.
+
+### Errata de la ronda 2 al preparar el handoff (commit H0 nuevo)
+
+- **E4.** tasks.md §R12 (1): `src/db/schema/nutrition.schema.spec.ts`, it `declara nutrition_plans con historial, checks, cascade e indice`,
+  compara la lista exacta de columnas de `nutrition_plans` (13, con `'ai_explanation',` una vez: `grep -cE "^\s+'ai_explanation',$" … # 1`).
+  Ni M6 ni M7 la cubren, y añadir `ai_proposal` en R12 (2) la tumbaría con la suite unitaria en verde exigida. Se añade el bullet que la
+  enmienda en el rojo de R12 y el lock `grep -cE "^\s+'ai_proposal',$" src/db/schema/nutrition.schema.spec.ts # 1`.
+- Sin errata, pero el handoff lo nombra: `test/meals.e2e-spec.ts`, it `devuelve solo las franjas servidas, ordenadas por el plan`, lista las
+  13 claves del GET (con `servedToday` y `kcalConsumedToday`). A21 no la cuenta; la cubre la última frase de M7 («Cualquier aserción exacta
+  sobre el cuerpo de `generate` o de GET en otros e2e gana las mismas claves»). Pasa a 14 en el commit e2e de R16/R17.
+- Sin errata: M6 alcanza también los literales de `NutritionPlan` de `add-meal-time`, `move-meal-time` y `serve-meal` (`*.use-case.spec.ts`).
+  M6 dice «Todo literal», así que ya está cubierto; el handoff los pone en la lista cerrada.

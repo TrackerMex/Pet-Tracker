@@ -159,6 +159,7 @@ Va antes que R8, porque R11 la usa.
 ## R12 — Contador diario atómico, esquema y migración
 
 - [ ] (1) Rojo: añadir los tres its de R12 al e2e.
+  - En `src/db/schema/nutrition.schema.spec.ts`, el it `declara nutrition_plans con historial, checks, cascade e indice` gana `'ai_proposal',` justo después de `'ai_explanation',` en su lista de columnas (errata E4 de la re-medida). Queda rojo por aserción hasta el verde.
   - Stub: `consumeAiGeneration` en el puerto y en el repositorio, devolviendo `false`.
   - Nacen verdes: ninguno.
   - Commit: `test(nutrition-ai-structured-plan): atomic daily AI generation counter (R12, stub)`.
@@ -177,6 +178,7 @@ Va antes que R8, porque R11 la usa.
   grep -cF 'CREATE TABLE "nutrition_ai_generations"' src/db/migrations/*_nutrition_ai_structured_plan.sql                      # 1
   grep -cF '"tag": "0019_pet_documents_uploaded_at"' src/db/migrations/meta/_journal.json                                        # 1
   grep -cF '_nutrition_ai_structured_plan"' src/db/migrations/meta/_journal.json                                               # 1
+  grep -cE "^\s+'ai_proposal',$" src/db/schema/nutrition.schema.spec.ts                                                          # 1
   ```
 
 ## R4 — System prompt de G2
