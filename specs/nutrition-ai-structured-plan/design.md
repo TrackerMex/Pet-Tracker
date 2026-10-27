@@ -147,9 +147,9 @@ El `warn` de `'rejected'` usa `private readonly logger = new Logger(GenerateNutr
 - `NUTRITION_AI_SYSTEM_PROMPT` pasa a ser el texto de §G2.1, con el comentario de §G2.1 en la línea anterior.
 - `buildUserPrompt(input, result, weightTrend)` devuelve `JSON.stringify({ input: <igual que hoy>, result: <igual que hoy>, weightTrend: weightTrend.map((p) => ({ measuredAt: p.measuredAt, weightKg: p.weightKg })) })`.
 - Nuevo `NUTRITION_AI_OUTPUT_JSON_SCHEMA`, el literal de §C-2.
-- Nuevo `NutritionAiOutputSchema`, de zod (§C-3).
 
 `src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts`:
+- Nuevo `NutritionAiOutputSchema`, de zod (§C-3), como `const` no exportada. Vive aquí y no en `nutrition-prompt.ts`, como fijó el handoff; alineado al cerrar (menor 2 de `progress/review_nutrition-ai-structured-plan.md`).
 - `NUTRITION_AI_MAX_OUTPUT_TOKENS = 2_000`.
 - `AnthropicMessageParams` gana `thinking: { type: 'disabled' }` y `output_config: { format: { type: 'json_schema'; schema: Record<string, unknown> } }`.
 - La normalización pasa a ser: si `stop_reason === 'end_turn'` y el texto recortado no está vacío, `JSON.parse` dentro de `try` y luego `NutritionAiOutputSchema.safeParse`. Si sale bien, devuelve `data`. En cualquier otro caso, `warn` con `message: 'ai proposal unusable'` (mismos campos que hoy) y `null`. Un `JSON.parse` fallido va por esa rama, no por el `catch` de errores de red.
