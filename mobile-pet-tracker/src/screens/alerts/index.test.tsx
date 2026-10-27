@@ -1888,4 +1888,13 @@ describe('#223 R5: la insignia espera al último cursor y suma las abiertas de t
     expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('1', { exact: true });
     expect(mockListAlerts).toHaveBeenCalledTimes(2);
   });
+
+  it('#223 R15: la lista no declara onEndReached y el drenado pide las páginas', async () => {
+    mockListAlerts.mockResolvedValueOnce({ kind: 'ok', items: [makeAlert({ id: 'first-page' })], nextCursor: 'c1' })
+      .mockResolvedValueOnce({ kind: 'ok', items: [makeAlert({ id: 'last-page' })], nextCursor: null });
+    await renderAlerts();
+    await waitFor(() => expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['first-page', 'last-page']));
+    expect(screen.getByTestId('alerts-list').props.onEndReached).toBeUndefined();
+    expect(mockListAlerts).toHaveBeenCalledTimes(2);
+  });
 });
