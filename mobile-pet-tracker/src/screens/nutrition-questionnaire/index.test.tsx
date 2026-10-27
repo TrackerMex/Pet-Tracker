@@ -385,3 +385,77 @@ it.each(['allergy', 'disease'] as const)('#209 R13: marcar Otra en %s muestra ¿
   await fireEvent.changeText(screen.getByTestId(`${list}-other-input`), 'Maíz ok');
   expect(screen.getByTestId(`${list}-other-count`)).toHaveTextContent('7/40', { exact: true });
 });
+
+function putBody(): Record<string, unknown> {
+  const call = fetchSpy.mock.calls.find(([, init]) => (init as RequestInit | undefined)?.method === 'PUT');
+  expect(call).toBeDefined();
+  return JSON.parse(String((call?.[1] as RequestInit).body)) as Record<string, unknown>;
+}
+async function saveFromFood() {
+  await fireEvent.press(screen.getByTestId('food-type-dry'));
+  await fireEvent.press(screen.getByTestId('nutrition-questionnaire-next'));
+  expect(await screen.findByText('Alergias')).toBeVisible();
+  await fireEvent.press(screen.getByTestId('nutrition-questionnaire-next'));
+}
+
+it('#209 R14: condición 5 omite targetWeightKg aunque se hubiera escrito antes', async () => {
+  await goToTarget(7);
+  await fireEvent.changeText(screen.getByTestId('target-weight-input'), '10');
+  await fireEvent.press(screen.getByTestId('target-weight-change'));
+  await fireEvent.press(await screen.findByTestId('bcs-option-5'));
+  await fireEvent.press(screen.getByTestId('nutrition-questionnaire-next'));
+  expect(await screen.findByText('Tipo de alimento')).toBeVisible();
+  await saveFromFood();
+  const body = putBody();
+  expect(body).toEqual({ activityLevel: 'medium', bodyCondition: 5, foodType: 'dry', kcalPer100g: 350, allergies: [], diseases: [] });
+  expect(body).not.toHaveProperty('targetWeightKg');
+});
+it('#209 R14: condición 7 con peso vacío omite targetWeightKg', async () => {
+  await goToFood(7);
+  await saveFromFood();
+  const body = putBody();
+  expect(body).toHaveProperty('bodyCondition', 7);
+  expect(body).not.toHaveProperty('targetWeightKg');
+});
+it('#209 R14: condición 7 con «10,5» envía targetWeightKg 10.5', async () => {
+  await goToTarget(7);
+  await fireEvent.changeText(screen.getByTestId('target-weight-input'), '10,5');
+  await fireEvent.press(screen.getByTestId('nutrition-questionnaire-next'));
+  expect(await screen.findByText('Tipo de alimento')).toBeVisible();
+  await saveFromFood();
+  expect(putBody()).toEqual({ activityLevel: 'medium', bodyCondition: 7, targetWeightKg: 10.5, foodType: 'dry', kcalPer100g: 350, allergies: [], diseases: [] });
+});
+it('#209 R14: Otra con «  Maíz  » añade «Maíz» tras las etiquetas marcadas', async () => {
+  await goToHealth();
+  await fireEvent.press(screen.getByTestId('allergy-chip-huevo'));
+  await fireEvent.press(screen.getByTestId('allergy-chip-otra'));
+  await fireEvent.changeText(screen.getByTestId('allergy-other-input'), '  Maíz  ');
+  await fireEvent.press(screen.getByTestId('allergy-chip-pollo'));
+  await fireEvent.press(screen.getByTestId('nutrition-questionnaire-next'));
+  const body = putBody();
+  expect(body.allergies).toEqual(['Pollo', 'Huevo', 'Maíz']);
+  expect(body.diseases).toEqual([]);
+});
+it('#209 R14: Otra con solo espacios no añade nada', async () => {
+  await goToHealth();
+  await fireEvent.press(screen.getByTestId('disease-chip-diabetes'));
+  await fireEvent.press(screen.getByTestId('disease-chip-otra'));
+  await fireEvent.changeText(screen.getByTestId('disease-other-input'), '   ');
+  await fireEvent.press(screen.getByTestId('nutrition-questionnaire-next'));
+  expect(putBody().diseases).toEqual(['Diabetes']);
+});
+it('#209 R14: con 21 alergias conservadas envía 20', async () => {
+  const kept = Array.from({ length: 21 }, (_, index) => `Alergia conservada ${String(index + 1).padStart(2, '0')} ${'a'.repeat(30)}`);
+  expect(kept.every(text => text.length > 40 && text.length <= 100)).toBe(true);
+  storedProfile = makeProfile({ allergies: kept });
+  await renderQuestionnaire();
+  await screen.findByTestId('activity-option-medium');
+  for (const legend of ['¿Cómo está su cuerpo?', 'Peso objetivo', 'Tipo de alimento', 'Alergias']) {
+    await fireEvent.press(screen.getByTestId('nutrition-questionnaire-next'));
+    expect(await screen.findByText(legend)).toBeVisible();
+  }
+  await fireEvent.press(screen.getByTestId('nutrition-questionnaire-next'));
+  const body = putBody();
+  expect(body.allergies).toEqual(kept.slice(0, 20));
+  expect(body.allergies).toHaveLength(20);
+});
