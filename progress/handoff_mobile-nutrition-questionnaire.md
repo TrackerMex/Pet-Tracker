@@ -658,9 +658,11 @@ Si sale otro rojo en Horario, PARA y reporta el nombre del `it` y su `Expected`/
 
 **Comprobaciones finales.** La errata ronda 5 va en un commit del leader que toca `requirements.md`,
 `tasks.md` y este fichero. En «Commits» y «Ficheros tocados» del Cierre, con la base `48346f15` de la
-Adenda 1, añade al final del comando dos exclusiones más:
-`':!specs/mobile-nutrition-questionnaire/requirements.md' ':!specs/mobile-nutrition-questionnaire/tasks.md'`.
-La lista de 26 rutas no cambia. «Ficheros intactos» no cambia.
+Adenda 1, añade al final del comando tres exclusiones más:
+`':!specs/mobile-nutrition-questionnaire/requirements.md' ':!specs/mobile-nutrition-questionnaire/tasks.md' ':!progress/current.md'`.
+La lista de 26 rutas no cambia. En «Ficheros intactos», quita `progress/current.md` del comando: lo tocan dos
+commits del leader, `b4f0d30f` (el fallback) y el que sigue a esta adenda. Que tú no lo tocas lo prueba
+«Commits», que con estas exclusiones lista solo tus commits.
 
 Retoma la cadena en R21 (test) y sigue hasta el commit final. El merge de `origin/dev` es del leader, después
 del commit final: no lo hagas tú.

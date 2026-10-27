@@ -15,3 +15,7 @@
   (`progress/impl_mobile-nutrition-questionnaire.md`).
 - Se pierde la separación «quien implementa no revisa» para R9 a R26: el `reviewer` lo sabe y lo revisa con
   ese dato.
+- 2026-10-27: el `implementer` hizo R9 a R20 y paró antes del test de R21, porque R21 contradecía 13 casos de
+  Horario que la spec no listaba. El leader los listó (errata ronda 5, `8431339f`) y escribió la Adenda 3 del
+  handoff. El fallback sigue: un `implementer` nuevo retoma en R21 (test) con el mismo handoff y el mismo
+  reporte. La cuota de Codex sigue al 3 %.
