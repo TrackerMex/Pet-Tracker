@@ -869,3 +869,81 @@ Las demás reglas siguen igual:
 - no uses Monitor;
 - no hagas push ni abras la PR;
 - `bun` y `bunx`, nunca npm ni npx.
+
+## Adenda 6 (leader, 2026-10-27, tras el rechazo de la segunda revisión)
+
+En la segunda revisión (`progress/review_mobile-nutrition-questionnaire.md` §Segunda revisión) el `reviewer`
+dio F1 y F2 por cerrados en el código. Rechazó porque los candados de la ronda 6 dejan verdes cuatro
+mutaciones (H1, H2, H3). La errata ronda 7 (`dc801dc3`) prescribe los candados nuevos, en R4 y R5 de
+`specs/mobile-nutrition-questionnaire/requirements.md`: busca `errata ronda 7`. Esta adenda manda sobre las
+anteriores donde lo contradiga.
+
+**0. Punto de partida.** HEAD es el commit de esta adenda (`docs(progress): #209 handoff Adenda 6 …`). Debajo
+están `dc801dc3` y `53de188d`, la segunda revisión. Compruébalo con `git log --oneline -3`; si no cuadra, PARA.
+Guarda el hash de HEAD como H6. Si existe `progress/impl_mobile-nutrition-questionnaire.done`, PARA. No hagas
+fetch ni merge. El código de HEAD ya cumple: solo faltan candados, y su rojo es una mutación de producción
+(CHECKPOINTS.md C4).
+
+**1. Cadena.** Desde `mobile-pet-tracker/`, con los dos pgreps vacíos. Tras cada commit, corre los dos
+ficheros de test de la Adenda 5 con la forma de «Jest de un fichero» y pega su línea `Tests:`.
+
+1. `test(mobile): #209 R4 R5 rojo (errata ronda 7)`. El commit lleva dos ficheros:
+   - `src/screens/nutrition-questionnaire/index.test.tsx`:
+     - en el `it('#209 R4: esqueleto y error de carga respetan el inset superior y el error tiene volver')`,
+       las dos últimas líneas pasan a las seis de la errata de R4, literales;
+     - el `it('#209 R5: Pingo de la burbuja mide 52 pt en Alimento y en Salud')` de la errata de R5, literal,
+       justo después del `it('#209 R5: Pingo de la burbuja mide 52 pt y 44 pt en Condición por style')`.
+   - `src/screens/nutrition-questionnaire/index.tsx`, con las dos mutaciones de producción que fija la errata:
+     - en la rama del error, el `ScreenHeader` fuera del `View`, como `<><ScreenHeader …/><View …><Text …/></View></>`;
+     - en la `Image` de `nutrition-questionnaire-pingo`, `step === 'condition' || step === 'food'` en lugar de
+       `step === 'condition'`.
+
+   Rojo esperado: exactamente esos dos `it`, por aserción (no por `ReferenceError` ni por `Unable to find`
+   en el render). El de R4 cae en `toEqual` del orden y el de R5 en `toEqual({ width: 52, height: 52 })` de
+   Alimento. Si sale rojo cualquier otro `it`, PARA y reporta.
+2. `feat(mobile): #209 R4 R5 revierte las mutaciones (errata ronda 7)`. Solo
+   `src/screens/nutrition-questionnaire/index.tsx`, de vuelta a como estaba. Comprueba
+   `git diff --quiet f8b7b130 HEAD -- src/screens/nutrition-questionnaire/index.tsx` (exit 0). Los dos ficheros
+   salen verdes.
+
+**2. Sondas**, sobre el árbol del commit 2, sin commitear. Cada una se revierte con `git checkout HEAD --` y se
+comprueba con `git diff --quiet HEAD -- mobile-pet-tracker` y `git diff --cached --quiet`. Corre solo el `it`
+afectado con `-t` y pega su `Expected`/`Received`. Las cuatro deben salir rojas:
+- P2: en la rama del error, el `Text` antes del `ScreenHeader`, dentro del `View`.
+- P3: el `ScreenHeader` fuera del `View` (la mutación del commit 1).
+- P9: `backFallback="/food"` pasa a `backFallback="/home"` en el `ScreenHeader` del error.
+- P5: `step === 'condition' || step === 'health' ? …` en la `Image` de la burbuja. Es distinta de la del
+  commit 1: así se ve que la muestra de Salud también mira.
+
+Si una sale verde, PARA y reporta. No toques el `it`.
+
+**3. Cierre.**
+- Suite completa sin pipe: `bun run test > ../progress/adenda6-test-209.log 2>&1; echo exit=$?`. Esperado:
+  `Test Suites: 168 passed, 168 total` y `Tests: 6222 passed, 6222 total` (6221 más un `it`). SIGKILL = 0 y
+  `failed to run` = 0. Si sale algún flake conocido, trátalo como en la Adenda 5.
+- `test ! -e .expo/types/router.d.ts`, `bunx tsc --noEmit` y el lint con `--no-cache`, como en la Adenda 5.
+- T0 guardas y T0 ampliado, como en la Adenda 5 (logs `a6-guards-209.log` y `a6-ext-209.log`), exit=0 en los dos.
+- Las guardas de «Guardas que R1 a R26 cruzan». La casilla de R26 sigue sin marcar.
+- `traceability.md`:
+  - fila de R4: añade los dos commits nuevos;
+  - fila de R5: añade el `it` nuevo y los dos commits nuevos;
+  - con el separador ` / ` de siempre. No toques nada más.
+- Reporte: al final de `progress/impl_mobile-nutrition-questionnaire.md`, la sección
+  `## Corrección tras la segunda revisión (Adenda 6)` con los dos commits y sus `Tests:`, las cuatro sondas
+  y la corrida final.
+- Commit: `git add ../specs/mobile-nutrition-questionnaire/traceability.md ../progress/impl_mobile-nutrition-questionnaire.md && git commit -m 'docs(mobile): #209 report and traceability after the second review'`.
+- `git log --oneline --first-parent <H6>..HEAD` da exactamente tus 3 commits.
+- `git diff --name-only <H6> HEAD` da exactamente:
+
+      mobile-pet-tracker/src/screens/nutrition-questionnaire/index.test.tsx
+      progress/impl_mobile-nutrition-questionnaire.md
+      specs/mobile-nutrition-questionnaire/traceability.md
+
+- El chequeo de árbol limpio acotado. Por último:
+  `cd /home/claude/sites/Pet-Tracker-wt-209 && printf '%s COMPLETO\n' "$(date -u +%Y-%m-%dT%H:%MZ)" > progress/impl_mobile-nutrition-questionnaire.done`.
+
+Las reglas de siempre siguen:
+- no corras `./init.sh`;
+- no uses Monitor;
+- no hagas push ni abras la PR;
+- solo `bun` y `bunx`.
