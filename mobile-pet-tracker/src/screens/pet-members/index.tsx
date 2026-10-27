@@ -36,6 +36,7 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
   const pet = petQuery.data?.kind === 'ok' ? petQuery.data.pet : null;
   const members = membersQuery.data?.kind === 'ok' ? membersQuery.data.members : null;
   const me = meQuery.data?.kind === 'ok' ? meQuery.data.me : null;
+  const isOwner = pet?.myRole === 'owner';
   const loading = queries.some((query) => query.data === undefined);
   const hasError = queries.some((query) => query.data && ['error', 'missing-config', 'unreachable'].includes(query.data.kind));
   const unreachable = queries.some((query) => query.data?.kind === 'unreachable');
@@ -70,6 +71,7 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
         ) : null}
         {pet && members && me ? (
           <>
+            {isOwner ? <Text testID="pet-members-intro" className="text-sm leading-note text-muted">{t('members.ownerIntro', { petName: pet.name })}</Text> : null}
             <Text testID="pet-members-heading" accessibilityRole="header" className="text-sm font-extrabold text-foreground">
               {t('members.membersHeading')}
             </Text>
@@ -77,6 +79,7 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
               {members.map((member) => {
                 const slot = member.userId === me.id ? 'neutral' : MEMBER_AVATAR_SLOTS[otherIndex++ % MEMBER_AVATAR_SLOTS.length];
                 const name = `${member.firstName} ${member.lastName}`.trim();
+                const canRemove = isOwner && member.userId !== me.id && member.role !== 'owner';
                 const rolePill = (
                   <View testID={`member-row-${member.userId}-role`} className={`rounded-full px-2 py-0.75 ${CATEGORY_SLOTS[member.role === 'owner' ? 'green' : 'rose'].surface}`}>
                     <Text className={`text-xs font-extrabold ${CATEGORY_SLOTS[member.role === 'owner' ? 'green' : 'rose'].ink}`}>
@@ -92,8 +95,13 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
                     <View className="flex-1 gap-1">
                       <Text testID={`member-row-${member.userId}-name`} className="text-sm font-extrabold text-foreground">{name}</Text>
                       {member.userId === me.id ? <Text testID={`member-row-${member.userId}-you`} className="text-xs font-semibold text-muted">{t('members.you')}</Text> : null}
+                      {canRemove ? rolePill : null}
                     </View>
-                    {rolePill}
+                    {canRemove ? (
+                      <Button testID={`member-row-${member.userId}-remove`} variant="danger-soft" className={`h-11 rounded-14 px-3 ${CATEGORY_SLOTS.rose.surface}`} accessibilityLabel={t('members.removeA11y', { name })}>
+                        <Text className="text-13 font-extrabold text-danger">{t('members.remove')}</Text>
+                      </Button>
+                    ) : rolePill}
                   </View>
                 );
               })}
