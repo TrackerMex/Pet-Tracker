@@ -2069,7 +2069,7 @@ describe('#213 R14: series en Recordatorios', () => {
     const sheet = screen.getByTestId('reminders-cancel-series-sheet');
     expect(screen.queryByTestId('reminders-delete-sheet')).toBeNull();
     const body = 'No volveré a avisarte de Pipeta antipulgas de Rocky. Si cambias de idea, puedes crear el recordatorio otra vez.';
-    await waitFor(() => expect(screen.getByTestId('reminders-cancel-series-sheet')).toHaveTextContent(body));
+    await waitFor(() => expect(within(screen.getByTestId('reminders-cancel-series-sheet')).getByText(body)).toHaveTextContent(body));
     expect(within(sheet).getByText('¿Cancelar la serie?')).toBeVisible();
     expect(within(sheet).getByTestId('reminders-cancel-series-reference')).toHaveTextContent('Pipeta antipulgas · cada mes');
     const tile = within(sheet).getByTestId('reminders-cancel-series-icon');
@@ -2099,7 +2099,8 @@ describe('#213 R14: series en Recordatorios', () => {
     await screen.findByTestId('reminder-cancel-series-series');
     await fireEvent.press(screen.getByTestId('reminder-cancel-series-series'));
     expect(screen.queryByTestId('reminders-cancel-series-sheet')).not.toBeNull();
-    await waitFor(() => expect(screen.getByTestId('reminders-cancel-series-sheet')).toHaveTextContent('No volveré a avisarte de Pipeta antipulgas. Si cambias de idea, puedes crear el recordatorio otra vez.'));
+    const body = 'No volveré a avisarte de Pipeta antipulgas. Si cambias de idea, puedes crear el recordatorio otra vez.';
+    await waitFor(() => expect(within(screen.getByTestId('reminders-cancel-series-sheet')).getByText(body)).toHaveTextContent(body));
   });
 
   it('#213 R17: las dos hojas comparten un solo BottomSheet', async () => {
