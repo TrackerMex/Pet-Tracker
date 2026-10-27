@@ -113,3 +113,25 @@ describe('#196 R11: alcance de la cabecera a sangre', () => {
     expect(charter).not.toContain('Inicio es la única pestaña con PetHeroHeader');
   });
 });
+
+describe('#222 R10: grep-limpio', () => {
+  it('#222 R10: ningún fichero de producción nombra los ids del título', () => {
+    const pattern = /(?<![\w-])(?:health-title|food-title-row|food-title|profile-title)(?![\w-])/;
+    for (const id of ['health-title', 'food-title', 'food-title-row', 'profile-title']) expect(id).toMatch(pattern);
+    for (const id of ['edit-profile-title', 'nutrition-profile-title']) expect(id).not.toMatch(pattern);
+    expect(filesMatching(pattern)).toEqual([]);
+  });
+
+  it('#222 R10: variant="avatars" solo vive en TabPetHeader', () => {
+    expect(filesMatching(/variant="avatars"/)).toEqual(['components/tab-pet-header.tsx']);
+  });
+
+  it('#222 R10: las pantallas y el componente nuevo no usan StyleSheet, hex ni corchetes', () => {
+    for (const file of [...TAB_SCREENS_168, 'components/tab-pet-header.tsx', 'components/pet-switcher.tsx']) {
+      const source = readSource(file);
+      expect(source).not.toContain('StyleSheet');
+      expect(source).not.toMatch(new RegExp(String.raw`#(?!\d{2,3} R\d)[\da-f]{3,8}\b`, 'i'));
+      expect(source).not.toMatch(/[A-Za-z0-9_-]+-\[[^\]]+\]/);
+    }
+  });
+});
