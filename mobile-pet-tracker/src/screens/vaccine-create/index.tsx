@@ -36,7 +36,7 @@ export function VaccineCreateScreen({ petId }: { petId: string }) {
   const t = useTranslate();
   const locale = useLocale();
   const [remind, setRemind] = useState(true);
-  const [formError, setFormError] = useState(false);
+  const [formError, setFormError] = useState<'save' | 'validation' | null>(null);
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const pets = useQuery({ queryKey: petKeys.list(), queryFn: () => listPets(baseUrl, token ?? '') });
@@ -89,7 +89,7 @@ export function VaccineCreateScreen({ petId }: { petId: string }) {
   const submitting = save.isPending;
 
   async function handleSubmit() {
-    setFormError(false);
+    setFormError(null);
     const issues = validateVaccine({ mode: entry ? 'catalog' : 'other', name });
     setFieldErrors(issues);
     if (Object.keys(issues).length > 0) return;
@@ -102,8 +102,12 @@ export function VaccineCreateScreen({ petId }: { petId: string }) {
       ...(clinic.trim() ? { clinic: clinic.trim() } : {}),
       ...(notes.trim() ? { notes: notes.trim() } : {}),
       });
-      if (result.kind !== 'ok') setFormError(true);
-    } catch { setFormError(true); }
+      if (result.kind === 'validation') {
+        const appliedInvalid = result.errors.some(({ path }) => path === 'appliedAt');
+        if (appliedInvalid) setFieldErrors({ appliedAt: { labelKey: 'vaccineCreate.appliedAtFuture' } });
+        if (!appliedInvalid || result.errors.some(({ path }) => path !== 'appliedAt')) setFormError('validation');
+      } else if (result.kind !== 'ok') setFormError('save');
+    } catch { setFormError('save'); }
   }
 
   function selectVaccine(id: string) {
@@ -199,7 +203,7 @@ export function VaccineCreateScreen({ petId }: { petId: string }) {
       <View testID="vaccine-create-bar" style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: Math.max(insets.bottom, 16), gap: 12 }}>
         {formError && <View testID="vaccine-create-error" accessibilityRole="alert" className={`flex-row items-center gap-2.5 rounded-tile px-3.5 py-3 ${CATEGORY_SLOTS.rose.surface}`} style={CONTINUOUS_CORNER}>
           <AlertTriangle size={20} color={danger} />
-          <Text testID="vaccine-create-error-text" className="flex-1 text-13 font-bold text-danger">{t('vaccineCreate.saveError')}</Text>
+          <Text testID="vaccine-create-error-text" className="flex-1 text-13 font-bold text-danger">{formError === 'validation' ? t('validation.checkDetails') : t('vaccineCreate.saveError')}</Text>
         </View>}
         <Button testID="vaccine-create-submit" className="h-14 rounded-16 bg-accent" style={chunkyLip.primary} isDisabled={submitting} onPress={() => void handleSubmit()}>
           <Text className="text-17 font-extrabold text-accent-foreground">{t('vaccineCreate.save')}</Text>
