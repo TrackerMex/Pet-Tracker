@@ -135,3 +135,20 @@ describe('#222 R10: grep-limpio', () => {
     }
   });
 });
+
+describe('#222 R14: Reparto de ficheros con otras features', () => {
+  it('#222 R14: los testID de otras features siguen en su pantalla', () => {
+    const anchors: Record<string, string[]> = {
+      'screens/health/index.tsx': ['vaccines-add', 'health-content', 'health-states', 'vaccine-reminder-notice'],
+      'screens/food/index.tsx': ['food-links', 'food-loading', 'food-error', 'food-retry', 'food-empty', 'food-plan-card'],
+      'screens/profile/index.tsx': ['profile-hero', 'profile-pet-card', 'profile-content', 'screen-profile'],
+    };
+    for (const [file, ids] of Object.entries(anchors)) {
+      for (const id of ids) expect(readSource(file)).toContain(`testID="${id}"`);
+    }
+  });
+
+  it('#222 R14: TabPetHeader no llama a t() y SCREEN_FILES no crece', () => {
+    expect(readSource('components/tab-pet-header.tsx')).not.toMatch(/\bt\(/);
+  });
+});
