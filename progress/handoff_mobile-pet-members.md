@@ -696,3 +696,54 @@ cuando había otros dos Codex corriendo jest. Lo que queda autorizado:
 
 Esta adenda y la Adenda 1 son commits del leader con `#214` en el asunto. Solo tocan este fichero, y en la
 comprobación de `git log --oneline 08fe7dab..HEAD` del cierre cuentan igual que el commit del handoff.
+
+## Adenda 3 (leader, tras la parada en R7 (2))
+
+Paraste bien. El rojo viene de tu test, no de la producción. `toHaveTextContent` con una cadena compara el
+texto **entero** del nodo (`exact` vale `true` por defecto en RNTL 14), y `home-empty` contiene título, cuerpo
+y acción. La spec no pide esa aserción: dice que `EmptyState` y su `action` no cambian, y el precedente del
+mismo fichero lee la etiqueta en `home-empty-action`.
+
+La misma causa deja tautológico un candado ya commiteado de R9. En
+`it('R9: ningún texto de la pantalla contiene el correo de getMe', …)`,
+`expect(text).not.toHaveTextContent('@')` solo fallaría con un nodo cuyo texto entero sea `@`, así que no
+puede ponerse rojo. Es tu «mutación verde» de R9 (`mutation-r09-email-214.log`). La spec pide «ninguno
+contiene `@`».
+
+Quedan autorizados estos dos arreglos y **solo** estos.
+
+### A. R7, antes de retomar R7 (2)
+
+- En `mobile-pet-tracker/src/screens/home/index.test.tsx`, dentro de
+  `it('R7: el vacío ofrece Unirme con código bajo Añadir mascota', …)`, cambia
+  `expect(screen.getByTestId('home-empty')).toHaveTextContent('Añadir mascota');` por
+  `expect(screen.getByTestId('home-empty-action')).toHaveTextContent('Añadir mascota');`.
+- No cambies nada más del test ni de la producción que ya tienes sin commit.
+- Commit aparte, solo del test (la producción de R7 sigue sin commit):
+  `git commit --only mobile-pet-tracker/src/screens/home/index.test.tsx -m "test(mobile): #214 read the add pet label from home-empty-action (R7)"`.
+  Sobre el árbol commiteado el `it` sigue en rojo, porque `home-join-pet` todavía no existe.
+- Retoma R7 (2) desde la primera corrida del paso verde, con tu producción tal cual. El fallo tiene que
+  desaparecer. La cuenta de R7 (1) no cambia (`5770`: son los mismos `it`).
+
+### B. R9, justo después de cerrar R7 (commit verde y sonda de R7 hechos)
+
+- En `mobile-pet-tracker/src/screens/pet-members/index.test.tsx`, dentro de
+  `it('R9: ningún texto de la pantalla contiene el correo de getMe', …)`, cambia
+  `expect(text).not.toHaveTextContent('@');` por `expect(text).not.toHaveTextContent(/@/);`.
+  Es el patrón de `src/screens/home/index.test.tsx` (`.not.toHaveTextContent(/Invalid/)`).
+- `bunx jest --runTestsByPath src/screens/pet-members/index.test.tsx`: verde, sin cambio de cuenta.
+- Repite tu sonda de R9: pinta `me.email` en una fila. Ahora **este** `it` tiene que dar rojo (además del
+  de filas). Revierte con `git checkout HEAD --` del fichero y comprueba diff e índice vacíos.
+- Commit solo del test:
+  `git commit --only mobile-pet-tracker/src/screens/pet-members/index.test.tsx -m "test(mobile): #214 match the at sign as a substring in the privacy lock (R9)"`.
+- Sigue la cadena donde la dejaste (lo que venía tras R7).
+
+### Para los dos
+
+- Anota en el reporte los dos commits nuevos, la causa y el rojo de la sonda B.
+- En la traceability, la fila R7 cita el rojo `a50176d6`. La fila R9 añade el commit de B como «candado
+  reforzado», sin tocar sus hashes.
+- Cualquier otro rojo inesperado: para, igual que antes.
+
+Esta adenda es commit del leader con `#214` en el asunto, como las Adendas 1 y 2. Los dos commits de test de
+A y B son tuyos y suman a la cuenta de commits del cierre: anótalos.
