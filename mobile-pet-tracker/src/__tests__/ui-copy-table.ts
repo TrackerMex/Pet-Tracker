@@ -168,6 +168,7 @@ export const R5_HEALTH: UseRow[] = [
   { file: 'src/screens/health/index.tsx', key: 'health.vaccines' },
   { file: 'src/screens/health/index.tsx', key: 'health.nextDue' },
   { file: 'src/screens/health/index.tsx', key: 'health.noVaccinesYet' },
+  { file: 'src/screens/health/index.tsx', key: 'health.noVaccinesYet' }, // #208 R20
   { file: 'src/screens/health/index.tsx', key: 'health.couldNotLoadVaccines' },
   { file: 'src/screens/health/index.tsx', key: 'common.retry' },
   { file: 'src/screens/health/index.tsx', key: 'health.weight' },
@@ -403,6 +404,63 @@ export const R8_REMINDERS: UseRow[] = [
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.alert' },
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.notifyPreview' }, // #178 R12
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.saveReminder' },
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.repeat' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.repeatOnce' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.repeatDaily' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.repeatWeekly' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.repeatMonthly' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.repeatYearly' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.repeatHourly' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.every' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.hoursValue' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.hoursValueOne' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.monthsValue' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.monthsValueOne' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.hoursRange' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.monthsRange' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.hourLess' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.hourMore' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.monthLess' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.monthMore' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.until' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.optional' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.untilPlaceholder' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.summaryDaily' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.summaryWeekly' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.summaryMonthly' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.summaryMonthlyN' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.summaryYearly' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.summaryHoursDoses' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.summaryHoursDosesNoPet' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.summaryHours' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.summaryHourly' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.summaryUntil' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.dosesJoin' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.repeatsEvery' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cadenceHour' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cadenceHours' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cadenceDay' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cadenceDays' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cadenceWeek' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cadenceWeeks' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cadenceMonth' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cadenceMonths' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cadenceYear' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cadenceYears' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.untilDay' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.untilMonth' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cancelSeries' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cancelSeriesA11y' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cancelSeriesTitle' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cancelSeriesReference' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cancelSeriesBody' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cancelSeriesBodyNoPet' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cancelSeriesConfirm' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.keepSeries' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.errorCancelForbidden' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'common.cannotReachServer' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'common.somethingWentWrong' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'common.somethingWentWrong' }, // #213 R22
 ];
 
 export const R9_ADD_PET: UseRow[] = [
@@ -666,6 +724,38 @@ export const R18_DATE_FIELD: UseRow[] = [
   { file: 'src/components/date-field.tsx', key: 'dateField.clear' },
 ];
 
+export const R19_VACCINE_CREATE: UseRow[] = [
+  { file: 'src/screens/health/index.tsx', key: 'health.addVaccine' },
+  { file: 'src/screens/health/index.tsx', key: 'health.addVaccine' },
+  { file: 'src/screens/health/index.tsx', key: 'health.vaccinesEmptyBody' },
+  { file: 'src/screens/health/index.tsx', key: 'health.vaccineReminderFailed' },
+  { file: 'src/screens/health/index.tsx', key: 'health.createReminderNow' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.title' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.vaccine' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.schemeForDog' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.schemeForCat' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.otherVaccine' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.vaccineName' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.appliedAt' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.nextDose' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.noteCatalog' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.noteOther' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.remindMe' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.remindOn' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.remindWhenPicked' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.vet' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.clinic' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.optional' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.optional' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.notes' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.notesPlaceholder' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.save' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.saveError' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.appliedAtFuture' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'validation.checkDetails' },
+  { file: 'src/utils/form-rules.ts', key: 'vaccineCreate.nameRequired' },
+];
+
 export const R21_PET_MEMBERS: UseRow[] = [ // #214 R22
   { file: 'src/screens/pet-members/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/pet-members/index.tsx', key: 'common.cannotReachServer' },
@@ -762,6 +852,7 @@ export const ALL_USES: UseRow[] = [
   ...R16_WELCOME,
   ...R17_EDIT_PROFILE,
   ...R18_DATE_FIELD,
+  ...R19_VACCINE_CREATE,
   ...R21_PET_MEMBERS, // #214 R22
 ];
 
@@ -772,12 +863,12 @@ describe('#65: la tabla de uso de copy está disponible al runner', () => {
 
   // Enmienda (3): el candado es la consistencia interna, no una constante
   // escrita a mano — es la tercera vez que una cifra congelada envejece.
-  it('#194 R5: cuadra ALL_USES con la suma de sus bloques (enmendado por #220 R16) (enmendado por #214 R22)', () => {
+  it('#194 R5: cuadra ALL_USES con la suma de sus bloques (enmendado por #220 R16) (enmendado por #208 R20) (enmendado por #214 R22)', () => {
     const blocks = [
       R1_AUTH, R2_TABS, R3_HOME, R4_MAP, R5_HEALTH, R6_FOOD,
       R7_PROFILE, R8_REMINDERS, R9_ADD_PET, R10_PAIRING, R11_RESET,
       R12_ALERTS, R13_ALERT_DETAIL, R14_GEOFENCES, R15_GEOFENCE_EDITOR,
-      R16_WELCOME, R17_EDIT_PROFILE, R18_DATE_FIELD, R21_PET_MEMBERS, // #214 R22
+      R16_WELCOME, R17_EDIT_PROFILE, R18_DATE_FIELD, R19_VACCINE_CREATE, R21_PET_MEMBERS, // #214 R22
     ];
 
     expect(ALL_USES).toHaveLength(

@@ -13,6 +13,7 @@ import { Text } from 'react-native';
 import { listPets } from '../../api/pets';
 import { petKeys, reminderKeys } from '../../api/query-keys';
 import {
+  cancelReminderSeries,
   deleteReminder,
   listReminders,
   type DeleteReminderState,
@@ -64,6 +65,7 @@ jest.mock('reicon-react-native', () => {
   return {
     ...actual,
     Plus: mockIcon('reminders-icon-plus'),
+    Repeat: mockIcon('reminders-icon-repeat'),
     Trash: mockIcon('reminders-icon-trash'),
     Syringe: mockIcon('reminders-icon-syringe'),
     Drop: mockIcon('reminders-icon-drop'),
@@ -84,6 +86,7 @@ jest.mock('../../api/pets', () => ({
 }));
 
 jest.mock('../../api/reminders', () => ({
+  cancelReminderSeries: jest.fn(),
   deleteReminder: jest.fn(),
   listReminders: jest.fn(),
 }));
@@ -116,10 +119,14 @@ jest.mock('@expo/ui/community/bottom-sheet', () => {
   };
 });
 
+let mockSearchParams: Record<string, unknown> = {};
+beforeEach(() => { mockSearchParams = {}; });
+
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn(), canGoBack: jest.fn(), replace: jest.fn() },
   useFocusEffect: jest.fn(),
   useIsFocused: () => true,
+  useLocalSearchParams: () => mockSearchParams,
 }));
 
 jest.mock('react-native-safe-area-context', () => ({
@@ -130,6 +137,7 @@ jest.mock('react-native-safe-area-context', () => ({
 const apiUrl = 'http://example.test/v1';
 const mockListPets = jest.mocked(listPets);
 const mockListReminders = jest.mocked(listReminders);
+const mockCancelReminderSeries = jest.mocked(cancelReminderSeries);
 const mockDeleteReminder = jest.mocked(deleteReminder);
 const mockUseAuth = jest.mocked(useAuth);
 const mockRouter = jest.mocked(router);
@@ -179,6 +187,8 @@ function makeReminder(overrides: Partial<Reminder> = {}): Reminder {
     dueAt: '2026-08-27T09:00:00.000Z',
     advanceMinutes: 10080,
     status: 'scheduled',
+    recurrence: null,
+    recurrenceUntil: null,
     ...overrides,
   };
 }
@@ -188,6 +198,7 @@ const canvasReminders = [
   makeReminder({ id: 'b', type: 'medication', title: 'Pastilla trimestral', dueAt: '2027-01-21T02:05:00.000Z', status: 'scheduled' }),
   makeReminder({ id: 'c', type: 'custom', title: 'Baño', dueAt: '2026-12-03T17:30:00.000Z', status: 'sent' }),
 ];
+const todayCanvasReminders = canvasReminders.map((reminder) => (reminder.id === 'a' ? { ...reminder, dueAt: '2026-12-30T23:00:00.000Z' } : reminder)); // #213 R16
 const hostProcess = process.getBuiltinModule('process');
 const originalTimezone = hostProcess.env.TZ;
 
@@ -519,7 +530,8 @@ describe('#178 R6: fila del canvas', () => {
     jest.useRealTimers();
   });
 
-  it('distingue las recetas de fila próxima, lejana e inactiva (enmendado por #204 R7)', async () => {
+  it('distingue las recetas de fila próxima, lejana e inactiva (enmendado por #204 R7) (enmendado por #213 R16)', async () => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: todayCanvasReminders });
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     for (const [id, className] of [
@@ -627,7 +639,7 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
     jest.useRealTimers();
   });
 
-  it('renders summaries and reminder rows in API order', async () => {
+  it('renders summaries and reminder rows in API order (enmendado por #213 R16)', async () => {
     const reminders = [
       makeReminder({
         id: 'sent',
@@ -686,9 +698,7 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
       ),
     ).toBeVisible();
     expect(upcoming.getByText('· en 3 días')).toBeVisible();
-    expect(screen.getByTestId('reminder-upcoming-upcoming')).toHaveTextContent(
-      '¡Próximo!',
-    );
+    expect(screen.queryByTestId('reminder-upcoming-upcoming')).toBeNull(); // #213 R16
     expect(screen.queryByTestId('reminder-upcoming-later')).toBeNull();
 
     expect(screen.getByTestId('reminder-row-sent').props.className).toContain(
@@ -1125,7 +1135,7 @@ describe('#84 R3: recordatorios cuenta días de calendario en la píldora, el ba
     jest.useRealTimers();
   });
 
-  it('08:00 del 10 de septiembre: hoy a las 20:00, +7 y +10 días a las 09:00 cuentan 0, 7 y 10', async () => {
+  it('08:00 del 10 de septiembre: hoy a las 20:00, +7 y +10 días a las 09:00 cuentan 0, 7 y 10 (enmendado por #213 R16)', async () => {
     const reminders = [
       makeReminder({ id: 'today-later', dueAt: new Date(2026, 8, 10, 20, 0).toISOString() }),
       makeReminder({ id: 'week-edge', dueAt: new Date(2026, 8, 17, 9, 0).toISOString() }),
@@ -1143,8 +1153,8 @@ describe('#84 R3: recordatorios cuenta días de calendario en la píldora, el ba
     expect(week.getByText('· en 7 días')).toBeVisible();
     expect(badge.getByText('· en 10 días')).toBeVisible();
     expect(today.getByTestId('reminder-upcoming-today-later')).toBeVisible();
-    expect(week.getByTestId('reminder-upcoming-week-edge')).toBeVisible();
-    expect(badge.getByTestId('reminder-upcoming-badge-edge')).toBeVisible();
+    expect(week.queryByTestId('reminder-upcoming-week-edge')).toBeNull(); // #213 R16
+    expect(badge.queryByTestId('reminder-upcoming-badge-edge')).toBeNull(); // #213 R16
     expect(within(screen.getByTestId('pill-week')).getByText('2')).toBeVisible();
   });
 
@@ -1183,7 +1193,7 @@ describe('#84 R6: los umbrales de la píldora y del badge no se aflojan (Enmiend
     jest.useRealTimers();
   });
 
-  it('08:00 del 10 de septiembre: +8 días queda fuera de la semana con badge y +11 días queda sin badge', async () => {
+  it('08:00 del 10 de septiembre: +8 días queda fuera de la semana con badge y +11 días queda sin badge (enmendado por #213 R16)', async () => {
     mockListReminders.mockResolvedValue({
       kind: 'ok',
       reminders: [
@@ -1196,7 +1206,7 @@ describe('#84 R6: los umbrales de la píldora y del badge no se aflojan (Enmiend
     await waitFor(() => expect(screen.getByTestId('reminder-row-plus-eleven')).toBeVisible());
 
     expect(within(screen.getByTestId('reminder-row-plus-eight')).getByText('· en 8 días')).toBeVisible();
-    expect(screen.getByTestId('reminder-upcoming-plus-eight')).toBeVisible();
+    expect(screen.queryByTestId('reminder-upcoming-plus-eight')).toBeNull(); // #213 R16
     expect(within(screen.getByTestId('reminder-row-plus-eleven')).getByText('· en 11 días')).toBeVisible();
     expect(screen.queryByTestId('reminder-upcoming-plus-eleven')).toBeNull();
     expect(within(screen.getByTestId('pill-week')).getByText('0')).toBeVisible();
@@ -1328,18 +1338,19 @@ describe('#178 R7: entrada escalonada y badge', () => {
     }
   });
 
-  it('envuelve el badge próximo con PopIn y la receta del canvas (enmendado por #204 R7)', async () => {
+  it('envuelve el badge próximo con PopIn y la receta del canvas (enmendado por #204 R7) (enmendado por #213 R16)', async () => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: todayCanvasReminders });
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     const badge = within(screen.getByTestId('reminder-upcoming-pop-a')).getByTestId('reminder-upcoming-a');
-    expect(badge).toHaveTextContent('¡Próximo!');
+    expect(badge).toHaveTextContent('Hoy');
     expect(badge.props.className).toBe('rounded-full px-2 py-0.75 text-11 font-extrabold bg-category-amber text-category-amber-strong');
   });
 
-  it('reserva el pop para la fila próxima y lo omite en la lejana', async () => {
+  it('reserva el pop para la fila próxima y lo omite en la lejana (enmendado por #213 R16)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
-    expect(screen.getByTestId('reminder-upcoming-pop-a')).toBeVisible();
+    expect(screen.queryByTestId('reminder-upcoming-pop-a')).toBeNull();
     expect(screen.queryByTestId('reminder-upcoming-pop-b')).toBeNull();
   });
 });
@@ -1888,7 +1899,8 @@ describe('#204 R7: ámbar de la fila próxima', () => {
     jest.useRealTimers();
   });
 
-  it('#204 R7: la fila próxima y su badge usan el ámbar del canvas', async () => {
+  it('#204 R7: la fila próxima y su badge usan el ámbar del canvas (enmendado por #213 R16)', async () => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: todayCanvasReminders });
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     expect(screen.getByTestId('reminder-row-a').props.className).toBe(
@@ -1950,4 +1962,262 @@ describe('#204 R9: Eliminar de la hoja', () => {
       'text-17 font-extrabold text-danger-foreground',
     );
   });
+});
+
+
+describe('#213 R14: series en Recordatorios', () => {
+  beforeEach(() => {
+    hostProcess.env.TZ = 'America/Mexico_City';
+    jest.useFakeTimers({ now: new Date(2026, 11, 30, 10, 0) });
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ name: 'Rocky' })] });
+    mockListReminders.mockReset();
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [makeReminder({ id: 'series', title: 'Pipeta antipulgas', dueAt: '2026-12-31T18:00:00.000Z', recurrence: { unit: 'month', every: 1 } })] });
+    mockCancelReminderSeries.mockReset();
+    mockCancelReminderSeries.mockResolvedValue({ kind: 'ok' });
+  });
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+    if (originalTimezone === undefined) delete hostProcess.env.TZ;
+    else hostProcess.env.TZ = originalTimezone;
+  });
+
+  it.each([
+    ["Se repite cada 8 horas · hasta el 31 dic", {"unit": "hour", "every": 8}, "2026-12-31"],
+    ["Se repite cada hora", {"unit": "hour", "every": 1}, null],
+    ["Se repite cada día · hasta ene 2027", {"unit": "day", "every": 1}, "2027-01-02"],
+    ["Se repite cada 3 días", {"unit": "day", "every": 3}, null],
+    ["Se repite cada semana", {"unit": "week", "every": 1}, null],
+    ["Se repite cada 2 semanas", {"unit": "week", "every": 2}, null],
+    ["Se repite cada mes · hasta abr 2027", {"unit": "month", "every": 1}, "2027-04-10"],
+    ["Se repite cada 3 meses", {"unit": "month", "every": 3}, null],
+    ["Se repite cada año", {"unit": "year", "every": 1}, null],
+    ["Se repite cada 2 años", {"unit": "year", "every": 2}, null],
+  ] as const)('#213 R14: la fila recurrente dice «%s»', async (expected, recurrence, recurrenceUntil) => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [makeReminder({ id: 'series', dueAt: '2026-12-31T18:00:00.000Z', recurrence, recurrenceUntil })] });
+    await renderReminders();
+    const row = await screen.findByTestId('reminder-row-series');
+    expect(within(row).queryByTestId('reminder-repeats-series')).not.toBeNull();
+    const line = within(row).getByTestId('reminder-repeats-series');
+    expect(line).toHaveTextContent(expected);
+    const icon = within(line).getByTestId('reminders-icon-repeat', { includeHiddenElements: true });
+    expect(icon.props.size).toBe(14);
+    expect(icon.props.color).toBe('color:accent-strong');
+    expect(within(line).getByText(expected).props.className).toBe('text-13 font-bold text-accent-strong');
+  });
+
+  it('#213 R14: sin línea de repetición si no hay recurrencia o la serie no está programada', async () => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [
+      makeReminder({ id: 'once', recurrence: null }),
+      makeReminder({ id: 'cancelled', recurrence: { unit: 'month', every: 1 }, status: 'cancelled' }),
+      makeReminder({ id: 'sent', recurrence: { unit: 'month', every: 1 }, status: 'sent' }),
+    ] });
+    await renderReminders();
+    await screen.findByTestId('reminder-row-once');
+    for (const id of ['once', 'cancelled', 'sent']) expect(screen.queryByTestId(`reminder-repeats-${id}`)).toBeNull();
+  });
+  it('#213 R15: la serie programada ofrece Cancelar serie y el puntual Eliminar', async () => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [
+      makeReminder({ id: 'series', title: 'Pipeta antipulgas', recurrence: { unit: 'month', every: 1 } }),
+      makeReminder({ id: 'once' }),
+    ] });
+    await renderReminders();
+    const row = await screen.findByTestId('reminder-row-series');
+    expect(within(row).queryByTestId('reminder-cancel-series-series')).not.toBeNull();
+    const button = within(row).getByTestId('reminder-cancel-series-series');
+    expect(button.props.accessibilityLabel).toBe('Cancelar la serie Pipeta antipulgas');
+    expect(button.props.className).toContain('button__root--variant-danger-soft');
+    expect(button.props.className).toContain('h-11 rounded-14 px-2.5 bg-category-rose');
+    const label = within(button).getByText('Cancelar serie');
+    expect(label.props.children).toBe('Cancelar\nserie');
+    expect(label.props.className).toBe('text-13 font-extrabold text-danger');
+    expect(within(row).queryByTestId('reminder-delete-series')).toBeNull();
+    expect(within(row).getAllByRole('button')).toHaveLength(1);
+    expect(screen.getByTestId('reminder-delete-once')).toHaveTextContent('Eliminar');
+    expect(screen.queryByTestId('reminder-cancel-series-once')).toBeNull();
+  });
+
+  it.each(['cancelled', 'sent'] as const)('#213 R15: una serie cancelada o enviada conserva Eliminar (%s)', async (status) => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [makeReminder({ id: 'series', status, recurrence: { unit: 'month', every: 1 } })] });
+    await renderReminders();
+    await screen.findByTestId('reminder-row-series');
+    expect(screen.getByTestId('reminder-delete-series')).toHaveTextContent('Eliminar');
+    expect(screen.queryByTestId('reminder-cancel-series-series')).toBeNull();
+  });
+
+  it('#213 R16: el badge Hoy y el borde ámbar solo marcan el día de hoy', async () => {
+    jest.setSystemTime(new Date(2026, 11, 31, 8));
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [
+      makeReminder({ id: 'today', dueAt: '2027-01-01T02:00:00.000Z' }),
+      makeReminder({ id: 'tomorrow', dueAt: '2027-01-01T15:00:00.000Z' }),
+      makeReminder({ id: 'yesterday', dueAt: '2026-12-30T15:00:00.000Z' }),
+    ] });
+    await renderReminders();
+    await screen.findByTestId('reminder-row-today');
+    expect(screen.getByTestId('reminder-upcoming-today')).toHaveTextContent('Hoy');
+    expect(screen.getByTestId('reminder-row-today').props.className).toBe('flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border-2 border-category-amber');
+    for (const id of ['tomorrow', 'yesterday']) {
+      expect(screen.queryByTestId(`reminder-upcoming-${id}`)).toBeNull();
+      expect(screen.getByTestId(`reminder-row-${id}`).props.className).toBe('flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border');
+    }
+  });
+
+  it('#213 R17: Cancelar serie abre la hoja con su copy', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-cancel-series-series');
+    await fireEvent.press(screen.getByTestId('reminder-cancel-series-series'));
+    expect(screen.queryByTestId('reminders-cancel-series-sheet')).not.toBeNull();
+    const sheet = screen.getByTestId('reminders-cancel-series-sheet');
+    expect(screen.queryByTestId('reminders-delete-sheet')).toBeNull();
+    const body = 'No volveré a avisarte de Pipeta antipulgas de Rocky. Si cambias de idea, puedes crear el recordatorio otra vez.';
+    await waitFor(() => expect(within(screen.getByTestId('reminders-cancel-series-sheet')).getByText(body)).toHaveTextContent(body));
+    expect(within(sheet).getByText('¿Cancelar la serie?')).toBeVisible();
+    expect(within(sheet).getByTestId('reminders-cancel-series-reference')).toHaveTextContent('Pipeta antipulgas · cada mes');
+    const tile = within(sheet).getByTestId('reminders-cancel-series-icon');
+    expect(tile.props.className).toBe('size-14 items-center justify-center rounded-full bg-category-rose');
+    const icon = within(tile).getByTestId('reminders-icon-repeat', { includeHiddenElements: true });
+    expect(icon.props.size).toBe(26);
+    expect(icon.props.color).toBe('color:danger');
+    const confirm = within(sheet).getByTestId('reminders-cancel-series-confirm');
+    expect(confirm).toHaveTextContent('Cancelar la serie');
+    expect(confirm.props.className).toContain('h-14 w-full rounded-16 bg-danger');
+    expect(within(confirm).getByText('Cancelar la serie').props.className).toBe('text-17 font-extrabold text-danger-foreground');
+    const keep = within(sheet).getByTestId('reminders-cancel-series-keep');
+    expect(keep).toHaveTextContent('Mantener la serie');
+    expect(keep.props.className).toContain('w-full h-14 rounded-16 border-2 border-lip-gray bg-surface');
+    expect(within(keep).getByText('Mantener la serie').props.className).toBe('text-17 font-extrabold text-foreground');
+    const tree = JSON.stringify(screen.toJSON());
+    let position = -1;
+    for (const part of ['reminders-cancel-series-icon', '¿Cancelar la serie?', 'reminders-cancel-series-reference', body, 'reminders-cancel-series-confirm', 'reminders-cancel-series-keep']) {
+      expect(tree.indexOf(part)).toBeGreaterThan(position);
+      position = tree.indexOf(part);
+    }
+  });
+
+  it('#213 R17: sin nombre de mascota el cuerpo omite la mascota', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ id: 'pet-2', name: 'Luna' })] });
+    await renderReminders();
+    await screen.findByTestId('reminder-cancel-series-series');
+    await fireEvent.press(screen.getByTestId('reminder-cancel-series-series'));
+    expect(screen.queryByTestId('reminders-cancel-series-sheet')).not.toBeNull();
+    const body = 'No volveré a avisarte de Pipeta antipulgas. Si cambias de idea, puedes crear el recordatorio otra vez.';
+    await waitFor(() => expect(within(screen.getByTestId('reminders-cancel-series-sheet')).getByText(body)).toHaveTextContent(body));
+  });
+
+  it('#213 R17: las dos hojas comparten un solo BottomSheet', async () => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [
+      makeReminder({ id: 'series', title: 'Pipeta antipulgas', recurrence: { unit: 'month', every: 1 } }),
+      makeReminder({ id: 'once' }),
+    ] });
+    await renderReminders();
+    await screen.findByTestId('reminder-cancel-series-series');
+    await fireEvent.press(screen.getByTestId('reminder-cancel-series-series'));
+    const host = screen.getByTestId('reminders-delete-host');
+    expect(within(host).getAllByTestId('community-bottom-sheet')).toHaveLength(1);
+    expect(screen.queryByTestId('reminders-cancel-series-sheet')).not.toBeNull();
+    expect(screen.queryByTestId('reminders-delete-sheet')).toBeNull();
+    await fireEvent(within(host).getByTestId('community-bottom-sheet'), 'onClose');
+    await fireEvent.press(screen.getByTestId('reminder-delete-once'));
+    expect(within(host).getAllByTestId('community-bottom-sheet')).toHaveLength(1);
+    expect(screen.getByTestId('reminders-delete-sheet')).toBeVisible();
+    expect(screen.queryByTestId('reminders-cancel-series-sheet')).toBeNull();
+  });
+
+  async function openSeriesSheet() {
+    await renderReminders();
+    await screen.findByTestId('reminder-cancel-series-series');
+    await fireEvent.press(screen.getByTestId('reminder-cancel-series-series'));
+  }
+
+  async function pressSeriesConfirmation() {
+    const button = screen.getByTestId('reminders-cancel-series-confirm');
+    await fireEvent.press(button);
+  }
+
+  it.each(['ok', 'not-found', 'not-editable'] as const)('#213 R18: confirmar cancela la serie e invalida la lista con %s', async (kind) => {
+    mockCancelReminderSeries.mockResolvedValue({ kind });
+    mockListReminders
+      .mockResolvedValueOnce({ kind: 'ok', reminders: [makeReminder({ id: 'series', recurrence: { unit: 'month', every: 1 } })] })
+      .mockResolvedValueOnce({ kind: 'ok', reminders: [] });
+    await openSeriesSheet();
+    await pressSeriesConfirmation();
+    await waitFor(() => expect(screen.queryByTestId('reminder-row-series')).toBeNull());
+    expect(mockListReminders).toHaveBeenCalledTimes(2);
+    expect(mockCancelReminderSeries).toHaveBeenCalledTimes(1);
+    expect(mockCancelReminderSeries).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token', 'series');
+    expect(screen.queryByTestId('reminders-cancel-series-sheet')).toBeNull();
+  });
+
+  it.each([
+    ['forbidden', 'Solo el dueño puede cancelar la serie'],
+    ['unreachable', 'No se pudo conectar con el servidor'],
+    ['error', 'Algo salió mal'],
+    ['missing-config', 'Algo salió mal'],
+    ['throws', 'Algo salió mal'],
+  ] as const)('#213 R18: confirmar con %s muestra su error', async (kind, expected) => {
+    if (kind === 'throws') mockCancelReminderSeries.mockRejectedValue(new Error('x'));
+    else if (kind === 'unreachable') mockCancelReminderSeries.mockResolvedValue({ kind, message: 'x' });
+    else mockCancelReminderSeries.mockResolvedValue({ kind });
+    await openSeriesSheet();
+    await pressSeriesConfirmation();
+    await waitFor(() => expect(screen.getByTestId('reminders-action-error')).toHaveTextContent(expected));
+    expect(screen.queryByTestId('reminders-cancel-series-sheet')).toBeNull();
+  });
+
+  it('#213 R18: confirmar con unauthorized cierra sesión', async () => {
+    mockCancelReminderSeries.mockResolvedValue({ kind: 'unauthorized' });
+    await openSeriesSheet();
+    await pressSeriesConfirmation();
+    await waitFor(() => expect(screen.queryByTestId('reminders-cancel-series-sheet')).toBeNull());
+    expect(mockUseAuth().signOut).toHaveBeenCalledTimes(1);
+  });
+
+  it('#213 R18: Mantener la serie cierra sin llamar a la API', async () => {
+    await openSeriesSheet();
+    const keep = screen.getByTestId('reminders-cancel-series-keep');
+    await fireEvent.press(keep);
+    await waitFor(() => expect(screen.queryByTestId('reminders-cancel-series-sheet')).toBeNull());
+    expect(mockCancelReminderSeries).not.toHaveBeenCalled();
+    await fireEvent.press(screen.getByTestId('reminder-cancel-series-series'));
+    await fireEvent(screen.getByTestId('community-bottom-sheet'), 'onClose');
+    expect(screen.queryByTestId('reminders-cancel-series-sheet')).toBeNull();
+    expect(mockCancelReminderSeries).not.toHaveBeenCalled();
+  });
+
+  it('#213 R19: la hoja Cancelar serie hereda el fondo surface de #218', async () => {
+    await openSeriesSheet();
+    const sheet = within(screen.getByTestId('reminders-delete-host')).getByTestId('community-bottom-sheet');
+    expect(flat(sheet.props.backgroundStyle)).toEqual({ backgroundColor: 'color:surface' });
+  });
+
+  it('#213 R21: el parámetro petId selecciona su mascota', async () => {
+    mockSearchParams = { petId: 'pet-2' };
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ id: 'pet-1', name: 'Luna' }), makePet({ id: 'pet-2', name: 'Rocky' })] });
+    await renderReminders();
+    await waitFor(() => expect(screen.getByTestId('pet-chip-pet-2').props.accessibilityState).toEqual({ selected: true }));
+    expect(mockListReminders).toHaveBeenLastCalledWith('http://example.test/v1', 'jwt-token', 'pet-2');
+  });
+
+  it('#213 R21: un petId desconocido deja la primera mascota', async () => {
+    mockSearchParams = { petId: 'pet-missing' };
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ id: 'pet-1', name: 'Luna' }), makePet({ id: 'pet-2', name: 'Rocky' })] });
+    await renderReminders();
+    await waitFor(() => expect(screen.getByTestId('pet-chip-pet-1').props.accessibilityState).toEqual({ selected: true }));
+    expect(mockListReminders).toHaveBeenLastCalledWith('http://example.test/v1', 'jwt-token', 'pet-1');
+    expect(mockListReminders.mock.calls.map((call) => call[2])).not.toContain('pet-missing');
+  });
+
+  it('#213 R21: tras abrir con petId se puede elegir otra mascota', async () => {
+    mockSearchParams = { petId: 'pet-2' };
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ id: 'pet-1', name: 'Luna' }), makePet({ id: 'pet-2', name: 'Rocky' })] });
+    await renderReminders();
+    await waitFor(() => expect(screen.getByTestId('pet-chip-pet-2').props.accessibilityState).toEqual({ selected: true }));
+    await fireEvent.press(screen.getByTestId('pet-chip-pet-1'));
+    await waitFor(() => expect(screen.getByTestId('pet-chip-pet-1').props.accessibilityState).toEqual({ selected: true }));
+    expect(mockListReminders).toHaveBeenLastCalledWith('http://example.test/v1', 'jwt-token', 'pet-1');
+  });
+
 });

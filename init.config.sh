@@ -33,7 +33,7 @@ E2E_CMD="pnpm -C backend-pet-tracker run test:e2e"
 
 # Puesta a punto idempotente antes de los e2e (#96): aplica las migraciones con
 # su journal y crea en LocalStack los recursos de desarrollo y de test.
-E2E_SETUP_CMD="pnpm -C backend-pet-tracker run db:migrate && pnpm -C backend-pet-tracker run provision:local"
+E2E_SETUP_CMD="pnpm -C backend-pet-tracker run db:migrate && pnpm -C backend-pet-tracker run seed:vaccines && pnpm -C backend-pet-tracker run provision:local"
 
 # Claves del .env de cuyas URLs se deriva la infra que los e2e necesitan.
 # No se duplican puertos: se sondea exactamente el destino que usa el backend.

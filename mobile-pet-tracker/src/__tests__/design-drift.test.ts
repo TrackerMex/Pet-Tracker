@@ -599,7 +599,7 @@ describe('#87 R19: use-' + 'api no deja huella', () => {
     'screens/pairing/index.tsx': 2,
     'screens/profile/index.tsx': 2,
     'screens/edit-profile/index.tsx': 1, // #194 R8
-    'screens/reminders/index.tsx': 1,
+    'screens/reminders/index.tsx': 1 + 1, // #213 R18
   };
 
   it('removes both legacy hook files', () => {
@@ -651,7 +651,7 @@ describe('#87 R19: use-' + 'api no deja huella', () => {
     expect(violations).toEqual([]);
   });
 
-  it('preserves every mutation sign-out with zero delta (enmendado por #200 R1)', () => {
+  it('preserves every mutation sign-out with zero delta (enmendado por #200 R1) (enmendado por #213 R22)', () => {
     const actual = Object.fromEntries(
       Object.keys(screenSignOutCalls).map((relativePath) => {
         const contents = readFileSync(
@@ -1068,10 +1068,10 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     )).toEqual([]);
   });
 
-  it('importa exactamente los iconos prescritos desde un único import de reicon (enmendado por #220 R15)', () => {
+  it('importa exactamente los iconos prescritos desde un único import de reicon (enmendado por #220 R15) (enmendado por #213 R22)', () => {
     const expected: Record<string, string[]> = {
-      'screens/reminders/index.tsx': ['Plus', 'Trash'],
-      'screens/add-reminder/index.tsx': ['Bell'], // #220 R15
+      'screens/reminders/index.tsx': ['Plus', 'Repeat', 'Trash'],
+      'screens/add-reminder/index.tsx': ['Bell', 'Minus', 'Plus', 'Repeat'], // #220 R15; #213 R22
       'utils/reminder-meta.ts': ['Drop', 'ForkKnife', 'Pill', 'PinTack', 'Stethoscope', 'Syringe', 'Weight'],
     };
     for (const [file, icons] of Object.entries(expected)) {
@@ -1116,9 +1116,9 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     expect(addReminder).not.toMatch(/uppercase|tracking-widest/);
   });
 
-  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #203 R4) (enmendado por #203 R6) (enmendado por #203 R7) (enmendado por #204 R8) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #196 R5) (enmendado por #201 R5, R13) (enmendado por #205 R13) (enmendado por #214 R7, R10, R11, R12, R13, R15, R16, R17, R18)', () => {
+  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #203 R4) (enmendado por #203 R6) (enmendado por #203 R7) (enmendado por #204 R8) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #196 R5) (enmendado por #201 R5, R13) (enmendado por #205 R13) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R7, R10, R11, R12, R13, R15, R16, R17, R18)', () => {
     for (const [pattern, count] of [
-      [/\brounded-14\b/g, 2], [/\brounded-16\b/g, 5], [/\brounded-22\b/g, 1],
+      [/\brounded-14\b/g, 2], [/\brounded-16\b/g, 5 + 2], [/\brounded-22\b/g, 1],
     ] as const) {
       expect(reminders.match(pattern) ?? []).toHaveLength(count);
     }
@@ -1136,7 +1136,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       'components/celebration.tsx': 2,
       'components/empty-state.tsx': 1,
       'screens/add-pet/index.tsx': 2, // #191 R11
-      'screens/add-reminder/index.tsx': 1,
+      'screens/add-reminder/index.tsx': 1 + 1, // #213 R6
       'screens/alert-detail/index.tsx': 2,
       'screens/docs-upload-form/index.tsx': 2,
       'screens/edit-profile/index.tsx': 1, // #194 R6
@@ -1144,7 +1144,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       'screens/forgot/index.tsx': 3,
       'screens/geofence-editor/index.tsx': 4, // #189 R13; #202 R18: +1
       'screens/geofences/index.tsx': 2, // #189 R7
-      'screens/health/index.tsx': 1, // #199 R14
+      'screens/health/index.tsx': 1 + 1, // #199 R14; #208 R21
       'screens/home/index.tsx': 1 + 1, // #214 R7
       'screens/home/weekly-activity-chart.tsx': 1, // #198 R9
       'screens/join-pet/index.tsx': 2, // #214 R18
@@ -1155,6 +1155,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       'screens/pet-members/index.tsx': 6, // #214 R11, R13, R16, R17
       'screens/register/index.tsx': 1,
       'screens/reset-password/index.tsx': 1 + 1, // #205 R13
+      'screens/vaccine-create/index.tsx': 1, // #208 R21
       'screens/weight-log/index.tsx': 1,
       'screens/welcome/index.tsx': 2,
     });
@@ -1234,10 +1235,11 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
     expect(schedule.indexOf('testID="meal-schedule-header"')).toBeLessThan(schedule.indexOf('testID="meal-schedule-summary"'));
   });
 
-  it('limita text-22 a Horario y text-17 al inventario de E1.2 (enmendado por #177 R10) (enmendado por #200 R5) (enmendado por #198 R15) (enmendado por #214 R13, R15, R18)', () => {
+  it('limita text-22 a Horario y text-17 al inventario de E1.2 (enmendado por #177 R10) (enmendado por #200 R5) (enmendado por #198 R15) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R13, R15, R18)', () => {
     const productionFilesMatching = (pattern: RegExp) => filesMatching(pattern).filter(path => !/\.test\.tsx?$/.test(path)).sort();
     expect(productionFilesMatching(/\btext-22\b/)).toEqual([
       'components/empty-state.tsx', // #198 R15
+      join('screens', 'add-reminder', 'index.tsx'), // #213 R6
       join('screens', 'alert-detail', 'index.tsx'), // #180 R3
       join('screens', 'meal-schedule', 'index.tsx'),
     ]);
@@ -1253,6 +1255,7 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
       'screens/forgot/index.tsx',
       'screens/geofence-editor/index.tsx',
       'screens/geofences/index.tsx',
+      'screens/health/index.tsx', // #208 R21
       'screens/home/index.tsx',
       'screens/join-pet/index.tsx', // #214 R18
       'screens/login/index.tsx',
@@ -1263,6 +1266,7 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
       'screens/register/index.tsx',
       'screens/reminders/index.tsx',
       'screens/reset-password/index.tsx',
+      'screens/vaccine-create/index.tsx', // #208 R21
       'screens/weight-log/index.tsx',
       'screens/welcome/index.tsx',
     ]);
@@ -1301,5 +1305,109 @@ describe('#185 R10: el formulario pertenece a la lista A11', () => {
     const end = source.indexOf('Su', start);
     expect(start).toBeGreaterThan(-1);
     expect(source.slice(start, end)).toContain('`pets/[petId]/docs-upload`');
+  });
+});
+
+describe('#217 R8: las dependencias nitro no existen', () => {
+  const packagePattern = new RegExp(['react-native', 'nitro'].join('-'));
+  const plantedDependency = ['"', ['react-native', 'nitro', 'modules'].join('-'), '": "0.37.0"'].join('');
+
+  it('#217 R8: package.json no nombra nitro en dependencias ni en transformIgnorePatterns', () => {
+    expect(plantedDependency).toMatch(packagePattern);
+    expect(readFileSync(join(projectRoot, 'package.json'), 'utf8')).not.toMatch(packagePattern);
+  });
+
+  it('#217 R8: bun.lock no nombra nitro', () => {
+    expect(plantedDependency).toMatch(packagePattern);
+    expect(readFileSync(join(projectRoot, 'bun.lock'), 'utf8')).not.toMatch(packagePattern);
+  });
+});
+
+describe('#217 R9: la transición retirada no deja fuentes', () => {
+  const transition = ['theme', 'transition'].join('-');
+  const availability = ['nitro', 'availability'].join('-');
+
+  it('#217 R9: los cuatro ficheros de la transición no existen', () => {
+    for (const relative of [
+      ['theme', transition + '.ts'],
+      ['theme', availability + '.ts'],
+      ['theme', '__tests__', transition + '.test.tsx'],
+      ['theme', '__tests__', transition + '.degraded.test.tsx'],
+    ]) {
+      expect(existsSync(join(sourceRoot, ...relative))).toBe(false);
+    }
+  });
+
+  it('#217 R9: ninguna fuente de producción nombra la transición', () => {
+    const forbidden = [
+      ['ni', 'tro'].join(''),
+      transition,
+      ['use', 'ThemeTransition'].join(''),
+      ['THEME', 'FADE'].join('_'),
+      ['is', 'ThemeTransitionAvailable'].join(''),
+    ];
+    const pattern = new RegExp(forbidden.join('|'));
+    for (const identifier of forbidden) {
+      expect('import { ' + identifier + ' } from "./legacy";').toMatch(pattern);
+    }
+    expect(sourceFiles(sourceRoot)
+      .filter((file) => !/\.test\.tsx?$/.test(file))
+      .filter((file) => pattern.test(readFileSync(file, 'utf8')))
+      .map((file) => file.slice(sourceRoot.length + 1)))
+      .toEqual([]);
+  });
+});
+
+describe('#217 R11: los tests no conservan módulos retirados', () => {
+  it('#217 R11: ningún test mockea nitro', () => {
+    const pattern = /nitro/;
+    const plantedMock = 'jest.mock("' + ['react-native', 'nitro', 'modules'].join('-') + '")';
+    expect(plantedMock).toMatch(pattern);
+    expect(allTypeScriptFiles(sourceRoot)
+      .filter((file) => /\.test\.tsx?$/.test(file))
+      .filter((file) => file !== join(sourceRoot, '__tests__', 'design-drift.test.ts'))
+      .filter((file) => pattern.test(readFileSync(file, 'utf8')))
+      .map((file) => file.slice(sourceRoot.length + 1)))
+      .toEqual([]);
+  });
+});
+
+describe('#217 R12: los ficheros nuevos no escapan del sistema de estilo', () => {
+  it('#217 R12: navigation-theme.ts y hero-status-bar.tsx no tienen hex, StyleSheet ni clases con corchetes', () => {
+    const pattern = /#[0-9A-Fa-f]{3,8}\b|StyleSheet|\b[a-z-]+-\[[^\]]+\]/;
+    for (const planted of [['#', '123456'].join(''), 'StyleSheet.create({})', 'bg-[red]']) {
+      expect(planted).toMatch(pattern);
+    }
+    for (const relative of [
+      ['theme', 'navigation-theme.ts'],
+      ['components', 'hero-status-bar.tsx'],
+    ]) {
+      expect(readFileSync(join(sourceRoot, ...relative), 'utf8')).not.toMatch(pattern);
+    }
+  });
+});
+
+describe('#208 R21: alta de vacuna sin deriva', () => {
+  it('#208 R21: los cuatro ficheros nuevos no tienen deriva de estilo', () => {
+    const files = [
+      'screens/vaccine-create/index.tsx', // #208 R21
+      'app/pets/[petId]/vaccines/new.tsx', // #208 R21
+      'utils/vaccine-dates.ts', // #208 R21
+      'hooks/vaccine-reminder-notice.ts', // #208 R21
+    ];
+    const forbidden = [
+      ['estilos', PAIRING_STYLE_ESCAPES],
+      ['clases arbitrarias', new RegExp(ARBITRARY_CLASS, 'g')],
+      ['tinta accent', /\btext-accent\b(?!-)/g],
+      ['tinta warning', /\btext-warning\b/g],
+      ['token accent', /useThemeColors\s*\(\s*\[[^\]]*['"]accent['"]/g],
+      ['comentario de feature sin requisito', /#208(?! R\d)/g],
+    ] as const;
+    for (const file of files) {
+      const source = readFileSync(join(sourceRoot, file), 'utf8');
+      for (const [rule, pattern] of forbidden) {
+        expect({ file, rule, count: (source.match(pattern) ?? []).length }).toEqual({ file, rule, count: 0 });
+      }
+    }
   });
 });
