@@ -6,6 +6,7 @@ import {
   waitFor,
   within,
 } from '@testing-library/react-native';
+import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect } from 'react';
 import type { TestInstance } from 'test-renderer';
@@ -148,6 +149,7 @@ const mockAddMealTime = jest.mocked(addMealTime);
 const mockMoveMealTime = jest.mocked(moveMealTime);
 const mockGetPet = jest.mocked(getPet);
 const mockUseAuth = jest.mocked(useAuth);
+const mockRouter = jest.mocked(router);
 
 function makePlan(overrides: Partial<NutritionPlan> = {}): NutritionPlan {
   return {
@@ -1409,4 +1411,55 @@ it.each([
   mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
   await renderMealSchedule();
   expect((await screen.findByTestId(id)).props.delayMs).toBe(delay);
+});
+
+describe('#209 R20: enlaces de perfil en Horario', () => {
+  beforeEach(() => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+  });
+
+  it('#209 R20: owner con perfil ve Editar perfil y navega al cuestionario', async () => {
+    mockGetPet.mockResolvedValue(petState('owner'));
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
+    await renderMealSchedule();
+    const edit = await screen.findByTestId('nutrition-profile-edit');
+    const row = edit.parent!;
+    expect(row).toHaveProp('className', 'flex-row items-center justify-between');
+    expect(childTestIds(row)).toEqual(['nutrition-profile-title', 'nutrition-profile-edit']);
+    expect(edit).toHaveTextContent('Editar perfil');
+    expect(edit).toHaveProp('accessibilityLabel', 'Editar perfil nutricional');
+    expect(edit.props.hitSlop).toEqual({ top: 6, bottom: 6, left: 6, right: 6 });
+    expect(within(edit).getByText('Editar perfil')).toHaveProp('className', 'text-13 font-extrabold text-foreground');
+    expect(screen.queryByTestId('nutrition-profile-create')).toBeNull();
+    await fireEvent.press(edit);
+    expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/nutrition-profile', params: { petId: 'pet-1' } });
+  });
+
+  it('#209 R20: owner sin perfil ve Crear perfil nutricional', async () => {
+    mockGetPet.mockResolvedValue(petState('owner'));
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'not-found' });
+    await renderMealSchedule();
+    const create = await screen.findByTestId('nutrition-profile-create');
+    const siblings = childTestIds(create.parent!);
+    expect(siblings.indexOf('nutrition-profile-create')).toBe(siblings.indexOf('nutrition-profile-empty') + 1);
+    expect(create).toHaveTextContent('Crear perfil nutricional');
+    expect(create.props.accessibilityLabel).toBeUndefined();
+    expect(create.props.hitSlop).toEqual({ top: 6, bottom: 6, left: 6, right: 6 });
+    expect(within(create).getByText('Crear perfil nutricional')).toHaveProp('className', 'text-13 font-extrabold text-foreground');
+    expect(screen.queryByTestId('nutrition-profile-edit')).toBeNull();
+    await fireEvent.press(create);
+    expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/nutrition-profile', params: { petId: 'pet-1' } });
+  });
+
+  it.each(['family', 'walker', 'vet'] as const)('#209 R20: %s no ve enlaces de perfil', async (role) => {
+    mockGetPet.mockResolvedValue(petState(role));
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
+    const { queryClient } = await renderMealSchedule();
+    await screen.findByTestId('nutrition-profile-title');
+    await waitFor(() => {
+      expect(queryClient.getQueryData(['pets', 'detail', 'pet-1'])).toEqual(petState(role));
+      expect(screen.queryByTestId('nutrition-profile-edit')).toBeNull();
+      expect(screen.queryByTestId('nutrition-profile-create')).toBeNull();
+    });
+  });
 });
