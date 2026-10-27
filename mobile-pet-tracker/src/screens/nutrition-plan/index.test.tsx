@@ -528,3 +528,173 @@ describe('#215 R16: rol family sin pie', () => {
     expect(screen.queryByTestId('nutrition-plan-footer')).toBeNull();
   });
 });
+
+describe('#215 R21: recetas exactas de cada nodo', () => {
+  type Node = ReturnType<typeof screen.getByTestId>;
+  type Arrange = 'engine' | 'ai' | 'no-collar' | 'limit' | 'loading' | 'load-error' | 'empty' | 'request-error';
+
+  const arrangements: Record<Arrange, { before?: () => void; after?: () => Promise<void> }> = {
+    engine: {},
+    ai: { before: () => mockGetNutritionPlan.mockResolvedValue(planState({ aiProposal: PROPOSAL, aiExplanation: 'Texto' })) },
+    'no-collar': { before: () => mockParams.mockReturnValue({ petId: 'pet-1', aiStatus: 'not_tracked' }) },
+    limit: { before: () => mockParams.mockReturnValue({ petId: 'pet-1', aiStatus: 'limit_reached' }) },
+    loading: { before: () => mockGetNutritionPlan.mockReturnValue(new Promise(() => undefined)) },
+    'load-error': { before: () => mockGetNutritionPlan.mockResolvedValue({ kind: 'error' }) },
+    empty: { before: () => mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' }) },
+    'request-error': {
+      before: () => mockGenerateNutritionPlan.mockResolvedValue({ kind: 'forbidden' }),
+      after: async () => { await fireEvent.press(await screen.findByTestId('nutrition-plan-request')); },
+    },
+  };
+
+  function expectButton(node: Node, recipe: string) {
+    expect((node.props.className as string).startsWith('pressable-feedback__root button__root ')).toBe(true);
+    expect((node.props.className as string).endsWith(` ${recipe}`)).toBe(true);
+  }
+  function expectIcon(node: Node, size: number, color: string) {
+    expect(node).toHaveProp('size', size);
+    expect(node.props.style).toEqual({ color });
+  }
+  function expectLip(node: Node, color: string) {
+    expect(node).toHaveStyle({ boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color }] });
+  }
+
+  it.each<[string, Arrange, string, (node: Node) => void]>([
+    ['screen-nutrition-plan', 'engine', 'screen-nutrition-plan', (node) => {
+      expect(node.props.className).toBe('flex-1 bg-background');
+    }],
+    ['ScrollView', 'engine', 'screen-nutrition-plan', (node) => {
+      const scroll = node.children[0] as Node;
+      expect(scroll.props.className).toBe('flex-1');
+      expect(scroll).toHaveProp('contentInsetAdjustmentBehavior', 'automatic');
+      expect(scroll.props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 48, gap: 12, paddingBottom: 16 });
+      expect(within(scroll).getByTestId('nutrition-plan-header')).toBeVisible();
+    }],
+    ['nutrition-plan-skeleton', 'loading', 'nutrition-plan-skeleton', (node) => {
+      expect(node.props.className).toBe('skeleton__root h-56 w-full rounded-card');
+    }],
+    ['nutrition-plan-load-error', 'load-error', 'nutrition-plan-load-error', (node) => {
+      expect(node.props.className).toBe('text-danger');
+      expect(node.parent!.props.className).toBe('items-start gap-3');
+      expect(within(node.parent!).getByTestId('nutrition-plan-retry')).toBeVisible();
+    }],
+    ['nutrition-plan-empty', 'empty', 'nutrition-plan-empty', (node) => {
+      expect(node.props.className).toBe('font-normal text-muted');
+    }],
+    ['nutrition-plan-badge (IA)', 'ai', 'nutrition-plan-badge', (node) => {
+      expect(node.props.className).toBe('h-7 flex-row items-center gap-1.5 self-start rounded-full bg-category-violet px-2.5');
+    }],
+    ['nutrition-plan-badge (motor)', 'engine', 'nutrition-plan-badge', (node) => {
+      expect(node.props.className).toBe('h-7 flex-row items-center gap-1.5 self-start rounded-full bg-default px-2.5');
+    }],
+    ['nutrition-plan-badge-text (IA)', 'ai', 'nutrition-plan-badge-text', (node) => {
+      expect(node.props.className).toBe('text-xs font-extrabold text-category-violet-strong');
+    }],
+    ['nutrition-plan-badge-text (motor)', 'engine', 'nutrition-plan-badge-text', (node) => {
+      expect(node.props.className).toBe('text-xs font-extrabold text-muted');
+    }],
+    ['nutrition-plan-meals', 'engine', 'nutrition-plan-meals', (node) => {
+      expect(node.props.className).toBe('rounded-card border border-border bg-surface px-3.5 py-1');
+      expect(node.props.style).toEqual({ borderCurve: 'continuous' });
+    }],
+    ['nutrition-plan-row-0', 'engine', 'nutrition-plan-row-0', (node) => {
+      expect(node.props.className).toBe('min-h-13 flex-row items-center gap-3');
+    }],
+    ['nutrition-plan-row-1', 'engine', 'nutrition-plan-row-1', (node) => {
+      expect(node.props.className).toBe('min-h-13 flex-row items-center gap-3 border-t border-border');
+    }],
+    ['nutrition-plan-row-2', 'engine', 'nutrition-plan-row-2', (node) => {
+      expect(node.props.className).toBe('min-h-13 flex-row items-center gap-3 border-t border-border');
+    }],
+    ['la hora de la fila', 'engine', 'nutrition-plan-row-0', (node) => {
+      expect(within(node).getByText('08:00').props.className).toBe('flex-1 text-15 font-bold text-foreground');
+    }],
+    ['el contenedor de gramos', 'engine', 'nutrition-plan-grams-0', (node) => {
+      expect(node.parent!.props.className).toBe('items-end');
+    }],
+    ['nutrition-plan-grams-0', 'engine', 'nutrition-plan-grams-0', (node) => {
+      expect(node.props.className).toBe('text-17 font-black text-foreground');
+    }],
+    ['nutrition-plan-before-0', 'ai', 'nutrition-plan-before-0', (node) => {
+      expect(node.props.className).toBe('text-11 font-semibold text-muted');
+      expect(node.parent!.props.className).toBe('items-end');
+    }],
+    ['nutrition-plan-total', 'engine', 'nutrition-plan-total', (node) => {
+      expect(node.props.className).toBe('min-h-13 flex-row items-center gap-3 border-t border-border');
+      expect(within(node).getByText('Total').props.className).toBe('flex-1 text-15 font-extrabold text-muted');
+    }],
+    ['nutrition-plan-total-grams', 'engine', 'nutrition-plan-total-grams', (node) => {
+      expect(node.props.className).toBe('text-17 font-black text-foreground');
+    }],
+    ['nutrition-plan-why', 'ai', 'nutrition-plan-why', (node) => {
+      expect(node.props.className).toBe('gap-1.5 rounded-tile bg-category-violet px-3.5 py-3');
+      expect(node.props.style).toEqual({ borderCurve: 'continuous' });
+      expect(within(node).getByText('Por qué cambié sus porciones').props.className).toBe('text-sm font-black text-category-violet-strong');
+    }],
+    ['nutrition-plan-why-text', 'ai', 'nutrition-plan-why-text', (node) => {
+      expect(node.props.className).toBe('text-13 font-semibold leading-note text-foreground');
+    }],
+    ['nutrition-plan-recommendations-title', 'ai', 'nutrition-plan-recommendations-title', (node) => {
+      expect(node.props.className).toBe('mt-0.5 text-base font-black text-foreground');
+    }],
+    ['nutrition-plan-recommendations', 'ai', 'nutrition-plan-recommendations', (node) => {
+      expect(node.props.className).toBe('gap-2');
+    }],
+    ['nutrition-plan-recommendation-0', 'ai', 'nutrition-plan-recommendation-0', (node) => {
+      expect(node.props.className).toBe('flex-row gap-2.5');
+      const number = within(node).getByText('1');
+      expect(number.props.className).toBe('text-xs font-black text-category-violet-strong');
+      expect(number.parent!.props.className).toBe('size-5.5 items-center justify-center rounded-full bg-category-violet');
+      expect(within(node).getByText('Pasea 10 minutos más por la mañana.').props.className).toBe('flex-1 text-13 font-semibold leading-body text-foreground');
+    }],
+    ['nutrition-plan-review', 'ai', 'nutrition-plan-review', (node) => {
+      expect(node.props.className).toBe('flex-row items-center gap-2.5');
+      expectIcon(within(node).getByTestId('nutrition-plan-icon-calendar'), 18, 'muted');
+      expect(within(node).getByText('Próxima revisión: 1 ene 2027').props.className).toBe('text-13 font-bold text-foreground');
+    }],
+    ['nutrition-plan-disclaimer', 'ai', 'nutrition-plan-disclaimer', (node) => {
+      expect(node.props.className).toBe('text-xs font-semibold leading-body text-muted');
+    }],
+    ['nutrition-plan-note', 'no-collar', 'nutrition-plan-note', (node) => {
+      expect(node.props.className).toBe('flex-row items-start gap-2.5 rounded-tile bg-default px-3.5 py-3');
+      expect(node.props.style).toEqual({ borderCurve: 'continuous' });
+      expectIcon(within(node).getByTestId('nutrition-plan-icon-info'), 20, 'muted');
+    }],
+    ['nutrition-plan-note-text', 'no-collar', 'nutrition-plan-note-text', (node) => {
+      expect(node.props.className).toBe('flex-1 text-13 font-semibold leading-note text-foreground');
+    }],
+    ['nutrition-plan-footer', 'engine', 'nutrition-plan-footer', (node) => {
+      expect(node.props.className).toBe('gap-2 bg-background px-5 pt-4');
+      expect(node.props.style).toEqual({ paddingBottom: 24 });
+      expect(node.parent!.props.testID).toBe('screen-nutrition-plan');
+    }],
+    ['nutrition-plan-error', 'request-error', 'nutrition-plan-error', (node) => {
+      expect(node.props.className).toBe('text-danger');
+    }],
+    ['nutrition-plan-limit', 'limit', 'nutrition-plan-limit', (node) => {
+      expect(node.props.className).toBe('text-center text-13 font-bold leading-body text-foreground');
+    }],
+    ['nutrition-plan-pair', 'no-collar', 'nutrition-plan-pair', (node) => {
+      expectButton(node, 'h-14 rounded-16 bg-accent');
+      expectLip(node, 'lip');
+      expect(within(node).getByText('Vincular collar').props.className).toBe('text-17 font-extrabold text-accent-foreground');
+    }],
+    ['nutrition-plan-request (límite)', 'limit', 'nutrition-plan-request', (node) => {
+      expectButton(node, 'h-14 gap-2 rounded-16 bg-default');
+      expect(node).toHaveStyle({ opacity: 1 });
+      expectIcon(within(node).getByTestId('nutrition-plan-icon-sparkles'), 18, 'muted');
+      expect(within(node).getByText('Pedir otro plan').props.className).toBe('text-17 font-extrabold text-muted');
+    }],
+    ['nutrition-plan-request (violeta tonal)', 'engine', 'nutrition-plan-request', (node) => {
+      expectButton(node, 'h-14 gap-2 rounded-16 bg-category-violet');
+      expectLip(node, 'lip-violet');
+      expectIcon(within(node).getByTestId('nutrition-plan-icon-sparkles'), 18, 'category-violet-strong');
+      expect(within(node).getByText('Pedir otro plan').props.className).toBe('text-17 font-extrabold text-category-violet-strong');
+    }],
+  ])('#215 R21: receta de %s', async (_node, view, anchor, check) => {
+    arrangements[view].before?.();
+    await renderPlan();
+    await arrangements[view].after?.();
+    check(await screen.findByTestId(anchor));
+  });
+});
