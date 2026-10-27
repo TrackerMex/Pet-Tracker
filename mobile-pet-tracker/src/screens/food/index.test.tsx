@@ -120,6 +120,8 @@ jest.mock('reicon-react-native', () => {
 
   return {
     ChevronRight: icon('food-icon-chevron-right'),
+    ChevronDown: icon('food-icon-chevron-down'),
+    ChevronUp: icon('food-icon-chevron-up'),
     Check: icon('food-icon-check'),
     Clock: icon('food-icon-clock'),
     ForkKnife: icon('food-icon-fork-knife'),
@@ -1723,24 +1725,34 @@ describe('#200 R7: avisos del plan', () => {
 });
 
 
-it('#200 R8: la recomendación es la tarjeta violeta del canvas', async () => {
+it('#200 R8: la recomendación es la tarjeta violeta del canvas (enmendado por #224 R10)', async () => {
   setupFood200Warnings();
   await renderFood();
   const card = await screen.findByTestId('food-ai-card');
   expect(card.type).toBe('View');
-  expect(card.props.className).toBe('flex-row gap-3 rounded-card bg-category-violet p-3.5');
+  expect(card.props.className).toBe('gap-2 rounded-card bg-category-violet p-3.5');
   expect(card).toHaveStyle(CONTINUOUS_CORNER);
   const icon = within(card).getByTestId('food-icon-sparkles', { includeHiddenElements: true });
-  expect(icon.props).toMatchObject({ size: 22, strokeWidth: 2.2, color: 'category-violet-strong' });
+  expect(icon.props).toMatchObject({ size: 20, strokeWidth: 2.2, color: 'category-violet-strong' });
   const title = within(card).getByTestId('food-ai-title');
   expect(title.props.className).toBe('text-sm font-extrabold text-category-violet-strong');
   expect(title).toHaveTextContent('Recomendación IA');
-  expect(title.parent?.props.className).toBe('flex-1 gap-0.5');
+  expect(title.parent?.props.testID).toBe('food-ai-header');
+  expect(title.parent?.props.className).toBe('flex-row items-center gap-2');
   const body = within(card).getByTestId('food-ai-body');
-  expect(body.props.className).toBe('text-13 leading-body text-foreground');
-  expect(body).toHaveTextContent('Plan explicado.');
+  expect(body.props.accessible).toBe(true);
+  expect(body.props.accessibilityLabel).toBe('Plan explicado.');
+  expect(within(card).getByText('Plan explicado.')).toBeOnTheScreen();
   expect(within(card).getAllByTestId(/^(food-icon-sparkles|food-ai-title|food-ai-body)$/).map(n => n.props.testID))
     .toEqual(['food-icon-sparkles', 'food-ai-title', 'food-ai-body']);
+});
+
+it.each([null, '', '   ', '**'])('#224 R10: explicación %j no pinta la tarjeta', async (aiExplanation) => { // sintético
+  setupFood200Warnings();
+  mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan({ aiExplanation }) });
+  await renderFood();
+  await screen.findByTestId('food-plan-card');
+  expect(screen.queryByTestId('food-ai-card')).toBeNull();
 });
 
 

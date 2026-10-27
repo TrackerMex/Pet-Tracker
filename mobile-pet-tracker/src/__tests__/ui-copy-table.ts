@@ -276,6 +276,9 @@ export const R6_FOOD: UseRow[] = [
   { file: 'src/screens/meals-history/index.tsx', key: 'common.somethingWentWrong' }, // #105 R5
   { file: 'src/screens/meals-history/index.tsx', key: 'common.retry' }, // #105 R5
   { file: 'src/screens/food/index.tsx', key: 'tabHeader.petsScroll' }, // #222 R8
+  { file: 'src/screens/food/ai-explanation.tsx', key: 'food.aiShowMore' }, // #224 R4
+  { file: 'src/screens/food/ai-explanation.tsx', key: 'food.aiShowLess' }, // #224 R4
+  { file: 'src/screens/food/ai-explanation.tsx', key: 'food.aiDisclaimer' }, // #224 R4
 ];
 
 export const R7_PROFILE: UseRow[] = [

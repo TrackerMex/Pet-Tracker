@@ -70,7 +70,7 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/home/index.tsx', // #198 R15
     ]);
   });
-  it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8) (enmendado por #189 R6) (enmendado por #200 R8) (enmendado por #199 R7) (enmendado por #199 R14) (enmendado por #198 R5) (enmendado por #208 R21) (enmendado por #214 R9, R12, R13, R14, R16, R18, R19) (enmendado por #209 R24)', () => {
+  it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8) (enmendado por #189 R6) (enmendado por #200 R8) (enmendado por #199 R7) (enmendado por #199 R14) (enmendado por #198 R5) (enmendado por #208 R21) (enmendado por #214 R9, R12, R13, R14, R16, R18, R19) (enmendado por #209 R24) (enmendado por #224 R13)', () => {
     expect(filesMatching(/\btext-13\b/)).toEqual([
       'components/form-error.tsx',
       'screens/add-pet/index.tsx', // #191 R11
@@ -79,6 +79,7 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/alerts/index.tsx', // #174 R4, R6
       'screens/docs/index.tsx', // #175 R8
       'screens/edit-profile/index.tsx', // #194 R5
+      'screens/food/ai-explanation.tsx', // #224 R13
       'screens/food/index.tsx',
       'screens/forgot/index.tsx',
       'screens/geofences/index.tsx', // #189 R6
