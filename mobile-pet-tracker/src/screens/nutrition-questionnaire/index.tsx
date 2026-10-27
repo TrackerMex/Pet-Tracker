@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
+import { usePreventRemove } from 'expo-router/react-navigation';
 import { Button, Skeleton } from 'heroui-native';
 import { Image } from 'expo-image';
 import { Check, Location, TrendDown, TrendUp } from 'reicon-react-native';
@@ -50,6 +51,13 @@ function nextStep(step: Step, bcs: number | null): Step {
   return 'health';
 }
 
+function prevStep(step: Step, bcs: number | null): Step {
+  if (step === 'health') return 'food';
+  if (step === 'food') return bcs !== null && bcs >= 7 ? 'target' : 'condition';
+  if (step === 'target') return 'condition';
+  return 'activity';
+}
+
 function BcsBadge({ n, slot, testID }: { n: number; slot: CategorySlot; testID: string }) {
   return <View testID={testID} className={`size-7.5 items-center justify-center rounded-10 ${CATEGORY_SLOTS[slot].surface}`}>
     <Text className={`text-sm font-black ${CATEGORY_SLOTS[slot].ink}`}>{n}</Text>
@@ -66,6 +74,7 @@ function QuestionnaireForm({ pet }: { initial: NutritionProfile | null; pet: Pet
   const [bcs, setBcs] = useState<number | null>(null);
   const n = stepNumber(step);
   const canContinue = step === 'activity' ? activity !== null : step === 'condition' ? bcs !== null : true;
+  usePreventRemove(step !== 'activity', () => setStep(prevStep(step, bcs)));
   function handleNext() {
     if (step !== 'health') setStep(nextStep(step, bcs));
   }
