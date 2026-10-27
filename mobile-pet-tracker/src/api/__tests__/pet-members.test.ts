@@ -6,6 +6,7 @@ import {
   removePetMember,
   revokePetInvite,
 } from '../pet-members';
+import { inviteKeys, memberKeys, petKeys } from '../query-keys';
 
 const baseUrl = 'http://example.test/v1/';
 const member = { userId: 'user-1', firstName: 'Ana', lastName: 'García', role: 'owner', joinedAt: '2026-10-06T09:05:00.000Z' };
@@ -107,4 +108,11 @@ it('R1: cada función llama al método y la ruta del contrato', async () => {
     await requests[name](baseUrl, fetchFn);
     expect(fetchFn).toHaveBeenCalledWith(`http://example.test/v1${path}`, options);
   }
+});
+
+it('R2: memberKeys e inviteKeys no comparten prefijo con petKeys', () => {
+  expect(memberKeys.list('pet-1')).toEqual(['pet-members', 'pet-1']);
+  expect(inviteKeys.list('pet-1')).toEqual(['pet-invites', 'pet-1']);
+  expect(memberKeys.list('pet-1')[0]).not.toBe(petKeys.list()[0]);
+  expect(inviteKeys.list('pet-1')[0]).not.toBe(petKeys.list()[0]);
 });
