@@ -8,14 +8,13 @@ import {
   within,
 } from '@testing-library/react-native';
 import { router, useFocusEffect } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { HeroUINativeProvider } from 'heroui-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Linking, Text, TextInput } from 'react-native';
 import { Uniwind } from 'uniwind';
 import type { TestInstance } from 'test-renderer';
-
-import { withThemeTransition } from 'react-native-nitro-theme-transition';
 
 import { requestPhotoUploadUrl, uploadPhotoToUrl } from '../../api/media';
 import { getPet, listPets, type PetState, type PetsState } from '../../api/pets';
@@ -75,17 +74,6 @@ const mockPetSwitcher = jest.fn<void, [{
   variant?: 'default' | 'avatars' | 'glass';
   trailing?: ReactNode;
 }]>();
-
-jest.mock('react-native-nitro-theme-transition', () => ({
-  withThemeTransition: jest.fn((apply: () => void) => {
-    apply();
-  }),
-  isThemeTransitionAvailable: jest.fn(() => false),
-}));
-
-jest.mock('../../theme/nitro-availability', () => ({
-  hasNitroModules: () => true,
-}));
 
 jest.mock('../../api/pets', () => ({
   getPet: jest.fn(),
@@ -167,6 +155,8 @@ jest.mock('../../components/pet-switcher', () => {
     },
   };
 });
+
+jest.mock('expo-status-bar', () => ({ StatusBar: jest.fn(() => null) }));
 
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn() },
@@ -557,14 +547,6 @@ describe('R4: toggle persiste', () => {
     expect(mockSetStoredTheme).toHaveBeenCalledWith('light');
   });
 
-  it('R2: el toggle dispara el fade vía withThemeTransition', async () => {
-    await renderProfile();
-    await fireEvent.press(screen.getByTestId('theme-toggle'));
-
-    expect(jest.mocked(withThemeTransition)).toHaveBeenCalledTimes(1);
-    expect(mockSetTheme).toHaveBeenCalledWith('dark');
-    expect(mockSetStoredTheme).toHaveBeenCalledWith('dark');
-  });
 });
 
 describe('#173 R11: cuenta en Card flat con Switch e idioma', () => {
@@ -2667,5 +2649,57 @@ describe('#222 R5: Perfil con hero', () => {
       expect(screen.queryByText('Perfil')).toBeNull();
       await cleanup();
     }
+  });
+});
+
+describe('#217 R6: la barra clara depende del hero de Perfil', () => {
+  beforeEach(() => {
+    setupProfile168();
+    mockTheme = 'light';
+  });
+
+  it('#217 R6: con hero pide la barra clara', async () => {
+    await renderProfile();
+    await screen.findByTestId('profile-pet-card');
+    expect(jest.mocked(StatusBar).mock.calls.at(-1)?.[0]).toEqual({ style: 'light' });
+    const source = readFileSync(`${process.cwd()}/src/screens/profile/index.tsx`, 'utf8');
+    const bar = source.indexOf('{showHero ? <HeroStatusBar /> : null}');
+    expect(bar).toBeGreaterThan(-1);
+    expect(bar).toBeLessThan(source.indexOf('{showHero ? ('));
+  });
+
+  it('#217 R6: sin mascotas no pide ninguna barra', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    const view = await renderProfile();
+    await screen.findByTestId('profile-pets-empty');
+    jest.mocked(StatusBar).mockClear();
+    await view.rerender(<ProfileScreen />);
+    expect(screen.getByTestId('profile-pets-empty')).toBeVisible();
+    expect(StatusBar).not.toHaveBeenCalled();
+    const source = readFileSync(`${process.cwd()}/src/screens/profile/index.tsx`, 'utf8');
+    expect(source).toContain('{showHero ? <HeroStatusBar /> : null}');
+  });
+});
+
+describe('#217 R10: el cambio de tema es inmediato y persistido', () => {
+  beforeEach(() => {
+    setupProfile168();
+    mockTheme = 'light';
+    mockSetStoredTheme.mockResolvedValue();
+  });
+
+  it('#217 R10: el interruptor aplica el tema antes de persistirlo', async () => {
+    await renderProfile();
+    const toggle = await screen.findByTestId('theme-toggle');
+    await fireEvent.press(toggle);
+
+    expect(mockSetTheme).toHaveBeenCalledTimes(1);
+    expect(mockSetTheme).toHaveBeenCalledWith('dark');
+    expect(mockSetStoredTheme).toHaveBeenCalledTimes(1);
+    expect(mockSetStoredTheme).toHaveBeenCalledWith('dark');
+    expect(mockSetTheme.mock.invocationCallOrder[0])
+      .toBeLessThan(mockSetStoredTheme.mock.invocationCallOrder[0]);
+    expect(readFileSync(`${process.cwd()}/src/screens/profile/index.tsx`, 'utf8'))
+      .not.toContain('theme-transition');
   });
 });

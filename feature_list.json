@@ -3572,7 +3572,7 @@
   {
     "id": 213,
     "name": "mobile-reminders-recurrence",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P1",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 2). Repetición en la app: chips en add-reminder (Una vez, Diario, Semanal, Mensual, Anual, Cada N horas con stepper) y campo Hasta opcional; etiqueta «Se repite…» en la lista; «Cancelar serie» con patchJson existente; notificationHref lleva un push de recordatorio a Recordatorios en vez de /alerts. Depende de #210 y del gate G1 (artboard NuevoRecordatorio con Repetición). Firma delegada al leader. Registrada sin spec."
   },
@@ -3600,7 +3600,7 @@
   {
     "id": 217,
     "name": "mobile-theme-flash-statusbar",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 1). Fondo de escena de navegación por tokens para el flash al cambiar de pestaña, retirar react-native-nitro-theme-transition y react-native-nitro-modules (cambio de tema instantáneo; rebuild del dev build lo hace el humano) y StatusBar auto con iconos claros en las pantallas con hero. Evidencia en progress/explore_ui-tema-barra-drawer-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },

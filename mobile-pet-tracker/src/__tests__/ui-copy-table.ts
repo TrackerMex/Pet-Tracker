@@ -406,6 +406,63 @@ export const R8_REMINDERS: UseRow[] = [
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.alert' },
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.notifyPreview' }, // #178 R12
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.saveReminder' },
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.repeat' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.repeatOnce' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.repeatDaily' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.repeatWeekly' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.repeatMonthly' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.repeatYearly' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.repeatHourly' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.every' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.hoursValue' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.hoursValueOne' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.monthsValue' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.monthsValueOne' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.hoursRange' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.monthsRange' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.hourLess' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.hourMore' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.monthLess' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.monthMore' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.until' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.optional' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.untilPlaceholder' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.summaryDaily' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.summaryWeekly' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.summaryMonthly' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.summaryMonthlyN' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.summaryYearly' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.summaryHoursDoses' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.summaryHoursDosesNoPet' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.summaryHours' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.summaryHourly' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.summaryUntil' }, // #213 R22
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.dosesJoin' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.repeatsEvery' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cadenceHour' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cadenceHours' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cadenceDay' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cadenceDays' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cadenceWeek' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cadenceWeeks' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cadenceMonth' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cadenceMonths' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cadenceYear' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cadenceYears' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.untilDay' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.untilMonth' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cancelSeries' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cancelSeriesA11y' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cancelSeriesTitle' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cancelSeriesReference' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cancelSeriesBody' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cancelSeriesBodyNoPet' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.cancelSeriesConfirm' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.keepSeries' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.errorCancelForbidden' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'common.cannotReachServer' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'common.somethingWentWrong' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'common.somethingWentWrong' }, // #213 R22
 ];
 
 export const R9_ADD_PET: UseRow[] = [
