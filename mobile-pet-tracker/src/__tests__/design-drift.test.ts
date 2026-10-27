@@ -1298,3 +1298,28 @@ describe('#185 R10: el formulario pertenece a la lista A11', () => {
     expect(source.slice(start, end)).toContain('`pets/[petId]/docs-upload`');
   });
 });
+
+describe('#208 R21: alta de vacuna sin deriva', () => {
+  it('#208 R21: los cuatro ficheros nuevos no tienen deriva de estilo', () => {
+    const files = [
+      'screens/vaccine-create/index.tsx', // #208 R21
+      'app/pets/[petId]/vaccines/new.tsx', // #208 R21
+      'utils/vaccine-dates.ts', // #208 R21
+      'hooks/vaccine-reminder-notice.ts', // #208 R21
+    ];
+    const forbidden = [
+      ['estilos', PAIRING_STYLE_ESCAPES],
+      ['clases arbitrarias', new RegExp(ARBITRARY_CLASS, 'g')],
+      ['tinta accent', /\btext-accent\b(?!-)/g],
+      ['tinta warning', /\btext-warning\b/g],
+      ['token accent', /useThemeColors\s*\(\s*\[[^\]]*['"]accent['"]/g],
+      ['comentario de feature sin requisito', /#208(?! R\d)/g],
+    ] as const;
+    for (const file of files) {
+      const source = readFileSync(join(sourceRoot, file), 'utf8');
+      for (const [rule, pattern] of forbidden) {
+        expect({ file, rule, count: (source.match(pattern) ?? []).length }).toEqual({ file, rule, count: 0 });
+      }
+    }
+  });
+});
