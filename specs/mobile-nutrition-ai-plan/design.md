@@ -44,17 +44,21 @@ tags: [harness, spec, mobile, nutrition]
 - Límite conocido: si el plan se cargó ayer y la pantalla sigue abierta tras la
   medianoche, dice «hoy» hasta el siguiente refetch.
 
-**Parser de #224 sí, componente de #224 no (R8, D2).**
+**Parser de #224 sí, componente de #224 no (R8, decisión del firmante D2).**
 
 - Se reutilizan `parseAiExplanation` y `aiExplanationPlainText`.
 - No se reutiliza `AiExplanation`: trae aviso y recorte propios que PlanIA no dibuja.
 - No se cambia su API.
 
-**Violeta sólido por constante (R20, R21, D6).**
+**Violeta tonal con la receta de Horario (R21, decisión del firmante D6).**
 
-- `CATEGORY_VIOLET_FILL` vive en `utils/category-palette.ts`, que ya centraliza las
-  clases de categoría. Así se respeta `#64 R9`: no hay clases interpoladas ni literales
-  fuera de la paleta.
+- «Pedir otro plan» copia la receta tonal ya aprobada de «Generar plan» (#200 R14):
+  `CATEGORY_SLOTS.violet.surface` de fondo y `CATEGORY_SLOTS.violet.ink` en la etiqueta,
+  con `h-14` y `rounded-16`.
+- Contraste AA calculado: 4,72:1 en claro y 4,81:1 en oscuro. El sólido del artboard da
+  3,41:1 en oscuro y no pasa (ver la decisión cerrada 14 de [[requirements]]).
+- Las clases salen de `utils/category-palette.ts`, que no cambia. La guarda `#64 R9` se
+  respeta sin enmendarla.
 - Labio `chunkyLip.violet`, el que ya existe en `theme/chunky-lip.ts`, en vez del
   `#4C2BB8` del canvas. Así no hay hex en la pantalla.
 
@@ -67,7 +71,7 @@ tags: [harness, spec, mobile, nutrition]
 
 - 16 claves nuevas bajo `nutritionPlan.*`.
 - Se reutilizan las de error de Horario, `home.pairCollar` y `common.*`.
-- El contador (D1) no tiene claves, porque no se pinta.
+- El contador (decisión del firmante D1) no tiene claves, porque no se pinta.
 
 ## Archivos afectados
 
@@ -80,7 +84,6 @@ Rutas relativas a `mobile-pet-tracker/`.
 | api (infraestructura) | `src/api/__tests__/nutrition.test.ts` | Tests de R1. |
 | utils (dominio de presentación) | `src/utils/meal-portion.ts` (nuevo) | `engineMealGrams`, `mealPortionGrams` (R2). |
 | utils (dominio de presentación) | `src/utils/__tests__/meal-portion.test.ts` (nuevo) | Tests de R2. |
-| utils (dominio de presentación) | `src/utils/category-palette.ts` | `CATEGORY_VIOLET_FILL` al final (R20). |
 | ruta | `src/app/nutrition-plan.tsx` (nuevo) | Ruta delgada (R3). |
 | ruta | `src/app/_layout.tsx` | `Stack.Screen name="nutrition-plan"` como último protegido (R3). |
 | pantalla | `src/screens/nutrition-plan/index.tsx` (nuevo) | `NutritionPlanScreen` y `planView` (R4–R16, R21). |
@@ -123,19 +126,22 @@ Reglas:
   re-verificación; el implementer para si algo no cuadra.
 - **Hora de la insignia con caché.** `setAiResult` de #212 no toca `generatedAt`. Límite
   aceptado en la decisión cerrada 6. Arreglarlo pide backend.
-- **Contraste del violeta en oscuro (~3:1).** Desviación declarada. Se revisa en el smoke
-  G4, punto 7.
+- **Desviación del relleno sólido del artboard.** El botón violeta es tonal porque el
+  sólido no pasa AA en oscuro. Contraste calculado 4,72:1 y 4,81:1; se revisa a ojo en el
+  smoke G4, punto 7. El sólido queda pendiente del humano (enmienda de la carta).
 - **Formato de fechas por ICU.** Ninguna fila de test usa septiembre.
 - **Rutas con paréntesis en jest.** No aplica: ningún fichero nuevo está bajo `(tabs)`.
 
 ## Alternativas descartadas
 
 - **Reutilizar `AiExplanation` de #224.** Pinta un segundo aviso y recorta con «Ver
-  más». Se deja como opción B de D2.
+  más». Es la opción B de D2, descartada.
 - **Añadir una prop a `AiExplanation`.** Cambia la API de un componente de #224, que es su
   dueño. Prohibido.
-- **Violeta suave** (`bg-category-violet` con `text-category-violet-strong`). Evita
-  enmendar `#64 R9`, pero no es fiel al artboard. Queda como alternativa en D6.
+- **Relleno sólido `bg-category-violet-strong` con texto blanco** (y una constante
+  `CATEGORY_VIOLET_FILL` en la paleta), como dibuja el artboard. En oscuro da 3,41:1 y la
+  etiqueta de 17 px necesita 4,5:1. Aceptarlo es enmendar `docs/ui-guidelines.md` §1, que no
+  se delega.
 - **Persistir `aiStatus`** en el cliente (AsyncStorage) o pedírselo al backend. El estado
   queda obsoleto al cambiar las entradas, y el backend no lo guarda.
 - **`Date.now()` para «hoy».** Vetado por la regla de pureza del render.

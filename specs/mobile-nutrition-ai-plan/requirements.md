@@ -97,13 +97,18 @@ Si #224 cambia antes de mergear:
 1. se re-verifica §Re-verificar al mergear #224;
 2. si alguna salida no cuadra, se enmienda esta spec.
 
+Confirmación del humano (2026-10-27): #224 arranca con textos sintéticos, y su parser deja
+literal el markdown que no cubre (`##`, `1.`, tablas), con 122 pt de alto colapsado.
+Coincide con #224 R3 (`008c1ccd`) y con las filas de #215 R8, así que no cambia nada de
+esta spec.
+
 **Elementos compartidos.** #224 es el dueño de todos. #215 va detrás y nunca cambia la
 API de un componente de #224.
 
 | Elemento | #224 (dueño) | #215 (detrás) |
 |---|---|---|
 | `src/screens/food/parse-ai-explanation.ts`: `parseAiExplanation`, `aiExplanationPlainText` (#224 R1, R3, R11) | Lo crea. | Importa las dos funciones en `screens/nutrition-plan/index.tsx` (R8). Solo lectura. |
-| `src/screens/food/ai-explanation.tsx`: `AiExplanation({ text })` (#224 R11) | Lo crea «de modo que #215 lo reutilice con solo importarlo». | **No lo importa** por defecto (decisión abierta D2). No cambia su API ni le añade props. |
+| `src/screens/food/ai-explanation.tsx`: `AiExplanation({ text })` (#224 R11) | Lo crea «de modo que #215 lo reutilice con solo importarlo». | **No lo importa** (decisión del firmante D2). No cambia su API ni le añade props. |
 | `src/screens/food/index.tsx` | R10 rehace la región de la tarjeta de IA. | R18 cambia solo la expresión de la ración y añade un import detrás del de `CATEGORY_SLOTS`. Son regiones distintas. |
 | `src/screens/food/index.test.tsx` | R10 cambia el mock de `reicon-react-native` (añade `ChevronDown` y `ChevronUp`). | Añade un `it` al final del fichero. No toca mocks. |
 | `src/i18n/catalog.ts` | R4 añade `food.aiShowMore`, `food.aiShowLess` y `food.aiDisclaimer`. | Añade 16 claves `nutritionPlan.*` detrás de `'mealSchedule.noMealPlanYet'` (R19). |
@@ -243,8 +248,8 @@ de pureza.
 **9. Nombres de las comidas.** Los artboards dibujan dos columnas: la hora (52 px) y el
 nombre («Desayuno», «Comida», «Cena»). Ni el plan ni el catálogo tienen nombres de comida.
 
-Por defecto, la fila pinta la hora en el hueco del nombre y no hay columna de 52 px
-(decisión abierta D5).
+La fila pinta la hora en el hueco del nombre y no hay columna de 52 px (decisión del
+firmante D5).
 
 **10. Vista límite.**
 
@@ -252,10 +257,10 @@ Por defecto, la fila pinta la hora en el hueco del nombre y no hay columna de 52
   límite.
 - El pie es el de PlanIALimite.
 
-Ver la decisión abierta D4.
+Ver la decisión del firmante D4.
 
 **11. Contador «Te quedan N de 3 planes hoy».** **No se pinta** y no se añaden sus claves:
-el backend no expone cuántos usos quedan (decisión abierta D1, §Contador).
+el backend no expone cuántos usos quedan (decisión del firmante D1, §Contador).
 
 **12. Usuario `family`.** No ve el pie: ni «Pedir otro plan», ni «Vincular collar», ni el
 texto del límite. El resto de la pantalla es igual que para el dueño.
@@ -265,14 +270,32 @@ texto del límite. El resto de la pantalla es igual que para el dueño.
 - Si falla `getPet`: no hay título, ni pie (el rol es desconocido).
 - Si falla `getPetTracking`: `tracked` vale `null` y no se aplica la regla 5 de `planView`.
 
-**14. Botón violeta.**
+**14. Botón violeta «Pedir otro plan»: tonal** (decisión del firmante D6).
 
-- Relleno sólido `bg-category-violet-strong`, con la constante nueva `CATEGORY_VIOLET_FILL`
-  de `utils/category-palette.ts` (decisión abierta D6).
+- Usa la receta tonal que la carta ya aprueba para «Generar plan» de Horario (#200 R14,
+  `generate-plan-button` en `screens/meal-schedule/index.tsx`), adaptada a `h-14`:
+  - botón `variant="tertiary"`, ``className={`h-14 gap-2 rounded-16 ${CATEGORY_SLOTS.violet.surface}`}``,
+    `style={chunkyLip.violet}` e `isDisabled={submitting}`;
+  - etiqueta ``className={`text-17 font-extrabold ${CATEGORY_SLOTS.violet.ink}`}``;
+  - icono `Sparkles` de 18 en color `category-violet-strong`.
+- Contraste de la etiqueta (17 px en negrita no es texto grande, cuyo umbral es 18,66 px,
+  así que necesita 4,5:1):
+
+  | Modo | Texto sobre superficie | Contraste |
+  |---|---|---|
+  | claro | `#7549F7` sobre `#F5F3FF` | 4,72:1 |
+  | oscuro | `#9579E7` sobre `#221C33` | 4,81:1 |
+
+- **Desviación declarada respecto al artboard.** PlanIA y PlanIADescartada dibujan un
+  relleno sólido con texto blanco. En oscuro, el blanco sobre `#9579E7` da 3,41:1 y no
+  pasa AA para esta etiqueta. `docs/ui-guidelines.md` §1 (Paleta pastel categórica) exige
+  AA calculado para cada par texto/superficie, y aceptar el 3,41:1 sería enmendar la
+  carta, que no se delega. Si el humano quiere el sólido, hace falta un token oscuro que
+  pase AA, y eso es una enmienda de la carta.
 - Labio `chunkyLip.violet` (`lip-violet`, desplazamiento 4), **no** el `#4C2BB8` del
-  canvas. Desviación declarada.
-- En modo oscuro, el blanco sobre `#9579E7` da unos 3:1. Se acepta tal como lo dibuja el
-  artboard. Desviación declarada.
+  canvas. Es el mismo labio de «Generar plan». Desviación declarada.
+- No hay clase nueva en la paleta: las dos clases salen de `CATEGORY_SLOTS.violet`, y la
+  guarda `#64 R9` («centraliza las diez clases completas…») no se toca.
 
 **15. «Vincular collar».** Reutiliza la clave `home.pairCollar` y navega con
 `router.push('/pairing')`, igual que Perfil.
@@ -281,62 +304,55 @@ texto del límite. El resto de la pantalla es igual que para el dueño.
 propuesta en caché sin gastar uso, y la pantalla se ve igual. No se avisa (§Fuera de
 alcance).
 
-### Decisiones abiertas para el firmante
+### Decisiones del firmante (leader, firma delegada 2026-10-27)
 
-Cada una tiene un valor por defecto, que es el que fija esta spec. El firmante puede
-cambiarlo antes de firmar.
+Cerradas por el leader con la firma delegada (mandato del 2026-10-23, ampliado el
+2026-10-26). Las que dejan algo pendiente del humano lo dicen y van a §Fuera de alcance.
 
-**D1. Contador de usos.** PlanIA dibuja «Te quedan 2 de 3 planes hoy» y PlanIADescartada
-«Te queda 1 de 3 planes hoy». El cliente no tiene de dónde sacar la cifra.
+**D1. Contador de usos: no se pinta.** PlanIA dibuja «Te quedan 2 de 3 planes hoy» y
+PlanIADescartada «Te queda 1 de 3 planes hoy».
 
-- Por defecto: no se pinta.
-- Alternativa: enmendar el backend con un campo `aiRemainingToday`, en otra feature.
+- Por qué: el backend no expone los usos que quedan, y una cifra calculada en el cliente
+  mentiría (no ve los `generate` de otros dispositivos).
+- Es una desviación del artboard y del copy de G1, que dibujan el contador. **Queda para
+  el humano**, que decide si abre una feature de backend `aiRemainingToday`.
+- El copy queda en §Contador por si esa feature llega.
 
-El copy queda en §Contador.
+**D2. `AiExplanation` de #224: opción A.** #215 importa solo `parseAiExplanation` y
+`aiExplanationPlainText` y pinta texto plano en la sección violeta.
 
-**D2. Choque con `AiExplanation` de #224.** #224 R11 la creó para que #215 la reutilizara.
-Pero trae dos cosas que PlanIA no dibuja:
+- Por qué no B (reutilizar `AiExplanation`): trae su propio aviso `food.aiDisclaimer`
+  («Orientativo: no sustituye la opinión de tu veterinario.») y el recorte a 122 px con
+  «Ver más», que PlanIA no dibuja. Habría dos avisos, o habría que cambiar el copy de G1,
+  que no se delega.
+- Por qué no C (añadir una prop a `AiExplanation`): cambia la API de un componente de
+  #224, y #224 es el dueño.
 
-- su propio aviso `food.aiDisclaimer` («Orientativo: no sustituye la opinión de tu
-  veterinario.»), cuando PlanIA ya pinta el suyo («Es una sugerencia y no sustituye la
-  opinión de su veterinario.»);
-- el recorte a 122 px con «Ver más».
+**D3. Entrada permanente desde Nutrición: no.** Solo se entra tras generar desde Horario
+(decisión cerrada 1). En Nutrición cambian solo los gramos (R18).
 
-Opciones:
+- Por qué: ningún artboard la dibuja, y añadirla pide G1, que no se delega.
 
-- **A (por defecto).** #215 importa solo `parseAiExplanation` y `aiExplanationPlainText`
-  y pinta texto plano en la sección violeta.
-- **B.** Reutilizar `AiExplanation`. Habría dos avisos, o se quita el de #215 y cambia el
-  copy aprobado en G1.
-- **C.** Añadir una prop a `AiExplanation`. Prohibido: cambia la API de #224.
+**D4. Parte de arriba de PlanIALimite: la del motor**, con el pie del límite.
 
-**D3. Entrada permanente.** `feature_list.json` dice «Nutrición muestra…», pero el
-artboard vuelve a Horario y no se dibuja entrada desde Nutrición.
+- Por qué: el contrato manda `aiProposal: null` con `limit_reached`. Pintar los gramos de
+  IA, «antes» y las recomendaciones del artboard sería inventarlos.
 
-- Por defecto: solo tras generar desde Horario (decisión cerrada 1).
-- En Nutrición cambian solo los gramos (R18).
+**D5. Nombres de comida y columna de hora: no.** La fila pinta la hora en el hueco del
+nombre, sin columna de 52 px (decisión cerrada 9).
 
-**D4. Parte de arriba de PlanIALimite.** El artboard pinta gramos de IA, «antes» y
-recomendaciones, pero el backend manda `aiProposal: null` con límite.
+- Por qué: los nombres («Desayuno», «Comida», «Cena») piden copy nuevo de G1 y un reparto
+  para `mealsPerDay ≠ 3`, que ni el plan ni el catálogo tienen.
 
-- Por defecto: parte de arriba del motor y pie del límite.
+**D6. Botón violeta: tonal**, según la decisión cerrada 14.
 
-**D5. Nombres de comida y columna de hora.** Ver la decisión cerrada 9. Añadir nombres
-pide copy de G1.
+- Por qué: el sólido del artboard no pasa AA en oscuro, y aceptarlo es una enmienda de la
+  carta, que no se delega.
 
-- Por defecto: la hora en el hueco del nombre, sin columna de 52 px.
+**D7. Copy con género: el literal de G1**, «que está bien para él».
 
-**D6. Relleno violeta sólido.** Pasa por `CATEGORY_VIOLET_FILL` y obliga a enmendar la
-lista de clases centralizadas de `consistency-classnames` (`#64 R9`, R20).
-
-- Alternativa: la receta violeta suave de Horario (`bg-category-violet` con
-  `text-category-violet-strong`). No es fiel al artboard.
-
-**D7. Copy con género.** «que está bien para él» (PlanIADescartada) supone que la mascota
-es macho.
-
-- Por defecto: el literal de G1.
-- Una forma neutra («que es el adecuado») es cambio de copy de G1, que no se delega.
+- Por qué: una forma neutra es cambio de copy de G1, que no se delega.
+- **Nota de copy para el humano:** «para él» supone una mascota macho.
 
 ## Requisitos
 
@@ -994,7 +1010,7 @@ ficheros, clases y recuentos, con estas enmiendas exactas y ninguna otra.
 Las anclas son de contenido, nunca números de línea.
 
 *`src/__tests__/consistency-classnames.test.ts`* (sufijo ` (enmendado por #215 R20)` en los
-seis `it`):
+cinco `it`):
 
 | `it` | Base | Después |
 |---|---|---|
@@ -1002,7 +1018,6 @@ seis `it`):
 | `directUses` (`it.each` `'%s importa y aplica sus %i esquinas …'`) | última fila `[join('screens', 'nutrition-questionnaire', 'index.tsx'), 6], // #209 R24` | detrás: `    [join('screens', 'nutrition-plan', 'index.tsx'), 3], // #215 R20` |
 | `'fusiona la esquina una vez y la entrega a las dos ramas de Card …'` | su `      + 6 // #209 R24` | detrás: `      + 3 // #215 R20` |
 | `'deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban …'` | su `      + 6 // #209 R24` | detrás: `      + 3 // #215 R20` |
-| `'centraliza las diez clases completas y prohíbe interpolarlas'` (`#64 R9`) | la lista acaba en `'text-category-rose-strong',` | detrás: `      'bg-category-violet-strong', // #215 R20` |
 | `'inventaría los diecisiete primarios con labio, fichero a fichero …'` | `'screens/nutrition-questionnaire/index.tsx': 1, // #209 R24` | delante: `      'screens/nutrition-plan/index.tsx': 1, // #215 R20` |
 
 El ancla `+ 6 // #209 R24` sale dos veces en el fichero, una por `it`. Cada enmienda se
@@ -1018,7 +1033,7 @@ Las tres esquinas son las de `nutrition-plan-meals`, `nutrition-plan-why` y
 | `CTA_ROWS` | fila `['screens/food/index.tsx', literalId('food-create-profile'), …], // #209 R24` | detrás: `  ['screens/nutrition-plan/index.tsx', literalId('nutrition-plan-pair'), 'h-14 rounded-16 bg-accent', ['onPress={openPairing}']], // #215 R20` |
 | `radii` | `'screens/nutrition-questionnaire/index.tsx': 2, // #209 R24` | detrás: `  'screens/nutrition-plan/index.tsx': 3, // #215 R20` |
 | `'#177 R6.2: recuentos de etiquetas …'`, `count(/text-17/g)` | `toBe(8 + 15 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 2 + 1 + 2 + 4 + 2); // #209 R24 …` | `… + 4 + 2 + 5); // #215 R20 // #209 R24 …` |
-| `'#177 R6.2 …'`, `count(/<Text className="text-17 font-extrabold text-accent-foreground">/g)` | `toBe(5 + 11 + 1 + 1 - 1 - 1 + 1 + 1 + 4 + 2); // #209 R24 …` | `… + 4 + 2 + 2); // #215 R20 // #209 R24 …` |
+| `'#177 R6.2 …'`, `count(/<Text className="text-17 font-extrabold text-accent-foreground">/g)` | `toBe(5 + 11 + 1 + 1 - 1 - 1 + 1 + 1 + 4 + 2); // #209 R24 …` | `… + 4 + 2 + 1); // #215 R20 // #209 R24 …` |
 | `'#177 R7.3: inventario de los veintisiete radios de dieciséis …'`, `count(/\brounded-16\b/g)` | `toBe(26 + … + 3 + 11 + 3); // #209 R24 …` | `… + 3 + 11 + 3 + 3); // #215 R20 // #209 R24 …` |
 
 Las cinco `text-17` del fuente:
@@ -1029,8 +1044,9 @@ Las cinco `text-17` del fuente:
 - etiqueta del botón del límite;
 - etiqueta del botón violeta.
 
-Las dos etiquetas `text-accent-foreground` son las de `nutrition-plan-pair` y del botón
-violeta. Los tres `rounded-16` son los tres botones.
+La única etiqueta `text-accent-foreground` es la de `nutrition-plan-pair`: el botón violeta
+es tonal y su etiqueta lleva `${CATEGORY_SLOTS.violet.ink}`. Los tres `rounded-16` son los
+tres botones.
 
 Ganan el sufijo: R3.1, R3.2, R3.3, R6.2, R7.2, R7.3, R7.4, R7.5 y el `it.each` de R8.1.
 No cambian: R7.1, R12.1, R12.2 y R12.3.
@@ -1070,14 +1086,9 @@ cambia):
 
 La longitud del grupo pasa de 19 a 20.
 
-*`src/utils/category-palette.ts`*: al final del fichero se añade
-
-```ts
-/** Relleno sólido del botón violeta del plan con IA (#215 R20). */
-export const CATEGORY_VIOLET_FILL = 'bg-category-violet-strong';
-```
-
-`src/utils/__tests__/category-palette.test.ts` sigue verde sin tocarlo.
+*`src/utils/category-palette.ts`* y la guarda `#64 R9` de `consistency-classnames.test.ts`
+(«centraliza las diez clases completas…») **no se tocan**: el botón violeta usa
+`CATEGORY_SLOTS.violet`, que ya existe.
 
 **Medida en la semilla** de `04c6e6a5`, con las 41 suites de:
 
@@ -1089,14 +1100,23 @@ export const CATEGORY_VIOLET_FILL = 'bg-category-violet-strong';
 | con las enmiendas de R3, R19 y R20 | 1435, todos verdes |
 | más el `describe` de R21 | 1438 |
 
+Re-medida el 2026-10-27 con la receta tonal (decisión cerrada 14), en las mismas 41 suites:
+
+- la receta tonal no añade ni quita `it`: siguen 1435 y 1438;
+- todas las suites de guardas (`src/__tests__/` y `layout.test.tsx`) verdes en las dos
+  corridas;
+- `src/screens/food/index.test.tsx` dio un flake de carga en cada corrida conjunta: dos
+  rojos de #222 R7 (`food-plan-error` no encontrado, con carga media de unos 48) y luego
+  uno de #200 R10 (`food-links`, flake conocido). Sola, la suite da 136/136.
+
+Cambios de cuenta frente a la primera medida: la etiqueta `text-accent-foreground` de
+chunky R6.2 pasa de +2 a +1. `text-17` sigue en +5, `rounded-16` en +3, y los primarios y el
+inventario de labios no cambian (+1 y 1).
+
 Los tests de conducta de R1, R2 y R4–R18 van encima. Es una cifra orientativa: la re-mide
 el reviewer y no es un candado.
 
 Test: todas las suites de `src/__tests__/` y `src/app/__tests__/layout.test.tsx`, en verde.
-
-Mutación obligatoria (ancla negativa): quitar `CATEGORY_VIOLET_FILL` y escribir el literal
-`bg-category-violet-strong` en la pantalla pone rojo
-`'centraliza las diez clases completas …'`.
 
 **R21** — Forma. THE SYSTEM SHALL pintar cada nodo con estas recetas exactas.
 
@@ -1146,13 +1166,13 @@ También `text-11`, `text-13`, `text-15` y `text-17`.
 | `nutrition-plan-limit` | `className="text-center text-13 font-bold leading-body text-foreground"`, `accessibilityLiveRegion="polite"` |
 | `nutrition-plan-pair` | `Button` `className="h-14 rounded-16 bg-accent"`, `style={chunkyLip.primary}`, `onPress={openPairing}`; etiqueta `<Text className="text-17 font-extrabold text-accent-foreground">` |
 | `nutrition-plan-request` (límite) | `Button` `className="h-14 gap-2 rounded-16 bg-default"`, `style={KEEP_OPACITY}`, `isDisabled`; `Sparkles` `size={18}` en color `muted`; etiqueta `Text` `className="text-17 font-extrabold text-muted"` |
-| `nutrition-plan-request` (violeta) | ``className={`h-14 gap-2 rounded-16 ${CATEGORY_VIOLET_FILL}`}``, `style={chunkyLip.violet}`, `isDisabled={submitting}`; `Sparkles` `size={18}` en color `accent-foreground`; etiqueta `<Text className="text-17 font-extrabold text-accent-foreground">` |
+| `nutrition-plan-request` (violeta tonal, receta de #200 R14) | `Button` `variant="tertiary"`, ``className={`h-14 gap-2 rounded-16 ${CATEGORY_SLOTS.violet.surface}`}``, `style={chunkyLip.violet}`, `isDisabled={submitting}`; `Sparkles` `size={18}` en color `category-violet-strong`; etiqueta ``<Text className={`text-17 font-extrabold ${CATEGORY_SLOTS.violet.ink}`}>`` |
 
 Procedencia:
 
 - `chunkyLip` sale de `useChunkyLip()`;
 - `CONTINUOUS_CORNER` y `KEEP_OPACITY`, de `theme/native-styles`;
-- los colores de icono, de `useThemeColors(['muted', 'category-violet-strong', 'accent-foreground'])`.
+- los colores de icono, de `useThemeColors(['muted', 'category-violet-strong'])`.
 
 **Prohibido** en `screens/nutrition-plan/index.tsx` y `utils/meal-portion.ts`:
 
@@ -1162,8 +1182,8 @@ Procedencia:
 - `expo-linear-gradient`, `expo-symbols`, `lottie-react-native`, `@rive-app`;
 - emoji;
 - `Date.now()`;
-- el literal `bg-category-violet-strong`;
-- importar `AiExplanation`, salvo que el firmante elija la opción B de D2;
+- el literal `bg-category-violet-strong` (ya lo veta la guarda `#64 R9`, sin enmendar);
+- importar `AiExplanation` (D2: A);
 - `#215` suelto en comentarios: van como `#215 R<n>`.
 
 Tests:
@@ -1209,7 +1229,8 @@ La salida debe ser **vacía**.
 
 ## Contador
 
-No se implementa (D1). Si otra feature lo habilita, este es el copy:
+No se implementa (decisión del firmante D1, pendiente del humano). Si otra feature lo
+habilita, este es el copy:
 
 | Quedan | es | en |
 |---|---|---|
@@ -1233,7 +1254,7 @@ Recorrido en un dev build Android:
 4. Sin collar se ve la nota, y «Vincular collar» abre Vincular.
 5. Horario y Nutrición muestran los gramos de la IA.
 6. Con la navegación por gestos, el pie no tapa el contenido.
-7. El botón violeta se ve bien en modo oscuro.
+7. El botón violeta tonal se lee bien en claro y en oscuro.
 
 La prueba con la clave real de la IA (un `proposed` real y el cuarto `generate` en
 `limit_reached`) **no se duplica aquí**. Es la de #212 R20
@@ -1242,8 +1263,13 @@ humano.
 
 ## Fuera de alcance
 
-- El contador de usos (D1) y cualquier cambio del backend: `aiRemainingToday`, o un
-  `aiGeneratedAt` para la hora de la insignia.
+- **Pendiente del humano (D1):** el contador de usos. Se desvía del artboard y del copy de
+  G1, y pintarlo pide una feature de backend `aiRemainingToday` que decide el humano.
+- Cualquier otro cambio del backend, como un `aiGeneratedAt` para la hora de la insignia.
+- **Pendiente del humano (decisión cerrada 14):** el relleno sólido del botón violeta que
+  dibuja el artboard. Pide un token oscuro que pase AA, que es una enmienda de
+  `docs/ui-guidelines.md`.
+- **Nota de copy para el humano (D7):** «que está bien para él» supone una mascota macho.
 - Una entrada permanente a «Plan de <nombre>» desde Nutrición u otra pantalla (D3).
 - Nombres de comida («Desayuno», «Comida», «Cena») y la columna de hora de 52 px (D5).
 - Avisar de que «Pedir otro plan» sin cambios en las entradas devuelve la misma propuesta

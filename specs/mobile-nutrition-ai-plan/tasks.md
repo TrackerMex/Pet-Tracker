@@ -12,8 +12,9 @@ tags: [harness, spec, mobile, nutrition]
 > Commits: `test(mobile): #215 R<n> rojo` y después `feat(mobile): #215 R<n> …`.
 > Grupos contiguos permitidos, declarados aquí:
 > - R4–R16, con un solo commit rojo y uno verde: comparten el fichero de pantalla nuevo.
-> - R19 y R20: son enmiendas mecánicas de guardas. Su rojo es el `it` nuevo de R19 y las
->   mutaciones obligatorias que manda la spec, anotadas en el reporte.
+> - R19 y R20: son enmiendas mecánicas de guardas. El rojo de R19 es su `it` nuevo y su
+>   mutación obligatoria. R20 no tiene mutación: su rojo son las guardas que se ponen rojas
+>   solas al crear la pantalla de R4–R16, antes de enmendarlas. Se anota en el reporte.
 >
 > Antes de R1: §Re-verificar al mergear #224 de [[requirements]], con todas las salidas
 > como se esperan.
@@ -132,7 +133,7 @@ tags: [harness, spec, mobile, nutrition]
 - [ ] (2) Implementación mínima que lo pasa
 - [ ] (3) Refactor con tests verdes
 
-## R20 — Guardas: enmiendas de inventario y CATEGORY_VIOLET_FILL
+## R20 — Guardas: enmiendas de inventario
 
 - [ ] (1) Escribir test que falla para R20
 - [ ] (2) Implementación mínima que lo pasa
