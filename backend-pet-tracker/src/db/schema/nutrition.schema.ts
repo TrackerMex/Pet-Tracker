@@ -8,6 +8,7 @@ import {
   jsonb,
   numeric,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uniqueIndex,
@@ -15,6 +16,7 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 import type { NutritionWarning } from '@/modules/nutrition/domain/nutrition-engine';
+import type { NutritionAiProposal } from '@/modules/nutrition/domain/nutrition-ai-proposal';
 import { pets } from './pets.schema';
 import { users } from './users.schema';
 
@@ -92,6 +94,7 @@ export const nutritionPlans = pgTable(
       .notNull()
       .default(sql`'[]'::jsonb`),
     aiExplanation: text('ai_explanation'),
+    aiProposal: jsonb('ai_proposal').$type<NutritionAiProposal>(),
     inputsHash: char('inputs_hash', { length: 64 }).notNull(),
     generatedAt: timestamp('generated_at', { withTimezone: true })
       .notNull()
@@ -110,6 +113,21 @@ export const nutritionPlans = pgTable(
       table.petId,
       table.generatedAt.desc(),
     ),
+  ],
+);
+
+export const nutritionAiGenerations = pgTable(
+  'nutrition_ai_generations',
+  {
+    petId: uuid('pet_id')
+      .notNull()
+      .references(() => pets.id, { onDelete: 'cascade' }),
+    localDay: date('local_day').notNull(),
+    count: integer('count').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.petId, table.localDay] }),
+    check('nutrition_ai_generations_count_check', sql`${table.count} > 0`),
   ],
 );
 

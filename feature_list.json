@@ -3565,21 +3565,21 @@
   {
     "id": 212,
     "name": "nutrition-ai-structured-plan",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P1",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 1). Decisión B híbrida del humano: el motor determinista fija las cotas (kcal, gramos, comidas) y la IA propone dentro con salida estructurada validada con zod: gramos por franja existente (respeta #103, sin proponer horarios), recomendaciones de seguimiento y fecha de revisión; fuera de cota o inválida, se sirve el plan del motor. Filtro determinista de alimentos tóxicos. Tendencia de peso entra en el prompt y en el hash. Gate OV3 (collar activo) más límite diario de 3 generaciones con IA por mascota (N = 3, gate G3 cerrado por el humano el 2026-10-26). .max() en allergies y diseases. Enmienda brief §16 y plan 009 en la misma PR. Gate humano G2 (system prompt nuevo y lista de tóxicos) antes del handoff. Coordina su migración con #210 y #211. Evidencia en progress/explore_nutrition-questionnaire-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },
   {
     "id": 213,
     "name": "mobile-reminders-recurrence",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P1",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 2). Repetición en la app: chips en add-reminder (Una vez, Diario, Semanal, Mensual, Anual, Cada N horas con stepper) y campo Hasta opcional; etiqueta «Se repite…» en la lista; «Cancelar serie» con patchJson existente; notificationHref lleva un push de recordatorio a Recordatorios en vez de /alerts. Depende de #210 y del gate G1 (artboard NuevoRecordatorio con Repetición). Firma delegada al leader. Registrada sin spec."
   },
   {
     "id": 214,
     "name": "mobile-pet-members",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P1",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 2). Familia en la app: quinta tarjeta «Familia» en Perfil que abre app/pets/[petId]/members.tsx; owner lista miembros, invita (código y Share nativo con texto en Voz B), revoca invitaciones y quita miembros; family ve la lista y puede salir. «Unirme con código» desde Perfil y desde el estado sin mascotas, reutilizando el patrón de input de pairing; tras aceptar invalida mascotas y selecciona la nueva. Depende de #211 y del gate G1 (artboards Familia). Firma delegada al leader. Registrada sin spec."
   },
@@ -3600,7 +3600,7 @@
   {
     "id": 217,
     "name": "mobile-theme-flash-statusbar",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 1). Fondo de escena de navegación por tokens para el flash al cambiar de pestaña, retirar react-native-nitro-theme-transition y react-native-nitro-modules (cambio de tema instantáneo; rebuild del dev build lo hace el humano) y StatusBar auto con iconos claros en las pantallas con hero. Evidencia en progress/explore_ui-tema-barra-drawer-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },
@@ -3635,7 +3635,7 @@
   {
     "id": 222,
     "name": "mobile-tab-avatar-header",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 2, gate G1). Quitar los títulos de Salud, Nutrición y Perfil a favor del selector de mascotas, con cabecera fija en Salud y Nutrición y encabezado oculto para lectores de pantalla. Enmienda N1 de #168. Evidencia en progress/explore_ui-titulos-scroll-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },

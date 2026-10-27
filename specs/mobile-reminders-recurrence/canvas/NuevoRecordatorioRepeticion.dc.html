@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Recordatorio, repetición</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+<style>
+body{margin:0}
+a{color:#107148;text-decoration:none}a:hover{color:#0B5C3A}
+.pt{--bg:#FFFFFF;--fg:#0D1117;--surface:#FFFFFF;--surface2:#F0FBF6;--default:#F5F6F8;--muted:#667085;--border:rgba(13,17,23,0.08);--lip-gray:#E4E7EC;--accent:#178255;--accent-strong:#107148;--lip:#0E5E3C;--blue:#EFF6FF;--blue-s:#0768E0;--amber:#FFF7ED;--amber-s:#A55E07;--green:#F0FBF6;--green-s:#107148;--violet:#F5F3FF;--violet-s:#7549F7;--rose:#FFF0F3;--rose-s:#D80B34;--danger:#D92D20;--warning:#B54708;--glass:rgba(255,255,255,0.86);--pill:rgba(23,130,85,0.14);--shadow:0 1px 2px rgba(13,17,23,0.04),0 8px 24px rgba(13,17,23,0.06)}
+.pt.dark{--bg:#0D1117;--fg:#F7F8FA;--surface:#161B22;--surface2:#12231B;--default:#1F242B;--muted:#9CA3AF;--border:rgba(255,255,255,0.08);--lip-gray:#0A0D12;--accent-strong:#2AB87C;--lip:#0B4D31;--blue:#0B203A;--blue-s:#4A8DDF;--amber:#271E14;--amber-s:#C17B22;--green:#12231B;--green-s:#2AB87C;--violet:#221C33;--violet-s:#9579E7;--rose:#39131A;--rose-s:#E35E78;--danger:#F87171;--warning:#FBBF24;--glass:rgba(22,27,34,0.86);--pill:rgba(23,130,85,0.22);--shadow:0 1px 2px rgba(0,0,0,0.4)}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+.chip{position: relative; flex: none}
+.chip input{position: absolute; opacity: 0}
+.chip span{display: inline-flex; height: 36px; padding: 0 14px; align-items: center; border-radius: 999px; font-size: 14px; font-weight: 800; background: var(--default); color: var(--fg); white-space: nowrap}
+.chip input:checked + span{background: var(--accent); color: #FFFFFF; box-shadow: 0 3px 0 var(--lip)}
+.lg{font-size: 14px; font-weight: 800; margin-bottom: 8px; padding: 0}
+.box{height: 52px; box-sizing: border-box; border-radius: 12px; background: var(--default); padding: 0 14px; display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600}
+</style>
+</helmet>
+<div class="pt {{theme}}" style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: var(--bg); color: var(--fg); font-family: Inter, 'Helvetica Neue', system-ui, sans-serif; padding: 56px 20px 32px; display: flex; flex-direction: column; gap: 12px">
+<header style="display: flex; align-items: center; gap: 8px"><a href="RecordatoriosRecurrentes.dc.html" aria-label="Volver" style="width: 44px; height: 44px; margin-left: -10px; display: flex; align-items: center; justify-content: center; color: var(--fg)"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></a><h1 style="margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.02em">Agregar recordatorio</h1></header>
+<fieldset style="border: 0; margin: 0 -20px 0 0; padding: 0; min-width: 0"><legend class="lg">Tipo</legend>
+<div style="display: flex; gap: 8px; overflow: hidden">
+<label class="chip"><input type="radio" name="tipo"><span style="background: var(--blue); color: var(--blue-s)">Vacuna</span></label>
+<label class="chip"><input type="radio" name="tipo" checked><span>Desparasitación</span></label>
+<label class="chip"><input type="radio" name="tipo"><span style="background: var(--amber); color: var(--amber-s)">Medicamento</span></label>
+<label class="chip"><input type="radio" name="tipo"><span style="background: var(--green); color: var(--green-s)">Consulta</span></label>
+<label class="chip"><input type="radio" name="tipo"><span>Peso</span></label>
+</div></fieldset>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 800">Título<input value="Pipeta antipulgas" style="height: 52px; box-sizing: border-box; border-radius: 12px; background: var(--default); border: 2px solid transparent; padding: 0 14px; font: 600 16px Inter, system-ui, sans-serif; color: var(--fg); outline: none"></label>
+<div style="display: grid; grid-template-columns: 3fr 2fr; gap: 10px">
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 800">Fecha<span class="box"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>10 oct 2026</span></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 800">Hora<span class="box"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>20:00</span></label>
+</div>
+<fieldset style="border: 0; margin: 0; padding: 0; animation: rise 400ms ease-out both"><legend class="lg">Repetición</legend>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<label class="chip"><input type="radio" name="rep"><span>Una vez</span></label>
+<label class="chip"><input type="radio" name="rep"><span>Diario</span></label>
+<label class="chip"><input type="radio" name="rep"><span>Semanal</span></label>
+<label class="chip"><input type="radio" name="rep" checked><span>Mensual</span></label>
+<label class="chip"><input type="radio" name="rep"><span>Anual</span></label>
+<a class="chip" href="NuevoRecordatorioCadaNHoras.dc.html"><span>Cada N horas</span></a>
+</div></fieldset>
+<div style="display: flex; flex-direction: column; gap: 6px; animation: rise 400ms ease-out 60ms both"><span style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 800">Hasta<span style="font-size: 13px; font-weight: 600; color: var(--muted)">Opcional</span></span><span class="box"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>10 abr 2027</span></div>
+<fieldset style="border: 0; margin: 0 -20px 0 0; padding: 0; min-width: 0"><legend class="lg">Aviso</legend>
+<div style="display: flex; gap: 8px; overflow: hidden">
+<label class="chip"><input type="radio" name="aviso"><span>El mismo día</span></label>
+<label class="chip"><input type="radio" name="aviso" checked><span>1 día antes</span></label>
+<label class="chip"><input type="radio" name="aviso"><span>3 días antes</span></label>
+<label class="chip"><input type="radio" name="aviso"><span>7 días antes</span></label>
+</div></fieldset>
+<div role="note" style="border-radius: 18px; background: var(--surface2); padding: 12px 14px; display: flex; gap: 10px; align-items: center; font-size: 13px; font-weight: 600; line-height: 1.4"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-strong)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="m17 2 4 4-4 4"></path><path d="M3 11v-1a4 4 0 0 1 4-4h14"></path><path d="m7 22-4-4 4-4"></path><path d="M21 13v1a4 4 0 0 1-4 4H3"></path></svg><span>Te aviso el día 9 de cada mes a las 20:00, hasta el 10 abr 2027.</span></div>
+<a href="RecordatoriosRecurrentes.dc.html" style="margin-top: auto; height: 56px; flex: none; border-radius: 16px; background: var(--accent); color: #FFFFFF; box-shadow: 0 4px 0 var(--lip); display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 800; text-decoration: none">Guardar recordatorio</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { theme: this.props.dark ? "dark" : "" };
+}
+}
+</script>
+</body>
+</html>

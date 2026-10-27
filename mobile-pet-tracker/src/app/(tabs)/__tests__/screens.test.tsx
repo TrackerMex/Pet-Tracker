@@ -12,6 +12,7 @@ import { renderWithProviders } from '../../../../test/render-with-providers';
 
 jest.mock('../../../api/pets', () => ({ getPet: jest.fn(), listPets: jest.fn() }));
 jest.mock('../../../api/users', () => ({ getMe: jest.fn() }));
+jest.mock('../../../api/pet-members', () => ({ listPetMembers: jest.fn() })); // #214 R5
 jest.mock('../../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
 }));
@@ -24,13 +25,6 @@ jest.mock('expo-router', () => ({
 
 jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: jest.fn(),
-}));
-
-jest.mock('react-native-nitro-theme-transition', () => ({
-  withThemeTransition: jest.fn((apply: () => void) => {
-    apply();
-  }),
-  isThemeTransitionAvailable: jest.fn(() => false),
 }));
 
 jest.mock('react-native-safe-area-context', () => ({
@@ -95,11 +89,11 @@ describe('R5: placeholders de tabs', () => {
     title: string;
   }>([
     { Screen: ProfileScreen, testID: 'screen-profile', title: 'Perfil' },
-  ])('renders the $title placeholder', async ({ Screen, testID, title }) => {
+  ])('renders the $title placeholder (enmendado por #222 R9)', async ({ Screen, testID, title }) => {
     await renderWithProviders(<Screen />, { wrapper: ProfileWrapper });
 
     expect(screen.getByTestId(testID)).toBeVisible();
-    expect(screen.getByText(title)).toBeVisible();
+    expect(screen.getByRole('header', { name: title })).toBeVisible();
   });
 });
 

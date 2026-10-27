@@ -6,6 +6,7 @@ import {
   within,
 } from '@testing-library/react-native';
 import { router, useFocusEffect } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect, type ReactNode } from 'react';
 import { Text } from 'react-native';
@@ -111,6 +112,8 @@ jest.mock('../../api/reminders', () => ({
 jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
 }));
+
+jest.mock('expo-status-bar', () => ({ StatusBar: jest.fn(() => null) }));
 
 jest.mock('expo-router', () => ({
   router: { push: jest.fn() },
@@ -416,6 +419,8 @@ function makeReminder(overrides: Partial<Reminder> = {}): Reminder {
     dueAt: localIso(2026, 8, 11),
     advanceMinutes: 60,
     status: 'scheduled',
+    recurrence: null,
+    recurrenceUntil: null,
     ...overrides,
   };
 }
@@ -5269,13 +5274,13 @@ describe('#155 R4: Inicio sin mascotas presenta a Pingo', () => {
     mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
   });
 
-  it('queda en el sitio del vacío que sustituye (enmendado por #181 R3)', async () => {
+  it('queda en el sitio del vacío que sustituye (enmendado por #181 R3) (enmendado por #214 R7)', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
     await renderHome();
     await screen.findByTestId('home-empty-pose');
     const slot = screen.getByTestId('home-empty');
     expect(slot.parent?.props.testID).toBe('home-no-pets-screen');
-    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['home-empty']);
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['home-empty', 'home-join-pet']); // #214 R7
   });
 
   it('pinta la pose, el título y la frase de Pingo', async () => {
@@ -5496,7 +5501,7 @@ describe('#181 R3: Inicio centra el estado sin mascotas fuera del scroll', () =>
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
   });
 
-  it('R3.2: el contenedor centrado solo contiene home-empty y sustituye la escena (enmendado por #176 R3)', async () => {
+  it('R3.2: el contenedor centrado solo contiene home-empty y sustituye la escena (enmendado por #176 R3) (enmendado por #214 R7)', async () => {
     const { queryClient } = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
     const empty = await screen.findByTestId('home-empty');
     await waitFor(() => expect(queryClient.isFetching()).toBe(0));
@@ -5505,7 +5510,7 @@ describe('#181 R3: Inicio centra el estado sin mascotas fuera del scroll', () =>
     expect(container.props.className).toBe('flex-1 items-center justify-center px-5 py-6 bg-background'); // (enmendado por #176 R3)
     expect(container.props.style).toBeUndefined();
     expect(empty.parent).toBe(container);
-    expect(container.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['home-empty']);
+    expect(container.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['home-empty', 'home-join-pet']); // #214 R7
     for (const id of ['screen-home', 'home-states', 'home-content', 'home-alerts-bell']) {
       expect(screen.queryByTestId(id)).toBeNull();
     }
@@ -6482,5 +6487,62 @@ describe('#198 R16: vacío de Inicio conservado', () => {
     expect(screen.getByTestId('home-empty-stage-disc', { includeHiddenElements: true }).props.className).toBe('absolute size-60 rounded-full bg-surface-secondary');
     expect(screen.getByTestId('home-empty-pose').props.source).toEqual([expect.objectContaining({ testUri: expect.stringMatching(/pingo-talk\.webp$/) })]);
     expect(screen.queryByTestId('home-empty-badge', { includeHiddenElements: true }) === null).toBe(true);
+  });
+});
+
+describe('#217 R6: la barra clara depende del hero de Inicio', () => {
+  beforeEach(setupHomeMotion);
+
+  it('#217 R6: con mascotas pide la barra clara', async () => {
+    await renderMotionHome();
+    expect(jest.mocked(StatusBar).mock.calls.at(-1)?.[0]).toEqual({ style: 'light' });
+    const source = readFileSync(join(process.cwd(), 'src/screens/home/index.tsx'), 'utf8');
+    const bar = source.indexOf('{hasPets ? <HeroStatusBar /> : null}');
+    expect(bar).toBeGreaterThan(-1);
+    expect(bar).toBeLessThan(source.indexOf('{hasPets ? ('));
+  });
+
+  it('#217 R6: sin mascotas no pide ninguna barra', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    const view = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
+    await screen.findByTestId('home-no-pets-screen');
+    jest.mocked(StatusBar).mockClear();
+    await view.rerender(<HomeScreen />);
+    expect(screen.getByTestId('home-no-pets-screen')).toBeVisible();
+    expect(StatusBar).not.toHaveBeenCalled();
+    const source = readFileSync(join(process.cwd(), 'src/screens/home/index.tsx'), 'utf8');
+    expect(source).toContain('{hasPets ? <HeroStatusBar /> : null}');
+  });
+});
+
+
+describe('#214 R7: Unirme con código en Inicio vacío', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    mockGetPet.mockReturnValue(pending<PetState>());
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  it('R7: el vacío ofrece Unirme con código bajo Añadir mascota', async () => {
+    await renderHome();
+    await screen.findByTestId('home-empty');
+    const join = await screen.findByTestId('home-join-pet');
+    expect(screen.getByTestId('home-no-pets-screen').children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['home-empty', 'home-join-pet']);
+    expect(join.props.className).toBe('w-full items-center gap-3.5 pt-5');
+    expect(screen.getByTestId('home-empty-action')).toHaveTextContent('Añadir mascota');
+    expect(screen.getByTestId('home-join-pet-prompt')).toHaveTextContent('¿Te invitaron a cuidar una mascota?');
+    expect(screen.getByTestId('home-join-pet-prompt').props.className).toBe('text-sm font-semibold text-muted');
+    expect(screen.getByTestId('home-join-pet-button')).toHaveTextContent('Unirme con código');
+    expect(screen.getByTestId('home-join-pet-button').props.className).toMatch(/ w-full h-13\.5 rounded-16 border-2 border-lip-gray bg-surface$/);
+  });
+
+  it('R7: Unirme con código navega a join-pet', async () => {
+    await renderHome();
+    await screen.findByTestId('home-empty');
+    await fireEvent.press(screen.getByTestId('home-join-pet-button'));
+    expect(mockRouter.push).toHaveBeenCalledWith('/join-pet');
   });
 });

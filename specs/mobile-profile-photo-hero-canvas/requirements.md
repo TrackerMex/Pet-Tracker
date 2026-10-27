@@ -291,6 +291,9 @@ carga son las de la tabla `PROFILE_BRANCHES_168` del mismo fichero. RNTL 14:
   (2) solo cuando la lista resolvió con mascotas, `PetSwitcher` con
   `variant="glass"`, sin `trailing`, con `pets`, `selectedPetId` y `onSelect`
   como hoy. Con la lista pendiente no hay selector.
+
+**Enmendado por #222 (C2)**: el slot superior del hero ya no lleva el título «Perfil»; lleva el selector glass a la izquierda y la cápsula «Añadir mascota» a la derecha (#222 R5, R6).
+
 - **R2.2** WHEN no hay hero, THE SYSTEM SHALL pintar la misma fila de título
   como primer hijo de `profile-content` con `profile-title` en
   `text-3xl font-black tracking-title text-foreground` y `profile-add-pet` en
@@ -704,3 +707,17 @@ tests no ven (design.md §Supuestos):
   Firma delegada, mismo mandato.
 - [ ] Smoke de R1, R2, R3, R4, R5, R6, R7 y R9 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
   Va en el lote `progress/smoke_canvas-parity.md` (plan §6); el `done` no espera al smoke.
+
+## Enmienda #222 — avatares fijos y sin título en las pestañas
+
+`mobile-tab-avatar-header` (#222) modifica una decisión que esta spec dejó
+aprobada. La spec de origen es `specs/mobile-tab-avatar-header/`; el detalle
+de la enmienda está en su `requirements.md` §R11.
+
+- Spec enmendada: `mobile-profile-photo-hero-canvas`
+- Qué cambia: `R2: el slot superior del hero lleva el selector y la cápsula, sin título`
+- Qué NO cambia: ningún otro requisito de esta spec ni su estado de
+  aprobación. Los tests que cubren lo enmendado se reescriben en #222 (lista
+  en su `requirements.md` §R9 y en su `tasks.md`).
+
+- [ ] Enmienda #222 aprobada por humano

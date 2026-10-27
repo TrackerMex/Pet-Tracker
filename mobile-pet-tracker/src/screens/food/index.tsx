@@ -20,8 +20,8 @@ import { listPets, type PetsState } from '../../api/pets';
 import { nutritionKeys, petKeys } from '../../api/query-keys';
 import { RiseIn } from '../../components/rise-in';
 import { EmptyState } from '../../components/empty-state';
-import { PetSwitcher } from '../../components/pet-switcher';
 import { PingoFloat } from '../../components/pingo-float';
+import { TabPetHeader, TAB_PET_HEADER_HEIGHT, TAB_PET_HEADER_SCROLL_MIN } from '../../components/tab-pet-header';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
@@ -171,6 +171,8 @@ export function FoodScreen() {
   );
 
   return (
+    <View testID="food-root" className="flex-1">
+    <View testID="food-heading" accessible accessibilityRole="header" accessibilityLabel={t('food.food')} className="absolute size-px" />
     <ScrollView
       testID="screen-food"
       className="flex-1 bg-background"
@@ -178,23 +180,10 @@ export function FoodScreen() {
       contentContainerStyle={{
         paddingHorizontal: 20,
         gap: 14,
-        paddingTop: insets.top + 12,
+        paddingTop: pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? insets.top + TAB_PET_HEADER_HEIGHT + 14 : insets.top + 12,
         paddingBottom: insets.bottom + 96,
       }}
     >
-      <View testID="food-title-row" className="flex-row items-center justify-between">
-        <Text testID="food-title" className="text-3xl font-black tracking-title text-foreground">
-          {t('food.food')}
-        </Text>
-        {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
-          <PetSwitcher
-            variant="avatars"
-            pets={pets.data.pets}
-            selectedPetId={selectedPetId}
-            onSelect={selectPet}
-          />
-        ) : null}
-      </View>
 
       {pets.data === undefined ? (
         <View className="h-10 items-center justify-center">
@@ -511,5 +500,16 @@ export function FoodScreen() {
         </View>
       ) : null}
     </ScrollView>
+    {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
+      <TabPetHeader
+        testID="food-pet-header"
+        horizontalInset={20}
+        pets={pets.data.pets}
+        selectedPetId={selectedPetId}
+        onSelect={selectPet}
+        scrollHint={pets.data.pets.length >= TAB_PET_HEADER_SCROLL_MIN ? t('tabHeader.petsScroll') : undefined}
+      />
+    ) : null}
+    </View>
   );
 }

@@ -103,6 +103,9 @@ Cada `describe` nuevo lleva el prefijo `#168 R<n>:`.
   clases con corchetes) y con el texto de `t('health.health')`,
   `t('food.food')` o `t('profile.profile')` (ES «Salud» / «Nutrición» /
   «Perfil»; EN "Health" / "Food" / "Profile"; claves existentes).
+
+**Enmendado por #222 (C1)**: las tres pestañas ya no pintan el título grande; conservan un encabezado oculto para lectores de pantalla (#222 R3, R4, R5, R7). El literal de R1.3 solo sigue en la celebración.
+
 - **R1.2**: THE SYSTEM SHALL renderizar ese título como primer nodo visible del
   scroll de la pantalla (en Perfil, dentro de la fila de título que ya existe,
   como su primer hijo), por encima de toda rama.
@@ -988,3 +991,17 @@ el detalle de la enmienda está en su `requirements.md` §R14.
   en su `tasks.md`).
 
 - [X] Enmienda #173 aprobada por humano
+
+## Enmienda #222 — avatares fijos y sin título en las pestañas
+
+`mobile-tab-avatar-header` (#222) modifica una decisión que esta spec dejó
+aprobada. La spec de origen es `specs/mobile-tab-avatar-header/`; el detalle
+de la enmienda está en su `requirements.md` §R11.
+
+- Spec enmendada: `mobile-tab-headers-canvas`
+- Qué cambia: `R1: el título grande sale de Salud, Nutrición y Perfil`
+- Qué NO cambia: ningún otro requisito de esta spec ni su estado de
+  aprobación. Los tests que cubren lo enmendado se reescriben en #222 (lista
+  en su `requirements.md` §R9 y en su `tasks.md`).
+
+- [ ] Enmienda #222 aprobada por humano

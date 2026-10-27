@@ -12,7 +12,7 @@
 
 ## Por qué importa
 
-Pilar 3 del brief. Mandato explícito (§16): **las reglas determinísticas calculan, la IA solo explica** — y nunca sustituye al veterinario ni se llama desde la app (§9, §19). Este plan implementa el cálculo calórico estándar veterinario (RER/MER), la porción diaria y horarios, y una explicación en lenguaje sencillo generada por OpenAI desde el backend con degradación limpia si no hay clave.
+Pilar 3 del brief. Mandato explícito (§16): **las reglas determinísticas calculan y fijan las cotas; la IA explica y propone dentro de ellas** (enmienda #212, 2026-10-26) — y nunca sustituye al veterinario ni se llama desde la app (§9, §19). Este plan implementa el cálculo calórico estándar veterinario (RER/MER), la porción diaria y horarios, y una explicación en lenguaje sencillo generada por OpenAI desde el backend con degradación limpia si no hay clave.
 
 ## Estado actual
 

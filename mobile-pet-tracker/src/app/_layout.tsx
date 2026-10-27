@@ -1,7 +1,8 @@
 import '../theme/global.css';
 
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, ThemeProvider } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -13,6 +14,7 @@ import { AuthProvider, useAuth } from '../providers/auth-provider';
 import { LanguageProvider } from '../providers/language-provider';
 import { QueryProvider } from '../providers/query-provider';
 import { SelectedPetProvider } from '../providers/selected-pet-provider';
+import { useNavigationTheme } from '../theme/navigation-theme';
 import { useThemeColors } from '../theme/use-theme-colors';
 import { getStoredLanguage } from '../utils/language-preference';
 import { getStoredTheme } from '../utils/theme-preference';
@@ -27,6 +29,7 @@ export default function RootLayout() {
   const [themeReady, setThemeReady] = useState(false);
   const [initialLanguage, setInitialLanguage] =
     useState<Language>(DEFAULT_LANGUAGE);
+  const navigationTheme = useNavigationTheme();
   useFonts({
     'Inter-Regular': require('../../assets/fonts/Inter-Regular.ttf'),
     'Inter-Medium': require('../../assets/fonts/Inter-Medium.ttf'),
@@ -57,18 +60,21 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <HeroUINativeProvider>
-        <LanguageProvider initial={initialLanguage}>
-          <AuthProvider>
-            <QueryProvider>
-              <SelectedPetProvider>
-                <PushRegistration />
-                <RootStack />
-              </SelectedPetProvider>
-            </QueryProvider>
-          </AuthProvider>
-        </LanguageProvider>
-      </HeroUINativeProvider>
+      <ThemeProvider value={navigationTheme}>
+        <StatusBar style="auto" />
+        <HeroUINativeProvider>
+          <LanguageProvider initial={initialLanguage}>
+            <AuthProvider>
+              <QueryProvider>
+                <SelectedPetProvider>
+                  <PushRegistration />
+                  <RootStack />
+                </SelectedPetProvider>
+              </QueryProvider>
+            </AuthProvider>
+          </LanguageProvider>
+        </HeroUINativeProvider>
+      </ThemeProvider>
     </GestureHandlerRootView>
   );
 }
@@ -105,6 +111,9 @@ function RootStack() {
         <Stack.Screen name="pets/[petId]/geofence-editor" options={{ headerShown: false }} />
         <Stack.Screen name="meals-history" options={{ headerShown: false }} />
         <Stack.Screen name="pets/[petId]/vaccines/new" options={{ headerShown: false }} />
+        <Stack.Screen name="pets/[petId]/members" options={{ headerShown: false }} />
+        <Stack.Screen name="pets/[petId]/invite" options={{ headerShown: false }} />
+        <Stack.Screen name="join-pet" options={{ headerShown: false }} />
         <Stack.Screen name="edit-profile" options={{ ...headerOptions, title: '' }} />
         <Stack.Screen name="nutrition-profile" options={{ headerShown: false }} />
       </Stack.Protected>

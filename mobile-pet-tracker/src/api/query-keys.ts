@@ -54,3 +54,11 @@ export const mediaKeys = {
 export const geofenceKeys = {
   list: (petId: string) => ['geofences', 'list', petId] as const,
 };
+
+export const memberKeys = {
+  list: (petId: string) => ['pet-members', petId] as const,
+};
+
+export const inviteKeys = {
+  list: (petId: string) => ['pet-invites', petId] as const,
+};

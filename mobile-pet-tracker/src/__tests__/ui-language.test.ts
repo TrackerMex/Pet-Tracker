@@ -23,6 +23,7 @@ import {
   R18_DATE_FIELD,
   R19_VACCINE_CREATE,
   R20_NUTRITION_QUESTIONNAIRE,
+  R21_PET_MEMBERS,
   type UseRow,
 } from './ui-copy-table';
 
@@ -137,15 +138,15 @@ describe('#65 R4: Map resuelve su copy por clave', () => {
 });
 
 describe('#65 R5: Health resuelve su copy por clave', () => {
-  it('#186 R7: resuelve las 43 ocurrencias normativas (enmendado por #199 R25) (enmendado por #220 R16) (enmendado por #208 R20)', () => {
-    expect(R5_HEALTH).toHaveLength(32 + 1 + 1 - 2 + 3 + 2 + 1 + 1 + 4 - 1 + 1 + 7 - 1 + 1); // #220 R16 // #208 R20; #199 R25: +7; #186 R7 // #186 R2 // +1 #90 R5, +1 #95 R4, -2 #95 R5, +3 #115 R1, +2 #155 R4, +1 #169 R6, +1 #169 R10
+  it('#186 R7: resuelve las 43 ocurrencias normativas (enmendado por #199 R25) (enmendado por #220 R16) (enmendado por #208 R20) (enmendado por #222 R8)', () => {
+    expect(R5_HEALTH).toHaveLength(32 + 1 + 1 - 2 + 3 + 2 + 1 + 1 + 4 - 1 + 1 + 7 - 1 + 1 + 1); // #222 R8 // #220 R16 // #208 R20; #199 R25: +7; #186 R7 // #186 R2 // +1 #90 R5, +1 #95 R4, -2 #95 R5, +3 #115 R1, +2 #155 R4, +1 #169 R6, +1 #169 R10
     checkUses(R5_HEALTH);
   });
 });
 
 describe('#65 R6: Food resuelve su copy por clave', () => {
-  it('resuelve las 51 ocurrencias normativas', () => {
-    expect(R6_FOOD).toHaveLength(35 + 3 + 1 - 2 + 1 + 3 + 9 + 11 + 2 + 1 + 3); // #105 R5; +1 #95 R4, -2 #95 R5, +1 #113 R3, +3 #147 R8, +9 #147 R9, +2 #155 R4, +1 #155 R9, +3 #179 R8
+  it('resuelve las 51 ocurrencias normativas (enmendado por #222 R8)', () => {
+    expect(R6_FOOD).toHaveLength(35 + 3 + 1 - 2 + 1 + 3 + 9 + 11 + 2 + 1 + 3 + 1); // #222 R8 // #105 R5; +1 #95 R4, -2 #95 R5, +1 #113 R3, +3 #147 R8, +9 #147 R9, +2 #155 R4, +1 #155 R9, +3 #179 R8
     checkUses(R6_FOOD);
   });
 });
@@ -177,8 +178,11 @@ describe('#65 R7: Profile resuelve su copy por clave', () => {
 });
 
 describe('#65 R8: Recordatorios resuelve su copy por clave', () => {
-  it('#186 R5: resuelve las 56 ocurrencias normativas', () => {
-    expect(R8_REMINDERS).toHaveLength(50 + 1 - 2 + 1 - 1 + 1 + 1 + 1 + 1 + 3 + 3 - 3); // #186 R5 // #186 R2 // #181 R4 // #178 R12 // +1 #95 R4, -2 #95 R5, +1 #114 R4, -1 #114 R5, +1 #155 R6; // #178 R6; #178 R9
+  it('#186 R5: resuelve las 113 ocurrencias normativas (enmendado por #213 R22)', () => {
+    expect(R8_REMINDERS).toHaveLength(
+      50 + 1 - 2 + 1 - 1 + 1 + 1 + 1 + 1 + 3 + 3 - 3 // #186 R5 // #186 R2 // #181 R4 // #178 R12 // +1 #95 R4, -2 #95 R5, +1 #114 R4, -1 #114 R5, +1 #155 R6; // #178 R6; #178 R9
+      + 57, // #213 R22
+    );
     checkUses(R8_REMINDERS);
   });
 });
@@ -504,7 +508,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
     checkUses(ALL_USES);
   });
 
-  it('#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas (enmendado por #200 R1) (enmendado por #199 R1) (enmendado por #220 R16) (enmendado por #208 R20) (enmendado por #209 R23)', () => {
+  it('#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas (enmendado por #200 R1) (enmendado por #199 R1) (enmendado por #220 R16) (enmendado por #208 R20) (enmendado por #214 R22) (enmendado por #209 R23)', () => {
     expect(SCREEN_FILES).toHaveLength(
       19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1 // #100 R10, #41 R10, #146 R10, #105 R5
         + 1 - 1 // #117 R10: sale app/(auth)/forgot.tsx, entra screens/forgot/index.tsx
@@ -521,6 +525,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
         - 1 // #199 R1: sale src/app/_layout.tsx
         + 1 // #220 R16: components/date-field.tsx
         + 1 // #208 R20: screens/vaccine-create/index.tsx
+        + 3 // #214 R22: screens/pet-members, screens/pet-invite y screens/join-pet
         + 1 // #209 R23: screens/nutrition-questionnaire/index.tsx
     );
 
@@ -568,6 +573,93 @@ describe('#208 R20: alta de vacuna', () => {
   it('#208 R20: R19_VACCINE_CREATE tiene 29 usos y cuadra con el código', () => {
     expect(R19_VACCINE_CREATE).toHaveLength(29);
     checkUses(R19_VACCINE_CREATE);
+  });
+});
+
+describe('#222 R8: Copy tabHeader.petsScroll y filas de la tabla', () => {
+  it('#222 R8: la clave tabHeader.petsScroll dice el literal en es y en', () => {
+    expect(es['tabHeader.petsScroll' as TranslationKey]).toBe('Mascotas, desliza para ver más');
+    expect(en['tabHeader.petsScroll' as TranslationKey]).toBe('Pets, swipe to see more');
+  });
+});
+
+
+describe('#214 R22: copy de Familia', () => {
+  it('R22: resuelve cada fila de R21_PET_MEMBERS', () => {
+    checkUses(R21_PET_MEMBERS);
+  });
+
+  it('R22: cada t( de las tres pantallas nuevas tiene su fila', () => {
+    for (const file of [
+      'src/screens/pet-members/index.tsx',
+      'src/screens/pet-invite/index.tsx',
+      'src/screens/join-pet/index.tsx',
+    ]) {
+      const calls = readFileSync(join(SOURCE_ROOT, file), 'utf8').match(/\bt\(\s*['"][\w.]+['"]/g) ?? [];
+      expect(calls).toHaveLength(R21_PET_MEMBERS.filter((row) => row.file === file).length);
+    }
+  });
+
+  it('R22: cada clave nueva existe en los dos idiomas y se usa', () => {
+    const keys: TranslationKey[] = [
+      'profile.membersLink',
+      'profile.membersSummaryAlone',
+      'profile.membersSummaryOne',
+      'profile.membersSummaryMany',
+      'members.titleOf',
+      'members.ownerIntro',
+      'members.familyIntro',
+      'members.membersHeading',
+      'members.you',
+      'members.roleOwner',
+      'members.roleFamily',
+      'members.remove',
+      'members.removeA11y',
+      'members.invitesHeading',
+      'members.inviteCreated',
+      'members.inviteExpires',
+      'members.revoke',
+      'members.revokeA11y',
+      'members.codeNote',
+      'members.inviteCta',
+      'members.removeTitle',
+      'members.removeBody',
+      'members.removeConfirm',
+      'members.cancel',
+      'members.ownerNote',
+      'members.leaveHint',
+      'members.leave',
+      'members.leaveTitle',
+      'members.leaveBody',
+      'members.leaveBodyNoOwner',
+      'members.leaveConfirm',
+      'members.invitesLimit',
+      'members.membersLimit',
+      'invite.title',
+      'invite.intro',
+      'invite.codeLabel',
+      'invite.expiresOnce',
+      'invite.messageLabel',
+      'invite.shareMessage',
+      'invite.roleNote',
+      'invite.share',
+      'invite.copy',
+      'invite.copied',
+      'joinPet.title',
+      'joinPet.invitedPrompt',
+      'joinPet.note',
+      'joinPet.hint',
+      'joinPet.submit',
+      'joinPet.invalid',
+      'joinPet.alreadyMember',
+      'joinPet.goHome',
+    ];
+    expect(keys).toHaveLength(51);
+    for (const key of keys) {
+      expect(Object.prototype.hasOwnProperty.call(en, key)).toBe(true);
+      expect(Object.prototype.hasOwnProperty.call(es, key)).toBe(true);
+      expect(R21_PET_MEMBERS.some((row) => row.key === key)).toBe(true);
+    }
   });
 });
 

@@ -15,6 +15,7 @@ const PLAN: NutritionPlan = {
   objective: 'maintenance',
   warnings: [],
   aiExplanation: null,
+  aiProposal: null,
   inputsHash: 'f'.repeat(64),
   generatedAt: new Date('2026-10-02T00:00:00Z'),
 };
