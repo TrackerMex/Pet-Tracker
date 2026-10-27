@@ -682,7 +682,7 @@ export function HomeScreen() {
                   <Text className="text-sm font-normal text-muted">{t('home.noCollar')}</Text>
                 </>
               )}
-              {detail.data.pet.device === null ? (
+              {detail.data.pet.device === null && isOwner ? (
                     <Pressable
                       accessibilityRole="button"
                       testID="collar-pair-link"
