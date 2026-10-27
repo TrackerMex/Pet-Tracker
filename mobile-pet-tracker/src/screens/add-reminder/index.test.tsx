@@ -1440,4 +1440,16 @@ describe('#213 R4: controles de repetición', () => {
     expect(mockCreateReminder.mock.calls[0][3]).not.toHaveProperty('recurrenceUntil');
   });
 
+  it('#213 R9: Cada N horas oculta Aviso y envía advanceMinutes 0', async () => {
+    await pickDate(new Date(2026, 11, 31, 12));
+    await fireEvent.press(screen.getByTestId('advance-chip-1440'));
+    await fireEvent.press(screen.getByTestId('repeat-chip-hour'));
+    expect(screen.queryByText('Aviso')).toBeNull();
+    expect(screen.queryAllByTestId(/^advance-chip-/)).toHaveLength(0);
+    await fireEvent.changeText(screen.getByTestId('title-input'), 'Rabies');
+    await fireEvent.press(screen.getByTestId('add-reminder-submit'));
+    await waitFor(() => expect(screen.getByTestId('add-reminder-submit')).toBeDisabled());
+    expect(mockCreateReminder.mock.calls[0][3].advanceMinutes).toBe(0);
+  });
+
 });
