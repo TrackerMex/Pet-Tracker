@@ -25,6 +25,7 @@ import {
   ChevronRight,
   FileText,
   ForkKnife,
+  Key,
   Map,
   Moon,
   Pill,
@@ -348,6 +349,13 @@ export function HomeScreen() {
             onPress: () => router.push('/pets/add'),
           }}
         />
+        <View testID="home-join-pet" className="w-full items-center gap-3.5 pt-5">
+          <Text testID="home-join-pet-prompt" className="text-sm font-semibold text-muted">{t('joinPet.invitedPrompt')}</Text>
+          <Button testID="home-join-pet-button" variant="outline" className="w-full h-13.5 rounded-16 border-2 border-lip-gray bg-surface" style={chunkyLip.neutral} onPress={() => router.push('/join-pet')}>
+            <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><Key size={20} color={foreground} /></View>
+            <Text className="text-base font-extrabold text-foreground">{t('joinPet.title')}</Text>
+          </Button>
+        </View>
       </View>
     );
   }
