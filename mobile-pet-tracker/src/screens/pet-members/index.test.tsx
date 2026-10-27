@@ -176,7 +176,7 @@ it('R9: ningún texto de la pantalla contiene el correo de getMe', async () => {
   await renderMembers();
   await waitFor(() => expect(screen.queryByTestId('pet-members-loading')).toBeNull());
   for (const text of screen.getAllByText(/./, { includeHiddenElements: true })) {
-    expect(text).not.toHaveTextContent('@');
+    expect(text).not.toHaveTextContent(/@/);
   }
 });
 
