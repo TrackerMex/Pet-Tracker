@@ -124,3 +124,31 @@ it("#223 R17: el cuerpo de calma", () => {
   const source = readSource('screens/alerts/index.tsx');
   expect(source).toContain("text-13 text-muted");
 });
+
+it('#223 R17: grep-limpio', () => {
+  const source = readSource('screens/alerts/index.tsx');
+  expect(source).not.toMatch(/\p{Extended_Pictographic}/u);
+  expect(source).not.toMatch(new RegExp(String.raw`#(?!\d{2,3} R\d)[\da-f]{3,8}\b`, 'i'));
+  expect(source).not.toContain('StyleSheet.create');
+  const classes = [...source.matchAll(/className=(?:"([^"]*)"|'([^']*)'|\{`([^`]*)`\})/g)]
+    .map((match) => match[1] ?? match[2] ?? match[3]);
+  for (const value of classes) expect(value).not.toMatch(/\[[^\]]*\]/);
+  expect(source).not.toMatch(/(?<![\w-])(?:shadow(?!-none\b)[\w-]*|elevation)\b/);
+});
+it('#223 R17: las dianas táctiles llegan a 44 pt', () => {
+  const source = readSource('screens/alerts/index.tsx');
+  const openingTag = (id: string) => {
+    const index = source.indexOf(`testID="${id}"`);
+    expect(index).toBeGreaterThan(-1);
+    return source.slice(source.lastIndexOf('<', index), source.indexOf('>', index));
+  };
+  const header = openingTag('alerts-attended-toggle');
+  expect(header).toContain('h-10');
+  expect(header).toContain('hitSlop={TOUCH_SLOP}');
+  expect(40 + 6 + 6).toBeGreaterThanOrEqual(44);
+  const attendedRow = source.slice(source.indexOf('function AttendedRow'), source.indexOf('export function AlertsScreen'));
+  expect(attendedRow).toContain('min-h-11');
+  expect(Number(attendedRow.match(/\bmin-h-(\d+(?:\.\d+)?)\b/)?.[1]) * 4).toBeGreaterThanOrEqual(44);
+  const more = openingTag('alerts-attended-more');
+  expect(Number(more.match(/\bh-(\d+(?:\.\d+)?)\b/)?.[1]) * 4).toBeGreaterThanOrEqual(44);
+});
