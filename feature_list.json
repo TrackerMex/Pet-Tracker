@@ -3649,7 +3649,7 @@
   {
     "id": 224,
     "name": "mobile-nutrition-ai-format",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 2, gate G1). Formato de la recomendación de IA en Nutrición: markdown mínimo propio, Ver más y aviso fijo; sin tocar el prompt (es de #212). Evidencia en progress/explore_ui-alertas-actividad-ia-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },
