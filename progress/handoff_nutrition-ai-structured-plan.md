@@ -479,3 +479,31 @@ lo borra hasta R6 test. Queda autorizado este puente en **R4 feat** y solo este:
 
 Después sigue la cadena desde R5 test. En la guarda final de `git log`, el commit de esta adenda es del leader
 y no cuenta, igual que el del handoff. La cifra de 38 commits tuyos no cambia.
+
+## Adenda 2 (leader, tras la parada en R13 test)
+
+Paraste bien otra vez. El stub de R13 cambia el retorno de `execute` a `GenerateNutritionPlanResult`, pero el
+controlador, que la cadena no toca hasta R13 feat, sigue pasando ese retorno a `toNutritionPlanResponse`. Así,
+R13 test no compila. Queda autorizado tu puente en **R13 test** y solo ese:
+
+1. Aplica tu parche guardado, desde la raíz del worktree:
+   `git apply --check progress/blocked212-r13-test.patch.log && git apply progress/blocked212-r13-test.patch.log`.
+2. En `N/infrastructure/nutrition.controller.ts`, cambia solo la llamada de generar:
+   `toNutritionPlanResponse(await this.generatePlan.execute(request.petMembership.petId))`
+   pasa a
+   `toNutritionPlanResponse((await this.generatePlan.execute(request.petMembership.petId)).plan)`.
+   No cambies el mapper, los imports ni otra ruta del controlador.
+3. Prettier, ESLint y `tsc --noEmit`, todos con `exit=0`. Después la corrida de R13 test:
+   - nace verde `R13: sin collar devuelve not_tracked sin consumir, llamar a la IA, actualizar, avisar ni fallar`;
+   - los otros cinco its de R13 dan rojo por aserción, nunca por compilación;
+   - la cuenta es 271 = U0 + 49.
+   Si una cifra no coincide, PARA como siempre.
+4. Un solo commit con los tres ficheros (el spec del caso de uso, el caso de uso y el controlador), con el mensaje
+   de siempre: `git commit -m "test(nutrition-ai-structured-plan): AI phase statuses in generate (R13, stub)"`.
+
+R13 feat no cambia: el controlador pasa a `toNutritionPlanGenerateResponse`, y eso borra este puente. El commit de
+esta adenda es del leader y no cuenta. Sigue la cadena desde R13 feat.
+
+**Quién sigue.** A Codex le queda el 3 % de la cuota semanal, que se reserva para #214. Desde aquí sigue el
+subagente `implementer`, con este handoff (adendas 1 y 2) y el mismo reporte. Está declarado en
+`progress/current.md`. Las reglas son las mismas que tenías tú.
