@@ -4,7 +4,7 @@ import {
   BottomSheetView,
 } from '@expo/ui/community/bottom-sheet';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { router, type Href, useFocusEffect } from 'expo-router';
+import { router, type Href, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
@@ -63,6 +63,7 @@ function cadenceText(recurrence: Recurrence, t: ReturnType<typeof useTranslate>)
 export function RemindersScreen() {
   const chunkyLip = useChunkyLip();
   const queryClient = useQueryClient();
+  const { petId } = useLocalSearchParams<{ petId?: string }>();
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const locale = useLocale();
@@ -85,6 +86,10 @@ export function RemindersScreen() {
     queryFn: () => listPets(baseUrl, token ?? ''),
   });
   usePetSelection({ data: pets.data, isRefreshing: pets.isRefetching });
+  useEffect(() => {
+    if (typeof petId === 'string' && petId !== selectedPetId && pets.data?.kind === 'ok'
+      && pets.data.pets.some(({ id }) => id === petId)) selectPet(petId);
+  }, [petId, pets.data, selectPet, selectedPetId]);
   const reminders = useQuery({
     queryKey: reminderKeys.list(selectedPetId ?? ''),
     queryFn: () => listReminders(baseUrl, token ?? '', selectedPetId!),
