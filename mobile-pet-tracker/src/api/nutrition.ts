@@ -1,5 +1,5 @@
-import { deleteJson, getJson, patchJson, postJson, readJson } from './http';
-import type { MealsHistory, NutritionPlan, NutritionProfile } from './types';
+import { deleteJson, getJson, patchJson, postJson, putJson, readJson } from './http';
+import type { MealsHistory, NutritionPlan, NutritionProfile, NutritionProfileInput } from './types';
 
 export type NutritionProfileState =
   | { kind: 'ok'; profile: NutritionProfile }
@@ -13,6 +13,16 @@ export type NutritionPlanState =
   | { kind: 'ok'; plan: NutritionPlan }
   | { kind: 'not-found' }
   | { kind: 'unauthorized' }
+  | { kind: 'error' }
+  | { kind: 'unreachable'; message: string }
+  | { kind: 'missing-config' };
+
+export type UpsertNutritionProfileState =
+  | { kind: 'ok'; profile: NutritionProfile }
+  | { kind: 'invalid' }
+  | { kind: 'unauthorized' }
+  | { kind: 'forbidden' }
+  | { kind: 'not-found' }
   | { kind: 'error' }
   | { kind: 'unreachable'; message: string }
   | { kind: 'missing-config' };
@@ -82,6 +92,35 @@ export async function getNutritionProfile(
   return isObjectBody(body)
     ? { kind: 'ok', profile: body as unknown as NutritionProfile }
     : { kind: 'error' };
+}
+
+export async function upsertNutritionProfile(
+  baseUrl: string | undefined,
+  token: string,
+  petId: string,
+  input: NutritionProfileInput,
+  fetchFn: typeof fetch = fetch,
+): Promise<UpsertNutritionProfileState> {
+  if (!baseUrl) return { kind: 'missing-config' };
+
+  const result = await putJson(
+    baseUrl, `/pets/${petId}/nutrition-profile`, token, input, fetchFn,
+  );
+  if (result.kind === 'unreachable') return result;
+
+  switch (result.response.status) {
+    case 400: return { kind: 'invalid' };
+    case 401: return { kind: 'unauthorized' };
+    case 403: return { kind: 'forbidden' };
+    case 404: return { kind: 'not-found' };
+    case 200: {
+      const body = await readJson(result.response);
+      return isObjectBody(body)
+        ? { kind: 'ok', profile: body as unknown as NutritionProfile }
+        : { kind: 'error' };
+    }
+    default: return { kind: 'error' };
+  }
 }
 
 export async function getNutritionPlan(
