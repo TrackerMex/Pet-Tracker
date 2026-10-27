@@ -568,3 +568,10 @@ describe('#208 R20: alta de vacuna', () => {
     checkUses(R19_VACCINE_CREATE);
   });
 });
+
+describe('#222 R8: Copy tabHeader.petsScroll y filas de la tabla', () => {
+  it('#222 R8: la clave tabHeader.petsScroll dice el literal en es y en', () => {
+    expect(es['tabHeader.petsScroll' as TranslationKey]).toBe('Mascotas, desliza para ver más');
+    expect(en['tabHeader.petsScroll' as TranslationKey]).toBe('Pets, swipe to see more');
+  });
+});
