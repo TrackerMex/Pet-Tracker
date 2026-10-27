@@ -204,6 +204,7 @@ export const R5_HEALTH: UseRow[] = [
   { file: 'src/screens/health/index.tsx', key: 'health.nextDoseTomorrow' }, // #199 R14
   { file: 'src/screens/health/index.tsx', key: 'health.nextDoseInDays' }, // #199 R14
   { file: 'src/components/weight-chart.tsx', key: 'weightChart.lastSixMonths' }, // #199 R5
+  { file: 'src/screens/health/index.tsx', key: 'tabHeader.petsScroll' }, // #222 R8
 ];
 
 export const R6_FOOD: UseRow[] = [
