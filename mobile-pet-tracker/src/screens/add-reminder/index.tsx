@@ -99,7 +99,9 @@ function summaryText(
       const list = times.slice(0, -1).join(', ');
       const last = times[times.length - 1];
       const doses = times.length === 1 ? times[0] : t('addReminder.dosesJoin', { list, last });
-      return t('addReminder.summaryHoursDoses', { ...params, pet: pet ?? '', doses });
+      return pet
+        ? t('addReminder.summaryHoursDoses', { ...params, pet, doses })
+        : t('addReminder.summaryHoursDosesNoPet', { ...params, doses });
     }
     return every === 1
       ? t('addReminder.summaryHourly', params)
