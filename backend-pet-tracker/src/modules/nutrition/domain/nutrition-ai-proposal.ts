@@ -28,8 +28,21 @@ export function acceptAiOutput(
   plan: { dailyGrams: number; mealTimes: string[] },
   localDay: string,
 ): { explanation: string; proposal: NutritionAiProposal } | null {
-  void output;
-  void plan;
-  void localDay;
-  return null;
+  if (output.mealGrams.length !== plan.mealTimes.length) return null;
+  const byTime = new Map(output.mealGrams.map((meal) => [meal.mealTime, meal]));
+  if (
+    byTime.size !== plan.mealTimes.length ||
+    plan.mealTimes.some((time) => !byTime.has(time))
+  ) {
+    return null;
+  }
+  return {
+    explanation: output.explanation,
+    proposal: {
+      mealGrams: plan.mealTimes.map((time) => byTime.get(time)!),
+      recommendations: output.recommendations,
+      reviewDate: shiftDay(localDay, output.reviewInDays),
+    },
+  };
 }
+import { shiftDay } from '@/pipeline/local-day';
