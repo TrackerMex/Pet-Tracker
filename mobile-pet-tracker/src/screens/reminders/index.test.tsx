@@ -2210,4 +2210,14 @@ describe('#213 R14: series en Recordatorios', () => {
     expect(mockListReminders.mock.calls.map((call) => call[2])).not.toContain('pet-missing');
   });
 
+  it('#213 R21: tras abrir con petId se puede elegir otra mascota', async () => {
+    mockSearchParams = { petId: 'pet-2' };
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ id: 'pet-1', name: 'Luna' }), makePet({ id: 'pet-2', name: 'Rocky' })] });
+    await renderReminders();
+    await waitFor(() => expect(screen.getByTestId('pet-chip-pet-2').props.accessibilityState).toEqual({ selected: true }));
+    await fireEvent.press(screen.getByTestId('pet-chip-pet-1'));
+    await waitFor(() => expect(screen.getByTestId('pet-chip-pet-1').props.accessibilityState).toEqual({ selected: true }));
+    expect(mockListReminders).toHaveBeenLastCalledWith('http://example.test/v1', 'jwt-token', 'pet-1');
+  });
+
 });
