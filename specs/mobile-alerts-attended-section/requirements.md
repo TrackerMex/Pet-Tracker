@@ -360,6 +360,13 @@ Claves **existentes que se reutilizan sin cambio**: `alerts.title`,
     (E2c) `#166 R3`: la lista ordenada de `testIds` gana `'alerts-attended-more'` tras
     `'alert-detail-view-map'`; (E2d) `#166 R3`: `count(/border-lip-gray/g)` gana
     `+ 1 // #223 R10`. Descubierto al medir el handoff sobre `dev` con #214.
+    (E3, hallada por Codex en C6) `screens/alerts/index.test.tsx`
+    `#203 R8: sin nuevas la cabecera no lleva accesorio`: sus dos alertas son
+    atendidas (`acked`, `closed`), así que con R4 no hay fila `alert-row-a` en
+    `data` y su espera falla. Se enmienda en el commit de R4 (C6) cambiando solo
+    esa espera por `await waitFor(() => expect(screen.getByTestId('alerts-list')).toBeVisible())`,
+    con el sufijo `(enmendado por #223 R18)`; las aserciones de cabecera sin
+    accesorio no cambian.
 
 - **R17**: THE SYSTEM SHALL pintar los elementos nuevos con las clases fijadas
   por el canvas (tabla abajo), sin hex, sin corchetes en `className`, sin
