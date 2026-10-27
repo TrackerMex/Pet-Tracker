@@ -152,3 +152,139 @@ it('#223 R17: las dianas táctiles llegan a 44 pt', () => {
   const more = openingTag('alerts-attended-more');
   expect(Number(more.match(/\bh-(\d+(?:\.\d+)?)\b/)?.[1]) * 4).toBeGreaterThanOrEqual(44);
 });
+
+const amendedTitles = [
+  [
+    "screens/alerts/index.test.tsx",
+    "alterna el tercer hijo entre ack y la píldora traducida"
+  ],
+  [
+    "screens/alerts/index.test.tsx",
+    "particiona por el status descargado y conserva el orden de cada grupo"
+  ],
+  [
+    "screens/alerts/index.test.tsx",
+    "no mueve la fila abierta al pulsar su ack"
+  ],
+  [
+    "screens/alerts/index.test.tsx",
+    "pide el cursor siguiente y conserva las filas de ambas páginas"
+  ],
+  [
+    "screens/alerts/index.test.tsx",
+    "no pide otra página cuando nextCursor es null"
+  ],
+  [
+    "screens/alerts/index.test.tsx",
+    "no pide otra página mientras la anterior está en vuelo"
+  ],
+  [
+    "screens/alerts/index.test.tsx",
+    "conserva la primera página y muestra error si falla la segunda"
+  ],
+  [
+    "screens/alerts/index.test.tsx",
+    "da prioridad al status cerrado descargado en el siguiente foco"
+  ],
+  [
+    "screens/alerts/index.test.tsx",
+    "ordena las abiertas por sección y en el orden del servidor"
+  ],
+  [
+    "screens/alerts/index.test.tsx",
+    "omite la cabecera de %s cuando la sección queda vacía"
+  ],
+  [
+    "screens/alerts/index.test.tsx",
+    "pinta cada cabecera una sola vez al cargar la página siguiente"
+  ],
+  [
+    "screens/alerts/index.test.tsx",
+    "no reordena al marcar leída una fila abierta"
+  ],
+  [
+    "screens/alerts/index.test.tsx",
+    "no pinta el contador con 0 nuevas: %s"
+  ],
+  [
+    "screens/alerts/index.test.tsx",
+    "suma las abiertas de todas las páginas cargadas"
+  ],
+  [
+    "screens/alerts/index.test.tsx",
+    "%s: sin borde de severidad"
+  ],
+  [
+    "screens/alerts/index.test.tsx",
+    "#203 R8: sin nuevas la cabecera no lleva accesorio"
+  ],
+  [
+    "screens/alerts/index.test.tsx",
+    "#223 R8: el encabezado alterna la sección y recuerda cuántas filas había"
+  ],
+  [
+    "__tests__/chunky-cta-canvas-fidelity.test.ts",
+    "#177 R7.5:"
+  ],
+  [
+    "__tests__/chunky-cta-canvas-fidelity.test.ts",
+    "#177 R7.1:"
+  ],
+  [
+    "__tests__/chunky-cta-canvas-fidelity.test.ts",
+    "#177 R7.3:"
+  ],
+  [
+    "__tests__/chunky-cta-canvas-fidelity.test.ts",
+    "#177 R4.3:"
+  ],
+  [
+    "__tests__/chunky-cta-canvas-fidelity.test.ts",
+    "#177 R6.2:"
+  ],
+  [
+    "__tests__/chunky-cta-canvas-fidelity.test.ts",
+    "#177 R8.3:"
+  ],
+  [
+    "__tests__/design-drift.test.ts",
+    "reserva los radios 14, 16 y 22 a Recordatorios"
+  ],
+  [
+    "__tests__/alerts-canvas-fidelity.test.ts",
+    "cada tracking-* va con su text-*"
+  ],
+  [
+    "__tests__/consistency-classnames.test.ts",
+    "%s importa y aplica sus %i esquinas"
+  ],
+  [
+    "__tests__/consistency-classnames.test.ts",
+    "fusiona la esquina una vez y la entrega a las dos ramas de Card"
+  ],
+  [
+    "__tests__/consistency-classnames.test.ts",
+    "deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban"
+  ],
+  [
+    "__tests__/consistency-classnames.test.ts",
+    "inventaría los cinco secundarios neutros de toda la app"
+  ],
+  [
+    "providers/__tests__/language-provider.test.tsx",
+    "#194 R1: mantiene la base más las claves de #68"
+  ],
+  [
+    "app/__tests__/alert-detail.navigation.test.tsx",
+    "abre la fila de la segunda página, la marca leída y la ve leída al volver"
+  ]
+] as const;
+
+it('#223 R18: los candados enmendados nombran su enmienda', () => {
+  for (const [file, prefix] of amendedTitles) {
+    const title = readSource(file).split('\n').find((line) => line.includes("('" + prefix) || line.includes('("' + prefix));
+    expect({ file, prefix, title }).toEqual({ file, prefix, title: expect.any(String) });
+    expect(title).toContain(file === 'providers/__tests__/language-provider.test.tsx'
+      ? '(enmendado por #223 R16)' : '(enmendado por #223 R18)');
+  }
+});
