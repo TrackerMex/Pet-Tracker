@@ -63,3 +63,14 @@
   #214), y el reporte `progress/impl_mobile-role-aware-actions.md`.
 - Para toda la feature se pierde la separación «quien implementa no revisa»: el `reviewer` lo sabe y lo revisa
   con ese dato.
+
+## Fallback al subagente `implementer` (#215, 2026-10-27)
+
+- Feature: #215 mobile-nutrition-ai-plan. Spec firmada (7b601547) con erratas E1 (b18d7ec2) y E2 (c3da2b3f, tras
+  mergear `dev` con #223 y #224 en 20fc6616).
+- Motivo (CLAUDE.md §Excepciones, «Codex CLI no está disponible»): a la cuota semanal de Codex le queda el 3 %
+  (se renueva el 2 de noviembre a las 14:37).
+- Implementa la feature entera el subagente `implementer`, con el handoff `progress/handoff_mobile-nutrition-ai-plan.md`
+  (H0 c3da2b3f) y el reporte `progress/impl_mobile-nutrition-ai-plan.md`.
+- Para toda la feature se pierde la separación «quien implementa no revisa»: el `reviewer` lo sabe y lo revisa
+  con ese dato.
