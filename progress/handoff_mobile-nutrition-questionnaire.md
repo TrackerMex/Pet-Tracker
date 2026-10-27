@@ -666,3 +666,111 @@ commits del leader, `b4f0d30f` (el fallback) y el que sigue a esta adenda. Que t
 
 Retoma la cadena en R21 (test) y sigue hasta el commit final. El merge de `origin/dev` es del leader, después
 del commit final: no lo hagas tú.
+
+## Adenda 4 (leader, 2026-10-27, el merge de `dev` tras el commit final)
+
+La cadena está cerrada en `da5e5eef`. Falta traer `dev`, que trae #212, #213, #214, #217 y #222, antes de la
+revisión. La Adenda 3 decía que el merge era del leader, pero tiene 13 conflictos de código y el leader no
+edita código de la aplicación. Lo haces tú. Esta adenda manda sobre todo lo anterior donde lo contradiga.
+
+**0. Arreglo del reporte.** La primera línea de `progress/impl_mobile-nutrition-questionnaire.md` sigue
+diciendo `Estado: PARA en R21 (test)…`. Al final de esta adenda pasa a ser `Estado: COMPLETO`, y el
+`.done` lleva una línea con la fecha UTC y el estado, no la ruta. Ver el punto 6.
+
+**1. Merge.** El leader ya hizo `git fetch`. Desde `/home/claude/sites/Pet-Tracker-wt-209`:
+`git merge origin/dev` (debe apuntar a `fe624698`; compruébalo antes con `git rev-parse --short origin/dev`).
+Nunca rebase, nunca `git fetch` otra vez. El leader lo probó y salen en conflicto exactamente estos 13
+ficheros. Si salen otros, o falta alguno, PARA antes de resolver nada:
+
+    mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts
+    mobile-pet-tracker/src/__tests__/chunky-cta-canvas-fidelity.test.ts
+    mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+    mobile-pet-tracker/src/__tests__/design-drift.test.ts
+    mobile-pet-tracker/src/__tests__/profile-canvas-fidelity.test.ts
+    mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+    mobile-pet-tracker/src/__tests__/ui-language.test.ts
+    mobile-pet-tracker/src/app/__tests__/layout.test.tsx
+    mobile-pet-tracker/src/i18n/catalog.ts
+    mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+    mobile-pet-tracker/src/screens/food/index.test.tsx
+    mobile-pet-tracker/src/screens/food/index.tsx
+    progress/current.md
+
+Tras el merge entran `package.json` y `bun.lock` de `dev` (`expo-clipboard`, de #214). Antes de correr nada,
+`cd /home/claude/sites/Pet-Tracker-wt-209/mobile-pet-tracker && bun install --frozen-lockfile`.
+
+**2. Reglas de resolución.** El resultado es la unión: lo de `dev` más lo de #209. No se pierde nada de ninguno
+de los dos lados.
+- **Cuentas e inventarios** (`toHaveLength(…)`, `+ N // …`, listas de ficheros consumidores, recuentos de
+  radios y tamaños de texto): la cifra es la de `dev` más el delta que #209 sumó sobre `b185ae61`. Las
+  expresiones aritméticas se quedan con los términos de `dev` y añaden al final los términos de #209 con su
+  comentario `// #209 R<n>`. Nunca se re-suma a mano ni se colapsa en un número.
+- **Sufijos de `it`**: la cadena de `dev` primero y después ` (enmendado por #209 R<n>)`. Ejemplo:
+  `(enmendado por #208 R20) (enmendado por #214 R22) (enmendado por #209 R23)`.
+- **Tablas de copy** (`ui-copy-table.ts`): `R20_NUTRITION_QUESTIONNAIRE` va tras `R19_VACCINE_CREATE` y
+  `R21_PET_MEMBERS` (de #214) se queda donde la deja `dev`. Si las dos tablas quieren el mismo sitio, `R20`
+  antes que `R21`, también en `ALL_USES`, en `blocks` y en el import de ui-language.
+- **`catalog.ts`** y **`language-provider.test.tsx`**: las claves de los dos lados, en `es` y en `en`. El `it`
+  `#194 R1` suma los términos de #213, #214 y #209 con sus comentarios, según la primera regla.
+- **`screens/food/index.tsx` y su test**: #222 R4 y R7 quitaron el título, fijaron la cabecera con avatar y
+  añadieron encabezados ocultos para el lector de pantalla. #209 R19 añadió la CTA «Crear perfil nutricional»
+  solo para owner. Se queda la estructura de #222 y la CTA de #209 va en el mismo sitio respecto al vacío de
+  Nutrición en que la puso R19. Si el nodo que asertan los `it` de R19 ya no existe o cambió de padre por
+  #222, PARA y reporta el `it` y su `Expected`/`Received`. No muevas aserciones de #222.
+- **`layout.test.tsx`**: las rutas de #214 y #217 más el `Stack.Screen` de `nutrition-profile` de R3, en el
+  orden de `_layout.tsx` ya mergeado.
+- **`progress/current.md`**: las secciones de los dos lados enteras, primero las de `dev` (#214 y #212) y
+  después la de #209. No escribas nada nuevo en ese fichero.
+
+Todo lo que haga falta para dejar verde el árbol mergeado va en el commit del merge: resoluciones y, en
+ficheros sin conflicto textual, cuentas que el merge automático dejó mal porque los dos lados sumaron filas.
+No hagas commits aparte. Si para ponerlo verde hace falta cambiar producción más allá de la unión de los dos
+lados, PARA.
+
+**3. Verificación antes de commitear el merge.** Con los dos pgreps vacíos, como siempre, desde
+`mobile-pet-tracker/`:
+- `test ! -e .expo/types/router.d.ts` y después `bunx tsc --noEmit`, exit 0.
+- El lint, con `--no-cache`, el log y `test ! -s` de siempre.
+- Las seis guardas de R24 y layout, una vez, con el comando de R24 (2).
+- La suite completa, `bun run test > ../progress/merge-test-209.log 2>&1; echo exit=$?`, sin pipe. Esperado:
+  `Test Suites: 168 passed, 168 total` y `Tests: 6183 passed, 6183 total`. Es una cifra del leader: el CI de
+  `dev` en `fe624698` da 167 suites y 6077 tests, y #209 suma 1 suite y 106 tests. SIGKILL = 0 y
+  `failed to run` = 0. Si cae un flake conocido (`#168 R2`, `#200 R9`/`#200 R10`, `#152 R8`, `#199 R18`,
+  `#190 R5`, `#173 R5`), córrelo aislado y anota el verde aislado. Si no cuadra la cifra, no pares: da en el
+  reporte el desglose por fichero (`--json`) y la diferencia.
+
+Mensaje del merge: el que propone git, `Merge remote-tracking branch 'origin/dev' into feature/209-mobile-nutrition-questionnaire`,
+y en el cuerpo una línea por fichero resuelto que diga qué lado aportó qué.
+
+**4. Anclas.** Corre otra vez las anclas de R23, R24, R25 y R26 del cuerpo. Para cada una, da la cifra en
+`da5e5eef` y la cifra tras el merge. Una diferencia que explica `dev` (una fila, un consumidor o un sufijo de
+#213, #214 o #222) se anota con su causa y no es parada. Una diferencia que no explica nadie, PARA.
+
+**5. Comprobaciones de cierre tras el merge.** Sustituyen a las del Cierre:
+- **Commits**: `git log --oneline --first-parent 48346f15..HEAD -- . ':!progress/handoff_mobile-nutrition-questionnaire.md' ':!specs/mobile-nutrition-questionnaire/requirements.md' ':!specs/mobile-nutrition-questionnaire/tasks.md' ':!progress/current.md'`
+  lista tus commits de `d4204afa` a `da5e5eef`, el merge y el commit del punto 6. Ni uno más.
+- **Ficheros tocados**: `git diff --name-only fe624698 HEAD -- mobile-pet-tracker docs` da exactamente las 24
+  primeras rutas de la lista del Cierre, las que van sin el reporte y sin `traceability.md`.
+- **Intactos**: `git diff --quiet fe624698 HEAD -- backend-pet-tracker init.sh init.config.sh STATUS.md progress/history.md mobile-pet-tracker/src/theme mobile-pet-tracker/src/components mobile-pet-tracker/src/hooks mobile-pet-tracker/package.json mobile-pet-tracker/bun.lock mobile-pet-tracker/test mobile-pet-tracker/src/__tests__/sheet-surface-background.test.ts mobile-pet-tracker/src/app/__tests__/detail-stack.guard.test.tsx && echo intactos`.
+  `feature_list.json` sale de la lista porque la branch lleva el `spec_ready` de #209, que es del leader.
+- Las guardas de «Guardas que R1 a R26 cruzan» (producción sin `#209`, tests sin `#209` desnudo, sin hojas,
+  sin `StyleSheet` en el test, la casilla de R26 sin marcar), corridas otra vez sobre el árbol mergeado.
+- `traceability.md` no se toca: los hashes de la cadena siguen valiendo, porque no hubo rebase.
+
+**6. Reporte.** Añade al final del reporte la sección `## Merge de dev (Adenda 4)` con:
+- la lista de conflictos y cómo resolviste cada uno;
+- `bun install`, tsc, lint y guardas;
+- la corrida completa con sus líneas `Test Suites:` y `Tests:`, SIGKILL y `failed to run`;
+- la tabla de anclas antes y después;
+- las comprobaciones del punto 5.
+
+Cambia la primera línea a `Estado: COMPLETO` y deja todo lo demás. Commit:
+`git add ../progress/impl_mobile-nutrition-questionnaire.md && git commit -m 'docs(mobile): #209 report after the dev merge'`.
+Después, el chequeo de árbol limpio acotado. Por último:
+`cd /home/claude/sites/Pet-Tracker-wt-209 && printf '%s COMPLETO\n' "$(date -u +%Y-%m-%dT%H:%MZ)" > progress/impl_mobile-nutrition-questionnaire.done`.
+
+Las demás reglas siguen igual:
+- no corras `./init.sh`;
+- no uses Monitor;
+- no hagas push ni abras la PR;
+- `bun` y `bunx`, nunca npm ni npx.
