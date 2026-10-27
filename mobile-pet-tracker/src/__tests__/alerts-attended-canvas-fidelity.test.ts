@@ -48,3 +48,7 @@ it('#223 R17: el disco del chevron', () => {
   const source = readSource('screens/alerts/index.tsx');
   for (const literal of ['size-8 items-center justify-center rounded-full bg-default', 'ChevronDown', 'ChevronUp', 'size={18}']) expect(source).toContain(literal);
 });
+
+it('#223 R17: la lista de atendidas', () => {
+  expect(readSource('screens/alerts/index.tsx')).toContain('testID="alerts-attended-list" className="gap-1.5"');
+});

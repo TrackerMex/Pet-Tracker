@@ -575,8 +575,6 @@ describe('#78 R7: pinta las abiertas primero y conserva la posición tras el ack
   const expectedOrder = [
     'alert-row-open1',
     'alert-row-open2',
-    'alert-row-acked',
-    'alert-row-closed',
   ];
 
   beforeEach(() => {
@@ -605,7 +603,7 @@ describe('#78 R7: pinta las abiertas primero y conserva la posición tras el ack
     );
   }
 
-  it('particiona por el status descargado y conserva el orden de cada grupo', async () => {
+  it('particiona por el status descargado y conserva el orden de cada grupo (enmendado por #223 R18)', async () => {
     await renderAlerts();
 
     await waitFor(() => expect(rowOrder()).toEqual(expectedOrder));
@@ -615,6 +613,9 @@ describe('#78 R7: pinta las abiertas primero y conserva la posición tras el ack
       undefined,
       undefined,
     );
+    await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
+    const attendedList = await screen.findByTestId('alerts-attended-list');
+    expect(within(attendedList).getAllByTestId(/^alert-row-(acked|closed)$/).map((row) => row.props.testID)).toEqual(['alert-row-acked', 'alert-row-closed']);
   });
 
   it('no mueve la fila abierta al pulsar su ack (enmendado por #223 R18)', async () => {
@@ -1186,7 +1187,7 @@ describe(
       });
     });
 
-    it('da prioridad al status cerrado descargado en el siguiente foco', async () => {
+    it('da prioridad al status cerrado descargado en el siguiente foco (enmendado por #223 R18)', async () => {
       await renderAlerts();
       const button = await waitFor(() =>
         screen.getByTestId('alert-row-alert-1-ack'),
@@ -1200,6 +1201,9 @@ describe(
       );
 
       await focusScreen();
+      await waitFor(() => expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('1', { exact: true }));
+      expect(screen.getByTestId('alerts-list').props.data).toEqual([]);
+      await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
 
       await waitFor(() =>
         expect(screen.getByTestId('alert-row-alert-1-status')).toHaveTextContent(
@@ -1720,5 +1724,27 @@ describe('#223 R5: la insignia espera al último cursor y suma las abiertas de t
       expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('2', { exact: true });
       expect(ids()).toEqual(['second']);
     });
+  });
+
+  it('#223 R8: el encabezado alterna la sección y recuerda cuántas filas había', async () => {
+    const history = Array.from({ length: 14 }, (_, i) => makeAlert({
+      id: `h${String(i + 1).padStart(2, '0')}`, status: i % 2 === 0 ? 'acked' : 'closed',
+      openedAt: new Date(Date.parse('2027-01-02T15:00:00.000Z') - i * 60000).toISOString(),
+    }));
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: history, nextCursor: null });
+    await renderAlerts();
+    await waitFor(() => expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('14', { exact: true }));
+    await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
+    await waitFor(() => expect(screen.queryByTestId('alerts-attended-list')).not.toBeNull());
+    expect(screen.getByTestId('alerts-attended-toggle').props.accessibilityState.expanded).toBe(true);
+    expect(screen.getByTestId('alerts-attended-chevron').props.iconName).toBe('ChevronUp');
+    expect(within(screen.getByTestId('alerts-attended-list')).getAllByTestId(/^alert-row-h\d+$/).map((row) => row.props.testID)).toEqual([
+      'alert-row-h01', 'alert-row-h02', 'alert-row-h03', 'alert-row-h04', 'alert-row-h05',
+      'alert-row-h06', 'alert-row-h07', 'alert-row-h08', 'alert-row-h09', 'alert-row-h10',
+    ]);
+    await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
+    expect(screen.queryByTestId('alerts-attended-list')).toBeNull();
+    expect(screen.queryByTestId('alert-row-h01')).toBeNull();
+    expect(screen.getByTestId('alerts-attended-chevron').props.iconName).toBe('ChevronDown');
   });
 });
