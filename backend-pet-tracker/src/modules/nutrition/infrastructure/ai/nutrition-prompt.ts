@@ -19,7 +19,6 @@ export function buildUserPrompt(
   result: NutritionPlanResult,
   weightTrend: NutritionWeightPoint[],
 ): string {
-  void weightTrend;
   return JSON.stringify({
     input: {
       species: input.species,
@@ -46,6 +45,10 @@ export function buildUserPrompt(
       objective: result.objective,
       warnings: result.warnings,
     },
+    weightTrend: weightTrend.map((p) => ({
+      measuredAt: p.measuredAt,
+      weightKg: p.weightKg,
+    })),
   });
 }
 

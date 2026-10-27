@@ -56,7 +56,6 @@ export class AnthropicNutritionExplainer implements NutritionExplainer {
     weightTrend: NutritionWeightPoint[],
     ctx: NutritionExplainerContext,
   ): Promise<string | null> {
-    void weightTrend;
     try {
       if (this.client === null) {
         const { default: Anthropic } = await this.loadSdk();
@@ -71,7 +70,10 @@ export class AnthropicNutritionExplainer implements NutritionExplainer {
         max_tokens: NUTRITION_AI_MAX_OUTPUT_TOKENS,
         system: NUTRITION_AI_SYSTEM_PROMPT,
         messages: [
-          { role: 'user', content: buildUserPrompt(input, result, []) },
+          {
+            role: 'user',
+            content: buildUserPrompt(input, result, weightTrend),
+          },
         ],
       });
       const blocks = Array.isArray(response.content)
