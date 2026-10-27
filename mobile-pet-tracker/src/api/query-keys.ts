@@ -11,6 +11,7 @@ export const nutritionKeys = {
 };
 
 export const healthKeys = {
+  vaccineCatalog: (species: 'dog' | 'cat') => ['health', 'vaccine-catalog', species] as const,
   vaccines: (petId: string) => ['health', 'vaccines', petId] as const,
   weights: (petId: string, limit: number | undefined) =>
     ['health', 'weights', petId, { limit }] as const,
