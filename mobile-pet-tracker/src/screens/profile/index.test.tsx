@@ -1957,13 +1957,14 @@ describe('#181 R5: Perfil conserva la cuenta y compone el vacío ilustrado', () 
     expect(mockRouter.push).toHaveBeenCalledWith('/pets/add');
   });
 
-  it('R5.2 R5.3: centra en horizontal dentro del scroll y mantiene las acciones de cuenta (enmendado por #196 R1)', async () => {
-    const { queryClient } = await renderProfile();
+  it('R5.2 R5.3: centra en horizontal dentro del scroll y mantiene las acciones de cuenta (enmendado por #196 R1) (enmendado por #222 R9)', async () => {
+    await renderProfile();
     const empty = await screen.findByTestId('profile-pets-empty-title');
-    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    // docs/conventions.md §Esperas: observar la cuenta final, no la caché.
+    expect(await screen.findByTestId('me-card-state')).toBeVisible();
     expect(empty.parent).toBe(screen.getByTestId('profile-pets-empty'));
     expect(empty.parent?.props.className).toBe('items-center gap-3 py-8');
-    for (const id of ['screen-profile', 'profile-title', 'profile-add-pet', 'reminders-link', 'me-card', 'profile-sign-out']) {
+    for (const id of ['screen-profile', 'profile-heading', 'profile-add-pet', 'reminders-link', 'me-card', 'profile-sign-out']) {
       expect(screen.getByTestId(id)).toBeVisible();
     }
     for (const id of ['profile-pet-error', 'profile-pet-retry', 'pet-hero-skeleton', 'profile-hero', 'pet-info-skeleton']) {
@@ -2236,7 +2237,7 @@ describe('#196 R1: hero a sangre y contenido por rama', () => {
     } else {
       expect(screen.queryByTestId('profile-hero')).toBeNull();
       expect(screen.queryByTestId('pet-hero')).toBeNull();
-      expect(profileChild(content, 0)).toBe(screen.getByTestId('profile-title').parent);
+      expect(profileChild(content, 0).props.testID).toBe('profile-top-row');
     }
   });
 
@@ -2346,17 +2347,18 @@ describe('#196 R2: título y selector en el slot fotográfico', () => {
   it.each([
     { name: 'vacía', pets: { kind: 'ok', pets: [] } as PetsState, branch: 'profile-pets-empty' },
     { name: 'error de lista', pets: { kind: 'error' } as PetsState, branch: 'profile-pets-error' },
-  ])('#196 R2: sin hero ($name) pinta la fila clara al principio del contenido', async ({ pets, branch }) => {
+  ])('#196 R2: sin hero ($name) pinta la fila clara al principio del contenido (enmendado por #222 R9)', async ({ pets, branch }) => {
     mockListPets.mockResolvedValue(pets);
     await renderProfile();
     await screen.findByTestId(branch);
     const content = screen.getByTestId('profile-content');
     const row = profileChild(content, 0);
-    expect(row.props.className).toBe('flex-row items-center justify-between gap-3');
-    expect(profileChild(row, 0)).toBe(screen.getByTestId('profile-title'));
-    expect(screen.getByTestId('profile-title').props.className).toBe('text-3xl font-black tracking-title text-foreground');
+    expect(row.props.testID).toBe('profile-top-row');
+    expect(row.props.className).toBe('flex-row justify-end');
+    expect(row.children).toHaveLength(1);
+    expect(screen.queryByTestId('profile-title')).toBeNull();
     const capsule = screen.getByTestId('profile-add-pet');
-    expect(profileChild(row, 1)).toBe(capsule);
+    expect(profileChild(row, 0)).toBe(capsule);
     expect(capsule.props.className).toBe('h-9 flex-row items-center gap-1.5 rounded-full bg-tab-pill px-3.5');
     expect(screen.queryByTestId('profile-hero-top')).toBeNull();
     expect(mockPetSwitcher).not.toHaveBeenCalled();
@@ -2401,12 +2403,12 @@ describe('#196 R5: aviso ámbar de notificaciones bloqueadas', () => {
     expect(profileChild(notice, 1)).toBe(screen.getByTestId('notifications-open-settings'));
   });
 
-  it('#196 R5: con el permiso bloqueado y sin hero el aviso va tras el título', async () => {
+  it('#196 R5: con el permiso bloqueado y sin hero el aviso va tras profile-top-row (enmendado por #222 R9)', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
     await renderProfile();
     await screen.findByTestId('profile-pets-empty');
     const content = screen.getByTestId('profile-content');
-    expect(profileChild(content, 0)).toBe(screen.getByTestId('profile-title').parent);
+    expect(profileChild(content, 0).props.testID).toBe('profile-top-row');
     expect(profileChild(content, 1)).toBe(screen.getByTestId('profile-entrance-notice'));
     expect(profileChild(screen.getByTestId('profile-entrance-notice'), 0)).toBe(screen.getByTestId('notifications-blocked-notice'));
   });
@@ -2584,5 +2586,45 @@ describe('#222 R7: Encabezado solo para lectores de pantalla', () => {
     await waitFor(() => expect(screen.queryByTestId('profile-heading')).not.toBeNull());
     const heading = screen.getByTestId('profile-heading');
     expect(profileChild(screen.getByTestId('screen-profile'), 0).children[0]).toBe(heading);
+  });
+});
+
+
+describe('#222 R6: Perfil sin hero', () => {
+  beforeEach(setupProfile168);
+
+  it('#222 R6: sin hero, profile-top-row lleva solo la cápsula pastilla a la derecha', async () => {
+    for (const state of PROFILE_BRANCHES_168.filter(({ hero }) => !hero)) {
+      setupProfile168();
+      mockListPets.mockImplementation(async () => state.pets);
+      mockGetPet.mockImplementation(async () => state.detail);
+      await renderProfile();
+      // docs/conventions.md §Esperas: observar la rama antes del orden.
+      await screen.findByTestId(state.branch);
+      const row = profileChild(screen.getByTestId('profile-content'), 0);
+      expect(row.props.testID).toBe('profile-top-row');
+      expect(row.props.className).toBe('flex-row justify-end');
+      expect(row.children).toHaveLength(1);
+      const capsule = profileChild(row, 0);
+      expect(capsule.props.testID).toBe('profile-add-pet');
+      expect(capsule.props.className).toBe('h-9 flex-row items-center gap-1.5 rounded-full bg-tab-pill px-3.5');
+      expect(screen.queryByTestId('profile-title')).toBeNull();
+      expect(screen.queryByText('Perfil')).toBeNull();
+      expect(screen.queryAllByTestId(/^pet-chip-/)).toEqual([]);
+      await cleanup();
+    }
+  });
+
+  it('#222 R6: sin hero, profile-content conserva paddingTop 52', async () => {
+    for (const state of PROFILE_BRANCHES_168.filter(({ hero }) => !hero)) {
+      setupProfile168();
+      mockListPets.mockImplementation(async () => state.pets);
+      mockGetPet.mockImplementation(async () => state.detail);
+      await renderProfile();
+      // docs/conventions.md §Esperas: las métricas se leen de la rama final.
+      await screen.findByTestId(state.branch);
+      expect(screen.getByTestId('profile-content').props.style).toEqual({ paddingTop: 52 });
+      await cleanup();
+    }
   });
 });
