@@ -194,6 +194,7 @@ const canvasReminders = [
   makeReminder({ id: 'b', type: 'medication', title: 'Pastilla trimestral', dueAt: '2027-01-21T02:05:00.000Z', status: 'scheduled' }),
   makeReminder({ id: 'c', type: 'custom', title: 'Baño', dueAt: '2026-12-03T17:30:00.000Z', status: 'sent' }),
 ];
+const todayCanvasReminders = canvasReminders.map((reminder) => (reminder.id === 'a' ? { ...reminder, dueAt: '2026-12-30T23:00:00.000Z' } : reminder)); // #213 R16
 const hostProcess = process.getBuiltinModule('process');
 const originalTimezone = hostProcess.env.TZ;
 
@@ -525,7 +526,8 @@ describe('#178 R6: fila del canvas', () => {
     jest.useRealTimers();
   });
 
-  it('distingue las recetas de fila próxima, lejana e inactiva (enmendado por #204 R7)', async () => {
+  it('distingue las recetas de fila próxima, lejana e inactiva (enmendado por #204 R7) (enmendado por #213 R16)', async () => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: todayCanvasReminders });
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     for (const [id, className] of [
@@ -633,7 +635,7 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
     jest.useRealTimers();
   });
 
-  it('renders summaries and reminder rows in API order', async () => {
+  it('renders summaries and reminder rows in API order (enmendado por #213 R16)', async () => {
     const reminders = [
       makeReminder({
         id: 'sent',
@@ -692,9 +694,7 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
       ),
     ).toBeVisible();
     expect(upcoming.getByText('· en 3 días')).toBeVisible();
-    expect(screen.getByTestId('reminder-upcoming-upcoming')).toHaveTextContent(
-      '¡Próximo!',
-    );
+    expect(screen.queryByTestId('reminder-upcoming-upcoming')).toBeNull(); // #213 R16
     expect(screen.queryByTestId('reminder-upcoming-later')).toBeNull();
 
     expect(screen.getByTestId('reminder-row-sent').props.className).toContain(
@@ -1131,7 +1131,7 @@ describe('#84 R3: recordatorios cuenta días de calendario en la píldora, el ba
     jest.useRealTimers();
   });
 
-  it('08:00 del 10 de septiembre: hoy a las 20:00, +7 y +10 días a las 09:00 cuentan 0, 7 y 10', async () => {
+  it('08:00 del 10 de septiembre: hoy a las 20:00, +7 y +10 días a las 09:00 cuentan 0, 7 y 10 (enmendado por #213 R16)', async () => {
     const reminders = [
       makeReminder({ id: 'today-later', dueAt: new Date(2026, 8, 10, 20, 0).toISOString() }),
       makeReminder({ id: 'week-edge', dueAt: new Date(2026, 8, 17, 9, 0).toISOString() }),
@@ -1149,8 +1149,8 @@ describe('#84 R3: recordatorios cuenta días de calendario en la píldora, el ba
     expect(week.getByText('· en 7 días')).toBeVisible();
     expect(badge.getByText('· en 10 días')).toBeVisible();
     expect(today.getByTestId('reminder-upcoming-today-later')).toBeVisible();
-    expect(week.getByTestId('reminder-upcoming-week-edge')).toBeVisible();
-    expect(badge.getByTestId('reminder-upcoming-badge-edge')).toBeVisible();
+    expect(week.queryByTestId('reminder-upcoming-week-edge')).toBeNull(); // #213 R16
+    expect(badge.queryByTestId('reminder-upcoming-badge-edge')).toBeNull(); // #213 R16
     expect(within(screen.getByTestId('pill-week')).getByText('2')).toBeVisible();
   });
 
@@ -1189,7 +1189,7 @@ describe('#84 R6: los umbrales de la píldora y del badge no se aflojan (Enmiend
     jest.useRealTimers();
   });
 
-  it('08:00 del 10 de septiembre: +8 días queda fuera de la semana con badge y +11 días queda sin badge', async () => {
+  it('08:00 del 10 de septiembre: +8 días queda fuera de la semana con badge y +11 días queda sin badge (enmendado por #213 R16)', async () => {
     mockListReminders.mockResolvedValue({
       kind: 'ok',
       reminders: [
@@ -1202,7 +1202,7 @@ describe('#84 R6: los umbrales de la píldora y del badge no se aflojan (Enmiend
     await waitFor(() => expect(screen.getByTestId('reminder-row-plus-eleven')).toBeVisible());
 
     expect(within(screen.getByTestId('reminder-row-plus-eight')).getByText('· en 8 días')).toBeVisible();
-    expect(screen.getByTestId('reminder-upcoming-plus-eight')).toBeVisible();
+    expect(screen.queryByTestId('reminder-upcoming-plus-eight')).toBeNull(); // #213 R16
     expect(within(screen.getByTestId('reminder-row-plus-eleven')).getByText('· en 11 días')).toBeVisible();
     expect(screen.queryByTestId('reminder-upcoming-plus-eleven')).toBeNull();
     expect(within(screen.getByTestId('pill-week')).getByText('0')).toBeVisible();
@@ -1334,18 +1334,19 @@ describe('#178 R7: entrada escalonada y badge', () => {
     }
   });
 
-  it('envuelve el badge próximo con PopIn y la receta del canvas (enmendado por #204 R7)', async () => {
+  it('envuelve el badge próximo con PopIn y la receta del canvas (enmendado por #204 R7) (enmendado por #213 R16)', async () => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: todayCanvasReminders });
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     const badge = within(screen.getByTestId('reminder-upcoming-pop-a')).getByTestId('reminder-upcoming-a');
-    expect(badge).toHaveTextContent('¡Próximo!');
+    expect(badge).toHaveTextContent('Hoy');
     expect(badge.props.className).toBe('rounded-full px-2 py-0.75 text-11 font-extrabold bg-category-amber text-category-amber-strong');
   });
 
-  it('reserva el pop para la fila próxima y lo omite en la lejana', async () => {
+  it('reserva el pop para la fila próxima y lo omite en la lejana (enmendado por #213 R16)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
-    expect(screen.getByTestId('reminder-upcoming-pop-a')).toBeVisible();
+    expect(screen.queryByTestId('reminder-upcoming-pop-a')).toBeNull();
     expect(screen.queryByTestId('reminder-upcoming-pop-b')).toBeNull();
   });
 });
@@ -1894,7 +1895,8 @@ describe('#204 R7: ámbar de la fila próxima', () => {
     jest.useRealTimers();
   });
 
-  it('#204 R7: la fila próxima y su badge usan el ámbar del canvas', async () => {
+  it('#204 R7: la fila próxima y su badge usan el ámbar del canvas (enmendado por #213 R16)', async () => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: todayCanvasReminders });
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     expect(screen.getByTestId('reminder-row-a').props.className).toBe(
@@ -2040,6 +2042,23 @@ describe('#213 R14: series en Recordatorios', () => {
     await screen.findByTestId('reminder-row-series');
     expect(screen.getByTestId('reminder-delete-series')).toHaveTextContent('Eliminar');
     expect(screen.queryByTestId('reminder-cancel-series-series')).toBeNull();
+  });
+
+  it('#213 R16: el badge Hoy y el borde ámbar solo marcan el día de hoy', async () => {
+    jest.setSystemTime(new Date(2026, 11, 31, 8));
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [
+      makeReminder({ id: 'today', dueAt: '2027-01-01T02:00:00.000Z' }),
+      makeReminder({ id: 'tomorrow', dueAt: '2027-01-01T15:00:00.000Z' }),
+      makeReminder({ id: 'yesterday', dueAt: '2026-12-30T15:00:00.000Z' }),
+    ] });
+    await renderReminders();
+    await screen.findByTestId('reminder-row-today');
+    expect(screen.getByTestId('reminder-upcoming-today')).toHaveTextContent('Hoy');
+    expect(screen.getByTestId('reminder-row-today').props.className).toBe('flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border-2 border-category-amber');
+    for (const id of ['tomorrow', 'yesterday']) {
+      expect(screen.queryByTestId(`reminder-upcoming-${id}`)).toBeNull();
+      expect(screen.getByTestId(`reminder-row-${id}`).props.className).toBe('flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border');
+    }
   });
 
 });

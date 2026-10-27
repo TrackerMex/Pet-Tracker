@@ -952,6 +952,7 @@ it.each([
   ["reminders.cancelSeriesConfirm", "Cancelar la serie", "Cancel the series"],
   ["reminders.keepSeries", "Mantener la serie", "Keep the series"],
   ["reminders.errorCancelForbidden", "Solo el dueño puede cancelar la serie", "Only the owner can cancel the series"],
+  ['reminders.upcoming', 'Hoy', 'Today'],
 ])('#213 R22: claves de recurrencia en ambos idiomas', (key, spanish, english) => {
   expect((es as Record<string, string>)[key]).toBe(spanish);
   expect((en as Record<string, string>)[key]).toBe(english);
