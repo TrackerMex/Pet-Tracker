@@ -342,3 +342,58 @@ describe('R14 (nutrition-ai-structured-plan #212): entradas de la fase de IA', (
     expect(proposal.reviewDate).toBe('2026-11-01');
   });
 });
+
+describe('R15 (nutrition-ai-structured-plan #212): acierto de cache', () => {
+  it('R15: hash igual con propuesta devuelve proposed sin collar, consumo, IA, INSERT ni UPDATE', async () => {
+    const latest = setup().updated;
+    const f = setup({ latest });
+    const result = await f.useCase.execute(petId, now);
+    expect(f.isPetTracked).not.toHaveBeenCalled();
+    expect(f.consumeAiGeneration).not.toHaveBeenCalled();
+    expect(f.explain).not.toHaveBeenCalled();
+    expect(f.insertPlan).not.toHaveBeenCalled();
+    expect(f.setAiResult).not.toHaveBeenCalled();
+    expect(result.aiStatus).toBe('proposed');
+    expect(result.plan).toBe(latest);
+  });
+  it('R15: hash igual sin propuesta reintenta sobre la misma fila con su horario editado y sin INSERT', async () => {
+    const latest = new NutritionPlan({
+      ...setup().inserted,
+      id: 'plan-editado',
+      mealsPerDay: 2,
+      mealTimes: ['08:15', '19:30'],
+    });
+    const f = setup({
+      latest,
+      output: {
+        ...VALID_OUTPUT,
+        mealGrams: [
+          { mealTime: '08:15', grams: 150 },
+          { mealTime: '19:30', grams: 155 },
+        ],
+      },
+    });
+    const result = await f.useCase.execute(petId, now);
+    expect(f.insertPlan).not.toHaveBeenCalled();
+    expect(f.explain).toHaveBeenCalledTimes(1);
+    expect(f.explain.mock.calls[0][1].mealTimes).toStrictEqual([
+      '08:15',
+      '19:30',
+    ]);
+    expect(f.setAiResult).toHaveBeenCalledTimes(1);
+    const [planId] = f.setAiResult.mock.calls[0] as [string];
+    expect(planId).toBe('plan-editado');
+    expect(result.aiStatus).toBe('proposed');
+  });
+  it('R15: hash igual sin propuesta y sin collar devuelve not_tracked sin INSERT', async () => {
+    const latest = setup().inserted;
+    const f = setup({ latest, tracked: false });
+    const result = await f.useCase.execute(petId, now);
+    expect(result.aiStatus).toBe('not_tracked');
+    expect(result.plan).toBe(latest);
+    expect(f.insertPlan).not.toHaveBeenCalled();
+    expect(f.consumeAiGeneration).not.toHaveBeenCalled();
+    expect(f.explain).not.toHaveBeenCalled();
+    expect(f.setAiResult).not.toHaveBeenCalled();
+  });
+});
