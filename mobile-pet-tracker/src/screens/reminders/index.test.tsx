@@ -119,10 +119,14 @@ jest.mock('@expo/ui/community/bottom-sheet', () => {
   };
 });
 
+let mockSearchParams: Record<string, unknown> = {};
+beforeEach(() => { mockSearchParams = {}; });
+
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn(), canGoBack: jest.fn(), replace: jest.fn() },
   useFocusEffect: jest.fn(),
   useIsFocused: () => true,
+  useLocalSearchParams: () => mockSearchParams,
 }));
 
 jest.mock('react-native-safe-area-context', () => ({
@@ -2187,6 +2191,23 @@ describe('#213 R14: series en Recordatorios', () => {
     await openSeriesSheet();
     const sheet = within(screen.getByTestId('reminders-delete-host')).getByTestId('community-bottom-sheet');
     expect(flat(sheet.props.backgroundStyle)).toEqual({ backgroundColor: 'color:surface' });
+  });
+
+  it('#213 R21: el parámetro petId selecciona su mascota', async () => {
+    mockSearchParams = { petId: 'pet-2' };
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ id: 'pet-1', name: 'Luna' }), makePet({ id: 'pet-2', name: 'Rocky' })] });
+    await renderReminders();
+    await waitFor(() => expect(screen.getByTestId('pet-chip-pet-2').props.accessibilityState).toEqual({ selected: true }));
+    expect(mockListReminders).toHaveBeenLastCalledWith('http://example.test/v1', 'jwt-token', 'pet-2');
+  });
+
+  it('#213 R21: un petId desconocido deja la primera mascota', async () => {
+    mockSearchParams = { petId: 'pet-missing' };
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ id: 'pet-1', name: 'Luna' }), makePet({ id: 'pet-2', name: 'Rocky' })] });
+    await renderReminders();
+    await waitFor(() => expect(screen.getByTestId('pet-chip-pet-1').props.accessibilityState).toEqual({ selected: true }));
+    expect(mockListReminders).toHaveBeenLastCalledWith('http://example.test/v1', 'jwt-token', 'pet-1');
+    expect(mockListReminders.mock.calls.map((call) => call[2])).not.toContain('pet-missing');
   });
 
 });
