@@ -1,10 +1,14 @@
 import {
   acceptAiOutput,
   NUTRITION_AI_DAILY_LIMIT,
+  NUTRITION_AI_WEIGHT_TREND_POINTS,
 } from '@/modules/nutrition/domain/nutrition-ai-proposal';
 import type { NutritionAiStatus } from '@/modules/nutrition/domain/nutrition-ai-proposal';
 import { NUTRITION_WEIGHT_READER } from '@/modules/nutrition/domain/ports/nutrition-weight-reader';
-import type { NutritionWeightReader } from '@/modules/nutrition/domain/ports/nutrition-weight-reader';
+import type {
+  NutritionWeightPoint,
+  NutritionWeightReader,
+} from '@/modules/nutrition/domain/ports/nutrition-weight-reader';
 import { SUBSCRIPTION_REPOSITORY } from '@/modules/subscriptions/domain/repositories/subscription.repository';
 import type { SubscriptionRepository } from '@/modules/subscriptions/domain/repositories/subscription.repository';
 import { NUTRITION_EXPLAINER } from '@/modules/nutrition/domain/ports/nutrition-explainer';
@@ -26,6 +30,7 @@ import {
 } from '@/modules/nutrition/domain/nutrition-engine';
 import { NUTRITION_REPOSITORY } from '@/modules/nutrition/domain/repositories/nutrition.repository';
 import type { NutritionRepository } from '@/modules/nutrition/domain/repositories/nutrition.repository';
+import { ownerLocalDay } from '@/modules/pets/application/owner-local-day';
 import { calculateAgeMonths } from '@/modules/pets/domain/entities/pet.entity';
 import { PET_REPOSITORY } from '@/modules/pets/domain/repositories/pet.repository';
 import type { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
@@ -74,10 +79,14 @@ export class GenerateNutritionPlanUseCase {
       allergies: profile.allergies,
       diseases: profile.diseases,
     };
-    const inputsHash = nutritionInputHash(input, []);
+    const trend = await this.weights.listRecent(
+      petId,
+      NUTRITION_AI_WEIGHT_TREND_POINTS,
+    );
+    const inputsHash = nutritionInputHash(input, trend);
     const latestPlan = await this.nutrition.findLatestPlan(petId);
     if (latestPlan?.inputsHash === inputsHash) {
-      return this.aiPhase(petId, input, latestPlan, now);
+      return this.aiPhase(petId, input, trend, latestPlan, now);
     }
 
     const result = computePlan(input);
@@ -91,19 +100,20 @@ export class GenerateNutritionPlanUseCase {
       aiProposal: null,
       inputsHash,
     });
-    return this.aiPhase(petId, input, plan, now);
+    return this.aiPhase(petId, input, trend, plan, now);
   }
 
   private async aiPhase(
     petId: string,
     input: NutritionEngineInput,
+    trend: NutritionWeightPoint[],
     plan: NutritionPlan,
     now: Date,
   ): Promise<GenerateNutritionPlanResult> {
     if (!(await this.subscriptions.isPetTracked(petId))) {
       return { plan, aiStatus: 'not_tracked' };
     }
-    const day = now.toISOString().slice(0, 10);
+    const day = await ownerLocalDay(this.pets, petId, now);
     if (
       !(await this.nutrition.consumeAiGeneration(
         petId,
@@ -113,10 +123,15 @@ export class GenerateNutritionPlanUseCase {
     ) {
       return { plan, aiStatus: 'limit_reached' };
     }
-    const output = await this.explainer.explain(input, toPlanResult(plan), [], {
-      petId,
-      planId: plan.id,
-    });
+    const output = await this.explainer.explain(
+      input,
+      toPlanResult(plan),
+      trend,
+      {
+        petId,
+        planId: plan.id,
+      },
+    );
     if (output === null) return { plan, aiStatus: 'unavailable' };
     const accepted = acceptAiOutput(output, plan, day);
     if (accepted === null) {
