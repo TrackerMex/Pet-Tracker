@@ -1,3 +1,4 @@
+import type { NutritionAiOutput } from '@/modules/nutrition/domain/nutrition-ai-proposal';
 import type { NutritionWeightPoint } from '@/modules/nutrition/domain/ports/nutrition-weight-reader';
 import type {
   NutritionEngineInput,
@@ -15,5 +16,5 @@ export interface NutritionExplainer {
     result: NutritionPlanResult,
     weightTrend: NutritionWeightPoint[],
     ctx: NutritionExplainerContext,
-  ): Promise<string | null>;
+  ): Promise<NutritionAiOutput | null>;
 }

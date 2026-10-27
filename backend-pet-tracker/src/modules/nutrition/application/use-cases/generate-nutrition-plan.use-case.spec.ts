@@ -1,3 +1,4 @@
+import type { NutritionAiOutput } from '@/modules/nutrition/domain/nutrition-ai-proposal';
 import type { NutritionWeightPoint } from '@/modules/nutrition/domain/ports/nutrition-weight-reader';
 import { Logger } from '@nestjs/common';
 import type {
@@ -16,6 +17,16 @@ import type { SubscriptionRepository } from '@/modules/subscriptions/domain/repo
 import { nutritionInputHash } from '../nutrition-input-hash';
 import { GenerateNutritionPlanUseCase } from './generate-nutrition-plan.use-case';
 
+const VALID_OUTPUT = {
+  mealGrams: [
+    { mealTime: '08:00', grams: 100 },
+    { mealTime: '14:00', grams: 100 },
+    { mealTime: '22:00', grams: 105 },
+  ],
+  recommendations: ['Pésala cada dos semanas.'],
+  reviewInDays: 30,
+  explanation: 'Tu perro necesita...',
+};
 const petId = 'pet-prueba';
 const input = {
   species: 'dog' as const,
@@ -89,7 +100,7 @@ function setup(
   const subscriptions = { isPetTracked } as unknown as SubscriptionRepository;
   const explain = jest
     .fn<
-      Promise<string | null>,
+      Promise<NutritionAiOutput | null>,
       [
         NutritionEngineInput,
         NutritionPlanResult,
@@ -97,7 +108,9 @@ function setup(
         NutritionExplainerContext,
       ]
     >()
-    .mockResolvedValue(text);
+    .mockResolvedValue(
+      text === null ? null : { ...VALID_OUTPUT, explanation: text },
+    );
   const useCase = new GenerateNutritionPlanUseCase(
     nutrition,
     pets,

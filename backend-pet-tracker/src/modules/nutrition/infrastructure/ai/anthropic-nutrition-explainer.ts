@@ -1,3 +1,4 @@
+import type { NutritionAiOutput } from '@/modules/nutrition/domain/nutrition-ai-proposal';
 import type { NutritionWeightPoint } from '@/modules/nutrition/domain/ports/nutrition-weight-reader';
 import { Logger } from '@nestjs/common';
 import {
@@ -60,7 +61,7 @@ export class AnthropicNutritionExplainer implements NutritionExplainer {
     result: NutritionPlanResult,
     weightTrend: NutritionWeightPoint[],
     ctx: NutritionExplainerContext,
-  ): Promise<string | null> {
+  ): Promise<NutritionAiOutput | null> {
     try {
       if (this.client === null) {
         const { default: Anthropic } = await this.loadSdk();
@@ -88,20 +89,11 @@ export class AnthropicNutritionExplainer implements NutritionExplainer {
           },
         ],
       });
-      const blocks = Array.isArray(response.content)
-        ? (response.content as { type: string; text?: string }[])
-        : [];
-      const text = blocks
-        .filter((block) => block.type === 'text')
-        .map((block) => block.text ?? '')
-        .join('')
-        .trim();
-      if (response.stop_reason === 'end_turn' && text.length > 0) return text;
       this.logger.warn({
         scope: NUTRITION_AI_SCOPE,
         petId: ctx.petId,
         planId: ctx.planId,
-        message: 'ai explanation unusable',
+        message: 'ai proposal unusable',
         stopReason: response.stop_reason ?? null,
         usage: response.usage ?? null,
       });

@@ -1,3 +1,4 @@
+import type { NutritionAiOutput } from '@/modules/nutrition/domain/nutrition-ai-proposal';
 import type { NutritionWeightPoint } from '@/modules/nutrition/domain/ports/nutrition-weight-reader';
 import { Logger } from '@nestjs/common';
 import { NUTRITION_AI_SCOPE } from './nutrition-prompt';
@@ -19,7 +20,7 @@ export class NullNutritionExplainer implements NutritionExplainer {
     result: NutritionPlanResult,
     weightTrend: NutritionWeightPoint[],
     ctx: NutritionExplainerContext,
-  ): Promise<null> {
+  ): Promise<NutritionAiOutput | null> {
     void input;
     void result;
     void weightTrend;

@@ -81,11 +81,11 @@ export class GenerateNutritionPlanUseCase {
     plan: NutritionPlan,
   ): Promise<NutritionPlan> {
     if (!(await this.subscriptions.isPetTracked(petId))) return plan;
-    const text = await this.explainer.explain(input, toPlanResult(plan), [], {
+    const output = await this.explainer.explain(input, toPlanResult(plan), [], {
       petId,
       planId: plan.id,
     });
-    if (text === null) return plan;
-    return this.nutrition.setAiExplanation(plan.id, text);
+    if (output === null) return plan;
+    return this.nutrition.setAiExplanation(plan.id, output.explanation);
   }
 }
