@@ -667,6 +667,38 @@ export const R18_DATE_FIELD: UseRow[] = [
   { file: 'src/components/date-field.tsx', key: 'dateField.clear' },
 ];
 
+export const R19_VACCINE_CREATE: UseRow[] = [
+  { file: 'src/screens/health/index.tsx', key: 'health.addVaccine' },
+  { file: 'src/screens/health/index.tsx', key: 'health.addVaccine' },
+  { file: 'src/screens/health/index.tsx', key: 'health.vaccinesEmptyBody' },
+  { file: 'src/screens/health/index.tsx', key: 'health.vaccineReminderFailed' },
+  { file: 'src/screens/health/index.tsx', key: 'health.createReminderNow' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.title' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.vaccine' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.schemeForDog' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.schemeForCat' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.otherVaccine' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.vaccineName' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.appliedAt' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.nextDose' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.noteCatalog' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.noteOther' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.remindMe' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.remindOn' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.remindWhenPicked' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.vet' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.clinic' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.optional' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.optional' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.notes' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.notesPlaceholder' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.save' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.saveError' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.appliedAtFuture' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'validation.checkDetails' },
+  { file: 'src/utils/form-rules.ts', key: 'vaccineCreate.nameRequired' },
+];
+
 export const ALL_USES: UseRow[] = [
   ...R1_AUTH,
   ...R2_TABS,
@@ -686,6 +718,7 @@ export const ALL_USES: UseRow[] = [
   ...R16_WELCOME,
   ...R17_EDIT_PROFILE,
   ...R18_DATE_FIELD,
+  ...R19_VACCINE_CREATE,
 ];
 
 describe('#65: la tabla de uso de copy está disponible al runner', () => {
@@ -695,12 +728,12 @@ describe('#65: la tabla de uso de copy está disponible al runner', () => {
 
   // Enmienda (3): el candado es la consistencia interna, no una constante
   // escrita a mano — es la tercera vez que una cifra congelada envejece.
-  it('#194 R5: cuadra ALL_USES con la suma de sus bloques (enmendado por #220 R16)', () => {
+  it('#194 R5: cuadra ALL_USES con la suma de sus bloques (enmendado por #220 R16) (enmendado por #208 R20)', () => {
     const blocks = [
       R1_AUTH, R2_TABS, R3_HOME, R4_MAP, R5_HEALTH, R6_FOOD,
       R7_PROFILE, R8_REMINDERS, R9_ADD_PET, R10_PAIRING, R11_RESET,
       R12_ALERTS, R13_ALERT_DETAIL, R14_GEOFENCES, R15_GEOFENCE_EDITOR,
-      R16_WELCOME, R17_EDIT_PROFILE, R18_DATE_FIELD,
+      R16_WELCOME, R17_EDIT_PROFILE, R18_DATE_FIELD, R19_VACCINE_CREATE,
     ];
 
     expect(ALL_USES).toHaveLength(
