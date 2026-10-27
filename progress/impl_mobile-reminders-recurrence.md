@@ -460,3 +460,86 @@ backend, init.sh, init.config.sh, feature_list.json, STATUS.md, progress/current
 y progress/history.md no cambian. El reporte y traceability se agrupan en un único commit
 `docs(mobile): #213 traceability and implementation report`, sin rebase posterior.
 El marcador .done se crea al terminar, con la ruta absoluta de este reporte.
+
+
+## Merge de origin/dev (73922b10)
+
+Handoff de integración recibido en `38c742c5`; se comprobó que `origin/dev`
+seguía congelado en `73922b10`, sin fetch. Merge `c7993706` (padres `38c742c5`
+y `73922b10`), base común `0c37e77a`. Aparecieron exactamente los cinco
+conflictos previstos, todos en tests de inventario. Se resolvieron por unión;
+no hubo edición manual de producción. Los títulos compartidos conservan
+primero el sufijo de #208 y después ` (enmendado por #213 R22)`.
+
+Resolución de los cinco ficheros; los números de esta tabla explican los
+sumandos, que permanecen visibles en los tests con sus comentarios de origen:
+
+| Fichero / candado | Base común | Delta #208 | Delta #213 | Unión |
+|---|---|---|---|---|
+| alerts-canvas-fidelity: inventario text-15 | 23 ficheros | +1 vaccine-create | +1 add-reminder | 25, ambas entradas |
+| chunky-cta R6.2: aperturas Button.Label | 14 | +1 | 0 | 15 |
+| chunky-cta R6.2: menciones Button.Label | 40 | +2 | 0 | 42 |
+| chunky-cta R6.2: text-17 | 30 | +2 +1 | +2 R17 | 35 |
+| chunky-cta R6.2: Text text-accent-foreground | 16 | +1 +1 | 0 | 18 |
+| chunky-cta R6.2: text-foreground | 8 | 0 | +1 R17 | 9 |
+| chunky-cta R7.3: rounded-16 global | 42 | +1 vaccine-create +1 health | +1 R6 +2 R17 | 47 |
+| chunky-cta R7.5: neutral de reminders | 1 | 0 | +1 keep | 2 |
+| chunky-cta R7.5: primaryCompact | food y reminders | +health | 0 | los tres ficheros |
+| chunky-cta R8.1: ids primaryCompact | reminders-add-link | +vaccines-add | 0 | los dos ids |
+| consistency-classnames: esquina de Card | 55 | +2 +7 | +1 R6 | 65 |
+| consistency-classnames: CONTINUOUS_CORNER | 53 | +2 +7 | +1 R6 | 63 |
+| design-drift: rounded-16 de reminders | 5 | 0 | +2 R17 | 7 |
+| design-drift: rounded-16 de add-reminder | 1 | 0 | +1 R6 | 2 |
+| design-drift: rounded-16 de health | 1 | +1 | 0 | 2 |
+| design-drift: rounded-16 de vaccine-create | 0 | +1 | 0 | 1 |
+| design-drift: text-22 | empty-state, alert-detail, meal-schedule | 0 | +add-reminder R6 | cuatro ficheros |
+| design-drift: text-17 | 20 ficheros, ya incluye add-reminder | +health y vaccine-create | 0 | 22 ficheros |
+| language-provider #194 R1: claves por idioma | 458 | +26 R19 | +54 R22 | 538 |
+
+En chunky-cta se conservaron además las dos CTA de #208 en CTA_ROWS, las
+entradas health/vaccine-create en los mapas de radios y el botón keep de #213
+en NEUTRAL_ROWS y neutralInventory. Los cambios disjuntos de ui-copy-table,
+ui-language, tipos, catálogo, rutas/layout y profile-canvas se mezclaron
+automáticamente; no se alteraron antes de comprobar el completo.
+
+El primer typecheck terminó con exit 2, por este fixture de #208:
+
+```text
+src/screens/vaccine-create/index.test.tsx(130,40): error TS2345: Argument of type '{ kind: "ok"; reminder: { id: string; petId: string; type: "vaccine"; title: string; dueAt: string; advanceMinutes: number; status: "scheduled"; }; }' is not assignable to parameter of type 'CreateReminderState | Promise<CreateReminderState>'.
+  Types of property 'reminder' are incompatible.
+    Type '{ id: string; petId: string; type: "vaccine"; title: string; dueAt: string; advanceMinutes: number; status: "scheduled"; }' is missing the following properties from type 'Reminder': recurrence, recurrenceUntil
+```
+
+Se paró y el leader autorizó la Adenda 1 en `e007b9c9`. Commit `cb088b2a`
+`test(mobile): #213 complete the #208 reminder fixture with recurrence fields after merging dev`:
+únicamente se añadieron `recurrence: null, recurrenceUntil: null` después de
+`status: 'scheduled'` en el mockCreateReminder del beforeEach de ese test.
+El typecheck posterior no señaló ningún otro fixture ni error.
+
+Se retomó la verificación desde typecheck, con logs en el scratch ignorado
+progress/. Antes del completo se usó el bucle de pgrep de Jest/init; hubo
+Jest ajeno en wt-214 y no se le envió ninguna señal. No se ejecutó init.sh,
+fetch, rebase, push, PR ni despliegue.
+
+| Verificación tras la Adenda 1 | Resultado | Log |
+|---|---|---|
+| Ausencia de .expo/types/router.d.ts + bunx tsc --noEmit + log vacío | exit 0 | progress/typecheck-213-merge.log |
+| bunx expo lint --no-cache + log vacío | exit 0 | progress/lint-213-merge.log |
+| bun run test completo | exit 0; 160 suites, 5863 tests, 1 snapshot; 160.797 s | progress/test-213-merge.log |
+
+No fue necesario un commit de re-cuenta: el primer completo tras la Adenda 1
+pasó todas las guardas. No hubo SIGKILL, timeouts ni reintento. Permanece el
+aviso preexistente de worker force-exit que también aparecía en T0 y en el
+cierre anterior; el proceso de Jest terminó con exit 0.
+
+```text
+Test Suites: 160 passed, 160 total
+Tests:       5863 passed, 5863 total
+Snapshots:   1 passed, 1 total
+Time:        160.797 s, estimated 162 s
+Ran all test suites.
+```
+
+Tras el commit documental se ejecuta `graphify update .` desde la raíz y se
+escribe `progress/impl_mobile-reminders-recurrence.merge.done` con el hash
+corto del HEAD de cierre. El smoke Android continúa reservado al humano.
