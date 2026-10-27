@@ -198,3 +198,13 @@ it('#209 R8: Siguiente está desactivado hasta elegir condición', async () => {
   await fireEvent.press(screen.getByTestId('bcs-option-5'));
   expect(screen.getByTestId('nutrition-questionnaire-next')).toBeEnabled();
 });
+
+it.each([[1, 'Alimento'], [6, 'Alimento'], [7, 'Peso objetivo'], [9, 'Peso objetivo']] as const)('#209 R9: con condición %i Siguiente va a %s', async (n, destination) => {
+  await goToCondition();
+  await fireEvent.press(await screen.findByTestId(`bcs-option-${n}`));
+  await fireEvent.press(screen.getByTestId('nutrition-questionnaire-next'));
+  const legend = { Alimento: 'Tipo de alimento', 'Peso objetivo': 'Peso objetivo' }[destination];
+  const other = { Alimento: 'Peso objetivo', 'Peso objetivo': 'Tipo de alimento' }[destination];
+  expect(await screen.findByText(legend)).toBeVisible();
+  expect(screen.queryByText(other)).toBeNull();
+});
