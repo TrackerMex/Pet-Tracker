@@ -1147,7 +1147,7 @@ describe('#181 R6: health hereda la limpieza de selección', () => {
 
 describe('#199 R13: avatares de Salud', () => {
   beforeEach(setupHealth168);
-  it('#222 R3: el selector vive solo en health-pet-header', async () => {
+  it('#222 R3: el selector vive solo en health-pet-header (enmendado por #222 R9)', async () => {
     await renderHealth();
     const content = await screen.findByTestId('health-content');
     // docs/conventions.md §Esperas: esperar a la cabecera que se aserta.

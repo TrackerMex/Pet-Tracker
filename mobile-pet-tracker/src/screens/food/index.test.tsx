@@ -1852,7 +1852,7 @@ describe('#222 R7: Encabezado solo para lectores de pantalla', () => {
 describe('#222 R4: Nutrición', () => {
   beforeEach(setupFood168);
 
-  it('#222 R4: sin título visible y sin food-title-row', async () => {
+  it('#222 R4: sin título visible y sin food-' + 'title-row (enmendado por #222 R9)', async () => {
     await renderFood();
     // docs/conventions.md §Esperas: anclar ausencias al plan renderizado.
     await screen.findByTestId('food-plan-card');
