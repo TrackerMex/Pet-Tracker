@@ -1905,7 +1905,7 @@ describe('#222 R4: Nutrición', () => {
     expect(within(header).getByTestId('pet-switcher-scroll').props.contentContainerStyle).toEqual({ paddingHorizontal: 15 });
     await fireEvent.press(within(header).getByTestId('pet-chip-pet-2'));
     // docs/conventions.md §Esperas: observar los datos de la mascota elegida.
-    await waitFor(() => expect(screen.getByTestId('food-plan-kcal')).toHaveTextContent('777'));
+    await waitFor(() => expect(screen.getByTestId('food-plan-kcal')).toHaveTextContent('777 kcal / día'));
   });
 
   it('#222 R4: seis mascotas sin pista, siete con ella', async () => {
