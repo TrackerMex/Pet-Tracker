@@ -292,6 +292,27 @@ busca `vaccines/new` por `indexOf` y no se toca.
     llama a `mockRouter.back` (el doble de `router.canGoBack` devuelve
     `true`; `BackButton` hace `router.back()`). Con el código de hoy (`p-5`
     sin `style`, `Text` suelto y sin cabecera) sale rojo en las dos ramas.
+  - (errata ronda 7, 2026-10-27; segunda revisión, H1 y H3) En ese mismo `it`,
+    las dos líneas del `press` y del `mockRouter.back` se sustituyen por estas,
+    en este orden:
+
+        expect(within(errorScreen).getAllByTestId(/^nutrition-questionnaire-(back|load-error)$/).map(node => node.props.testID)).toEqual(['nutrition-questionnaire-back', 'nutrition-questionnaire-load-error']);
+        await fireEvent.press(within(errorScreen).getByTestId('nutrition-questionnaire-back'));
+        expect(mockRouter.back).toHaveBeenCalled();
+        mockRouter.canGoBack.mockReturnValueOnce(false);
+        await fireEvent.press(within(errorScreen).getByTestId('nutrition-questionnaire-back'));
+        expect(mockRouter.replace).toHaveBeenCalledWith('/food');
+
+    La primera fija que el botón de volver está **dentro** del `View` con
+    inset y antes del `Text`. Sale roja si el `ScreenHeader` queda fuera del
+    `View` (falta `-back`) o si los dos hijos se invierten. La última fija
+    `backFallback="/food"`: `BackButton` hace
+    `router.canGoBack() ? router.back() : router.replace(fallback)`, y
+    `jest.clearAllMocks()` del `beforeEach` no borra la implementación
+    `() => true` del doble. El código de HEAD ya cumple, así que el rojo es
+    una mutación de producción (CHECKPOINTS.md C4): el commit `test` versiona
+    el `ScreenHeader` del error fuera del `View`
+    (`<><ScreenHeader …/><View …><Text …/></View></>`), y el `feat` la revierte.
 
 **R5** — WHILE el formulario está montado, THE SYSTEM SHALL pintar:
 - `ScreenHeader` con `testID="nutrition-questionnaire"`, título «Perfil
@@ -323,6 +344,24 @@ Valores de N: Actividad 1, Condición 2, Peso objetivo 2, Alimento 3, Salud 4.
   `{ width: 52, height: 52 }` y `props.className` `undefined`. Con el código
   de hoy sale rojo: no existe el `testID` y la imagen solo lleva
   `className="size-13"` o `"size-11"`.
+- (errata ronda 7, 2026-10-27; segunda revisión, H2) La rama de 52 pt cubre
+  cuatro pasos y el `it` anterior solo la mira en Actividad. Test nuevo, justo
+  después:
+  `it('#209 R5: Pingo de la burbuja mide 52 pt en Alimento y en Salud')`:
+
+      await goToFood(5);
+      expect(screen.getByTestId('nutrition-questionnaire-pingo', { includeHiddenElements: true }).props.style).toEqual({ width: 52, height: 52 });
+      await fireEvent.press(screen.getByTestId('food-type-dry'));
+      await fireEvent.press(screen.getByTestId('nutrition-questionnaire-next'));
+      expect(await screen.findByText('Alergias')).toBeVisible();
+      expect(screen.getByTestId('nutrition-questionnaire-pingo', { includeHiddenElements: true }).props.style).toEqual({ width: 52, height: 52 });
+
+  `goToFood(5)` es el helper del fichero: deja el paso Alimento observado con
+  `findByText('Tipo de alimento')`. Los tres pasos siguientes son los de
+  `goToHealth()`, sin la recursión. El código de HEAD ya cumple, así que el
+  rojo es una mutación de producción (CHECKPOINTS.md C4): el commit `test`
+  versiona `step === 'condition' || step === 'food' ? { width: 44, height: 44 } : { width: 52, height: 52 }`,
+  y el `feat` la revierte.
 
 **R6** — WHEN el usuario pulsa Volver (`nutrition-questionnaire-back`, o el
 gesto o botón del sistema, vía `usePreventRemove`) en un paso distinto de

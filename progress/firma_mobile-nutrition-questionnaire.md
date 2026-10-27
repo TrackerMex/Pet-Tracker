@@ -1083,3 +1083,38 @@ ruta tiene `headerShown: false`. Errata: los dos ramos usan
 - No hay copy nuevo, ni dependencias, ni costo, ni recursos AWS.
 - No cambia ninguna R-id ni ningún literal de copy. La aprobación y el
   `status` no se tocan.
+
+## Ronda 7 — errata por la segunda revisión (2026-10-27)
+
+En la segunda revisión, sobre `f8b7b130`, el `reviewer` dio por cerrados F1 y F2 en el código, pero el `it`
+que prescribía la ronda 6 dejaba verdes cuatro mutaciones de sus propias cláusulas (sondas P2, P3, P5 y P9 de
+`progress/review_mobile-nutrition-questionnaire.md` §Segunda revisión). Igual que en la ronda 6, el hueco
+venía de la spec.
+
+- **H1 (P2 y P3).** El `press` buscaba el botón de volver en `screen`, no dentro del `View` con inset.
+  Errata en R4: se aserta el orden de los dos hijos dentro de `errorScreen` con
+  `within(errorScreen).getAllByTestId(/^nutrition-questionnaire-(back|load-error)$/)`, y el botón se pulsa
+  con `within(errorScreen)`.
+- **H3 (P9).** Nadie vigilaba `backFallback="/food"`. Errata en R4: un segundo `press` con
+  `mockRouter.canGoBack.mockReturnValueOnce(false)`, y la aserción
+  `mockRouter.replace` `toHaveBeenCalledWith('/food')`. Verificado en el árbol:
+  - `components/back-button.tsx:19` hace `router.canGoBack() ? router.back() : router.replace(fallback)`;
+  - el doble es `canGoBack: jest.fn(() => true)`;
+  - el `beforeEach` usa `jest.clearAllMocks()`, que no borra la implementación.
+- **H2 (P5).** La rama de 52 pt solo se miraba en Actividad. Errata en R5: un `it` nuevo que la aserta en
+  Alimento y en Salud con `goToFood(5)` y los pasos de `goToHealth()`.
+
+El código de HEAD ya cumple las tres cláusulas, así que el rojo de cada candado nuevo es una mutación de
+producción (CHECKPOINTS.md C4, mutación de producción y no del doble). La errata fija cuál versiona cada
+commit `test`.
+
+### Checklist (`plan_canvas-parity-2026-10-23.md` §4)
+
+- No hay ningún `testID` nuevo. El regex está anclado (`^…$`) y solo casa con los dos `testID` que ya
+  existen. Ningún selector por prefijo del repo se ve afectado.
+- No hay copy nuevo: «Alergias» y «Tipo de alimento» son textos que ya existen y que los helpers ya buscan.
+- No hay ninguna llamada `t(...)` nueva ni cambios de producción en el estado final: los inventarios y las
+  guardas no se mueven.
+- Tampoco hay dependencias, costo ni AWS.
+
+Firmado por el leader con la firma delegada (mandato del 2026-10-23, ampliado el 2026-10-26).
