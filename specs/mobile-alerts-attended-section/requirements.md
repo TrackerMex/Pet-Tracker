@@ -346,6 +346,20 @@ Claves **existentes que se reutilizan sin cambio**: `alerts.title`,
     suma `+ 6 // #223 R16` y el sufijo ` (enmendado por #223 R16)` al título. Va en un
     paso rojo propio antes del verde que añade las claves. Descubierto en #222 (misma
     clase de candado). Si #222 llegó antes a `dev`, suma sobre su `+ 1, // #222 R8`.
+  - **Fe de erratas E1b del leader (2026-10-27):** con #222 y #214 en `dev`, la suma
+    de `#194 R1` termina en `+ 1 // #222 R8` y `+ 51, // #214 R22`, y el título en
+    `(enmendado por #222 R8) (enmendado por #214 R22)`. Las líneas `+ <n> // #223 R16` se
+    añaden DESPUÉS de la de #214 (la coma solo en la última) y el sufijo
+    `(enmendado por #223 R16)` va al final del título.
+  - **Fe de erratas E2 del leader (2026-10-27):** cuatro candados de
+    `consistency-classnames.test.ts` que la tabla de enmiendas no lista se ponen rojos
+    con la fila atendida y «Ver más»; se enmiendan con el sufijo `(enmendado por #223 R18)`:
+    (E2a) `#98 R10`: la suma de `count(/style=\{CONTINUOUS_CORNER\}/g)` gana `+ 1 // #223 R9`;
+    (E2b) `#62 R14`: `directUses` gana la fila `[join('screens', 'alerts', 'index.tsx'), 1]`
+    (+1 `it`) y la suma de `fusiona la esquina una vez…` gana `+ 1 // #223 R9`;
+    (E2c) `#166 R3`: la lista ordenada de `testIds` gana `'alerts-attended-more'` tras
+    `'alert-detail-view-map'`; (E2d) `#166 R3`: `count(/border-lip-gray/g)` gana
+    `+ 1 // #223 R10`. Descubierto al medir el handoff sobre `dev` con #214.
 
 - **R17**: THE SYSTEM SHALL pintar los elementos nuevos con las clases fijadas
   por el canvas (tabla abajo), sin hex, sin corchetes en `className`, sin
@@ -459,10 +473,10 @@ por lectura; se recomputan en T0):
 | Fichero · `it` (prefijo) | Enmienda |
 |---|---|
 | `chunky-cta-canvas-fidelity.test.ts` · `#177 R7.5` | `inventory(/style=\{chunkyLip\.neutralCompact\}/g)` → `screens/alerts/index.tsx: 2` |
-| `chunky-cta-canvas-fidelity.test.ts` · `#177 R7.1` | `count(/border-lip-gray/g)`: `10 + 1 + 1` → `+ 1` |
+| `chunky-cta-canvas-fidelity.test.ts` · `#177 R7.1` | `count(/border-lip-gray/g)`: la expresión real es `10 + 1 + 1 + 2 + 1 + 4` → `+ 1` |
 | `chunky-cta-canvas-fidelity.test.ts` · `#177 R7.3` | el mapa `radii` suma `'screens/alerts/index.tsx': 1` y el total de `rounded-16` suma 1 |
 | `chunky-cta-canvas-fidelity.test.ts` · `#177 R4.3` (y el `neutralInventory`) | suma el id `alerts-attended-more`, en su posición ordenada (entre `alert-detail-view-map` y `docs-upload-cancel`) |
-| `chunky-cta-canvas-fidelity.test.ts` · `#177 R5.1` | `count(/<Button\.Label/g)` +1 y `count(/Button\.Label/g)` +2 |
+| `chunky-cta-canvas-fidelity.test.ts` · `#177 R6.2` | `count(/<Button\.Label/g)` +1 y `count(/Button\.Label/g)` +2 |
 | `chunky-cta-canvas-fidelity.test.ts` · `#177 R8.3` | suma la fila `['screens/alerts/index.tsx', 'h-11 rounded-14 border-2 border-lip-gray bg-surface px-5.5']` |
 | `design-drift.test.ts` · `reserva los radios 14, 16 y 22 a Recordatorios…` | el mapa `rounded16` suma `'screens/alerts/index.tsx': 1`; `outsideReminders(/\brounded-14\b/)` suma `join('screens','alerts','index.tsx')` entre `components/segmented-control.tsx` y `screens/geofences/index.tsx` |
 | `alerts-canvas-fidelity.test.ts` · `cada tracking-* va con su text-*` | `toHaveLength(1)` → `toHaveLength(3)` (cabecera de sección, «Abiertas» y «Atendidas») |
