@@ -151,3 +151,50 @@ it('#209 R7: Siguiente está desactivado hasta elegir actividad', async () => {
   expect(screen.getByTestId('nutrition-questionnaire-next')).toBeEnabled();
   expect(screen.getByTestId('activity-option-medium')).toHaveProp('accessibilityState', { checked: true });
 });
+
+const NINE_ROWS = [
+  [1, 'Muy delgado', 'Huesos muy visibles, sin grasa al tacto', 'blue'],
+  [2, 'Delgado', 'Costillas y cadera se ven a simple vista', 'blue'],
+  [3, 'Algo delgado', 'Costillas fáciles de sentir, cintura marcada', 'blue'],
+  [4, 'Ideal, esbelto', 'Costillas se sienten con poca grasa', 'green'],
+  [5, 'Ideal', 'Costillas se sienten y la cintura se ve', 'green'],
+  [6, 'Algo de sobrepeso', 'Algo de grasa en costillas, poca cintura', 'amber'],
+  [7, 'Sobrepeso', 'Costillas difíciles de sentir', 'amber'],
+  [8, 'Obesidad', 'No se sienten las costillas ni la cintura', 'rose'],
+  [9, 'Obesidad severa', 'Grasa abundante en cuello, lomo y vientre', 'rose'],
+] as const;
+
+async function goToCondition() {
+  await renderQuestionnaire();
+  await fireEvent.press(await screen.findByTestId('activity-option-medium'));
+  await fireEvent.press(screen.getByTestId('nutrition-questionnaire-next'));
+}
+
+it.each(NINE_ROWS)('#209 R8: fila %i pinta «%s», «%s» y la banda %s', async (n, title, description, band) => {
+  await goToCondition();
+  const row = await screen.findByTestId(`bcs-option-${n}`);
+  expect(row).toHaveProp('accessibilityRole', 'radio');
+  expect(row).toHaveProp('accessibilityState', { checked: false });
+  expect(within(row).getByText(title)).toBeVisible();
+  expect(within(row).getByText(description)).toBeVisible();
+  const [surface, ink] = {
+    blue: ['bg-category-blue', 'text-category-blue-strong'],
+    green: ['bg-category-green', 'text-category-green-strong'],
+    amber: ['bg-category-amber', 'text-category-amber-strong'],
+    rose: ['bg-category-rose', 'text-category-rose-strong'],
+  }[band];
+  const badge = screen.getByTestId(`bcs-badge-${n}`, { includeHiddenElements: true });
+  expect(badge.props.className).toBe(`size-7.5 items-center justify-center rounded-10 ${surface}`);
+  expect(within(badge).getByText(String(n), { includeHiddenElements: true }).props.className).toBe(`text-sm font-black ${ink}`);
+  await fireEvent.press(row);
+  expect(screen.getByTestId(`bcs-option-${n}`)).toHaveProp('accessibilityState', { checked: true });
+});
+it('#209 R8: Siguiente está desactivado hasta elegir condición', async () => {
+  await goToCondition();
+  expect(await screen.findByText('¿Cómo está su cuerpo?')).toBeVisible();
+  expect(NINE_ROWS).toHaveLength(9);
+  expect(screen.getByTestId('nutrition-questionnaire-bubble')).toHaveTextContent('Pasa la mano por el costado de Rocky y elige lo que más se parezca a lo que sientes.', { exact: true });
+  expect(screen.getByTestId('nutrition-questionnaire-next')).toBeDisabled();
+  await fireEvent.press(screen.getByTestId('bcs-option-5'));
+  expect(screen.getByTestId('nutrition-questionnaire-next')).toBeEnabled();
+});
