@@ -1,6 +1,4 @@
 import { Logger } from '@nestjs/common';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import type {
   NutritionEngineInput,
   NutritionPlanResult,
@@ -8,6 +6,7 @@ import type {
 import {
   buildUserPrompt,
   NUTRITION_AI_SYSTEM_PROMPT,
+  NUTRITION_AI_OUTPUT_JSON_SCHEMA,
 } from './nutrition-prompt';
 import {
   AnthropicNutritionExplainer,
@@ -48,17 +47,28 @@ const ctx = {
   planId: '22222222-2222-2222-2222-222222222222',
 };
 
-describe('R9 (nutrition-ai-explainer #18): parametros exactos de la llamada', () => {
-  it('fija timeout, reintentos y tope de tokens', () => {
+const VALID_OUTPUT = {
+  mealGrams: [
+    { mealTime: '08:00', grams: 100 },
+    { mealTime: '14:00', grams: 100 },
+    { mealTime: '22:00', grams: 105 },
+  ],
+  recommendations: ['Pésala cada dos semanas.'],
+  reviewInDays: 30,
+  explanation: 'Tu perro necesita...',
+};
+
+describe('R6 (nutrition-ai-structured-plan #212): parametros estructurados', () => {
+  it('R6: fija timeout, reintentos y tope de tokens', () => {
     expect(NUTRITION_AI_TIMEOUT_MS).toBe(15000);
     expect(NUTRITION_AI_MAX_RETRIES).toBe(0);
-    expect(NUTRITION_AI_MAX_OUTPUT_TOKENS).toBe(1200);
+    expect(NUTRITION_AI_MAX_OUTPUT_TOKENS).toBe(2000);
   });
-  it('llama una vez con exactamente model, max_tokens, system y messages', async () => {
+  it('R6: llama una vez con exactamente model, max_tokens, system, messages, thinking y output_config', async () => {
     const create = jest
       .fn<Promise<AnthropicMessageResponse>, [AnthropicMessageParams]>()
       .mockResolvedValue({
-        content: [{ type: 'text', text: 'texto' }],
+        content: [{ type: 'text', text: JSON.stringify(VALID_OUTPUT) }],
         stop_reason: 'end_turn',
       });
     const adapter = new AnthropicNutritionExplainer(
@@ -68,38 +78,75 @@ describe('R9 (nutrition-ai-explainer #18): parametros exactos de la llamada', ()
     );
     await adapter.explain(input, result, [], ctx);
     expect(create).toHaveBeenCalledTimes(1);
-    const params = create.mock.calls[0][0] as {
-      model: string;
-      max_tokens: number;
-      system: string;
-      messages: { role: string; content: string }[];
-    };
-    expect(Object.keys(params).sort()).toEqual([
-      'max_tokens',
-      'messages',
-      'model',
-      'system',
-    ]);
-    expect(params.model).toBe('modelo-de-prueba');
-    expect(params.max_tokens).toBe(1200);
-    expect(params.system).toBe(NUTRITION_AI_SYSTEM_PROMPT);
-    expect(params.messages).toHaveLength(1);
-    expect(params.messages[0].role).toBe('user');
-    expect(params.messages[0].content).toBe(buildUserPrompt(input, result, []));
+    expect(create.mock.calls[0][0]).toStrictEqual({
+      model: 'modelo-de-prueba',
+      max_tokens: 2000,
+      system: NUTRITION_AI_SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: buildUserPrompt(input, result, []) }],
+      thinking: { type: 'disabled' },
+      output_config: {
+        format: {
+          type: 'json_schema',
+          schema: NUTRITION_AI_OUTPUT_JSON_SCHEMA,
+        },
+      },
+    });
   });
-  it('construye el cliente perezoso con clave explicita y constantes', () => {
-    const source = readFileSync(
-      join(__dirname, 'anthropic-nutrition-explainer.ts'),
-      'utf8',
+  it('R6: el esquema JSON es el literal de la spec', () => {
+    expect(NUTRITION_AI_OUTPUT_JSON_SCHEMA).toEqual({
+      type: 'object',
+      properties: {
+        mealGrams: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              mealTime: { type: 'string' },
+              grams: { type: 'integer' },
+            },
+            required: ['mealTime', 'grams'],
+            additionalProperties: false,
+          },
+        },
+        recommendations: { type: 'array', items: { type: 'string' } },
+        reviewInDays: { type: 'integer' },
+        explanation: { type: 'string' },
+      },
+      required: ['mealGrams', 'recommendations', 'reviewInDays', 'explanation'],
+      additionalProperties: false,
+    });
+  });
+  it('R6: construye el cliente perezoso con clave explicita y constantes', async () => {
+    const options: AnthropicClientOptions[] = [];
+    const create = jest
+      .fn<Promise<AnthropicMessageResponse>, [AnthropicMessageParams]>()
+      .mockResolvedValue({
+        stop_reason: 'end_turn',
+        content: [{ type: 'text', text: JSON.stringify(VALID_OUTPUT) }],
+      });
+    class WorkingSdk {
+      readonly messages = { create };
+      constructor(value: AnthropicClientOptions) {
+        options.push(value);
+      }
+    }
+    const loadSdk: AnthropicSdkLoader = jest
+      .fn<ReturnType<AnthropicSdkLoader>, []>()
+      .mockResolvedValue({ default: WorkingSdk });
+    const adapter = new AnthropicNutritionExplainer(
+      'modelo-de-prueba',
+      'clave-de-prueba',
+      null,
+      loadSdk,
     );
-    expect(source).toContain('apiKey: this.apiKey');
-    expect(source).toContain('timeout: NUTRITION_AI_TIMEOUT_MS');
-    expect(source).toContain('maxRetries: NUTRITION_AI_MAX_RETRIES');
-    expect(source).not.toContain('maxRetries: 0');
-    expect(source.split("await import('@anthropic-ai/" + "sdk')")).toHaveLength(
-      2,
-    );
-    expect(source).not.toContain("from '@anthropic-ai/" + "sdk'");
+    expect(options).toEqual([]);
+    expect(loadSdk).not.toHaveBeenCalled();
+    await adapter.explain(input, result, [], ctx);
+    expect(loadSdk).toHaveBeenCalledTimes(1);
+    expect(options).toStrictEqual([
+      { apiKey: 'clave-de-prueba', timeout: 15000, maxRetries: 0 },
+    ]);
+    expect(create).toHaveBeenCalledTimes(1);
   });
 });
 

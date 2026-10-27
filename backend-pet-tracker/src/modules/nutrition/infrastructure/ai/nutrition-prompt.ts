@@ -56,3 +56,5 @@ export const NUTRITION_AI_MAX_LIST_ITEMS = 20;
 export const NUTRITION_AI_MAX_ITEM_CHARS = 100;
 
 export const NUTRITION_AI_SCOPE = 'nutrition-ai';
+
+export const NUTRITION_AI_OUTPUT_JSON_SCHEMA = {};
