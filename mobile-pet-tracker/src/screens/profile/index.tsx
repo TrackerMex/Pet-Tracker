@@ -271,8 +271,6 @@ export function ProfileScreen() {
     />
   );
 
-  const screenTitle = t('profile.profile');
-
   const addPetCapsule = (
     <Pressable
       testID="profile-add-pet"
@@ -294,15 +292,6 @@ export function ProfileScreen() {
     </Pressable>
   );
 
-  const titleRow = (
-  <View className="flex-row items-center justify-between gap-3">
-    <Text testID="profile-title" className={showHero ? 'text-3xl font-black tracking-title text-accent-foreground' : 'text-3xl font-black tracking-title text-foreground'}>
-      {screenTitle}
-    </Text>
-    {addPetCapsule}
-  </View>
-  );
-
   return (
     <ScrollView
       testID="screen-profile"
@@ -313,7 +302,7 @@ export function ProfileScreen() {
         paddingBottom: insets.bottom + 96,
       }}
     >
-      <View testID="profile-heading" accessible accessibilityRole="header" accessibilityLabel={screenTitle} className="absolute size-px" />
+      <View testID="profile-heading" accessible accessibilityRole="header" accessibilityLabel={t('profile.profile')} className="absolute size-px" />
       {showHero ? (
         <View testID="profile-hero" className="relative">
           <PetHeroHeader
@@ -328,16 +317,18 @@ export function ProfileScreen() {
               </View>
             ) : undefined}
           >
-            <View testID="profile-hero-top" className="gap-3 px-1">
-              {titleRow}
-              {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
-                <PetSwitcher
-                  variant="glass"
-                  pets={pets.data.pets}
-                  selectedPetId={selectedPetId}
-                  onSelect={selectPet}
-                />
-              ) : null}
+            <View testID="profile-hero-top" className="flex-row items-center justify-between gap-3 px-1">
+              <View testID="profile-hero-selector" className="min-w-0 flex-1">
+                {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
+                  <PetSwitcher
+                    variant="glass"
+                    pets={pets.data.pets}
+                    selectedPetId={selectedPetId}
+                    onSelect={selectPet}
+                  />
+                ) : null}
+              </View>
+              {addPetCapsule}
             </View>
           </PetHeroHeader>
           {pet ? (
