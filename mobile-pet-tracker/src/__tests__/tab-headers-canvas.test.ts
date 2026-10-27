@@ -152,3 +152,10 @@ describe('#222 R14: Reparto de ficheros con otras features', () => {
     expect(readSource('components/tab-pet-header.tsx')).not.toMatch(/\bt\(/);
   });
 });
+
+describe('#222 R13: Convenciones: excepción de la cabecera fija', () => {
+  it('#222 R13: conventions.md recoge la excepción de la cabecera fija', () => {
+    const conventions = readFileSync(join(process.cwd(), '..', 'docs/conventions.md'), 'utf8');
+    expect(conventions).toContain('**Excepción nombrada (enmienda #222, 2026-10-27)**');
+  });
+});
