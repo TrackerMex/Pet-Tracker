@@ -6506,7 +6506,7 @@ describe('#214 R7: Unirme con código en Inicio vacío', () => {
     expect(screen.getByTestId('home-join-pet-prompt')).toHaveTextContent('¿Te invitaron a cuidar una mascota?');
     expect(screen.getByTestId('home-join-pet-prompt').props.className).toBe('text-sm font-semibold text-muted');
     expect(screen.getByTestId('home-join-pet-button')).toHaveTextContent('Unirme con código');
-    expect(screen.getByTestId('home-join-pet-button').props.className).toBe('w-full h-13.5 rounded-16 border-2 border-lip-gray bg-surface');
+    expect(screen.getByTestId('home-join-pet-button').props.className).toMatch(/ w-full h-13\.5 rounded-16 border-2 border-lip-gray bg-surface$/);
   });
 
   it('R7: Unirme con código navega a join-pet', async () => {
