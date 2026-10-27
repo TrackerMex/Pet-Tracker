@@ -1978,3 +1978,14 @@ it('#209 R19: owner con perfil y sin plan ve el vacío actual', async () => {
   expect(screen.queryByTestId('food-profile-empty')).toBeNull();
   expect(screen.queryByTestId('food-create-profile')).toBeNull();
 });
+it('#209 R19: Pingo de NutricionSinPerfil mide 150 pt por style', async () => {
+  mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+  mockGetNutritionProfile.mockResolvedValue({ kind: 'not-found' });
+  await renderFood();
+  // docs/conventions.md §Esperas: observar la sección antes de medir.
+  await screen.findByTestId('food-profile-empty');
+  const image = within(screen.getByTestId('food-profile-pingo', { includeHiddenElements: true })).getByTestId('food-profile-pingo-image', { includeHiddenElements: true });
+  expect(image.props.style).toEqual({ width: 150, height: 150 });
+  expect(image.props.className).toBeUndefined();
+});

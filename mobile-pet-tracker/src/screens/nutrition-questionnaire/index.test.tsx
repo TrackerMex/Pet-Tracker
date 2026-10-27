@@ -145,6 +145,17 @@ it('#209 R5: pinta cabecera, contador «1 de 4» y la barra con un segmento hech
   ]);
   expect(screen.getByTestId('nutrition-questionnaire-bubble')).toHaveTextContent('Cuéntame cómo es un día normal de Rocky. Con eso calculo cuánta energía necesita.', { exact: true });
 });
+it('#209 R5: Pingo de la burbuja mide 52 pt y 44 pt en Condición por style', async () => {
+  await goToCondition();
+  // docs/conventions.md §Esperas: observar el paso Condición antes de medir.
+  await screen.findByTestId('bcs-option-1');
+  expect(screen.getByTestId('nutrition-questionnaire-pingo', { includeHiddenElements: true }).props.style).toEqual({ width: 44, height: 44 });
+  await pressBack();
+  await screen.findByTestId('activity-option-medium');
+  const pingo = screen.getByTestId('nutrition-questionnaire-pingo', { includeHiddenElements: true });
+  expect(pingo.props.style).toEqual({ width: 52, height: 52 });
+  expect(pingo.props.className).toBeUndefined();
+});
 
 it('#209 R7: Actividad pinta las tres opciones con su copy', async () => {
   await renderQuestionnaire();
@@ -586,6 +597,12 @@ it('#209 R16: con movimiento reducido no pinta anillos', async () => {
   expect(screen.queryByTestId('nutrition-generating-ring-0', { includeHiddenElements: true })).toBeNull();
   expect(screen.queryByTestId('nutrition-generating-ring-1', { includeHiddenElements: true })).toBeNull();
   expect(screen.getByTestId('nutrition-generating-pingo', { includeHiddenElements: true })).toBeOnTheScreen();
+});
+it('#209 R16: Pingo de Generando mide 112 pt por style', async () => {
+  await saveFromHealth();
+  const image = within(screen.getByTestId('nutrition-generating-pingo', { includeHiddenElements: true })).getByTestId('nutrition-generating-pingo-image', { includeHiddenElements: true });
+  expect(image.props.style).toEqual({ width: 112, height: 112 });
+  expect(image.props.className).toBeUndefined();
 });
 
 // [petición, resultado, texto es literal ('' = signOut sin texto), status (null = fetch rechaza), cuerpo]
