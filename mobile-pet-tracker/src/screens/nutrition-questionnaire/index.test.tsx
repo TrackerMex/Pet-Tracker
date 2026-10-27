@@ -1,3 +1,91 @@
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
+import { usePreventRemove } from 'expo-router/react-navigation';
+import { router } from 'expo-router';
+import { HeroUINativeProvider } from 'heroui-native';
+import { renderWithProviders } from '../../../test/render-with-providers';
+import { getPet } from '../../api/pets';
+import type { NutritionProfile, PetProfile } from '../../api/types';
+import { LanguageProvider } from '../../providers/language-provider';
+import { NutritionQuestionnaireScreen } from '.';
+
+jest.mock('../../api/pets', () => ({ getPet: jest.fn() }));
+jest.mock('../../providers/auth-provider', () => ({
+  useAuth: () => ({ token: 'jwt-token', status: 'authenticated', signOut: mockSignOut }),
+}));
+jest.mock('expo-router', () => ({
+  useLocalSearchParams: () => ({ petId: 'pet-1' }),
+  router: { push: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => true), replace: jest.fn() },
+}));
+jest.mock('expo-router/react-navigation', () => ({
+  ...jest.requireActual('expo-router/react-navigation'),
+  __esModule: true,
+  usePreventRemove: jest.fn(),
+}));
+jest.mock('react-native-safe-area-context', () => ({
+  ...jest.requireActual('react-native-safe-area-context'),
+  useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
+}));
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: (tokens: string[]) => tokens.map(() => 'black'),
+}));
+jest.mock('react-native-reanimated', () => ({
+  ...jest.requireActual('react-native-reanimated'),
+  __esModule: true,
+  useReducedMotion: () => mockUseReducedMotion(),
+}));
+
+const mockSignOut = jest.fn();
+const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
+const mockGetPet = jest.mocked(getPet);
+const mockRouter = jest.mocked(router);
+const mockPreventRemove = jest.mocked(usePreventRemove);
+const apiUrl = 'http://example.test/v1';
+let fetchSpy: jest.SpyInstance;
+let storedProfile: NutritionProfile | null = null;
+
+function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
+  return {
+    id: 'pet-1', name: 'Rocky', species: 'dog', myRole: 'owner', breed: null, sex: null,
+    birthDate: null, approxAgeMonths: 30, ageMonths: 30, currentWeightKg: 12.4, size: null,
+    color: null, sterilized: null, microchip: null, photoUrl: null, lostMode: false,
+    lastPosition: null, lastCommunicationAt: null, device: null, nextVaccine: null,
+    nextReminder: null, activitySummary: null, mealsToday: null,
+    createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z', ...overrides,
+  };
+}
+function makeProfile(overrides: Partial<NutritionProfile> = {}): NutritionProfile {
+  return { petId: 'pet-1', activityLevel: 'medium', bodyCondition: 7, targetWeightKg: 10.5,
+    foodType: 'wet', kcalPer100g: 110, allergies: [], diseases: [], updatedAt: '', ...overrides };
+}
+function response(status: number, body: unknown): Response {
+  return { status, json: jest.fn().mockResolvedValue(body) } as unknown as Response;
+}
+async function renderQuestionnaire() {
+  return renderWithProviders(<HeroUINativeProvider><LanguageProvider initial="es"><NutritionQuestionnaireScreen /></LanguageProvider></HeroUINativeProvider>);
+}
+beforeEach(() => {
+  jest.clearAllMocks();
+  process.env.EXPO_PUBLIC_API_URL = apiUrl;
+  storedProfile = null;
+  mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+  mockUseReducedMotion.mockReturnValue(false);
+  fetchSpy = jest.spyOn(global, 'fetch').mockImplementation(async (input, init) => {
+    const url = String(input);
+    if (url === 'http://example.test/v1/pets/pet-1/nutrition-profile') {
+      if (init?.method === 'PUT') return response(200, makeProfile());
+      return storedProfile ? response(200, storedProfile) : response(404, {});
+    }
+    if (url === 'http://example.test/v1/pets/pet-1/nutrition-plan/generate' && init?.method === 'POST') {
+      return response(200, { id: 'plan-1', petId: 'pet-1' });
+    }
+    throw new Error(`Unexpected request ${init?.method ?? 'GET'} ${url}`);
+  });
+});
+afterEach(() => {
+  fetchSpy.mockRestore();
+  mockUseReducedMotion.mockReturnValue(false);
+});
+
 const { existsSync, readFileSync } = jest.requireActual<typeof import('fs')>('fs');
 
 it('#209 R3: la ruta nutrition-profile es delgada y está en el Stack', () => {
@@ -8,4 +96,16 @@ it('#209 R3: la ruta nutrition-profile es delgada y está en el Stack', () => {
   expect(route.trim()).toBe("export { NutritionQuestionnaireScreen as default } from '../screens/nutrition-questionnaire';");
   const layout = readFileSync('src/app/_layout.tsx', 'utf8');
   expect(layout).toContain('<Stack.Screen name="nutrition-profile" options={{ headerShown: false }} />');
+});
+
+it('#209 R4: mientras carga pinta el esqueleto', async () => {
+  mockGetPet.mockReturnValue(new Promise(() => undefined));
+  await renderQuestionnaire();
+  expect(await screen.findByTestId('nutrition-questionnaire-skeleton')).toBeVisible();
+  expect(readFileSync('src/screens/nutrition-questionnaire/index.tsx', 'utf8')).not.toContain('<Spinner');
+});
+it('#209 R4: si la mascota falla pinta el error de carga', async () => {
+  mockGetPet.mockResolvedValue({ kind: 'error' });
+  await renderQuestionnaire();
+  expect(await screen.findByTestId('nutrition-questionnaire-load-error')).toHaveTextContent('Algo salió mal', { exact: true });
 });
