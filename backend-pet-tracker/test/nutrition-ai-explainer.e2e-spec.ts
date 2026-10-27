@@ -187,7 +187,11 @@ describe('Nutrition AI explainer (e2e HTTP y Postgres)', () => {
       expect(inserted).toBeDefined();
       expect(inserted?.aiExplanation).toBeNull();
       expect(p2?.inputsHash).toBe(inserted?.inputsHash);
-      expect(p2).toEqual({ ...inserted, aiExplanation: 'texto B' });
+      expect(p2).toEqual({
+        ...inserted,
+        aiExplanation: 'texto B',
+        aiProposal: p2?.aiProposal,
+      });
     });
   });
   describe('R16 (nutrition-ai-explainer #18): hash hit no vuelve a pagar por HTTP', () => {

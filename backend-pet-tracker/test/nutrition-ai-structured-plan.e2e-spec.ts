@@ -7,6 +7,10 @@ import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { weights } from '@/db/schema/health.schema';
+import {
+  nutritionAiGenerations,
+  nutritionPlans,
+} from '@/db/schema/nutrition.schema';
 import { pets } from '@/db/schema/pets.schema';
 import { users } from '@/db/schema/users.schema';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
@@ -24,9 +28,33 @@ import {
   NUTRITION_WEIGHT_READER,
   type NutritionWeightReader,
 } from '@/modules/nutrition/domain/ports/nutrition-weight-reader';
+import type { NutritionAiProposal } from '@/modules/nutrition/domain/nutrition-ai-proposal';
+import { shiftDay } from '@/pipeline/local-day';
 import { AppModule } from '../src/app.module';
 
 process.env.ANTHROPIC_ENABLED = 'false';
+
+const E2E_OUTPUT = {
+  mealGrams: [
+    { mealTime: '07:30', grams: 150 },
+    { mealTime: '19:30', grams: 160 },
+  ],
+  recommendations: ['Pésala cada dos semanas.', 'Evita darle chocolate.'],
+  reviewInDays: 30,
+  explanation: 'Explicación de prueba.',
+};
+
+interface PlanBody {
+  id: string;
+  dailyGrams: number;
+  mealTimes: string[];
+  aiExplanation: string | null;
+  aiProposal: NutritionAiProposal | null;
+  aiStatus?: string;
+}
+
+const utcToday = () => new Date().toISOString().slice(0, 10);
+const reviewDay = () => shiftDay(utcToday(), 30);
 
 describe('Nutrition AI structured plan (e2e HTTP y Postgres)', () => {
   let app: INestApplication<App>;
@@ -230,6 +258,155 @@ describe('Nutrition AI structured plan (e2e HTTP y Postgres)', () => {
       );
       expect(results.filter(Boolean)).toHaveLength(3);
       expect(await storedCount(f.petId, '2026-10-25')).toBe(3);
+    });
+  });
+
+  const planRow = async (planId: string) => {
+    const rows = await db
+      .select()
+      .from(nutritionPlans)
+      .where(eq(nutritionPlans.id, planId));
+    expect(rows).toHaveLength(1);
+    return rows[0];
+  };
+  const countersOf = (petId: string) =>
+    db
+      .select()
+      .from(nutritionAiGenerations)
+      .where(eq(nutritionAiGenerations.petId, petId));
+
+  describe('R16 (nutrition-ai-structured-plan #212): contrato HTTP de la propuesta', () => {
+    it('R16: generate con propuesta valida devuelve proposed, la persiste y GET la devuelve', async () => {
+      const f = await fixture();
+      explain.mockResolvedValue(E2E_OUTPUT);
+      const before = reviewDay();
+      const body = (await f.generate().expect(200)).body as PlanBody;
+      const after = reviewDay();
+      expect(body.aiStatus).toBe('proposed');
+      expect(body.aiExplanation).toBe('Explicación de prueba.');
+      expect(body.dailyGrams).toBe(305);
+      const reviewDate = body.aiProposal?.reviewDate;
+      expect([before, after]).toContain(reviewDate);
+      expect(body.aiProposal).toStrictEqual({
+        mealGrams: [
+          { mealTime: '07:30', grams: 150 },
+          { mealTime: '19:30', grams: 160 },
+        ],
+        recommendations: ['Pésala cada dos semanas.'],
+        reviewDate,
+      });
+      const row = await planRow(body.id);
+      expect(row.aiExplanation).toBe('Explicación de prueba.');
+      expect(row.aiProposal).toStrictEqual(body.aiProposal);
+      expect(row.dailyGrams).toBe(305);
+      const latest = (await f.get().expect(200)).body as PlanBody;
+      expect(latest.id).toBe(body.id);
+      expect(latest.aiExplanation).toBe('Explicación de prueba.');
+      expect(latest.aiProposal).toStrictEqual(body.aiProposal);
+    });
+
+    it('R16: propuesta fuera de cota devuelve rejected y deja ai_explanation y ai_proposal en NULL', async () => {
+      const f = await fixture();
+      explain.mockResolvedValue({
+        ...E2E_OUTPUT,
+        mealGrams: [
+          { mealTime: '07:30', grams: 100 },
+          { mealTime: '19:30', grams: 100 },
+        ],
+      });
+      const body = (await f.generate().expect(200)).body as PlanBody;
+      expect(body.aiStatus).toBe('rejected');
+      expect(body.aiExplanation).toBeNull();
+      expect(body.aiProposal).toBeNull();
+      expect(body.dailyGrams).toBe(305);
+      const row = await planRow(body.id);
+      expect(row.aiExplanation).toBeNull();
+      expect(row.aiProposal).toBeNull();
+      expect(explain).toHaveBeenCalledTimes(1);
+    });
+
+    it('R16: IA null devuelve unavailable con el plan del motor', async () => {
+      const f = await fixture();
+      const body = (await f.generate().expect(200)).body as PlanBody;
+      expect(body.aiStatus).toBe('unavailable');
+      expect(body.dailyGrams).toBe(305);
+      expect(body.mealTimes).toStrictEqual(['07:30', '19:30']);
+      expect(body.aiExplanation).toBeNull();
+      expect(body.aiProposal).toBeNull();
+      const row = await planRow(body.id);
+      expect(row.aiExplanation).toBeNull();
+      expect(row.aiProposal).toBeNull();
+      expect(explain).toHaveBeenCalledTimes(1);
+    });
+
+    it('R16: sin collar devuelve not_tracked sin llamar a la IA ni crear contador', async () => {
+      const f = await fixture();
+      isPetTracked.mockResolvedValue(false);
+      explain.mockResolvedValue(E2E_OUTPUT);
+      const body = (await f.generate().expect(200)).body as PlanBody;
+      expect(body.aiStatus).toBe('not_tracked');
+      expect(body.aiExplanation).toBeNull();
+      expect(body.aiProposal).toBeNull();
+      expect(explain).not.toHaveBeenCalled();
+      expect(await countersOf(f.petId)).toStrictEqual([]);
+    });
+
+    it('R16: el cuarto generate del dia devuelve limit_reached sin llamar a la IA', async () => {
+      const f = await fixture();
+      explain.mockResolvedValue(E2E_OUTPUT);
+      const before = utcToday();
+      const statuses: (string | undefined)[] = [];
+      for (const kcal of [350, 351, 352, 353]) {
+        await f.putProfile(kcal).expect(200);
+        statuses.push(
+          ((await f.generate().expect(200)).body as PlanBody).aiStatus,
+        );
+      }
+      const after = utcToday();
+      expect(statuses).toStrictEqual([
+        'proposed',
+        'proposed',
+        'proposed',
+        'limit_reached',
+      ]);
+      expect(explain).toHaveBeenCalledTimes(3);
+      const counters = await countersOf(f.petId);
+      expect(counters).toHaveLength(1);
+      expect([before, after]).toContain(counters[0].localDay);
+      expect(counters[0].count).toBe(3);
+    });
+  });
+
+  describe('R17 (nutrition-ai-structured-plan #212): editar el horario descarta la propuesta', () => {
+    it('R17: mover una franja descarta la propuesta y el siguiente generate propone sobre la hora editada', async () => {
+      const f = await fixture();
+      explain.mockResolvedValue(E2E_OUTPUT);
+      const first = (await f.generate().expect(200)).body as PlanBody;
+      expect(first.aiStatus).toBe('proposed');
+      const moved = (
+        await api()
+          .patch(`/v1/pets/${f.petId}/meal-times/07:30`)
+          .set(f.auth)
+          .send({ mealTime: '08:15' })
+          .expect(200)
+      ).body as PlanBody;
+      expect(moved.aiProposal).toBeNull();
+      expect(moved.aiExplanation).toBe(E2E_OUTPUT.explanation);
+      explain.mockClear().mockResolvedValue({
+        ...E2E_OUTPUT,
+        mealGrams: [
+          { mealTime: '08:15', grams: 150 },
+          { mealTime: '19:30', grams: 160 },
+        ],
+      });
+      const next = (await f.generate().expect(200)).body as PlanBody;
+      expect(next.id).toBe(moved.id);
+      expect(next.aiStatus).toBe('proposed');
+      expect(explain).toHaveBeenCalledTimes(1);
+      expect(explain.mock.calls[0][1].mealTimes).toStrictEqual([
+        '08:15',
+        '19:30',
+      ]);
     });
   });
 });

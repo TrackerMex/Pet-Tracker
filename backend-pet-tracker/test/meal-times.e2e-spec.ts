@@ -249,6 +249,7 @@ describe('Meal schedule editing (e2e)', () => {
           'objective',
           'warnings',
           'aiExplanation',
+          'aiProposal',
           'generatedAt',
         ].sort(),
       );
@@ -321,6 +322,7 @@ describe('Meal schedule editing (e2e)', () => {
           'objective',
           'warnings',
           'aiExplanation',
+          'aiProposal',
           'generatedAt',
         ].sort(),
       );
