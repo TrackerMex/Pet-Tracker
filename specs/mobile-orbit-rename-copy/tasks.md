@@ -9,10 +9,10 @@ tags: [harness, spec]
 > Disciplina TDD. Cada tarea corresponde a un requisito de [[requirements]].
 > Rutas relativas a `mobile-pet-tracker/`. Desde `mobile-pet-tracker/`:
 > `bun run typecheck`, `bun run lint`, `bun run test`.
-> Orden de ejecución: primero el commit de R4 (humano, gate G4), luego la cadena de Codex.
+> Orden de ejecución (E1): primero la cadena de Codex (R1 a R3), luego el commit de R4 (humano, gate G4) antes de la PR.
 > Commits test-primero (C4 de `CHECKPOINTS.md`): el historial debe mostrar rojo y luego verde.
 
-## Gate G4 previo — R4 (leader prepara, humano commitea, antes del handoff)
+## Gate G4 — R4 (leader prepara el parche, humano commitea tras la cadena de Codex y antes de la PR)
 
 - [ ] (1) Test rojo: crear `src/__tests__/orbit-charter-voice.test.ts` con `#221 R4: la carta nombra a Orbit en el punto 7` (rojo contra la carta actual).
 - [ ] (2) Aplicar el bloque literal de [[requirements]] R4 a `docs/ui-guidelines.md` y las tres enmiendas T1, T2 y T3. Verde.

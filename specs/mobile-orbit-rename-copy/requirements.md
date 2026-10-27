@@ -201,6 +201,19 @@ Premisas del plan verificadas contra el árbol:
     también R1 (otras líneas) y este commit (otras líneas); por eso el commit de R4 va **antes**
     del handoff y la cadena de Codex arranca desde él.
 
+> **Fe de erratas E1 del leader (2026-10-27, medida en `c0ffc029` = `origin/dev` `6e59fb2e` + spec).**
+> (a) Orden de R4: el último párrafo de R4 manda que el commit de R4 vaya **antes** del
+> handoff. Se invierte: la cadena de Codex (R1 a R3) corre **primero** y el commit de
+> R4 del humano va **después**, antes de la PR. R4 solo toca `welcome/index.test.tsx` en
+> otras líneas (`voice` y `idleLoops`, no los 7 literales de R1), así que no hay
+> conflicto. El leader deja el parche de R4 preparado fuera de la cadena
+> (`progress/orbit-r4-prep.patch`) y el humano lo commitea con `git commit --only`.
+> G4 no se salta: sin esa firma la feature no pasa a `done` ni se abre la PR.
+> (b) La fila R4 de [[traceability]] la rellena el leader tras el commit del humano;
+> Codex la deja en `pendiente (G4, humano)` y esa es la única fila que puede quedar así.
+> (c) Anclas del §Contexto recomputadas en `c0ffc029`: las cifras coinciden con la tabla
+> (`Pingo` en `catalog.ts` 2, `Hola, soy Pingo.` 5, `Hi, I\'m Pingo.` 4, `pingo-*` 9).
+
 ## Fuera de alcance
 
 - Renombrar identificadores, `testID`, claves de catálogo (`welcome.pingoGreeting`,
