@@ -1,6 +1,7 @@
 import { BottomSheet, BottomSheetView } from '@expo/ui/community/bottom-sheet';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Skeleton } from 'heroui-native';
+import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,6 +14,7 @@ import { getMe } from '../../api/users';
 import { ScreenHeader } from '../../components/screen-header';
 import { useAuth } from '../../providers/auth-provider';
 import { useLocale, useTranslate } from '../../providers/language-provider';
+import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS, type CategorySlot } from '../../utils/category-palette';
@@ -27,11 +29,12 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
   const locale = useLocale();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
+  const { clearPet } = useSelectedPet();
   const chunkyLip = useChunkyLip();
   const [surface] = useThemeColors(['surface']);
   const [amberStrong, foreground, danger] = useThemeColors(['category-amber-strong', 'foreground', 'danger']);
   const [removing, setRemoving] = useState<{ member: PetMember; slot: CategorySlot } | null>(null);
-  const [, setLeaveOpen] = useState(false);
+  const [leaveOpen, setLeaveOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -130,6 +133,35 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
   function openLeave() {
     setActionError(null);
     setLeaveOpen(true);
+  }
+
+  async function handleLeave() {
+    if (!me || busyRef.current) return;
+    busyRef.current = true;
+    setBusy(true);
+    try {
+      const result = await removePetMember(baseUrl, token ?? '', petId, me.id);
+      switch (result.kind) {
+        case 'ok':
+          queryClient.removeQueries({ queryKey: petKeys.detail(petId) });
+          queryClient.removeQueries({ queryKey: memberKeys.list(petId) });
+          clearPet();
+          await queryClient.invalidateQueries({ queryKey: petKeys.list() });
+          router.dismissTo('/home');
+          break;
+        case 'unauthorized':
+          await signOut();
+          break;
+        case 'unreachable':
+          setActionError(t('common.cannotReachServer'));
+          break;
+        default:
+          setActionError(t('common.somethingWentWrong'));
+      }
+    } finally {
+      busyRef.current = false;
+      setBusy(false);
+    }
   }
 
   let otherIndex = 0;
@@ -258,6 +290,24 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
                 <Text className="text-base font-extrabold text-danger-foreground">{t('members.removeConfirm', { firstName: removing.member.firstName })}</Text>
               </Button>
               <Button testID="member-remove-sheet-cancel" variant="outline" className="w-full h-13.5 rounded-16 border-2 border-lip-gray bg-surface" style={chunkyLip.neutral} onPress={() => setRemoving(null)}>
+                <Text className="text-base font-extrabold text-foreground">{t('members.cancel')}</Text>
+              </Button>
+            </View>
+          ) : null}
+        </BottomSheetView>
+      </BottomSheet>
+      <BottomSheet index={leaveOpen ? 0 : -1} enablePanDownToClose onClose={() => setLeaveOpen(false)} snapPoints={['50%', '100%']} backgroundStyle={{ backgroundColor: surface }}>
+        <BottomSheetView>
+          {leaveOpen && pet ? (
+            <View testID="member-leave-sheet" className="items-center gap-3 bg-surface px-5 pb-9 pt-3">
+              <Text testID="member-leave-sheet-title" accessibilityRole="header" className="text-center text-xl font-black text-foreground">{t('members.leaveTitle', { petName: pet.name })}</Text>
+              <Text testID="member-leave-sheet-body" className="max-w-80 text-center text-sm leading-note text-muted">
+                {ownerName ? t('members.leaveBody', { petName: pet.name, ownerName }) : t('members.leaveBodyNoOwner', { petName: pet.name })}
+              </Text>
+              <Button testID="member-leave-sheet-confirm" className="w-full h-13.5 rounded-16 bg-danger" style={chunkyLip.danger} isDisabled={busy} onPress={() => void handleLeave()}>
+                <Text className="text-base font-extrabold text-danger-foreground">{t('members.leaveConfirm')}</Text>
+              </Button>
+              <Button testID="member-leave-sheet-cancel" variant="outline" className="w-full h-13.5 rounded-16 border-2 border-lip-gray bg-surface" style={chunkyLip.neutral} onPress={() => setLeaveOpen(false)}>
                 <Text className="text-base font-extrabold text-foreground">{t('members.cancel')}</Text>
               </Button>
             </View>
