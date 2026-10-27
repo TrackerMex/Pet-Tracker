@@ -15,8 +15,6 @@ import { Linking, Text, TextInput } from 'react-native';
 import { Uniwind } from 'uniwind';
 import type { TestInstance } from 'test-renderer';
 
-import { withThemeTransition } from 'react-native-nitro-theme-transition';
-
 import { requestPhotoUploadUrl, uploadPhotoToUrl } from '../../api/media';
 import { getPet, listPets, type PetState, type PetsState } from '../../api/pets';
 import { petKeys, userKeys } from '../../api/query-keys';
@@ -75,17 +73,6 @@ const mockPetSwitcher = jest.fn<void, [{
   variant?: 'default' | 'avatars' | 'glass';
   trailing?: ReactNode;
 }]>();
-
-jest.mock('react-native-nitro-theme-transition', () => ({
-  withThemeTransition: jest.fn((apply: () => void) => {
-    apply();
-  }),
-  isThemeTransitionAvailable: jest.fn(() => false),
-}));
-
-jest.mock('../../theme/nitro-availability', () => ({
-  hasNitroModules: () => true,
-}));
 
 jest.mock('../../api/pets', () => ({
   getPet: jest.fn(),
@@ -583,14 +570,6 @@ describe('R4: toggle persiste', () => {
     expect(mockSetStoredTheme).toHaveBeenCalledWith('light');
   });
 
-  it('R2: el toggle dispara el fade vía withThemeTransition', async () => {
-    await renderProfile();
-    await fireEvent.press(screen.getByTestId('theme-toggle'));
-
-    expect(jest.mocked(withThemeTransition)).toHaveBeenCalledTimes(1);
-    expect(mockSetTheme).toHaveBeenCalledWith('dark');
-    expect(mockSetStoredTheme).toHaveBeenCalledWith('dark');
-  });
 });
 
 describe('#173 R11: cuenta en Card flat con Switch e idioma', () => {
