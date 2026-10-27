@@ -52,6 +52,7 @@ import { listReminders } from '../../api/reminders';
 import type { DayEntry, ReminderType } from '../../api/types';
 import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
+import { HeroStatusBar } from '../../components/hero-status-bar';
 import {
   PetHeroHeader,
   type PetHeroStatusTone,
@@ -367,6 +368,7 @@ export function HomeScreen() {
         `paddingTop: insets.top + 12` de §Dimensiones bajan a envoltorios de
         dentro (excepción A9). El paddingTop lo asume el slot del hero.
       */}
+      {hasPets ? <HeroStatusBar /> : null}
       {hasPets ? (
         <PetHeroHeader
           pet={detail.data?.kind === 'ok' ? detail.data.pet : null}

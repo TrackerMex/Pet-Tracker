@@ -309,9 +309,9 @@ describe('#197 R22: fuentes limpias', () => {
     expect(source).not.toMatch(/\p{Extended_Pictographic}/u);
     expect(source).not.toMatch(/\b(?:shadowColor|shadowOffset|shadowOpacity|shadowRadius|elevation)\s*:/);
   });
-  it('#197 R22: no añade dependencias', () => {
+  it('#197 R22: no añade dependencias (enmendado por #217 R8)', () => {
     const manifest = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8'));
-    expect(Object.keys(manifest.dependencies)).toHaveLength(44);
+    expect(Object.keys(manifest.dependencies)).toHaveLength(42);
     expect(Object.keys(manifest.devDependencies)).toHaveLength(8);
   });
 });

@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Bell, Camera, FileText, Map as MapIcon, Plus, Wifi } from 'reicon-react-native';
-import { useUniwind } from 'uniwind';
+import { Uniwind, useUniwind } from 'uniwind';
 
 import {
   requestPhotoUploadUrl,
@@ -19,6 +19,7 @@ import type { PetProfile } from '../../api/types';
 import { getMe } from '../../api/users';
 import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
+import { HeroStatusBar } from '../../components/hero-status-bar';
 import { PetHeroHeader } from '../../components/pet-hero-header';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { ToggleSwitch } from '../../components/toggle-switch';
@@ -33,10 +34,10 @@ import {
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
-import { useThemeTransition } from '../../theme/theme-transition';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS, type CategorySlot } from '../../utils/category-palette';
+import { setStoredTheme } from '../../utils/theme-preference';
 import { BubblePop } from '../home/bubble-pop';
 import { HomeEntrance } from '../home/home-entrance';
 
@@ -153,7 +154,6 @@ export function ProfileScreen() {
   const selectedPetIdRef = useRef<string | null>(selectedPetId);
   const photoBusyRef = useRef<boolean>(false);
   const { theme } = useUniwind();
-  const switchTheme = useThemeTransition();
   const insets = useSafeAreaInsets();
   const chunkyLip = useChunkyLip();
   const [blue, green, amber, violet, accentStrong, accentForeground] = useThemeColors(['category-blue-strong', 'category-green-strong', 'category-amber-strong', 'category-violet-strong', 'accent-strong', 'accent-foreground']);
@@ -307,6 +307,7 @@ export function ProfileScreen() {
         paddingBottom: insets.bottom + 96,
       }}
     >
+      {showHero ? <HeroStatusBar /> : null}
       {showHero ? (
         <View testID="profile-hero" className="relative">
           <PetHeroHeader
@@ -516,7 +517,11 @@ export function ProfileScreen() {
           <ToggleSwitch
             testID="theme-toggle"
             isSelected={theme === 'dark'}
-            onSelectedChange={(selected) => switchTheme(selected ? 'dark' : 'light')}
+            onSelectedChange={(selected) => {
+              const next = selected ? 'dark' : 'light';
+              Uniwind.setTheme(next);
+              void setStoredTheme(next);
+            }}
             accessibilityLabel={useDarkThemeLabel}
             hitSlop={TOUCH_SLOP}
           />
