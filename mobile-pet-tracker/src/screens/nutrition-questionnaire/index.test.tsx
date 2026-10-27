@@ -1,6 +1,4 @@
-import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
-import { usePreventRemove } from 'expo-router/react-navigation';
-import { router } from 'expo-router';
+import { fireEvent, screen, within } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import { renderWithProviders } from '../../../test/render-with-providers';
 import { getPet } from '../../api/pets';
@@ -37,8 +35,6 @@ jest.mock('react-native-reanimated', () => ({
 const mockSignOut = jest.fn();
 const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
 const mockGetPet = jest.mocked(getPet);
-const mockRouter = jest.mocked(router);
-const mockPreventRemove = jest.mocked(usePreventRemove);
 const apiUrl = 'http://example.test/v1';
 let fetchSpy: jest.SpyInstance;
 let storedProfile: NutritionProfile | null = null;
