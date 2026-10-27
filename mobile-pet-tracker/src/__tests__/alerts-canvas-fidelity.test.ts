@@ -235,7 +235,6 @@ describe('#174 R12: inventarios', () => {
         'components/empty-state.tsx', // (enmendado por #176 R8)
         'components/pet-hero-header.tsx', // #195 R6
         'components/screen-header.tsx',
-        'screens/food/index.tsx',
         'screens/home/index.tsx', // #198 R15
         'screens/pairing/index.tsx', // #188 R16
         'screens/profile/index.tsx',

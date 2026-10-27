@@ -275,6 +275,7 @@ export const R6_FOOD: UseRow[] = [
   { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.servedMany' }, // #105 R5
   { file: 'src/screens/meals-history/index.tsx', key: 'common.somethingWentWrong' }, // #105 R5
   { file: 'src/screens/meals-history/index.tsx', key: 'common.retry' }, // #105 R5
+  { file: 'src/screens/food/index.tsx', key: 'tabHeader.petsScroll' }, // #222 R8
 ];
 
 export const R7_PROFILE: UseRow[] = [
