@@ -774,3 +774,98 @@ Las demás reglas siguen igual:
 - no uses Monitor;
 - no hagas push ni abras la PR;
 - `bun` y `bunx`, nunca npm ni npx.
+
+## Adenda 5 (leader, 2026-10-27, tras el rechazo de la primera revisión)
+
+El `reviewer` rechazó `8aec187f` (`progress/review_mobile-nutrition-questionnaire.md`, F1 y F2). Los dos
+hallazgos venían de la spec, y la errata ronda 6 (`3c31d6b5`) los corrige en R4, R5, R16, R19 y R25. Esta
+adenda manda sobre todo lo anterior donde lo contradiga.
+
+**0. Punto de partida.** HEAD debe ser el commit de esta adenda (`docs(progress): #209 handoff Adenda 5 …`),
+cuyo padre es `3c31d6b5`. Compruébalo con `git log --oneline -2`; si no cuadra, PARA. Guarda su hash como H5
+(`git rev-parse --short HEAD`): los rangos del cierre salen de él. Por debajo está `40e640d9`, el merge de `dev` con #216 (`43230cb4`) que hizo el leader. Solo tuvo conflicto
+`progress/current.md`; los ficheros de la app se mezclaron solos. No hagas `git fetch` ni otro merge. Lee la
+errata en `specs/mobile-nutrition-questionnaire/requirements.md`: busca `errata ronda 6` (aparece en R4, R5,
+R16, R19 y R25).
+
+**1. T0 sobre el merge, antes de tocar nada.** Desde `mobile-pet-tracker/`, con los dos pgreps vacíos:
+- `bun install --frozen-lockfile` (no debería cambiar nada: #216 no trae dependencias).
+- `test ! -e .expo/types/router.d.ts` y `bunx tsc --noEmit`, exit 0.
+- La suite completa, sin pipe: `bun run test > ../progress/t0-adenda5-209.log 2>&1; echo exit=$?`.
+  Esperado: `Test Suites: 168 passed, 168 total` y `Tests: 6217 passed, 6217 total`. Es una cifra del leader:
+  el CI de `dev` en `43230cb4` da 167 suites y 6111 tests, y #209 suma 1 suite y 106 tests. SIGKILL = 0 y
+  `failed to run` = 0. Si cae un flake conocido (`#168 R2`, `#200 R9`/`#200 R10`, `#152 R8`, `#199 R18`,
+  `#190 R5`, `#173 R5`), córrelo aislado y anota el verde aislado.
+- Si el merge automático dejó mal una cuenta porque los dos lados sumaron filas (en `ui-copy-table.ts` o
+  `ui-language.test.ts`, que se mezclaron solos), PARA y reporta el `it`, su `Expected` y su `Received`. No lo
+  arregles en esta adenda: es un merge, y el leader decide.
+
+**2. Cadena, test primero.** Cuatro commits de código, en este orden. Cada `test` sale rojo y cada `feat` lo
+pone verde. Tras cada commit, corre los dos ficheros de test con la forma de «Jest de un fichero» y pega su
+línea `Tests:`.
+
+1. `test(mobile): #209 R4 rojo (errata ronda 6)`. En `src/screens/nutrition-questionnaire/index.test.tsx`,
+   el `it('#209 R4: esqueleto y error de carga respetan el inset superior y el error tiene volver')`, tal como
+   lo describe R4, justo después de `it('#209 R4: si la mascota falla pinta el error de carga')`. Rojo
+   esperado: el esqueleto no tiene `style` y no existe `nutrition-questionnaire-load-error-screen`.
+2. `feat(mobile): #209 R4 inset y volver en la carga y el error`. En
+   `src/screens/nutrition-questionnaire/index.tsx`, `NutritionQuestionnaireScreen` llama a
+   `useSafeAreaInsets()` antes del primer `return` (ya está importado) y pinta los dos contenedores literales
+   de R4. El `Text` del error y los dos `Skeleton` no cambian.
+3. `test(mobile): #209 R5 R16 R19 rojo (errata ronda 6)`. Los tres `it` nuevos: R5 y R16 en
+   `src/screens/nutrition-questionnaire/index.test.tsx` (R5 justo después del `it` de R5 que ya existe; R16
+   justo después de `it('#209 R16: con movimiento reducido no pinta anillos')`), y R19 en
+   `src/screens/food/index.test.tsx`, justo después de `it('#209 R19: owner con perfil y sin plan ve el vacío actual')`.
+   Rojo esperado en los tres: no existe el `testID` de la imagen.
+4. `feat(mobile): #209 R5 R16 R19 Pingo por style`. Las tres `Image` pasan a los literales de R5, R16 y R19:
+   `testID` nuevo, `style` con el tamaño y sin `className`. Nada más cambia en esos ficheros.
+
+Tras el commit 4, con los dos pgreps vacíos, corre los comandos de T0 guardas y T0 ampliado tal cual, con los
+logs `a5-guards-209.log` y `a5-ext-209.log`. Esperado: exit=0 en los dos. Pega sus líneas `Tests:` sin
+compararlas con las cifras de antes, que ya no valen: el merge con #216 y los `it` nuevos las mueven. El leader
+midió que ninguna guarda mira las clases que salen (`size-28`, `size-37.5`, `size-13`, `size-11`, `p-5`) ni
+`style={{`, y que no se añade ninguna llamada `t(...)`. Si aun así cae una guarda, PARA y reporta el `it`, su
+`Expected` y su `Received`. No la enmiendes.
+
+**3. Sondas.** Una por candado nuevo, sobre el árbol del commit 4, sin commitear nada. Para cada una: aplica la
+mutación, corre solo ese `it` con `-t`, comprueba que sale rojo, pega la línea del `Expected`/`Received`,
+revierte con `git checkout HEAD -- <fichero>` y comprueba `git diff --quiet HEAD -- <fichero>`.
+- R4: en la rama del error, `paddingTop: insets.top + 12` pasa a `paddingTop: insets.top`.
+- R4: en la rama del error, quita el `ScreenHeader` (deja el `View` y el `Text`).
+- R5: intercambia `44` y `52` en el `style` de `nutrition-questionnaire-pingo`.
+- R16: en la imagen de Generando, quita `style` y pon `className="size-28"`.
+- R19: en la imagen de NutricionSinPerfil, `150` pasa a `112` en `width` y en `height`.
+
+**4. Cierre.**
+- Suite completa otra vez, sin pipe: `bun run test > ../progress/adenda5-test-209.log 2>&1; echo exit=$?`.
+  Esperado: `Test Suites: 168 passed, 168 total` y `Tests: 6221 passed, 6221 total` (6217 más los 4 `it`
+  nuevos). SIGKILL = 0, `failed to run` = 0. Flakes conocidos, como en el punto 1.
+- `test ! -e .expo/types/router.d.ts`, `bunx tsc --noEmit` y el lint con `--no-cache`, el log y `test ! -s`.
+- Las guardas de «Guardas que R1 a R26 cruzan», otra vez (producción sin `#209`, tests sin `#209` desnudo,
+  sin `StyleSheet` en el test, la casilla de R26 sin marcar).
+- `specs/mobile-nutrition-questionnaire/traceability.md`: en las filas de R4, R5, R16 y R19 añade el `it`
+  nuevo al final de la columna de tests (con ` / ` como separador, como las demás) y los dos commits nuevos
+  al final de la columna de commits, con su hash y su mensaje. No toques otras filas ni otros hashes.
+- Reporte: al final de `progress/impl_mobile-nutrition-questionnaire.md`, la sección
+  `## Corrección tras la primera revisión (Adenda 5)` con el T0, los cuatro commits y sus líneas `Tests:`,
+  las guardas, las cinco sondas y la corrida final. La primera línea sigue en `Estado: COMPLETO`.
+- Commit: `git add ../specs/mobile-nutrition-questionnaire/traceability.md ../progress/impl_mobile-nutrition-questionnaire.md && git commit -m 'docs(mobile): #209 report and traceability after the first review'`.
+- **Commits**: `git log --oneline --first-parent <H5>..HEAD` da exactamente tus 5 commits.
+- **Ficheros tocados**: `git diff --name-only <H5> HEAD` da exactamente estas 6 rutas:
+
+      mobile-pet-tracker/src/screens/food/index.test.tsx
+      mobile-pet-tracker/src/screens/food/index.tsx
+      mobile-pet-tracker/src/screens/nutrition-questionnaire/index.test.tsx
+      mobile-pet-tracker/src/screens/nutrition-questionnaire/index.tsx
+      progress/impl_mobile-nutrition-questionnaire.md
+      specs/mobile-nutrition-questionnaire/traceability.md
+
+- El chequeo de árbol limpio acotado. Por último:
+  `cd /home/claude/sites/Pet-Tracker-wt-209 && printf '%s COMPLETO\n' "$(date -u +%Y-%m-%dT%H:%MZ)" > progress/impl_mobile-nutrition-questionnaire.done`.
+  El leader borró el `.done` anterior: si al empezar existe, PARA.
+
+Las demás reglas siguen igual:
+- no corras `./init.sh`;
+- no uses Monitor;
+- no hagas push ni abras la PR;
+- `bun` y `bunx`, nunca npm ni npx.
