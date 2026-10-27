@@ -29,7 +29,7 @@ recorrido. Lo que falle abre una feature de arreglo.
 
 - [ ] Smoke de #218 recorrido por el humano (fecha: ____)
 
-## #217 mobile-theme-flash-statusbar (en implementación)
+## #217 mobile-theme-flash-statusbar (mergeada en dev)
 
 Requiere el rebuild G3 (dev build sin nitro).
 
