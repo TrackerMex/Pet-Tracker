@@ -1918,3 +1918,35 @@ describe('#216 R6: el formulario de vincular es solo del dueño', () => {
     }
   });
 });
+
+describe('#216 R7: desvincular es solo del dueño', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseReducedMotion.mockReturnValue(false);
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetPetTracking.mockResolvedValue({ kind: 'ok', tracked: true });
+  });
+
+  it.each([
+    ['owner', true],
+    ['family', false],
+    ['walker', false],
+    ['vet', false],
+  ] as const)('#216 R7 con el rol %s desvincular se pinta: %s', async (role, unpairVisible) => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: role, device: makeDevice() })] });
+    await renderPairing();
+    await screen.findByTestId('device-status-card');
+    expect(screen.queryByTestId('device-title')).not.toBeNull();
+
+    if (unpairVisible) {
+      expect(screen.queryByTestId('device-unpair')).not.toBeNull();
+      expect(screen.queryByTestId('device-unpair-spacer')).not.toBeNull();
+    } else {
+      expect(screen.queryByTestId('device-unpair')).toBeNull();
+      expect(screen.queryByTestId('device-unpair-spacer')).toBeNull();
+    }
+  });
+});
