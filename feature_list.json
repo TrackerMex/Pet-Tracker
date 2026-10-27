@@ -3642,7 +3642,7 @@
   {
     "id": 223,
     "name": "mobile-alerts-attended-section",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 2, gate G1). Alertas: abiertas arriba y sección colapsable «Atendidas» con Ver más para el listado enorme, contador exacto de abiertas, sin backend. Evidencia en progress/explore_ui-alertas-actividad-ia-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },
