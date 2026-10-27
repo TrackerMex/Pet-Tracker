@@ -1,3 +1,4 @@
+import { putJson } from '../http';
 import {
   addMealTime,
   moveMealTime,
@@ -7,6 +8,7 @@ import {
   getNutritionProfile,
   serveMeal,
   unserveMeal,
+  upsertNutritionProfile,
 } from '../nutrition';
 
 const baseUrl = 'http://example.test/v1/';
@@ -525,4 +527,52 @@ describe('#105 R6: meals history API states', () => {
     const fetchFn = jest.fn().mockRejectedValue(new Error('network down'));
     await expect(getMealsHistory(baseUrl, 'jwt-token', 'p1', from, to, fetchFn)).resolves.toEqual({ kind: 'unreachable', message: 'network down' });
   });
+});
+
+it('#209 R1: putJson envía PUT con cuerpo JSON y Bearer', async () => {
+  const backendResponse = response(200, {});
+  const fetchFn = jest.fn().mockResolvedValue(backendResponse) as unknown as typeof fetch;
+  await expect(putJson(baseUrl, '/pets/pet-1/nutrition-profile', 'token-1', { a: 1 }, fetchFn))
+    .resolves.toEqual({ kind: 'response', response: backendResponse });
+  expect(fetchFn).toHaveBeenCalledWith(profileEndpoint, {
+    method: 'PUT',
+    headers: { Authorization: 'Bearer token-1', 'Content-Type': 'application/json' },
+    body: '{"a":1}',
+  });
+});
+
+const nutritionInput = {
+  activityLevel: 'medium' as const,
+  bodyCondition: 5,
+  foodType: 'dry' as const,
+  kcalPer100g: 350,
+  allergies: [],
+  diseases: [],
+};
+
+it('#209 R2: upsertNutritionProfile hace PUT a nutrition-profile y devuelve ok con el perfil', async () => {
+  const profile = makeProfile();
+  const fetchFn = jest.fn().mockResolvedValue(response(200, profile)) as unknown as typeof fetch;
+  await expect(upsertNutritionProfile(baseUrl, 'token-1', 'pet-1', nutritionInput, fetchFn))
+    .resolves.toEqual({ kind: 'ok', profile });
+  expect(fetchFn).toHaveBeenCalledWith(profileEndpoint, {
+    method: 'PUT',
+    headers: { Authorization: 'Bearer token-1', 'Content-Type': 'application/json' },
+    body: JSON.stringify(nutritionInput),
+  });
+});
+
+it.each([
+  [400, 'invalid'], [401, 'unauthorized'], [403, 'forbidden'],
+  [404, 'not-found'], [500, 'error'],
+])('#209 R2: status %i se mapea a %s', async (status, kind) => {
+  const fetchFn = jest.fn().mockResolvedValue(response(status as number, {})) as unknown as typeof fetch;
+  await expect(upsertNutritionProfile(baseUrl, 'token-1', 'pet-1', nutritionInput, fetchFn))
+    .resolves.toEqual({ kind });
+});
+
+it('#209 R2: sin red devuelve unreachable', async () => {
+  const fetchFn = jest.fn().mockRejectedValue(new Error('network down')) as unknown as typeof fetch;
+  await expect(upsertNutritionProfile(baseUrl, 'token-1', 'pet-1', nutritionInput, fetchFn))
+    .resolves.toEqual({ kind: 'unreachable', message: 'network down' });
 });

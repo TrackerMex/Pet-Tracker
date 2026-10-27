@@ -185,7 +185,7 @@ describe('#174 R12: inventarios', () => {
     {
       token: 'rounded-10',
       pattern: /(?<![\w-])rounded-10\b/,
-      files: ['components/segmented-control.tsx', 'screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx', 'screens/pet-members/index.tsx'], // #179 R6; #174 R12; #214 R12
+      files: ['components/segmented-control.tsx', 'screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx', 'screens/nutrition-questionnaire/index.tsx', 'screens/pet-members/index.tsx'], // #179 R6; #174 R12; #214 R12; #209 R24
     },
     {
       token: 'border-b-5',
@@ -220,6 +220,7 @@ describe('#174 R12: inventarios', () => {
         'screens/map/index.tsx', // #201 R2
         'screens/meal-schedule/index.tsx', // #179 R7
         'screens/meals-history/index.tsx', // #179 R11
+        'screens/nutrition-questionnaire/index.tsx', // #209 R24
         'screens/pairing/index.tsx', // #203 R4
         'screens/profile/index.tsx', // #196 R6
         'screens/register/index.tsx',
@@ -236,12 +237,14 @@ describe('#174 R12: inventarios', () => {
         'components/empty-state.tsx', // (enmendado por #176 R8)
         'components/pet-hero-header.tsx', // #195 R6
         'components/screen-header.tsx',
+        'screens/food/index.tsx', // #209 R24: el título de R19 sigue tras quitar #222 R9 el de la pantalla
         'screens/home/index.tsx', // #198 R15
         'screens/join-pet/index.tsx', // #214 R18
+        'screens/nutrition-questionnaire/index.tsx', // #209 R24
         'screens/pairing/index.tsx', // #188 R16
       ],
     },
-  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12) (enmendado por #197 R4) (enmendado por #197 R10) (enmendado por #197 R19) (enmendado por #200 R1 y #200 R3 y #200 R5 y #200 R12 y #200 R13) (enmendado por #199 R10) (enmendado por #199 R14) (enmendado por #199 R16) (enmendado por #198 R9, R15) (enmendado por #203 R4, R8, R10) (enmendado por #204 R4) (enmendado por #204 R10) (enmendado por #204 R12) (enmendado por #202 R7) (enmendado por #202 R1) (enmendado por #202 R11) (enmendado por #202 R17) (enmendado por #196 R6) (enmendado por #201 R2) (enmendado por #205 R16) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #222 R9) (enmendado por #214 R12, R18)', ({ pattern, files }) => {
+  ])('limita $token a su inventario de producción (enmendado por #189 R1) (enmendado por #189 R8) (enmendado por #189 R12) (enmendado por #197 R4) (enmendado por #197 R10) (enmendado por #197 R19) (enmendado por #200 R1 y #200 R3 y #200 R5 y #200 R12 y #200 R13) (enmendado por #199 R10) (enmendado por #199 R14) (enmendado por #199 R16) (enmendado por #198 R9, R15) (enmendado por #203 R4, R8, R10) (enmendado por #204 R4) (enmendado por #204 R10) (enmendado por #204 R12) (enmendado por #202 R7) (enmendado por #202 R1) (enmendado por #202 R11) (enmendado por #202 R17) (enmendado por #196 R6) (enmendado por #201 R2) (enmendado por #205 R16) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #222 R9) (enmendado por #214 R12, R18) (enmendado por #209 R24)', ({ pattern, files }) => {
     expect(filesMatching(pattern)).toEqual(files);
   });
 

@@ -191,6 +191,16 @@ export interface WeightEntry {
   variation: number | null;
 }
 
+export interface NutritionProfileInput {
+  activityLevel: 'low' | 'medium' | 'high';
+  bodyCondition?: number;
+  targetWeightKg?: number;
+  foodType: 'dry' | 'wet' | 'mixed' | 'homemade';
+  kcalPer100g: number;
+  allergies: string[];
+  diseases: string[];
+}
+
 export interface NutritionProfile {
   petId: string;
   activityLevel: string;

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Horario, editar perfil</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+<style>
+body{margin:0}
+a{color:#107148;text-decoration:none}a:hover{color:#0B5C3A}
+.pt{--bg:#FFFFFF;--fg:#0D1117;--surface:#FFFFFF;--surface2:#F0FBF6;--default:#F5F6F8;--muted:#667085;--border:rgba(13,17,23,0.08);--lip-gray:#E4E7EC;--accent:#178255;--accent-strong:#107148;--lip:#0E5E3C;--blue:#EFF6FF;--blue-s:#0768E0;--amber:#FFF7ED;--amber-s:#A55E07;--green:#F0FBF6;--green-s:#107148;--violet:#F5F3FF;--violet-s:#7549F7;--rose:#FFF0F3;--rose-s:#D80B34;--danger:#D92D20;--warning:#B54708;--glass:rgba(255,255,255,0.86);--pill:rgba(23,130,85,0.14);--shadow:0 1px 2px rgba(13,17,23,0.04),0 8px 24px rgba(13,17,23,0.06)}
+.pt.dark{--bg:#0D1117;--fg:#F7F8FA;--surface:#161B22;--surface2:#12231B;--default:#1F242B;--muted:#9CA3AF;--border:rgba(255,255,255,0.08);--lip-gray:#0A0D12;--accent-strong:#2AB87C;--lip:#0B4D31;--blue:#0B203A;--blue-s:#4A8DDF;--amber:#271E14;--amber-s:#C17B22;--green:#12231B;--green-s:#2AB87C;--violet:#221C33;--violet-s:#9579E7;--rose:#39131A;--rose-s:#E35E78;--danger:#F87171;--warning:#FBBF24;--glass:rgba(22,27,34,0.86);--pill:rgba(23,130,85,0.22);--shadow:0 1px 2px rgba(0,0,0,0.4)}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes ping{0%{transform:scale(.55);opacity:.55}100%{transform:scale(1.5);opacity:0}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fill{from{width:0}}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+@keyframes fall{0%{transform:translateY(-40px) rotate(0);opacity:0}10%{opacity:1}100%{transform:translateY(760px) rotate(540deg);opacity:0}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
+</helmet>
+<div class="pt {{theme}}" style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: var(--bg); color: var(--fg); font-family: Inter, 'Helvetica Neue', system-ui, sans-serif; padding: 56px 20px 32px; display: flex; flex-direction: column; gap: 14px">
+<header style="display: flex; align-items: center; gap: 8px">
+<a href="Nutricion.dc.html" aria-label="Volver" style="width: 44px; height: 44px; margin-left: -10px; display: flex; align-items: center; justify-content: center; color: var(--fg)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></a>
+<h1 style="margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.02em">Horario de comidas</h1>
+</header>
+<section style="border-radius: 24px; background: var(--accent); color: #FFFFFF; box-shadow: 0 5px 0 var(--lip); padding: 16px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; animation: rise 400ms ease-out both">
+<span style="grid-column: 1 / -1; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; opacity: .85">Objetivo diario</span>
+<span style="display: flex; flex-direction: column"><span style="font-size: 22px; font-weight: 900">1200</span><span style="font-size: 12px; opacity: .85">kcal</span></span>
+<span style="display: flex; flex-direction: column"><span style="font-size: 22px; font-weight: 900">300 g</span><span style="font-size: 12px; opacity: .85">/ día</span></span>
+<span style="display: flex; flex-direction: column"><span style="font-size: 22px; font-weight: 900">3</span><span style="font-size: 12px; opacity: .85">comidas / día</span></span>
+</section>
+<h2 style="margin: 4px 0 0; font-size: 17px; font-weight: 800">Horarios y porciones</h2>
+<article style="border-radius: 20px; background: var(--surface); border: 1px solid var(--border); padding: 12px 14px; display: flex; align-items: center; gap: 12px; animation: rise 400ms ease-out 80ms both"><span style="width: 42px; height: 42px; border-radius: 14px; background: var(--amber); color: var(--amber-s); display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span><span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 18px; font-weight: 900">08:00</span><span style="font-size: 13px; font-weight: 600; color: var(--muted)">100 g</span></span><button type="button" style="height: 36px; padding: 0 14px; border-radius: 10px; background: var(--surface); border: 2px solid var(--lip-gray); box-shadow: 0 3px 0 var(--lip-gray); color: var(--fg); font: 800 13px Inter, system-ui, sans-serif">Editar</button></article>
+<article style="border-radius: 20px; background: var(--surface); border: 1px solid var(--border); padding: 12px 14px; display: flex; align-items: center; gap: 12px; animation: rise 400ms ease-out 140ms both"><span style="width: 42px; height: 42px; border-radius: 14px; background: var(--amber); color: var(--amber-s); display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span><span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 18px; font-weight: 900">13:00</span><span style="font-size: 13px; font-weight: 600; color: var(--muted)">100 g</span></span><button type="button" style="height: 36px; padding: 0 14px; border-radius: 10px; background: var(--surface); border: 2px solid var(--lip-gray); box-shadow: 0 3px 0 var(--lip-gray); color: var(--fg); font: 800 13px Inter, system-ui, sans-serif">Editar</button></article>
+<article style="border-radius: 20px; background: var(--surface); border: 1px solid var(--border); padding: 12px 14px; display: flex; align-items: center; gap: 12px; animation: rise 400ms ease-out 200ms both"><span style="width: 42px; height: 42px; border-radius: 14px; background: var(--amber); color: var(--amber-s); display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span><span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 18px; font-weight: 900">18:00</span><span style="font-size: 13px; font-weight: 600; color: var(--muted)">100 g</span></span><button type="button" style="height: 36px; padding: 0 14px; border-radius: 10px; background: var(--surface); border: 2px solid var(--lip-gray); box-shadow: 0 3px 0 var(--lip-gray); color: var(--fg); font: 800 13px Inter, system-ui, sans-serif">Editar</button></article>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+<button type="button" style="height: 50px; border-radius: 14px; background: var(--surface); border: 2px solid var(--lip-gray); box-shadow: 0 4px 0 var(--lip-gray); color: var(--fg); font: 800 15px Inter, system-ui, sans-serif">Añadir comida</button>
+<button type="button" style="height: 50px; border: 0; border-radius: 14px; background: var(--violet); color: var(--violet-s); box-shadow: 0 4px 0 rgba(91,63,163,0.35); font: 800 15px Inter, system-ui, sans-serif; display: flex; align-items: center; justify-content: center; gap: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"></path></svg>Generar plan</button>
+</div>
+<div style="margin-top: 4px; display: flex; align-items: center; justify-content: space-between"><h2 style="margin: 0; font-size: 17px; font-weight: 800">Perfil nutricional</h2><a href="CuestionarioActividad.dc.html" style="height: 36px; box-sizing: border-box; padding: 0 12px; border-radius: 12px; background: var(--surface); border: 2px solid var(--lip-gray); box-shadow: 0 3px 0 var(--lip-gray); color: var(--fg); display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 800; text-decoration: none"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg>Editar perfil</a></div>
+<div style="display: flex; flex-wrap: wrap; gap: 6px">
+<span style="padding: 6px 10px; border-radius: 999px; background: var(--default); font-size: 12px; font-weight: 700"><span style="color: var(--muted)">Actividad </span>Media</span>
+<span style="padding: 6px 10px; border-radius: 999px; background: var(--default); font-size: 12px; font-weight: 700"><span style="color: var(--muted)">Edad </span>Adulto</span>
+<span style="padding: 6px 10px; border-radius: 999px; background: var(--default); font-size: 12px; font-weight: 700"><span style="color: var(--muted)">Condición </span>5/9</span>
+<span style="padding: 6px 10px; border-radius: 999px; background: var(--default); font-size: 12px; font-weight: 700"><span style="color: var(--muted)">Alimento </span>Seco 380 kcal/100 g</span>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;dark&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true},&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844}}">
+class Component extends DCLogic {
+renderVals() {
+return { theme: this.props.dark ? "dark" : "" };
+}
+}
+</script>
+</body>
+</html>
