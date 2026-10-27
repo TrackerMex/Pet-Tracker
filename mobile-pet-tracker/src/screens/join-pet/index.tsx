@@ -16,25 +16,30 @@ import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
 const PINGO_SOURCE = require('../../../assets/images/pingo-collar.webp');
+type JoinError = 'not-acceptable' | 'rate-limited' | 'unreachable' | 'error' | 'missing-config';
 
 export default function JoinPetScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
-  const { token } = useAuth();
+  const { token, signOut } = useAuth();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
   const chunkyLip = useChunkyLip();
   const [foreground, muted, accentStrong] = useThemeColors(['foreground', 'muted', 'accent-strong']);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
+  const [state, setState] = useState<JoinError | 'already-member' | null>(null);
   const busyRef = useRef(false);
-  const border = 'border-accent';
+  const border = state === 'not-acceptable' ? 'border-danger' : 'border-accent';
 
   async function submit() {
     if (input.trim() === '' || busyRef.current) return;
+    setState(null);
     busyRef.current = true;
     setBusy(true);
     try {
-      await acceptInvite(baseUrl, token ?? '', input.trim());
+      const result = await acceptInvite(baseUrl, token ?? '', input.trim());
+      if (result.kind === 'unauthorized') await signOut();
+      else if (result.kind !== 'ok' && result.kind !== 'already-member') setState(result.kind);
     } finally {
       busyRef.current = false;
       setBusy(false);
@@ -58,7 +63,12 @@ export default function JoinPetScreen() {
           <Text className="flex-1 text-13 font-semibold leading-note text-foreground">{t('joinPet.note')}</Text>
         </View>
         <Text testID="join-pet-label" className="text-sm font-extrabold text-foreground">{t('invite.codeLabel')}</Text>
-        <TextInput testID="join-pet-input" placeholder="XXXXX-XXXXX" placeholderTextColor={muted} maxLength={11} autoCapitalize="characters" autoCorrect={false} autoComplete="off" accessibilityLabel={t('invite.codeLabel')} className={`h-15 rounded-14 border-2 ${border} bg-default px-4 font-mono text-24 tracking-code text-foreground`} style={CONTINUOUS_CORNER} value={input} onChangeText={setInput} />
+        <TextInput testID="join-pet-input" placeholder="XXXXX-XXXXX" placeholderTextColor={muted} maxLength={11} autoCapitalize="characters" autoCorrect={false} autoComplete="off" accessibilityLabel={t('invite.codeLabel')} className={`h-15 rounded-14 border-2 ${border} bg-default px-4 font-mono text-24 tracking-code text-foreground`} style={CONTINUOUS_CORNER} value={input} onChangeText={(value) => { setInput(value); setState(null); }} />
+        {state && state !== 'already-member' ? (
+          <Text testID="join-pet-error" accessibilityRole="alert" className="text-13 font-bold text-danger">
+            {state === 'not-acceptable' ? t('joinPet.invalid') : state === 'rate-limited' ? t('forgot.tooManyAttempts') : state === 'unreachable' ? t('common.cannotReachServer') : t('common.somethingWentWrong')}
+          </Text>
+        ) : null}
         <Text testID="join-pet-hint" className="text-13 font-semibold text-muted">{t('joinPet.hint')}</Text>
         <View style={{ flexGrow: 1 }} />
         <Button testID="join-pet-submit" className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary} isDisabled={input.trim() === '' || busy} onPress={() => void submit()}>
