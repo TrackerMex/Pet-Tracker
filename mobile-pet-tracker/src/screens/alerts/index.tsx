@@ -40,6 +40,22 @@ function fmtOpenedAt(
   return days === 1 ? t('alerts.dayAgo') : t('alerts.daysAgo', { days });
 }
 
+function StatusPill({ item, rowId }: { item: Alert; rowId: string }) {
+  const t = useTranslate();
+  return (
+    <Text
+      testID={`${rowId}-status`}
+      className={item.status === 'acked'
+        ? 'rounded-full bg-default px-2.5 py-1 text-xs font-bold text-muted'
+        : `rounded-full ${CATEGORY_SLOTS.green.surface} px-2.5 py-1 text-xs font-extrabold ${CATEGORY_SLOTS.green.ink}`}
+    >
+      {item.status === 'acked'
+        ? t('alerts.statusAcked')
+        : t('alerts.statusClosed')}
+    </Text>
+  );
+}
+
 export function AlertsScreen() {
   const chunkyLip = useChunkyLip();
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
@@ -55,7 +71,7 @@ export function AlertsScreen() {
   const [ackingId, setAckingId] = useState<string | null>(null);
   const ackingIdRef = useRef<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
-  const alerts = useAlertsList();
+  const alerts = useAlertsList({ drain: true });
   const refetchAlerts = alerts.refetch;
 
   useFocusEffect(
@@ -73,11 +89,7 @@ export function AlertsScreen() {
     ) ?? [];
   const now = new Date(alerts.dataUpdatedAt);
   const ordered = (['today', 'week', 'earlier'] as const).flatMap((section) => {
-    const sectionRows = fetched.filter((alert) => alertSection(alert.openedAt, now) === section);
-    return [
-      ...sectionRows.filter((alert) => alert.status === 'open'),
-      ...sectionRows.filter((alert) => alert.status !== 'open'),
-    ];
+    return fetched.filter((alert) => alert.status === 'open' && alertSection(alert.openedAt, now) === section);
   });
   const rows = ordered.map((alert) =>
     alert.status === 'open' ? (acked[alert.id] ?? alert) : alert,
@@ -248,16 +260,7 @@ export function AlertsScreen() {
                   <Button.Label className="text-xs font-extrabold text-foreground">{t('alerts.ack')}</Button.Label>
                 </Button>
               ) : (
-                <Text
-                  testID={`${rowId}-status`}
-                  className={item.status === 'acked'
-                    ? 'rounded-full bg-default px-2.5 py-1 text-xs font-bold text-muted'
-                    : `rounded-full ${CATEGORY_SLOTS.green.surface} px-2.5 py-1 text-xs font-extrabold ${CATEGORY_SLOTS.green.ink}`}
-                >
-                  {item.status === 'acked'
-                    ? t('alerts.statusAcked')
-                    : t('alerts.statusClosed')}
-                </Text>
+                <StatusPill item={item} rowId={rowId} />
               )}
             </Card>
           );

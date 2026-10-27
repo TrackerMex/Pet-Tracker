@@ -1604,7 +1604,7 @@ describe('#203 R8: cabecera de Alertas', () => {
     expect(within(counter).getByTestId('alerts-new-count-text')).toHaveTextContent('2 nuevas', { exact: true });
   });
 
-  it('#203 R8: sin nuevas la cabecera no lleva accesorio', async () => {
+  it('#203 R8: sin nuevas la cabecera no lleva accesorio (enmendado por #223 R18)', async () => {
     mockListAlerts.mockResolvedValue({
       kind: 'ok',
       items: [makeAlert({ id: 'a', status: 'acked' }), makeAlert({ id: 'b', status: 'closed' })],
@@ -1612,7 +1612,7 @@ describe('#203 R8: cabecera de Alertas', () => {
     });
     await renderAlerts();
 
-    await screen.findByTestId('alert-row-a');
+    await waitFor(() => expect(screen.getByTestId('alerts-list')).toBeVisible());
     const row = screen.getByTestId('alerts');
     expect(row.children).toHaveLength(2);
     expect(within(row).queryByTestId('alerts-new-count')).toBeNull();
