@@ -14,7 +14,8 @@ import {
   uploadPhotoToUrl,
 } from '../../api/media';
 import { getPet, listPets } from '../../api/pets';
-import { petKeys, userKeys } from '../../api/query-keys';
+import { listPetMembers } from '../../api/pet-members';
+import { memberKeys, petKeys, userKeys } from '../../api/query-keys';
 import type { PetProfile } from '../../api/types';
 import { getMe } from '../../api/users';
 import { Card } from '../../components/card';
@@ -212,7 +213,20 @@ export function ProfileScreen() {
   );
 
   const pet = detail.data?.kind === 'ok' ? detail.data.pet : null;
-  const membersSummary: string | null = null;
+  const membersQuery = useQuery({
+    queryKey: memberKeys.list(pet?.id ?? ''),
+    queryFn: async () => {
+      const result = await listPetMembers(baseUrl, token ?? '', pet?.id ?? '');
+      // This optional subtitle must not end the session.
+      return result.kind === 'unauthorized' ? { kind: 'error' as const } : result;
+    },
+    enabled: pet !== null,
+  });
+  const others = membersQuery.data?.kind === 'ok' ? Math.max(membersQuery.data.members.length - 1, 0) : null;
+  const membersSummary = pet === null || others === null ? null
+    : others === 0 ? t('profile.membersSummaryAlone', { petName: pet.name })
+    : others === 1 ? t('profile.membersSummaryOne', { petName: pet.name })
+    : t('profile.membersSummaryMany', { count: others, petName: pet.name });
   const showHero = pets.data === undefined || (pets.data.kind === 'ok' && pets.data.pets.length > 0);
   const petsEmpty = pets.data?.kind === 'ok' && pets.data.pets.length === 0;
   const petLoading = (pets.data === undefined || (selectedPetId !== null && detail.data === undefined)) && !petsEmpty;
