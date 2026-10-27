@@ -7,7 +7,7 @@ export const REMINDER_REPOSITORY = Symbol('ReminderRepository');
 
 export type NewReminder = Omit<ReminderProps, 'id'>;
 export type ReminderChanges = Partial<
-  Pick<ReminderProps, 'dueAt' | 'advanceMinutes' | 'title'>
+  Pick<ReminderProps, 'dueAt' | 'advanceMinutes' | 'title' | 'recurrence'>
 >;
 
 export interface ReminderRepository {
@@ -22,6 +22,16 @@ export interface ReminderRepository {
   ): Promise<Reminder>;
   cancel(id: string): Promise<Reminder>;
   findDue(now: Date): Promise<Reminder[]>;
-  markEnqueued(id: string, at: Date): Promise<void>;
+  markEnqueued(
+    id: string,
+    scheduleName: string | null,
+    at: Date,
+  ): Promise<void>;
+  advanceOccurrence(
+    id: string,
+    scheduleName: string,
+    dueAt: Date,
+    newScheduleName: string,
+  ): Promise<boolean>;
   markSent(id: string): Promise<boolean>;
 }

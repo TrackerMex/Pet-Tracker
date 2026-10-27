@@ -7,6 +7,7 @@ const USER_ID = '01924a3f-0000-7000-8000-0000000000bb';
 
 function reminder(id: string, dueAt: string): Reminder {
   return new Reminder({
+    recurrence: null,
     id,
     petId: PET_ID,
     type: 'custom',

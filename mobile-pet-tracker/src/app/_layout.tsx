@@ -110,6 +110,7 @@ function RootStack() {
         <Stack.Screen name="pets/[petId]/geofences" options={{ headerShown: false }} />
         <Stack.Screen name="pets/[petId]/geofence-editor" options={{ headerShown: false }} />
         <Stack.Screen name="meals-history" options={{ headerShown: false }} />
+        <Stack.Screen name="pets/[petId]/vaccines/new" options={{ headerShown: false }} />
         <Stack.Screen name="edit-profile" options={{ ...headerOptions, title: '' }} />
       </Stack.Protected>
       <Stack.Protected guard={status !== 'authenticated'}>

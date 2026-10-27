@@ -419,6 +419,8 @@ function makeReminder(overrides: Partial<Reminder> = {}): Reminder {
     dueAt: localIso(2026, 8, 11),
     advanceMinutes: 60,
     status: 'scheduled',
+    recurrence: null,
+    recurrenceUntil: null,
     ...overrides,
   };
 }

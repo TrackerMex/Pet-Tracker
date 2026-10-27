@@ -11,6 +11,20 @@ const workflow = readFileSync(new URL('./.github/workflows/ci.yml', import.meta.
 const START = '# >>> bloque e2e (#96) >>>';
 const END = '# <<< bloque e2e (#96) <<<';
 
+it('#208 R22: E2E_SETUP_CMD siembra el catálogo de vacunas entre migrar y aprovisionar', () => {
+  const setupLine = initConfig
+    .split('\n')
+    .find((line) => line.startsWith('E2E_SETUP_CMD=')) ?? '';
+  const migrate = setupLine.indexOf('run db:migrate');
+  const seed = setupLine.indexOf('run seed:vaccines');
+  const provision = setupLine.indexOf('run provision:local');
+
+  assert.ok(migrate >= 0);
+  assert.ok(seed > migrate, 'seed:vaccines debe ir después de db:migrate');
+  assert.ok(provision > seed, 'provision:local debe ir después de seed:vaccines');
+  assert.equal((setupLine.match(/run seed:vaccines/g) ?? []).length, 1);
+});
+
 function e2eBlock() {
   const a = initSh.indexOf(START);
   const b = initSh.indexOf(END);

@@ -45,8 +45,9 @@ export function fmtDate(date: string, locale: string): string {
 
 export function fmtMinutes(minutes: number | null): string {
   if (minutes === null) return '—';
-  if (minutes < 60) return `${minutes}m`;
-  return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+  const roundedMinutes = Math.round(minutes);
+  if (roundedMinutes < 60) return `${roundedMinutes}m`;
+  return `${Math.floor(roundedMinutes / 60)}h ${roundedMinutes % 60}m`;
 }
 
 export function fmtKm(meters: number | null): string {
@@ -54,7 +55,7 @@ export function fmtKm(meters: number | null): string {
 }
 
 export function fmtCount(count: number | null): string {
-  return count === null ? '—' : String(count);
+  return count === null ? '—' : String(Number(count.toFixed(1)));
 }
 
 export function fmtKg(kg: number | null): string {

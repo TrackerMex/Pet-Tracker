@@ -86,3 +86,12 @@ export function validateWeight(values: {
   }
   return issues;
 }
+
+export function validateVaccine(values: {
+  mode: 'catalog' | 'other';
+  name: string;
+}): FieldIssues<'name'> {
+  return values.mode === 'other' && !values.name.trim()
+    ? { name: { labelKey: 'vaccineCreate.nameRequired' } }
+    : {};
+}

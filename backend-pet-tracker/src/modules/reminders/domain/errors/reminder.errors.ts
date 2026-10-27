@@ -18,3 +18,10 @@ export class ReminderNotEditableError extends Error {
     this.name = 'ReminderNotEditableError';
   }
 }
+
+export class InvalidRecurrenceError extends Error {
+  constructor() {
+    super('Invalid recurrence');
+    this.name = 'InvalidRecurrenceError';
+  }
+}

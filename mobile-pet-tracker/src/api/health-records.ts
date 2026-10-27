@@ -1,5 +1,21 @@
 import { getJson, postJson, readJson } from './http';
-import type { FieldError, Vaccine, WeightEntry } from './types';
+import type { CreateVaccineInput, FieldError, Vaccine, VaccineCatalogEntry, WeightEntry } from './types';
+
+export type VaccineCatalogState =
+  | { kind: 'ok'; entries: VaccineCatalogEntry[] }
+  | { kind: 'unauthorized' }
+  | { kind: 'error' }
+  | { kind: 'unreachable'; message: string }
+  | { kind: 'missing-config' };
+
+export type CreateVaccineState =
+  | { kind: 'ok'; vaccine: Vaccine }
+  | { kind: 'validation'; errors: FieldError[] }
+  | { kind: 'forbidden' }
+  | { kind: 'unauthorized' }
+  | { kind: 'error' }
+  | { kind: 'unreachable'; message: string }
+  | { kind: 'missing-config' };
 
 export type VaccinesState =
   | { kind: 'ok'; vaccines: Vaccine[] }
@@ -157,5 +173,92 @@ export async function createWeight(
     responseBody !== null &&
     !Array.isArray(responseBody)
     ? { kind: 'ok', weight: responseBody as WeightEntry }
+    : { kind: 'error' };
+}
+
+export async function getVaccineCatalog(
+  baseUrl: string | undefined,
+  token: string,
+  species: 'dog' | 'cat',
+  fetchFn: typeof fetch = fetch,
+): Promise<VaccineCatalogState> {
+  if (!baseUrl) {
+    return { kind: 'missing-config' };
+  }
+
+  const result = await getJson(
+    baseUrl,
+    `/vaccine-catalog?species=${species}`,
+    token,
+    fetchFn,
+  );
+  if (result.kind === 'unreachable') {
+    return result;
+  }
+
+  if (result.response.status === 401) {
+    return { kind: 'unauthorized' };
+  }
+
+  if (result.response.status !== 200) {
+    return { kind: 'error' };
+  }
+
+  const body = await readJson(result.response);
+  return Array.isArray(body)
+    ? { kind: 'ok', entries: body as VaccineCatalogEntry[] }
+    : { kind: 'error' };
+}
+
+export async function createVaccine(
+  baseUrl: string | undefined,
+  token: string,
+  petId: string,
+  input: CreateVaccineInput,
+  fetchFn: typeof fetch = fetch,
+): Promise<CreateVaccineState> {
+  if (!baseUrl) {
+    return { kind: 'missing-config' };
+  }
+
+  const result = await postJson(
+    baseUrl,
+    `/pets/${petId}/vaccines`,
+    token,
+    input,
+    fetchFn,
+  );
+  if (result.kind === 'unreachable') {
+    return result;
+  }
+
+  if (result.response.status === 400) {
+    const validationBody = await readJson(result.response);
+    const errors =
+      typeof validationBody === 'object' &&
+      validationBody !== null &&
+      Array.isArray((validationBody as Record<string, unknown>).errors)
+        ? ((validationBody as Record<string, unknown>).errors as FieldError[])
+        : [];
+    return { kind: 'validation', errors };
+  }
+
+  if (result.response.status === 403) {
+    return { kind: 'forbidden' };
+  }
+
+  if (result.response.status === 401) {
+    return { kind: 'unauthorized' };
+  }
+
+  if (result.response.status !== 201) {
+    return { kind: 'error' };
+  }
+
+  const responseBody = await readJson(result.response);
+  return typeof responseBody === 'object' &&
+    responseBody !== null &&
+    !Array.isArray(responseBody)
+    ? { kind: 'ok', vaccine: responseBody as Vaccine }
     : { kind: 'error' };
 }

@@ -2,7 +2,10 @@ import type { Reminder } from '../../api/types';
 import {
   calendarDaysUntil,
   fmtDate,
+  fmtCount,
   fmtKg,
+  fmtKm,
+  fmtMinutes,
   localDayOf,
   upcomingReminders,
 } from './format';
@@ -24,6 +27,8 @@ function makeReminder(
     dueAt,
     advanceMinutes: 60,
     status,
+    recurrence: null,
+    recurrenceUntil: null,
   };
 }
 
@@ -243,5 +248,66 @@ describe('#85 R3: upcomingReminders filtra, ordena y acota', () => {
       'rem-plus-2',
       'rem-plus-3',
     ]);
+  });
+});
+
+describe('#219 R1: fmtMinutes redondea antes de separar horas y minutos', () => {
+  it.each([
+    [null, '—'],
+    [0, '0m'],
+    [0.4, '0m'],
+    [0.5, '1m'],
+    [45, '45m'],
+    [59, '59m'],
+    [59.4, '59m'],
+    [59.5, '1h 0m'],
+    [59.6, '1h 0m'],
+    [60, '1h 0m'],
+    [89.5, '1h 30m'],
+    [119.4, '1h 59m'],
+    [119.5, '2h 0m'],
+    [119.6, '2h 0m'],
+    [210, '3h 30m'],
+    [210.33333333333334, '3h 30m'],
+    [1439.6, '24h 0m'],
+    [6000, '100h 0m'],
+    [99999.5, '1666h 40m'],
+  ] as const)('#219 R1: fmtMinutes(%s) devuelve %s', (minutes, expected) => {
+    expect(fmtMinutes(minutes)).toBe(expected);
+  });
+});
+
+describe('#219 R2: fmtCount usa un decimal cuando hace falta y omite .0', () => {
+  it.each([
+    [null, '—'],
+    [0, '0'],
+    [0.04, '0'],
+    [2, '2'],
+    [2.25, '2.3'],
+    [2.33333333333333, '2.3'],
+    [2.4, '2.4'],
+    [2.75, '2.8'],
+    [2.95, '3'],
+    [2.96, '3'],
+    [3.05, '3'],
+    [14.28571428571, '14.3'],
+    [100, '100'],
+  ] as const)('#219 R2: fmtCount(%s) devuelve %s', (count, expected) => {
+    expect(fmtCount(count)).toBe(expected);
+  });
+});
+
+describe('#219 R3: fmtKm conserva siempre un decimal', () => {
+  it.each([
+    [null, '—'],
+    [0, '0.0 km'],
+    [49, '0.0 km'],
+    [50, '0.1 km'],
+    [1033.3333, '1.0 km'],
+    [2433.33, '2.4 km'],
+    [22000, '22.0 km'],
+    [22050, '22.1 km'],
+  ] as const)('#219 R3: fmtKm(%s) devuelve %s', (meters, expected) => {
+    expect(fmtKm(meters)).toBe(expected);
   });
 });

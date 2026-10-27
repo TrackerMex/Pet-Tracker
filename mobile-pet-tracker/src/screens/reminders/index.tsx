@@ -3,22 +3,24 @@ import {
   BottomSheet,
   BottomSheetView,
 } from '@expo/ui/community/bottom-sheet';
-import { useQuery } from '@tanstack/react-query';
-import { router, type Href, useFocusEffect } from 'expo-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { router, type Href, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Plus, Trash } from 'reicon-react-native';
+import { Plus, Repeat, Trash } from 'reicon-react-native';
 
 import { listPets } from '../../api/pets';
 import { petKeys, reminderKeys } from '../../api/query-keys';
 import {
+  cancelReminderSeries,
   deleteReminder,
   listReminders,
   type RemindersState,
 } from '../../api/reminders';
-import type { Reminder } from '../../api/types';
+import type { Recurrence, Reminder } from '../../api/types';
+import { isoToLocalDate } from '../../utils/civil-date';
 import { EmptyState } from '../../components/empty-state';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { PopIn } from '../../components/pop-in';
@@ -47,19 +49,35 @@ function isRemindersError(state: RemindersState): boolean {
   );
 }
 
+function cadenceText(recurrence: Recurrence, t: ReturnType<typeof useTranslate>): string {
+  const { unit, every } = recurrence;
+  switch (unit) {
+    case 'hour': return every === 1 ? t('reminders.cadenceHour') : t('reminders.cadenceHours', { count: every });
+    case 'day': return every === 1 ? t('reminders.cadenceDay') : t('reminders.cadenceDays', { count: every });
+    case 'week': return every === 1 ? t('reminders.cadenceWeek') : t('reminders.cadenceWeeks', { count: every });
+    case 'month': return every === 1 ? t('reminders.cadenceMonth') : t('reminders.cadenceMonths', { count: every });
+    case 'year': return every === 1 ? t('reminders.cadenceYear') : t('reminders.cadenceYears', { count: every });
+  }
+}
+
 export function RemindersScreen() {
   const chunkyLip = useChunkyLip();
+  const queryClient = useQueryClient();
+  const { petId } = useLocalSearchParams<{ petId?: string }>();
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const locale = useLocale();
   const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
   const selectedPetIdRef = useRef<string | null>(selectedPetId);
+  const appliedRoutePetIdRef = useRef<string | null>(null);
   const insets = useSafeAreaInsets();
-  const [blueInk, amberInk, greenInk, violetInk, roseInk, muted, accentForeground, danger] = useThemeColors([
+  const [blueInk, amberInk, greenInk, violetInk, roseInk, muted, accentForeground, danger, accentStrong] = useThemeColors([
     'category-blue-strong', 'category-amber-strong', 'category-green-strong',
-    'category-violet-strong', 'category-rose-strong', 'muted', 'accent-foreground', 'danger',
+    'category-violet-strong', 'category-rose-strong', 'muted', 'accent-foreground', 'danger', 'accent-strong',
   ]);
+  const [now, setNow] = useState(Date.now);
+  const [surface] = useThemeColors(['surface']);
   const categoryInk = {
     blue: blueInk, amber: amberInk, green: greenInk,
     violet: violetInk, rose: roseInk, neutral: muted,
@@ -69,6 +87,13 @@ export function RemindersScreen() {
     queryFn: () => listPets(baseUrl, token ?? ''),
   });
   usePetSelection({ data: pets.data, isRefreshing: pets.isRefetching });
+  useEffect(() => {
+    if (typeof petId === 'string' && petId !== appliedRoutePetIdRef.current && pets.data?.kind === 'ok'
+      && pets.data.pets.some(({ id }) => id === petId)) {
+      appliedRoutePetIdRef.current = petId;
+      selectPet(petId);
+    }
+  }, [petId, pets.data, selectPet]);
   const reminders = useQuery({
     queryKey: reminderKeys.list(selectedPetId ?? ''),
     queryFn: () => listReminders(baseUrl, token ?? '', selectedPetId!),
@@ -77,6 +102,7 @@ export function RemindersScreen() {
   const refetchReminders = reminders.refetch;
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteCandidate, setDeleteCandidate] = useState<Reminder | null>(null);
+  const [cancelCandidate, setCancelCandidate] = useState<Reminder | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -85,11 +111,13 @@ export function RemindersScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      setNow(Date.now());
       if (selectedPetIdRef.current !== null) {
         refetchReminders();
       }
       return () => {
         setDeleteCandidate(null);
+        setCancelCandidate(null);
         setActionError(null);
       };
     }, [refetchReminders]),
@@ -135,6 +163,47 @@ export function RemindersScreen() {
     }, [baseUrl, refetchReminders, selectedPetId, signOut, t, token],
   );
 
+  const handleCancelSeries = useCallback(
+    async (reminderId: string) => {
+      if (!selectedPetId) return;
+      setDeletingId(reminderId);
+      setActionError(null);
+      try {
+        const result = await cancelReminderSeries(baseUrl, token ?? '', reminderId);
+        switch (result.kind) {
+          case 'ok':
+          case 'not-found':
+          case 'not-editable':
+            await queryClient.invalidateQueries({ queryKey: reminderKeys.list(selectedPetId) });
+            return;
+          case 'forbidden':
+            setActionError(t('reminders.errorCancelForbidden'));
+            return;
+          case 'unreachable':
+            setActionError(t('common.cannotReachServer'));
+            return;
+          case 'unauthorized':
+            await signOut();
+            return;
+          case 'error':
+          case 'missing-config':
+            setActionError(t('common.somethingWentWrong'));
+        }
+      } catch {
+        setActionError(t('common.somethingWentWrong'));
+      } finally {
+        setDeletingId(null);
+      }
+    }, [baseUrl, queryClient, selectedPetId, signOut, t, token],
+  );
+
+  const cancelSelectedReminder = useCallback(() => {
+    if (!cancelCandidate) return;
+    const reminderId = cancelCandidate.id;
+    setCancelCandidate(null);
+    void handleCancelSeries(reminderId);
+  }, [cancelCandidate, handleCancelSeries]);
+
   const confirmDelete = useCallback((reminder: Reminder) => {
     setActionError(null);
     setDeleteCandidate(reminder);
@@ -142,6 +211,7 @@ export function RemindersScreen() {
 
   const dismissDeleteSheet = useCallback(() => {
     setDeleteCandidate(null);
+    setCancelCandidate(null);
   }, []);
 
   const deleteSelectedReminder = useCallback(() => {
@@ -151,6 +221,7 @@ export function RemindersScreen() {
     void handleDelete(reminderId);
   }, [deleteCandidate, handleDelete]);
 
+  const cancelPetName = pets.data?.kind === 'ok' ? pets.data.pets.find(({ id }) => id === cancelCandidate?.petId)?.name : undefined;
   const petsEmpty = pets.data?.kind === 'ok' && pets.data.pets.length === 0;
   if (petsEmpty) {
     return (
@@ -288,7 +359,7 @@ export function RemindersScreen() {
                 {
                   reminders.data.reminders.filter((reminder) => {
                     const days = daysUntil(
-                      new Date(),
+                      new Date(now),
                       new Date(reminder.dueAt),
                     );
                     return (
@@ -328,9 +399,17 @@ export function RemindersScreen() {
             {reminders.data.reminders.map((reminder, i) => {
               const meta = REMINDER_TYPE_META[reminder.type];
               const due = new Date(reminder.dueAt);
-              const days = daysUntil(new Date(), due);
+              const days = daysUntil(new Date(now), due);
               const inactive = reminder.status !== 'scheduled';
-              const upcoming = !inactive && days >= 0 && days <= 10;
+              const recurrence = inactive ? null : reminder.recurrence;
+              const isSeries = Boolean(recurrence);
+              const until = reminder.recurrenceUntil ? isoToLocalDate(reminder.recurrenceUntil) : null;
+              const repeatUntil = until
+                ? until.getFullYear() === new Date(now).getFullYear()
+                  ? t('reminders.untilDay', { date: until.toLocaleDateString(locale, { day: 'numeric', month: 'short' }) })
+                  : t('reminders.untilMonth', { date: new Intl.DateTimeFormat(locale, { month: 'short', year: 'numeric' }).format(until) })
+                : '';
+              const upcoming = !inactive && days === 0;
               const slot = CATEGORY_SLOTS[meta.category];
               const date = due.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
               const time = due.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
@@ -387,16 +466,34 @@ export function RemindersScreen() {
                           </Text>
                         )}
                       </View>
+                      {recurrence ? (
+                        <View testID={`reminder-repeats-${reminder.id}`} className="flex-row items-center gap-1">
+                          <Repeat size={14} color={accentStrong} />
+                          <Text className="text-13 font-bold text-accent-strong">
+                            {t('reminders.repeatsEvery', { cadence: cadenceText(recurrence, t), until: repeatUntil })}
+                          </Text>
+                        </View>
+                      ) : null}
                     </View>
                     <Button
-                      testID={`reminder-delete-${reminder.id}`}
+                      testID={isSeries ? `reminder-cancel-series-${reminder.id}` : `reminder-delete-${reminder.id}`}
+                      accessibilityLabel={isSeries ? t('reminders.cancelSeriesA11y', { title: reminder.title }) : undefined}
                       className={`h-11 rounded-14 px-2.5 ${CATEGORY_SLOTS.rose.surface}`}
                       isDisabled={deletingId === reminder.id}
                       variant="danger-soft"
-                      onPress={() => confirmDelete(reminder)}
+                      onPress={() => {
+                        if (isSeries) {
+                          setActionError(null);
+                          setDeleteCandidate(null);
+                          setCancelCandidate(reminder);
+                        } else {
+                          setCancelCandidate(null);
+                          confirmDelete(reminder);
+                        }
+                      }}
                     >
                       <Text className="text-13 font-extrabold text-danger">
-                        {t('reminders.delete')}
+                        {isSeries ? t('reminders.cancelSeries') : t('reminders.delete')}
                       </Text>
                     </Button>
                   </View>
@@ -409,12 +506,37 @@ export function RemindersScreen() {
 
       <View testID="reminders-delete-host">
         <BottomSheet
-          index={deleteCandidate === null ? -1 : 0}
+          index={deleteCandidate === null && cancelCandidate === null ? -1 : 0}
           enablePanDownToClose
           onClose={dismissDeleteSheet}
           snapPoints={['50%', '100%']}
+          backgroundStyle={{ backgroundColor: surface }}
         >
           <BottomSheetView>
+            {cancelCandidate ? (
+              <View testID="reminders-cancel-series-sheet" className="items-center gap-3 bg-surface px-5 pb-9 pt-3">
+                <View testID="reminders-cancel-series-icon" className={`size-14 items-center justify-center rounded-full ${CATEGORY_SLOTS.rose.surface}`}>
+                  <Repeat size={26} color={danger} />
+                </View>
+                <Text className="text-center text-xl font-black text-foreground">{t('reminders.cancelSeriesTitle')}</Text>
+                <Text testID="reminders-cancel-series-reference" className="text-center text-base font-semibold text-foreground">
+                  {t('reminders.cancelSeriesReference', { title: cancelCandidate.title, cadence: cancelCandidate.recurrence ? cadenceText(cancelCandidate.recurrence, t) : '' })}
+                </Text>
+                <Text className="text-center text-sm font-normal text-muted">
+                  {cancelPetName
+                    ? t('reminders.cancelSeriesBody', { title: cancelCandidate.title, pet: cancelPetName })
+                    : t('reminders.cancelSeriesBodyNoPet', { title: cancelCandidate.title })}
+                </Text>
+                <View className="w-full gap-3">
+                  <Button testID="reminders-cancel-series-confirm" className="h-14 w-full rounded-16 bg-danger" style={chunkyLip.danger} variant="danger" onPress={cancelSelectedReminder}>
+                    <Text className="text-17 font-extrabold text-danger-foreground">{t('reminders.cancelSeriesConfirm')}</Text>
+                  </Button>
+                  <Button testID="reminders-cancel-series-keep" className="w-full h-14 rounded-16 border-2 border-lip-gray bg-surface" style={chunkyLip.neutral} variant="outline" onPress={dismissDeleteSheet}>
+                    <Text className="text-17 font-extrabold text-foreground">{t('reminders.keepSeries')}</Text>
+                  </Button>
+                </View>
+              </View>
+            ) : (
             <View
               testID="reminders-delete-sheet"
               className="items-center gap-3 bg-surface px-5 pb-9 pt-3"
@@ -460,6 +582,7 @@ export function RemindersScreen() {
                 </Button>
               </View>
             </View>
+            )}
           </BottomSheetView>
         </BottomSheet>
       </View>

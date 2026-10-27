@@ -1,4 +1,5 @@
-import { createWeight, listVaccines, listWeights } from '../health-records';
+import { createVaccine, createWeight, getVaccineCatalog, listVaccines, listWeights } from '../health-records';
+import { healthKeys } from '../query-keys';
 
 const baseUrl = 'http://example.test/v1/';
 const vaccinesEndpoint = 'http://example.test/v1/pets/pet-1/vaccines';
@@ -45,6 +46,58 @@ function makeWeight(overrides: Record<string, unknown> = {}) {
     ...overrides,
   };
 }
+
+describe('#208 R1: clientes de vacunas', () => {
+  it('#208 R1: getVaccineCatalog pide la especie y devuelve las entradas', async () => {
+    expect(typeof getVaccineCatalog).toBe('function');
+    const entries = [{ id: 'cat-rabia', species: 'dog', name: 'Rabia', scheme: { firstDoseMonths: 3, boosterMonths: 12 } }];
+    const fetchFn = jest.fn().mockResolvedValue(response(200, entries));
+    await expect(getVaccineCatalog(baseUrl, 'jwt-token', 'dog', fetchFn)).resolves.toEqual({ kind: 'ok', entries });
+    expect(fetchFn).toHaveBeenCalledWith('http://example.test/v1/vaccine-catalog?species=dog', { headers: { Authorization: 'Bearer jwt-token' } });
+    expect(healthKeys.vaccineCatalog('dog')).toEqual(['health', 'vaccine-catalog', 'dog']);
+    expect(healthKeys.vaccineCatalog('cat')).toEqual(['health', 'vaccine-catalog', 'cat']);
+    await getVaccineCatalog(baseUrl, 'jwt-token', 'cat', fetchFn);
+    expect(fetchFn).toHaveBeenLastCalledWith('http://example.test/v1/vaccine-catalog?species=cat', { headers: { Authorization: 'Bearer jwt-token' } });
+  });
+
+  it('#208 R1: getVaccineCatalog mapea 401, 500, fallo de red y falta de config', async () => {
+    expect(typeof getVaccineCatalog).toBe('function');
+    for (const [status, kind] of [[401, 'unauthorized'], [500, 'error']] as const) {
+      await expect(getVaccineCatalog(baseUrl, 'jwt-token', 'dog', jest.fn().mockResolvedValue(response(status, {})))).resolves.toEqual({ kind });
+    }
+    await expect(getVaccineCatalog(baseUrl, 'jwt-token', 'dog', jest.fn().mockRejectedValue(new Error('offline')))).resolves.toEqual({ kind: 'unreachable', message: 'offline' });
+    const fetchFn = jest.fn();
+    await expect(getVaccineCatalog(undefined, 'jwt-token', 'dog', fetchFn)).resolves.toEqual({ kind: 'missing-config' });
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+
+  it('#208 R1: createVaccine envía el cuerpo exacto y devuelve la vacuna con 201', async () => {
+    expect(typeof createVaccine).toBe('function');
+    const vaccine = makeVaccine();
+    const input = { catalogId: 'cat-rabia', appliedAt: '2026-08-01', nextDoseAt: '2027-08-01', vetName: 'Ana', clinic: 'Vet', notes: 'Lote 1' };
+    const fetchFn = jest.fn().mockResolvedValue(response(201, vaccine));
+    await expect(createVaccine(baseUrl, 'jwt-token', 'pet-1', input, fetchFn)).resolves.toEqual({ kind: 'ok', vaccine });
+    expect(fetchFn).toHaveBeenCalledWith(vaccinesEndpoint, { method: 'POST', headers: { Authorization: 'Bearer jwt-token', 'Content-Type': 'application/json' }, body: JSON.stringify(input) });
+  });
+
+  it('#208 R1: createVaccine mapea 400 a validation con sus errores', async () => {
+    expect(typeof createVaccine).toBe('function');
+    const errors = [{ path: 'appliedAt', message: 'future' }];
+    await expect(createVaccine(baseUrl, 'jwt-token', 'pet-1', { name: 'Rabia', appliedAt: '2099-01-01' }, jest.fn().mockResolvedValue(response(400, { errors })))).resolves.toEqual({ kind: 'validation', errors });
+  });
+
+  it('#208 R1: createVaccine mapea 403, 401, 500, fallo de red y falta de config', async () => {
+    expect(typeof createVaccine).toBe('function');
+    const input = { name: 'Rabia', appliedAt: '2026-08-01' };
+    for (const [status, kind] of [[403, 'forbidden'], [401, 'unauthorized'], [500, 'error']] as const) {
+      await expect(createVaccine(baseUrl, 'jwt-token', 'pet-1', input, jest.fn().mockResolvedValue(response(status, {})))).resolves.toEqual({ kind });
+    }
+    await expect(createVaccine(baseUrl, 'jwt-token', 'pet-1', input, jest.fn().mockRejectedValue(new Error('offline')))).resolves.toEqual({ kind: 'unreachable', message: 'offline' });
+    const fetchFn = jest.fn();
+    await expect(createVaccine(undefined, 'jwt-token', 'pet-1', input, fetchFn)).resolves.toEqual({ kind: 'missing-config' });
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+});
 
 describe('R1: listVaccines mapea la respuesta por kind', () => {
   it('gets the ordered vaccines with the bearer token', async () => {

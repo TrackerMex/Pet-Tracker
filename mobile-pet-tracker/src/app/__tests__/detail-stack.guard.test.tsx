@@ -178,8 +178,9 @@ describe('#149 R3: cerrar sesión en un detalle aterriza en welcome', () => {
     '/pets/pet-1/geofences',
     '/pets/pet-1/geofence-editor',
     '/meals-history',
+    '/pets/pet-1/vaccines/new', // #208 R4
     '/edit-profile', // #194 R4
-  ])('#194 R4: cierra sesión en %s, aterriza en welcome y no reabre el detalle', async (href) => {
+  ])('#194 R4: cierra sesión en %s, aterriza en welcome y no reabre el detalle (enmendado por #208 R4)', async (href) => {
     mockAuthState = { status: 'authenticated', token: 'token-a' };
     const app = renderRouter(routes(), { initialUrl: '/home' });
     await app;
