@@ -328,3 +328,11 @@ it('#209 R11: cambiar de tipo sobrescribe un valor editado', async () => {
   expect(screen.getByTestId('food-type-dry')).toHaveProp('accessibilityState', { checked: false });
   expect(screen.getByTestId('kcal-note')).toHaveTextContent(FOUR_TYPES[1][3], { exact: true });
 });
+
+it.each([['79', true], ['80', false], ['600', false], ['601', true], ['', true]] as const)('#209 R12: kcal «%s» desactiva Siguiente: %s', async (value, disabled) => {
+  await goToFood(5);
+  await fireEvent.press(screen.getByTestId('food-type-dry'));
+  await fireEvent.changeText(screen.getByTestId('kcal-input'), value);
+  if (disabled) expect(screen.getByTestId('nutrition-questionnaire-next')).toBeDisabled();
+  else expect(screen.getByTestId('nutrition-questionnaire-next')).toBeEnabled();
+});
