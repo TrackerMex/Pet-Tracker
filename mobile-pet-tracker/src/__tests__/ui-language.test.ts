@@ -22,6 +22,7 @@ import {
   R17_EDIT_PROFILE,
   R18_DATE_FIELD,
   R19_VACCINE_CREATE,
+  R20_NUTRITION_QUESTIONNAIRE,
   R21_PET_MEMBERS,
   type UseRow,
 } from './ui-copy-table';
@@ -194,8 +195,8 @@ describe('#65 R9: el alta de mascota resuelve su copy por clave', () => {
 });
 
 describe('#65 R10: el emparejado del collar resuelve su copy por clave', () => {
-  it('resuelve las ocurrencias normativas y el delta de conectividad', () => {
-    expect(R10_PAIRING).toHaveLength(42 + 2 + 1 + 4 - 1 + 1); // +4 #94 E1: la tabla del Mapa comparte el util; -1 #95 R5; #188 R18: -1 fila Prompt, +2 filas Lead y Body
+  it('resuelve las ocurrencias normativas y el delta de conectividad (enmendado por #216 R6)', () => {
+    expect(R10_PAIRING).toHaveLength(42 + 2 + 1 + 4 - 1 + 1 + 1); // +4 #94 E1: la tabla del Mapa comparte el util; -1 #95 R5; #188 R18: -1 fila Prompt, +2 filas Lead y Body; +1 #216 R6: la nota de solo lectura
     checkUses(R10_PAIRING);
   });
 });
@@ -507,7 +508,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
     checkUses(ALL_USES);
   });
 
-  it('#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas (enmendado por #200 R1) (enmendado por #199 R1) (enmendado por #220 R16) (enmendado por #208 R20) (enmendado por #214 R22)', () => {
+  it('#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas (enmendado por #200 R1) (enmendado por #199 R1) (enmendado por #220 R16) (enmendado por #208 R20) (enmendado por #214 R22) (enmendado por #209 R23)', () => {
     expect(SCREEN_FILES).toHaveLength(
       19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1 // #100 R10, #41 R10, #146 R10, #105 R5
         + 1 - 1 // #117 R10: sale app/(auth)/forgot.tsx, entra screens/forgot/index.tsx
@@ -525,6 +526,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
         + 1 // #220 R16: components/date-field.tsx
         + 1 // #208 R20: screens/vaccine-create/index.tsx
         + 3 // #214 R22: screens/pet-members, screens/pet-invite y screens/join-pet
+        + 1 // #209 R23: screens/nutrition-questionnaire/index.tsx
     );
 
     for (const file of SCREEN_FILES) {
@@ -658,5 +660,12 @@ describe('#214 R22: copy de Familia', () => {
       expect(Object.prototype.hasOwnProperty.call(es, key)).toBe(true);
       expect(R21_PET_MEMBERS.some((row) => row.key === key)).toBe(true);
     }
+  });
+});
+
+describe('#209 R23: el cuestionario resuelve su copy por clave', () => {
+  it('#209 R23: el bloque del cuestionario tiene 96 filas', () => {
+    expect(R20_NUTRITION_QUESTIONNAIRE).toHaveLength(96);
+    checkUses(R20_NUTRITION_QUESTIONNAIRE);
   });
 });

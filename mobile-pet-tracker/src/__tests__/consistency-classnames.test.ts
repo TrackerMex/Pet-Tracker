@@ -94,13 +94,13 @@ describe('#62 R1: la escala de radios está declarada y el botón primario tiene
     expect(button).not.toContain('rounded-2xl');
   });
 
-  it('deja todos los botones primarios sólidos en un único radio (enmendado por #177 R10) (enmendado por #201 R13) (enmendado por #208 R21) (enmendado por #214 R13, R15, R18, R20)', () => {
+  it('deja todos los botones primarios sólidos en un único radio (enmendado por #177 R10) (enmendado por #201 R13) (enmendado por #208 R21) (enmendado por #214 R13, R15, R18, R20) (enmendado por #209 R24)', () => {
     const primaryRadius = sourceFiles().flatMap((path) =>
       readFileSync(path, 'utf8').match(/rounded-xl bg-accent(?=[\s'"`])/g) ?? [],
     );
 
     expect(primaryRadius).toHaveLength(1 + 1); // #208 R21 // #177 R10
-    expect(sourceFiles().flatMap(path => readFileSync(path, 'utf8').match(/rounded-16 bg-accent(?=[\s'"`])/g) ?? [])).toHaveLength(16 + 1 + 1 + 1 + 1 + 1 + 4); // #208 R21 // #194 R6 // #191 R11 // #201 R13 // #214 R13, R15, R18, R20
+    expect(sourceFiles().flatMap(path => readFileSync(path, 'utf8').match(/rounded-16 bg-accent(?=[\s'"`])/g) ?? [])).toHaveLength(16 + 1 + 1 + 1 + 1 + 1 + 4 + 2); // #209 R24 // #208 R21 // #194 R6 // #191 R11 // #201 R13 // #214 R13, R15, R18, R20
     expect(filesMatching(/rounded-2xl bg-accent(?=[\s'"`])/)).toEqual([]);
   });
 });
@@ -207,12 +207,12 @@ describe('#62 R12: los TextInput crudos comparten una sola receta', () => {
     ),
   );
 
-  it('da color temático a los seis placeholders (enmendado por #208 R21) (enmendado por #214 R18)', () => {
+  it('da color temático a los seis placeholders (enmendado por #208 R21) (enmendado por #214 R18) (enmendado por #209 R24)', () => {
     const withPlaceholder = textInputs.filter(({ source }) =>
       /\bplaceholder=/.test(source),
     );
 
-    expect(textInputs).toHaveLength(6 + 1 + 3 + 1); // #208 R21 // #214 R18
+    expect(textInputs).toHaveLength(6 + 1 + 3 + 1 + 2); // #209 R24 // #208 R21 // #214 R18
     expect(withPlaceholder).toHaveLength(5 + 3 + 1); // #208 R21 // #214 R18
     expect(
       withPlaceholder
@@ -280,6 +280,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     [join('screens', 'login', 'index.tsx'), 1], // #205 R8
     [join('screens', 'reset-password', 'index.tsx'), 1], // #205 R13
     [join('screens', 'alerts', 'index.tsx'), 1], // #223 R9
+    [join('screens', 'nutrition-questionnaire', 'index.tsx'), 6], // #209 R24
   ] as const;
 
   it('declara las dos constantes nativas compartidas', () => {
@@ -293,7 +294,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     );
   });
 
-  it.each(directUses)('%s importa y aplica sus %i esquinas (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9) (enmendado por #200 R1 y #200 R5 y #200 R7 y #200 R8 y #200 R9) (enmendado por #199 R3) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R2) (enmendado por #205 R3) (enmendado por #220 R4) (enmendado por #220 R14) (enmendado por #220 R15) (enmendado por #208 R21) (enmendado por #214 R4, R18) (enmendado por #223 R18)', (path, count) => {
+  it.each(directUses)('%s importa y aplica sus %i esquinas (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9) (enmendado por #200 R1 y #200 R5 y #200 R7 y #200 R8 y #200 R9) (enmendado por #199 R3) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R2) (enmendado por #205 R3) (enmendado por #220 R4) (enmendado por #220 R14) (enmendado por #220 R15) (enmendado por #208 R21) (enmendado por #214 R4, R18) (enmendado por #209 R24) (enmendado por #223 R18)', (path, count) => {
     const source = readSource(path);
     const uses = [...source.matchAll(/style=\{CONTINUOUS_CORNER\}/g)];
 
@@ -312,7 +313,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     }
   });
 
-  it('fusiona la esquina una vez y la entrega a las dos ramas de Card (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9) (enmendado por #200 R1 y #200 R5 y #200 R7 y #200 R8 y #200 R9) (enmendado por #199 R3) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R2) (enmendado por #205 R3) (enmendado por #220 R4) (enmendado por #220 R14) (enmendado por #220 R15) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R4, R18) (enmendado por #223 R18)', () => {
+  it('fusiona la esquina una vez y la entrega a las dos ramas de Card (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9) (enmendado por #200 R1 y #200 R5 y #200 R7 y #200 R8 y #200 R9) (enmendado por #199 R3) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R2) (enmendado por #205 R3) (enmendado por #220 R4) (enmendado por #220 R14) (enmendado por #220 R15) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R4, R18) (enmendado por #209 R24) (enmendado por #223 R18)', () => {
     const card = readSource(join('components', 'card.tsx'));
 
     expect(card).toContain(
@@ -345,6 +346,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
       + 1 // #213 R6
       + 2 // #214 R4, R18
       + 1 // #223 R9
+      + 6 // #209 R24
     ); // #189 R6; #189 R5 (enmendado por #190 R13) // #191 R11 // #177 R5 // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168 R3, R8, R6; #170 R16; #171 R3: ready-done; #173 R10: ProfileTile
   });
 });
@@ -416,7 +418,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
 });
 
 describe('#98 R10: los candados que esta feature no mueve', () => {
-  it('deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9) (enmendado por #200 R1 y #200 R5 y #200 R6 y #200 R7 y #200 R8 y #200 R9) (enmendado por #199 R3) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R2, R3, R4, R11, R13) (enmendado por #203 R5) (enmendado por #205 R3) (enmendado por #220 R4) (enmendado por #220 R14) (enmendado por #220 R15) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R4, R18) (enmendado por #223 R18)', () => {
+  it('deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9) (enmendado por #200 R1 y #200 R5 y #200 R6 y #200 R7 y #200 R8 y #200 R9) (enmendado por #199 R3) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R2, R3, R4, R11, R13) (enmendado por #203 R5) (enmendado por #205 R3) (enmendado por #220 R4) (enmendado por #220 R14) (enmendado por #220 R15) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R4, R18) (enmendado por #209 R24) (enmendado por #223 R18)', () => {
     const home = readSource(join('screens', 'home', 'index.tsx'));
     const food = readSource(join('screens', 'food', 'index.tsx'));
     const count = (pattern: RegExp) =>
@@ -450,6 +452,7 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
       + 1 // #213 R6
       + 2 // #214 R4, R18
       + 1 // #223 R9
+      + 6 // #209 R24
     ); // #189 R6; #189 R5 (enmendado por #190 R13) // #191 R11 // #177 R5 // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168; #170 R8: alert-detail-map; #171 R3: ready-done; #173 R10: ProfileTile
     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(1 + 1); // #177 R10 // #208 R21
     expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 2 - 1 - 1 - 1 - 1 - 2); // #191 R11 // #179 R6, R7, R11; #178 R5, R10, R12; #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6 // #198 R3 // #198 R11 // #198 R13 // #203 R5 // #205 R18
@@ -600,6 +603,7 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
       'screens/alert-detail/index.tsx': 1,
       'screens/docs-upload-form/index.tsx': 1,
       'screens/edit-profile/index.tsx': 1, // #194 R6
+      'screens/food/index.tsx': 1, // #209 R24
       'screens/forgot/index.tsx': 1,
       'screens/geofence-editor/index.tsx': 1,
       'screens/geofences/index.tsx': 1,
@@ -607,6 +611,7 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
       'screens/join-pet/index.tsx': 2, // #214 R18, R20
       'screens/login/index.tsx': 1,
       'screens/map/index.tsx': 1, // #201 R13
+      'screens/nutrition-questionnaire/index.tsx': 1, // #209 R24
       'screens/pairing/index.tsx': 1,
       'screens/pet-invite/index.tsx': 1, // #214 R15
       'screens/pet-members/index.tsx': 1, // #214 R13
@@ -616,7 +621,7 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
       'screens/welcome/index.tsx': 1,
     };
 
-  it('inventaría los diecisiete primarios con labio, fichero a fichero (enmendado por #177 R10) (enmendado por #201 R13) (enmendado por #208 R21) (enmendado por #214 R13, R15, R18, R20)', () => {
+  it('inventaría los diecisiete primarios con labio, fichero a fichero (enmendado por #177 R10) (enmendado por #201 R13) (enmendado por #208 R21) (enmendado por #214 R13, R15, R18, R20) (enmendado por #209 R24)', () => {
     const inventory = (pattern: RegExp) => Object.fromEntries(
       sourceFiles().flatMap((path) => {
         const count = (readFileSync(path, 'utf8').match(pattern) ?? []).length;
@@ -662,7 +667,7 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
     }
   });
 
-  it('inventaría los cinco secundarios neutros de toda la app (enmendado por #177 R10) (enmendado por #189 R13) (enmendado por #197 R10) (enmendado por #203 R7) (enmendado por #213 R22) (enmendado por #214 R7, R11, R15, R16, R17) (enmendado por #223 R18)', () => {
+  it('inventaría los cinco secundarios neutros de toda la app (enmendado por #177 R10) (enmendado por #189 R13) (enmendado por #197 R10) (enmendado por #203 R7) (enmendado por #213 R22) (enmendado por #214 R7, R11, R15, R16, R17) (enmendado por #209 R24) (enmendado por #223 R18)', () => {
     const testIds = sourceFiles().filter((path) => path.endsWith('.tsx')).flatMap((path) =>
       readFileSync(path, 'utf8').split(/<Button(?=[\s>])/).slice(1).flatMap((part) => {
         const tag = part.split('<')[0];
@@ -699,7 +704,7 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
       (total, path) => total + (readFileSync(path, 'utf8').match(pattern) ?? []).length,
       0,
     );
-    expect(count(/border-lip-gray/g)).toBe(4 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 2 + 1 + 4 + 1); // #223 R10 // #213 R6 (+2); #213 R17 (+1) // #214 R7, R11, R15, R17; #189 R13; #179 R6, R7; #170 R16; #171 R14; #174 R8; #175 R7: borde de la zona de subida; #203 R7
+    expect(count(/border-lip-gray/g)).toBe(4 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 2 + 1 + 4 + 5 + 1); // #223 R10 // #209 R24 // #213 R6 (+2); #213 R17 (+1) // #214 R7, R11, R15, R17; #189 R13; #179 R6, R7; #170 R16; #171 R14; #174 R8; #175 R7: borde de la zona de subida; #203 R7
     expect(count(/\bborder-b-6\b/g)).toBe(0); // #177 R10
   });
 

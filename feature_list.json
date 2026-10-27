@@ -3544,7 +3544,7 @@
   {
     "id": 209,
     "name": "mobile-nutrition-questionnaire",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P1",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 2). Cuestionario de nutrición: hoy no hay formulario del perfil y «Generar plan» acaba en 422 en la app real. Wizard por pasos sobre el PUT /v1/pets/:petId/nutrition-profile existente (actividad, BCS 1-9, peso objetivo si BCS >= 7, tipo de alimento y kcal/100 g con precarga, alergias y enfermedades con lista cerrada más «otra» acotada); putJson nuevo en src/api/http.ts; al guardar llama a nutrition-plan/generate. Entradas desde el estado sin perfil y «Editar perfil» en Horario; «Generar plan» oculto a quien no es owner. Preguntas que el motor no modela quedan fuera. Depende del gate G1 (artboard CuestionarioNutricion). Evidencia en progress/explore_nutrition-questionnaire-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },
@@ -3593,7 +3593,7 @@
   {
     "id": 216,
     "name": "mobile-role-aware-actions",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 3). Ocultar a family las acciones de owner que hoy se muestran y acaban en 403: registro de peso, alta de recordatorio, borrado en Recordatorios, vincular collar y subir documentos, con el patrón de solo lectura existente; el 403 del backend queda como red. Depende de #214. Evidencia en progress/explore_roles-sharing-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },

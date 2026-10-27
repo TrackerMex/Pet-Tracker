@@ -18,6 +18,7 @@ import { Easing, ReduceMotion } from 'react-native-reanimated';
 
 import {
   getNutritionPlan,
+  getNutritionProfile,
   serveMeal,
   type NutritionPlanState,
   unserveMeal,
@@ -46,6 +47,7 @@ jest.mock('../../api/pets', () => ({
 
 jest.mock('../../api/nutrition', () => ({
   getNutritionPlan: jest.fn(),
+  getNutritionProfile: jest.fn(),
   serveMeal: jest.fn(),
   unserveMeal: jest.fn(),
 }));
@@ -134,6 +136,7 @@ jest.mock(
 
 const apiUrl = 'http://example.test/v1';
 const mockGetNutritionPlan = jest.mocked(getNutritionPlan);
+const mockGetNutritionProfile = jest.mocked(getNutritionProfile);
 const mockServeMeal = jest.mocked(serveMeal);
 const mockUnserveMeal = jest.mocked(unserveMeal);
 const mockListPets = jest.mocked(listPets);
@@ -227,6 +230,20 @@ beforeEach(() => {
     signIn: jest.fn(),
     signOut: jest.fn(),
   } satisfies AuthContextValue);
+  mockGetNutritionProfile.mockResolvedValue({
+    kind: 'ok',
+    profile: {
+      petId: 'pet-1',
+      activityLevel: 'medium',
+      bodyCondition: 5,
+      targetWeightKg: null,
+      foodType: 'dry',
+      kcalPer100g: 350,
+      allergies: [],
+      diseases: [],
+      updatedAt: '2026-08-22T00:00:00.000Z',
+    },
+  });
 });
 
 describe('#106 R1: expo-haptics entra declarada y sin configuración de babel', () => {
@@ -1920,4 +1937,55 @@ describe('#222 R4: Nutrición', () => {
       await cleanup();
     }
   });
+});
+
+it('#209 R19: owner sin perfil ve Crear perfil nutricional y navega al cuestionario', async () => {
+  mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+  mockGetNutritionProfile.mockResolvedValue({ kind: 'not-found' });
+  await renderFood();
+  const cta = await screen.findByTestId('food-create-profile');
+  const section = screen.getByTestId('food-profile-empty');
+  expect(mockGetNutritionProfile).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1');
+  expect(screen.queryByTestId('food-plan-empty')).toBeNull();
+  const pingo = within(section).getByTestId('food-profile-pingo', { includeHiddenElements: true });
+  expect(foodChild(pingo, 0).props.source).toEqual([
+    expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-food\.webp$/) }),
+  ]);
+  expect(within(section).getByText('Aún no hay perfil nutricional')).toBeOnTheScreen();
+  expect(within(section).getByText('Respóndeme unas preguntas sobre Luna y preparo su plan: cuántas calorías necesita y cuántos gramos servir en cada comida.')).toBeOnTheScreen();
+  expect(within(section).getByText('Son 4 pasos y podrás cambiar tus respuestas cuando quieras.')).toBeOnTheScreen();
+  expect(cta).toHaveTextContent('Crear perfil nutricional');
+  await fireEvent.press(cta);
+  expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/nutrition-profile', params: { petId: 'pet-1' } });
+});
+
+it.each(['family', 'walker', 'vet'] as const)('#209 R19: %s sin perfil ve el vacío actual', async (role) => {
+  mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: role })] });
+  mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+  mockGetNutritionProfile.mockResolvedValue({ kind: 'not-found' });
+  await renderFood();
+  await screen.findByTestId('food-plan-empty');
+  expect(screen.queryByTestId('food-profile-empty')).toBeNull();
+  expect(screen.queryByTestId('food-create-profile')).toBeNull();
+});
+
+it('#209 R19: owner con perfil y sin plan ve el vacío actual', async () => {
+  mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+  await renderFood();
+  await screen.findByTestId('food-plan-empty');
+  expect(screen.queryByTestId('food-profile-empty')).toBeNull();
+  expect(screen.queryByTestId('food-create-profile')).toBeNull();
+});
+it('#209 R19: Pingo de NutricionSinPerfil mide 150 pt por style', async () => {
+  mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+  mockGetNutritionProfile.mockResolvedValue({ kind: 'not-found' });
+  await renderFood();
+  // docs/conventions.md §Esperas: observar la sección antes de medir.
+  await screen.findByTestId('food-profile-empty');
+  const image = within(screen.getByTestId('food-profile-pingo', { includeHiddenElements: true })).getByTestId('food-profile-pingo-image', { includeHiddenElements: true });
+  expect(image.props.style).toEqual({ width: 150, height: 150 });
+  expect(image.props.className).toBeUndefined();
 });

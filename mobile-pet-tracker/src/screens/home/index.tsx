@@ -292,6 +292,7 @@ export function HomeScreen() {
       ? activity.data.days[activity.data.days.length - 1]
       : undefined;
   const petList = pets.data?.kind === 'ok' ? pets.data.pets : [];
+  const isOwner = petList.find(({ id }) => id === selectedPetId)?.myRole === 'owner';
   const hasPets = petList.length > 0;
   const hasOpenAlerts =
     openAlerts.data?.kind === 'ok' && openAlerts.data.items.length > 0;
@@ -681,7 +682,7 @@ export function HomeScreen() {
                   <Text className="text-sm font-normal text-muted">{t('home.noCollar')}</Text>
                 </>
               )}
-              {detail.data.pet.device === null ? (
+              {detail.data.pet.device === null && isOwner ? (
                     <Pressable
                       accessibilityRole="button"
                       testID="collar-pair-link"
@@ -712,7 +713,7 @@ export function HomeScreen() {
               </Text>
               <View testID="quick-actions-row" className="flex-row gap-2.5">
                 {QUICK_ACTIONS.map(
-                  ({ testID, Icon, labelKey, slot, lip, href }, index) => (
+                  ({ testID, Icon, labelKey, slot, lip, href }, index) => testID === 'quick-action-reminder' && !isOwner ? null : (
                     <Pressable
                       key={testID}
                       testID={testID}

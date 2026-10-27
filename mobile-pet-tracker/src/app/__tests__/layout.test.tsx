@@ -423,14 +423,14 @@ describe('#114 R1: la guarda de RootStack declara reminders y alerts tras las se
     mockGetStoredLanguage.mockResolvedValue(undefined);
   });
 
-  it('#194 R4: declara ocho rutas protegidas y alerts singular (enmendado por #208 R4) (enmendado por #214 R3)', async () => {
+  it('#194 R4: declara ocho rutas protegidas y alerts singular (enmendado por #208 R4) (enmendado por #214 R3) (enmendado por #209 R3)', async () => {
     await render(<RootLayout />);
     await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
     const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
     const group = Children.toArray(stack?.children)[4];
     if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
     const children = Children.toArray(group.props.children);
-    expect(children).toHaveLength(8 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 3); // #194 R4 // #185 R10 // #100 R2, #41 R4, #146 R5, #105 R8 // #208 R4 // #214 R3
+    expect(children).toHaveLength(8 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 3 + 1); // #209 R3 // #194 R4 // #185 R10 // #100 R2, #41 R4, #146 R5, #105 R8 // #208 R4 // #214 R3
     expect(children.slice(7, 9).map((child) =>
       isValidElement<{ name: string; dangerouslySingular?: boolean }>(child)
         ? [child.type, child.props.name, child.props.dangerouslySingular]
@@ -449,14 +449,14 @@ describe('#100 R2: la guarda de RootStack declara el detalle de alerta tras aler
     mockGetStoredLanguage.mockResolvedValue(undefined);
   });
 
-  it('#194 R4: declara alerts/[alertId] como décimo hijo y singular (enmendado por #208 R4) (enmendado por #214 R3)', async () => {
+  it('#194 R4: declara alerts/[alertId] como décimo hijo y singular (enmendado por #208 R4) (enmendado por #214 R3) (enmendado por #209 R3)', async () => {
     await render(<RootLayout />);
     await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
     const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
     const group = Children.toArray(stack?.children)[4];
     if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
     const children = Children.toArray(group.props.children);
-    expect(children).toHaveLength(9 + 1 + 1 + 1 + 1 + 1 + 1 + 3); // #194 R4 // #185 R10 // #41 R4, #146 R5, #105 R8 // #208 R4 // #214 R3
+    expect(children).toHaveLength(9 + 1 + 1 + 1 + 1 + 1 + 1 + 3 + 1); // #209 R3 // #194 R4 // #185 R10 // #41 R4, #146 R5, #105 R8 // #208 R4 // #214 R3
     const detail = children[9];
     expect(isValidElement<{ name: string; dangerouslySingular?: boolean }>(detail)
       ? [detail.type, detail.props.name, detail.props.dangerouslySingular]
@@ -494,14 +494,14 @@ describe('#41 R4: la guarda de RootStack declara las zonas seguras tras el detal
     mockGetStoredLanguage.mockResolvedValue(undefined);
   });
 
-  it('#194 R4: declara pets/[petId]/geofences como undécimo hijo y no singular (enmendado por #189 R1.1) (enmendado por #208 R4) (enmendado por #214 R3)', async () => {
+  it('#194 R4: declara pets/[petId]/geofences como undécimo hijo y no singular (enmendado por #189 R1.1) (enmendado por #208 R4) (enmendado por #214 R3) (enmendado por #209 R3)', async () => {
     await render(<RootLayout />);
     await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
     const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
     const group = Children.toArray(stack?.children)[4];
     if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
     const children = Children.toArray(group.props.children);
-    expect(children).toHaveLength(10 + 1 + 1 + 1 + 1 + 1 + 3); // #194 R4 // #185 R10 // #146 R5, #105 R8 // #208 R4 // #214 R3
+    expect(children).toHaveLength(10 + 1 + 1 + 1 + 1 + 1 + 3 + 1); // #209 R3 // #194 R4 // #185 R10 // #146 R5, #105 R8 // #208 R4 // #214 R3
     const detail = children[10];
     expect(isValidElement<{ name: string; dangerouslySingular?: boolean }>(detail)
       ? [detail.type, detail.props.name, detail.props.dangerouslySingular]
@@ -526,14 +526,14 @@ describe('#146 R5: la guarda de RootStack declara el editor de zonas tras la lis
     mockGetStoredLanguage.mockResolvedValue(undefined);
   });
 
-  it('#194 R4: declara pets/[petId]/geofence-editor como duodécimo hijo y no singular (enmendado por #189 R1.1) (enmendado por #208 R4) (enmendado por #214 R3)', async () => {
+  it('#194 R4: declara pets/[petId]/geofence-editor como duodécimo hijo y no singular (enmendado por #189 R1.1) (enmendado por #208 R4) (enmendado por #214 R3) (enmendado por #209 R3)', async () => {
     await render(<RootLayout />);
     await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
     const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
     const group = Children.toArray(stack?.children)[4];
     if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
     const children = Children.toArray(group.props.children);
-    expect(children).toHaveLength(11 + 1 + 1 + 1 + 1 + 3); // #194 R4 // #185 R10 // #105 R8 // #208 R4 // #214 R3
+    expect(children).toHaveLength(11 + 1 + 1 + 1 + 1 + 3 + 1); // #209 R3 // #194 R4 // #185 R10 // #105 R8 // #208 R4 // #214 R3
     const detail = children[11];
     expect(isValidElement<{ name: string; dangerouslySingular?: boolean }>(detail)
       ? [detail.type, detail.props.name, detail.props.dangerouslySingular]
@@ -604,7 +604,7 @@ describe('#194 R4: the profile editor is protected', () => {
     mockGetStoredLanguage.mockResolvedValue(undefined);
   });
 
-  it('#194 R4: edit-profile es la última pantalla protegida', async () => {
+  it('#194 R4: edit-profile es la última pantalla protegida (enmendado por #209 R3)', async () => {
     await render(<RootLayout />);
     await waitFor(() => expect(screen.getByTestId('root-stack')).toBeVisible());
     const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
@@ -612,9 +612,22 @@ describe('#194 R4: the profile editor is protected', () => {
     if (!isValidElement<{ guard: boolean; children: ReactNode }>(group)) throw new Error('Expected protected group');
     expect(group.type).toBe(Stack.Protected);
     expect(group.props.guard).toBe(true);
-    const detail = Children.toArray(group.props.children).at(-1);
+    const detail = Children.toArray(group.props.children).at(-1 - 1); // #209 R3
     expect(isValidElement<{ name: string }>(detail) ? [detail.type, detail.props.name] : undefined)
       .toEqual([Stack.Screen, 'edit-profile']);
+  });
+
+  it('#209 R3: nutrition-profile es el último hijo protegido, justo tras edit-profile', async () => {
+    await render(<RootLayout />);
+    await screen.findByTestId('root-stack');
+    const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
+    const group = Children.toArray(stack?.children)[4];
+    if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
+    const names = Children.toArray(group.props.children).map(child =>
+      isValidElement<{ name: string }>(child) ? child.props.name : undefined,
+    );
+    expect(names.at(-1)).toBe('nutrition-profile');
+    expect(names.indexOf('nutrition-profile')).toBe(names.indexOf('edit-profile') + 1);
   });
 });
 
