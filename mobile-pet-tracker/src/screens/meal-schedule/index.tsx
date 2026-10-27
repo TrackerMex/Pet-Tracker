@@ -1,10 +1,10 @@
 import { Host } from '@expo/ui';
 import ExpoDateTimePicker from '@expo/ui/community/datetime-picker';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Redirect } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Clock, Sparkles } from 'reicon-react-native';
 
@@ -90,6 +90,10 @@ function MealScheduleContent({ petId }: { petId: string }) {
   function retryAll() {
     plan.refetch();
     profile.refetch();
+  }
+
+  function openNutritionProfile() {
+    router.push({ pathname: '/nutrition-profile', params: { petId } });
   }
 
   async function runMealTimeEdit(request: () => Promise<EditMealTimeState>) {
@@ -402,12 +406,19 @@ function MealScheduleContent({ petId }: { petId: string }) {
 
         {!hasError && loadedProfile !== null ? (
           <View testID="nutrition-profile-section" className="gap-2.5">
-            <Text
-              testID="nutrition-profile-title"
-              className="mt-1 text-17 font-extrabold text-foreground"
-            >
-              {t('mealSchedule.nutritionProfile')}
-            </Text>
+            <View className="flex-row items-center justify-between">
+              <Text
+                testID="nutrition-profile-title"
+                className="mt-1 text-17 font-extrabold text-foreground"
+              >
+                {t('mealSchedule.nutritionProfile')}
+              </Text>
+              {isOwner ? (
+                <Pressable testID="nutrition-profile-edit" accessibilityLabel={t('nutritionQuestionnaire.editProfileLabel')} hitSlop={TOUCH_SLOP} className="h-9 flex-row items-center justify-center rounded-xl border-2 border-lip-gray bg-surface px-3" style={chunkyLip.neutralCompact} onPress={openNutritionProfile}>
+                  <Text className="text-13 font-extrabold text-foreground">{t('profile.editProfile')}</Text>
+                </Pressable>
+              ) : null}
+            </View>
             <View testID="nutrition-profile-pills" className="flex-row flex-wrap gap-1.5">
               <Text testID="nutrition-profile-activity" className="rounded-full bg-default px-2.5 py-1.5 text-xs font-bold text-foreground">
                 <Text className="text-muted">{`${t('mealSchedule.activity')} `}</Text>
@@ -441,6 +452,12 @@ function MealScheduleContent({ petId }: { petId: string }) {
           <Text testID="nutrition-profile-empty" className="font-normal text-muted">
             {t('mealSchedule.noNutritionProfileYet')}
           </Text>
+        ) : null}
+
+        {!hasError && profile.data?.kind === 'not-found' && isOwner ? (
+          <Pressable testID="nutrition-profile-create" hitSlop={TOUCH_SLOP} className="h-9 flex-row items-center justify-center rounded-xl border-2 border-lip-gray bg-surface px-3" style={chunkyLip.neutralCompact} onPress={openNutritionProfile}>
+            <Text className="text-13 font-extrabold text-foreground">{t('nutritionQuestionnaire.createProfile')}</Text>
+          </Pressable>
         ) : null}
       </View>
     </ScrollView>
