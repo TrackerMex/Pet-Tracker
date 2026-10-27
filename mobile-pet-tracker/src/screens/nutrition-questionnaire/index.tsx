@@ -15,7 +15,7 @@ import { ScreenHeader } from '../../components/screen-header';
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
-import { CATEGORY_SLOTS } from '../../utils/category-palette';
+import { CATEGORY_SLOTS, type CategorySlot } from '../../utils/category-palette';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 
@@ -25,18 +25,39 @@ const ACTIVITY_OPTIONS = [
   { value: 'high', slot: 'amber', icon: TrendUp, title: { labelKey: 'nutritionQuestionnaire.activityHigh' }, description: { labelKey: 'nutritionQuestionnaire.activityHighDescription' } },
 ] as const;
 
+const BCS_ROWS = [
+  { n: 1, slot: 'blue', title: { labelKey: 'nutritionQuestionnaire.bcs1' }, description: { labelKey: 'nutritionQuestionnaire.bcs1Description' } },
+  { n: 2, slot: 'blue', title: { labelKey: 'nutritionQuestionnaire.bcs2' }, description: { labelKey: 'nutritionQuestionnaire.bcs2Description' } },
+  { n: 3, slot: 'blue', title: { labelKey: 'nutritionQuestionnaire.bcs3' }, description: { labelKey: 'nutritionQuestionnaire.bcs3Description' } },
+  { n: 4, slot: 'green', title: { labelKey: 'nutritionQuestionnaire.bcs4' }, description: { labelKey: 'nutritionQuestionnaire.bcs4Description' } },
+  { n: 5, slot: 'green', title: { labelKey: 'nutritionQuestionnaire.bcs5' }, description: { labelKey: 'nutritionQuestionnaire.bcs5Description' } },
+  { n: 6, slot: 'amber', title: { labelKey: 'nutritionQuestionnaire.bcs6' }, description: { labelKey: 'nutritionQuestionnaire.bcs6Description' } },
+  { n: 7, slot: 'amber', title: { labelKey: 'nutritionQuestionnaire.bcs7' }, description: { labelKey: 'nutritionQuestionnaire.bcs7Description' } },
+  { n: 8, slot: 'rose', title: { labelKey: 'nutritionQuestionnaire.bcs8' }, description: { labelKey: 'nutritionQuestionnaire.bcs8Description' } },
+  { n: 9, slot: 'rose', title: { labelKey: 'nutritionQuestionnaire.bcs9' }, description: { labelKey: 'nutritionQuestionnaire.bcs9Description' } },
+] as const;
+
 type Step = 'activity' | 'condition' | 'target' | 'food' | 'health';
+
+function BcsBadge({ n, slot, testID }: { n: number; slot: CategorySlot; testID: string }) {
+  return <View testID={testID} className={`size-7.5 items-center justify-center rounded-10 ${CATEGORY_SLOTS[slot].surface}`}>
+    <Text className={`text-sm font-black ${CATEGORY_SLOTS[slot].ink}`}>{n}</Text>
+  </View>;
+}
 
 function QuestionnaireForm({ pet }: { initial: NutritionProfile | null; pet: PetProfile }) {
   const t = useTranslate();
   const insets = useSafeAreaInsets();
   const chunkyLip = useChunkyLip();
-  const [step] = useState<Step>('activity');
+  const [step, setStep] = useState<Step>('activity');
   const colors = useThemeColors(['category-blue-strong', 'category-green-strong', 'category-amber-strong', 'accent-foreground']);
   const [activity, setActivity] = useState<NutritionProfileInput['activityLevel'] | null>(null);
-  const n = 1;
-  const canContinue = activity !== null;
-  function handleNext() {}
+  const [bcs, setBcs] = useState<number | null>(null);
+  const n = step === 'activity' ? 1 : 2;
+  const canContinue = step === 'activity' ? activity !== null : bcs !== null;
+  function handleNext() {
+    if (step === 'activity') setStep('condition');
+  }
 
   return (
     <KeyboardAvoidingView testID="screen-nutrition-questionnaire" className="flex-1" behavior="padding" keyboardVerticalOffset={0}>
@@ -52,9 +73,10 @@ function QuestionnaireForm({ pet }: { initial: NutritionProfile | null; pet: Pet
           <Image source={require('../../../assets/images/pingo-food.webp')} className={step === 'condition' ? 'size-11' : 'size-13'} />
           <View testID="nutrition-questionnaire-bubble" className="flex-1 rounded-tile bg-surface-secondary px-3 py-2.5" style={CONTINUOUS_CORNER}>
             <View className={step === 'condition' ? 'absolute -left-1.5 top-4.5 size-3 rotate-45 bg-surface-secondary' : 'absolute -left-1.5 top-5.5 size-3 rotate-45 bg-surface-secondary'} />
-            <Text className="text-13 font-semibold leading-body text-foreground">{t('nutritionQuestionnaire.bubbleActivity', { name: pet.name })}</Text>
+            <Text className="text-13 font-semibold leading-body text-foreground">{step === 'condition' ? t('nutritionQuestionnaire.bubbleCondition', { name: pet.name }) : t('nutritionQuestionnaire.bubbleActivity', { name: pet.name })}</Text>
           </View>
         </View>
+        {step === 'activity' ? <>
         <Text className="text-lg font-black text-foreground">{t('nutritionQuestionnaire.activityLegend', { name: pet.name })}</Text>
         <View className="gap-3">
           {ACTIVITY_OPTIONS.map((option, index) => {
@@ -76,6 +98,24 @@ function QuestionnaireForm({ pet }: { initial: NutritionProfile | null; pet: Pet
             </Pressable>;
           })}
         </View>
+        </> : null}
+        {step === 'condition' ? <>
+          <Text className="text-lg font-black text-foreground">{t('nutritionQuestionnaire.conditionLegend')}</Text>
+          <View className="gap-1.5">
+            {BCS_ROWS.map(row => {
+              const selected = bcs === row.n;
+              return <Pressable key={row.n} testID={`bcs-option-${row.n}`} accessibilityRole="radio" accessibilityState={{ checked: selected }}
+                className={selected ? 'flex-row items-center gap-2.5 rounded-14 border-2 px-2.5 py-1.25 border-accent bg-tab-pill' : 'flex-row items-center gap-2.5 rounded-14 border-2 px-2.5 py-1.25 border-transparent bg-default'}
+                onPress={() => setBcs(row.n)}>
+                <BcsBadge n={row.n} slot={row.slot} testID={`bcs-badge-${row.n}`} />
+                <View className="flex-1">
+                  <Text className="text-sm font-extrabold leading-tight text-foreground">{t(row.title.labelKey)}</Text>
+                  <Text className="text-xs leading-tight text-muted">{t(row.description.labelKey)}</Text>
+                </View>
+              </Pressable>;
+            })}
+          </View>
+        </> : null}
       </ScrollView>
       <View className="bg-background px-5 pt-4" style={{ paddingBottom: Math.max(insets.bottom, 16) }}>
         <Button testID="nutrition-questionnaire-next" className="h-14 rounded-16 bg-accent" style={chunkyLip.primary} isDisabled={!canContinue} onPress={() => void handleNext()}>
