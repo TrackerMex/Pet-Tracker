@@ -3,8 +3,16 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { nutritionPlans } from '@/db/schema/nutrition.schema';
 import { NutritionPlan } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
 import { NutritionDrizzleRepository } from './nutrition.drizzle.repository';
-describe('R13 (nutrition-ai-explainer #18): UPDATE exclusivo por id y returning mapeado', () => {
-  it('actualiza una sola columna en el plan indicado sin insertar ni releer', async () => {
+describe('R16 (nutrition-ai-structured-plan #212): resultado persistido', () => {
+  it('R16: setAiResult actualiza explicacion y propuesta solo en el plan indicado', async () => {
+    const proposal = {
+      mealGrams: [
+        { mealTime: '07:30', grams: 150 },
+        { mealTime: '19:30', grams: 155 },
+      ],
+      recommendations: ['Pésala cada dos semanas.'],
+      reviewDate: '2026-11-25',
+    };
     const row: typeof nutritionPlans.$inferSelect = {
       id: 'plan',
       petId: 'pet',
@@ -17,6 +25,7 @@ describe('R13 (nutrition-ai-explainer #18): UPDATE exclusivo por id y returning 
       objective: 'maintenance',
       warnings: [],
       aiExplanation: 'texto',
+      aiProposal: proposal,
       inputsHash: 'h'.repeat(64),
       generatedAt: new Date('2026-10-08T00:00:00Z'),
     };
@@ -25,7 +34,10 @@ describe('R13 (nutrition-ai-explainer #18): UPDATE exclusivo por id y returning 
       .fn<{ returning: typeof returning }, [ReturnType<typeof eq>]>()
       .mockReturnValue({ returning });
     const set = jest
-      .fn<{ where: typeof where }, [{ aiExplanation: string }]>()
+      .fn<
+        { where: typeof where },
+        [{ aiExplanation: string; aiProposal: typeof proposal }]
+      >()
       .mockReturnValue({ where });
     const update = jest.fn().mockReturnValue({ set });
     const insert = jest.fn();
@@ -35,11 +47,14 @@ describe('R13 (nutrition-ai-explainer #18): UPDATE exclusivo por id y returning 
       insert,
       select,
     } as unknown as NodePgDatabase);
-    const plan = await repository.setAiExplanation('plan', 'texto');
+    const plan = await repository.setAiResult('plan', 'texto', proposal);
     expect(update).toHaveBeenCalledTimes(1);
     expect(update).toHaveBeenCalledWith(nutritionPlans);
     expect(set).toHaveBeenCalledTimes(1);
-    expect(set.mock.calls[0][0]).toEqual({ aiExplanation: 'texto' });
+    expect(set.mock.calls[0][0]).toEqual({
+      aiExplanation: 'texto',
+      aiProposal: proposal,
+    });
     expect(where).toHaveBeenCalledTimes(1);
     expect(where.mock.calls[0][0]).toEqual(eq(nutritionPlans.id, 'plan'));
     expect(returning).toHaveBeenCalledTimes(1);

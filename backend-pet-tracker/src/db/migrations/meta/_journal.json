@@ -155,6 +155,13 @@
       "when": 1793049526484,
       "tag": "0021_reminders_recurrence",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1793081136834,
+      "tag": "0022_nutrition_ai_structured_plan",
+      "breakpoints": true
     }
   ]
 }

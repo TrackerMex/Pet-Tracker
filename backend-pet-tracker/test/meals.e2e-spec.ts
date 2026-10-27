@@ -485,6 +485,7 @@ describe('Meals served tracking (e2e)', () => {
           'objective',
           'warnings',
           'aiExplanation',
+          'aiProposal',
           'generatedAt',
           'servedToday',
           'kcalConsumedToday',
