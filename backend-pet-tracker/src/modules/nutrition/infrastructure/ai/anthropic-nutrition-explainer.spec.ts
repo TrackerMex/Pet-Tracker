@@ -66,7 +66,7 @@ describe('R9 (nutrition-ai-explainer #18): parametros exactos de la llamada', ()
       'clave-de-prueba',
       { create },
     );
-    await adapter.explain(input, result, ctx);
+    await adapter.explain(input, result, [], ctx);
     expect(create).toHaveBeenCalledTimes(1);
     const params = create.mock.calls[0][0] as {
       model: string;
@@ -85,7 +85,7 @@ describe('R9 (nutrition-ai-explainer #18): parametros exactos de la llamada', ()
     expect(params.system).toBe(NUTRITION_AI_SYSTEM_PROMPT);
     expect(params.messages).toHaveLength(1);
     expect(params.messages[0].role).toBe('user');
-    expect(params.messages[0].content).toBe(buildUserPrompt(input, result));
+    expect(params.messages[0].content).toBe(buildUserPrompt(input, result, []));
   });
   it('construye el cliente perezoso con clave explicita y constantes', () => {
     const source = readFileSync(
@@ -206,7 +206,7 @@ describe('R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null 
         'clave-de-prueba',
         { create },
       );
-      await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+      await expect(adapter.explain(input, result, [], ctx)).resolves.toBeNull();
       expect(warn).toHaveBeenCalledTimes(1);
       expect(warn.mock.calls[0][0]).toEqual({
         scope: 'nutrition-ai',
@@ -251,7 +251,7 @@ describe('R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null 
           .mockResolvedValue({ stop_reason: 'end_turn', content }),
       },
     );
-    await expect(adapter.explain(input, result, ctx)).resolves.toBe(
+    await expect(adapter.explain(input, result, [], ctx)).resolves.toBe(
       'Tu perro necesita...',
     );
     expect(warn).not.toHaveBeenCalled();
@@ -293,7 +293,7 @@ describe('R11 (nutrition-ai-explainer #18): cualquier fallo degrada con un warn'
       'clave-de-prueba',
       { create },
     );
-    await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+    await expect(adapter.explain(input, result, [], ctx)).resolves.toBeNull();
     expect(create).toHaveBeenCalledTimes(1);
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn.mock.calls[0][0]).toEqual({
@@ -328,7 +328,7 @@ describe('R11 (nutrition-ai-explainer #18) E1.3: la carga perezosa del SDK tambi
       null,
       loadSdk,
     );
-    await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+    await expect(adapter.explain(input, result, [], ctx)).resolves.toBeNull();
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn.mock.calls[0][0]).toEqual({
       scope: 'nutrition-ai',
@@ -360,7 +360,7 @@ describe('R11 (nutrition-ai-explainer #18) E1.3: la carga perezosa del SDK tambi
       null,
       loadSdk,
     );
-    await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+    await expect(adapter.explain(input, result, [], ctx)).resolves.toBeNull();
     expect(options).toHaveLength(1);
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn.mock.calls[0][0]).toEqual({
@@ -394,7 +394,7 @@ describe('R11 (nutrition-ai-explainer #18) E1.3: la carga perezosa del SDK tambi
       null,
       loadSdk,
     );
-    await expect(adapter.explain(input, result, ctx)).resolves.toBe(
+    await expect(adapter.explain(input, result, [], ctx)).resolves.toBe(
       'Tu perro necesita...',
     );
     expect(options).toEqual([

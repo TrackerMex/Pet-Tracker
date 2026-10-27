@@ -1,3 +1,4 @@
+import type { NutritionWeightPoint } from '@/modules/nutrition/domain/ports/nutrition-weight-reader';
 import { Logger } from '@nestjs/common';
 import type {
   NutritionEngineInput,
@@ -89,7 +90,12 @@ function setup(
   const explain = jest
     .fn<
       Promise<string | null>,
-      [NutritionEngineInput, NutritionPlanResult, NutritionExplainerContext]
+      [
+        NutritionEngineInput,
+        NutritionPlanResult,
+        NutritionWeightPoint[],
+        NutritionExplainerContext,
+      ]
     >()
     .mockResolvedValue(text);
   const useCase = new GenerateNutritionPlanUseCase(
@@ -150,7 +156,7 @@ describe('R12 (nutrition-ai-explainer #18): inserta antes de explicar y devuelve
       objective: 'maintenance',
       warnings: [],
     });
-    expect(f.explain.mock.calls[0][2]).toEqual({
+    expect(f.explain.mock.calls[0][3]).toEqual({
       petId,
       planId: 'plan-insertado',
     });
@@ -209,7 +215,7 @@ describe('R15 (nutrition-ai-explainer #18): reintenta el hash hit con null sobre
       objective: 'maintenance',
       warnings: [],
     });
-    expect(f.explain.mock.calls[0][2]).toEqual({ petId, planId: latest.id });
+    expect(f.explain.mock.calls[0][3]).toEqual({ petId, planId: latest.id });
     expect(f.setAiExplanation).toHaveBeenCalledWith(latest.id, 'texto');
     expect(f.insertPlan).not.toHaveBeenCalled();
     expect(plan).toBe(f.updated);

@@ -1,3 +1,4 @@
+import type { NutritionWeightPoint } from '@/modules/nutrition/domain/ports/nutrition-weight-reader';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { eq, inArray } from 'drizzle-orm';
@@ -37,7 +38,12 @@ describe('Nutrition AI explainer (e2e HTTP y Postgres)', () => {
   const explain = jest
     .fn<
       Promise<string | null>,
-      [NutritionEngineInput, NutritionPlanResult, NutritionExplainerContext]
+      [
+        NutritionEngineInput,
+        NutritionPlanResult,
+        NutritionWeightPoint[],
+        NutritionExplainerContext,
+      ]
     >()
     .mockResolvedValue(text);
   const isPetTracked = jest.fn().mockResolvedValue(true);
@@ -123,7 +129,7 @@ describe('Nutrition AI explainer (e2e HTTP y Postgres)', () => {
       const latest = await f.get().expect(200);
       expect(latest.body).toHaveProperty('aiExplanation', text);
       expect(explain).toHaveBeenCalledTimes(1);
-      expect(explain.mock.calls[0][2]).toEqual({
+      expect(explain.mock.calls[0][3]).toEqual({
         petId: f.petId,
         planId: body.id,
       });
@@ -139,6 +145,7 @@ describe('Nutrition AI explainer (e2e HTTP y Postgres)', () => {
           async (
             _input: NutritionEngineInput,
             _result: NutritionPlanResult,
+            _weightTrend: NutritionWeightPoint[],
             ctx: NutritionExplainerContext,
           ) => {
             [inserted] = await db

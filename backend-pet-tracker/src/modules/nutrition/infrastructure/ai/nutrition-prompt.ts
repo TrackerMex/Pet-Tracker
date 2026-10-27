@@ -1,3 +1,4 @@
+import type { NutritionWeightPoint } from '@/modules/nutrition/domain/ports/nutrition-weight-reader';
 import type {
   NutritionEngineInput,
   NutritionPlanResult,
@@ -16,7 +17,9 @@ export const NUTRITION_AI_SYSTEM_PROMPT = [
 export function buildUserPrompt(
   input: NutritionEngineInput,
   result: NutritionPlanResult,
+  weightTrend: NutritionWeightPoint[],
 ): string {
+  void weightTrend;
   return JSON.stringify({
     input: {
       species: input.species,

@@ -81,7 +81,7 @@ export class GenerateNutritionPlanUseCase {
     plan: NutritionPlan,
   ): Promise<NutritionPlan> {
     if (!(await this.subscriptions.isPetTracked(petId))) return plan;
-    const text = await this.explainer.explain(input, toPlanResult(plan), {
+    const text = await this.explainer.explain(input, toPlanResult(plan), [], {
       petId,
       planId: plan.id,
     });
