@@ -242,3 +242,51 @@ it('#209 R6: Volver desde Alimento con condición 7 vuelve a Peso objetivo', asy
   expect(await screen.findByText('¿Cuánto se mueve Rocky?')).toBeVisible();
   expect(mockPreventRemove.mock.lastCall?.[0]).toBe(false);
 });
+
+async function goToTarget(n: number) {
+  await goToCondition();
+  await fireEvent.press(await screen.findByTestId(`bcs-option-${n}`));
+  await fireEvent.press(screen.getByTestId('nutrition-questionnaire-next'));
+  expect(await screen.findByText('Peso objetivo')).toBeVisible();
+}
+
+it('#209 R10: Peso objetivo pinta resumen, copy y contador «2 de 4»', async () => {
+  await goToTarget(7);
+  expect(screen.getByTestId('nutrition-questionnaire-bubble')).toHaveTextContent('Con condición 7 conviene que Rocky baje de peso poco a poco. ¿Te dijo el veterinario cuál es su peso ideal?', { exact: true });
+  const summary = screen.getByTestId('target-weight-summary');
+  expect(summary.props.className).toBe('flex-row items-center gap-2.5 rounded-16 bg-default px-3 py-2.5');
+  const badge = within(summary).getByTestId('bcs-badge-summary', { includeHiddenElements: true });
+  expect(badge.props.className).toBe('size-7.5 items-center justify-center rounded-10 bg-category-amber');
+  expect(within(summary).getByText('Condición 7/9 · Sobrepeso')).toBeVisible();
+  const change = within(summary).getByTestId('target-weight-change');
+  expect(within(change).getByText('Cambiar').props.className).toBe('text-13 font-extrabold text-accent-strong');
+  expect(screen.getByText('Opcional')).toBeVisible();
+  const input = screen.getByTestId('target-weight-input');
+  expect(input).toHaveProp('keyboardType', 'decimal-pad');
+  expect(input).toHaveProp('maxLength', 6);
+  expect(screen.getByText('kg')).toBeVisible();
+  expect(screen.getByTestId('target-weight-current')).toHaveTextContent('Peso actual de Rocky: 12.4 kg', { exact: true });
+  expect(screen.getByTestId('target-weight-note')).toHaveTextContent('Si aún no lo sabes, déjalo vacío: calculo con su peso actual y lo ajustas después.', { exact: true });
+  expect(screen.getByTestId('nutrition-questionnaire-step-label')).toHaveTextContent('2 de 4', { exact: true });
+  expect(screen.getByTestId('nutrition-questionnaire-step-bar')).toHaveProp('accessibilityValue', { min: 1, max: 4, now: 2 });
+  expect(screen.getByTestId('nutrition-questionnaire-next')).toBeEnabled();
+});
+it('#209 R10: Cambiar vuelve a Condición', async () => {
+  await goToTarget(7);
+  await fireEvent.press(screen.getByTestId('target-weight-change'));
+  expect(await screen.findByText('¿Cómo está su cuerpo?')).toBeVisible();
+  expect(screen.queryByText('Peso objetivo')).toBeNull();
+  expect(screen.getByTestId('bcs-option-7')).toHaveProp('accessibilityState', { checked: true });
+});
+it('#209 R10: sin currentWeightKg no pinta el peso actual', async () => {
+  mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ currentWeightKg: null }) });
+  await goToTarget(7);
+  expect(screen.getByTestId('target-weight-input')).toBeVisible();
+  expect(screen.queryByTestId('target-weight-current')).toBeNull();
+});
+it.each([['0', true], ['1000', true], ['12,345', true], ['', false], ['10,5', false]] as const)('#209 R10: peso «%s» desactiva Siguiente: %s', async (value, disabled) => {
+  await goToTarget(7);
+  await fireEvent.changeText(screen.getByTestId('target-weight-input'), value);
+  if (disabled) expect(screen.getByTestId('nutrition-questionnaire-next')).toBeDisabled();
+  else expect(screen.getByTestId('nutrition-questionnaire-next')).toBeEnabled();
+});
