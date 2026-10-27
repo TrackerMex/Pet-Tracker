@@ -39,6 +39,13 @@ const BCS_ROWS = [
   { n: 9, slot: 'rose', title: { labelKey: 'nutritionQuestionnaire.bcs9' }, description: { labelKey: 'nutritionQuestionnaire.bcs9Description' } },
 ] as const;
 
+const FOOD_TYPES = [
+  { value: 'dry', kcal: '350', labelKey: 'nutritionQuestionnaire.foodDry', note: { labelKey: 'nutritionQuestionnaire.kcalNoteDry' } },
+  { value: 'wet', kcal: '90', labelKey: 'nutritionQuestionnaire.foodWet', note: { labelKey: 'nutritionQuestionnaire.kcalNoteWet' } },
+  { value: 'mixed', kcal: '220', labelKey: 'nutritionQuestionnaire.foodMixed', note: { labelKey: 'nutritionQuestionnaire.kcalNoteMixed' } },
+  { value: 'homemade', kcal: '130', labelKey: 'nutritionQuestionnaire.foodHomemade', note: { labelKey: 'nutritionQuestionnaire.kcalNoteHomemade' } },
+] as const;
+
 type Step = 'activity' | 'condition' | 'target' | 'food' | 'health';
 
 function stepNumber(step: Step) {
@@ -95,7 +102,10 @@ function QuestionnaireForm({ pet }: { initial: NutritionProfile | null; pet: Pet
   const [activity, setActivity] = useState<NutritionProfileInput['activityLevel'] | null>(null);
   const [bcs, setBcs] = useState<number | null>(null);
   const [target, setTarget] = useState('');
+  const [food, setFood] = useState<NutritionProfileInput['foodType'] | null>(null);
+  const [kcal, setKcal] = useState('');
   const bcsRow = BCS_ROWS.find(row => row.n === bcs);
+  const foodRow = FOOD_TYPES.find(option => option.value === food);
   const n = stepNumber(step);
   const canContinue = step === 'activity' ? activity !== null : step === 'condition' ? bcs !== null : step === 'target' ? target === '' || isWeight(target) : true;
   usePreventRemove(step !== 'activity', () => setStep(prevStep(step, bcs)));
@@ -117,7 +127,7 @@ function QuestionnaireForm({ pet }: { initial: NutritionProfile | null; pet: Pet
           <Image source={require('../../../assets/images/pingo-food.webp')} className={step === 'condition' ? 'size-11' : 'size-13'} />
           <View testID="nutrition-questionnaire-bubble" className="flex-1 rounded-tile bg-surface-secondary px-3 py-2.5" style={CONTINUOUS_CORNER}>
             <View className={step === 'condition' ? 'absolute -left-1.5 top-4.5 size-3 rotate-45 bg-surface-secondary' : 'absolute -left-1.5 top-5.5 size-3 rotate-45 bg-surface-secondary'} />
-            <Text className="text-13 font-semibold leading-body text-foreground">{step === 'condition' ? t('nutritionQuestionnaire.bubbleCondition', { name: pet.name }) : step === 'target' ? t('nutritionQuestionnaire.bubbleTargetWeight', { bcs: String(bcs), name: pet.name }) : t('nutritionQuestionnaire.bubbleActivity', { name: pet.name })}</Text>
+            <Text className="text-13 font-semibold leading-body text-foreground">{step === 'condition' ? t('nutritionQuestionnaire.bubbleCondition', { name: pet.name }) : step === 'target' ? t('nutritionQuestionnaire.bubbleTargetWeight', { bcs: String(bcs), name: pet.name }) : step === 'food' ? t('nutritionQuestionnaire.bubbleFood', { name: pet.name }) : t('nutritionQuestionnaire.bubbleActivity', { name: pet.name })}</Text>
           </View>
         </View>
         {step === 'activity' ? <>
@@ -176,7 +186,23 @@ function QuestionnaireForm({ pet }: { initial: NutritionProfile | null; pet: Pet
           {pet.currentWeightKg !== null ? <Text testID="target-weight-current" className="text-13 font-semibold text-muted">{t('nutritionQuestionnaire.currentWeight', { name: pet.name, weight: pet.currentWeightKg })}</Text> : null}
           <NoteRow testID="target-weight-note" text={t('nutritionQuestionnaire.targetWeightNote')} color={colors[4]} />
         </> : null}
-        {step === 'food' ? <Text className="text-lg font-black text-foreground">{t('nutritionQuestionnaire.foodLegend')}</Text> : null}
+        {step === 'food' ? <>
+          <Text className="text-lg font-black text-foreground">{t('nutritionQuestionnaire.foodLegend')}</Text>
+          <View className="flex-row flex-wrap gap-2">
+            {FOOD_TYPES.map(option => {
+              const selected = food === option.value;
+              return <Pressable key={option.value} testID={`food-type-${option.value}`} accessibilityRole="radio" accessibilityState={{ checked: selected }} hitSlop={TOUCH_SLOP}
+                className={selected ? 'h-11 justify-center rounded-full border border-accent bg-tab-pill px-4' : 'h-11 justify-center rounded-full border border-border bg-default px-4'}
+                onPress={() => { setFood(option.value); setKcal(option.kcal); }}>
+                <Text className={selected ? 'text-sm font-bold text-foreground' : 'text-sm font-semibold text-foreground'}>{t(option.labelKey)}</Text>
+              </Pressable>;
+            })}
+          </View>
+          <Text className="text-lg font-black text-foreground">{t('nutritionQuestionnaire.kcalLabel')}</Text>
+          <NumberField kind="kcal" testID="kcal-input" unit={t('nutritionQuestionnaire.unitKcal')} value={kcal} onChangeText={setKcal} />
+          <Text className="text-13 font-semibold text-muted">{t('nutritionQuestionnaire.kcalHelp')}</Text>
+          {foodRow ? <NoteRow testID="kcal-note" text={t(foodRow.note.labelKey)} color={colors[4]} /> : null}
+        </> : null}
       </ScrollView>
       <View className="bg-background px-5 pt-4" style={{ paddingBottom: Math.max(insets.bottom, 16) }}>
         <Button testID="nutrition-questionnaire-next" className="h-14 rounded-16 bg-accent" style={chunkyLip.primary} isDisabled={!canContinue} onPress={() => void handleNext()}>
