@@ -48,7 +48,7 @@ function LocaleProbe() {
 
 describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y parámetros', () => {
   // 259 en `303fc19` + 1 de `home.walks` (#67 R7b) + 16 de #68 + 14 de #78 + 2 de #73 + 1 de #90 + 4 de #98 - 6 de #95 R5 (las seis claves de volver) + 1 de #113 R3 (food.kcalConsumedOfTarget) + 2 de #99 R3 (profile.notificationsBlocked, profile.openSettings) + 3 de #100 R1 (alerts.detailTitle, alerts.statusOpen, alerts.openedAt) + 11 de #41 R1 (geofences.*) + 12 de #146 R1 (geofenceEditor.*) + 2 de #146 R1 (geofenceEditor.limitNotice, geofenceEditor.ownerOnly) + 9 de #147 R1 (mealSchedule.* del horario editable).
-  it('#194 R1: mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas (enmendado por #189 R15) (enmendado por #199 R5) (enmendado por #199 R9) (enmendado por #199 R14) (enmendado por #199 R17) (enmendado por #198 R15) (enmendado por #206 R8) (enmendado por #202 R10) (enmendado por #202 R18) (enmendado por #220 R16) (enmendado por #208 R19) (enmendado por #213 R22) (enmendado por #222 R8) (enmendado por #214 R22) (enmendado por #209 R23) (enmendado por #223 R16) (enmendado por #224 R4)', () => {
+  it('#194 R1: mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas (enmendado por #189 R15) (enmendado por #199 R5) (enmendado por #199 R9) (enmendado por #199 R14) (enmendado por #199 R17) (enmendado por #198 R15) (enmendado por #206 R8) (enmendado por #202 R10) (enmendado por #202 R18) (enmendado por #220 R16) (enmendado por #208 R19) (enmendado por #213 R22) (enmendado por #222 R8) (enmendado por #214 R22) (enmendado por #209 R23) (enmendado por #223 R16) (enmendado por #224 R4) (enmendado por #215 R19)', () => {
     const englishKeys = Object.keys(en).sort();
     const spanishKeys = Object.keys(es).sort();
 
@@ -94,7 +94,8 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
         + 51 // #214 R22
         + 6 // #223 R16
         + 77 // #209 R23
-        + 3, // #224 R4
+        + 3 // #224 R4
+        + 16, // #215 R19
     );
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {

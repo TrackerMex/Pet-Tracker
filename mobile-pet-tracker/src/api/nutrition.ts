@@ -1,5 +1,23 @@
 import { deleteJson, getJson, patchJson, postJson, putJson, readJson } from './http';
-import type { MealsHistory, NutritionPlan, NutritionProfile, NutritionProfileInput } from './types';
+import type {
+  MealsHistory,
+  NutritionAiStatus,
+  NutritionPlan,
+  NutritionProfile,
+  NutritionProfileInput,
+} from './types';
+
+export const NUTRITION_AI_STATUSES: readonly NutritionAiStatus[] = [
+  'proposed',
+  'not_tracked',
+  'limit_reached',
+  'unavailable',
+  'rejected',
+];
+
+export function isNutritionAiStatus(value: unknown): value is NutritionAiStatus {
+  return (NUTRITION_AI_STATUSES as readonly unknown[]).includes(value);
+}
 
 export type NutritionProfileState =
   | { kind: 'ok'; profile: NutritionProfile }
@@ -28,7 +46,7 @@ export type UpsertNutritionProfileState =
   | { kind: 'missing-config' };
 
 export type GeneratePlanState =
-  | { kind: 'ok'; plan: NutritionPlan }
+  | { kind: 'ok'; plan: NutritionPlan; aiStatus?: NutritionAiStatus }
   | { kind: 'forbidden' }
   | { kind: 'unprocessable'; code: string | null }
   | { kind: 'unauthorized' }
@@ -253,9 +271,11 @@ export async function generateNutritionPlan(
   }
 
   const body = await readJson(result.response);
-  return isObjectBody(body)
-    ? { kind: 'ok', plan: body as unknown as NutritionPlan }
-    : { kind: 'error' };
+  if (!isObjectBody(body)) return { kind: 'error' };
+  const plan = body as unknown as NutritionPlan;
+  return isNutritionAiStatus(body.aiStatus)
+    ? { kind: 'ok', plan, aiStatus: body.aiStatus }
+    : { kind: 'ok', plan };
 }
 
 export async function serveMeal(

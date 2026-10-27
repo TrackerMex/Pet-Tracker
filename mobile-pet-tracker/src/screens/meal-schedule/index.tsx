@@ -32,6 +32,7 @@ import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { RiseIn } from '../../components/rise-in';
+import { mealPortionGrams } from '../../utils/meal-portion';
 
 type ProfileLabels = Partial<Record<string, { labelKey: TranslationKey }>>;
 
@@ -181,6 +182,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
       switch (result.kind) {
         case 'ok':
           plan.refetch();
+          router.push({ pathname: '/nutrition-plan', params: result.aiStatus === undefined ? { petId } : { petId, aiStatus: result.aiStatus } });
           return;
         case 'forbidden':
           setGenerateError(t('mealSchedule.errorForbidden'));
@@ -298,9 +300,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
               {t('mealSchedule.timesAndPortions')}
             </Text>
             {loadedPlan.mealTimes.map((mealTime, index) => {
-              const portionGrams = Math.round(
-                loadedPlan.dailyGrams / loadedPlan.mealsPerDay,
-              );
+              const portionGrams = mealPortionGrams(loadedPlan, mealTime);
 
               return (
                 <RiseIn key={mealTime} testID={`meal-time-entry-${index}`} delayMs={80 + 60 * index}>
