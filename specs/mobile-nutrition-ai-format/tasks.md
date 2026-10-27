@@ -111,78 +111,78 @@ Registrada en `progress/impl_mobile-nutrition-ai-format.md` con el `it` que se p
 
 ## R1 — gramática del parser (19 filas)
 
-- [ ] (1) Escribir test que falla para R1 (`screens/food/parse-ai-explanation.test.ts`, `it.each '#224 R1'`)
-- [ ] (2) Implementación mínima que lo pasa (`parseAiExplanation`)
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R1 (`screens/food/parse-ai-explanation.test.ts`, `it.each '#224 R1'`)
+- [x] (2) Implementación mínima que lo pasa (`parseAiExplanation`)
+- [x] (3) Refactor con tests verdes
 
 ## R2 — degradación y entradas hostiles (18 filas más carga lineal)
 
-- [ ] (1) Escribir test que falla para R2 (`it.each '#224 R2'`, `no lanza` y carga de 20000)
-- [ ] (2) Implementación mínima que lo pasa (normalización, `*` fuera de pares, colapso de espacios)
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R2 (`it.each '#224 R2'`, `no lanza` y carga de 20000)
+- [x] (2) Implementación mínima que lo pasa (normalización, `*` fuera de pares, colapso de espacios)
+- [x] (3) Refactor con tests verdes
 
 ## R3 — texto plano y `SAMPLE`
 
-- [ ] (1) Escribir test que falla para R3 (`it.each '#224 R3'` y `it('#224 R3: SAMPLE ...')`)
-- [ ] (2) Implementación mínima que lo pasa (`aiExplanationPlainText`)
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R3 (`it.each '#224 R3'` y `it('#224 R3: SAMPLE ...')`)
+- [x] (2) Implementación mínima que lo pasa (`aiExplanationPlainText`)
+- [x] (3) Refactor con tests verdes
 
 ## R4 — copy ES/EN y fórmulas de candados
 
-- [ ] (1) Escribir test que falla para R4 (filas de `ui-copy-table.ts`, fórmulas de `ui-language.test.ts` y `language-provider.test.tsx`, `it.each '#224 R4'` en `ai-explanation.test.tsx`)
-- [ ] (2) Implementación mínima que lo pasa (tres claves en `catalog.ts`, `t(...)` una vez cada una)
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R4 (filas de `ui-copy-table.ts`, fórmulas de `ui-language.test.ts` y `language-provider.test.tsx`, `it.each '#224 R4'` en `ai-explanation.test.tsx`)
+- [x] (2) Implementación mínima que lo pasa (tres claves en `catalog.ts`, `t(...)` una vez cada una)
+- [x] (3) Refactor con tests verdes
 
 ## R5 — render de bloques
 
-- [ ] (1) Escribir test que falla para R5 (`ai-explanation.test.tsx`, `SAMPLE` con una decisión por hijo)
-- [ ] (2) Implementación mínima que lo pasa (`AiExplanation`: párrafos, viñetas, puntos, negritas)
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R5 (`ai-explanation.test.tsx`, `SAMPLE` con una decisión por hijo)
+- [x] (2) Implementación mínima que lo pasa (`AiExplanation`: párrafos, viñetas, puntos, negritas)
+- [x] (3) Refactor con tests verdes
 
 ## R6 — recorte y degradado (frontera 122 / 123)
 
-- [ ] (1) Escribir test que falla para R6 (`it.each '#224 R6'` y literal del degradado)
-- [ ] (2) Implementación mínima que lo pasa (`onLayout`, `maxHeight`, `food-ai-fade`)
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R6 (`it.each '#224 R6'` y literal del degradado)
+- [x] (2) Implementación mínima que lo pasa (`onLayout`, `maxHeight`, `food-ai-fade`)
+- [x] (3) Refactor con tests verdes
 
 ## R7 — botón Ver más / Ver menos y zona de 44
 
-- [ ] (1) Escribir test que falla para R7 (alternancia, `hitSlop`, texto nuevo colapsa)
-- [ ] (2) Implementación mínima que lo pasa (`Pressable`, chevrones, `expandedFor`)
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R7 (alternancia, `hitSlop`, texto nuevo colapsa)
+- [x] (2) Implementación mínima que lo pasa (`Pressable`, chevrones, `expandedFor`)
+- [x] (3) Refactor con tests verdes
 
 ## R8 — aviso fijo
 
-- [ ] (1) Escribir test que falla para R8 (`it.each '#224 R8'`, 6 filas)
-- [ ] (2) Implementación mínima que lo pasa (`food-ai-disclaimer`)
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R8 (`it.each '#224 R8'`, 6 filas)
+- [x] (2) Implementación mínima que lo pasa (`food-ai-disclaimer`)
+- [x] (3) Refactor con tests verdes
 
 ## R9 — accesibilidad continua
 
-- [ ] (1) Escribir test que falla para R9 (etiqueta, botón fuera de la unidad, recorte no cambia la etiqueta)
-- [ ] (2) Implementación mínima que lo pasa (`accessible` y `accessibilityLabel` en `food-ai-body`)
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R9 (etiqueta, botón fuera de la unidad, recorte no cambia la etiqueta)
+- [x] (2) Implementación mínima que lo pasa (`accessible` y `accessibilityLabel` en `food-ai-body`)
+- [x] (3) Refactor con tests verdes
 
 ## R10 — integración en `index.tsx`
 
-- [ ] (1) Escribir test que falla para R10 (enmendar `#200 R8`, `it.each '#224 R10'`, mock de reicon)
-- [ ] (2) Implementación mínima que lo pasa (tarjeta columna, cabecera, `AiExplanation`, condición por `parseAiExplanation`)
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R10 (enmendar `#200 R8`, `it.each '#224 R10'`, mock de reicon)
+- [x] (2) Implementación mínima que lo pasa (tarjeta columna, cabecera, `AiExplanation`, condición por `parseAiExplanation`)
+- [x] (3) Refactor con tests verdes
 
 ## R11 — API reutilizable por #215
 
-- [ ] (1) Escribir test que falla para R11 (montaje con solo `text`; ausencia de imports prohibidos)
-- [ ] (2) Implementación mínima que lo pasa (`AiExplanation({ text })` exportado, sin dependencias de `index.tsx`)
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R11 (montaje con solo `text`; ausencia de imports prohibidos)
+- [x] (2) Implementación mínima que lo pasa (`AiExplanation({ text })` exportado, sin dependencias de `index.tsx`)
+- [x] (3) Refactor con tests verdes
 
 ## R12 — backend y dependencias intactos
 
-- [ ] (1) Sin test de jest: la comprobación es el diff vacío de la tabla de anclas
-- [ ] (2) Sin implementación
-- [ ] (3) El reporte pega la salida (vacía) de `git diff origin/dev --stat -- ../backend-pet-tracker package.json bun.lock`
+- [x] (1) Sin test de jest: la comprobación es el diff vacío de la tabla de anclas
+- [x] (2) Sin implementación
+- [x] (3) El reporte pega la salida (vacía) de `git diff origin/dev --stat -- ../backend-pet-tracker package.json bun.lock`
 
 ## R13 — candados de inventario y grep-limpio
 
-- [ ] (1) Escribir test que falla para R13 (lista `text-13` de Perfil, fila `leading-body`, `it.each '#224 R13'`)
-- [ ] (2) Implementación mínima que lo pasa (los ficheros nuevos son grep-limpios; `index.tsx` pierde `leading-body` y conserva `text-13` por E1)
-- [ ] (3) `bun run typecheck`, `bun run lint` (con `> log 2>&1 && test ! -s log`) y `bun run test` completo sin pipe, código 0
+- [x] (1) Escribir test que falla para R13 (lista `text-13` de Perfil, fila `leading-body`, `it.each '#224 R13'`)
+- [x] (2) Implementación mínima que lo pasa (los ficheros nuevos son grep-limpios; `index.tsx` pierde `leading-body` y conserva `text-13` por E1)
+- [x] (3) `bun run typecheck`, `bun run lint` (con `> log 2>&1 && test ! -s log`) y `bun run test` completo sin pipe, código 0
