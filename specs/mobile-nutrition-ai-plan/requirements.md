@@ -143,6 +143,26 @@ Después se re-miden, con la regla mecánica de R20, el total del catálogo y el
 - total sin #224: `667 + 16 = 683`;
 - total con #224: `670 + 16 = 686`.
 
+> **Fe de erratas E2 del firmante (2026-10-27, medida en `20fc6616`, el merge de
+> `origin/dev` con #223 y #224 dentro).** Las 8 órdenes de la tabla de arriba dan la salida
+> esperada. #223 (PR #279) también tocó las guardas, y eso cambia dos cosas:
+>
+> - **Total del catálogo.** #223 R16 añade `+ 6 // #223 R16` antes de `+ 77 // #209 R23`.
+>   La base medida es 676 claves en `en` y en `es` (667 + 6 + 3), y con #215 queda en
+>   `676 + 16 = 692`. La última línea de la suma es `+ 3, // #224 R4`. `+ 16, // #215 R19` va
+>   detrás de ella y la coma pasa a la línea nueva. `SCREEN_FILES` no cambia con #223:
+>   #215 añade su `+ 1 // #215 R19` detrás de `+ 1 // #224 R4: screens/food/ai-explanation.tsx`.
+> - **`rounded-16` en `chunky-cta-canvas-fidelity.test.ts`.** La base es ahora
+>   `+ 3 + 11 + 3 + 1); // #223 R9 // #209 R24`, y queda en
+>   `+ 3 + 11 + 3 + 1 + 3); // #215 R20 // #223 R9 // #209 R24`. La cifra de #215 sigue
+>   siendo `+ 3`.
+>
+> Todo lo demás sigue igual. Las líneas que #223 añade a `directUses` y a las dos sumas
+> `+ 6 // #209 R24` de `consistency-classnames.test.ts` van **delante** de las de #209, así
+> que el «detrás de #209» de R20 sigue siendo la última posición. Las demás celdas «Base» de
+> R19 y R20 se verificaron una a una con `grep -cF` sobre `20fc6616`, y salen como dice la
+> spec.
+
 Las líneas de #215 van **siempre las últimas** de cada suma.
 
 ### Contrato del backend (verificado contra el árbol)
@@ -984,7 +1004,7 @@ Ningún valor fijo del catálogo aparece como literal entero en el fichero (`#19
 | `src/__tests__/ui-language.test.ts` | import | `  R21_PET_MEMBERS,` | detrás: `  R22_NUTRITION_PLAN,` |
 | `src/__tests__/ui-language.test.ts` | agregado de `SCREEN_FILES` en `'#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas …'` | última línea `+ 1 // #209 R23: screens/nutrition-questionnaire/index.tsx`, o la de #224 si ya está | detrás de la última: `        + 1 // #215 R19: screens/nutrition-plan/index.tsx`; sufijo ` (enmendado por #215 R19)` |
 | `src/__tests__/ui-language.test.ts` | `describe` nuevo, al final | — | `describe('#215 R19: el plan resuelve su copy por clave')` › `it('#215 R19: el bloque del plan tiene 28 filas')`, con `expect(R22_NUTRITION_PLAN).toHaveLength(28); checkUses(R22_NUTRITION_PLAN);` |
-| `src/providers/__tests__/language-provider.test.tsx` | total del `it` `'#194 R1: mantiene la base más las claves de #68 …'` | `+ 77, // #209 R23` (667) | `+ 77 // #209 R23` y debajo `+ 16, // #215 R19` (683); sufijo ` (enmendado por #215 R19)`. Con #224 dentro, la línea nueva va detrás de la última y la coma se mueve a ella. |
+| `src/providers/__tests__/language-provider.test.tsx` | total del `it` `'#194 R1: mantiene la base más las claves de #68 …'` | `+ 77, // #209 R23` (667) | `+ 77 // #209 R23` y debajo `+ 16, // #215 R19` (683); sufijo ` (enmendado por #215 R19)`. Con #224 dentro, la línea nueva va detrás de la última y la coma se mueve a ella. Tras E2 (#223 y #224 en dev), la última es `+ 3, // #224 R4` y el total es 692. |
 
 Si al implementar otra feature ya usa `R22_`, se toma el siguiente número libre y se anota
 en el reporte.
@@ -1034,7 +1054,7 @@ Las tres esquinas son las de `nutrition-plan-meals`, `nutrition-plan-why` y
 | `radii` | `'screens/nutrition-questionnaire/index.tsx': 2, // #209 R24` | detrás: `  'screens/nutrition-plan/index.tsx': 3, // #215 R20` |
 | `'#177 R6.2: recuentos de etiquetas …'`, `count(/text-17/g)` | `toBe(8 + 15 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 2 + 1 + 2 + 4 + 2); // #209 R24 …` | `… + 4 + 2 + 5); // #215 R20 // #209 R24 …` |
 | `'#177 R6.2 …'`, `count(/<Text className="text-17 font-extrabold text-accent-foreground">/g)` | `toBe(5 + 11 + 1 + 1 - 1 - 1 + 1 + 1 + 4 + 2); // #209 R24 …` | `… + 4 + 2 + 1); // #215 R20 // #209 R24 …` |
-| `'#177 R7.3: inventario de los veintisiete radios de dieciséis …'`, `count(/\brounded-16\b/g)` | `toBe(26 + … + 3 + 11 + 3); // #209 R24 …` | `… + 3 + 11 + 3 + 3); // #215 R20 // #209 R24 …` |
+| `'#177 R7.3: inventario de los veintisiete radios de dieciséis …'`, `count(/\brounded-16\b/g)` | `toBe(26 + … + 3 + 11 + 3 + 1); // #223 R9 // #209 R24 …` (E2) | `… + 3 + 11 + 3 + 1 + 3); // #215 R20 // #223 R9 // #209 R24 …` |
 
 Las cinco `text-17` del fuente:
 
