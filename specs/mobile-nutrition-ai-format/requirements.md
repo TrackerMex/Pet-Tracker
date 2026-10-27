@@ -442,6 +442,19 @@ párrafo, viñeta, viñeta, viñeta, párrafo, con 3 tramos en negrita (`1200 kc
     plantada (un `StyleSheet` y un hex bare en el fichero nuevo ponen rojas sus filas:
     ver [[tasks]]).
 
+> **Fe de erratas E1 del leader (2026-10-27, medida en `552c6b0b` con #209 y #222 en dev).**
+> (a) R13(a) queda así: la lista `limita text-13` de Perfil **conserva**
+> `'screens/food/index.tsx'` (el pie de L468 sigue usando `text-13` tras R10) y solo
+> **gana** `'screens/food/ai-explanation.tsx', // #224 R13` (25 pasa a 26); el ancla
+> `grep -cF "text-13" src/screens/food/index.tsx` tras C5 es `1`, no `0`.
+> (b) Las constantes nuevas llevan ruta relativa a `src` (`source()` ya antepone
+> `src`): `'screens/food/ai-explanation.tsx'` y `'screens/food/parse-ai-explanation.ts'`.
+> (c) Las cifras y líneas de fórmula de R4/R13 (`R6_FOOD` 68 a 71, `SCREEN_FILES`
+> 42 a 43, catálogo 667 a 670) y su colocación son las del handoff
+> `progress/handoff_mobile-nutrition-ai-format.md` (P2 a P8), que mandan sobre las
+> de design.md. Las muestras de texto de los tests son sintéticas (decisión del
+> humano del 2026-10-27: no se espera a salidas reales del modelo).
+
 ## Fuera de alcance
 
 - Cambiar el prompt, el mapper o el servicio de IA del backend (#212 / Backend), y con

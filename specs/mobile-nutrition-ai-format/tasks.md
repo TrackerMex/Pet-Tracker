@@ -46,7 +46,7 @@ Se ejecutan desde `/home/claude/sites/Pet-Tracker-wt-224/mobile-pet-tracker` tra
 
 | Comprobación | Salida esperada |
 |---|---|
-| `grep -cF "text-13" src/screens/food/index.tsx` | `0` |
+| `grep -cF "text-13" src/screens/food/index.tsx` | `1` (enmendado por E1: el pie de L468 lo conserva) |
 | `grep -cF "leading-body" src/screens/food/index.tsx` | `0` |
 | `grep -cF "food-ai-body" src/screens/food/index.tsx` | `0` (el cuerpo vive ahora en el componente) |
 | `grep -cF "food-ai-card" src/screens/food/index.tsx` | `1` |
@@ -184,5 +184,5 @@ Registrada en `progress/impl_mobile-nutrition-ai-format.md` con el `it` que se p
 ## R13 — candados de inventario y grep-limpio
 
 - [ ] (1) Escribir test que falla para R13 (lista `text-13` de Perfil, fila `leading-body`, `it.each '#224 R13'`)
-- [ ] (2) Implementación mínima que lo pasa (los ficheros nuevos son grep-limpios; `index.tsx` pierde `text-13` y `leading-body`)
+- [ ] (2) Implementación mínima que lo pasa (los ficheros nuevos son grep-limpios; `index.tsx` pierde `leading-body` y conserva `text-13` por E1)
 - [ ] (3) `bun run typecheck`, `bun run lint` (con `> log 2>&1 && test ! -s log`) y `bun run test` completo sin pipe, código 0
