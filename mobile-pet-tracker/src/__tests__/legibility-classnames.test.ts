@@ -166,13 +166,14 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     [join('components', 'pet-hero-header.tsx'), 1],
     [join('screens', 'weight-log', 'index.tsx'), 1], // #199 R4
     [join('screens', 'welcome', 'index.tsx'), 2],
+    [join('screens', 'nutrition-questionnaire', 'index.tsx'), 1], // #209 R24
   ];
 
-  it.each(inkSites)('%s pinta con text-accent-strong (%i) (enmendado por #200 R1 y #200 R5 y #200 R6) (enmendado por #199 R4) (enmendado por #199 R18) (enmendado por #198 R4) (enmendado por #201 R5)', (path, sites) => {
+  it.each(inkSites)('%s pinta con text-accent-strong (%i) (enmendado por #200 R1 y #200 R5 y #200 R6) (enmendado por #199 R4) (enmendado por #199 R18) (enmendado por #198 R4) (enmendado por #201 R5) (enmendado por #209 R24)', (path, sites) => {
     expect(readSource(path).match(/text-accent-strong\b/g) ?? []).toHaveLength(sites);
   });
 
-  it('suma las trece ocurrencias que enumera la spec (enmendado por #200 R5 y #200 R6) (enmendado por #199 R4) (enmendado por #199 R18) (enmendado por #198 R4) (enmendado por #201 R5)', () => {
+  it('suma las trece ocurrencias que enumera la spec (enmendado por #200 R5 y #200 R6) (enmendado por #199 R4) (enmendado por #199 R18) (enmendado por #198 R4) (enmendado por #201 R5) (enmendado por #209 R24)', () => {
     expect(inkSites.reduce((total, [path]) => total + (readSource(path).match(/text-accent-strong\b/g) ?? []).length, 0)).toBe(
       inkSites.reduce((total, [, sites]) => total + sites, 0),
     );
@@ -192,7 +193,8 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
         + 1 // #199 R4
         - 1 // #199 R18
         - 1 // #201 R5
-        + 1, // #198 R4: +1 Inicio
+        + 1 // #198 R4: +1 Inicio
+        + 1, // #209 R24
     );
   });
 

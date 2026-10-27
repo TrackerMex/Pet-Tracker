@@ -1116,7 +1116,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     expect(addReminder).not.toMatch(/uppercase|tracking-widest/);
   });
 
-  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #203 R4) (enmendado por #203 R6) (enmendado por #203 R7) (enmendado por #204 R8) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #196 R5) (enmendado por #201 R5, R13) (enmendado por #205 R13) (enmendado por #208 R21)', () => {
+  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #203 R4) (enmendado por #203 R6) (enmendado por #203 R7) (enmendado por #204 R8) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #196 R5) (enmendado por #201 R5, R13) (enmendado por #205 R13) (enmendado por #208 R21) (enmendado por #209 R24)', () => {
     for (const [pattern, count] of [
       [/\brounded-14\b/g, 2], [/\brounded-16\b/g, 5], [/\brounded-22\b/g, 1],
     ] as const) {
@@ -1140,7 +1140,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       'screens/alert-detail/index.tsx': 2,
       'screens/docs-upload-form/index.tsx': 2,
       'screens/edit-profile/index.tsx': 1, // #194 R6
-      'screens/food/index.tsx': 2, // #200 R9
+      'screens/food/index.tsx': 2 + 1, // #200 R9 // #209 R24
       'screens/forgot/index.tsx': 3,
       'screens/geofence-editor/index.tsx': 4, // #189 R13; #202 R18: +1
       'screens/geofences/index.tsx': 2, // #189 R7
@@ -1149,6 +1149,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       'screens/home/weekly-activity-chart.tsx': 1, // #198 R9
       'screens/login/index.tsx': 1,
       'screens/map/index.tsx': 1, // #201 R13
+      'screens/nutrition-questionnaire/index.tsx': 2, // #209 R24
       'screens/pairing/index.tsx': 4, // #203 R6; #203 R7
       'screens/register/index.tsx': 1,
       'screens/reset-password/index.tsx': 1 + 1, // #205 R13
@@ -1163,6 +1164,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       join('screens', 'map', 'index.tsx'), // #201 R5
       join('screens', 'meal-schedule', 'index.tsx'), // #179 R13 comparte rounded-14
       join('screens', 'meals-history', 'index.tsx'), // #179 R13 comparte rounded-14
+      join('screens', 'nutrition-questionnaire', 'index.tsx'), // #209 R24
       join('screens', 'pairing', 'index.tsx'), // #188 R20 comparte rounded-14
       join('screens', 'profile', 'index.tsx'), // #196 R5
     ]);
@@ -1205,8 +1207,8 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
     expect(history).toContain("import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';");
   });
 
-  it('limita los márgenes táctiles a Editar y las dos flechas', () => {
-    expect(schedule.match(/hitSlop=\{TOUCH_SLOP\}/g)).toHaveLength(1);
+  it('limita los márgenes táctiles a Editar y las dos flechas (enmendado por #209 R24)', () => {
+    expect(schedule.match(/hitSlop=\{TOUCH_SLOP\}/g)).toHaveLength(1 + 2); // #209 R24
     expect(history.match(/hitSlop=\{TOUCH_SLOP\}/g)).toHaveLength(2);
   });
 
@@ -1230,7 +1232,7 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
     expect(schedule.indexOf('testID="meal-schedule-header"')).toBeLessThan(schedule.indexOf('testID="meal-schedule-summary"'));
   });
 
-  it('limita text-22 a Horario y text-17 al inventario de E1.2 (enmendado por #177 R10) (enmendado por #200 R5) (enmendado por #198 R15) (enmendado por #208 R21)', () => {
+  it('limita text-22 a Horario y text-17 al inventario de E1.2 (enmendado por #177 R10) (enmendado por #200 R5) (enmendado por #198 R15) (enmendado por #208 R21) (enmendado por #209 R24)', () => {
     const productionFilesMatching = (pattern: RegExp) => filesMatching(pattern).filter(path => !/\.test\.tsx?$/.test(path)).sort();
     expect(productionFilesMatching(/\btext-22\b/)).toEqual([
       'components/empty-state.tsx', // #198 R15
@@ -1253,6 +1255,7 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
       'screens/home/index.tsx',
       'screens/login/index.tsx',
       'screens/meal-schedule/index.tsx',
+      'screens/nutrition-questionnaire/index.tsx', // #209 R24
       'screens/pairing/index.tsx',
       'screens/register/index.tsx',
       'screens/reminders/index.tsx',
@@ -1271,13 +1274,13 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
     expect(history.match(/\brounded-14\b/g)).toHaveLength(1);
   });
 
-  it('ancla las tres etiquetas Text con los literales de E2.3', () => {
-    for (const label of [
-      '<Text className="text-13 font-extrabold text-foreground">',
-      '<Text className="text-15 font-extrabold text-foreground">',
-      '<Text className={`text-15 font-extrabold ${CATEGORY_SLOTS.violet.ink}`}>',
-    ]) {
-      expect(schedule.split(label)).toHaveLength(2);
+  it('ancla las tres etiquetas Text con los literales de E2.3 (enmendado por #209 R24)', () => {
+    for (const [label, parts] of [
+      ['<Text className="text-13 font-extrabold text-foreground">', 2 + 2], // #209 R24
+      ['<Text className="text-15 font-extrabold text-foreground">', 2],
+      ['<Text className={`text-15 font-extrabold ${CATEGORY_SLOTS.violet.ink}`}>', 2],
+    ] as const) {
+      expect(schedule.split(label)).toHaveLength(parts);
     }
   });
 });

@@ -44,13 +44,14 @@ describe('#173 R2: inventario de radios nuevos', () => {
   it('reserva rounded-hero al Card compartido y el skeleton de Perfil (enmendado por #200 R3) (enmendado por #202 R7) (enmendado por #196 R1)', () => {
     expect(filesMatching(/\brounded-hero\b/)).toEqual(['components/card.tsx', 'components/confirm-dialog.tsx', 'screens/alert-detail/index.tsx', 'screens/food/index.tsx']); // #180 R10
   });
-  it('reserva rounded-tile a sus consumidores aprobados (enmendado por #190 R13) (enmendado por #208 R21)', () => {
+  it('reserva rounded-tile a sus consumidores aprobados (enmendado por #190 R13) (enmendado por #208 R21) (enmendado por #209 R24)', () => {
     expect(filesMatching(/\brounded-tile\b/)).toEqual([
       'screens/add-pet/index.tsx', // #191 R11
       'screens/add-reminder/index.tsx',
       'screens/geofences/index.tsx', // #189 R6 // #178 R12
       'screens/health/index.tsx', // #208 R21
       'screens/home/index.tsx', // (enmendado por #190 R13)
+      'screens/nutrition-questionnaire/index.tsx', // #209 R24
       'screens/pairing/index.tsx', // #188 R18
       'screens/profile/index.tsx',
       'screens/vaccine-create/index.tsx', // #208 R21
@@ -66,7 +67,7 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/home/index.tsx', // #198 R15
     ]);
   });
-  it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8) (enmendado por #189 R6) (enmendado por #200 R8) (enmendado por #199 R7) (enmendado por #199 R14) (enmendado por #198 R5) (enmendado por #208 R21)', () => {
+  it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8) (enmendado por #189 R6) (enmendado por #200 R8) (enmendado por #199 R7) (enmendado por #199 R14) (enmendado por #198 R5) (enmendado por #208 R21) (enmendado por #209 R24)', () => {
     expect(filesMatching(/\btext-13\b/)).toEqual([
       'components/form-error.tsx',
       'screens/add-pet/index.tsx', // #191 R11
@@ -82,6 +83,7 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/home/index.tsx', // #198 R5
       'screens/login/index.tsx',
       'screens/meal-schedule/index.tsx', // #179 R6
+      'screens/nutrition-questionnaire/index.tsx', // #209 R24
       'screens/pairing/index.tsx', // #188 R18
       'screens/profile/index.tsx',
       'screens/register/index.tsx',
