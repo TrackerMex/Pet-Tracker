@@ -20,7 +20,8 @@ import {
   listWeights,
   type WeightsState,
 } from '../../api/health-records';
-import { healthKeys, userKeys } from '../../api/query-keys';
+import { getPet } from '../../api/pets';
+import { healthKeys, petKeys, userKeys } from '../../api/query-keys';
 import { getMe } from '../../api/users';
 import { Card } from '../../components/card';
 import { ScreenHeader } from '../../components/screen-header';
@@ -101,6 +102,11 @@ function WeightLogContent({ petId }: { petId: string }) {
   });
   const profileTimeZone =
     me.data?.kind === 'ok' ? me.data.me.timezone : undefined;
+  const pet = useQuery({
+    queryKey: petKeys.detail(petId),
+    queryFn: () => getPet(baseUrl, token ?? '', petId),
+  });
+  const isOwner = pet.data?.kind === 'ok' && pet.data.pet.myRole === 'owner';
   const measuredAt = measuredAtDraft ?? civilTodayIso(profileTimeZone);
   const weights = useQuery({
     queryKey: healthKeys.weights(petId, undefined),
@@ -223,71 +229,73 @@ function WeightLogContent({ petId }: { petId: string }) {
           </RiseIn>
         ) : null}
 
-        <RiseIn delayMs={80}>
-          <Card testID="weight-form" variant="flat" className="gap-2.5 py-3.5">
-            <View className="flex-row gap-2.5">
-              <TextField className="flex-1 gap-1.5" isInvalid={Boolean(fieldErrors.weight)}>
-              <Label><Text className="text-13 font-extrabold text-foreground">
-                {t('weightLog.weight')}
-              </Text></Label>
-              <Input
-                testID="weight-input"
-                className="h-12 rounded-xl bg-default"
-                keyboardType="decimal-pad"
-                placeholder={t('weightLog.weightKg')}
-                value={weightText}
-                onChangeText={setWeightText}
-              />
-              <FieldErrorMessage testID="weight-input" issue={fieldErrors.weight} />
-            </TextField>
-              <TextField className="flex-1 gap-1.5" isInvalid={Boolean(fieldErrors.measuredAt)}>
-              <Label><Text className="text-13 font-extrabold text-foreground">
-                {t('weightLog.measuredAt')}
-              </Text></Label>
-              <DateField
-                testID="weight-date-input"
-                pickerTestID="weight-date-picker"
-                value={measuredAt}
-                onChange={(next) => { if (next !== null) setMeasuredAtDraft(next); }}
-                maxDate={civilTodayIso(profileTimeZone)}
-                isInvalid={Boolean(fieldErrors.measuredAt)}
-              />
-              <FieldErrorMessage testID="weight-date-input" issue={fieldErrors.measuredAt} />
-            </TextField>
-            </View>
-            <TextField className="gap-1.5" isInvalid={Boolean(fieldErrors.bodyCondition)}>
-              <Label><Text className="text-13 font-extrabold text-foreground">
-                {t('weightLog.bodyCondition')}
-              </Text></Label>
-              <Input
-                testID="weight-bc-input"
-                className="h-12 rounded-xl bg-default"
-                keyboardType="number-pad"
-                placeholder={t('weightLog.bodyConditionPlaceholder')}
-                value={bodyConditionText}
-                onChangeText={setBodyConditionText}
-              />
-              <FieldErrorMessage testID="weight-bc-input" issue={fieldErrors.bodyCondition} />
-            </TextField>
+        {isOwner ? (
+          <RiseIn delayMs={80}>
+            <Card testID="weight-form" variant="flat" className="gap-2.5 py-3.5">
+              <View className="flex-row gap-2.5">
+                <TextField className="flex-1 gap-1.5" isInvalid={Boolean(fieldErrors.weight)}>
+                <Label><Text className="text-13 font-extrabold text-foreground">
+                  {t('weightLog.weight')}
+                </Text></Label>
+                <Input
+                  testID="weight-input"
+                  className="h-12 rounded-xl bg-default"
+                  keyboardType="decimal-pad"
+                  placeholder={t('weightLog.weightKg')}
+                  value={weightText}
+                  onChangeText={setWeightText}
+                />
+                <FieldErrorMessage testID="weight-input" issue={fieldErrors.weight} />
+              </TextField>
+                <TextField className="flex-1 gap-1.5" isInvalid={Boolean(fieldErrors.measuredAt)}>
+                <Label><Text className="text-13 font-extrabold text-foreground">
+                  {t('weightLog.measuredAt')}
+                </Text></Label>
+                <DateField
+                  testID="weight-date-input"
+                  pickerTestID="weight-date-picker"
+                  value={measuredAt}
+                  onChange={(next) => { if (next !== null) setMeasuredAtDraft(next); }}
+                  maxDate={civilTodayIso(profileTimeZone)}
+                  isInvalid={Boolean(fieldErrors.measuredAt)}
+                />
+                <FieldErrorMessage testID="weight-date-input" issue={fieldErrors.measuredAt} />
+              </TextField>
+              </View>
+              <TextField className="gap-1.5" isInvalid={Boolean(fieldErrors.bodyCondition)}>
+                <Label><Text className="text-13 font-extrabold text-foreground">
+                  {t('weightLog.bodyCondition')}
+                </Text></Label>
+                <Input
+                  testID="weight-bc-input"
+                  className="h-12 rounded-xl bg-default"
+                  keyboardType="number-pad"
+                  placeholder={t('weightLog.bodyConditionPlaceholder')}
+                  value={bodyConditionText}
+                  onChangeText={setBodyConditionText}
+                />
+                <FieldErrorMessage testID="weight-bc-input" issue={fieldErrors.bodyCondition} />
+              </TextField>
 
-            {formError ? (
-              <Text testID="weight-form-error" className="text-danger">
-                {formError}
-              </Text>
-            ) : null}
+              {formError ? (
+                <Text testID="weight-form-error" className="text-danger">
+                  {formError}
+                </Text>
+              ) : null}
 
-            <Button
-              testID="weight-submit"
-              className="h-14 rounded-16 bg-accent" style={chunkyLip.primary}
-              isDisabled={submitting}
-              onPress={() => void handleSubmit()}
-            >
-              <Text className="text-17 font-extrabold text-accent-foreground">
-                {t('weightLog.logWeight')}
-              </Text>
-            </Button>
-          </Card>
-        </RiseIn>
+              <Button
+                testID="weight-submit"
+                className="h-14 rounded-16 bg-accent" style={chunkyLip.primary}
+                isDisabled={submitting}
+                onPress={() => void handleSubmit()}
+              >
+                <Text className="text-17 font-extrabold text-accent-foreground">
+                  {t('weightLog.logWeight')}
+                </Text>
+              </Button>
+            </Card>
+          </RiseIn>
+        ) : null}
 
         {weights.data === undefined ? (
           <View testID="weight-log-loading">

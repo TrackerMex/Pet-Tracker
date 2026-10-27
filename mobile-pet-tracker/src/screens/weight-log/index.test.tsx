@@ -18,8 +18,9 @@ import {
   type CreateWeightState,
   type WeightsState,
 } from '../../api/health-records';
-import { healthKeys } from '../../api/query-keys';
-import type { WeightEntry } from '../../api/types';
+import { getPet } from '../../api/pets';
+import { healthKeys, petKeys } from '../../api/query-keys';
+import type { PetProfile, WeightEntry } from '../../api/types';
 import { es } from '../../i18n/catalog';
 import { getMe, type ProfileResponse } from '../../api/users';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
@@ -74,6 +75,8 @@ jest.mock('../../api/health-records', () => ({
   createWeight: jest.fn(),
   listWeights: jest.fn(),
 }));
+
+jest.mock('../../api/pets', () => ({ getPet: jest.fn() }));
 
 jest.mock('../../components/rise-in', () => {
   const React = jest.requireActual<typeof import('react')>('react');
@@ -151,6 +154,7 @@ const apiUrl = 'http://example.test/v1';
 const mockCreateWeight = jest.mocked(createWeight);
 const mockListWeights = jest.mocked(listWeights);
 const mockGetMe = jest.mocked(getMe);
+const mockGetPet = jest.mocked(getPet);
 const mockUseAuth = jest.mocked(useAuth);
 
 function makeWeight(overrides: Partial<WeightEntry> = {}): WeightEntry {
@@ -161,6 +165,37 @@ function makeWeight(overrides: Partial<WeightEntry> = {}): WeightEntry {
     measuredAt: '2026-08-21',
     bodyCondition: 5,
     variation: 0.4,
+    ...overrides,
+  };
+}
+
+function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
+  return {
+    id: 'pet-1',
+    name: 'Luna',
+    species: 'dog',
+    breed: 'Mixed',
+    sex: 'female',
+    birthDate: null,
+    approxAgeMonths: 30,
+    ageMonths: 30,
+    currentWeightKg: 12,
+    size: 'medium',
+    color: 'black',
+    sterilized: true,
+    microchip: null,
+    photoUrl: null,
+    lostMode: false,
+    lastPosition: null,
+    lastCommunicationAt: null,
+    myRole: 'owner',
+    device: null,
+    nextVaccine: null,
+    nextReminder: null,
+    activitySummary: null,
+    mealsToday: null,
+    createdAt: '2026-08-20T00:00:00.000Z',
+    updatedAt: '2026-08-21T00:00:00.000Z',
     ...overrides,
   };
 }
@@ -193,6 +228,7 @@ beforeEach(() => {
     kind: 'ok',
     me: makeProfile('Pacific/Kiritimati'),
   });
+  mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
 });
 
 function SelectionProbe() {
@@ -1441,8 +1477,9 @@ describe('#199 R22: estados de Peso', () => {
   function skeletonRows199() {
     return screen.getAllByTestId(/^weight-log-skeleton-row-\d+$/, { includeHiddenElements: true });
   }
-  it('#199 R22 en carga pinta cabecera, formulario y tres filas esqueleto', async () => {
+  it('#199 R22 en carga pinta cabecera, formulario y tres filas esqueleto (enmendado por #216 R1)', async () => {
     const loading = await renderLoading199();
+    await screen.findByTestId('weight-form');
     expect(skeletonRows199().map(node => node.props.testID)).toEqual(['weight-log-skeleton-row-0', 'weight-log-skeleton-row-1', 'weight-log-skeleton-row-2']);
     const container = screen.getByTestId('weight-log-header').parent!;
     const slots = [screen.getByTestId('weight-log-header'), screen.getByTestId('weight-form'), loading].map(node => scrollSlotOf(node, container));
@@ -1548,5 +1585,40 @@ describe('#220 R12: Peso usa DateField', () => {
     await fireEvent.press(screen.getByTestId('weight-submit'));
     await waitFor(() => expect(screen.getByTestId('weight-submit')).toBeDisabled());
     expect(mockCreateWeight).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1', { weightKg: 12.4, measuredAt: '2026-08-20' });
+  });
+});
+
+
+describe('#216 R1: Peso solo deja registrar al dueño', () => {
+  beforeEach(() => {
+    prepareWeightLogTests();
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [makeWeight()] });
+  });
+  it.each([
+    ['owner', true],
+    ['family', false],
+    ['walker', false],
+    ['vet', false],
+  ] as const)('#216 R1 con el rol %s el formulario se pinta: %s', async (role, formVisible) => {
+    const pet = makePet({ myRole: role });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    const { queryClient } = await renderWeightLog();
+    await screen.findByTestId('weight-row-weight-1');
+    await waitFor(() => expect(queryClient.getQueryData(petKeys.detail('pet-1'))).toEqual({ kind: 'ok', pet }));
+    expect(mockGetPet).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1');
+    for (const id of ['weight-form', 'weight-input', 'weight-date-input', 'weight-bc-input', 'weight-submit']) {
+      if (formVisible) expect(screen.queryByTestId(id)).not.toBeNull();
+      else expect(screen.queryByTestId(id)).toBeNull();
+    }
+    for (const id of ['weight-log-header', 'weight-chart-card', 'weight-history-title']) {
+      expect(screen.queryByTestId(id)).not.toBeNull();
+    }
+  });
+  it('#216 R1 mientras la mascota carga no pinta el formulario', async () => {
+    mockGetPet.mockReturnValue(pending());
+    await renderWeightLog();
+    await screen.findByTestId('weight-row-weight-1');
+    expect(screen.queryByTestId('weight-form')).toBeNull();
+    expect(screen.queryByTestId('weight-submit')).toBeNull();
   });
 });
