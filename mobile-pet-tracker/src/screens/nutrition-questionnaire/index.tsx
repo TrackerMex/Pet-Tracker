@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { getNutritionProfile } from '../../api/nutrition';
+import { getNutritionProfile, upsertNutritionProfile } from '../../api/nutrition';
 import { getPet } from '../../api/pets';
 import { nutritionKeys, petKeys } from '../../api/query-keys';
 import type { NutritionProfile, NutritionProfileInput, PetProfile } from '../../api/types';
@@ -100,6 +100,38 @@ function isKcal(value: string) {
   return /^\d+$/.test(value) && Number(value) >= 80 && Number(value) <= 600;
 }
 
+type Label = (key: HealthOption['labelKey']) => string;
+type Form = {
+  activity: NutritionProfileInput['activityLevel'];
+  bcs: number | null;
+  target: string;
+  food: NutritionProfileInput['foodType'];
+  kcal: string;
+  allergies: string[];
+  allergyOther: string;
+  diseases: string[];
+  diseaseOther: string;
+  kept: { allergies: string[]; diseases: string[] };
+};
+
+function healthItems(options: readonly HealthOption[], checked: string[], other: string, kept: string[], label: Label) {
+  const items = options.filter(option => option.slug !== 'otra' && checked.includes(option.slug)).map(option => label(option.labelKey));
+  if (checked.includes('otra') && other.trim() !== '') items.push(other.trim());
+  return [...new Set([...items, ...kept])].slice(0, 20).map(item => item.slice(0, 100));
+}
+
+function buildInput(form: Form, label: Label): NutritionProfileInput {
+  return {
+    activityLevel: form.activity,
+    ...(form.bcs !== null ? { bodyCondition: form.bcs } : {}),
+    ...(form.bcs !== null && form.bcs >= 7 && form.target !== '' ? { targetWeightKg: Number(form.target.replace(',', '.')) } : {}),
+    foodType: form.food,
+    kcalPer100g: Number(form.kcal),
+    allergies: healthItems(ALLERGIES, form.allergies, form.allergyOther, form.kept.allergies, label),
+    diseases: healthItems(DISEASES, form.diseases, form.diseaseOther, form.kept.diseases, label),
+  };
+}
+
 function NumberField({ kind, testID, unit, value, onChangeText }: { kind: 'weight' | 'kcal'; testID: string; unit: string; value: string; onChangeText: (value: string) => void }) {
   const [focused, setFocused] = useState(false);
   return <View className={focused ? 'h-16 flex-row items-center gap-2 rounded-14 border-2 border-accent bg-default px-4' : 'h-16 flex-row items-center gap-2 rounded-14 border-2 border-transparent bg-default px-4'} style={CONTINUOUS_CORNER}>
@@ -158,6 +190,8 @@ function QuestionnaireForm({ pet }: { initial: NutritionProfile | null; pet: Pet
   const t = useTranslate();
   const insets = useSafeAreaInsets();
   const chunkyLip = useChunkyLip();
+  const { token } = useAuth();
+  const [phase, setPhase] = useState<'form' | 'saving'>('form');
   const [step, setStep] = useState<Step>('activity');
   const colors = useThemeColors(['category-blue-strong', 'category-green-strong', 'category-amber-strong', 'accent-foreground', 'muted']);
   const [activity, setActivity] = useState<NutritionProfileInput['activityLevel'] | null>(null);
@@ -174,8 +208,16 @@ function QuestionnaireForm({ pet }: { initial: NutritionProfile | null; pet: Pet
   const n = stepNumber(step);
   const canContinue = step === 'activity' ? activity !== null : step === 'condition' ? bcs !== null : step === 'target' ? target === '' || isWeight(target) : step === 'food' ? food !== null && isKcal(kcal) : true;
   usePreventRemove(step !== 'activity', () => setStep(prevStep(step, bcs)));
-  function handleNext() {
-    if (step !== 'health') setStep(nextStep(step, bcs));
+  async function handleNext() {
+    if (step !== 'health') {
+      setStep(nextStep(step, bcs));
+      return;
+    }
+    if (activity === null || food === null) return;
+    setPhase('saving');
+    await upsertNutritionProfile(process.env.EXPO_PUBLIC_API_URL, token ?? '', pet.id, buildInput({
+      activity, bcs, target, food, kcal, allergies, allergyOther, diseases, diseaseOther, kept: { allergies: [], diseases: [] },
+    }, t));
   }
 
   return (
@@ -278,7 +320,7 @@ function QuestionnaireForm({ pet }: { initial: NutritionProfile | null; pet: Pet
         </> : null}
       </ScrollView>
       <View className="bg-background px-5 pt-4" style={{ paddingBottom: Math.max(insets.bottom, 16) }}>
-        <Button testID="nutrition-questionnaire-next" className="h-14 rounded-16 bg-accent" style={chunkyLip.primary} isDisabled={!canContinue} onPress={() => void handleNext()}>
+        <Button testID="nutrition-questionnaire-next" className="h-14 rounded-16 bg-accent" style={chunkyLip.primary} isDisabled={!canContinue || phase !== 'form'} onPress={() => void handleNext()}>
           <Text className="text-17 font-extrabold text-accent-foreground">{step === 'health' ? t('nutritionQuestionnaire.saveAndGenerate') : t('nutritionQuestionnaire.next')}</Text>
         </Button>
       </View>
