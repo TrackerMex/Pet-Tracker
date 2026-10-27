@@ -104,7 +104,7 @@ function AddReminderContent({ petId }: { petId: string }) {
         type,
         title: trimmedTitle,
         dueAt: dueAt.toISOString(),
-        advanceMinutes: effectiveAdvance(dueAt, advanceMinutes, Date.now()),
+        advanceMinutes: repeat === 'hour' ? 0 : effectiveAdvance(dueAt, advanceMinutes, Date.now()),
       });
 
       switch (result.kind) {
@@ -138,7 +138,7 @@ function AddReminderContent({ petId }: { petId: string }) {
   const maxEvery = repeat === 'month' ? 12 : 24;
   const setEvery = repeat === 'month' ? setMonthEvery : setHourEvery;
   const pickedDueAt = date ? combineDateAndTime(date, time) : null;
-  const selectedAdvance = effectiveAdvance(pickedDueAt, advanceMinutes, now);
+  const selectedAdvance = repeat === 'hour' ? 0 : effectiveAdvance(pickedDueAt, advanceMinutes, now);
   const notifyAt = pickedDueAt ? new Date(pickedDueAt.getTime() - selectedAdvance * 60000) : null;
 
   return (
@@ -342,6 +342,7 @@ function AddReminderContent({ petId }: { petId: string }) {
           </View>
         ) : null}
 
+        {repeat !== 'hour' ? (
         <View className="gap-2">
           <Text className="text-sm font-extrabold text-foreground">
             {t('addReminder.alert')}
@@ -377,6 +378,8 @@ function AddReminderContent({ petId }: { petId: string }) {
             })}
           </ScrollView>
         </View>
+
+        ) : null}
 
         {notifyAt ? (
           <View
