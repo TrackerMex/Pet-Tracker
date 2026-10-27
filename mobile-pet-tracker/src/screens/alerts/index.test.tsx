@@ -97,7 +97,10 @@ jest.mock('reicon-react-native', () => {
   return {
     BatteryLow: icon('BatteryLow'),
     Bell: icon('Bell'),
+    Check: icon('Check'),
+    ChevronDown: icon('ChevronDown'),
     ChevronLeft: icon('ChevronLeft'),
+    ChevronUp: icon('ChevronUp'),
     LocationSlash: icon('LocationSlash'),
   };
 });
@@ -470,7 +473,7 @@ describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tr
     },
   );
 
-  it('alterna el tercer hijo entre ack y la píldora traducida (enmendado por #174 R7) (enmendado por #174 R8) (enmendado por #197 R8)', async () => {
+  it('alterna el tercer hijo entre ack y la píldora traducida (enmendado por #174 R7) (enmendado por #174 R8) (enmendado por #197 R8) (enmendado por #223 R18)', async () => {
     const alerts = [
       makeAlert({ id: 'open', status: 'open' }),
       makeAlert({ id: 'acked', status: 'acked' }),
@@ -484,20 +487,23 @@ describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tr
     await renderAlerts();
 
     const list = screen.getByTestId('alerts-list');
-    await waitFor(() => expect(list.props.data).toHaveLength(3));
+    await waitFor(() => expect(list.props.data).toHaveLength(1));
+    await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
+    await screen.findByTestId('alert-row-acked');
     for (const alert of alerts) {
       const rowId = `alert-row-${alert.id}`;
       const row = within(list).getByTestId(rowId);
       expect(row.children).toHaveLength(3);
+      const compact = alert.status !== 'open';
       const classes = row.props.className.split(' ');
-      for (const value of ['flex-row', 'items-center', 'gap-3', 'px-3.5', 'py-3', 'shadow-none']) {
+      for (const value of ['flex-row', 'items-center', 'gap-3', 'px-3.5', compact ? 'py-2.5' : 'py-3', compact ? 'rounded-16' : 'shadow-none']) {
         expect(classes).toContain(value);
       }
       expect(classes).not.toContain('min-h-20');
       expect(classes).not.toContain('shadow-sm');
-      expect(elementChild(row, 0).props.className).toContain('size-11');
+      expect(elementChild(row, 0).props.className).toContain(compact ? 'size-9' : 'size-11');
       expect(elementChild(row, 1).props.className).toBe(
-        'min-h-11 min-w-0 flex-1 justify-center gap-0.5',
+        compact ? 'min-h-11 min-w-0 flex-1 justify-center gap-px' : 'min-h-11 min-w-0 flex-1 justify-center gap-0.5',
       );
     }
 
@@ -572,8 +578,6 @@ describe('#78 R7: pinta las abiertas primero y conserva la posición tras el ack
   const expectedOrder = [
     'alert-row-open1',
     'alert-row-open2',
-    'alert-row-acked',
-    'alert-row-closed',
   ];
 
   beforeEach(() => {
@@ -602,7 +606,7 @@ describe('#78 R7: pinta las abiertas primero y conserva la posición tras el ack
     );
   }
 
-  it('particiona por el status descargado y conserva el orden de cada grupo', async () => {
+  it('particiona por el status descargado y conserva el orden de cada grupo (enmendado por #223 R18)', async () => {
     await renderAlerts();
 
     await waitFor(() => expect(rowOrder()).toEqual(expectedOrder));
@@ -612,11 +616,15 @@ describe('#78 R7: pinta las abiertas primero y conserva la posición tras el ack
       undefined,
       undefined,
     );
+    await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
+    const attendedList = await screen.findByTestId('alerts-attended-list');
+    expect(within(attendedList).getAllByTestId(/^alert-row-(acked|closed)$/).map((row) => row.props.testID)).toEqual(['alert-row-acked', 'alert-row-closed']);
   });
 
-  it('no mueve la fila abierta al pulsar su ack', async () => {
+  it('no mueve la fila abierta al pulsar su ack (enmendado por #223 R18)', async () => {
+    const expectedOpenOrder = ['alert-row-open1', 'alert-row-open2'];
     await renderAlerts();
-    await waitFor(() => expect(rowOrder()).toEqual(expectedOrder));
+    await waitFor(() => expect(rowOrder()).toEqual(expectedOpenOrder));
 
     await fireEvent.press(screen.getByTestId('alert-row-open1-ack'));
 
@@ -625,7 +633,7 @@ describe('#78 R7: pinta las abiertas primero y conserva la posición tras el ack
         es['alerts.statusAcked'],
       ),
     );
-    expect(rowOrder()).toEqual(expectedOrder);
+    expect(rowOrder()).toEqual(expectedOpenOrder);
   });
 });
 
@@ -883,7 +891,7 @@ describe('#78 R9: pagina por nextCursor y se para cuando no hay', () => {
     );
   }
 
-  it('pide el cursor siguiente y conserva las filas de ambas páginas', async () => {
+  it('pide el cursor siguiente y conserva las filas de ambas páginas (enmendado por #223 R18)', async () => {
     mockListAlerts
       .mockResolvedValueOnce({
         kind: 'ok',
@@ -896,9 +904,6 @@ describe('#78 R9: pagina por nextCursor y se para cuando no hay', () => {
         nextCursor: null,
       });
     await renderAlerts();
-    await waitFor(() => expect(rowIds()).toEqual(['p1a', 'p1b']));
-
-    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
 
     await waitFor(() =>
       expect(rowIds()).toEqual(['p1a', 'p1b', 'p2a', 'p2b']),
@@ -912,7 +917,7 @@ describe('#78 R9: pagina por nextCursor y se para cuando no hay', () => {
     );
   });
 
-  it('no pide otra página cuando nextCursor es null', async () => {
+  it('no pide otra página cuando nextCursor es null (enmendado por #223 R18)', async () => {
     mockListAlerts.mockResolvedValue({
       kind: 'ok',
       items: [makeAlert()],
@@ -921,36 +926,25 @@ describe('#78 R9: pagina por nextCursor y se para cuando no hay', () => {
     await renderAlerts();
     await waitFor(() => expect(rowIds()).toEqual(['alert-1']));
 
-    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
-
     expect(mockListAlerts).toHaveBeenCalledTimes(1);
   });
 
-  it('corta el segundo onEndReached mientras la página está en vuelo', async () => {
+  it('no pide otra página mientras la anterior está en vuelo (enmendado por #223 R18)', async () => {
+    let finishSecond!: (page: AlertsState) => void;
     mockListAlerts
-      .mockResolvedValueOnce({
-        kind: 'ok',
-        items: [makeAlert()],
-        nextCursor: 'c1',
-      })
-      .mockReturnValueOnce(pending<AlertsState>());
+      .mockResolvedValueOnce({ kind: 'ok', items: [makeAlert()], nextCursor: 'c1' })
+      .mockReturnValueOnce(new Promise<AlertsState>((resolve) => { finishSecond = resolve; }));
     await renderAlerts();
     await waitFor(() => expect(rowIds()).toEqual(['alert-1']));
-    const firstHandler = screen.getByTestId('alerts-list').props.onEndReached;
-
-    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
-    await waitFor(() => expect(mockListAlerts).toHaveBeenCalledTimes(2));
-    await waitFor(() =>
-      expect(screen.getByTestId('alerts-list').props.onEndReached).not.toBe(
-        firstHandler,
-      ),
-    );
-    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
-
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+    expect(rowIds()).toEqual(['alert-1']);
+    expect(mockListAlerts).toHaveBeenCalledTimes(2);
+    await act(async () => finishSecond({ kind: 'ok', items: [makeAlert({ id: 'second' })], nextCursor: null }));
+    await waitFor(() => expect(rowIds()).toEqual(['alert-1', 'second']));
     expect(mockListAlerts).toHaveBeenCalledTimes(2);
   });
 
-  it('conserva la primera página y muestra error si falla la segunda', async () => {
+  it('conserva la primera página y muestra error si falla la segunda (enmendado por #223 R18)', async () => {
     mockListAlerts
       .mockResolvedValueOnce({
         kind: 'ok',
@@ -961,15 +955,12 @@ describe('#78 R9: pagina por nextCursor y se para cuando no hay', () => {
     await renderAlerts();
     await waitFor(() => expect(rowIds()).toEqual(['p1a', 'p1b']));
 
-    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
-
     await waitFor(() =>
       expect(screen.getByTestId('alerts-action-error')).toHaveTextContent(
         es['common.somethingWentWrong'],
       ),
     );
     expect(rowIds()).toEqual(['p1a', 'p1b']);
-    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
     expect(mockListAlerts).toHaveBeenCalledTimes(2);
   });
 });
@@ -1199,7 +1190,7 @@ describe(
       });
     });
 
-    it('da prioridad al status cerrado descargado en el siguiente foco', async () => {
+    it('da prioridad al status cerrado descargado en el siguiente foco (enmendado por #223 R18)', async () => {
       await renderAlerts();
       const button = await waitFor(() =>
         screen.getByTestId('alert-row-alert-1-ack'),
@@ -1213,6 +1204,9 @@ describe(
       );
 
       await focusScreen();
+      await waitFor(() => expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('1', { exact: true }));
+      expect(screen.getByTestId('alerts-list').props.data).toEqual([]);
+      await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
 
       await waitFor(() =>
         expect(screen.getByTestId('alert-row-alert-1-status')).toHaveTextContent(
@@ -1341,10 +1335,19 @@ describe('#170 R3: agrupa la lista en Hoy, Esta semana y Anteriores', () => {
     else hostProcess.env.TZ = previousTZ;
     jest.restoreAllMocks();
   });
-  it('ordena por sección y, dentro, abiertas primero en el orden del servidor', async () => {
+  it('#223 R4: data contiene solo las abiertas, por sección y en el orden del servidor', async () => {
+    await renderAlerts();
+    await waitFor(() => expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['today-open', 'week-open', 'earlier-open']));
+    for (const section of ['today', 'week', 'earlier']) {
+      expect(screen.getAllByTestId('alerts-section-' + section)).toHaveLength(1);
+    }
+    expect(screen.queryByTestId('alert-row-today-acked')).toBeNull();
+    expect(screen.queryByTestId('alert-row-earlier-closed')).toBeNull();
+  });
+  it('ordena las abiertas por sección y en el orden del servidor (enmendado por #223 R18)', async () => {
     await renderAlerts();
     await screen.findByTestId('alert-row-today-open');
-    expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['today-open', 'today-acked', 'week-open', 'earlier-open', 'earlier-closed']);
+    expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['today-open', 'week-open', 'earlier-open']);
   });
   it('pinta una cabecera por sección con su copy en español (enmendado por #174 R6)', async () => {
     await renderAlerts();
@@ -1384,13 +1387,13 @@ describe('#170 R3: agrupa la lista en Hoy, Esta semana y Anteriores', () => {
     ['today', S.filter((a) => !a.id.startsWith('today'))],
     ['week', S.filter((a) => !a.id.startsWith('week'))],
     ['earlier', S.filter((a) => !a.id.startsWith('earlier'))],
-  ] as const)('omite la cabecera de %s cuando la sección queda vacía', async (section, items) => {
+  ] as const)('omite la cabecera de %s cuando la sección queda vacía (enmendado por #223 R18)', async (section, items) => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items, nextCursor: null });
     await renderAlerts();
-    await screen.findByTestId('alert-row-' + items[0].id);
+    await screen.findByTestId('alert-row-' + items.find((a) => a.status === 'open')!.id);
     expect(screen.queryByTestId('alerts-section-' + section)).toBeNull();
   });
-  it('pinta cada cabecera una sola vez al cargar la página siguiente', async () => {
+  it('pinta cada cabecera una sola vez al cargar la página siguiente (enmendado por #223 R18)', async () => {
     mockListAlerts.mockResolvedValueOnce({ kind: 'ok', items: [
       makeAlert({ id: 'today-1', openedAt: '2027-01-02T14:00:00.000Z' }),
       makeAlert({ id: 'week-1', openedAt: '2026-12-30T12:00:00.000Z' }),
@@ -1400,17 +1403,17 @@ describe('#170 R3: agrupa la lista en Hoy, Esta semana y Anteriores', () => {
     ], nextCursor: null });
     await renderAlerts();
     await screen.findByTestId('alert-row-today-1');
-    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
-    await waitFor(() => expect(screen.getByTestId('alerts-list').props.data).toHaveLength(4));
-    expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['today-1', 'week-1', 'week-2', 'earlier-1']);
+    await waitFor(() => expect(screen.getByTestId('alerts-list').props.data).toHaveLength(3));
+    expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['today-1', 'week-1', 'earlier-1']);
     expect(screen.getAllByTestId('alerts-section-week')).toHaveLength(1);
   });
-  it('no reordena al marcar leída una fila abierta', async () => {
+  it('no reordena al marcar leída una fila abierta (enmendado por #223 R18)', async () => {
     mockAckAlert.mockResolvedValue({ kind: 'ok', alert: { ...S[4], status: 'acked' } });
     await renderAlerts();
+    await waitFor(() => expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['today-open', 'week-open', 'earlier-open']));
     await fireEvent.press(await screen.findByTestId('alert-row-today-open-ack'));
     await screen.findByTestId('alert-row-today-open-status');
-    expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['today-open', 'today-acked', 'week-open', 'earlier-open', 'earlier-closed']);
+    expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['today-open', 'week-open', 'earlier-open']);
   });
 });
 
@@ -1422,12 +1425,12 @@ describe('#170 R4: cuenta las alertas nuevas', () => {
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
     mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
   });
-  it.each(['carga', 'error', 'vacía', 'todas leídas'])('no pinta el contador con 0 nuevas: %s (enmendado por #203 R8)', async (state) => {
+  it.each(['carga', 'error', 'vacía', 'todas leídas'])('no pinta el contador con 0 nuevas: %s (enmendado por #203 R8) (enmendado por #223 R18)', async (state) => {
     if (state === 'carga') mockListAlerts.mockReturnValue(pending<AlertsState>());
     else if (state === 'error') mockListAlerts.mockResolvedValue({ kind: 'error' });
     else mockListAlerts.mockResolvedValue({ kind: 'ok', items: state === 'vacía' ? [] : [makeAlert({ id: 'a', status: 'acked' }), makeAlert({ id: 'b', status: 'closed' })], nextCursor: null });
     await renderAlerts();
-    await screen.findByTestId(state === 'carga' ? 'alerts-loading' : state === 'error' ? 'alerts-error' : state === 'vacía' ? 'alerts-empty' : 'alert-row-a');
+    await screen.findByTestId(state === 'carga' ? 'alerts-loading' : state === 'error' ? 'alerts-error' : state === 'vacía' ? 'alerts-empty' : 'alerts-calm');
     expect(screen.queryByTestId('alerts-new-count')).toBeNull();
     expect(screen.getByTestId('alerts').children).toHaveLength(2);
     const root = screen.getByTestId('screen-alerts');
@@ -1444,12 +1447,10 @@ describe('#170 R4: cuenta las alertas nuevas', () => {
     await renderAlertsInEnglish();
     expect(await screen.findByTestId('alerts-new-count-text')).toHaveTextContent('1 new');
   });
-  it('suma las abiertas de todas las páginas cargadas', async () => {
+  it('suma las abiertas de todas las páginas cargadas (enmendado por #223 R18)', async () => {
     mockListAlerts.mockResolvedValueOnce({ kind: 'ok', items: [makeAlert({ id: 'a' }), makeAlert({ id: 'b' }), makeAlert({ id: 'c', status: 'acked' })], nextCursor: 'c1' })
       .mockResolvedValue({ kind: 'ok', items: [makeAlert({ id: 'd' })], nextCursor: null });
     await renderAlerts();
-    expect(await screen.findByTestId('alerts-new-count-text')).toHaveTextContent('2 nuevas');
-    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
     await waitFor(() => expect(screen.getByTestId('alerts-new-count-text')).toHaveTextContent('3 nuevas'));
   });
   it('pinta «2 new» en inglés', async () => {
@@ -1521,10 +1522,13 @@ describe('#170 R5: la fila abierta lleva el borde de su tipo', () => {
     expect(icon.parent?.props.className.split(' ')).toContain(disc);
     expect(within(row).getByTestId('alert-row-alert-1-type')).toHaveTextContent(label);
   });
-  it.each(['acked', 'closed'] as const)('%s: sin borde de severidad', async (status) => {
+  it.each(['acked', 'closed'] as const)('%s: sin borde de severidad (enmendado por #223 R18)', async (status) => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ status })], nextCursor: null });
     await renderAlerts();
+    await waitFor(() => expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('1', { exact: true }));
+    await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
     const row = await screen.findByTestId('alert-row-alert-1');
+    expect(row.props.className).toBe('flex-row items-center gap-3 rounded-16 border border-border bg-surface px-3.5 py-2.5');
     const classes = row.props.className.split(' ');
     expect(classes).toContain('border');
     expect(classes).toContain('border-border');
@@ -1610,7 +1614,7 @@ describe('#203 R8: cabecera de Alertas', () => {
     expect(within(counter).getByTestId('alerts-new-count-text')).toHaveTextContent('2 nuevas', { exact: true });
   });
 
-  it('#203 R8: sin nuevas la cabecera no lleva accesorio', async () => {
+  it('#203 R8: sin nuevas la cabecera no lleva accesorio (enmendado por #223 R18)', async () => {
     mockListAlerts.mockResolvedValue({
       kind: 'ok',
       items: [makeAlert({ id: 'a', status: 'acked' }), makeAlert({ id: 'b', status: 'closed' })],
@@ -1618,7 +1622,7 @@ describe('#203 R8: cabecera de Alertas', () => {
     });
     await renderAlerts();
 
-    await screen.findByTestId('alert-row-a');
+    await waitFor(() => expect(screen.getByTestId('alerts-list')).toBeVisible());
     const row = screen.getByTestId('alerts');
     expect(row.children).toHaveLength(2);
     expect(within(row).queryByTestId('alerts-new-count')).toBeNull();
@@ -1636,5 +1640,261 @@ describe('#203 R8: cabecera de Alertas', () => {
       paddingBottom: 48,
       gap: 12,
     });
+  });
+});
+
+
+describe('#223 R5: la insignia espera al último cursor y suma las abiertas de todas las páginas', () => {
+  const hostProcess = process.getBuiltinModule('process');
+  let previousTZ: string | undefined;
+  beforeEach(() => {
+    previousTZ = hostProcess.env.TZ;
+    hostProcess.env.TZ = 'America/Mexico_City';
+    jest.spyOn(Date, 'now').mockReturnValue(Date.parse('2027-01-02T16:00:00.000Z'));
+    jest.clearAllMocks();
+    mockListAlerts.mockReset();
+    mockAckAlert.mockReset();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+  });
+  afterEach(() => {
+    if (previousTZ === undefined) delete hostProcess.env.TZ;
+    else hostProcess.env.TZ = previousTZ;
+    jest.restoreAllMocks();
+  });
+
+  it('#223 R5: la insignia espera al último cursor y suma las abiertas de todas las páginas', async () => {
+    for (const language of ['es', 'en']) {
+      let finishSecond!: (page: AlertsState) => void;
+      mockListAlerts.mockReset().mockResolvedValueOnce({ kind: 'ok', items: [
+        makeAlert({ id: 'a' }), makeAlert({ id: 'b' }), makeAlert({ id: 'c', status: 'acked' }),
+      ], nextCursor: 'c1' }).mockReturnValueOnce(new Promise<AlertsState>((resolve) => { finishSecond = resolve; }));
+      const rendered = await (language === 'es' ? renderAlerts() : renderAlertsInEnglish());
+      await waitFor(() => expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['a', 'b']));
+      expect(screen.queryByTestId('alerts-new-count')).toBeNull();
+      await act(async () => finishSecond({ kind: 'ok', items: [makeAlert({ id: 'd' })], nextCursor: null }));
+      await waitFor(() => expect(screen.getByTestId('alerts-new-count-text')).toHaveTextContent(language === 'es' ? '3 nuevas' : '3 new', { exact: true }));
+      await rendered.unmount();
+    }
+  });
+
+  it('#223 R7: pinta «Atendidas» colapsada con su contador solo asentada y con atendidas', async () => {
+    const attended = [makeAlert({ id: 'read', status: 'acked' }), makeAlert({ id: 'resolved', status: 'closed' })];
+    for (const language of ['es', 'en']) {
+      mockListAlerts.mockReset().mockResolvedValue({ kind: 'ok', items: [makeAlert({ id: 'open' }), ...attended], nextCursor: null });
+      const rendered = await (language === 'es' ? renderAlerts() : renderAlertsInEnglish());
+      await waitFor(() => expect(screen.queryByTestId('alerts-attended')).not.toBeNull());
+      expect(screen.getByTestId('alerts-attended-label')).toHaveTextContent(language === 'es' ? 'Atendidas' : 'Attended', { exact: true });
+      expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('2', { exact: true });
+      expect(screen.getByTestId('alerts-attended-toggle').props.accessibilityState.expanded).toBe(false);
+      expect(screen.getByTestId('alerts-attended-chevron').props.iconName).toBe('ChevronDown');
+      expect(screen.queryByTestId('alert-row-read')).toBeNull();
+      expect(screen.queryByTestId('alert-row-resolved')).toBeNull();
+      await rendered.unmount();
+    }
+    mockListAlerts.mockReset().mockResolvedValue({ kind: 'ok', items: [makeAlert({ id: 'only-open' })], nextCursor: null });
+    const withoutAttended = await renderAlerts();
+    await screen.findByTestId('alert-row-only-open');
+    expect(screen.queryByTestId('alerts-attended')).toBeNull();
+    await withoutAttended.unmount();
+
+    let finishSecond!: (page: AlertsState) => void;
+    mockListAlerts.mockReset().mockResolvedValueOnce({ kind: 'ok', items: [makeAlert({ id: 'pending-open' }), ...attended], nextCursor: 'c1' })
+      .mockReturnValueOnce(new Promise<AlertsState>((resolve) => { finishSecond = resolve; }));
+    await renderAlerts();
+    await screen.findByTestId('alert-row-pending-open');
+    expect(screen.queryByTestId('alerts-attended')).toBeNull();
+    await act(async () => finishSecond({ kind: 'ok', items: [], nextCursor: null }));
+    await waitFor(() => expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('2', { exact: true }));
+  });
+
+  it('#223 R6: la fila marcada leída conserva su sitio y pasa a Atendidas en el siguiente refetch', async () => {
+    const first = makeAlert({ id: 'first' });
+    const second = makeAlert({ id: 'second' });
+    const read = makeAlert({ id: 'read', status: 'acked' });
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [first, read, second], nextCursor: null });
+    mockAckAlert.mockResolvedValue({ kind: 'ok', alert: { ...first, status: 'acked' } });
+    await renderAlerts();
+    await waitFor(() => expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('1', { exact: true }));
+    const ids = () => screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id);
+    expect(ids()).toEqual(['first', 'second']);
+    expect(screen.getByTestId('alerts-new-count-text')).toHaveTextContent('2 nuevas', { exact: true });
+    await fireEvent.press(screen.getByTestId('alert-row-first-ack'));
+    await waitFor(() => expect(screen.getByTestId('alert-row-first-status')).toHaveTextContent('Leída', { exact: true }));
+    expect(ids()).toEqual(['first', 'second']);
+    expect(screen.getByTestId('alerts-new-count-text')).toHaveTextContent('1 nueva', { exact: true });
+    expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('1', { exact: true });
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [{ ...first, status: 'acked' }, read, second], nextCursor: null });
+    await focusScreen();
+    await waitFor(() => {
+      expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('2', { exact: true });
+      expect(ids()).toEqual(['second']);
+    });
+  });
+
+  it('#223 R8: el encabezado alterna la sección y recuerda cuántas filas había (enmendado por #223 R18)', async () => {
+    const history = Array.from({ length: 14 }, (_, i) => makeAlert({
+      id: `h${String(i + 1).padStart(2, '0')}`, status: i % 2 === 0 ? 'acked' : 'closed',
+      openedAt: new Date(Date.parse('2027-01-02T15:00:00.000Z') - i * 60000).toISOString(),
+    }));
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: history, nextCursor: null });
+    await renderAlerts();
+    await waitFor(() => expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('14', { exact: true }));
+    await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
+    await waitFor(() => expect(screen.queryByTestId('alerts-attended-list')).not.toBeNull());
+    expect(screen.getByTestId('alerts-attended-toggle').props.accessibilityState.expanded).toBe(true);
+    expect(screen.getByTestId('alerts-attended-chevron').props.iconName).toBe('ChevronUp');
+    expect(within(screen.getByTestId('alerts-attended-list')).getAllByTestId(/^alert-row-h\d+$/).map((row) => row.props.testID)).toEqual([
+      'alert-row-h01', 'alert-row-h02', 'alert-row-h03', 'alert-row-h04', 'alert-row-h05',
+      'alert-row-h06', 'alert-row-h07', 'alert-row-h08', 'alert-row-h09', 'alert-row-h10',
+    ]);
+    await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
+    expect(screen.queryByTestId('alerts-attended-list')).toBeNull();
+    expect(screen.queryByTestId('alert-row-h01')).toBeNull();
+    expect(screen.getByTestId('alerts-attended-chevron').props.iconName).toBe('ChevronDown');
+    await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
+    await fireEvent.press(screen.getByTestId('alerts-attended-more'));
+    await screen.findByTestId('alert-row-h14');
+    await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
+    expect(screen.queryByTestId('alerts-attended-list')).toBeNull();
+    await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
+    expect(within(screen.getByTestId('alerts-attended-list')).getAllByTestId(/^alert-row-h\d+$/)).toHaveLength(14);
+    expect(screen.getByTestId('alert-row-h14')).toBeVisible();
+  });
+
+  it('#223 R9: la fila atendida es compacta, sin ack y abre su detalle', async () => {
+    for (const [status, type, iconName, ink, disc, title, label, pill] of [
+      ['acked', 'battery_low', 'BatteryLow', '--color-warning-strong', 'bg-category-amber', 'Batería baja', 'Leída', 'rounded-full bg-default px-2.5 py-1 text-xs font-bold text-muted'],
+      ['closed', 'geofence_exit', 'LocationSlash', '--color-danger', 'bg-category-rose', 'Salió de la zona', 'Resuelta', 'rounded-full bg-category-green px-2.5 py-1 text-xs font-extrabold text-category-green-strong'],
+    ] as const) {
+      mockListAlerts.mockReset().mockResolvedValue({ kind: 'ok', items: [makeAlert({ id: status, status, type, petName: 'Rocky', openedAt: '2027-01-02T14:00:00.000Z' })], nextCursor: null });
+      const rendered = await renderAlerts();
+      await waitFor(() => expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('1', { exact: true }));
+      await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
+      const rowId = `alert-row-${status}`;
+      const row = await screen.findByTestId(rowId);
+      const icon = within(row).getByTestId(`${rowId}-icon`);
+      expect(icon.props.size).toBe(18);
+      expect(icon.props.iconName).toBe(iconName);
+      expect(icon.props.color).toBe(ink);
+      expect(icon.parent?.props.className).toBe(`size-9 items-center justify-center rounded-full ${disc}`);
+      expect(screen.getByTestId(`${rowId}-type`)).toHaveTextContent(title, { exact: true });
+      expect(screen.getByTestId(`${rowId}-pet`)).toHaveTextContent('Rocky', { exact: true });
+      expect(screen.getByTestId(`${rowId}-time`)).toHaveTextContent('Hace 2 h', { exact: true });
+      expect(screen.getByTestId(`${rowId}-subtitle`)).toHaveTextContent('Rocky · Hace 2 h', { exact: true });
+      expect(screen.getByTestId(`${rowId}-status`)).toHaveTextContent(label, { exact: true });
+      expect(screen.getByTestId(`${rowId}-status`).props.className).toBe(pill);
+      expect(screen.queryByTestId(`${rowId}-ack`)).toBeNull();
+      expect(screen.queryByTestId(`${rowId}-entrance`)).toBeNull();
+      expect(row.props.className).toBe('flex-row items-center gap-3 rounded-16 border border-border bg-surface px-3.5 py-2.5');
+      await fireEvent.press(screen.getByTestId(`${rowId}-link`));
+      expect(mockRouterPush).toHaveBeenLastCalledWith({ pathname: '/alerts/[alertId]', params: { alertId: status } });
+      await rendered.unmount();
+    }
+  });
+
+  it.each([10, 11, 23])('#223 R10: «Ver más» suma 10 y el pie cuenta N de M', async (total) => {
+    const history = Array.from({ length: total }, (_, i) => makeAlert({ id: `m${i + 1}`, status: i % 2 === 0 ? 'acked' : 'closed' }));
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: history, nextCursor: null });
+    const rendered = await renderAlerts();
+    await waitFor(() => expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent(String(total), { exact: true }));
+    await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
+    const rows = () => within(screen.getByTestId('alerts-attended-list')).getAllByTestId(/^alert-row-m\d+$/);
+    expect(rows()).toHaveLength(10);
+    if (total === 10) {
+      expect(screen.queryByTestId('alerts-attended-more')).toBeNull();
+      expect(screen.queryByTestId('alerts-attended-footer')).toBeNull();
+    } else {
+      expect(screen.getByTestId('alerts-attended-more')).toHaveTextContent('Ver más', { exact: true });
+      expect(screen.getByTestId('alerts-attended-footer')).toHaveTextContent(total === 11 ? 'Mostrando 10 de 11' : 'Mostrando 10 de 23', { exact: true });
+      await fireEvent.press(screen.getByTestId('alerts-attended-more'));
+      expect(rows()).toHaveLength(total === 11 ? 11 : 20);
+      expect(screen.getByTestId('alerts-attended-footer')).toHaveTextContent(total === 11 ? 'Mostrando 11 de 11' : 'Mostrando 20 de 23', { exact: true });
+      if (total === 23) {
+        await fireEvent.press(screen.getByTestId('alerts-attended-more'));
+        expect(rows()).toHaveLength(23);
+        expect(screen.getByTestId('alerts-attended-footer')).toHaveTextContent('Mostrando 23 de 23', { exact: true });
+      }
+      expect(screen.queryByTestId('alerts-attended-more')).toBeNull();
+    }
+    await rendered.unmount();
+    if (total === 23) {
+      await renderAlertsInEnglish();
+      await waitFor(() => expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('23', { exact: true }));
+      await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
+      expect(screen.getByTestId('alerts-attended-more')).toHaveTextContent('Show more', { exact: true });
+      expect(screen.getByTestId('alerts-attended-footer')).toHaveTextContent('Showing 10 of 23', { exact: true });
+    }
+  });
+
+  it('#223 R11: sin abiertas pinta «Todo en calma» con el nombre de la mascota más reciente', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [
+      makeAlert({ id: 'newer', status: 'acked', petName: 'Rocky', openedAt: '2027-01-02T15:00:00.000Z' }),
+      makeAlert({ id: 'older', status: 'closed', petName: 'Luna', openedAt: '2027-01-01T15:00:00.000Z' }),
+    ], nextCursor: null });
+    for (const language of ['es', 'en']) {
+      const rendered = await (language === 'es' ? renderAlerts() : renderAlertsInEnglish());
+      await waitFor(() => expect(screen.queryByTestId('alerts-calm')).not.toBeNull());
+      expect(screen.getByTestId('alerts-calm-title')).toHaveTextContent(language === 'es' ? 'Todo en calma' : 'All calm', { exact: true });
+      expect(screen.getByTestId('alerts-calm-body')).toHaveTextContent(language === 'es' ? 'No tienes alertas abiertas. Rocky está tranquilo.' : 'You have no open alerts. Rocky is calm.', { exact: true });
+      expect(screen.getByTestId('alerts-open-heading')).toHaveTextContent(language === 'es' ? 'Abiertas' : 'Open', { exact: true });
+      expect(screen.getByTestId('alerts-calm-icon').props.iconName).toBe('Check');
+      expect(screen.getByTestId('alerts-calm-icon').props.color).toBe('--color-category-green-strong');
+      expect(screen.queryByTestId('alerts-empty')).toBeNull();
+      expect(screen.queryByTestId('alerts-new-count')).toBeNull();
+      expect(screen.getByTestId('alerts-attended-toggle')).toBeVisible();
+      await rendered.unmount();
+    }
+  });
+
+  it('#223 R12: sin alertas conserva el vacío de Pingo y el error de la primera página conserva el reintento', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [], nextCursor: null });
+    const rendered = await renderAlerts();
+    await waitFor(() => expect(screen.queryByTestId('alerts-empty')).not.toBeNull());
+    expect(screen.queryByTestId('alerts-attended')).toBeNull();
+    expect(screen.queryByTestId('alerts-calm')).toBeNull();
+    expect(screen.queryByTestId('alerts-open-heading')).toBeNull();
+    await rendered.unmount();
+    mockListAlerts.mockReset().mockResolvedValue({ kind: 'error' });
+    await renderAlerts();
+    await waitFor(() => expect(screen.getByTestId('alerts-error')).toHaveTextContent('Algo salió mal', { exact: true }));
+    expect(screen.getByTestId('alerts-retry')).toBeVisible();
+    expect(screen.queryByTestId('alerts-attended')).toBeNull();
+  });
+
+  it('#223 R13: mientras drena sin abiertas pinta el esqueleto, no el vacío ni la tarjeta de calma', async () => {
+    let finishSecond!: (page: AlertsState) => void;
+    mockListAlerts.mockResolvedValueOnce({ kind: 'ok', items: [makeAlert({ status: 'acked' })], nextCursor: 'c1' })
+      .mockReturnValueOnce(new Promise<AlertsState>((resolve) => { finishSecond = resolve; }));
+    await renderAlerts();
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+    await waitFor(() => expect(screen.queryByTestId('alerts-loading')).not.toBeNull());
+    expect(mockListAlerts).toHaveBeenCalledTimes(2);
+    expect(screen.queryByTestId('alerts-empty')).toBeNull();
+    expect(screen.queryByTestId('alerts-calm')).toBeNull();
+    await act(async () => finishSecond({ kind: 'ok', items: [makeAlert({ id: 'arriving-open' })], nextCursor: null }));
+    await screen.findByTestId('alert-row-arriving-open');
+    expect(screen.queryByTestId('alerts-loading')).toBeNull();
+  });
+
+  it('#223 R14: si falla la segunda página conserva lo descargado, muestra el error y no pide más', async () => {
+    mockListAlerts.mockResolvedValueOnce({ kind: 'ok', items: [makeAlert({ id: 'p1a' }), makeAlert({ id: 'p1b', status: 'acked' })], nextCursor: 'c1' })
+      .mockResolvedValueOnce({ kind: 'error' });
+    await renderAlerts();
+    await waitFor(() => expect(screen.getByTestId('alerts-action-error')).toHaveTextContent('Algo salió mal', { exact: true }));
+    expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['p1a']);
+    expect(screen.queryByTestId('alerts-new-count-text')).not.toBeNull();
+    expect(screen.getByTestId('alerts-new-count-text')).toHaveTextContent('1 nueva', { exact: true });
+    expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('1', { exact: true });
+    expect(mockListAlerts).toHaveBeenCalledTimes(2);
+  });
+
+  it('#223 R15: la lista no declara onEndReached y el drenado pide las páginas', async () => {
+    mockListAlerts.mockResolvedValueOnce({ kind: 'ok', items: [makeAlert({ id: 'first-page' })], nextCursor: 'c1' })
+      .mockResolvedValueOnce({ kind: 'ok', items: [makeAlert({ id: 'last-page' })], nextCursor: null });
+    await renderAlerts();
+    await waitFor(() => expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['first-page', 'last-page']));
+    expect(screen.getByTestId('alerts-list').props.onEndReached).toBeUndefined();
+    expect(mockListAlerts).toHaveBeenCalledTimes(2);
   });
 });
