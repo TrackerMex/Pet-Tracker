@@ -24,6 +24,7 @@ import {
   R19_VACCINE_CREATE,
   R20_NUTRITION_QUESTIONNAIRE,
   R21_PET_MEMBERS,
+  R22_NUTRITION_PLAN,
   type UseRow,
 } from './ui-copy-table';
 
@@ -508,7 +509,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
     checkUses(ALL_USES);
   });
 
-  it('#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas (enmendado por #200 R1) (enmendado por #199 R1) (enmendado por #220 R16) (enmendado por #208 R20) (enmendado por #214 R22) (enmendado por #209 R23) (enmendado por #224 R4)', () => {
+  it('#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas (enmendado por #200 R1) (enmendado por #199 R1) (enmendado por #220 R16) (enmendado por #208 R20) (enmendado por #214 R22) (enmendado por #209 R23) (enmendado por #224 R4) (enmendado por #215 R19)', () => {
     expect(SCREEN_FILES).toHaveLength(
       19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1 // #100 R10, #41 R10, #146 R10, #105 R5
         + 1 - 1 // #117 R10: sale app/(auth)/forgot.tsx, entra screens/forgot/index.tsx
@@ -528,6 +529,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
         + 3 // #214 R22: screens/pet-members, screens/pet-invite y screens/join-pet
         + 1 // #209 R23: screens/nutrition-questionnaire/index.tsx
         + 1 // #224 R4: screens/food/ai-explanation.tsx
+        + 1 // #215 R19: screens/nutrition-plan/index.tsx
     );
 
     for (const file of SCREEN_FILES) {
@@ -668,5 +670,12 @@ describe('#209 R23: el cuestionario resuelve su copy por clave', () => {
   it('#209 R23: el bloque del cuestionario tiene 96 filas', () => {
     expect(R20_NUTRITION_QUESTIONNAIRE).toHaveLength(96);
     checkUses(R20_NUTRITION_QUESTIONNAIRE);
+  });
+});
+
+describe('#215 R19: el plan resuelve su copy por clave', () => {
+  it('#215 R19: el bloque del plan tiene 28 filas', () => {
+    expect(R22_NUTRITION_PLAN).toHaveLength(28);
+    checkUses(R22_NUTRITION_PLAN);
   });
 });

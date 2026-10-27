@@ -73,6 +73,7 @@ const CTA_ROWS = [
   ['screens/join-pet/index.tsx', literalId('join-pet-go-home'), 'w-full h-14 rounded-16 bg-accent', ["onPress={() => router.dismissTo('/home')}"]], // #214 R20
   ['screens/nutrition-questionnaire/index.tsx', literalId('nutrition-questionnaire-next'), 'h-14 rounded-16 bg-accent', ['isDisabled={!canContinue}', 'onPress={() => void handleNext()}']], // #209 R24
   ['screens/food/index.tsx', literalId('food-create-profile'), 'w-full h-14 rounded-16 bg-accent', ['onPress={openNutritionProfile}']], // #209 R24
+  ['screens/nutrition-plan/index.tsx', literalId('nutrition-plan-pair'), 'h-14 rounded-16 bg-accent', ['onPress={openPairing}']], // #215 R20
 ] as const;
 const NEUTRAL_ROWS = [
   ['screens/geofence-editor/index.tsx', literalId('geofence-editor-delete'), 'flex-1 h-13.5 rounded-16 border-2 border-lip-gray bg-surface', 'outline', 'Text', 'text-base font-extrabold text-danger', ['isDisabled={busy}', 'onPress={() => setDeleteVisible(true)}']], // #189 R13
@@ -119,11 +120,12 @@ const radii = {
   'screens/weight-log/index.tsx': 1,
   'screens/welcome/index.tsx': 2,
   'screens/nutrition-questionnaire/index.tsx': 2, // #209 R24
+  'screens/nutrition-plan/index.tsx': 3, // #215 R20
 };
 
 const disabledCtas: Record<string, string> = { 'screens/geofences/index.tsx': 'atLimit', 'screens/geofence-editor/index.tsx': "name.trim() === ''" }; // #189 R7; #189 R13
 
-it.each(CTA_ROWS)('#177 R3.1: %s pinta la receta cta de %s (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20) (enmendado por #204 R11) (enmendado por #202 R15) (enmendado por #208 R21) (enmendado por #214 R13, R15, R18, R20) (enmendado por #209 R24)', (path, anchor, classes, keeps) => {
+it.each(CTA_ROWS)('#177 R3.1: %s pinta la receta cta de %s (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20) (enmendado por #204 R11) (enmendado por #202 R15) (enmendado por #208 R21) (enmendado por #214 R13, R15, R18, R20) (enmendado por #209 R24) (enmendado por #215 R20)', (path, anchor, classes, keeps) => {
   const tag = openingTagWithTestId(readSource(path), anchor);
   const condition = disabledCtas[path];
   expect(tag).toContain(condition ? `className={${condition} ? '${classes.replace('bg-accent', 'bg-default')}' : '${classes}'}` : `className="${classes}"`);
@@ -131,14 +133,14 @@ it.each(CTA_ROWS)('#177 R3.1: %s pinta la receta cta de %s (enmendado por #189 R
   for (const keep of keeps) expect(tag).toContain(keep);
   for (const forbidden of ['border-b-4', 'border-black', 'rounded-xl', 'min-h-11']) expect(tag).not.toContain(forbidden);
 });
-it.each(CTA_ROWS)('#177 R3.2: %s pinta la etiqueta Text 17/800 de %s (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #208 R21) (enmendado por #214 R13, R15, R18, R20) (enmendado por #209 R24)', (path, anchor) => {
+it.each(CTA_ROWS)('#177 R3.2: %s pinta la etiqueta Text 17/800 de %s (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #208 R21) (enmendado por #214 R13, R15, R18, R20) (enmendado por #209 R24) (enmendado por #215 R20)', (path, anchor) => {
   const element = elementWithTestId(readSource(path), anchor);
   const condition = disabledCtas[path];
   expect(element).toContain(condition ? `<Text className={${condition} ? 'text-17 font-extrabold text-muted' : 'text-17 font-extrabold text-accent-foreground'}>` : '<Text className="text-17 font-extrabold text-accent-foreground">');
   expect(element).not.toContain('Button.Label');
   expect(readSource(path)).toMatch(/import \{[^}]*\bText\b[^}]*\} from 'react-native';/);
 });
-it('#177 R3.3: el inventario de Button con bg-accent está cerrado (enmendado por #208 R21) (enmendado por #214 R13, R15, R18, R20) (enmendado por #209 R24)', () => {
+it('#177 R3.3: el inventario de Button con bg-accent está cerrado (enmendado por #208 R21) (enmendado por #214 R13, R15, R18, R20) (enmendado por #209 R24) (enmendado por #215 R20)', () => {
   expect(idsWhere(tag => /\bbg-accent(?=[\s'"`])/.test(tag))).toEqual([...primaryIds, 'reminders-add-link', 'vaccines-add'].sort());
 });
 it.each(NEUTRAL_ROWS)('#177 R4.1: %s pinta la receta neutra de %s (enmendado por E4 R19) (enmendado por #202 R9) (enmendado por #202 R15)', (path, anchor, classes, variant, _label, _labelClasses, keeps) => {
@@ -177,12 +179,12 @@ it('#177 R5.2: el tile conserva la esquina y recibe el labio con el orden exacto
   expect(tag).toContain('style={[CONTINUOUS_CORNER, chunkyLip.primary]}');
   expect(tag).not.toMatch(/border-b-4|border-black\/25/);
 });
-it('#177 R6.2: recuentos de etiquetas (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #200 R5) (enmendado por #199 R9) (enmendado por #204 R8) (enmendado por #204 R9) (enmendado por #196 R6) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R13, R15, R18, R20) (enmendado por #209 R24) (enmendado por #223 R18)', () => {
+it('#177 R6.2: recuentos de etiquetas (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #200 R5) (enmendado por #199 R9) (enmendado por #204 R8) (enmendado por #204 R9) (enmendado por #196 R6) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R13, R15, R18, R20) (enmendado por #209 R24) (enmendado por #223 R18) (enmendado por #215 R20)', () => {
   // #177 R6
   expect(count(/<Button\.Label/g)).toBe(35 - 15 - 1 - 1 - 1 - 1 - 1 - 1 + 1 + 1); // #223 R10 // #191 R11 // #189 R5; #189 R13; // #196 R6: -1 // #204 R8; #204 R9 // #208 R21
   expect(count(/Button\.Label/g)).toBe(82 - 30 - 2 - 2 - 2 - 2 - 2 - 2 + 2 + 2); // #223 R10 // #191 R11 // #189 R5; #189 R13; // #196 R6: -2 // #204 R8; #204 R9 // #208 R21
-  expect(count(/text-17/g)).toBe(8 + 15 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 2 + 1 + 2 + 4 + 2); // #209 R24 // #200 R5; #199 R9 // #194 R6 // #191 R11 // #189 R7; #189 R13 // #204 R9 // #208 R21 // #208 R21 // #213 R17 (+2) // #214 R13, R15, R18, R20
-  expect(count(/<Text className="text-17 font-extrabold text-accent-foreground">/g)).toBe(5 + 11 + 1 + 1 - 1 - 1 + 1 + 1 + 4 + 2); // #209 R24 // #194 R6 // #191 R11 // #189 R7; #189 R13 // #208 R21 // #208 R21 // #214 R13, R15, R18, R20
+  expect(count(/text-17/g)).toBe(8 + 15 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 2 + 1 + 2 + 4 + 2 + 5); // #215 R20 // #209 R24 // #200 R5; #199 R9 // #194 R6 // #191 R11 // #189 R7; #189 R13 // #204 R9 // #208 R21 // #208 R21 // #213 R17 (+2) // #214 R13, R15, R18, R20
+  expect(count(/<Text className="text-17 font-extrabold text-accent-foreground">/g)).toBe(5 + 11 + 1 + 1 - 1 - 1 + 1 + 1 + 4 + 2 + 1); // #215 R20 // #209 R24 // #194 R6 // #191 R11 // #189 R7; #189 R13 // #208 R21 // #208 R21 // #214 R13, R15, R18, R20
   expect(count(/text-17 font-extrabold text-foreground/g)).toBe(3 + 3 + 1 + 1 + 1); // #213 R17 // #200 R5; #199 R9
   expect(count(/<Text className="text-17 font-bold text-accent-strong">/g)).toBe(0 + 1);
 });
@@ -192,19 +194,19 @@ it('#177 R7.1: inventarios de los labios de borde restantes (enmendado por #189 
   expect(inventory(/\bborder-b-6\b/g)).toEqual({});
   expect(count(/border-lip-gray/g)).toBe(10 + 1 + 1 + 2 + 1 + 4 + 5 + 1); // #223 R10 // #209 R24 // #213 R6 (+2); #213 R17 (+1) // #189 R13; #203 R7: +1 // #214 R7, R11, R15, R17
 });
-it('#177 R7.2: inventarios de las dos recetas de primario (enmendado por #201 R13) (enmendado por #208 R21) (enmendado por #214 R13, R15, R18, R20) (enmendado por #209 R24)', () => {
+it('#177 R7.2: inventarios de las dos recetas de primario (enmendado por #201 R13) (enmendado por #208 R21) (enmendado por #214 R13, R15, R18, R20) (enmendado por #209 R24) (enmendado por #215 R20)', () => {
   expect(inventory(/rounded-16 bg-accent(?=[\s'"`])/g)).toEqual({ ...Object.fromEntries(ctaFiles.map(path => [path, path === 'screens/add-pet/index.tsx' || path === 'screens/join-pet/index.tsx' ? 2 : 1])), 'screens/map/index.tsx': 1 }); // #201 R13 // #214 R13, R15, R18, R20
   expect(inventory(/rounded-xl bg-accent(?=[\s'"`])/g)).toEqual({ 'screens/reminders/index.tsx': 1, 'screens/health/index.tsx': 1 });
 });
-it('#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por #191 R11) (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #198 R9) (enmendado por #203 R6) (enmendado por #203 R7) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #201 R13) (enmendado por #205 R13) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R7, R11, R13, R15, R16, R17, R18, R20) (enmendado por #209 R24) (enmendado por #223 R18)', () => {
+it('#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por #191 R11) (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #198 R9) (enmendado por #203 R6) (enmendado por #203 R7) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #201 R13) (enmendado por #205 R13) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R7, R11, R13, R15, R16, R17, R18, R20) (enmendado por #209 R24) (enmendado por #223 R18) (enmendado por #215 R20)', () => {
   expect(inventory(/\brounded-16\b/g)).toEqual(radii);
-  expect(count(/\brounded-16\b/g)).toBe(26 + 1 + 1 + 1 + 2 + 2 + 1 + 1 + 1 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 3 + 11 + 3 + 1); // #223 R9 // #209 R24 // #214 R7, R11, R13, R15, R16, R17, R18, R20 (+11) #204 R9 (+1) // #202 R18 (+1) // #200 R9 (+2); #198 R9 (+1); #199 R14 (+1); #203 R6 (+1); #203 R7 (+2); #201 R13 (+1); #205 R13 (+1) // #194 R6 // #191 R11 // #189 R7; #189 R13 // #208 R21 // #208 R21 // #213 R6 (+1); #213 R17 (+2)
+  expect(count(/\brounded-16\b/g)).toBe(26 + 1 + 1 + 1 + 2 + 2 + 1 + 1 + 1 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 3 + 11 + 3 + 1 + 3); // #215 R20 // #223 R9 // #209 R24 // #214 R7, R11, R13, R15, R16, R17, R18, R20 (+11) #204 R9 (+1) // #202 R18 (+1) // #200 R9 (+2); #198 R9 (+1); #199 R14 (+1); #203 R6 (+1); #203 R7 (+2); #201 R13 (+1); #205 R13 (+1) // #194 R6 // #191 R11 // #189 R7; #189 R13 // #208 R21 // #208 R21 // #213 R6 (+1); #213 R17 (+2)
 });
-it('#177 R7.4: solo la definición y los dieciocho consumidores usan el hook (enmendado por #197 R10) (enmendado por #200 R3) (enmendado por #196 R4) (enmendado por #201 R13) (enmendado por #208 R21) (enmendado por #214 R13, R15, R18) (enmendado por #209 R24)', () => {
+it('#177 R7.4: solo la definición y los dieciocho consumidores usan el hook (enmendado por #197 R10) (enmendado por #200 R3) (enmendado por #196 R4) (enmendado por #201 R13) (enmendado por #208 R21) (enmendado por #214 R13, R15, R18) (enmendado por #209 R24) (enmendado por #215 R20)', () => {
   expect(Object.keys(inventory(/useChunkyLip/g)).sort()).toEqual([...consumers, 'theme/chunky-lip.ts'].sort());
   for (const path of consumers) expect((readSource(path).match(/const chunkyLip = useChunkyLip\(\);/g) ?? []).length).toBe(1);
 });
-it('#177 R7.5: inventario de los tres estilos y el tile (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20) (enmendado por #197 R10) (enmendado por #200 R6) (enmendado por #196 R4, R5) (enmendado por #201 R13) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R7, R11, R13, R15, R16, R17, R18, R20) (enmendado por #209 R24) (enmendado por #223 R18)', () => {
+it('#177 R7.5: inventario de los tres estilos y el tile (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20) (enmendado por #197 R10) (enmendado por #200 R6) (enmendado por #196 R4, R5) (enmendado por #201 R13) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R7, R11, R13, R15, R16, R17, R18, R20) (enmendado por #209 R24) (enmendado por #223 R18) (enmendado por #215 R20)', () => {
   expect(inventory(/style=\{(?:chunkyLip\.primary|(?:atLimit|name\.trim\(\) === '') \? KEEP_OPACITY : \[chunkyLip\.primary, KEEP_OPACITY\])\}/g)).toEqual(Object.fromEntries([...ctaFiles.map(path => [path, path === 'screens/add-pet/index.tsx' || path === 'screens/join-pet/index.tsx' ? 2 : 1]), ['screens/profile/index.tsx', 2], ['screens/map/index.tsx', 1]].sort())); // #201 R13
   expect(inventory(/style=\{(?:chunkyLip\.neutral|\[chunkyLip\.neutral, KEEP_OPACITY\])\}/g)).toEqual(Object.fromEntries([...NEUTRAL_ROWS.map(([path]) => [path, path === 'screens/reminders/index.tsx' ? 2 : 1]), ['screens/meal-schedule/index.tsx', 1], ['screens/home/index.tsx', 1], ['screens/pet-invite/index.tsx', 1], ['screens/pet-members/index.tsx', 3]].sort()));
   expect(inventory(/style=\{chunkyLip\.primaryCompact\}/g)).toEqual({ 'screens/food/index.tsx': 1, 'screens/reminders/index.tsx': 1, 'screens/health/index.tsx': 1 });
@@ -214,7 +216,7 @@ it('#177 R7.5: inventario de los tres estilos y el tile (enmendado por #189 R7) 
 });
 it.each([
   ['primary', [...primaryIds, 'notifications-open-settings'].sort()], ['neutral', [...neutralIds, 'add-meal-time-button', 'home-join-pet-button', 'member-leave-sheet-cancel', 'member-remove-sheet-cancel', 'pet-invite-copy', 'pet-members-leave'].sort()], ['primaryCompact', ['reminders-add-link', 'vaccines-add']],
-] as const)('#177 R8.1: solo la tabla recibe chunkyLip.%s (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20) (enmendado por #197 R10) (enmendado por #196 R5) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R7, R11, R13, R15, R16, R17, R18, R20) (enmendado por #209 R24)', (style, ids) => {
+] as const)('#177 R8.1: solo la tabla recibe chunkyLip.%s (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20) (enmendado por #197 R10) (enmendado por #196 R5) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R7, R11, R13, R15, R16, R17, R18, R20) (enmendado por #209 R24) (enmendado por #215 R20)', (style, ids) => {
   expect(idsWhere(tag => tag.includes(`style={chunkyLip.${style}}`) || (style === 'primary' && /style=\{(?:atLimit|name\.trim\(\) === '') \? KEEP_OPACITY : \[chunkyLip\.primary, KEEP_OPACITY\]\}/.test(tag)) || (style === 'neutral' && tag.includes('style={[chunkyLip.neutral, KEEP_OPACITY]}')))).toEqual(ids);
 });
 it('#197 R10: Alertas y Horario usan useChunkyLip', () => {
