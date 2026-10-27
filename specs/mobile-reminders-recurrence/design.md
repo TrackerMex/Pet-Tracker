@@ -235,7 +235,8 @@ Lo que comparte #213 con cada una:
   (`{ petId, reminderId, kind: 'reminder' }`).
 - `RemindersScreen` lee `useLocalSearchParams<{ petId?: string }>()` y, en un
   efecto, llama `selectPet(petId)` cuando `petId` está en la lista de
-  mascotas cargada y difiere de `selectedPetId`.
+  mascotas cargada, una sola vez por cada valor de `petId` (errata E3 de
+  `requirements.md`): ni la condición ni las deps usan `selectedPetId`.
 
 ## Copy
 
