@@ -1,10 +1,12 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   HttpStatus,
   NotFoundException,
 } from '@nestjs/common';
 import {
+  InvalidRecurrenceError,
   NotReminderOwnerError,
   ReminderNotEditableError,
   ReminderNotFoundError,
@@ -17,6 +19,12 @@ export function mapReminderError(error: unknown): unknown {
     return new ConflictException({
       statusCode: HttpStatus.CONFLICT,
       message: 'Reminder is not editable',
+    });
+  }
+  if (error instanceof InvalidRecurrenceError) {
+    return new BadRequestException({
+      statusCode: HttpStatus.BAD_REQUEST,
+      message: 'Invalid recurrence',
     });
   }
   return error;

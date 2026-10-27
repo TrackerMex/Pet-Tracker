@@ -20,6 +20,8 @@ import {
   R15_GEOFENCE_EDITOR,
   R16_WELCOME,
   R17_EDIT_PROFILE,
+  R18_DATE_FIELD,
+  R19_VACCINE_CREATE,
   type UseRow,
 } from './ui-copy-table';
 
@@ -134,8 +136,8 @@ describe('#65 R4: Map resuelve su copy por clave', () => {
 });
 
 describe('#65 R5: Health resuelve su copy por clave', () => {
-  it('#186 R7: resuelve las 43 ocurrencias normativas (enmendado por #199 R25)', () => {
-    expect(R5_HEALTH).toHaveLength(32 + 1 + 1 - 2 + 3 + 2 + 1 + 1 + 4 - 1 + 1 + 7); // #199 R25: +7; #186 R7 // #186 R2 // +1 #90 R5, +1 #95 R4, -2 #95 R5, +3 #115 R1, +2 #155 R4, +1 #169 R6, +1 #169 R10
+  it('#186 R7: resuelve las 43 ocurrencias normativas (enmendado por #199 R25) (enmendado por #220 R16) (enmendado por #208 R20)', () => {
+    expect(R5_HEALTH).toHaveLength(32 + 1 + 1 - 2 + 3 + 2 + 1 + 1 + 4 - 1 + 1 + 7 - 1 + 1); // #220 R16 // #208 R20; #199 R25: +7; #186 R7 // #186 R2 // +1 #90 R5, +1 #95 R4, -2 #95 R5, +3 #115 R1, +2 #155 R4, +1 #169 R6, +1 #169 R10
     checkUses(R5_HEALTH);
   });
 });
@@ -167,8 +169,8 @@ describe('#98 R9: el copy de comidas servidas queda registrado', () => {
 });
 
 describe('#65 R7: Profile resuelve su copy por clave', () => {
-  it('#186 R2: resuelve las 69 ocurrencias normativas', () => {
-    expect(R7_PROFILE).toHaveLength(35 - 1 + 2 + 1 + 16 - 4 + 8 + 1 + 6 + 2 + 2 + 1); // #186 R2 // #181 R5 // #185 R10: errorFileTooLarge y somethingWentWrong en ambas pantallas; #95 R5, +2 #99 R3, +1 #41 R9 // #158 R12; - 4 + 8 // #173 R13; #175 R7; #175 R8
+  it('#186 R2: resuelve las 69 ocurrencias normativas (enmendado por #220 R16)', () => {
+    expect(R7_PROFILE).toHaveLength(35 - 1 + 2 + 1 + 16 - 4 + 8 + 1 + 6 + 2 + 2 + 1 - 1); // #220 R16; #186 R2 // #181 R5 // #185 R10: errorFileTooLarge y somethingWentWrong en ambas pantallas; #95 R5, +2 #99 R3, +1 #41 R9 // #158 R12; - 4 + 8 // #173 R13; #175 R7; #175 R8
     checkUses(R7_PROFILE);
   });
 });
@@ -467,6 +469,13 @@ function wholeLiterals(source: string): Set<string> {
   return literals;
 }
 
+describe('#220 R16: copy compartida de DateField', () => {
+  it('#220 R16: registra las cinco claves y sus usos', () => {
+    expect(R18_DATE_FIELD).toHaveLength(5);
+    checkUses(R18_DATE_FIELD);
+  });
+});
+
 describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () => {
   // Regresión del falso verde que destapó el reviewer el 2026-09-06: una
   // plantilla con `${…}` descuadraba el lexer y cegaba el resto del fichero.
@@ -494,7 +503,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
     checkUses(ALL_USES);
   });
 
-  it('#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas (enmendado por #200 R1) (enmendado por #199 R1)', () => {
+  it('#194 R5: no deja ningún valor fijo del catálogo como literal entero en las pantallas (enmendado por #200 R1) (enmendado por #199 R1) (enmendado por #220 R16) (enmendado por #208 R20)', () => {
     expect(SCREEN_FILES).toHaveLength(
       19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1 // #100 R10, #41 R10, #146 R10, #105 R5
         + 1 - 1 // #117 R10: sale app/(auth)/forgot.tsx, entra screens/forgot/index.tsx
@@ -509,6 +518,8 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
         + 1 // #194 R5: screens/edit-profile/index.tsx
         + 1 - 1 // #200 R1: sale app/(tabs)/food.tsx, entra screens/food/index.tsx
         - 1 // #199 R1: sale src/app/_layout.tsx
+        + 1 // #220 R16: components/date-field.tsx
+        + 1 // #208 R20: screens/vaccine-create/index.tsx
     );
 
     for (const file of SCREEN_FILES) {
@@ -548,5 +559,12 @@ describe('#194 R5: la pantalla de edición resuelve su copy por clave', () => {
   it('#194 R6: resolves the editor copy', () => {
     expect(R17_EDIT_PROFILE).toHaveLength(6 + 1 + 3 + 1);
     checkUses(R17_EDIT_PROFILE);
+  });
+});
+
+describe('#208 R20: alta de vacuna', () => {
+  it('#208 R20: R19_VACCINE_CREATE tiene 29 usos y cuadra con el código', () => {
+    expect(R19_VACCINE_CREATE).toHaveLength(29);
+    checkUses(R19_VACCINE_CREATE);
   });
 });

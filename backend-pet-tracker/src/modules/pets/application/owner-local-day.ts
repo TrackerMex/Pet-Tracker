@@ -20,6 +20,13 @@ export function localDayInZone(
   now: Date,
   context: Record<string, unknown>,
 ): string {
+  return localDayOf(now.getTime(), ownerTimeZone(raw, context));
+}
+
+export function ownerTimeZone(
+  raw: string | null,
+  context: Record<string, unknown>,
+): string {
   const timezone = raw !== null && isSupportedTimeZone(raw) ? raw : 'UTC';
 
   if (timezone !== raw) {
@@ -30,5 +37,5 @@ export function localDayInZone(
     });
   }
 
-  return localDayOf(now.getTime(), timezone);
+  return timezone;
 }

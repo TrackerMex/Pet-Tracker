@@ -4,7 +4,6 @@ import { router } from 'expo-router';
 import { notificationAsync } from 'expo-haptics';
 import { HeroUINativeProvider } from 'heroui-native';
 import * as ImagePicker from 'expo-image-picker';
-import { Children, isValidElement } from 'react';
 import { DeviceEventEmitter, Platform } from 'react-native';
 
 import { requestPhotoUploadUrl, uploadPhotoToUrl } from '../../api/media';
@@ -17,6 +16,12 @@ import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { AddPetScreen } from '.';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { renderWithProviders } from '../../../test/render-with-providers';
+
+jest.mock('reicon-react-native', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return { ...jest.requireActual('reicon-react-native'), Calendar: (props: Record<string, unknown>) => React.createElement(View, { ...props, testID: 'birth-date-calendar' }) };
+});
 
 jest.mock('expo-router/react-navigation', () => ({
   ...jest.requireActual('expo-router/react-navigation'),
@@ -183,24 +188,24 @@ describe('R6: alta de mascota', () => {
     }
   });
 
-  it('#191 R13: el campo de fecha usa la receta de fecha de add-reminder', async () => {
+  it('#191 R13: el campo de fecha usa la receta de fecha de add-reminder (enmendado por #220 R14)', async () => {
     await renderAddPet();
     const muted = screen.getByTestId('name-input').props.placeholderTextColor;
     await goToStep2();
     const date = screen.getByTestId('birth-date-field');
-    expect(date.props.className).toBe('h-12 flex-row items-center gap-2 rounded-xl border-2 border-transparent bg-default px-3.5');
+    expect(date.props.className).toBe('h-12 rounded-xl bg-default');
     expect(date).toHaveStyle({ borderCurve: 'continuous' });
     expect(date.props.accessibilityRole).toBe('button');
-    const children = Children.toArray(date.props.children).filter(isValidElement<{ size?: number; color?: string }>);
-    const calendar = children.find(child => child.props.size === 18);
-    expect(calendar?.type).toHaveProperty('displayName', 'Calendar');
-    expect(calendar?.props).toMatchObject({ size: 18, color: muted });
-    expect(children[0]?.props).toMatchObject({ size: 18, color: muted });
-    expect(within(date).getByText(es['addPet.selectBirthDate']).props.className).toBe('text-15 font-semibold text-muted');
+    const calendar = within(date).getByTestId('birth-date-calendar', { includeHiddenElements: true });
+    expect(calendar.props).toMatchObject({ size: 18, color: muted });
+    expect(calendar.parent?.props.accessibilityElementsHidden).toBe(true);
+    expect(calendar.parent?.parent?.children[0]).toBe(calendar.parent);
+    expect(screen.getByTestId('birth-date-field-value').props.placeholder).toBe('Elige una fecha de nacimiento');
+    expect(screen.getByTestId('birth-date-field-value').props.editable).toBe(false);
     expect(date.props.className.split(' ')[0]).toBe('h-12');
     await fireEvent.press(date);
     await fireEvent(screen.getByTestId('birth-date-picker'), 'onValueChange', {}, new Date(2024, 3, 9, 12));
-    expect(within(screen.getByTestId('birth-date-field')).getByText('9/4/2024').props.className).toBe('text-15 font-semibold text-foreground');
+    expect(screen.getByTestId('birth-date-field-value').props.value).toBe('9 abr 2024');
     await fireEvent.press(screen.getByTestId('age-mode-months'));
     expect(screen.getByTestId('approx-age-input').props.className.split(' ')[0]).toBe('h-12');
   });
@@ -303,7 +308,7 @@ describe('R6: alta de mascota', () => {
       expect(removal()[0]).toBe(true);
     });
 
-    it('conserva todos los valores y limpia el aviso al volver', async () => {
+    it('conserva todos los valores y limpia el aviso al volver (enmendado por #220 R14)', async () => {
       mockCreatePet.mockResolvedValue({ kind: 'invalid' });
       mockLaunchImageLibrary.mockResolvedValue({ canceled: false, assets: [{ uri: 'file:///luna-back.jpg', mimeType: 'image/jpeg' } as never] });
       await renderAddPet();
@@ -338,7 +343,7 @@ describe('R6: alta de mascota', () => {
       expect(screen.getByTestId('microchip-input').props.value).toBe('123');
       expect(screen.queryByTestId('add-pet-error')).toBeNull();
       await fireEvent.press(screen.getByTestId('age-mode-date'));
-      expect(within(screen.getByTestId('birth-date-field')).getByText('9/4/2024')).toBeVisible();
+      expect(screen.getByTestId('birth-date-field-value').props.value).toBe('9 abr 2024');
       expect(mockRouter.back).not.toHaveBeenCalled();
     });
 
@@ -1046,7 +1051,7 @@ describe('#205 R19: pie fijo de NuevaMascota', () => {
 });
 
 describe('#191 R6: métricas y receta de campos', () => {
-  it('aplica las métricas, etiquetas y controles exactos en ambos pasos (enmendado por #205 R18)', async () => {
+  it('aplica las métricas, etiquetas y controles exactos en ambos pasos (enmendado por #205 R18) (enmendado por #220 R14)', async () => {
     process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
     mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
     mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet, clearPet: jest.fn() });
@@ -1072,7 +1077,7 @@ describe('#191 R6: métricas y receta de campos', () => {
     await goToStep2();
     metrics(16); // #205 R18
     const date = screen.getByTestId('birth-date-field');
-    expect(date.props.className).toBe('h-12 flex-row items-center gap-2 rounded-xl border-2 border-transparent bg-default px-3.5');
+    expect(date.props.className).toBe('h-12 rounded-xl bg-default');
     expect(date).toHaveStyle({ borderCurve: 'continuous' });
     expect(date.parent!.props.className).toBe('gap-1.5');
     expect(within(date.parent!).getByText(es['addPet.age']).props.className).toBe('text-13 font-extrabold text-foreground');
@@ -1121,18 +1126,34 @@ describe('#123: picker de nacimiento de Añadir mascota en Android a las 20:00 d
     jest.useRealTimers();
   });
 
+  it('#220 R14: nacimiento vacío, máximo local y elección Android guardan el día civil', async () => {
+    mockCreatePet.mockReturnValue(pending());
+    await renderAddPet();
+    await goToStep2('Nala');
+    expect(screen.getByTestId('birth-date-field-value').props.placeholder).toBe('Elige una fecha de nacimiento');
+    expect(screen.getByTestId('birth-date-field-value').props.value).toBe('');
+    await fireEvent.press(screen.getByTestId('birth-date-field'));
+    const picker = screen.getByTestId('birth-date-picker');
+    expect(picker.props.maximumDate.getTime()).toBe(new Date(2026, 8, 24, 12).getTime());
+    await fireEvent(picker, 'onValueChange', {}, wallClock([2024, 3, 8, 18, 0], [2024, 3, 9]));
+    expect(screen.getByTestId('birth-date-field-value').props.value).toBe('9 abr 2024');
+    await fireEvent.press(screen.getByTestId('add-pet-submit'));
+    await waitFor(() => expect(screen.getByTestId('add-pet-submit')).toBeDisabled());
+    expect(mockCreatePet).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token', { name: 'Nala', species: 'dog', birthDate: '2024-04-09' });
+  });
+
   describe('#123 R6: Añadir mascota muestra y manda el día de nacimiento elegido', () => {
     it.each([
-      ['elegir hoy (24 de septiembre de 2026) manda 2026-09-24', [2026, 8, 23, 18, 0], [2026, 8, 24], '24/9/2026', '2026-09-24'],
-      ['elegir el 1 de octubre de 2025 manda 2025-10-01 (cruce de mes)', [2025, 8, 30, 18, 0], [2025, 9, 1], '1/10/2025', '2025-10-01'],
-      ['elegir el 1 de enero de 2026 manda 2026-01-01 (cruce de año)', [2025, 11, 31, 18, 0], [2026, 0, 1], '1/1/2026', '2026-01-01'],
-    ] as [string, number[], number[], string, string][])('%s', async (_title, local, utc, etiqueta, birthDate) => {
+      ['elegir hoy (24 de septiembre de 2026) manda 2026-09-24', [2026, 8, 23, 18, 0], [2026, 8, 24], '24 sep 2026', '2026-09-24'],
+      ['elegir el 1 de octubre de 2025 manda 2025-10-01 (cruce de mes)', [2025, 8, 30, 18, 0], [2025, 9, 1], '1 oct 2025', '2025-10-01'],
+      ['elegir el 1 de enero de 2026 manda 2026-01-01 (cruce de año)', [2025, 11, 31, 18, 0], [2026, 0, 1], '1 ene 2026', '2026-01-01'],
+    ] as [string, number[], number[], string, string][])('%s (enmendado por #220 R14)', async (_title, local, utc, etiqueta, birthDate) => {
       await renderAddPet();
       await goToStep2('Nala');
       await fireEvent.press(screen.getByTestId('birth-date-field'));
       const picker = within(screen.getByTestId('expo-ui-picker-host')).getByTestId('birth-date-picker');
       await fireEvent(picker, 'onValueChange', {}, wallClock(local, utc));
-      expect(within(screen.getByTestId('birth-date-field')).getByText(etiqueta)).toBeVisible();
+      expect(screen.getByTestId('birth-date-field-value').props.value).toBe(etiqueta);
       await fireEvent.press(screen.getByTestId('add-pet-submit'));
       await waitFor(() => expect(screen.getByTestId('add-pet-submit')).not.toBeDisabled());
       await waitFor(() => expect(mockCreatePet).toHaveBeenCalledWith(
@@ -1144,13 +1165,13 @@ describe('#123: picker de nacimiento de Añadir mascota en Android a las 20:00 d
   });
 
   describe('#123 R7: el calendario de nacimiento abre en el día local y el máximo no se convierte', () => {
-    it('abre en el 24, con el máximo en el instante actual', async () => {
+    it('abre en el 24, con el máximo en el instante actual (enmendado por #220 R14)', async () => {
       await renderAddPet();
       await goToStep2();
       await fireEvent.press(screen.getByTestId('birth-date-field'));
       const picker = within(screen.getByTestId('expo-ui-picker-host')).getByTestId('birth-date-picker');
       expect((picker.props.value as Date).toISOString()).toBe('2026-09-24T00:00:00.000Z');
-      expect((picker.props.maximumDate as Date).getTime()).toBe(new Date(2026, 8, 24, 20, 0).getTime());
+      expect((picker.props.maximumDate as Date).getTime()).toBe(new Date(2026, 8, 24, 12).getTime());
     });
   });
 });

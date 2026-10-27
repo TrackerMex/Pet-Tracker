@@ -3537,7 +3537,7 @@
   {
     "id": 208,
     "name": "mobile-vaccine-create",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P1",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 2). Alta de vacuna desde la app: hoy solo existe POST /v1/pets/:petId/vaccines (owner) y Salud es de solo lectura, así que en la app real nunca hay vacunas. Ruta delgada app/pets/[petId]/vaccines/new.tsx más pantalla en src/screens/; clientes getVaccineCatalog y createVaccine en src/api/health-records.ts; catálogo por especie o nombre libre (exactamente uno), appliedAt no futuro, nextDoseAt opcional, veterinario, clínica y notas. Toggle «Recordarme la próxima dosis» encendido por defecto, que tras el 201 crea un recordatorio type vaccine con el endpoint existente si nextDoseAt es futuro (hora por defecto la fija la spec). CTA solo para owner. init.sh pasa a correr seed:vaccines (idempotente). Fuera: editar y borrar vacunas. Depende del gate G1 (artboard AltaVacuna). Evidencia en progress/explore_vaccines-reminders-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },
@@ -3551,14 +3551,14 @@
   {
     "id": 210,
     "name": "reminders-recurrence",
-    "status": "pending",
+    "status": "done",
     "priority": "P1",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 1). Recordatorios recurrentes en backend: migración nueva con recurrence jsonb nullable {unit: hour|day|week|month|year, every} y recurrence_until; CreateReminderSchema y UpdateReminderSchema la admiten y GET la devuelve. En notifyReminder, tras el push, un recurrente se reprograma a la primera ocurrencia futura (sin ráfaga de perdidas; day/week/month/year anclados a la hora local del owner, hour absoluta) con scheduleName nuevo, o markSent si pasó until. Cancelar serie = PATCH status cancelled existente. El push lleva kind reminder y reminderId en data. Sin AWS real: EventBridge rate/cron solo anotado en design.md. Coordina su migración con #211 y #212 (§3 del plan). Evidencia en progress/explore_vaccines-reminders-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },
   {
     "id": 211,
     "name": "pet-members-api",
-    "status": "pending",
+    "status": "done",
     "priority": "P1",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 1). Compartir mascota en backend: hoy solo existe la fila owner en pet_users y no hay endpoints de miembros. Tabla pet_invites (code_hash, role family, created_by, expires_at, accepted_by/at, revoked_at); POST /v1/pets/:petId/invites (owner, código en claro una sola vez, un solo uso, caducidad), GET y DELETE de invitaciones pendientes, POST /v1/invites/accept {code} sin petId (patrón devices/claim, error genérico para inválido/caducado/usado, 409 si ya es miembro, rate limit contra fuerza bruta), GET /v1/pets/:petId/members (nombre y rol, sin email) y DELETE /v1/pets/:petId/members/:userId (owner quita family o el miembro se sale; nunca sin owner). Solo rol family en v1; walker y vet sin uso. Auditoría con AuditLogger. Coordina su migración con #210 y #212. Evidencia en progress/explore_roles-sharing-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },
@@ -3596,5 +3596,68 @@
     "status": "pending",
     "priority": "P2",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 3). Ocultar a family las acciones de owner que hoy se muestran y acaban en 403: registro de peso, alta de recordatorio, borrado en Recordatorios, vincular collar y subir documentos, con el patrón de solo lectura existente; el 403 del backend queda como red. Depende de #214. Evidencia en progress/explore_roles-sharing-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 217,
+    "name": "mobile-theme-flash-statusbar",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 1). Fondo de escena de navegación por tokens para el flash al cambiar de pestaña, retirar react-native-nitro-theme-transition y react-native-nitro-modules (cambio de tema instantáneo; rebuild del dev build lo hace el humano) y StatusBar auto con iconos claros en las pantallas con hero. Evidencia en progress/explore_ui-tema-barra-drawer-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 218,
+    "name": "mobile-sheet-surface-background",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 1). backgroundStyle con el token surface en los BottomSheet de Recordatorios y Vinculación para quitar la franja rosa del cajón de borrar. Evidencia en progress/explore_ui-tema-barra-drawer-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 219,
+    "name": "mobile-weekly-average-format",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 1). Media de Actividad semanal sin decimales sobrantes: minutos enteros, paseos y km a un decimal, punto decimal en todo (la tendencia deja la coma). Evidencia en progress/explore_ui-alertas-actividad-ia-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 220,
+    "name": "mobile-date-field",
+    "status": "spec_ready",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 1). Componente DateField propio sobre piezas de heroui-native y el selector nativo de @expo/ui, modo fecha u hora, valor ISO, mínimo, máximo y borrable; migra Registro de peso, Documentos, Alta de mascota y Nuevo recordatorio. Va antes de #208 y #213. Evidencia en progress/explore_ui-heroui-fechas-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 221,
+    "name": "mobile-orbit-rename-copy",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 1). La mascota pasa de Pingo a Orbit en el texto visible (welcome.pingoGreeting, ES y EN) y en la carta docs/ui-guidelines.md punto 7; los identificadores y assets los renombra #225. Evidencia en progress/explore_ui-mascota-orbit-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 222,
+    "name": "mobile-tab-avatar-header",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 2, gate G1). Quitar los títulos de Salud, Nutrición y Perfil a favor del selector de mascotas, con cabecera fija en Salud y Nutrición y encabezado oculto para lectores de pantalla. Enmienda N1 de #168. Evidencia en progress/explore_ui-titulos-scroll-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 223,
+    "name": "mobile-alerts-attended-section",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 2, gate G1). Alertas: abiertas arriba y sección colapsable «Atendidas» con Ver más para el listado enorme, contador exacto de abiertas, sin backend. Evidencia en progress/explore_ui-alertas-actividad-ia-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 224,
+    "name": "mobile-nutrition-ai-format",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 2, gate G1). Formato de la recomendación de IA en Nutrición: markdown mínimo propio, Ver más y aviso fijo; sin tocar el prompt (es de #212). Evidencia en progress/explore_ui-alertas-actividad-ia-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 225,
+    "name": "mobile-orbit-activity-pose",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 3, gates G1 y G6). Pose nueva de Orbit caminando para la burbuja de Inicio, que genera el humano, y renombre interno de assets, ids y testIDs de pingo a orbit. Evidencia en progress/explore_ui-mascota-orbit-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   }
 ]

@@ -101,6 +101,7 @@ export function PairingScreen() {
   const chunkyLip = useChunkyLip();
   const shadows = useShadows();
   const [muted, danger] = useThemeColors(['muted', 'danger']);
+  const [surface] = useThemeColors(['surface']);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const locale = useLocale();
@@ -577,6 +578,7 @@ export function PairingScreen() {
           enablePanDownToClose
           onClose={closeUnpair}
           snapPoints={['50%', '100%']}
+          backgroundStyle={{ backgroundColor: surface }}
         >
           <BottomSheetView>
             <View

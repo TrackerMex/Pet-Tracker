@@ -217,12 +217,12 @@ describe('R8: formulario de alta con chips y pickers', () => {
     });
   });
 
-  it('opens the date picker and reflects the selected date', async () => {
+  it('opens the date picker and reflects the selected date (enmendado por #220 R15)', async () => {
     const selectedDate = new Date(2026, 8, 15, 12, 30);
     await renderAddReminder();
     await waitFor(() => expect(screen.getByTestId('date-field')).toBeVisible());
 
-    expect(screen.getByText('Elige una fecha')).toBeVisible();
+    expect(screen.getByTestId('date-field-value').props.placeholder).toBe('Elige una fecha');
     expect(screen.queryByTestId('date-picker')).toBeNull();
     await fireEvent.press(screen.getByTestId('date-field'));
 
@@ -240,12 +240,10 @@ describe('R8: formulario de alta con chips y pickers', () => {
     );
 
     expect(screen.queryByTestId('date-picker')).toBeNull();
-    expect(
-      screen.getByText('15 sep 2026'), // #178 R10
-    ).toBeVisible();
+    expect(screen.getByTestId('date-field-value').props.value).toBe('15 sep 2026');
   });
 
-  it('opens the time picker with 09:00 and reflects a new time', async () => {
+  it('opens the time picker with 09:00 and reflects a new time (enmendado por #220 R15)', async () => {
     const selectedTime = new Date(2026, 7, 24, 14, 45);
     await renderAddReminder();
     await waitFor(() => expect(screen.getByTestId('time-field')).toBeVisible());
@@ -266,12 +264,10 @@ describe('R8: formulario de alta con chips y pickers', () => {
     );
 
     expect(screen.queryByTestId('time-picker')).toBeNull();
-    expect(
-      screen.getByText('14:45'), // #178 R10
-    ).toBeVisible();
+    expect(screen.getByTestId('time-field-value').props.value).toBe('14:45');
   });
 
-  it('closes the Expo UI dialog when the native picker is dismissed', async () => {
+  it('closes the Expo UI dialog when the native picker is dismissed (enmendado por #220 R15)', async () => {
     await renderAddReminder();
     await waitFor(() => expect(screen.getByTestId('date-field')).toBeVisible());
 
@@ -284,7 +280,7 @@ describe('R8: formulario de alta con chips y pickers', () => {
     );
 
     expect(screen.queryByTestId('date-picker')).toBeNull();
-    expect(screen.getByText('Elige una fecha')).toBeVisible();
+    expect(screen.getByTestId('date-field-value').props.placeholder).toBe('Elige una fecha');
   });
 
   it('renders alert choices and selects seven days by default', async () => {
@@ -337,7 +333,7 @@ describe('R9: guardar con validación y degradación por kind', () => {
     expect(mockCreateReminder).not.toHaveBeenCalled();
   });
 
-  it('#186 R5: fecha ausente muestra su error bajo la columna', async () => {
+  it('#186 R5: fecha ausente muestra su error bajo la columna (enmendado por #220 R15)', async () => {
     mockCreateReminder.mockResolvedValue({ kind: 'error' });
     await renderAddReminder();
     await waitFor(() => expect(screen.getByTestId('title-input')).toBeVisible());
@@ -349,7 +345,8 @@ describe('R9: guardar con validación y degradación por kind', () => {
     expect(screen.queryByTestId('add-reminder-error')).toBeNull();
     expect(screen.getByTestId('add-reminder-submit')).not.toBeDisabled();
     const field = screen.getByTestId('date-field');
-    expect(field.children).toHaveLength(2);
+    expect(field.children).toHaveLength(1);
+    expect(screen.getByTestId('date-field-value').parent?.children).toHaveLength(2);
     expect(field.parent!.props.className).toBe('flex-3 gap-1.5');
     expect(within(field.parent!).queryByTestId('date-field-message')).toHaveTextContent('Elige una fecha');
     expect(within(field).queryByTestId('date-field-message')).toBeNull();
@@ -686,7 +683,7 @@ describe('#123: pickers de fecha de Nuevo recordatorio en Android a las 20:00 de
       ['elegir hoy (24 de septiembre) guarda hoy', [2026, 8, 23, 18, 0], [2026, 8, 24], '24 sep 2026', new Date(2026, 8, 24, 21, 30).toISOString(), 0],
       ['elegir el 1 de octubre guarda el 1 de octubre (cruce de mes)', [2026, 8, 30, 18, 0], [2026, 9, 1], '1 oct 2026', new Date(2026, 9, 1, 21, 30).toISOString(), 10080],
       ['elegir el 1 de enero de 2027 guarda el 1 de enero (cruce de año)', [2026, 11, 31, 18, 0], [2027, 0, 1], '1 ene 2027', new Date(2027, 0, 1, 21, 30).toISOString(), 10080],
-    ] as [string, number[], number[], string, string, number][])('%s', async (_title, local, utc, etiqueta, dueAt, aviso) => {
+    ] as [string, number[], number[], string, string, number][])('%s (enmendado por #220 R15)', async (_title, local, utc, etiqueta, dueAt, aviso) => {
       await renderAddReminder();
       await waitFor(() => expect(screen.getByTestId('title-input')).toBeVisible());
       await fireEvent.changeText(screen.getByTestId('title-input'), 'Rabies');
@@ -694,7 +691,7 @@ describe('#123: pickers de fecha de Nuevo recordatorio en Android a las 20:00 de
       await fireEvent.press(screen.getByTestId('time-field'));
       const timePicker = within(screen.getByTestId('expo-ui-picker-host')).getByTestId('time-picker');
       await fireEvent(timePicker, 'onValueChange', {}, new Date(2026, 8, 24, 21, 30));
-      expect(within(screen.getByTestId('date-field')).getByText(etiqueta)).toBeVisible();
+      expect(screen.getByTestId('date-field-value').props.value).toBe(etiqueta);
       await fireEvent.press(screen.getByTestId('add-reminder-submit'));
       await waitFor(() => expect(mockCreateReminder).toHaveBeenCalledWith(
         'http://example.test/v1',
@@ -706,13 +703,13 @@ describe('#123: pickers de fecha de Nuevo recordatorio en Android a las 20:00 de
   });
 
   describe('#123 R5: el calendario de Nuevo recordatorio abre en el día local; el mínimo y la hora no se convierten', () => {
-    it('abre en el 24, con el mínimo en el instante actual y la hora a las 09:00 (enmendado por #197 R7)', async () => {
+    it('abre en el 24, con el mínimo en el instante actual y la hora a las 09:00 (enmendado por #197 R7) (enmendado por #220 R15)', async () => {
       await renderAddReminder();
       await waitFor(() => expect(screen.getByTestId('date-field')).toBeVisible());
       await fireEvent.press(screen.getByTestId('date-field'));
       const picker = within(screen.getByTestId('expo-ui-picker-host')).getByTestId('date-picker');
       expect((picker.props.value as Date).toISOString()).toBe('2026-09-24T00:00:00.000Z');
-      expect((picker.props.minimumDate as Date).getTime()).toBe(new Date(2026, 8, 24, 20, 0).getTime());
+      expect((picker.props.minimumDate as Date).getTime()).toBe(new Date(2026, 8, 24, 12).getTime());
       await fireEvent(picker, 'onDismiss');
       await fireEvent.press(screen.getByTestId('time-field'));
       expect((within(screen.getByTestId('expo-ui-picker-host')).getByTestId('time-picker').props.value as Date).getTime()).toBe(new Date(2026, 8, 24, 9, 0).getTime());
@@ -1004,30 +1001,36 @@ describe('#178 R11: título, fecha y hora del canvas', () => {
     expect(screen.getByTestId('title-input').props.className).toBe('h-13 rounded-xl bg-default px-3.5 text-base font-semibold text-foreground border-2 border-transparent');
   });
 
-  it('abre cada campo con su icono de 18 y tinta muted', () => {
+  it('abre cada campo con su icono de 18 y tinta muted (enmendado por #220 R15)', () => {
     for (const [fieldID, iconID] of [
       ['date-field', 'add-reminder-icon-calendar'],
       ['time-field', 'add-reminder-icon-clock'],
     ]) {
       const field = screen.getByTestId(fieldID);
-      expect(field.props.className).toBe('h-13 flex-row items-center gap-2 rounded-xl bg-default px-3.5');
+      expect(field.props.className).toBe('h-12 rounded-xl bg-default');
       expect(field).toHaveStyle({ borderCurve: 'continuous' });
-      expect(field.children).toHaveLength(2);
-      const icon = within(field).getByTestId(iconID);
-      expect(field.children[0]).toBe(icon);
+      expect(field.children).toHaveLength(1);
+      const icon = within(field).getByTestId(iconID, { includeHiddenElements: true });
+      expect(field.children[0]).toBe(icon.parent?.parent);
+      expect(icon.parent?.parent?.children[0]).toBe(icon.parent);
+      expect(icon.parent?.props.accessibilityElementsHidden).toBe(true);
       expect(icon.props.size).toBe(18);
       expect(icon.props.color).toBe('color:muted');
     }
   });
 
-  it('pinta la fecha vacía como texto base seminegrita y muted', () => {
-    expect(within(screen.getByTestId('date-field')).getByText('Elige una fecha').props.className).toBe('text-base font-semibold text-muted');
+  it('pinta la fecha vacía como texto base seminegrita y muted (enmendado por #220 R15)', () => {
+    const input = screen.getByTestId('date-field-value');
+    expect(input.props.placeholder).toBe('Elige una fecha');
+    expect(input.props.value).toBe('');
+    expect(input.props.editable).toBe(false);
   });
 
-  it('refleja la hora elegida en formato de 24 horas', async () => {
+  it('refleja la hora elegida en formato de 24 horas (enmendado por #220 R15)', async () => {
     await pickTime(20, 5);
-    const time = within(screen.getByTestId('time-field')).getByText('20:05');
-    expect(time.props.className).toBe('text-base font-semibold text-foreground');
+    const time = screen.getByTestId('time-field-value');
+    expect(time.props.value).toBe('20:05');
+    expect(time.props.editable).toBe(false);
   });
 });
 
@@ -1213,5 +1216,37 @@ describe('#204 R11: Guardar al pie', () => {
     await renderAddReminder();
     await screen.findByTestId('title-input');
     expect(screen.getByTestId('add-reminder-submit').props.className).toContain('mt-auto h-14 rounded-16 bg-accent');
+  });
+});
+
+
+describe('#220 R15: Recordatorio usa DateField para fecha y hora', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(2026, 8, 24, 20));
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+    mockCreateReminder.mockReturnValue(pending());
+  });
+  afterEach(() => jest.useRealTimers());
+  it('#220 R15: elegir fecha y hora conserva dueAt y el mensaje hermano de fecha', async () => {
+    await renderAddReminder();
+    await screen.findByTestId('title-input');
+    await fireEvent.press(screen.getByTestId('add-reminder-submit'));
+    await waitFor(() => expect(screen.getByTestId('date-field-message')).toHaveTextContent('Elige una fecha'));
+    const field = screen.getByTestId('date-field');
+    expect(within(field.parent!).getByTestId('date-field-message')).toBeOnTheScreen();
+    expect(within(field).queryByTestId('date-field-message')).toBeNull();
+    expect(within(screen.getByTestId('time-field').parent!).queryByTestId('time-field-message')).toBeNull();
+    await pickDate(new Date(2026, 8, 25));
+    await fireEvent.press(screen.getByTestId('time-field'));
+    await fireEvent(screen.getByTestId('time-picker'), 'onValueChange', {}, new Date(2026, 8, 24, 9, 5));
+    expect(screen.getByTestId('date-field-value').props.value).toBe('25 sep 2026');
+    expect(screen.getByTestId('time-field-value').props.value).toBe('09:05');
+    await fireEvent.changeText(screen.getByTestId('title-input'), 'Rabies');
+    await fireEvent.press(screen.getByTestId('add-reminder-submit'));
+    await waitFor(() => expect(screen.getByTestId('add-reminder-submit')).toBeDisabled());
+    expect(mockCreateReminder).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token', 'pet-1', { type: 'vaccine', title: 'Rabies', dueAt: '2026-09-25T09:05:00.000Z', advanceMinutes: 0 });
   });
 });

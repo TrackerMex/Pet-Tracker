@@ -1754,6 +1754,13 @@ describe('#203 R7: hoja de desvincular', () => {
     expect(cancelLabel.props.className).toBe('text-base font-extrabold text-foreground');
   });
 
+  it('#218 R2: backgroundStyle del BottomSheet de desvincular es exactamente el token surface', async () => {
+    await openUnpairSheet();
+    const community = within(screen.getByTestId('pairing-unpair-host')).getByTestId('community-bottom-sheet');
+    expect(Object.assign({}, ...[community.props.backgroundStyle].flat(Infinity).filter(Boolean))).toEqual({ backgroundColor: 'color:surface' });
+    expect(community.props.snapPoints).toEqual(['50%', '100%']);
+  });
+
   it('#203 R7.3: Cancelar cierra sin liberar', async () => {
     await openUnpairSheet();
 

@@ -26,6 +26,7 @@ import { Card } from '../../components/card';
 import { ScreenHeader } from '../../components/screen-header';
 import { RiseIn } from '../../components/rise-in';
 import { WeightChart } from '../../components/weight-chart';
+import { DateField } from '../../components/date-field';
 import { FieldErrorMessage } from '../../components/field-error-message';
 import type { FieldIssues } from '../../utils/account-rules';
 import { parseDecimal, validateWeight } from '../../utils/form-rules';
@@ -243,12 +244,13 @@ function WeightLogContent({ petId }: { petId: string }) {
               <Label><Text className="text-13 font-extrabold text-foreground">
                 {t('weightLog.measuredAt')}
               </Text></Label>
-              <Input
+              <DateField
                 testID="weight-date-input"
-                className="h-12 rounded-xl bg-default"
-                placeholder={t('weightLog.yyyyMmDd')}
+                pickerTestID="weight-date-picker"
                 value={measuredAt}
-                onChangeText={setMeasuredAtDraft}
+                onChange={(next) => { if (next !== null) setMeasuredAtDraft(next); }}
+                maxDate={civilTodayIso(profileTimeZone)}
+                isInvalid={Boolean(fieldErrors.measuredAt)}
               />
               <FieldErrorMessage testID="weight-date-input" issue={fieldErrors.measuredAt} />
             </TextField>

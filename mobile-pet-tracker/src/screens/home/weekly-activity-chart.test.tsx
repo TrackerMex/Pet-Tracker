@@ -2,6 +2,7 @@ import {
   act,
   fireEvent,
   render,
+  screen,
   within,
 } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
@@ -1108,27 +1109,27 @@ describe('R10: las barras entran animadas y respetan reduced motion', () => {
 });
 
 describe('R12: la tendencia sigue a la métrica y se calla sin base', () => {
-  it('muestra el alza localizada con TrendUp', async () => {
+  it('muestra el alza localizada con TrendUp (enmendado por #219 R6)', async () => {
     const result = await renderChart([makeDay()], {
       ...NO_COMPARISON,
       activeMinutes: 12.5,
     });
 
     expect(result.getByTestId('weekly-activity-trend')).toHaveTextContent(
-      '+12,5 % frente a la semana previa',
+      '+12.5 % frente a la semana previa',
     );
     expect(result.getByTestId('weekly-activity-trend-up')).toBeOnTheScreen();
     expect(result.queryByTestId('weekly-activity-trend-down')).toBeNull();
   });
 
-  it('muestra la bajada localizada con TrendDown', async () => {
+  it('muestra la bajada localizada con TrendDown (enmendado por #219 R6)', async () => {
     const result = await renderChart([makeDay()], {
       ...NO_COMPARISON,
       activeMinutes: -8.3,
     });
 
     expect(result.getByTestId('weekly-activity-trend')).toHaveTextContent(
-      '-8,3 % frente a la semana previa',
+      '-8.3 % frente a la semana previa',
     );
     expect(result.getByTestId('weekly-activity-trend-down')).toBeOnTheScreen();
     expect(result.queryByTestId('weekly-activity-trend-up')).toBeNull();
@@ -1151,7 +1152,7 @@ describe('R12: la tendencia sigue a la métrica y se calla sin base', () => {
     expect(result.queryByTestId('weekly-activity-trend')).toBeNull();
   });
 
-  it('cambia la tendencia al delta de la métrica seleccionada', async () => {
+  it('cambia la tendencia al delta de la métrica seleccionada (enmendado por #219 R6)', async () => {
     const result = await renderChart([makeDay()], {
       activeMinutes: 12.5,
       distanceM: -8.3,
@@ -1163,7 +1164,7 @@ describe('R12: la tendencia sigue a la métrica y se calla sin base', () => {
     );
 
     expect(result.getByTestId('weekly-activity-trend')).toHaveTextContent(
-      '-8,3 % frente a la semana previa',
+      '-8.3 % frente a la semana previa',
     );
     expect(result.getByTestId('weekly-activity-trend-down')).toBeOnTheScreen();
   });
@@ -2417,4 +2418,107 @@ describe('#198 R9: barras y detalle del canvas', () => {
       expect(value.parent!.children.filter(child => typeof child !== 'string')[0].props.className).toBe('text-11 text-muted');
     }
   });
+});
+
+describe('#219 R4: la etiqueta de media aplica el formato de los formateadores', () => {
+  it.each([
+    ['es', 'activeMinutes', [200, 210, 221], /^Media 3h 30m$/],
+    ['es', 'activeMinutes', [59, 60, 60, 60, 59], /^Media 1h 0m$/],
+    ['es', 'activeMinutes', [119, 120, 120], /^Media 2h 0m$/],
+    ['es', 'activeMinutes', [44, 45, 45], /^Media 45m$/],
+    ['en', 'activeMinutes', [200, 210, 221], /^Average 3h 30m$/],
+    ['es', 'walkCount', [2, 2, 3], /^Media 2\.3$/],
+    ['es', 'walkCount', [2, 3, 3, 3], /^Media 2\.8$/],
+    ['es', 'walkCount', [2, 2, 2], /^Media 2$/],
+    ['es', 'distanceM', [1000, 1000, 1100], /^Media 1\.0 km$/],
+  ] as const)(
+    '#219 R4: %s %s con días %j muestra %s',
+    async (language, metric, values, expected) => {
+      const days = metric === 'activeMinutes'
+        ? makeWeek('2026-09-02', [
+            ...values,
+            ...Array<number | null>(7 - values.length).fill(null),
+          ])
+        : values.map((value, index) => makeDay({
+            date: `2026-09-${String(2 + index).padStart(2, '0')}`,
+            [metric]: value,
+          }));
+
+      await renderChart(days, NO_COMPARISON, language);
+      if (metric !== 'activeMinutes') {
+        await fireEvent.press(
+          screen.getByTestId(`weekly-activity-metric-${metric}`),
+        );
+      }
+
+      expect(
+        await screen.findByTestId('weekly-activity-average-label'),
+      ).toHaveTextContent(expected);
+    },
+  );
+});
+
+it('#219 R5: la línea de media usa el valor real, no el redondeado', async () => {
+  await renderChart(
+    makeWeek('2026-09-02', [59, 60, 60, 60, 59, null, null]),
+  );
+  const { props } = await screen.findByTestId('weekly-activity-average');
+
+  expect(props.y1).toBeCloseTo(40.4, 6);
+  expect(props.y2).toBeCloseTo(40.4, 6);
+});
+
+it.each([
+  [12.5, /^\+12\.5 % frente a la semana previa$/],
+  [-8.3, /^-8\.3 % frente a la semana previa$/],
+  [0, /^0 % frente a la semana previa$/],
+  [231.2, /^\+231\.2 % frente a la semana previa$/],
+  [1234.56, /^\+1234\.6 % frente a la semana previa$/],
+  [0.96, /^\+1 % frente a la semana previa$/],
+  [-12.5, /^-12\.5 % frente a la semana previa$/],
+  [100, /^\+100 % frente a la semana previa$/],
+  [12, /^\+12 % frente a la semana previa$/],
+] as const)('#219 R6: la tendencia de %s muestra %s', async (value, expected) => {
+  await renderChart([makeDay()], {
+    ...NO_COMPARISON,
+    activeMinutes: value,
+  });
+
+  expect(
+    await screen.findByTestId('weekly-activity-trend-label'),
+  ).toHaveTextContent(expected);
+});
+
+it('#219 R6: en inglés usa punto y sin espacio antes del %', async () => {
+  await renderChart([makeDay()], {
+    ...NO_COMPARISON,
+    activeMinutes: 12.5,
+  }, 'en');
+
+  expect(
+    await screen.findByTestId('weekly-activity-trend-label'),
+  ).toHaveTextContent(/^\+12\.5% vs\. previous week$/);
+});
+
+it('#219 R7: la tendencia no depende del locale del entorno', async () => {
+  const RealNumberFormat = Intl.NumberFormat;
+  const numberFormat = jest.spyOn(Intl, 'NumberFormat').mockImplementation(
+    (locale, options) => new RealNumberFormat(
+      locale === 'en-US' ? 'en-US' : 'es-ES',
+      options,
+    ),
+  );
+
+  try {
+    await renderChart([makeDay()], {
+      ...NO_COMPARISON,
+      activeMinutes: 12.5,
+    });
+
+    expect(
+      await screen.findByTestId('weekly-activity-trend-label'),
+    ).toHaveTextContent(/^\+12\.5 % frente a la semana previa$/);
+  } finally {
+    numberFormat.mockRestore();
+  }
 });
