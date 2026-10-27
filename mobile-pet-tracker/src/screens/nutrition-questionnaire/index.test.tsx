@@ -290,3 +290,41 @@ it.each([['0', true], ['1000', true], ['12,345', true], ['', false], ['10,5', fa
   if (disabled) expect(screen.getByTestId('nutrition-questionnaire-next')).toBeDisabled();
   else expect(screen.getByTestId('nutrition-questionnaire-next')).toBeEnabled();
 });
+
+const FOUR_TYPES = [
+  ['dry', '350', 'Seco', 'Puse 350, lo habitual en alimento seco. Si la bolsa dice otro número, cámbialo: lo encuentras como energía metabolizable.'],
+  ['wet', '90', 'Húmedo', 'Puse 90, lo habitual en alimento húmedo. Si la lata dice otro número, cámbialo: lo encuentras como energía metabolizable.'],
+  ['mixed', '220', 'Mixto', 'Puse 220, un punto medio entre seco y húmedo. Si sabes el número exacto, cámbialo.'],
+  ['homemade', '130', 'Casero', 'Puse 130, lo habitual en comida casera. Si tu receta tiene otro número, cámbialo.'],
+] as const;
+
+it.each(FOUR_TYPES)('#209 R11: %s precarga %s kcal y su nota', async (type, kcal, label, note) => {
+  expect(FOUR_TYPES).toHaveLength(4);
+  await goToFood(5);
+  expect(screen.getByTestId('nutrition-questionnaire-bubble')).toHaveTextContent('¿Qué come Rocky? Con las calorías de su alimento calculo cuántos gramos servir en cada comida.', { exact: true });
+  expect(screen.getByText('Calorías del alimento')).toBeVisible();
+  const input = screen.getByTestId('kcal-input');
+  expect(input).toHaveProp('keyboardType', 'number-pad');
+  expect(input).toHaveProp('maxLength', 3);
+  expect(screen.getByText('kcal / 100 g')).toBeVisible();
+  expect(screen.getByText('Entre 80 y 600 kcal por cada 100 g.')).toBeVisible();
+  expect(screen.queryByTestId('kcal-note')).toBeNull();
+  const chip = screen.getByTestId(`food-type-${type}`);
+  expect(chip).toHaveProp('accessibilityRole', 'radio');
+  expect(chip).toHaveProp('accessibilityState', { checked: false });
+  expect(within(chip).getByText(label)).toBeVisible();
+  await fireEvent.press(chip);
+  expect(screen.getByTestId(`food-type-${type}`)).toHaveProp('accessibilityState', { checked: true });
+  expect(screen.getByTestId('kcal-input')).toHaveProp('value', kcal);
+  expect(screen.getByTestId('kcal-note')).toHaveTextContent(note, { exact: true });
+});
+it('#209 R11: cambiar de tipo sobrescribe un valor editado', async () => {
+  await goToFood(5);
+  await fireEvent.press(screen.getByTestId('food-type-dry'));
+  await fireEvent.changeText(screen.getByTestId('kcal-input'), '400');
+  expect(screen.getByTestId('kcal-input')).toHaveProp('value', '400');
+  await fireEvent.press(screen.getByTestId('food-type-wet'));
+  expect(screen.getByTestId('kcal-input')).toHaveProp('value', '90');
+  expect(screen.getByTestId('food-type-dry')).toHaveProp('accessibilityState', { checked: false });
+  expect(screen.getByTestId('kcal-note')).toHaveTextContent(FOUR_TYPES[1][3], { exact: true });
+});
