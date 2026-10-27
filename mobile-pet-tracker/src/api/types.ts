@@ -218,6 +218,10 @@ export interface NutritionWarning {
   message: string;
 }
 
+export interface NutritionMealGrams { mealTime: string; grams: number; }
+export interface NutritionAiProposal { mealGrams: NutritionMealGrams[]; recommendations: string[]; reviewDate: string; }
+export type NutritionAiStatus = 'proposed' | 'not_tracked' | 'limit_reached' | 'unavailable' | 'rejected';
+
 export interface NutritionPlan {
   id: string;
   petId: string;
@@ -229,6 +233,7 @@ export interface NutritionPlan {
   objective: string;
   warnings: NutritionWarning[];
   aiExplanation: string | null;
+  aiProposal?: NutritionAiProposal | null;
   generatedAt: string;
   servedToday: string[];
   kcalConsumedToday: number;
