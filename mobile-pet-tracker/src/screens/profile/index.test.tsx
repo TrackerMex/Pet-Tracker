@@ -2574,3 +2574,26 @@ describe('#217 R6: la barra clara depende del hero de Perfil', () => {
     expect(source).toContain('{showHero ? <HeroStatusBar /> : null}');
   });
 });
+
+describe('#217 R10: el cambio de tema es inmediato y persistido', () => {
+  beforeEach(() => {
+    setupProfile168();
+    mockTheme = 'light';
+    mockSetStoredTheme.mockResolvedValue();
+  });
+
+  it('#217 R10: el interruptor aplica el tema antes de persistirlo', async () => {
+    await renderProfile();
+    const toggle = await screen.findByTestId('theme-toggle');
+    await fireEvent.press(toggle);
+
+    expect(mockSetTheme).toHaveBeenCalledTimes(1);
+    expect(mockSetTheme).toHaveBeenCalledWith('dark');
+    expect(mockSetStoredTheme).toHaveBeenCalledTimes(1);
+    expect(mockSetStoredTheme).toHaveBeenCalledWith('dark');
+    expect(mockSetTheme.mock.invocationCallOrder[0])
+      .toBeLessThan(mockSetStoredTheme.mock.invocationCallOrder[0]);
+    expect(readFileSync(`${process.cwd()}/src/screens/profile/index.tsx`, 'utf8'))
+      .not.toContain('theme-transition');
+  });
+});

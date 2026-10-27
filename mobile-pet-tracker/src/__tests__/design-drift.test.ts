@@ -1295,3 +1295,82 @@ describe('#185 R10: el formulario pertenece a la lista A11', () => {
     expect(source.slice(start, end)).toContain('`pets/[petId]/docs-upload`');
   });
 });
+
+describe('#217 R8: las dependencias nitro no existen', () => {
+  const packagePattern = new RegExp(['react-native', 'nitro'].join('-'));
+  const plantedDependency = ['"', ['react-native', 'nitro', 'modules'].join('-'), '": "0.37.0"'].join('');
+
+  it('#217 R8: package.json no nombra nitro en dependencias ni en transformIgnorePatterns', () => {
+    expect(plantedDependency).toMatch(packagePattern);
+    expect(readFileSync(join(projectRoot, 'package.json'), 'utf8')).not.toMatch(packagePattern);
+  });
+
+  it('#217 R8: bun.lock no nombra nitro', () => {
+    expect(plantedDependency).toMatch(packagePattern);
+    expect(readFileSync(join(projectRoot, 'bun.lock'), 'utf8')).not.toMatch(packagePattern);
+  });
+});
+
+describe('#217 R9: la transición retirada no deja fuentes', () => {
+  const transition = ['theme', 'transition'].join('-');
+  const availability = ['nitro', 'availability'].join('-');
+
+  it('#217 R9: los cuatro ficheros de la transición no existen', () => {
+    for (const relative of [
+      ['theme', transition + '.ts'],
+      ['theme', availability + '.ts'],
+      ['theme', '__tests__', transition + '.test.tsx'],
+      ['theme', '__tests__', transition + '.degraded.test.tsx'],
+    ]) {
+      expect(existsSync(join(sourceRoot, ...relative))).toBe(false);
+    }
+  });
+
+  it('#217 R9: ninguna fuente de producción nombra la transición', () => {
+    const forbidden = [
+      ['ni', 'tro'].join(''),
+      transition,
+      ['use', 'ThemeTransition'].join(''),
+      ['THEME', 'FADE'].join('_'),
+      ['is', 'ThemeTransitionAvailable'].join(''),
+    ];
+    const pattern = new RegExp(forbidden.join('|'));
+    for (const identifier of forbidden) {
+      expect('import { ' + identifier + ' } from "./legacy";').toMatch(pattern);
+    }
+    expect(sourceFiles(sourceRoot)
+      .filter((file) => !/\.test\.tsx?$/.test(file))
+      .filter((file) => pattern.test(readFileSync(file, 'utf8')))
+      .map((file) => file.slice(sourceRoot.length + 1)))
+      .toEqual([]);
+  });
+});
+
+describe('#217 R11: los tests no conservan módulos retirados', () => {
+  it('#217 R11: ningún test mockea nitro', () => {
+    const pattern = /nitro/;
+    const plantedMock = 'jest.mock("' + ['react-native', 'nitro', 'modules'].join('-') + '")';
+    expect(plantedMock).toMatch(pattern);
+    expect(allTypeScriptFiles(sourceRoot)
+      .filter((file) => /\.test\.tsx?$/.test(file))
+      .filter((file) => file !== join(sourceRoot, '__tests__', 'design-drift.test.ts'))
+      .filter((file) => pattern.test(readFileSync(file, 'utf8')))
+      .map((file) => file.slice(sourceRoot.length + 1)))
+      .toEqual([]);
+  });
+});
+
+describe('#217 R12: los ficheros nuevos no escapan del sistema de estilo', () => {
+  it('#217 R12: navigation-theme.ts y hero-status-bar.tsx no tienen hex, StyleSheet ni clases con corchetes', () => {
+    const pattern = /#[0-9A-Fa-f]{3,8}\b|StyleSheet|\b[a-z-]+-\[[^\]]+\]/;
+    for (const planted of [['#', '123456'].join(''), 'StyleSheet.create({})', 'bg-[red]']) {
+      expect(planted).toMatch(pattern);
+    }
+    for (const relative of [
+      ['theme', 'navigation-theme.ts'],
+      ['components', 'hero-status-bar.tsx'],
+    ]) {
+      expect(readFileSync(join(sourceRoot, ...relative), 'utf8')).not.toMatch(pattern);
+    }
+  });
+});
