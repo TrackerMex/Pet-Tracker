@@ -499,6 +499,17 @@ vigentes): `#134 R6` y `#134 R7` (`screens/alerts/index.tsx` sin `case '`,
 (`EmptyState` en el sitio del vacío), `#203 R9` (RiseIn de las **cinco
 primeras filas abiertas** y la sexta sin envoltorio).
 
+> **Fe de erratas E4 del leader (2026-10-27, hallada por Codex en la corrida completa C27).**
+> `src/app/__tests__/alert-detail.navigation.test.tsx` (`#100 R8: fila, detalle y vuelta al
+> centro con la alerta leída`) conservaba el flujo antiguo: con R1/R4 la pantalla drena las dos
+> páginas sola y `alert-2`, ya leída, vive en «Atendidas» (colapsada). Se enmienda ese `it`, y solo
+> ese fichero de `app/`, con el sufijo `(enmendado por #223 R18)`: (1) se elimina el
+> `fireEvent(..., 'onEndReached')` y la espera `toHaveLength(1)` pasa a `toHaveLength(2)`
+> (`alert-1` y `alert-2` abiertas); (2) tras volver del detalle, antes de leer
+> `alert-row-alert-2-status`, se pulsa `alerts-attended-toggle` para expandir «Atendidas»;
+> (3) un `await` delante del `renderRouter` solo si el test lo necesita para no filtrar al
+> siguiente `it`. Las demás aserciones no cambian.
+
 ## Fuera de alcance
 
 - Cambios de backend: el contador `openCount` y el filtro `?status=acked,closed`
