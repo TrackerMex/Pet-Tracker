@@ -2,7 +2,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 
-import { listPetMembers, removePetMember, type RemovePetMemberState } from '../../api/pet-members';
+import { listPetInvites, listPetMembers, removePetMember, revokePetInvite, type RemovePetMemberState } from '../../api/pet-members';
 import { getPet } from '../../api/pets';
 import type { PetProfile } from '../../api/types';
 import { getMe } from '../../api/users';
@@ -65,6 +65,7 @@ const me = {
   phone: '', country: 'MX', timezone: 'America/Mexico_City',
   createdAt: '2026-10-06T09:05:00.000Z', updatedAt: '2026-10-06T09:05:00.000Z',
 };
+const invite = { id: 'inv-1', role: 'family', createdAt: new Date(2026, 9, 6, 9, 5).toISOString(), expiresAt: new Date(2026, 9, 9, 14, 0).toISOString() };
 const queries = { pet: jest.mocked(getPet), members: jest.mocked(listPetMembers), me: jest.mocked(getMe) };
 
 function Wrapper({ children }: { children: ReactNode }) {
@@ -82,6 +83,8 @@ beforeEach(() => {
   jest.mocked(listPetMembers).mockResolvedValue({ kind: 'ok', members });
   jest.mocked(getMe).mockResolvedValue({ kind: 'ok', me });
   jest.mocked(removePetMember).mockResolvedValue({ kind: 'ok' });
+  jest.mocked(listPetInvites).mockResolvedValue({ kind: 'ok', invites: [] });
+  jest.mocked(revokePetInvite).mockResolvedValue({ kind: 'ok' });
 });
 
 afterAll(() => {
@@ -278,4 +281,69 @@ it('R11: doble toque llama una sola vez', async () => {
   expect(removePetMember).toHaveBeenCalledTimes(1);
   await act(async () => finish({ kind: 'ok' }));
   await waitFor(() => expect(screen.queryByTestId('member-remove-sheet')).toBeNull());
+});
+
+async function renderInvites() {
+  jest.mocked(listPetInvites).mockResolvedValue({ kind: 'ok', invites: [invite] });
+  const app = await renderMembers();
+  await waitFor(() => expect(screen.getByTestId('pet-invites-list')).toBeVisible());
+  return app;
+}
+
+it('R12: lista las invitaciones con fecha de creación y vencimiento', async () => {
+  await renderInvites();
+  expect(screen.getByTestId('pet-invites-heading')).toHaveTextContent('Invitaciones pendientes');
+  expect(screen.getByTestId('invite-row-inv-1-created')).toHaveTextContent('Invitación · creada el 6 oct');
+  expect(screen.getByTestId('invite-row-inv-1-expires')).toHaveTextContent('Vence el 9 oct a las 14:00');
+  const icon = screen.getByTestId('invite-row-inv-1-icon', { includeHiddenElements: true });
+  expect(icon.props.className).toContain('rounded-10');
+  expect(icon.props.className).toContain('bg-category-amber');
+  expect(screen.getByLabelText('Revocar la invitación creada el 6 oct')).toBeVisible();
+});
+
+it('R12: sin invitaciones no hay sección', async () => {
+  await renderMembers();
+  await waitFor(() => expect(screen.queryByTestId('pet-members-loading')).toBeNull());
+  expect(screen.queryByTestId('pet-invites-heading')).toBeNull();
+  expect(screen.queryByTestId('pet-invites-list')).toBeNull();
+});
+
+it('R12: si la lista falla no hay sección', async () => {
+  jest.mocked(listPetInvites).mockResolvedValue({ kind: 'error' });
+  await renderMembers();
+  await waitFor(() => expect(screen.queryByTestId('pet-members-loading')).toBeNull());
+  expect(screen.queryByTestId('pet-invites-heading')).toBeNull();
+  expect(screen.queryByTestId('pet-invites-list')).toBeNull();
+});
+
+it('R12: revocar llama a la API e invalida la lista', async () => {
+  const { queryClient } = await renderInvites();
+  const invalidate = jest.spyOn(queryClient, 'invalidateQueries');
+  await fireEvent.press(screen.getByTestId('invite-row-inv-1-revoke'));
+  await waitFor(() => expect(screen.getByTestId('invite-row-inv-1-revoke')).toBeEnabled());
+  expect(revokePetInvite).toHaveBeenCalledWith('http://example.test/v1', 'token', 'pet-1', 'inv-1');
+  expect(invalidate).toHaveBeenCalledWith({ queryKey: ['pet-invites', 'pet-1'] });
+});
+
+it('R12: revocar not-found también invalida', async () => {
+  jest.mocked(revokePetInvite).mockResolvedValue({ kind: 'not-found' });
+  const { queryClient } = await renderInvites();
+  const invalidate = jest.spyOn(queryClient, 'invalidateQueries');
+  await fireEvent.press(screen.getByTestId('invite-row-inv-1-revoke'));
+  await waitFor(() => expect(screen.getByTestId('invite-row-inv-1-revoke')).toBeEnabled());
+  expect(invalidate).toHaveBeenCalledWith({ queryKey: ['pet-invites', 'pet-1'] });
+});
+
+it('R12: revocar unreachable avisa', async () => {
+  jest.mocked(revokePetInvite).mockResolvedValue({ kind: 'unreachable', message: 'x' });
+  await renderInvites();
+  await fireEvent.press(screen.getByTestId('invite-row-inv-1-revoke'));
+  await waitFor(() => expect(screen.getByTestId('pet-members-action-error')).toHaveTextContent('No se pudo conectar con el servidor'));
+});
+
+it('R12: family no pide invitaciones', async () => {
+  jest.mocked(getPet).mockResolvedValue({ kind: 'ok', pet: { ...pet, myRole: 'family' } });
+  await renderMembers();
+  await waitFor(() => expect(screen.getByTestId('pet-members-list')).toBeVisible());
+  expect(listPetInvites).not.toHaveBeenCalled();
 });
