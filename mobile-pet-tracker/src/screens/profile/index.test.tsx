@@ -35,6 +35,7 @@ import { setStoredLanguage } from '../../utils/language-preference';
 import { ProfileScreen } from '.';
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { TOUCH_SLOP } from '../../theme/touch-target';
+import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
 const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
@@ -1281,7 +1282,7 @@ describe('#41 R9: Perfil enlaza a las zonas seguras de la mascota activa', () =>
     mockGetPet.mockResolvedValue({ kind: 'ok', pet });
   });
 
-  it('pinta la fila de zonas seguras tras la de GPS y abre la ruta de la mascota activa', async () => {
+  it('pinta la fila de zonas seguras tras la de GPS y abre la ruta de la mascota activa (enmendado por #214 R4, R6)', async () => {
     await renderProfile();
     const link = await screen.findByTestId('geofences-link');
     expect(link).toHaveTextContent('Zonas seguras');
@@ -1292,6 +1293,7 @@ describe('#41 R9: Perfil enlaza a las zonas seguras de la mascota activa', () =>
     expect(within(link).getByText('Zonas seguras').props.className).toBe('text-sm font-extrabold text-category-amber-strong');
     expect(screen.getAllByTestId(/-link$/).map((row) => row.props.testID)).toEqual([
       'documents-link', 'pairing-link', 'geofences-link', 'reminders-link',
+      'members-link', 'join-pet-link', // #214 R4, R6
     ]);
     await fireEvent.press(link);
     expect(mockRouter.push).toHaveBeenCalledTimes(1);
@@ -1628,12 +1630,12 @@ describe('#168 R6 (enmendado por #173 R10): los accesos son tiles pastel en reji
     expect(mockRouter.push).toHaveBeenCalledWith(destination);
   });
 
-  it('con mascota ordena dos filas de dos tiles', async () => {
+  it('con mascota ordena dos filas de dos tiles (enmendado por #214 R4, R6)', async () => {
     await renderProfile();
     await screen.findByTestId('pet-info-card');
     const grid = screen.getByTestId('profile-links');
     expect(grid.props.className).toBe('gap-2');
-    expect(grid.children).toHaveLength(2);
+    expect(grid.children).toHaveLength(2 + 2); // #214 R4, R6
     const first = profileChild(grid, 0);
     const second = profileChild(grid, 1);
     expect(first.props.testID).toBe('profile-links-row-0');
@@ -2540,5 +2542,35 @@ describe('#196 R9: índices de entrada fijos por rama', () => {
     expect(entrance.props.index).toBe(0);
     expect(mockHomeEntrance.mock.calls.filter(([props]) => props.testID === 'profile-entrance-notice').map(([props]) => props.index)).toEqual(expect.arrayContaining([0]));
     expect(screen.queryByTestId('profile-entrance-hero')).toBeNull();
+  });
+});
+
+
+describe('#214 R4: tarjeta de Familia', () => {
+  beforeEach(setupProfile168);
+
+  it('R4: con mascota añade la fila de Familia a ancho completo y navega a members', async () => {
+    await renderProfile();
+    const link = await screen.findByTestId('members-link');
+    const row = screen.getByTestId('profile-links-row-2');
+    expect(row.props.className).toBe('flex-row gap-2');
+    expect(row.children).toHaveLength(1);
+    expect(profileChild(row, 0)).toBe(link);
+    expect(link.props.className).toBe(`flex-row items-center gap-2.5 rounded-tile p-3 ${CATEGORY_SLOTS.rose.surface}`);
+    expect(screen.getByTestId('members-link-label').props.className).toBe(`text-sm font-extrabold ${CATEGORY_SLOTS.rose.ink}`);
+    expect(screen.getByTestId('members-link-label')).toHaveTextContent('Familia');
+    expect(link.props.accessibilityRole).toBe('button');
+    expect(link.props.hitSlop).toEqual(TOUCH_SLOP);
+    expect(link).toHaveStyle({ borderCurve: 'continuous' });
+    await fireEvent.press(link);
+    expect(mockRouter.push).toHaveBeenCalledWith('/pets/pet-1/members');
+  });
+
+  it('R4: sin mascota no hay tarjeta de Familia', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    mockGetPet.mockReturnValue(pending<PetState>());
+    await renderProfile();
+    await screen.findByTestId('profile-pets-empty');
+    expect(screen.queryByTestId('members-link')).toBeNull();
   });
 });

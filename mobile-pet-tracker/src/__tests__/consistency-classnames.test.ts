@@ -190,13 +190,13 @@ describe('#62 R7: ningún glifo tipográfico hace de icono', () => {
     expect(filesMatching(/[←›]/)).toEqual([]);
   });
 
-  it('profile usa los glifos de reicon sin ChevronRight (#173 R10)', () => {
+  it('profile usa los glifos de reicon y ChevronRight solo en la tarjeta ancha (#173 R10) (enmendado por #214 R4, R6)', () => {
     const profile = readSource(join('screens', 'profile', 'index.tsx'));
 
     expect(profile).toContain(
-      "import { Bell, Camera, FileText, Map as MapIcon, Plus, Wifi } from 'reicon-react-native';",
+      "import { Bell, Camera, ChevronRight, FileText, Key, Map as MapIcon, Plus, Users, Wifi } from 'reicon-react-native';", // #214 R4, R6
     );
-    expect(profile.match(/ChevronRight/g)).toBeNull();
+    expect(profile.match(/ChevronRight/g)).toHaveLength(2); // #214 R4
   });
 });
 
