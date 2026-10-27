@@ -292,7 +292,7 @@ export default function PetMembersScreen({ petId }: { petId: string }) {
             {isOwner ? (
               <View testID="pet-members-code-note" className="flex-row items-center gap-2.5 rounded-tile bg-default px-3.5 py-3">
                 <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><InfoCircle size={20} color={foreground} /></View>
-                <Text className="text-13 font-semibold leading-note text-foreground" selectable>{t('members.codeNote')}</Text>
+                <Text className="flex-1 text-13 font-semibold leading-note text-foreground" selectable>{t('members.codeNote')}</Text>
               </View>
             ) : null}
             {!isOwner && ownerName ? (
