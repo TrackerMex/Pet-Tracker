@@ -71,6 +71,10 @@ function isWeight(value: string) {
   return /^\d*\.?\d{0,2}$/.test(normalized) && Number(normalized) > 0 && Number(normalized) <= 999.99;
 }
 
+function isKcal(value: string) {
+  return /^\d+$/.test(value) && Number(value) >= 80 && Number(value) <= 600;
+}
+
 function NumberField({ kind, testID, unit, value, onChangeText }: { kind: 'weight' | 'kcal'; testID: string; unit: string; value: string; onChangeText: (value: string) => void }) {
   const [focused, setFocused] = useState(false);
   return <View className={focused ? 'h-16 flex-row items-center gap-2 rounded-14 border-2 border-accent bg-default px-4' : 'h-16 flex-row items-center gap-2 rounded-14 border-2 border-transparent bg-default px-4'} style={CONTINUOUS_CORNER}>
@@ -107,7 +111,7 @@ function QuestionnaireForm({ pet }: { initial: NutritionProfile | null; pet: Pet
   const bcsRow = BCS_ROWS.find(row => row.n === bcs);
   const foodRow = FOOD_TYPES.find(option => option.value === food);
   const n = stepNumber(step);
-  const canContinue = step === 'activity' ? activity !== null : step === 'condition' ? bcs !== null : step === 'target' ? target === '' || isWeight(target) : true;
+  const canContinue = step === 'activity' ? activity !== null : step === 'condition' ? bcs !== null : step === 'target' ? target === '' || isWeight(target) : step === 'food' ? food !== null && isKcal(kcal) : true;
   usePreventRemove(step !== 'activity', () => setStep(prevStep(step, bcs)));
   function handleNext() {
     if (step !== 'health') setStep(nextStep(step, bcs));
