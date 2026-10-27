@@ -3,3 +3,4 @@ jest.mock('react-native-worklets', () =>
 );
 
 require('react-native-reanimated').setUpTests();
+jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn() }));

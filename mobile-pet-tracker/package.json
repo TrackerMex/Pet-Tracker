@@ -9,6 +9,7 @@
     "blobatar": "^2.5.0",
     "expo": "~57.0.14",
     "expo-blur": "~57.0.2",
+    "expo-clipboard": "~57.0.2",
     "expo-constants": "~57.0.12",
     "expo-dev-client": "~57.0.14",
     "expo-device": "~57.0.1",
