@@ -476,27 +476,29 @@ export function RemindersScreen() {
                         </View>
                       ) : null}
                     </View>
-                    <Button
-                      testID={isSeries ? `reminder-cancel-series-${reminder.id}` : `reminder-delete-${reminder.id}`}
-                      accessibilityLabel={isSeries ? t('reminders.cancelSeriesA11y', { title: reminder.title }) : undefined}
-                      className={`h-11 rounded-14 px-2.5 ${CATEGORY_SLOTS.rose.surface}`}
-                      isDisabled={deletingId === reminder.id}
-                      variant="danger-soft"
-                      onPress={() => {
-                        if (isSeries) {
-                          setActionError(null);
-                          setDeleteCandidate(null);
-                          setCancelCandidate(reminder);
-                        } else {
-                          setCancelCandidate(null);
-                          confirmDelete(reminder);
-                        }
-                      }}
-                    >
-                      <Text className="text-13 font-extrabold text-danger">
-                        {isSeries ? t('reminders.cancelSeries') : t('reminders.delete')}
-                      </Text>
-                    </Button>
+                    {isOwner ? (
+                      <Button
+                        testID={isSeries ? `reminder-cancel-series-${reminder.id}` : `reminder-delete-${reminder.id}`}
+                        accessibilityLabel={isSeries ? t('reminders.cancelSeriesA11y', { title: reminder.title }) : undefined}
+                        className={`h-11 rounded-14 px-2.5 ${CATEGORY_SLOTS.rose.surface}`}
+                        isDisabled={deletingId === reminder.id}
+                        variant="danger-soft"
+                        onPress={() => {
+                          if (isSeries) {
+                            setActionError(null);
+                            setDeleteCandidate(null);
+                            setCancelCandidate(reminder);
+                          } else {
+                            setCancelCandidate(null);
+                            confirmDelete(reminder);
+                          }
+                        }}
+                      >
+                        <Text className="text-13 font-extrabold text-danger">
+                          {isSeries ? t('reminders.cancelSeries') : t('reminders.delete')}
+                        </Text>
+                      </Button>
+                    ) : null}
                   </View>
                 </RiseIn>
               );
