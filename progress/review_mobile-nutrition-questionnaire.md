@@ -119,3 +119,113 @@ Para la re-revisión: solo cambian `food/index.tsx`, `nutrition-questionnaire/in
 
 ## Output de ./init.sh
 No lo corrí: orden del leader («NO ejecutes ./init.sh: lo corre el CI de la PR (job `verify`)»). El sustituto fueron las dos corridas de jest de arriba, más las tres corridas de las sondas, todas con los pgreps vacíos y el árbol limpio al acabar.
+
+---
+
+## Segunda revisión (HEAD f8b7b130)
+Fecha: 2026-10-27
+Veredicto: RECHAZADO
+Reviewer: subagente `reviewer` (segunda revisión). Mismo modelo que el `implementer` de reserva que hizo la Adenda 5: por eso cada candado lleva una sonda mía distinta de la suya.
+Alcance: `git log --first-parent 7940c0fb..HEAD` (8 commits: merge `40e640d9`, errata `3c31d6b5`, Adenda 5 `28cb9ecc`, y `63d4295e`, `f75ece10`, `5333d27c`, `fbff52ee`, `f8b7b130`).
+
+### Bitácora
+- Lista cerrada: `git diff --name-only 28cb9ecc HEAD` = las 6 rutas de la Adenda 5 §4, ni una más.
+- Merge `40e640d9`: padres `7940c0fb` (rama) y `43230cb4` (`dev` con #216), base `fe624698`. `git merge-tree --write-tree 7940c0fb 43230cb4` rehecho por mí difiere del árbol del merge solo en `progress/current.md` (la resolución del conflicto): el resto es la mezcla automática, sin cambios a mano. Ficheros que tocan los dos lados: `feature_list.json`, `ui-copy-table.ts`, `ui-language.test.ts` y `current.md`; en los tres primeros el hunk de `dev` (fila `#216 R6` de `R10_PAIRING` y su `+ 1`) entra idéntico. Ningún fichero de #209 lo toca #216.
+- Historial, en el árbol de wt-209 con `git checkout <c> -- <4 ficheros>` y vuelta a `HEAD` (tras cada una, `git diff --quiet HEAD -- mobile-pet-tracker` = 0 y `git diff --cached --quiet` = 0), los dos tests de la Adenda con `--runTestsByPath`:
+  - `63d4295e` (test R4): `Tests: 1 failed, 201 passed, 202 total`, exit 1; rojo solo `#209 R4: esqueleto y error de carga …`, por aserción (`Expected: {"paddingTop": 52}` / `Received: undefined`).
+  - `f75ece10` (feat R4): `Tests: 202 passed, 202 total`, exit 0.
+  - `5333d27c` (test R5 R16 R19): `Tests: 3 failed, 202 passed, 205 total`, exit 1; rojos exactamente los tres `it` nuevos, por `Unable to find an element with testID` de la imagen.
+  - `fbff52ee` (feat R5 R16 R19; mismos ficheros de app que HEAD): `Tests: 205 passed, 205 total`, exit 0.
+  - Cada `test` toca solo tests y cada `feat` solo producción (`git show --name-only`). Los 5 commits llevan los dos trailers.
+- Sondas mías (árbol de HEAD, una a una con `-t`, revertidas con `git checkout HEAD --`; tras cada una `git diff --quiet HEAD -- mobile-pet-tracker` = 0 y `git diff --cached --quiet` = 0). Ninguna repite las del implementer:
+
+  | # | Mutación | `it` | Resultado |
+  |---|---|---|---|
+  | P1 | R4, rama del **esqueleto**: `insets.top + 12` → `insets.top` (el implementer mutó la del error) | `#209 R4: esqueleto y error …` | rojo, `paddingTop` 52 vs 40 |
+  | P2 | R4, error: `Text` antes que `ScreenHeader` (la spec fija «dos hijos en este orden») | el mismo | **verde** |
+  | P3 | R4, error: `ScreenHeader` fuera del `View` con inset (`<><ScreenHeader …/><View …><Text …/></View></>`) | el mismo | **verde** |
+  | P4 | R5: el `className={step === 'condition' ? 'size-11' : 'size-13'}` de antes, con el `testID` nuevo | `#209 R5: Pingo de la burbuja …` | rojo (`style` `{}`) |
+  | P5 | R5: `step === 'condition' \|\| step === 'food' ? 44 : 52` | el mismo | **verde** |
+  | P6 | R16: `{ width: 112 }` sin `height` | `#209 R16: Pingo de Generando …` | rojo |
+  | P7 | R19: el `className="size-37.5"` de antes, con el `testID` nuevo | `#209 R19: Pingo de NutricionSinPerfil …` | rojo (`style` `{}`) |
+  | P8 | R16: `style` correcto más `className="size-28"` | `#209 R16: Pingo de Generando …` | rojo por `toBeUndefined()` (`Received: "size-28"`): el candado de `className` mira de verdad |
+  | P9 | R4, error: `backFallback="/food"` → `backFallback="/home"` en el `ScreenHeader` del error | fichero entero (`-t '#209'`, 69 tests) | **verde** |
+
+  P4 y P7 son la regresión exacta de F1 y los candados la ven. `expo-image` reenvía `className` al host (`ExpoImage.tsx`: `{...props}` a `NativeExpoImage`), así que el `toBeUndefined()` sobre `className` no es tautológico.
+
+- Barrido cláusula × candado de la errata ronda 6 (regla de #147: cada cláusula de la errata con su candado y su sonda):
+
+  | Cláusula | Candado | Sonda | Estado |
+  |---|---|---|---|
+  | R4 esqueleto: `paddingTop: insets.top + 12` | `toEqual({ paddingTop: 52 })` | P1 (y `insets.bottom` daría 36: el doble tiene `bottom: 24`) | cerrada |
+  | R4 esqueleto y error: `className` exacto | `toBe('flex-1 gap-4 bg-background px-5 pb-5')` | del implementer | cerrada |
+  | R4 error: `paddingTop` | `toEqual` | del implementer | cerrada |
+  | R4 error: hay `ScreenHeader` con volver | `fireEvent.press(screen.getByTestId('nutrition-questionnaire-back'))` | del implementer (sin cabecera, rojo) | cerrada |
+  | R4 error: el `ScreenHeader` es hijo del `View` con inset | ninguno: el `press` busca en `screen`, no en `errorScreen` | P3 | **abierta** (H1) |
+  | R4 error: «dos hijos en este orden» | ninguno | P2 | **abierta** (H1) |
+  | R4 error: `backFallback="/food"` | ninguno: el doble de `canGoBack` siempre devuelve `true` | P9 | **abierta** (H3) |
+  | R4 error: `size={24}` | no hace falta: sin `title` no tiene efecto (`screen-header.tsx`: `size` solo elige `TITLE_CLASSES`) | — | sin efecto |
+  | R5: 44 pt en Condición | `toEqual({ width: 44, height: 44 })` | P4 | cerrada |
+  | R5: 52 pt en el resto de pasos (Actividad, Peso objetivo, Alimento, Salud) | solo Actividad | P5 | **abierta** (H2) |
+  | R5: sin `className` | `toBeUndefined()` en Actividad | P4 | cerrada |
+  | R16: 112 pt por `style`, sin `className` | `toEqual` y `toBeUndefined()` | P6, P8 | cerrada |
+  | R19: 150 pt por `style`, sin `className` | `toEqual` y `toBeUndefined()` | P7 | cerrada |
+  | R25: repite R5, R16 y R19 | los de arriba | — | sigue a R5 |
+
+- Suite móvil completa (antes, los dos `pgrep` vacíos): `bun run test > ../progress/rr-test-209.log 2>&1` → exit 0, `Test Suites: 168 passed, 168 total`, `Tests: 6221 passed, 6221 total`, 0 `SIGKILL`. Son las cifras esperadas.
+- `bunx tsc --noEmit` → exit 0, log vacío. `bunx expo lint --no-cache` → exit 0, log vacío.
+- Trazabilidad: las filas R4, R5, R16 y R19 nombran los `it` nuevos y los commits `63d4295e`, `f75ece10`, `5333d27c` y `fbff52ee`. Los 54 hashes del fichero resuelven y todos son ancestros de HEAD. 0 filas «pendiente».
+- Guardas:
+  - `#209` en producción: 0.
+  - `#209` suelto (sin `R<n>`) en los tests: 0.
+  - `StyleSheet` en el test del cuestionario: 0.
+  - En el repo no queda ninguna `Image` de `expo-image` con `className`.
+  - `docs/` sin cambios en el delta (`git diff --stat 7940c0fb..HEAD -- docs` vacío).
+  - La casilla de R26 (`- [ ] Enmienda #209 aprobada por humano`, línea 1372) sigue sin marcar, y la del smoke (línea 1426) también. Las dos son del humano.
+- `./init.sh` no lo corrí: el leader lo prohibió en el encargo («the leader and CI run it»).
+
+### Checklist C2 — Estado coherente
+- [x] 0 features `in_progress` (#209 y #216 en `spec_ready`; init.sh aborta con dos)
+- [x] `progress/current.md` describe la sesión de #209 con el fallback al `implementer`
+
+### Checklist C3 — Arquitectura
+- [x] Solo cambian una pantalla, su test, Nutrición y su test. No hay capas de backend en el delta.
+
+### Checklist C4 — TDD
+- [x] R4, R5, R16 y R19 tienen `it` nuevos que nombran su R-id
+- [x] Test primero: `63d4295e` rojo → `f75ece10` verde, y `5333d27c` rojo → `fbff52ee` verde, por aserción y no por `ReferenceError`
+- [ ] Candados que cubran su cláusula entera: P2, P3, P5 y P9 dejan la suite verde (H1–H3)
+
+### Checklist C5 — Trazabilidad
+- [x] 0 filas «pendiente». Los hashes resuelven.
+- [x] Formato `test(mobile): #209 R<n> …` y `feat(mobile): #209 R<n> …`, con los dos trailers (los R-ids van en el asunto, tras `#209`, como en el resto de la feature)
+
+### Checklist C6 — Spec aprobada
+- [x] `status: approved` y la casilla de la línea 1425 marcada. La errata ronda 6 está en `3c31d6b5`, antes de la Adenda 5 y de los commits de código.
+
+### Checklist C7 — Sin código huérfano
+- [x] N/A. La errata cambia `className` por `style` en tres `Image` y no reemplaza ningún módulo.
+
+### Checklist C8 — UI móvil
+- [x] Grep-clean: lint, `design-drift` y `consistency-classnames` en verde dentro de la suite
+- [x] Insets: los dos estados sin cabecera llevan `insets.top + 12`, igual que el formulario
+- [x] F1 cerrado: las tres `Image` llevan su tamaño en `style`
+- [ ] El candado del inset no mira dónde está el botón de volver (H1)
+
+### Hallazgos
+F1 está cerrado en el código y sus candados lo ven (P4, P6, P7 y P8 rojos). F2 también está cerrado en el código, pero su candado no cubre la cláusula entera. Según el precedente de #147, un candado que deja verde una mutación de su cláusula no cierra, aunque el código y los `it` cumplan la letra de la spec. Los huecos vienen del `it` que prescribe la errata ronda 6, no de una desviación del implementer. El arreglo, por tanto, necesita una errata ronda 7 en la spec.
+
+En los tres hallazgos el código ya es correcto. Por C4, punto 5, el rojo de cada candado nuevo es una **mutación de producción**: se versiona en el commit `test` y se revierte en el `feat`. La mutación de cada hallazgo es la de su sonda.
+
+1. **H1 — MEDIA, bloqueante (P3 y P2).** En `#209 R4: esqueleto y error de carga respetan el inset superior y el error tiene volver`, el `press` usa `screen.getByTestId('nutrition-questionnaire-back')`. Así no ve:
+   - **P3**: el `ScreenHeader` fuera del `View` con inset. El botón de volver queda bajo la barra de estado, que es justo el síntoma de F2.
+   - **P2**: la cláusula «dos hijos en este orden» invertida.
+
+   Arreglo propuesto, en el mismo `it`: sobre `errorScreen`, aserta
+   `within(errorScreen).getAllByTestId(/^nutrition-questionnaire-(back|load-error)$/).map((n) => n.props.testID)`
+   `toEqual(['nutrition-questionnaire-back', 'nutrition-questionnaire-load-error'])`,
+   y pulsa con `within(errorScreen).getByTestId('nutrition-questionnaire-back')`. Rojo con P3 (falta `-back`) y con P2 (orden inverso). Este candado no lo he medido sobre HEAD: antes de firmar, pídeme que lo mida (verde sin mutar, rojo con P2 y con P3).
+2. **H2 — BAJA, bloqueante por la regla de cláusulas universales (P5).** En `#209 R5: Pingo de la burbuja mide 52 pt y 44 pt en Condición por style`, la rama «52 pt» cubre cuatro pasos, pero solo se aserta en Actividad. Con `step === 'condition' || step === 'food' ? 44 : 52` la suite sigue verde. Arreglo: el mismo `toEqual({ width: 52, height: 52 })` en al menos un paso más, con los helpers de navegación que ya tiene el fichero. Lo mejor es Alimento y Salud, porque una salida que depende del paso pide dos muestras.
+3. **H3 — BAJA (P9).** El `ScreenHeader` del error lleva `backFallback="/food"`, y ningún test lo vigila: el doble de `router.canGoBack` siempre devuelve `true`. Con `"/home"` la suite sigue verde. Arreglo: en el `it` de R4, con `mockRouter.canGoBack.mockReturnValueOnce(false)`, pulsar el volver de `errorScreen` y asertar `expect(mockRouter.replace).toHaveBeenCalledWith('/food')`. Va en la misma errata porque cuesta una línea.
+
+Lo demás está conforme: la suite, tsc, lint, la trazabilidad, el merge `40e640d9` y el historial test-primero. En la tercera revisión mediré la lista cerrada (los 2 tests, el reporte y la trazabilidad) contra el HEAD de la errata ronda 7, y volveré a correr P2, P3, P5 y P9.
