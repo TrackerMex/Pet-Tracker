@@ -97,7 +97,10 @@ jest.mock('reicon-react-native', () => {
   return {
     BatteryLow: icon('BatteryLow'),
     Bell: icon('Bell'),
+    Check: icon('Check'),
+    ChevronDown: icon('ChevronDown'),
     ChevronLeft: icon('ChevronLeft'),
+    ChevronUp: icon('ChevronUp'),
     LocationSlash: icon('LocationSlash'),
   };
 });
