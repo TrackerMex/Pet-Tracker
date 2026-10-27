@@ -2,6 +2,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
+import { router } from 'expo-router';
 import type { ReactNode } from 'react';
 
 import { acceptInvite, type AcceptInviteState } from '../../api/pet-members';
@@ -128,5 +129,35 @@ it('R19: editar borra el error', async () => {
   await waitFor(() => expect(screen.getByTestId('join-pet-error')).toBeVisible());
   await fireEvent.changeText(screen.getByTestId('join-pet-input'), 'OTRO');
   expect(screen.queryByTestId('join-pet-error')).toBeNull();
+  expect(screen.getByTestId('join-pet-input').props.className).toContain('border-accent');
+});
+
+it('R20: ya miembro sustituye la nota y el botón por Ir a Inicio', async () => {
+  await attempt({ kind: 'already-member' });
+  await waitFor(() => expect(screen.getByTestId('join-pet-already-member')).toHaveTextContent('Ya formas parte de la familia de esta mascota. La encontrarás en Inicio.'));
+  expect(screen.getByTestId('join-pet-input').props.className).toContain('border-transparent');
+  expect(screen.queryByTestId('join-pet-note')).toBeNull();
+  expect(screen.queryByTestId('join-pet-hint')).toBeNull();
+  expect(screen.queryByTestId('join-pet-submit')).toBeNull();
+  expect(screen.getByTestId('join-pet-go-home')).toHaveTextContent('Ir a Inicio');
+});
+
+it('R20: Ir a Inicio vuelve a Inicio', async () => {
+  await attempt({ kind: 'already-member' });
+  await waitFor(() => expect(screen.getByTestId('join-pet-go-home')).toBeVisible());
+  await fireEvent.press(screen.getByTestId('join-pet-go-home'));
+  expect(router.dismissTo).toHaveBeenCalledWith('/home');
+  expect(router.replace).not.toHaveBeenCalled();
+});
+
+it('R20: editar vuelve al formulario', async () => {
+  await attempt({ kind: 'already-member' });
+  await waitFor(() => expect(screen.getByTestId('join-pet-input')).toHaveProp('value', 'K7P4Q-2M9XA'));
+  await fireEvent.changeText(screen.getByTestId('join-pet-input'), 'OTRO');
+  expect(screen.queryByTestId('join-pet-already-member')).toBeNull();
+  expect(screen.queryByTestId('join-pet-go-home')).toBeNull();
+  expect(screen.getByTestId('join-pet-note')).toBeVisible();
+  expect(screen.getByTestId('join-pet-hint')).toBeVisible();
+  expect(screen.getByTestId('join-pet-submit')).toBeEnabled();
   expect(screen.getByTestId('join-pet-input').props.className).toContain('border-accent');
 });
