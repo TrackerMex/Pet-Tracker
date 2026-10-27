@@ -94,13 +94,13 @@ describe('#62 R1: la escala de radios está declarada y el botón primario tiene
     expect(button).not.toContain('rounded-2xl');
   });
 
-  it('deja todos los botones primarios sólidos en un único radio (enmendado por #177 R10) (enmendado por #201 R13)', () => {
+  it('deja todos los botones primarios sólidos en un único radio (enmendado por #177 R10) (enmendado por #201 R13) (enmendado por #214 R13, R15, R18, R20)', () => {
     const primaryRadius = sourceFiles().flatMap((path) =>
       readFileSync(path, 'utf8').match(/rounded-xl bg-accent(?=[\s'"`])/g) ?? [],
     );
 
     expect(primaryRadius).toHaveLength(1); // #177 R10
-    expect(sourceFiles().flatMap(path => readFileSync(path, 'utf8').match(/rounded-16 bg-accent(?=[\s'"`])/g) ?? [])).toHaveLength(16 + 1 + 1 + 1); // #194 R6 // #191 R11 // #201 R13
+    expect(sourceFiles().flatMap(path => readFileSync(path, 'utf8').match(/rounded-16 bg-accent(?=[\s'"`])/g) ?? [])).toHaveLength(16 + 1 + 1 + 1 + 4); // #194 R6 // #191 R11 // #201 R13 // #214 R13, R15, R18, R20
     expect(filesMatching(/rounded-2xl bg-accent(?=[\s'"`])/)).toEqual([]);
   });
 });
@@ -590,16 +590,19 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
       'screens/geofence-editor/index.tsx': 1,
       'screens/geofences/index.tsx': 1,
       'screens/home/index.tsx': 1,
+      'screens/join-pet/index.tsx': 2, // #214 R18, R20
       'screens/login/index.tsx': 1,
       'screens/map/index.tsx': 1, // #201 R13
       'screens/pairing/index.tsx': 1,
+      'screens/pet-invite/index.tsx': 1, // #214 R15
+      'screens/pet-members/index.tsx': 1, // #214 R13
       'screens/register/index.tsx': 1,
       'screens/reset-password/index.tsx': 1,
       'screens/weight-log/index.tsx': 1,
       'screens/welcome/index.tsx': 1,
     };
 
-  it('inventaría los diecisiete primarios con labio, fichero a fichero (enmendado por #177 R10) (enmendado por #201 R13)', () => {
+  it('inventaría los diecisiete primarios con labio, fichero a fichero (enmendado por #177 R10) (enmendado por #201 R13) (enmendado por #214 R13, R15, R18, R20)', () => {
     const inventory = (pattern: RegExp) => Object.fromEntries(
       sourceFiles().flatMap((path) => {
         const count = (readFileSync(path, 'utf8').match(pattern) ?? []).length;

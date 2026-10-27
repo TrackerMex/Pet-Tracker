@@ -1234,7 +1234,7 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
     expect(schedule.indexOf('testID="meal-schedule-header"')).toBeLessThan(schedule.indexOf('testID="meal-schedule-summary"'));
   });
 
-  it('limita text-22 a Horario y text-17 al inventario de E1.2 (enmendado por #177 R10) (enmendado por #200 R5) (enmendado por #198 R15)', () => {
+  it('limita text-22 a Horario y text-17 al inventario de E1.2 (enmendado por #177 R10) (enmendado por #200 R5) (enmendado por #198 R15) (enmendado por #214 R13, R15, R18)', () => {
     const productionFilesMatching = (pattern: RegExp) => filesMatching(pattern).filter(path => !/\.test\.tsx?$/.test(path)).sort();
     expect(productionFilesMatching(/\btext-22\b/)).toEqual([
       'components/empty-state.tsx', // #198 R15
@@ -1254,9 +1254,12 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
       'screens/geofence-editor/index.tsx',
       'screens/geofences/index.tsx',
       'screens/home/index.tsx',
+      'screens/join-pet/index.tsx', // #214 R18
       'screens/login/index.tsx',
       'screens/meal-schedule/index.tsx',
       'screens/pairing/index.tsx',
+      'screens/pet-invite/index.tsx', // #214 R15
+      'screens/pet-members/index.tsx', // #214 R13
       'screens/register/index.tsx',
       'screens/reminders/index.tsx',
       'screens/reset-password/index.tsx',

@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 
-import { listPetInvites, listPetMembers, removePetMember, revokePetInvite, type RemovePetMemberState } from '../../api/pet-members';
+import { createPetInvite, listPetInvites, listPetMembers, removePetMember, revokePetInvite, type CreatePetInviteState, type RemovePetMemberState } from '../../api/pet-members';
 import { getPet } from '../../api/pets';
 import type { PetProfile } from '../../api/types';
 import { getMe } from '../../api/users';
@@ -71,6 +71,7 @@ const me = {
   createdAt: '2026-10-06T09:05:00.000Z', updatedAt: '2026-10-06T09:05:00.000Z',
 };
 const invite = { id: 'inv-1', role: 'family', createdAt: new Date(2026, 9, 6, 9, 5).toISOString(), expiresAt: new Date(2026, 9, 9, 14, 0).toISOString() };
+const createdInvite = { ...invite, code: 'K7P4Q2M9XA' };
 const queries = { pet: jest.mocked(getPet), members: jest.mocked(listPetMembers), me: jest.mocked(getMe) };
 
 function Wrapper({ children }: { children: ReactNode }) {
@@ -85,6 +86,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockClearPet.mockReset();
   jest.mocked(router.dismissTo).mockReset();
+  jest.mocked(router.push).mockReset();
   process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
   jest.mocked(getPet).mockResolvedValue({ kind: 'ok', pet });
   jest.mocked(listPetMembers).mockResolvedValue({ kind: 'ok', members });
@@ -92,6 +94,7 @@ beforeEach(() => {
   jest.mocked(removePetMember).mockResolvedValue({ kind: 'ok' });
   jest.mocked(listPetInvites).mockResolvedValue({ kind: 'ok', invites: [] });
   jest.mocked(revokePetInvite).mockResolvedValue({ kind: 'ok' });
+  jest.mocked(createPetInvite).mockResolvedValue({ kind: 'error' });
 });
 
 afterAll(() => {
@@ -466,5 +469,101 @@ it('R17: unauthorized cierra sesión', async () => {
   await fireEvent.press(screen.getByTestId('member-leave-sheet-confirm'));
   await waitFor(() => expect(screen.getByTestId('member-leave-sheet-confirm')).toBeEnabled());
   expect(mockSignOut).toHaveBeenCalledTimes(1);
+  expect(screen.queryByTestId('pet-members-action-error')).toBeNull();
+});
+
+async function renderInviteCta() {
+  const app = await renderMembers();
+  await waitFor(() => expect(screen.getByTestId('pet-members-list')).toBeVisible());
+  return app;
+}
+
+it('R13: ok invalida invitaciones y abre invite con sus parámetros', async () => {
+  jest.mocked(createPetInvite).mockResolvedValue({ kind: 'ok', invite: createdInvite });
+  const { queryClient } = await renderInviteCta();
+  const invalidate = jest.spyOn(queryClient, 'invalidateQueries');
+  await fireEvent.press(screen.getByTestId('pet-members-invite-cta'));
+  await waitFor(() => expect(screen.getByTestId('pet-members-invite-cta')).toBeEnabled());
+  expect(createPetInvite).toHaveBeenCalledWith('http://example.test/v1', 'token', 'pet-1');
+  expect(invalidate).toHaveBeenCalledWith({ queryKey: ['pet-invites', 'pet-1'] });
+  expect(router.push).toHaveBeenCalledWith({ pathname: '/pets/[petId]/invite', params: { petId: 'pet-1', petName: 'Rocky', inviterName: 'Ana', code: 'K7P4Q2M9XA', expiresAt: invite.expiresAt } });
+});
+
+it('R13: invites-limit avisa del máximo de invitaciones', async () => {
+  jest.mocked(createPetInvite).mockResolvedValue({ kind: 'invites-limit' });
+  await renderInviteCta();
+  await fireEvent.press(screen.getByTestId('pet-members-invite-cta'));
+  await waitFor(() => expect(screen.getByTestId('pet-members-action-error')).toHaveTextContent('Ya hay 5 invitaciones pendientes. Revoca una para crear otra.'));
+});
+
+it('R13: members-limit avisa del máximo de personas', async () => {
+  jest.mocked(createPetInvite).mockResolvedValue({ kind: 'members-limit' });
+  await renderInviteCta();
+  await fireEvent.press(screen.getByTestId('pet-members-invite-cta'));
+  await waitFor(() => expect(screen.getByTestId('pet-members-action-error')).toHaveTextContent('Rocky ya tiene el máximo de personas. Quita a alguien o revoca una invitación para invitar de nuevo.'));
+});
+
+it('R13: unreachable avisa', async () => {
+  jest.mocked(createPetInvite).mockResolvedValue({ kind: 'unreachable', message: 'x' });
+  await renderInviteCta();
+  await fireEvent.press(screen.getByTestId('pet-members-invite-cta'));
+  await waitFor(() => expect(screen.getByTestId('pet-members-action-error')).toHaveTextContent('No se pudo conectar con el servidor'));
+});
+
+it('R13: error avisa', async () => {
+  await renderInviteCta();
+  await fireEvent.press(screen.getByTestId('pet-members-invite-cta'));
+  await waitFor(() => expect(screen.getByTestId('pet-members-action-error')).toHaveTextContent('Algo salió mal'));
+});
+
+it('R13: unauthorized cierra sesión', async () => {
+  jest.mocked(createPetInvite).mockResolvedValue({ kind: 'unauthorized' });
+  await renderInviteCta();
+  await fireEvent.press(screen.getByTestId('pet-members-invite-cta'));
+  await waitFor(() => expect(screen.getByTestId('pet-members-invite-cta')).toBeEnabled());
+  expect(mockSignOut).toHaveBeenCalledTimes(1);
+});
+
+it('R13: doble toque crea una sola invitación', async () => {
+  let finish!: (result: CreatePetInviteState) => void;
+  jest.mocked(createPetInvite).mockReturnValue(new Promise((resolve) => { finish = resolve; }));
+  await renderInviteCta();
+  await fireEvent.press(screen.getByTestId('pet-members-invite-cta'));
+  expect(screen.getByTestId('pet-members-invite-cta')).toBeDisabled();
+  await fireEvent.press(screen.getByTestId('pet-members-invite-cta'));
+  expect(createPetInvite).toHaveBeenCalledTimes(1);
+  await act(async () => finish({ kind: 'ok', invite: createdInvite }));
+  await waitFor(() => expect(screen.getByTestId('pet-members-invite-cta')).toBeEnabled());
+});
+
+it.each([
+  ['member-row-user-2-remove'],
+  ['member-remove-sheet-confirm'],
+  ['invite-row-inv-1-revoke'],
+  ['pet-members-invite-cta'],
+  ['pet-members-leave'],
+] as const)('R13: pulsar %s borra el aviso anterior', async (target) => {
+  if (target === 'pet-members-leave') {
+    jest.mocked(removePetMember).mockResolvedValue({ kind: 'unreachable', message: 'x' });
+    await renderLeaving();
+    await fireEvent.press(screen.getByTestId('member-leave-sheet-confirm'));
+    await waitFor(() => expect(screen.getByTestId('pet-members-action-error')).toBeVisible());
+    await fireEvent.press(screen.getByTestId('member-leave-sheet-cancel'));
+    await waitFor(() => expect(screen.queryByTestId('member-leave-sheet')).toBeNull());
+  } else {
+    jest.mocked(createPetInvite).mockResolvedValue({ kind: 'unreachable', message: 'x' });
+    await renderInvites();
+    if (target === 'member-remove-sheet-confirm') {
+      await fireEvent.press(screen.getByTestId('member-row-user-2-remove'));
+      await waitFor(() => expect(screen.getByTestId('member-remove-sheet')).toBeVisible());
+    }
+    await fireEvent.press(screen.getByTestId('pet-members-invite-cta'));
+    await waitFor(() => expect(screen.getByTestId('pet-members-action-error')).toBeVisible());
+  }
+  if (target === 'member-remove-sheet-confirm') jest.mocked(removePetMember).mockReturnValue(new Promise(() => undefined));
+  if (target === 'invite-row-inv-1-revoke') jest.mocked(revokePetInvite).mockReturnValue(new Promise(() => undefined));
+  if (target === 'pet-members-invite-cta') jest.mocked(createPetInvite).mockReturnValue(new Promise(() => undefined));
+  expect(screen.getByTestId('pet-members-action-error')).toBeVisible();
+  await fireEvent.press(screen.getByTestId(target));
   expect(screen.queryByTestId('pet-members-action-error')).toBeNull();
 });

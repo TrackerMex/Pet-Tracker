@@ -44,14 +44,16 @@ describe('#173 R2: inventario de radios nuevos', () => {
   it('reserva rounded-hero al Card compartido y el skeleton de Perfil (enmendado por #200 R3) (enmendado por #202 R7) (enmendado por #196 R1)', () => {
     expect(filesMatching(/\brounded-hero\b/)).toEqual(['components/card.tsx', 'components/confirm-dialog.tsx', 'screens/alert-detail/index.tsx', 'screens/food/index.tsx']); // #180 R10
   });
-  it('reserva rounded-tile a sus consumidores aprobados (enmendado por #190 R13) (enmendado por #214 R16)', () => {
+  it('reserva rounded-tile a sus consumidores aprobados (enmendado por #190 R13) (enmendado por #214 R13, R14, R18, R20)', () => {
     expect(filesMatching(/\brounded-tile\b/)).toEqual([
       'screens/add-pet/index.tsx', // #191 R11
       'screens/add-reminder/index.tsx',
       'screens/geofences/index.tsx', // #189 R6 // #178 R12
       'screens/home/index.tsx', // (enmendado por #190 R13)
+      'screens/join-pet/index.tsx', // #214 R18, R20
       'screens/pairing/index.tsx', // #188 R18
-      'screens/pet-members/index.tsx', // #214 R16
+      'screens/pet-invite/index.tsx', // #214 R14
+      'screens/pet-members/index.tsx', // #214 R13
       'screens/profile/index.tsx',
     ]);
   });
