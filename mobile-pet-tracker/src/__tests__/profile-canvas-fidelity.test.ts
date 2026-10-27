@@ -64,7 +64,7 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/home/index.tsx', // #198 R15
     ]);
   });
-  it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8) (enmendado por #189 R6) (enmendado por #200 R8) (enmendado por #199 R7) (enmendado por #199 R14) (enmendado por #198 R5)', () => {
+  it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8) (enmendado por #189 R6) (enmendado por #200 R8) (enmendado por #199 R7) (enmendado por #199 R14) (enmendado por #198 R5) (enmendado por #214 R9, R12, R13, R14, R16, R18, R19)', () => {
     expect(filesMatching(/\btext-13\b/)).toEqual([
       'components/form-error.tsx',
       'screens/add-pet/index.tsx', // #191 R11
@@ -78,9 +78,12 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/geofences/index.tsx', // #189 R6
       'screens/health/index.tsx', // #199 R14
       'screens/home/index.tsx', // #198 R5
+      'screens/join-pet/index.tsx', // #214 R18, R19
       'screens/login/index.tsx',
       'screens/meal-schedule/index.tsx', // #179 R6
       'screens/pairing/index.tsx', // #188 R18
+      'screens/pet-invite/index.tsx', // #214 R14
+      'screens/pet-members/index.tsx', // #214 R9, R12, R13, R16
       'screens/profile/index.tsx',
       'screens/register/index.tsx',
       'screens/reminders/index.tsx', // #178 R6

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 
@@ -106,4 +106,43 @@ it.each(['pet', 'members', 'me'] as const)('R8: %s unauthorized cierra sesión',
 it('R8: el título es Familia de Rocky', async () => {
   await renderMembers();
   await waitFor(() => expect(screen.getByTestId('pet-members-header-title')).toHaveTextContent('Familia de Rocky'));
+});
+
+it('R9: pinta iniciales, nombre, Tú y la píldora de rol en el orden de la API', async () => {
+  await renderMembers();
+  await waitFor(() => expect(screen.getByTestId('pet-members-list')).toBeVisible());
+  expect(screen.getByTestId('pet-members-heading')).toHaveTextContent('Miembros');
+  expect(within(screen.getByTestId('pet-members-list')).getAllByTestId(/^member-row-user-\d+$/).map((row) => row.props.testID)).toEqual(['member-row-user-1', 'member-row-user-2']);
+  expect(screen.getByTestId('member-row-user-1-name')).toHaveTextContent('Ana García');
+  expect(screen.getByTestId('member-row-user-2-name')).toHaveTextContent('Luis Ortega');
+  expect(screen.getByTestId('member-row-user-1-you')).toHaveTextContent('Tú');
+  expect(screen.queryByTestId('member-row-user-2-you')).toBeNull();
+  const ownAvatar = screen.getByTestId('member-row-user-1-avatar', { includeHiddenElements: true });
+  const otherAvatar = screen.getByTestId('member-row-user-2-avatar', { includeHiddenElements: true });
+  expect(ownAvatar).toHaveTextContent('AG');
+  expect(otherAvatar).toHaveTextContent('LO');
+  expect(ownAvatar.props.className).toContain('bg-default');
+  expect(otherAvatar.props.className).toContain('bg-category-blue');
+  expect(screen.getByTestId('member-row-user-1-role').props.className).toBe('rounded-full px-2 py-0.75 bg-category-green');
+  expect(screen.getByTestId('member-row-user-1-role')).toHaveTextContent('Dueño');
+  expect(screen.getByTestId('member-row-user-2-role').props.className).toBe('rounded-full px-2 py-0.75 bg-category-rose');
+  expect(screen.getByTestId('member-row-user-2-role')).toHaveTextContent('Familia');
+});
+
+it('R9: walker y vet se muestran como Familia', async () => {
+  jest.mocked(listPetMembers).mockResolvedValue({ kind: 'ok', members: [
+    { ...members[0], role: 'walker' },
+    { ...members[1], role: 'vet' },
+  ] });
+  await renderMembers();
+  await waitFor(() => expect(screen.getByTestId('member-row-user-1-role')).toHaveTextContent('Familia'));
+  expect(screen.getByTestId('member-row-user-2-role')).toHaveTextContent('Familia');
+});
+
+it('R9: ningún texto de la pantalla contiene el correo de getMe', async () => {
+  await renderMembers();
+  await waitFor(() => expect(screen.queryByTestId('pet-members-loading')).toBeNull());
+  for (const text of screen.getAllByText(/./, { includeHiddenElements: true })) {
+    expect(text).not.toHaveTextContent('@');
+  }
 });
