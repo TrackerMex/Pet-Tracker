@@ -1,3 +1,4 @@
+import type { NutritionAiProposal } from '@/modules/nutrition/domain/nutrition-ai-proposal';
 import { Inject, Injectable } from '@nestjs/common';
 import { and, desc, eq, notExists, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -43,6 +44,20 @@ export class NutritionDrizzleRepository implements NutritionRepository {
       })
       .returning({ count: t.count });
     return rows.length === 1;
+  }
+
+  async setAiResult(
+    planId: string,
+    explanation: string,
+    proposal: NutritionAiProposal,
+  ): Promise<NutritionPlan> {
+    void proposal;
+    const [row] = await this.db
+      .update(nutritionPlans)
+      .set({ aiExplanation: explanation })
+      .where(eq(nutritionPlans.id, planId))
+      .returning();
+    return toPlan(row);
   }
 
   async setAiExplanation(

@@ -1,3 +1,4 @@
+import type { NutritionAiStatus } from '@/modules/nutrition/domain/nutrition-ai-proposal';
 import type { MealsHistoryResult } from '@/modules/nutrition/application/use-cases/get-meals-history.use-case';
 import type { NutritionProfile } from '@/modules/nutrition/domain/entities/nutrition-profile.entity';
 import type { NutritionPlan } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
@@ -104,3 +105,10 @@ export function toMealServingResponse(
 }
 
 export type MealsHistoryResponse = MealsHistoryResult;
+
+export function toNutritionPlanGenerateResponse(result: {
+  plan: NutritionPlan;
+  aiStatus: NutritionAiStatus;
+}): NutritionPlanResponse {
+  return toNutritionPlanResponse(result.plan);
+}
