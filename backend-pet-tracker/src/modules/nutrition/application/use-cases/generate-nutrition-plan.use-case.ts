@@ -1,3 +1,4 @@
+import { acceptAiOutput } from '@/modules/nutrition/domain/nutrition-ai-proposal';
 import { SUBSCRIPTION_REPOSITORY } from '@/modules/subscriptions/domain/repositories/subscription.repository';
 import type { SubscriptionRepository } from '@/modules/subscriptions/domain/repositories/subscription.repository';
 import { NUTRITION_EXPLAINER } from '@/modules/nutrition/domain/ports/nutrition-explainer';
@@ -87,6 +88,16 @@ export class GenerateNutritionPlanUseCase {
       planId: plan.id,
     });
     if (output === null) return plan;
-    return this.nutrition.setAiExplanation(plan.id, output.explanation);
+    const accepted = acceptAiOutput(
+      output,
+      plan,
+      new Date().toISOString().slice(0, 10),
+    );
+    if (accepted === null) return plan;
+    return this.nutrition.setAiResult(
+      plan.id,
+      accepted.explanation,
+      accepted.proposal,
+    );
   }
 }

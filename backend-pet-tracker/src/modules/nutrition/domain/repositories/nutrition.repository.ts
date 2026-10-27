@@ -27,7 +27,6 @@ export interface NutritionRepository {
     localDay: string,
     limit: number,
   ): Promise<boolean>;
-  setAiExplanation(planId: string, explanation: string): Promise<NutritionPlan>;
   findProfile(petId: string): Promise<NutritionProfile | null>;
   upsertProfile(
     petId: string,

@@ -51,22 +51,9 @@ export class NutritionDrizzleRepository implements NutritionRepository {
     explanation: string,
     proposal: NutritionAiProposal,
   ): Promise<NutritionPlan> {
-    void proposal;
     const [row] = await this.db
       .update(nutritionPlans)
-      .set({ aiExplanation: explanation })
-      .where(eq(nutritionPlans.id, planId))
-      .returning();
-    return toPlan(row);
-  }
-
-  async setAiExplanation(
-    planId: string,
-    explanation: string,
-  ): Promise<NutritionPlan> {
-    const [row] = await this.db
-      .update(nutritionPlans)
-      .set({ aiExplanation: explanation })
+      .set({ aiExplanation: explanation, aiProposal: proposal })
       .where(eq(nutritionPlans.id, planId))
       .returning();
     return toPlan(row);
@@ -194,7 +181,7 @@ function toPlan(row: NutritionPlanRow): NutritionPlan {
     objective: row.objective,
     warnings: row.warnings,
     aiExplanation: row.aiExplanation ?? null,
-    ...{ aiProposal: row.aiProposal ?? null },
+    aiProposal: row.aiProposal ?? null,
     inputsHash: row.inputsHash,
     generatedAt: row.generatedAt,
   });

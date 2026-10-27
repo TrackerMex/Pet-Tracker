@@ -79,13 +79,13 @@ function setup(
     }),
   );
   const insertPlan = jest.fn().mockResolvedValue(inserted);
-  const setAiExplanation = jest.fn().mockResolvedValue(updated);
+  const setAiResult = jest.fn().mockResolvedValue(updated);
   const findLatestPlan = jest.fn().mockResolvedValue(latest);
   const nutrition = {
     findProfile,
     findLatestPlan,
     insertPlan,
-    setAiExplanation,
+    setAiResult,
   } as unknown as NutritionRepository;
   const findById = jest.fn().mockResolvedValue({
     id: petId,
@@ -123,7 +123,7 @@ function setup(
     inserted,
     updated,
     insertPlan,
-    setAiExplanation,
+    setAiResult,
     findLatestPlan,
     isPetTracked,
     explain,
@@ -138,7 +138,14 @@ describe('R12 (nutrition-ai-explainer #18): inserta antes de explicar y devuelve
     );
     expect(f.isPetTracked).toHaveBeenCalledTimes(1);
     expect(f.explain).toHaveBeenCalledTimes(1);
-    expect(f.setAiExplanation).toHaveBeenCalledWith(f.inserted.id, 'texto');
+    expect(f.setAiResult).toHaveBeenCalledWith(
+      f.inserted.id,
+      'texto',
+      expect.objectContaining({
+        mealGrams: VALID_OUTPUT.mealGrams,
+        recommendations: VALID_OUTPUT.recommendations,
+      }),
+    );
     expect(f.insertPlan.mock.invocationCallOrder[0]).toBeLessThan(
       f.isPetTracked.mock.invocationCallOrder[0],
     );
@@ -146,7 +153,7 @@ describe('R12 (nutrition-ai-explainer #18): inserta antes de explicar y devuelve
       f.explain.mock.invocationCallOrder[0],
     );
     expect(f.explain.mock.invocationCallOrder[0]).toBeLessThan(
-      f.setAiExplanation.mock.invocationCallOrder[0],
+      f.setAiResult.mock.invocationCallOrder[0],
     );
     expect(plan).toBe(f.updated);
   });
@@ -154,7 +161,7 @@ describe('R12 (nutrition-ai-explainer #18): inserta antes de explicar y devuelve
     const f = setup(null);
     expect(await f.useCase.execute(petId)).toBe(f.inserted);
     expect(f.explain).toHaveBeenCalledTimes(1);
-    expect(f.setAiExplanation).not.toHaveBeenCalled();
+    expect(f.setAiResult).not.toHaveBeenCalled();
   });
   it('explica las siete claves del plan persistido con horario distinto del motor y ctx de trazas', async () => {
     const f = setup();
@@ -201,7 +208,7 @@ describe('R14 (nutrition-ai-explainer #18): entitlement decide la explicacion si
     const plan = await f.useCase.execute(petId);
     expect(f.isPetTracked).toHaveBeenCalledWith(petId);
     expect(f.explain).not.toHaveBeenCalled();
-    expect(f.setAiExplanation).not.toHaveBeenCalled();
+    expect(f.setAiResult).not.toHaveBeenCalled();
     expect(plan).toBe(f.inserted);
     expect(plan.aiExplanation).toBeNull();
     expect(warn).not.toHaveBeenCalled();
@@ -230,7 +237,14 @@ describe('R15 (nutrition-ai-explainer #18): reintenta el hash hit con null sobre
       warnings: [],
     });
     expect(f.explain.mock.calls[0][3]).toEqual({ petId, planId: latest.id });
-    expect(f.setAiExplanation).toHaveBeenCalledWith(latest.id, 'texto');
+    expect(f.setAiResult).toHaveBeenCalledWith(
+      latest.id,
+      'texto',
+      expect.objectContaining({
+        mealGrams: VALID_OUTPUT.mealGrams,
+        recommendations: VALID_OUTPUT.recommendations,
+      }),
+    );
     expect(f.insertPlan).not.toHaveBeenCalled();
     expect(plan).toBe(f.updated);
     expect(plan.id).toBe(latest.id);
@@ -240,7 +254,7 @@ describe('R15 (nutrition-ai-explainer #18): reintenta el hash hit con null sobre
     const f = setup(null, true, latest);
     expect(await f.useCase.execute(petId)).toBe(latest);
     expect(f.explain).toHaveBeenCalledTimes(1);
-    expect(f.setAiExplanation).not.toHaveBeenCalled();
+    expect(f.setAiResult).not.toHaveBeenCalled();
     expect(f.insertPlan).not.toHaveBeenCalled();
   });
   it('entitlement false no explica, actualiza ni inserta', async () => {
@@ -248,7 +262,7 @@ describe('R15 (nutrition-ai-explainer #18): reintenta el hash hit con null sobre
     const f = setup('texto', false, latest);
     expect(await f.useCase.execute(petId)).toBe(latest);
     expect(f.explain).not.toHaveBeenCalled();
-    expect(f.setAiExplanation).not.toHaveBeenCalled();
+    expect(f.setAiResult).not.toHaveBeenCalled();
     expect(f.insertPlan).not.toHaveBeenCalled();
   });
 });
@@ -260,7 +274,7 @@ describe('R16 (nutrition-ai-explainer #18): hash hit con texto no vuelve a pagar
     expect(await f.useCase.execute(petId)).toBe(latest);
     expect(f.explain).not.toHaveBeenCalled();
     expect(f.isPetTracked).not.toHaveBeenCalled();
-    expect(f.setAiExplanation).not.toHaveBeenCalled();
+    expect(f.setAiResult).not.toHaveBeenCalled();
     expect(f.insertPlan).not.toHaveBeenCalled();
   });
 });

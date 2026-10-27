@@ -1,4 +1,7 @@
-import type { NutritionAiStatus } from '@/modules/nutrition/domain/nutrition-ai-proposal';
+import type {
+  NutritionAiStatus,
+  NutritionAiProposal,
+} from '@/modules/nutrition/domain/nutrition-ai-proposal';
 import type { MealsHistoryResult } from '@/modules/nutrition/application/use-cases/get-meals-history.use-case';
 import type { NutritionProfile } from '@/modules/nutrition/domain/entities/nutrition-profile.entity';
 import type { NutritionPlan } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
@@ -32,7 +35,12 @@ export interface NutritionPlanResponse {
   objective: NutritionObjective;
   warnings: NutritionWarning[];
   aiExplanation: string | null;
+  aiProposal: NutritionAiProposal | null;
   generatedAt: string;
+}
+
+export interface NutritionPlanGenerateResponse extends NutritionPlanResponse {
+  aiStatus: NutritionAiStatus;
 }
 
 export interface NutritionPlanTodayResponse extends NutritionPlanResponse {
@@ -79,6 +87,7 @@ export function toNutritionPlanResponse(
     objective: plan.objective,
     warnings: plan.warnings,
     aiExplanation: plan.aiExplanation,
+    aiProposal: plan.aiProposal,
     generatedAt: plan.generatedAt.toISOString(),
   };
 }
@@ -109,6 +118,6 @@ export type MealsHistoryResponse = MealsHistoryResult;
 export function toNutritionPlanGenerateResponse(result: {
   plan: NutritionPlan;
   aiStatus: NutritionAiStatus;
-}): NutritionPlanResponse {
-  return toNutritionPlanResponse(result.plan);
+}): NutritionPlanGenerateResponse {
+  return { ...toNutritionPlanResponse(result.plan), aiStatus: result.aiStatus };
 }
