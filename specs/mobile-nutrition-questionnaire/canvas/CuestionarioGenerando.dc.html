@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Cuestionario, generando</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+<style>
+body{margin:0}
+a{color:#107148;text-decoration:none}a:hover{color:#0B5C3A}
+.pt{--bg:#FFFFFF;--fg:#0D1117;--surface:#FFFFFF;--surface2:#F0FBF6;--default:#F5F6F8;--muted:#667085;--border:rgba(13,17,23,0.08);--lip-gray:#E4E7EC;--accent:#178255;--accent-strong:#107148;--lip:#0E5E3C;--blue:#EFF6FF;--blue-s:#0768E0;--amber:#FFF7ED;--amber-s:#A55E07;--green:#F0FBF6;--green-s:#107148;--violet:#F5F3FF;--violet-s:#7549F7;--rose:#FFF0F3;--rose-s:#D80B34;--danger:#D92D20;--warning:#B54708;--glass:rgba(255,255,255,0.86);--pill:rgba(23,130,85,0.14);--shadow:0 1px 2px rgba(13,17,23,0.04),0 8px 24px rgba(13,17,23,0.06)}
+.pt.dark{--bg:#0D1117;--fg:#F7F8FA;--surface:#161B22;--surface2:#12231B;--default:#1F242B;--muted:#9CA3AF;--border:rgba(255,255,255,0.08);--lip-gray:#0A0D12;--accent-strong:#2AB87C;--lip:#0B4D31;--blue:#0B203A;--blue-s:#4A8DDF;--amber:#271E14;--amber-s:#C17B22;--green:#12231B;--green-s:#2AB87C;--violet:#221C33;--violet-s:#9579E7;--rose:#39131A;--rose-s:#E35E78;--danger:#F87171;--warning:#FBBF24;--glass:rgba(22,27,34,0.86);--pill:rgba(23,130,85,0.22);--shadow:0 1px 2px rgba(0,0,0,0.4)}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes ping{from{transform:scale(0.7);opacity:0.7}to{transform:scale(1.35);opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
+</helmet>
+<div class="pt {{theme}}" style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: var(--bg); color: var(--fg); font-family: Inter, 'Helvetica Neue', system-ui, sans-serif; padding: 56px 20px 0; display: flex; flex-direction: column; gap: 16px">
+<div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; text-align: center; padding-bottom: 80px">
+<div aria-hidden="true" style="position: relative; width: 180px; height: 180px; display: flex; align-items: center; justify-content: center">
+<span style="position: absolute; inset: 0; border-radius: 50%; border: 3px solid var(--accent); animation: ping 2s ease-out infinite"></span>
+<span style="position: absolute; inset: 0; border-radius: 50%; border: 3px solid var(--accent); animation: ping 2s ease-out 1s infinite"></span>
+<span style="position: absolute; inset: 24px; border-radius: 50%; background: var(--surface2)"></span>
+<img src="/_blob/f4ec4ed756bad6b3aa2ee809a534ea88" alt="" style="position: relative; width: 112px; height: 112px; object-fit: contain; animation: float 3s ease-in-out infinite">
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px; animation: rise 400ms ease-out both">
+<h1 style="margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.02em">Preparando el plan de Rocky</h1>
+<p style="margin: 0; font-size: 15px; font-weight: 600; line-height: 1.45; color: var(--muted)">Estoy calculando sus calorías y el reparto de sus comidas. Tarda unos segundos.</p>
+</div>
+<ul role="status" aria-live="polite" style="list-style: none; margin: 0; padding: 14px 16px; width: 100%; box-sizing: border-box; border-radius: 18px; background: var(--default); display: flex; flex-direction: column; gap: 12px; text-align: left; animation: rise 400ms ease-out 80ms both">
+<li style="display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 700"><span style="width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #FFFFFF; display: flex; align-items: center; justify-content: center; flex: none"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></span>Perfil guardado</li>
+<li style="display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 800"><span style="width: 26px; height: 26px; box-sizing: border-box; border-radius: 50%; border: 3px solid var(--lip-gray); border-top-color: var(--accent); animation: spin 900ms linear infinite; flex: none"></span>Calculando calorías</li>
+<li style="display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 600; color: var(--muted)"><span style="width: 26px; height: 26px; box-sizing: border-box; border-radius: 50%; border: 2px solid var(--lip-gray); flex: none"></span>Repartiendo comidas</li>
+</ul>
+</div>
+<div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 16px 20px 34px; text-align: center"><a href="HorarioComidas.dc.html" style="display: inline-flex; height: 44px; align-items: center; font-size: 15px; font-weight: 800; color: var(--accent-strong)">Ver el plan de Rocky</a></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { theme: this.props.dark ? "dark" : "" };
+}
+}
+</script>
+</body>
+</html>

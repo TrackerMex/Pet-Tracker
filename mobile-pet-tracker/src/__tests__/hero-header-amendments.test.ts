@@ -208,3 +208,88 @@ describe('#168 R11: las specs enmendadas por #168 llevan su bloque', () => {
     }
   });
 });
+
+
+const SIGNATURE_LINE_222 = '- [ ] Enmienda #222 aprobada por humano';
+
+const AMENDED_DOCS_222 = [
+  {
+    file: 'specs/mobile-tab-headers-canvas/requirements.md',
+    feature: 'mobile-tab-headers-canvas',
+    change: 'R1: el título grande sale de Salud, Nutrición y Perfil',
+    marker: '**Enmendado por #222 (C1)**: las tres pestañas ya no pintan el título grande; conservan un encabezado oculto para lectores de pantalla (#222 R3, R4, R5, R7). El literal de R1.3 solo sigue en la celebración.',
+  },
+  {
+    file: 'specs/mobile-profile-photo-hero-canvas/requirements.md',
+    feature: 'mobile-profile-photo-hero-canvas',
+    change: 'R2: el slot superior del hero lleva el selector y la cápsula, sin título',
+    marker: '**Enmendado por #222 (C2)**: el slot superior del hero ya no lleva el título «Perfil»; lleva el selector glass a la izquierda y la cápsula «Añadir mascota» a la derecha (#222 R5, R6).',
+  },
+  {
+    file: 'specs/mobile-canvas-health-weight/requirements.md',
+    feature: 'mobile-canvas-health-weight',
+    change: 'R12 y R13: Salud sin título, con cabecera fija de avatares',
+    marker: '**Enmendado por #222 (C3)**: health-header y health-title desaparecen; el selector avatars vive en la cabecera fija health-pet-header (#222 R3).',
+  },
+  {
+    file: 'specs/mobile-canvas-nutrition/requirements.md',
+    feature: 'mobile-canvas-nutrition',
+    change: 'R2: Nutrición sin fila de título, con cabecera fija de avatares',
+    marker: '**Enmendado por #222 (C4)**: food-title-row y food-title desaparecen; el selector avatars vive en la cabecera fija food-pet-header (#222 R4).',
+  },
+  {
+    file: 'specs/mobile-canvas-foundations/requirements.md',
+    feature: 'mobile-canvas-foundations',
+    change: 'R4: el título de las pestañas ya no usa tracking-title',
+    marker: '**Enmendado por #222 (C5)**: el literal text-3xl font-black tracking-title text-foreground solo sigue en components/celebration.tsx (#222 R9, L4).',
+  },
+  {
+    file: 'specs/mobile-tab-screens-canvas-fidelity/requirements.md',
+    feature: 'mobile-tab-screens-canvas-fidelity',
+    change: 'R4 y R5: avatars deja las pantallas y la cápsula pierde el título',
+    marker: '**Enmendado por #222 (C6)**: variant="avatars" solo vive en components/tab-pet-header.tsx y la cápsula profile-add-pet ya no sigue a un título (#222 R2, R5, R9 L5).',
+  },
+];
+
+function canonicalAmendment222(feature: string, change: string): string {
+  const design = readFileSync(
+    join(REPOSITORY_ROOT, 'specs', 'mobile-tab-avatar-header', 'design.md'),
+    'utf8',
+  );
+  const fence = '```markdown\n## Enmienda #222 — avatares fijos y sin título en las pestañas';
+  const start = design.indexOf(fence);
+
+  expect(start).toBeGreaterThan(-1);
+
+  const body = design.slice(start + '```markdown\n'.length);
+  const block = body
+    .slice(0, body.indexOf('\n```'))
+    .replace('<FEATURE>', feature)
+    .replace('<QUÉ CAMBIA>', change);
+
+  return block.slice(0, block.indexOf(SIGNATURE_LINE_222)).trimEnd();
+}
+
+describe('#222 R11: las specs enmendadas por #222 llevan su bloque', () => {
+  it('#222 R11: inserta el bloque literal de design.md §2 en los siete documentos', () => {
+    expect(AMENDED_DOCS_222).toHaveLength(6);
+    for (const { file, feature, change } of AMENDED_DOCS_222) {
+      const source = readFileSync(join(REPOSITORY_ROOT, file), 'utf8');
+      expect({ file, hasAmendment: source.includes(canonicalAmendment222(feature, change)) }).toEqual({ file, hasAmendment: true });
+    }
+  });
+
+  it('#222 R11: deja en cada documento su línea de firma propia, marcada o no', () => {
+    for (const { file } of AMENDED_DOCS_222) {
+      const source = readFileSync(join(REPOSITORY_ROOT, file), 'utf8');
+      expect({ file, hasSignatureLine: source.includes(SIGNATURE_LINE_222) || source.includes('- [X] Enmienda #222 aprobada por humano') }).toEqual({ file, hasSignatureLine: true });
+    }
+  });
+
+  it('#222 R11: aplica además el marcador en prosa de la tabla R11.1', () => {
+    for (const { file, marker } of AMENDED_DOCS_222) {
+      const source = readFileSync(join(REPOSITORY_ROOT, file), 'utf8').replace(/\s+/g, ' ');
+      expect({ file, hasMarker: source.includes(marker.replace(/\s+/g, ' ')) }).toEqual({ file, hasMarker: true });
+    }
+  });
+});

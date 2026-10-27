@@ -191,6 +191,16 @@ export interface WeightEntry {
   variation: number | null;
 }
 
+export interface NutritionProfileInput {
+  activityLevel: 'low' | 'medium' | 'high';
+  bodyCondition?: number;
+  targetWeightKg?: number;
+  foodType: 'dry' | 'wet' | 'mixed' | 'homemade';
+  kcalPer100g: number;
+  allergies: string[];
+  diseases: string[];
+}
+
 export interface NutritionProfile {
   petId: string;
   activityLevel: string;
@@ -235,6 +245,8 @@ export type ReminderType =
 
 export type ReminderStatus = 'scheduled' | 'sent' | 'cancelled';
 
+export type Recurrence = { unit: 'hour' | 'day' | 'week' | 'month' | 'year'; every: number };
+
 export interface Reminder {
   id: string;
   petId: string;
@@ -243,6 +255,8 @@ export interface Reminder {
   dueAt: string;
   advanceMinutes: number;
   status: ReminderStatus;
+  recurrence: Recurrence | null;
+  recurrenceUntil: string | null;
 }
 
 export type AlertType = 'geofence_exit' | 'battery_low';

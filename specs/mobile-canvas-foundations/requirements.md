@@ -236,6 +236,8 @@ que solo mire producción no cumple su requisito.
     `screens/health/index.tsx`, `screens/profile/index.tsx` y
     `components/screen-header.tsx` (R19), en orden de `.sort()`.
 
+**Enmendado por #222 (C5)**: el literal text-3xl font-black tracking-title text-foreground solo sigue en components/celebration.tsx (#222 R9, L4).
+
 ### C03 — Labios
 
 - **R5**: THE SYSTEM SHALL declarar en **los dos** bloques `@variant` de
@@ -735,3 +737,17 @@ la casilla en el leader citando el mensaje donde dio el visto bueno.
   final) y R24 `RiseIn`, traído de #199 R24 sin cambiar su semántica.
 - [ ] Smoke de R23 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
   Va en el lote `progress/smoke_canvas-parity.md` (plan §6); el `done` no espera al smoke.
+
+## Enmienda #222 — avatares fijos y sin título en las pestañas
+
+`mobile-tab-avatar-header` (#222) modifica una decisión que esta spec dejó
+aprobada. La spec de origen es `specs/mobile-tab-avatar-header/`; el detalle
+de la enmienda está en su `requirements.md` §R11.
+
+- Spec enmendada: `mobile-canvas-foundations`
+- Qué cambia: `R4: el título de las pestañas ya no usa tracking-title`
+- Qué NO cambia: ningún otro requisito de esta spec ni su estado de
+  aprobación. Los tests que cubren lo enmendado se reescriben en #222 (lista
+  en su `requirements.md` §R9 y en su `tasks.md`).
+
+- [ ] Enmienda #222 aprobada por humano

@@ -1,4 +1,5 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { NutritionWeightReadModule } from '@/modules/health/nutrition-weight-read.module';
 import { SubscriptionsModule } from '@/modules/subscriptions/subscriptions.module';
 import { NUTRITION_EXPLAINER } from '@/modules/nutrition/domain/ports/nutrition-explainer';
 import { createNutritionExplainer } from '@/modules/nutrition/infrastructure/ai/nutrition-explainer.factory';
@@ -21,7 +22,12 @@ import { NutritionDrizzleRepository } from '@/modules/nutrition/infrastructure/r
 import { PetsModule } from '@/modules/pets/pets.module';
 
 @Module({
-  imports: [PetsModule, SubscriptionsModule, ConfigModule],
+  imports: [
+    PetsModule,
+    SubscriptionsModule,
+    ConfigModule,
+    NutritionWeightReadModule,
+  ],
   controllers: [NutritionController, MealsController],
   providers: [
     {

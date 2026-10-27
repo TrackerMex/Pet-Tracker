@@ -48,7 +48,7 @@ function LocaleProbe() {
 
 describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y parámetros', () => {
   // 259 en `303fc19` + 1 de `home.walks` (#67 R7b) + 16 de #68 + 14 de #78 + 2 de #73 + 1 de #90 + 4 de #98 - 6 de #95 R5 (las seis claves de volver) + 1 de #113 R3 (food.kcalConsumedOfTarget) + 2 de #99 R3 (profile.notificationsBlocked, profile.openSettings) + 3 de #100 R1 (alerts.detailTitle, alerts.statusOpen, alerts.openedAt) + 11 de #41 R1 (geofences.*) + 12 de #146 R1 (geofenceEditor.*) + 2 de #146 R1 (geofenceEditor.limitNotice, geofenceEditor.ownerOnly) + 9 de #147 R1 (mealSchedule.* del horario editable).
-  it('#194 R1: mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas (enmendado por #189 R15) (enmendado por #199 R5) (enmendado por #199 R9) (enmendado por #199 R14) (enmendado por #199 R17) (enmendado por #198 R15) (enmendado por #206 R8) (enmendado por #202 R10) (enmendado por #202 R18) (enmendado por #220 R16) (enmendado por #208 R19)', () => {
+  it('#194 R1: mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas (enmendado por #189 R15) (enmendado por #199 R5) (enmendado por #199 R9) (enmendado por #199 R14) (enmendado por #199 R17) (enmendado por #198 R15) (enmendado por #206 R8) (enmendado por #202 R10) (enmendado por #202 R18) (enmendado por #220 R16) (enmendado por #208 R19) (enmendado por #213 R22) (enmendado por #222 R8) (enmendado por #214 R22) (enmendado por #209 R23)', () => {
     const englishKeys = Object.keys(en).sort();
     const spanishKeys = Object.keys(es).sort();
 
@@ -88,7 +88,11 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
         + 1 // #202 R10
         + 1 // #202 R18
         + 5 - 2 // #220 R16
-        + 26, // #208 R19
+        + 26 // #208 R19
+        + 54 // #213 R22
+        + 1 // #222 R8
+        + 51 // #214 R22
+        + 77, // #209 R23
     );
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {
@@ -895,4 +899,66 @@ it('#194 R1: declara las claves de edición de perfil en los dos idiomas y su re
     );
   }
   expect(languageDesign).toMatch(/### §2\.\d+ — Añadidos por #194 — Editar perfil/);
+});
+
+it.each([
+  ["addReminder.repeat", "Repetición", "Repeat"],
+  ["addReminder.repeatOnce", "Una vez", "Once"],
+  ["addReminder.repeatDaily", "Diario", "Daily"],
+  ["addReminder.repeatWeekly", "Semanal", "Weekly"],
+  ["addReminder.repeatMonthly", "Mensual", "Monthly"],
+  ["addReminder.repeatYearly", "Anual", "Yearly"],
+  ["addReminder.repeatHourly", "Cada N horas", "Every N hours"],
+  ["addReminder.every", "Cada", "Every"],
+  ["addReminder.hoursValue", "{{count}} horas", "{{count}} hours"],
+  ["addReminder.hoursValueOne", "1 hora", "1 hour"],
+  ["addReminder.monthsValue", "{{count}} meses", "{{count}} months"],
+  ["addReminder.monthsValueOne", "1 mes", "1 month"],
+  ["addReminder.hoursRange", "De 1 a 24 horas.", "From 1 to 24 hours."],
+  ["addReminder.monthsRange", "De 1 a 12 meses.", "From 1 to 12 months."],
+  ["addReminder.hourLess", "Una hora menos", "One hour less"],
+  ["addReminder.hourMore", "Una hora más", "One hour more"],
+  ["addReminder.monthLess", "Un mes menos", "One month less"],
+  ["addReminder.monthMore", "Un mes más", "One month more"],
+  ["addReminder.until", "Hasta", "Until"],
+  ["addReminder.optional", "Opcional", "Optional"],
+  ["addReminder.untilPlaceholder", "Sin fecha de fin", "No end date"],
+  ["addReminder.summaryDaily", "Te aviso cada día a las {{time}}{{until}}.", "I'll remind you every day at {{time}}{{until}}."],
+  ["addReminder.summaryWeekly", "Te aviso cada {{weekday}} a las {{time}}{{until}}.", "I'll remind you every {{weekday}} at {{time}}{{until}}."],
+  ["addReminder.summaryMonthly", "Te aviso el día {{day}} de cada mes a las {{time}}{{until}}.", "I'll remind you on day {{day}} of every month at {{time}}{{until}}."],
+  ["addReminder.summaryMonthlyN", "Te aviso el día {{day}} cada {{count}} meses a las {{time}}{{until}}.", "I'll remind you on day {{day}} every {{count}} months at {{time}}{{until}}."],
+  ["addReminder.summaryYearly", "Te aviso cada año el {{date}} a las {{time}}{{until}}.", "I'll remind you every year on {{date}} at {{time}}{{until}}."],
+  ["addReminder.summaryHoursDoses", "Te aviso en cada toma de {{pet}}: {{doses}}{{until}}.", "I'll remind you at each of {{pet}}'s doses: {{doses}}{{until}}."],
+  ["addReminder.summaryHoursDosesNoPet", "Te aviso en cada toma: {{doses}}{{until}}.", "I'll remind you at each dose: {{doses}}{{until}}."],
+  ["addReminder.summaryHours", "Te aviso cada {{count}} horas desde las {{time}}{{until}}.", "I'll remind you every {{count}} hours from {{time}}{{until}}."],
+  ["addReminder.summaryHourly", "Te aviso cada hora desde las {{time}}{{until}}.", "I'll remind you every hour from {{time}}{{until}}."],
+  ["addReminder.summaryUntil", ", hasta el {{date}}", ", until {{date}}"],
+  ["addReminder.dosesJoin", "{{list}} y {{last}}", "{{list}} and {{last}}"],
+  ["reminders.repeatsEvery", "Se repite {{cadence}}{{until}}", "Repeats {{cadence}}{{until}}"],
+  ["reminders.cadenceHour", "cada hora", "every hour"],
+  ["reminders.cadenceHours", "cada {{count}} horas", "every {{count}} hours"],
+  ["reminders.cadenceDay", "cada día", "every day"],
+  ["reminders.cadenceDays", "cada {{count}} días", "every {{count}} days"],
+  ["reminders.cadenceWeek", "cada semana", "every week"],
+  ["reminders.cadenceWeeks", "cada {{count}} semanas", "every {{count}} weeks"],
+  ["reminders.cadenceMonth", "cada mes", "every month"],
+  ["reminders.cadenceMonths", "cada {{count}} meses", "every {{count}} months"],
+  ["reminders.cadenceYear", "cada año", "every year"],
+  ["reminders.cadenceYears", "cada {{count}} años", "every {{count}} years"],
+  ["reminders.untilDay", " · hasta el {{date}}", " · until {{date}}"],
+  ["reminders.untilMonth", " · hasta {{date}}", " · until {{date}}"],
+  ["reminders.cancelSeries", "Cancelar\nserie", "Cancel\nseries"],
+  ["reminders.cancelSeriesA11y", "Cancelar la serie {{title}}", "Cancel the {{title}} series"],
+  ["reminders.cancelSeriesTitle", "¿Cancelar la serie?", "Cancel the series?"],
+  ["reminders.cancelSeriesReference", "{{title}} · {{cadence}}", "{{title}} · {{cadence}}"],
+  ["reminders.cancelSeriesBody", "No volveré a avisarte de {{title}} de {{pet}}. Si cambias de idea, puedes crear el recordatorio otra vez.", "I won't remind you about {{title}} for {{pet}} again. If you change your mind, you can create the reminder again."],
+  ["reminders.cancelSeriesBodyNoPet", "No volveré a avisarte de {{title}}. Si cambias de idea, puedes crear el recordatorio otra vez.", "I won't remind you about {{title}} again. If you change your mind, you can create the reminder again."],
+  ["reminders.cancelSeriesConfirm", "Cancelar la serie", "Cancel the series"],
+  ["reminders.keepSeries", "Mantener la serie", "Keep the series"],
+  ["reminders.errorCancelForbidden", "Solo el dueño puede cancelar la serie", "Only the owner can cancel the series"],
+  ['reminders.upcoming', 'Hoy', 'Today'],
+])('#213 R22: claves de recurrencia en ambos idiomas', (key, spanish, english) => {
+  expect((es as Record<string, string>)[key]).toBe(spanish);
+  expect((en as Record<string, string>)[key]).toBe(english);
+  expect(markerNames(spanish)).toEqual(markerNames(english));
 });

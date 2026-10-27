@@ -1,8 +1,12 @@
+import type { NutritionAiOutput } from '@/modules/nutrition/domain/nutrition-ai-proposal';
+import type { NutritionWeightPoint } from '@/modules/nutrition/domain/ports/nutrition-weight-reader';
 import { Logger } from '@nestjs/common';
+import { z } from 'zod';
 import {
   NUTRITION_AI_SCOPE,
   buildUserPrompt,
   NUTRITION_AI_SYSTEM_PROMPT,
+  NUTRITION_AI_OUTPUT_JSON_SCHEMA,
 } from './nutrition-prompt';
 import type {
   NutritionEngineInput,
@@ -15,12 +19,30 @@ import type {
 
 export const NUTRITION_AI_TIMEOUT_MS = 15_000;
 export const NUTRITION_AI_MAX_RETRIES = 0;
-export const NUTRITION_AI_MAX_OUTPUT_TOKENS = 1_200;
+export const NUTRITION_AI_MAX_OUTPUT_TOKENS = 2_000;
+const NutritionAiOutputSchema = z.strictObject({
+  mealGrams: z
+    .array(
+      z.strictObject({
+        mealTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+        grams: z.number().int().min(1),
+      }),
+    )
+    .min(1)
+    .max(6),
+  recommendations: z.array(z.string().trim().min(1).max(200)).min(1).max(3),
+  reviewInDays: z.number().int().min(7).max(90),
+  explanation: z.string().trim().min(1).max(1500),
+});
 export interface AnthropicMessageParams {
   model: string;
   max_tokens: number;
   system: string;
   messages: { role: 'user'; content: string }[];
+  thinking: { type: 'disabled' };
+  output_config: {
+    format: { type: 'json_schema'; schema: Record<string, unknown> };
+  };
 }
 export interface AnthropicMessageResponse {
   content: unknown;
@@ -52,8 +74,9 @@ export class AnthropicNutritionExplainer implements NutritionExplainer {
   async explain(
     input: NutritionEngineInput,
     result: NutritionPlanResult,
+    weightTrend: NutritionWeightPoint[],
     ctx: NutritionExplainerContext,
-  ): Promise<string | null> {
+  ): Promise<NutritionAiOutput | null> {
     try {
       if (this.client === null) {
         const { default: Anthropic } = await this.loadSdk();
@@ -67,22 +90,43 @@ export class AnthropicNutritionExplainer implements NutritionExplainer {
         model: this.model,
         max_tokens: NUTRITION_AI_MAX_OUTPUT_TOKENS,
         system: NUTRITION_AI_SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: buildUserPrompt(input, result) }],
+        thinking: { type: 'disabled' },
+        output_config: {
+          format: {
+            type: 'json_schema',
+            schema: NUTRITION_AI_OUTPUT_JSON_SCHEMA,
+          },
+        },
+        messages: [
+          {
+            role: 'user',
+            content: buildUserPrompt(input, result, weightTrend),
+          },
+        ],
       });
       const blocks = Array.isArray(response.content)
         ? (response.content as { type: string; text?: string }[])
         : [];
       const text = blocks
-        .filter((block) => block.type === 'text')
+        .filter((block) => block?.type === 'text')
         .map((block) => block.text ?? '')
         .join('')
         .trim();
-      if (response.stop_reason === 'end_turn' && text.length > 0) return text;
+      if (response.stop_reason === 'end_turn' && text.length > 0) {
+        let decoded: unknown;
+        try {
+          decoded = JSON.parse(text);
+        } catch {
+          decoded = null;
+        }
+        const parsed = NutritionAiOutputSchema.safeParse(decoded);
+        if (parsed.success) return parsed.data;
+      }
       this.logger.warn({
         scope: NUTRITION_AI_SCOPE,
         petId: ctx.petId,
         planId: ctx.planId,
-        message: 'ai explanation unusable',
+        message: 'ai proposal unusable',
         stopReason: response.stop_reason ?? null,
         usage: response.usage ?? null,
       });

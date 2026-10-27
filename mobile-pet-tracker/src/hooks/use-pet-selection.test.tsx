@@ -214,11 +214,11 @@ describe('#181 R2: limpieza de la selección', () => {
     },
   );
 
-  it('R2.4: solo proveedor y hook mencionan clearPet en producción', () => {
+  it('R2.4: solo proveedor, hook y Familia mencionan clearPet en producción (enmendado por #214 R17)', () => {
     const writers = productionSourceFiles(sourceRoot)
       .filter((path) => readFileSync(path, 'utf8').includes('clearPet'))
       .map((path) => path.slice(sourceRoot.length + 1))
       .sort();
-    expect(writers).toEqual(['hooks/use-pet-selection.ts', 'providers/selected-pet-provider.tsx']);
+    expect(writers).toEqual(['hooks/use-pet-selection.ts', 'providers/selected-pet-provider.tsx', 'screens/pet-members/index.tsx']); // #214 R17
   });
 });

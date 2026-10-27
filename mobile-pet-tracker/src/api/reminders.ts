@@ -1,5 +1,5 @@
-import { deleteJson, getJson, postJson, readJson } from './http';
-import type { Reminder, ReminderType } from './types';
+import { deleteJson, getJson, patchJson, postJson, readJson } from './http';
+import type { Recurrence, Reminder, ReminderType } from './types';
 
 export type RemindersState =
   | { kind: 'ok'; reminders: Reminder[] }
@@ -14,6 +14,8 @@ export interface CreateReminderInput {
   title: string;
   dueAt: string;
   advanceMinutes: number;
+  recurrence?: Recurrence;
+  recurrenceUntil?: string;
 }
 
 export type CreateReminderState =
@@ -86,6 +88,8 @@ export async function createReminder(
     title: input.title,
     dueAt: input.dueAt,
     advanceMinutes: input.advanceMinutes,
+    ...(input.recurrence === undefined ? {} : { recurrence: input.recurrence }),
+    ...(input.recurrenceUntil === undefined ? {} : { recurrenceUntil: input.recurrenceUntil }),
   };
   const result = await postJson(
     baseUrl,
@@ -153,4 +157,34 @@ export async function deleteReminder(
     return { kind: 'unauthorized' };
   }
   return { kind: 'error' };
+}
+
+
+export type CancelReminderSeriesState = DeleteReminderState | { kind: 'not-editable' };
+
+export async function cancelReminderSeries(
+  baseUrl: string | undefined,
+  token: string,
+  reminderId: string,
+  fetchFn: typeof fetch = fetch,
+): Promise<CancelReminderSeriesState> {
+  if (!baseUrl) return { kind: 'missing-config' };
+
+  const result = await patchJson(
+    baseUrl,
+    `/reminders/${reminderId}`,
+    token,
+    { status: 'cancelled' },
+    fetchFn,
+  );
+  if (result.kind === 'unreachable') return result;
+
+  switch (result.response.status) {
+    case 200: return { kind: 'ok' };
+    case 404: return { kind: 'not-found' };
+    case 409: return { kind: 'not-editable' };
+    case 403: return { kind: 'forbidden' };
+    case 401: return { kind: 'unauthorized' };
+    default: return { kind: 'error' };
+  }
 }

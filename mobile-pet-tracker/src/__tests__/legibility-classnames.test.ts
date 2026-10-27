@@ -166,13 +166,14 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     [join('components', 'pet-hero-header.tsx'), 1],
     [join('screens', 'weight-log', 'index.tsx'), 1], // #199 R4
     [join('screens', 'welcome', 'index.tsx'), 2],
+    [join('screens', 'nutrition-questionnaire', 'index.tsx'), 1], // #209 R24
   ];
 
-  it.each(inkSites)('%s pinta con text-accent-strong (%i) (enmendado por #200 R1 y #200 R5 y #200 R6) (enmendado por #199 R4) (enmendado por #199 R18) (enmendado por #198 R4) (enmendado por #201 R5)', (path, sites) => {
+  it.each(inkSites)('%s pinta con text-accent-strong (%i) (enmendado por #200 R1 y #200 R5 y #200 R6) (enmendado por #199 R4) (enmendado por #199 R18) (enmendado por #198 R4) (enmendado por #201 R5) (enmendado por #209 R24)', (path, sites) => {
     expect(readSource(path).match(/text-accent-strong\b/g) ?? []).toHaveLength(sites);
   });
 
-  it('suma las trece ocurrencias que enumera la spec (enmendado por #200 R5 y #200 R6) (enmendado por #199 R4) (enmendado por #199 R18) (enmendado por #198 R4) (enmendado por #201 R5)', () => {
+  it('suma las trece ocurrencias que enumera la spec (enmendado por #200 R5 y #200 R6) (enmendado por #199 R4) (enmendado por #199 R18) (enmendado por #198 R4) (enmendado por #201 R5) (enmendado por #209 R24)', () => {
     expect(inkSites.reduce((total, [path]) => total + (readSource(path).match(/text-accent-strong\b/g) ?? []).length, 0)).toBe(
       inkSites.reduce((total, [, sites]) => total + sites, 0),
     );
@@ -192,7 +193,8 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
         + 1 // #199 R4
         - 1 // #199 R18
         - 1 // #201 R5
-        + 1, // #198 R4: +1 Inicio
+        + 1 // #198 R4: +1 Inicio
+        + 1, // #209 R24
     );
   });
 
@@ -200,10 +202,10 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     expect(filesMatching(/text-accent(?![-\w])/)).toEqual([]);
   });
 
-  it('reserva las peticiones de accent a las huellas de EmptyState (enmendado por #176 R5) (enmendado por #197 R20) (enmendado por #220 R6)', () => {
+  it('reserva las peticiones de accent a las huellas de EmptyState (enmendado por #176 R5) (enmendado por #197 R20) (enmendado por #220 R6) (enmendado por #217 R1)', () => {
     const requestsAccent = /useThemeColors\(\s*\[[^\]]*'accent'[^\]]*\]/;
 
-    expect(filesMatching(requestsAccent)).toEqual(['components/date-field.tsx', 'components/empty-state.tsx', 'components/toggle-switch.tsx', 'theme/shadows.ts']); // (enmendado por #176 R5) // (enmendado por #220 R6)
+    expect(filesMatching(requestsAccent)).toEqual(['components/date-field.tsx', 'components/empty-state.tsx', 'components/toggle-switch.tsx', 'theme/navigation-theme.ts', 'theme/shadows.ts']); // (enmendado por #176 R5) // (enmendado por #220 R6)
   });
 });
 

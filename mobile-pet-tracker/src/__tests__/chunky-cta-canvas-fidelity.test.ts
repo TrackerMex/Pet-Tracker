@@ -67,6 +67,12 @@ const CTA_ROWS = [
   ['screens/geofence-editor/index.tsx', literalId('geofence-editor-save'), 'flex-2 h-13.5 rounded-16 bg-accent', ["isDisabled={busy || name.trim() === ''}", 'onPress={() => void save()}']],
   ['screens/geofences/index.tsx', literalId('geofences-add'), 'mt-auto h-14 rounded-16 bg-accent', ['isDisabled={busy || atLimit}']],
   ['screens/weight-log/index.tsx', literalId('weight-submit'), 'h-14 rounded-16 bg-accent', ['isDisabled={submitting}', 'onPress={() => void handleSubmit()}']],
+  ['screens/pet-members/index.tsx', literalId('pet-members-invite-cta'), 'w-full h-14 rounded-16 bg-accent', ['isDisabled={busy}']], // #214 R13
+  ['screens/pet-invite/index.tsx', literalId('pet-invite-share'), 'w-full h-14 rounded-16 bg-accent', []], // #214 R15
+  ['screens/join-pet/index.tsx', literalId('join-pet-submit'), 'w-full h-14 rounded-16 bg-accent', []], // #214 R18
+  ['screens/join-pet/index.tsx', literalId('join-pet-go-home'), 'w-full h-14 rounded-16 bg-accent', ["onPress={() => router.dismissTo('/home')}"]], // #214 R20
+  ['screens/nutrition-questionnaire/index.tsx', literalId('nutrition-questionnaire-next'), 'h-14 rounded-16 bg-accent', ['isDisabled={!canContinue}', 'onPress={() => void handleNext()}']], // #209 R24
+  ['screens/food/index.tsx', literalId('food-create-profile'), 'w-full h-14 rounded-16 bg-accent', ['onPress={openNutritionProfile}']], // #209 R24
 ] as const;
 const NEUTRAL_ROWS = [
   ['screens/geofence-editor/index.tsx', literalId('geofence-editor-delete'), 'flex-1 h-13.5 rounded-16 border-2 border-lip-gray bg-surface', 'outline', 'Text', 'text-base font-extrabold text-danger', ['isDisabled={busy}', 'onPress={() => setDeleteVisible(true)}']], // #189 R13
@@ -75,43 +81,48 @@ const NEUTRAL_ROWS = [
   ['components/celebration.tsx', 'testID={secondary.testID}', 'w-full h-14 rounded-16 border-2 border-lip-gray bg-surface', null, 'Text', 'text-17 font-extrabold text-foreground', ['onPress={secondary.onPress}']],
   ['screens/docs-upload-form/index.tsx', literalId('docs-upload-cancel'), 'h-14 rounded-16 border-2 border-lip-gray bg-surface', 'outline', 'Text', 'text-17 font-extrabold text-foreground', ['isDisabled={uploading}', 'onPress={() => router.back()}']],
   ['screens/reminders/index.tsx', literalId('reminders-delete-cancel'), 'w-full h-14 rounded-16 border-2 border-lip-gray bg-surface', 'outline', 'Text', 'text-17 font-extrabold text-foreground', ['onPress={dismissDeleteSheet}']],
+  ['screens/reminders/index.tsx', literalId('reminders-cancel-series-keep'), 'w-full h-14 rounded-16 border-2 border-lip-gray bg-surface', 'outline', 'Text', 'text-17 font-extrabold text-foreground', []], // #213 R17
   ['screens/alert-detail/index.tsx', literalId('alert-detail-view-map'), 'h-13 rounded-16 border-2 border-lip-gray bg-surface', 'secondary', 'Button.Label', 'text-base font-extrabold text-foreground', ['accessibilityRole="button"']],
   ['screens/pairing/index.tsx', literalId('pairing-unpair-cancel'), 'w-full h-13.5 rounded-16 border-2 border-lip-gray bg-surface', 'outline', 'Text', 'text-base font-extrabold text-foreground', ['onPress={closeUnpair}']], // #203 R7
 ] as const;
 const primaryIds = CTA_ROWS.map(([, anchor]) => idOf(anchor)).sort();
 const neutralIds = NEUTRAL_ROWS.map(([, anchor]) => idOf(anchor)).sort();
 const ctaFiles = [...new Set(CTA_ROWS.map(([path]) => path))].sort(); // #191 R11
-const consumers = [...ctaFiles, 'screens/reminders/index.tsx', 'screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx', 'screens/food/index.tsx', 'screens/profile/index.tsx', 'screens/map/index.tsx'].sort(); // #201 R13
-const neutralInventory = ['${rowId}-ack', 'add-meal-time-button', 'alert-detail-view-map', 'docs-upload-cancel', 'forgot-resend', 'geofence-editor-delete', 'meal-time-edit-${index}', 'pairing-unpair-cancel', 'reminders-delete-cancel', 'secondary.testID', 'welcome-have-account'];
+const consumers = [...ctaFiles, 'screens/reminders/index.tsx', 'screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx', 'screens/profile/index.tsx', 'screens/map/index.tsx'].sort(); // #201 R13 // #209 R24: sale screens/food/index.tsx, que entra por CTA_ROWS
+const neutralInventory = ['${rowId}-ack', 'add-meal-time-button', 'alert-detail-view-map', 'docs-upload-cancel', 'forgot-resend', 'geofence-editor-delete', 'home-join-pet-button', 'meal-time-edit-${index}', 'member-leave-sheet-cancel', 'member-remove-sheet-cancel', 'pairing-unpair-cancel', 'pet-invite-copy', 'pet-members-leave', 'reminders-cancel-series-keep', 'reminders-delete-cancel', 'secondary.testID', 'welcome-have-account']; // #214 R7, R11, R15, R16, R17
 const radii = {
   'screens/edit-profile/index.tsx': 1, // #194 R6
   'components/celebration.tsx': 2,
   'components/empty-state.tsx': 1,
   'screens/add-pet/index.tsx': 2, // #191 R11
-  'screens/add-reminder/index.tsx': 1,
+  'screens/add-reminder/index.tsx': 1 + 1, // #213 R6
   'screens/alert-detail/index.tsx': 2,
   'screens/docs-upload-form/index.tsx': 2,
-  'screens/food/index.tsx': 2,
+  'screens/food/index.tsx': 2 + 1, // #209 R24
   'screens/forgot/index.tsx': 3,
   'screens/geofence-editor/index.tsx': 4, // #189 R13; #202 R18: +1
   'screens/geofences/index.tsx': 2, // #189 R7
   'screens/vaccine-create/index.tsx': 1, // #208 R21
   'screens/health/index.tsx': 1 + 1, // #199 R14 // #208 R21
-  'screens/home/index.tsx': 1,
+  'screens/home/index.tsx': 1 + 1, // #214 R7
   'screens/home/weekly-activity-chart.tsx': 1, // #198 R9
+  'screens/join-pet/index.tsx': 2, // #214 R18, R20
   'screens/login/index.tsx': 1,
   'screens/map/index.tsx': 1, // #201 R13
   'screens/pairing/index.tsx': 4, // #203 R6; #203 R7
+  'screens/pet-invite/index.tsx': 2, // #214 R15
+  'screens/pet-members/index.tsx': 6, // #214 R11, R13, R16, R17
   'screens/register/index.tsx': 1,
-  'screens/reminders/index.tsx': 5, // #204 R9
+  'screens/reminders/index.tsx': 5 + 2, // #204 R9; #213 R17
   'screens/reset-password/index.tsx': 2,
   'screens/weight-log/index.tsx': 1,
   'screens/welcome/index.tsx': 2,
+  'screens/nutrition-questionnaire/index.tsx': 2, // #209 R24
 };
 
 const disabledCtas: Record<string, string> = { 'screens/geofences/index.tsx': 'atLimit', 'screens/geofence-editor/index.tsx': "name.trim() === ''" }; // #189 R7; #189 R13
 
-it.each(CTA_ROWS)('#177 R3.1: %s pinta la receta cta de %s (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20) (enmendado por #204 R11) (enmendado por #202 R15) (enmendado por #208 R21)', (path, anchor, classes, keeps) => {
+it.each(CTA_ROWS)('#177 R3.1: %s pinta la receta cta de %s (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20) (enmendado por #204 R11) (enmendado por #202 R15) (enmendado por #208 R21) (enmendado por #214 R13, R15, R18, R20) (enmendado por #209 R24)', (path, anchor, classes, keeps) => {
   const tag = openingTagWithTestId(readSource(path), anchor);
   const condition = disabledCtas[path];
   expect(tag).toContain(condition ? `className={${condition} ? '${classes.replace('bg-accent', 'bg-default')}' : '${classes}'}` : `className="${classes}"`);
@@ -119,14 +130,14 @@ it.each(CTA_ROWS)('#177 R3.1: %s pinta la receta cta de %s (enmendado por #189 R
   for (const keep of keeps) expect(tag).toContain(keep);
   for (const forbidden of ['border-b-4', 'border-black', 'rounded-xl', 'min-h-11']) expect(tag).not.toContain(forbidden);
 });
-it.each(CTA_ROWS)('#177 R3.2: %s pinta la etiqueta Text 17/800 de %s (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #208 R21)', (path, anchor) => {
+it.each(CTA_ROWS)('#177 R3.2: %s pinta la etiqueta Text 17/800 de %s (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #208 R21) (enmendado por #214 R13, R15, R18, R20) (enmendado por #209 R24)', (path, anchor) => {
   const element = elementWithTestId(readSource(path), anchor);
   const condition = disabledCtas[path];
   expect(element).toContain(condition ? `<Text className={${condition} ? 'text-17 font-extrabold text-muted' : 'text-17 font-extrabold text-accent-foreground'}>` : '<Text className="text-17 font-extrabold text-accent-foreground">');
   expect(element).not.toContain('Button.Label');
   expect(readSource(path)).toMatch(/import \{[^}]*\bText\b[^}]*\} from 'react-native';/);
 });
-it('#177 R3.3: el inventario de Button con bg-accent está cerrado (enmendado por #208 R21)', () => {
+it('#177 R3.3: el inventario de Button con bg-accent está cerrado (enmendado por #208 R21) (enmendado por #214 R13, R15, R18, R20) (enmendado por #209 R24)', () => {
   expect(idsWhere(tag => /\bbg-accent(?=[\s'"`])/.test(tag))).toEqual([...primaryIds, 'reminders-add-link', 'vaccines-add'].sort());
 });
 it.each(NEUTRAL_ROWS)('#177 R4.1: %s pinta la receta neutra de %s (enmendado por E4 R19) (enmendado por #202 R9) (enmendado por #202 R15)', (path, anchor, classes, variant, _label, _labelClasses, keeps) => {
@@ -146,7 +157,7 @@ it.each(NEUTRAL_ROWS)('#177 R4.2: %s pinta la etiqueta de %s', (path, anchor, _c
     expect(readSource(path)).toMatch(/import \{[^}]*\bText\b[^}]*\} from 'react-native';/);
   } else expect(element).toContain('<Map size={18} color={foreground} />');
 });
-it('#177 R4.3: conserva los nueve secundarios neutros (enmendado por #189 R13) (enmendado por #203 R7)', () => {
+it('#177 R4.3: conserva los nueve secundarios neutros (enmendado por #189 R13) (enmendado por #203 R7) (enmendado por #213 R22) (enmendado por #214 R7, R11, R15, R16, R17)', () => {
   expect(idsWhere(tag => ((tag.includes('variant="outline"') || tag.includes('variant="secondary"')) && !tag.includes('bg-accent-soft') && !tag.includes('bg-default')) || tag.includes('border-lip-gray'))).toEqual(neutralInventory);
 });
 it('#177 R5.1: el compacto conserva talla, etiqueta e icono con labio de tres', () => {
@@ -165,44 +176,44 @@ it('#177 R5.2: el tile conserva la esquina y recibe el labio con el orden exacto
   expect(tag).toContain('style={[CONTINUOUS_CORNER, chunkyLip.primary]}');
   expect(tag).not.toMatch(/border-b-4|border-black\/25/);
 });
-it('#177 R6.2: recuentos de etiquetas (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #200 R5) (enmendado por #199 R9) (enmendado por #204 R8) (enmendado por #204 R9) (enmendado por #196 R6) (enmendado por #208 R21)', () => {
+it('#177 R6.2: recuentos de etiquetas (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #200 R5) (enmendado por #199 R9) (enmendado por #204 R8) (enmendado por #204 R9) (enmendado por #196 R6) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R13, R15, R18, R20) (enmendado por #209 R24)', () => {
   // #177 R6
   expect(count(/<Button\.Label/g)).toBe(35 - 15 - 1 - 1 - 1 - 1 - 1 - 1 + 1); // #191 R11 // #189 R5; #189 R13; // #196 R6: -1 // #204 R8; #204 R9 // #208 R21
   expect(count(/Button\.Label/g)).toBe(82 - 30 - 2 - 2 - 2 - 2 - 2 - 2 + 2); // #191 R11 // #189 R5; #189 R13; // #196 R6: -2 // #204 R8; #204 R9 // #208 R21
-  expect(count(/text-17/g)).toBe(8 + 15 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 2 + 1); // #200 R5; #199 R9 // #194 R6 // #191 R11 // #189 R7; #189 R13 // #204 R9 // #208 R21 // #208 R21
-  expect(count(/<Text className="text-17 font-extrabold text-accent-foreground">/g)).toBe(5 + 11 + 1 + 1 - 1 - 1 + 1 + 1); // #194 R6 // #191 R11 // #189 R7; #189 R13 // #208 R21 // #208 R21
-  expect(count(/text-17 font-extrabold text-foreground/g)).toBe(3 + 3 + 1 + 1); // #200 R5; #199 R9
+  expect(count(/text-17/g)).toBe(8 + 15 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 2 + 1 + 2 + 4 + 2); // #209 R24 // #200 R5; #199 R9 // #194 R6 // #191 R11 // #189 R7; #189 R13 // #204 R9 // #208 R21 // #208 R21 // #213 R17 (+2) // #214 R13, R15, R18, R20
+  expect(count(/<Text className="text-17 font-extrabold text-accent-foreground">/g)).toBe(5 + 11 + 1 + 1 - 1 - 1 + 1 + 1 + 4 + 2); // #209 R24 // #194 R6 // #191 R11 // #189 R7; #189 R13 // #208 R21 // #208 R21 // #214 R13, R15, R18, R20
+  expect(count(/text-17 font-extrabold text-foreground/g)).toBe(3 + 3 + 1 + 1 + 1); // #213 R17 // #200 R5; #199 R9
   expect(count(/<Text className="text-17 font-bold text-accent-strong">/g)).toBe(0 + 1);
 });
-it('#177 R7.1: inventarios de los labios de borde restantes (enmendado por #189 R13) (enmendado por #197 R10) (enmendado por #203 R7)', () => {
+it('#177 R7.1: inventarios de los labios de borde restantes (enmendado por #189 R13) (enmendado por #197 R10) (enmendado por #203 R7) (enmendado por #213 R22) (enmendado por #214 R7, R11, R15, R17) (enmendado por #209 R24)', () => {
   expect(inventory(/border-b-4/g)).toEqual({});
   expect(inventory(/border-black\/25/g)).toEqual({});
   expect(inventory(/\bborder-b-6\b/g)).toEqual({});
-  expect(count(/border-lip-gray/g)).toBe(10 + 1 + 1); // #189 R13; #203 R7: +1
+  expect(count(/border-lip-gray/g)).toBe(10 + 1 + 1 + 2 + 1 + 4 + 5); // #209 R24 // #213 R6 (+2); #213 R17 (+1) // #189 R13; #203 R7: +1 // #214 R7, R11, R15, R17
 });
-it('#177 R7.2: inventarios de las dos recetas de primario (enmendado por #201 R13) (enmendado por #208 R21)', () => {
-  expect(inventory(/rounded-16 bg-accent(?=[\s'"`])/g)).toEqual({ ...Object.fromEntries(ctaFiles.map(path => [path, path === 'screens/add-pet/index.tsx' ? 2 : 1])), 'screens/map/index.tsx': 1 }); // #201 R13
+it('#177 R7.2: inventarios de las dos recetas de primario (enmendado por #201 R13) (enmendado por #208 R21) (enmendado por #214 R13, R15, R18, R20) (enmendado por #209 R24)', () => {
+  expect(inventory(/rounded-16 bg-accent(?=[\s'"`])/g)).toEqual({ ...Object.fromEntries(ctaFiles.map(path => [path, path === 'screens/add-pet/index.tsx' || path === 'screens/join-pet/index.tsx' ? 2 : 1])), 'screens/map/index.tsx': 1 }); // #201 R13 // #214 R13, R15, R18, R20
   expect(inventory(/rounded-xl bg-accent(?=[\s'"`])/g)).toEqual({ 'screens/reminders/index.tsx': 1, 'screens/health/index.tsx': 1 });
 });
-it('#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por #191 R11) (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #198 R9) (enmendado por #203 R6) (enmendado por #203 R7) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #201 R13) (enmendado por #205 R13) (enmendado por #208 R21)', () => {
+it('#177 R7.3: inventario de los veintisiete radios de dieciséis (enmendado por #191 R11) (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #198 R9) (enmendado por #203 R6) (enmendado por #203 R7) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #201 R13) (enmendado por #205 R13) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R7, R11, R13, R15, R16, R17, R18, R20) (enmendado por #209 R24)', () => {
   expect(inventory(/\brounded-16\b/g)).toEqual(radii);
-  expect(count(/\brounded-16\b/g)).toBe(26 + 1 + 1 + 1 + 2 + 2 + 1 + 1 + 1 + 2 + 1 + 1 + 1 + 1 + 1 + 1); // #204 R9 (+1) // #202 R18 (+1) // #200 R9 (+2); #198 R9 (+1); #199 R14 (+1); #203 R6 (+1); #203 R7 (+2); #201 R13 (+1); #205 R13 (+1) // #194 R6 // #191 R11 // #189 R7; #189 R13 // #208 R21 // #208 R21
+  expect(count(/\brounded-16\b/g)).toBe(26 + 1 + 1 + 1 + 2 + 2 + 1 + 1 + 1 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 3 + 11 + 3); // #209 R24 // #214 R7, R11, R13, R15, R16, R17, R18, R20 (+11) #204 R9 (+1) // #202 R18 (+1) // #200 R9 (+2); #198 R9 (+1); #199 R14 (+1); #203 R6 (+1); #203 R7 (+2); #201 R13 (+1); #205 R13 (+1) // #194 R6 // #191 R11 // #189 R7; #189 R13 // #208 R21 // #208 R21 // #213 R6 (+1); #213 R17 (+2)
 });
-it('#177 R7.4: solo la definición y los dieciocho consumidores usan el hook (enmendado por #197 R10) (enmendado por #200 R3) (enmendado por #196 R4) (enmendado por #201 R13) (enmendado por #208 R21)', () => {
+it('#177 R7.4: solo la definición y los dieciocho consumidores usan el hook (enmendado por #197 R10) (enmendado por #200 R3) (enmendado por #196 R4) (enmendado por #201 R13) (enmendado por #208 R21) (enmendado por #214 R13, R15, R18) (enmendado por #209 R24)', () => {
   expect(Object.keys(inventory(/useChunkyLip/g)).sort()).toEqual([...consumers, 'theme/chunky-lip.ts'].sort());
   for (const path of consumers) expect((readSource(path).match(/const chunkyLip = useChunkyLip\(\);/g) ?? []).length).toBe(1);
 });
-it('#177 R7.5: inventario de los tres estilos y el tile (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20) (enmendado por #197 R10) (enmendado por #200 R6) (enmendado por #196 R4, R5) (enmendado por #201 R13) (enmendado por #208 R21)', () => {
-  expect(inventory(/style=\{(?:chunkyLip\.primary|(?:atLimit|name\.trim\(\) === '') \? KEEP_OPACITY : \[chunkyLip\.primary, KEEP_OPACITY\])\}/g)).toEqual(Object.fromEntries([...ctaFiles.map(path => [path, path === 'screens/add-pet/index.tsx' ? 2 : 1]), ['screens/profile/index.tsx', 2], ['screens/map/index.tsx', 1]].sort())); // #201 R13
-  expect(inventory(/style=\{(?:chunkyLip\.neutral|\[chunkyLip\.neutral, KEEP_OPACITY\])\}/g)).toEqual(Object.fromEntries([...NEUTRAL_ROWS.map(([path]) => [path, 1]), ['screens/meal-schedule/index.tsx', 1]].sort()));
+it('#177 R7.5: inventario de los tres estilos y el tile (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20) (enmendado por #197 R10) (enmendado por #200 R6) (enmendado por #196 R4, R5) (enmendado por #201 R13) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R7, R11, R13, R15, R16, R17, R18, R20) (enmendado por #209 R24)', () => {
+  expect(inventory(/style=\{(?:chunkyLip\.primary|(?:atLimit|name\.trim\(\) === '') \? KEEP_OPACITY : \[chunkyLip\.primary, KEEP_OPACITY\])\}/g)).toEqual(Object.fromEntries([...ctaFiles.map(path => [path, path === 'screens/add-pet/index.tsx' || path === 'screens/join-pet/index.tsx' ? 2 : 1]), ['screens/profile/index.tsx', 2], ['screens/map/index.tsx', 1]].sort())); // #201 R13
+  expect(inventory(/style=\{(?:chunkyLip\.neutral|\[chunkyLip\.neutral, KEEP_OPACITY\])\}/g)).toEqual(Object.fromEntries([...NEUTRAL_ROWS.map(([path]) => [path, path === 'screens/reminders/index.tsx' ? 2 : 1]), ['screens/meal-schedule/index.tsx', 1], ['screens/home/index.tsx', 1], ['screens/pet-invite/index.tsx', 1], ['screens/pet-members/index.tsx', 3]].sort()));
   expect(inventory(/style=\{chunkyLip\.primaryCompact\}/g)).toEqual({ 'screens/food/index.tsx': 1, 'screens/reminders/index.tsx': 1, 'screens/health/index.tsx': 1 });
-  expect(inventory(/chunkyLip\.primary\b/g)).toEqual(Object.fromEntries([...ctaFiles.map(path => [path, path === 'screens/forgot/index.tsx' || path === 'screens/add-pet/index.tsx' ? 2 : 1]), ['screens/profile/index.tsx', 2], ['screens/map/index.tsx', 1]].sort())); // #201 R13
-  expect(inventory(/style=\{chunkyLip\.neutralCompact\}/g)).toEqual({ 'screens/alerts/index.tsx': 1, 'screens/meal-schedule/index.tsx': 1 });
+  expect(inventory(/chunkyLip\.primary\b/g)).toEqual(Object.fromEntries([...ctaFiles.map(path => [path, path === 'screens/forgot/index.tsx' || path === 'screens/add-pet/index.tsx' || path === 'screens/join-pet/index.tsx' ? 2 : 1]), ['screens/profile/index.tsx', 2], ['screens/map/index.tsx', 1]].sort())); // #201 R13
+  expect(inventory(/style=\{chunkyLip\.neutralCompact\}/g)).toEqual({ 'screens/alerts/index.tsx': 1, 'screens/meal-schedule/index.tsx': 1 + 2 }); // #209 R24
   expect(inventory(/chunkyLip\.summary/g)).toEqual({ 'screens/meal-schedule/index.tsx': 1 });
 });
 it.each([
-  ['primary', [...primaryIds, 'notifications-open-settings'].sort()], ['neutral', [...neutralIds, 'add-meal-time-button'].sort()], ['primaryCompact', ['reminders-add-link', 'vaccines-add']],
-] as const)('#177 R8.1: solo la tabla recibe chunkyLip.%s (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20) (enmendado por #197 R10) (enmendado por #196 R5) (enmendado por #208 R21)', (style, ids) => {
+  ['primary', [...primaryIds, 'notifications-open-settings'].sort()], ['neutral', [...neutralIds, 'add-meal-time-button', 'home-join-pet-button', 'member-leave-sheet-cancel', 'member-remove-sheet-cancel', 'pet-invite-copy', 'pet-members-leave'].sort()], ['primaryCompact', ['reminders-add-link', 'vaccines-add']],
+] as const)('#177 R8.1: solo la tabla recibe chunkyLip.%s (enmendado por #189 R7) (enmendado por #189 R13) (enmendado por E4 R19) (enmendado por E4 R20) (enmendado por #197 R10) (enmendado por #196 R5) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R7, R11, R13, R15, R16, R17, R18, R20) (enmendado por #209 R24)', (style, ids) => {
   expect(idsWhere(tag => tag.includes(`style={chunkyLip.${style}}`) || (style === 'primary' && /style=\{(?:atLimit|name\.trim\(\) === '') \? KEEP_OPACITY : \[chunkyLip\.primary, KEEP_OPACITY\]\}/.test(tag)) || (style === 'neutral' && tag.includes('style={[chunkyLip.neutral, KEEP_OPACITY]}')))).toEqual(ids);
 });
 it('#197 R10: Alertas y Horario usan useChunkyLip', () => {
@@ -277,7 +288,7 @@ it('#177 R11.5: la spec de #166 añade el bloque de sustitución', () => {
   for (const literal of ['R2', 'R3', 'reemplaza', 'consistency-classnames.test.ts', 'en su sitio', 'mobile-chunky-cta-canvas-fidelity']) expect(section).toContain(literal);
   expect(section).toMatch(/^- \[[ xX]\] Enmienda #177 aprobada por humano/m);
 });
-it('#177 R12.1/R12.2: los diecinueve ficheros respetan los guards de la carta (enmendado por #197 R10) (enmendado por #200 R3) (enmendado por #201 R13)', () => {
+it('#177 R12.1/R12.2: los diecinueve ficheros respetan los guards de la carta (enmendado por #197 R10) (enmendado por #200 R3) (enmendado por #201 R13) (enmendado por #209 R24)', () => {
   for (const path of [...consumers, 'theme/chunky-lip.ts']) {
     const source = readSource(path);
     expect(source).not.toMatch(/(?:bg|text|border|rounded|h|w|size|p|m|gap)-\[[^\]]+\]/);
@@ -286,7 +297,7 @@ it('#177 R12.1/R12.2: los diecinueve ficheros respetan los guards de la carta (e
   }
   expect('chunky-lip.ts useChunkyLip').not.toContain('shadow');
 });
-it('#177 R12.3: cada comentario de la feature nombra su requisito (enmendado por #197 R10) (enmendado por #200 R3) (enmendado por #201 R13)', () => {
+it('#177 R12.3: cada comentario de la feature nombra su requisito (enmendado por #197 R10) (enmendado por #200 R3) (enmendado por #201 R13) (enmendado por #209 R24)', () => {
   for (const path of [...consumers, 'theme/chunky-lip.ts']) expect(readSource(path)).not.toMatch(/#177(?! R\d)/);
   expect((readSource('screens/welcome/index.tsx').match(/text-accent-strong/g) ?? []).length).toBe(2);
 });

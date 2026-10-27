@@ -405,6 +405,8 @@ como primer hijo del scroll un `View` `health-header` con
   `health-header` (sufijo `(enmendado por #199 R12)`); el tercero conserva sus
   cinco ramas.
 
+**Enmendado por #222 (C3)**: health-header y health-title desaparecen; el selector avatars vive en la cabecera fija health-pet-header (#222 R3).
+
 **R13 — Avatares en la cabecera.** WHEN la cuenta tiene mascotas, THE SYSTEM
 SHALL pintar `PetSwitcher` con `variant="avatars"` como segundo hijo de
 `health-header` (D5), con los mismos `selectedPetId` y `onSelect` de hoy.
@@ -877,3 +879,17 @@ en el PC del humano, no en Expo Go ni en la VPS:
 - [ ] Smoke de R23 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
 - [ ] Smoke de R24 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
   Va en el lote `progress/smoke_canvas-parity.md` (plan §6); el `done` no espera al smoke.
+
+## Enmienda #222 — avatares fijos y sin título en las pestañas
+
+`mobile-tab-avatar-header` (#222) modifica una decisión que esta spec dejó
+aprobada. La spec de origen es `specs/mobile-tab-avatar-header/`; el detalle
+de la enmienda está en su `requirements.md` §R11.
+
+- Spec enmendada: `mobile-canvas-health-weight`
+- Qué cambia: `R12 y R13: Salud sin título, con cabecera fija de avatares`
+- Qué NO cambia: ningún otro requisito de esta spec ni su estado de
+  aprobación. Los tests que cubren lo enmendado se reescriben en #222 (lista
+  en su `requirements.md` §R9 y en su `tasks.md`).
+
+- [ ] Enmienda #222 aprobada por humano

@@ -127,7 +127,7 @@ beforeEach(() => {
   mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   mockCatalog.mockResolvedValue({ kind: 'ok', entries: catalog });
   mockCreateVaccine.mockReturnValue(pending());
-  mockCreateReminder.mockResolvedValue({ kind: 'ok', reminder: { id: 'reminder-1', petId: 'pet-1', type: 'vaccine', title: 'Leptospirosis', dueAt: '2027-10-06T09:00:00.000Z', advanceMinutes: 0, status: 'scheduled' } });
+  mockCreateReminder.mockResolvedValue({ kind: 'ok', reminder: { id: 'reminder-1', petId: 'pet-1', type: 'vaccine', title: 'Leptospirosis', dueAt: '2027-10-06T09:00:00.000Z', advanceMinutes: 0, status: 'scheduled', recurrence: null, recurrenceUntil: null } });
   mockGetMe.mockResolvedValue({ kind: 'ok', me: { id: 'user-1', email: 'a@example.test', firstName: 'Ana', lastName: 'A', phone: '', country: 'MX', timezone: 'America/Mexico_City', createdAt: '', updatedAt: '' } });
 });
 afterEach(() => {

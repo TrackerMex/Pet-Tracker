@@ -9,8 +9,8 @@ export const UpsertNutritionProfileSchema = z.strictObject({
   targetWeightKg: z.number().gt(0).max(999.99).optional(),
   foodType: z.enum(['dry', 'wet', 'mixed', 'homemade']),
   kcalPer100g: z.number().min(KCAL_PER_100G_MIN).max(KCAL_PER_100G_MAX),
-  allergies: z.array(z.string()).default([]),
-  diseases: z.array(z.string()).default([]),
+  allergies: z.array(z.string().max(100)).max(20).default([]),
+  diseases: z.array(z.string().max(100)).max(20).default([]),
 });
 
 export type UpsertNutritionProfileDto = z.infer<

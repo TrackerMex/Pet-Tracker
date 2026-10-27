@@ -111,7 +111,7 @@ describe('#173 R4: variante avatars', () => {
     );
   }
 
-  it('reparte los cinco colores y vuelve a ámbar en la sexta mascota', async () => {
+  it('reparte los cinco colores y vuelve a ámbar en la sexta mascota (enmendado por #222 R2)', async () => {
     const pets = Array.from({ length: 6 }, (_, index) =>
       makePet({ id: `pet-${index + 1}`, name: `Pet ${index + 1}` }),
     );
@@ -122,7 +122,7 @@ describe('#173 R4: variante avatars', () => {
       'bg-category-green', 'bg-category-rose', 'bg-category-amber',
     ];
     const first = screen.getByTestId('pet-chip-pet-1');
-    expect(first.parent!.props.className).toBe('flex-row gap-1.5');
+    expect(first.parent!.props.className).toBe('flex-row');
     expect(first.parent!.children).toHaveLength(6);
     pets.forEach((pet, index) => {
       const chip = screen.getByTestId(`pet-chip-${pet.id}`);
@@ -294,5 +294,45 @@ describe('#195 R10: fila de vidrio con acción al final', () => {
     await render(<HeroUINativeProvider><PetSwitcher pets={[makePet()]} selectedPetId="pet-1" onSelect={jest.fn()} variant="glass" /></HeroUINativeProvider>);
     const chip = screen.getByTestId('pet-chip-pet-1');
     expect(chip.parent!.children).toEqual([chip]);
+  });
+});
+
+
+describe('#222 R2: PetSwitcher variante avatars', () => {
+  it('#222 R2: la caja del chip mide 50 y la fila no lleva gap', async () => {
+    await render(<HeroUINativeProvider><PetSwitcher pets={[makePet()]} selectedPetId="pet-1" onSelect={jest.fn()} variant="avatars" /></HeroUINativeProvider>);
+    const chip = screen.getByTestId('pet-chip-pet-1');
+    expect(chip.props.className).toContain('p-0.75');
+    expect(chip.props.className).toContain('border-2');
+    expect(screen.getByTestId('pet-avatar-pet-1').props.className).toContain('size-10');
+    expect(chip.parent!.props.className).toBe('flex-row');
+  });
+
+  it('#222 R2: sin edgeInset ni scrollHint el ScrollView no lleva relleno ni etiqueta', async () => {
+    await render(<HeroUINativeProvider><PetSwitcher pets={[makePet()]} selectedPetId="pet-1" onSelect={jest.fn()} variant="avatars" /></HeroUINativeProvider>);
+    expect(screen.queryByTestId('pet-switcher-scroll')).not.toBeNull();
+    const scroll = screen.getByTestId('pet-switcher-scroll');
+    expect(scroll.props.horizontal).toBe(true);
+    expect(scroll.props.showsHorizontalScrollIndicator).toBe(false);
+    expect(scroll.props.contentContainerStyle).toBeUndefined();
+    expect(scroll.props.accessibilityLabel).toBeUndefined();
+  });
+
+  it('#222 R2: edgeInset y scrollHint llegan al ScrollView pet-switcher-scroll', async () => {
+    await render(<HeroUINativeProvider><PetSwitcher pets={[makePet()]} selectedPetId="pet-1" onSelect={jest.fn()} variant="avatars" {...{ edgeInset: 19, scrollHint: 'pista recibida' }} /></HeroUINativeProvider>);
+    expect(screen.queryByTestId('pet-switcher-scroll')).not.toBeNull();
+    const scroll = screen.getByTestId('pet-switcher-scroll');
+    expect(scroll.props.contentContainerStyle).toEqual({ paddingHorizontal: 19 });
+    expect(scroll.props.accessibilityLabel).toBe('pista recibida');
+  });
+
+  it('#222 R2: las variantes default y glass no cambian', async () => {
+    for (const variant of ['default', 'glass'] as const) {
+      await render(<HeroUINativeProvider><PetSwitcher pets={[makePet()]} selectedPetId="pet-1" onSelect={jest.fn()} variant={variant} {...{ edgeInset: 19, scrollHint: 'pista recibida' }} /></HeroUINativeProvider>);
+      const chip = screen.getByTestId('pet-chip-pet-1');
+      expect(chip.parent!.props.className).toBe(variant === 'default' ? 'flex-row gap-2' : 'flex-row items-center gap-2 p-1');
+      expect(screen.queryByTestId('pet-switcher-scroll')).toBeNull();
+      await cleanup();
+    }
   });
 });

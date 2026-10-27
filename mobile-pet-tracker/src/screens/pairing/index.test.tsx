@@ -1875,3 +1875,78 @@ describe('#203 R7: hoja de desvincular', () => {
     expect(within(screen.getByTestId('pairing-unpair-cancel')).getByText('Cancel')).toBeOnTheScreen();
   });
 });
+
+describe('#216 R6: el formulario de vincular es solo del dueño', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseReducedMotion.mockReturnValue(false);
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetPetTracking.mockResolvedValue({ kind: 'ok', tracked: true });
+  });
+
+  const formTestIDs = [
+    'pairing-plan-rise',
+    'pairing-plan-free',
+    'pairing-code-rise',
+    'activation-code-input',
+    'pairing-submit-spacer',
+    'pairing-submit',
+  ];
+
+  it.each([
+    ['owner', true],
+    ['family', false],
+    ['walker', false],
+    ['vet', false],
+  ] as const)('#216 R6 con el rol %s el formulario se pinta: %s', async (role, formVisible) => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: role })] });
+    await renderPairing();
+    await screen.findByTestId('pairing-title');
+
+    if (formVisible) {
+      await screen.findByTestId('activation-code-input');
+      for (const testID of formTestIDs) expect(screen.queryByTestId(testID)).not.toBeNull();
+      expect(screen.queryByTestId('pairing-owner-only')).toBeNull();
+    } else {
+      const note = await screen.findByTestId('pairing-owner-only');
+      for (const testID of formTestIDs) expect(screen.queryByTestId(testID)).toBeNull();
+      expect(note).toHaveTextContent('Solo el dueño puede vincular un collar.', { exact: true });
+      expect(note.props.className).toBe('text-center text-sm font-normal leading-body text-muted');
+    }
+  });
+});
+
+describe('#216 R7: desvincular es solo del dueño', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseReducedMotion.mockReturnValue(false);
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetPetTracking.mockResolvedValue({ kind: 'ok', tracked: true });
+  });
+
+  it.each([
+    ['owner', true],
+    ['family', false],
+    ['walker', false],
+    ['vet', false],
+  ] as const)('#216 R7 con el rol %s desvincular se pinta: %s', async (role, unpairVisible) => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: role, device: makeDevice() })] });
+    await renderPairing();
+    await screen.findByTestId('device-status-card');
+    expect(screen.queryByTestId('device-title')).not.toBeNull();
+
+    if (unpairVisible) {
+      expect(screen.queryByTestId('device-unpair')).not.toBeNull();
+      expect(screen.queryByTestId('device-unpair-spacer')).not.toBeNull();
+    } else {
+      expect(screen.queryByTestId('device-unpair')).toBeNull();
+      expect(screen.queryByTestId('device-unpair-spacer')).toBeNull();
+    }
+  });
+});

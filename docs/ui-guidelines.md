@@ -977,3 +977,11 @@ Detalle y tests en `specs/mobile-canvas-tab-bar/requirements.md` (R1 a R10).
 
 - [X] Enmienda #206 aprobada por humano
   Firma delegada en el leader por mandato del humano del 2026-10-23 (`progress/plan_canvas-parity-2026-10-23.md` §4), reflejada desde `specs/mobile-canvas-tab-bar/requirements.md` § Aprobación, ya firmada el 2026-10-23.
+
+## Enmienda #209 — Cuestionario de nutrición
+
+- Los anillos de ping de `CuestionarioGenerando` (`src/screens/nutrition-questionnaire/index.tsx`) quedan permitidos: dos `PingRing` con `MOTION_PING_TIMING`, ninguno con movimiento reducido. Es la excepción a «Ninguna otra pantalla usa anillos de ping sin una enmienda propia» (#167).
+- Fuera de la escala, por fidelidad al canvas (#209): tarjetas de actividad y lista de Generando en `rounded-tile`, filas BCS y campos numéricos en `rounded-14`, badges BCS en `rounded-10`, resumen de peso objetivo en `rounded-16`.
+- Chips de Salud: receta de chip elegido de la regla 13 (`rounded-full bg-accent` + `chunkyLip.primaryCompact`); chips de tipo de alimento: receta de `OptionalChip`, sin labio.
+
+- [ ] Enmienda #209 aprobada por humano

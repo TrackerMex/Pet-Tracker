@@ -276,6 +276,9 @@ comparan escritas en el propio test, nunca importando una constante de producci�
 - **R4.3** WHEN Perfil renderiza el switcher, THE SYSTEM SHALL pasarle `variant="avatars"`.
   - Ningún otro fichero de producción contiene `variant="avatars"`.
   - Los otros cinco consumidores de `PetSwitcher` no cambian.
+
+**Enmendado por #222 (C6)**: variant="avatars" solo vive en components/tab-pet-header.tsx y la cápsula profile-add-pet ya no sigue a un título (#222 R2, R5, R9 L5).
+
 - **Tests**:
   - `src/components/__tests__/pet-switcher.test.tsx`, describe nuevo `#173 R4: variante avatars`. Usa
     `await fireEvent.press` y cubre una rama y combinación por `it`:
@@ -988,3 +991,17 @@ Detalle y tests en `specs/mobile-alert-detail-canvas-fidelity/requirements.md`. 
 su sitio con el sufijo `(enmendado por #180 Rn)`.
 
 - [X] Enmienda #180 aprobada por humano
+
+## Enmienda #222 — avatares fijos y sin título en las pestañas
+
+`mobile-tab-avatar-header` (#222) modifica una decisión que esta spec dejó
+aprobada. La spec de origen es `specs/mobile-tab-avatar-header/`; el detalle
+de la enmienda está en su `requirements.md` §R11.
+
+- Spec enmendada: `mobile-tab-screens-canvas-fidelity`
+- Qué cambia: `R4 y R5: avatars deja las pantallas y la cápsula pierde el título`
+- Qué NO cambia: ningún otro requisito de esta spec ni su estado de
+  aprobación. Los tests que cubren lo enmendado se reescriben en #222 (lista
+  en su `requirements.md` §R9 y en su `tasks.md`).
+
+- [ ] Enmienda #222 aprobada por humano

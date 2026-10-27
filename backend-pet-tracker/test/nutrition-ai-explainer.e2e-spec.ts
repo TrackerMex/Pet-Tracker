@@ -1,3 +1,5 @@
+import type { NutritionAiOutput } from '@/modules/nutrition/domain/nutrition-ai-proposal';
+import type { NutritionWeightPoint } from '@/modules/nutrition/domain/ports/nutrition-weight-reader';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { eq, inArray } from 'drizzle-orm';
@@ -22,7 +24,15 @@ import { AppModule } from '../src/app.module';
 
 process.env.ANTHROPIC_ENABLED = 'false';
 
-const text = 'Tu perro de 20 kg necesita unas 1059 kcal al día...';
+const E2E_OUTPUT = {
+  mealGrams: [
+    { mealTime: '07:30', grams: 150 },
+    { mealTime: '19:30', grams: 160 },
+  ],
+  recommendations: ['Pésala cada dos semanas.', 'Evita darle chocolate.'],
+  reviewInDays: 30,
+  explanation: 'Explicación de prueba.',
+};
 interface PlanResponse {
   id: string;
   aiExplanation: string | null;
@@ -36,10 +46,15 @@ describe('Nutrition AI explainer (e2e HTTP y Postgres)', () => {
   const petIds: string[] = [];
   const explain = jest
     .fn<
-      Promise<string | null>,
-      [NutritionEngineInput, NutritionPlanResult, NutritionExplainerContext]
+      Promise<NutritionAiOutput | null>,
+      [
+        NutritionEngineInput,
+        NutritionPlanResult,
+        NutritionWeightPoint[],
+        NutritionExplainerContext,
+      ]
     >()
-    .mockResolvedValue(text);
+    .mockResolvedValue(E2E_OUTPUT);
   const isPetTracked = jest.fn().mockResolvedValue(true);
   const api = () => request(app.getHttpServer());
   beforeAll(async () => {
@@ -56,7 +71,7 @@ describe('Nutrition AI explainer (e2e HTTP y Postgres)', () => {
     tokens = app.get<TokenService>(TOKEN_SERVICE);
   });
   beforeEach(() => {
-    explain.mockReset().mockResolvedValue(text);
+    explain.mockReset().mockResolvedValue(E2E_OUTPUT);
     isPetTracked.mockClear();
   });
   afterAll(async () => {
@@ -113,17 +128,20 @@ describe('Nutrition AI explainer (e2e HTTP y Postgres)', () => {
       const f = await fixture();
       const generated = await f.generate().expect(200);
       const body = generated.body as PlanResponse;
-      expect(body.aiExplanation).toBe(text);
+      expect(body.aiExplanation).toBe(E2E_OUTPUT.explanation);
       const rows = await db
         .select()
         .from(nutritionPlans)
         .where(eq(nutritionPlans.id, body.id));
       expect(rows).toHaveLength(1);
-      expect(rows[0].aiExplanation).toBe(text);
+      expect(rows[0].aiExplanation).toBe(E2E_OUTPUT.explanation);
       const latest = await f.get().expect(200);
-      expect(latest.body).toHaveProperty('aiExplanation', text);
+      expect(latest.body).toHaveProperty(
+        'aiExplanation',
+        E2E_OUTPUT.explanation,
+      );
       expect(explain).toHaveBeenCalledTimes(1);
-      expect(explain.mock.calls[0][2]).toEqual({
+      expect(explain.mock.calls[0][3]).toEqual({
         petId: f.petId,
         planId: body.id,
       });
@@ -139,13 +157,14 @@ describe('Nutrition AI explainer (e2e HTTP y Postgres)', () => {
           async (
             _input: NutritionEngineInput,
             _result: NutritionPlanResult,
+            _weightTrend: NutritionWeightPoint[],
             ctx: NutritionExplainerContext,
           ) => {
             [inserted] = await db
               .select()
               .from(nutritionPlans)
               .where(eq(nutritionPlans.id, ctx.planId));
-            return 'texto B';
+            return { ...E2E_OUTPUT, explanation: 'texto B' };
           },
         );
       const first = (await f.generate().expect(200)).body as PlanResponse;
@@ -168,7 +187,11 @@ describe('Nutrition AI explainer (e2e HTTP y Postgres)', () => {
       expect(inserted).toBeDefined();
       expect(inserted?.aiExplanation).toBeNull();
       expect(p2?.inputsHash).toBe(inserted?.inputsHash);
-      expect(p2).toEqual({ ...inserted, aiExplanation: 'texto B' });
+      expect(p2).toEqual({
+        ...inserted,
+        aiExplanation: 'texto B',
+        aiProposal: p2?.aiProposal,
+      });
     });
   });
   describe('R16 (nutrition-ai-explainer #18): hash hit no vuelve a pagar por HTTP', () => {
@@ -177,8 +200,8 @@ describe('Nutrition AI explainer (e2e HTTP y Postgres)', () => {
       const first = (await f.generate().expect(200)).body as PlanResponse;
       const second = (await f.generate().expect(200)).body as PlanResponse;
       expect(second.id).toBe(first.id);
-      expect(first.aiExplanation).toBe(text);
-      expect(second.aiExplanation).toBe(text);
+      expect(first.aiExplanation).toBe(E2E_OUTPUT.explanation);
+      expect(second.aiExplanation).toBe(E2E_OUTPUT.explanation);
       const rows = await db
         .select()
         .from(nutritionPlans)

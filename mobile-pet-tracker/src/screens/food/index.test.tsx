@@ -1,5 +1,6 @@
 import {
   act,
+  cleanup,
   fireEvent,
   renderHook,
   screen,
@@ -17,6 +18,7 @@ import { Easing, ReduceMotion } from 'react-native-reanimated';
 
 import {
   getNutritionPlan,
+  getNutritionProfile,
   serveMeal,
   type NutritionPlanState,
   unserveMeal,
@@ -45,6 +47,7 @@ jest.mock('../../api/pets', () => ({
 
 jest.mock('../../api/nutrition', () => ({
   getNutritionPlan: jest.fn(),
+  getNutritionProfile: jest.fn(),
   serveMeal: jest.fn(),
   unserveMeal: jest.fn(),
 }));
@@ -133,6 +136,7 @@ jest.mock(
 
 const apiUrl = 'http://example.test/v1';
 const mockGetNutritionPlan = jest.mocked(getNutritionPlan);
+const mockGetNutritionProfile = jest.mocked(getNutritionProfile);
 const mockServeMeal = jest.mocked(serveMeal);
 const mockUnserveMeal = jest.mocked(unserveMeal);
 const mockListPets = jest.mocked(listPets);
@@ -226,6 +230,20 @@ beforeEach(() => {
     signIn: jest.fn(),
     signOut: jest.fn(),
   } satisfies AuthContextValue);
+  mockGetNutritionProfile.mockResolvedValue({
+    kind: 'ok',
+    profile: {
+      petId: 'pet-1',
+      activityLevel: 'medium',
+      bodyCondition: 5,
+      targetWeightKg: null,
+      foodType: 'dry',
+      kcalPer100g: 350,
+      allergies: [],
+      diseases: [],
+      updatedAt: '2026-08-22T00:00:00.000Z',
+    },
+  });
 });
 
 describe('#106 R1: expo-haptics entra declarada y sin configuración de babel', () => {
@@ -260,13 +278,13 @@ describe('R4: food resuelve la mascota seleccionada', () => {
     mockGetNutritionPlan.mockReturnValue(pending<NutritionPlanState>());
   });
 
-  it('shows the hub and a loading state while pets are pending (enmendado por #200 R2)', async () => {
+  it('shows the hub and a loading state while pets are pending (enmendado por #200 R2) (enmendado por #222 R9)', async () => {
     mockListPets.mockReturnValue(pending<PetsState>());
 
     await renderFood();
 
     expect(screen.getByTestId('screen-food')).toBeVisible();
-    expect(screen.getByText('Nutrición')).toBeVisible();
+    expect(screen.getByRole('header', { name: 'Nutrición' })).toBeVisible();
     expect(screen.getByTestId('food-loading')).toBeVisible();
     expect(screen.getByTestId('food-plan-skeleton')).toHaveProp(
       'className',
@@ -1176,13 +1194,13 @@ describe('#155 R4: Comida sin mascotas presenta a Pingo', () => {
     expect(within(screen.getByTestId('food-empty-action')).getByText('Añadir mascota')).toBeVisible();
   });
 
-  it('queda en el sitio del vacío que sustituye (enmendado por #200 R2)', async () => {
+  it('queda en el sitio del vacío que sustituye (enmendado por #200 R2) (enmendado por #222 R9)', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
     await renderFood();
     await screen.findByTestId('food-empty-pose');
     const slot = screen.getByTestId('food-empty');
     expect(slot.parent?.parent?.props.testID).toBe('screen-food');
-    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['food-title-row', 'food-empty']);
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['food-empty']);
   });
 
   it('lleva a añadir mascota', async () => {
@@ -1209,7 +1227,7 @@ describe('#155 R9: sin plan de comidas, Pingo enseña el cuenco', () => {
     expect(screen.getByTestId('food-plan-empty-body')).toHaveTextContent('Cuando haya un plan, te ayudo a llevar la cuenta de cada comida.');
   });
 
-  it('queda en el sitio del vacío que sustituye (enmendado por #200 R9)', async () => {
+  it('queda en el sitio del vacío que sustituye (enmendado por #200 R9) (enmendado por #222 R9)', async () => {
     mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
     await renderFood();
     await screen.findByTestId('food-plan-empty-pose');
@@ -1245,15 +1263,14 @@ const FOOD_BRANCHES_168 = [
 describe('#168 R1: Nutrición pinta el título grande en todas sus ramas', () => {
   beforeEach(setupFood168);
 
-  it.each(FOOD_BRANCHES_168)('pinta el título grande ($name) (enmendado por #197 R4)', async ({ pets, plan, branch }) => {
+  it.each(FOOD_BRANCHES_168)('pinta el encabezado oculto ($name) (enmendado por #197 R4) (enmendado por #222 R9)', async ({ pets, plan, branch }) => {
     mockListPets.mockImplementation(async () => pets);
     mockGetNutritionPlan.mockImplementation(async () => plan);
     await renderFood();
     await screen.findByTestId(branch);
-    const title = screen.getByTestId('food-title');
-    expect(title.props.className).toBe('text-3xl font-black tracking-title text-foreground');
-    expect(title).toHaveTextContent('Nutrición');
-    expect(title.parent!.children[0]).toBe(title);
+    expect(screen.getByTestId('food-heading')).toBeOnTheScreen();
+    expect(screen.queryByTestId('food-title')).toBeNull();
+    expect(screen.queryByTestId('food-title-row')).toBeNull();
   });
 });
 
@@ -1519,32 +1536,24 @@ describe('#181 R6: food hereda la limpieza de selección', () => {
 describe('#200 R2: marco y fila del canvas', () => {
   beforeEach(setupFood168);
 
-  it('#200 R2: el marco es el del canvas', async () => {
+  it('#200 R2: el marco es el del canvas (enmendado por #222 R9)', async () => {
     await renderFood();
+    // docs/conventions.md §Esperas: el relleno depende de las mascotas cargadas.
+    await screen.findByTestId('food-plan-card');
     expect(screen.getByTestId('screen-food').props.contentContainerStyle).toEqual({
-      paddingHorizontal: 20, paddingTop: 52, paddingBottom: 120, gap: 14,
+      paddingHorizontal: 20, paddingTop: 119, paddingBottom: 120, gap: 14,
     });
   });
 
-  it('#200 R2: los avatares comparten fila con el título', async () => {
-    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet(), makePet({ id: 'pet-2', name: 'Max' })] });
-    await renderFood();
-    await screen.findByTestId('pet-chip-pet-2');
-    const row = screen.getByTestId('food-title-row');
-    expect(row.props.className).toBe('flex-row items-center justify-between');
-    expect(foodChild(row, 0).props.testID).toBe('food-title');
-    expect(within(row).getAllByTestId(/^pet-chip-/).map((node) => node.props.testID))
-      .toEqual(['pet-chip-pet-1', 'pet-chip-pet-2']);
-  });
 
-  it('#200 R2: sin mascotas la fila solo lleva el título', async () => {
+
+  it('#222 R4: sin mascotas no hay food-pet-header (enmendado por #222 R9)', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
     await renderFood();
+    // docs/conventions.md §Esperas: anclar ausencias al vacío renderizado.
     await screen.findByTestId('food-empty');
-    const row = screen.getByTestId('food-title-row');
-    expect(row.children).toHaveLength(1);
-    expect(foodChild(row, 0).props.testID).toBe('food-title');
-    expect(within(row).queryAllByTestId(/^pet-chip-/)).toEqual([]);
+    expect(screen.queryByTestId('food-pet-header')).toBeNull();
+    expect(screen.queryAllByTestId(/^pet-chip-/)).toEqual([]);
   });
 
   it('#200 R2: el contenido de la mascota se separa 14 como el canvas', async () => {
@@ -1807,4 +1816,176 @@ describe('#200 R10: entrada escalonada de Nutrición', () => {
     await screen.findByTestId('food-plan-empty');
     expect(riseDelayOf(screen.getByTestId('food-links'))).toBeUndefined();
   });
+});
+
+
+describe('#222 R7: Encabezado solo para lectores de pantalla', () => {
+  beforeEach(setupFood168);
+
+  it('#222 R7: Nutrición anuncia su encabezado sin texto visible', async () => {
+    await renderFood();
+    // docs/conventions.md §Esperas: esperar al mismo nodo que se aserta.
+    await waitFor(() => expect(screen.queryByRole('header', { name: 'Nutrición' })).not.toBeNull());
+    const heading = screen.getByTestId('food-heading');
+    expect(screen.getByRole('header', { name: 'Nutrición' })).toBe(heading);
+    expect(heading.props.accessible).toBe(true);
+    expect(heading.props.className).toBe('absolute size-px');
+    expect(heading.children).toEqual([]);
+  });
+
+  it('#222 R7: el encabezado sale en inglés', async () => {
+    await renderWithProviders(<FoodScreen />, {
+      wrapper: ({ children }) => <HeroUINativeProvider><LanguageProvider initial="en"><SelectedPetProvider>{children}</SelectedPetProvider></LanguageProvider></HeroUINativeProvider>,
+    });
+    // docs/conventions.md §Esperas: el idioma se observa en el encabezado.
+    await waitFor(() => expect(screen.queryByRole('header', { name: 'Food' })).not.toBeNull());
+    expect(screen.getByRole('header', { name: 'Food' })).toBe(screen.getByTestId('food-heading'));
+  });
+
+  it('#222 R7: el encabezado existe en todos los estados', async () => {
+    for (const state of FOOD_BRANCHES_168) {
+      setupFood168();
+      mockListPets.mockImplementation(async () => state.pets);
+      mockGetNutritionPlan.mockImplementation(async () => state.plan);
+      await renderFood();
+      await screen.findByTestId(state.branch);
+      // docs/conventions.md §Esperas: se espera al encabezado de esta rama.
+      await waitFor(() => expect(screen.queryByTestId('food-heading')).not.toBeNull());
+      expect(screen.getByRole('header', { name: 'Nutrición' })).toBe(screen.getByTestId('food-heading'));
+      await cleanup();
+    }
+  });
+
+  it('#222 R7: el encabezado es el primer hijo', async () => {
+    await renderFood();
+    // docs/conventions.md §Esperas: la posición se aserta tras montar el nodo.
+    await waitFor(() => expect(screen.queryByTestId('food-heading')).not.toBeNull());
+    const heading = screen.getByTestId('food-heading');
+    expect(screen.getByTestId('food-root').children[0]).toBe(heading);
+  });
+});
+
+
+describe('#222 R4: Nutrición', () => {
+  beforeEach(setupFood168);
+
+  it('#222 R4: sin título visible y sin food-' + 'title-row (enmendado por #222 R9)', async () => {
+    await renderFood();
+    // docs/conventions.md §Esperas: anclar ausencias al plan renderizado.
+    await screen.findByTestId('food-plan-card');
+    expect(screen.queryByTestId('food-title')).toBeNull();
+    expect(screen.queryByTestId('food-title-row')).toBeNull();
+    expect(screen.queryByText('Nutrición')).toBeNull();
+  });
+
+  it('#222 R4: food-root envuelve al scroll y la cabecera va después', async () => {
+    for (const hasPets of [true, false]) {
+      setupFood168();
+      if (!hasPets) mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+      await renderFood();
+      // docs/conventions.md §Esperas: el estado determina los hijos esperados.
+      await screen.findByTestId(hasPets ? 'food-plan-card' : 'food-empty');
+      const root = screen.getByTestId('food-root');
+      expect(root.props.className).toBe('flex-1');
+      expect(root.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(hasPets
+        ? ['food-heading', 'screen-food', 'food-pet-header']
+        : ['food-heading', 'screen-food']);
+      await cleanup();
+    }
+  });
+
+  it('#222 R4: el scroll arranca bajo la cabecera con mascotas y arriba sin ellas', async () => {
+    for (const state of FOOD_BRANCHES_168) {
+      setupFood168();
+      mockListPets.mockImplementation(async () => state.pets);
+      mockGetNutritionPlan.mockImplementation(async () => state.plan);
+      await renderFood();
+      // docs/conventions.md §Esperas: observar la rama antes de sus métricas.
+      await screen.findByTestId(state.branch);
+      const hasPets = !['food-loading', 'food-error', 'food-empty'].includes(state.name);
+      expect(screen.getByTestId('screen-food').props.contentContainerStyle).toEqual({ paddingHorizontal: 20, gap: 14, paddingTop: hasPets ? 119 : 52, paddingBottom: 120 });
+      if (hasPets) expect(screen.queryByTestId('food-pet-header')).not.toBeNull();
+      else expect(screen.queryByTestId('food-pet-header')).toBeNull();
+      await cleanup();
+    }
+  });
+
+  it('#222 R4: el selector vive solo en food-pet-header', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo' })] });
+    mockGetNutritionPlan.mockImplementation(async (_url, _token, petId) => ({ kind: 'ok', plan: makePlan({ petId, merKcal: petId === 'pet-2' ? 777 : 656 }) }));
+    await renderFood();
+    // docs/conventions.md §Esperas: esperar al contenedor que se aserta.
+    await waitFor(() => expect(screen.queryByTestId('food-pet-header')).not.toBeNull());
+    const header = screen.getByTestId('food-pet-header');
+    expect(within(header).getAllByTestId(/^pet-chip-/).map(node => node.props.testID)).toEqual(['pet-chip-pet-1', 'pet-chip-pet-2']);
+    expect(within(screen.getByTestId('screen-food')).queryAllByTestId(/^pet-chip-/)).toEqual([]);
+    expect(within(header).getByTestId('pet-switcher-scroll').props.contentContainerStyle).toEqual({ paddingHorizontal: 15 });
+    await fireEvent.press(within(header).getByTestId('pet-chip-pet-2'));
+    // docs/conventions.md §Esperas: observar los datos de la mascota elegida.
+    await waitFor(() => expect(screen.getByTestId('food-plan-kcal')).toHaveTextContent('777 kcal / día'));
+  });
+
+  it('#222 R4: seis mascotas sin pista, siete con ella', async () => {
+    for (const count of [6, 7]) {
+      setupFood168();
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: Array.from({ length: count }, (_, index) => makePet({ id: `pet-${index + 1}` })) });
+      await renderFood();
+      // docs/conventions.md §Esperas: el selector es el nodo de la pista.
+      await screen.findByTestId('pet-switcher-scroll');
+      expect(screen.queryByTestId('food-pet-header')).not.toBeNull();
+      expect(screen.getByTestId('pet-switcher-scroll').props.accessibilityLabel).toBe(count === 6 ? undefined : 'Mascotas, desliza para ver más');
+      await cleanup();
+    }
+  });
+});
+
+it('#209 R19: owner sin perfil ve Crear perfil nutricional y navega al cuestionario', async () => {
+  mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+  mockGetNutritionProfile.mockResolvedValue({ kind: 'not-found' });
+  await renderFood();
+  const cta = await screen.findByTestId('food-create-profile');
+  const section = screen.getByTestId('food-profile-empty');
+  expect(mockGetNutritionProfile).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1');
+  expect(screen.queryByTestId('food-plan-empty')).toBeNull();
+  const pingo = within(section).getByTestId('food-profile-pingo', { includeHiddenElements: true });
+  expect(foodChild(pingo, 0).props.source).toEqual([
+    expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-food\.webp$/) }),
+  ]);
+  expect(within(section).getByText('Aún no hay perfil nutricional')).toBeOnTheScreen();
+  expect(within(section).getByText('Respóndeme unas preguntas sobre Luna y preparo su plan: cuántas calorías necesita y cuántos gramos servir en cada comida.')).toBeOnTheScreen();
+  expect(within(section).getByText('Son 4 pasos y podrás cambiar tus respuestas cuando quieras.')).toBeOnTheScreen();
+  expect(cta).toHaveTextContent('Crear perfil nutricional');
+  await fireEvent.press(cta);
+  expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/nutrition-profile', params: { petId: 'pet-1' } });
+});
+
+it.each(['family', 'walker', 'vet'] as const)('#209 R19: %s sin perfil ve el vacío actual', async (role) => {
+  mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: role })] });
+  mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+  mockGetNutritionProfile.mockResolvedValue({ kind: 'not-found' });
+  await renderFood();
+  await screen.findByTestId('food-plan-empty');
+  expect(screen.queryByTestId('food-profile-empty')).toBeNull();
+  expect(screen.queryByTestId('food-create-profile')).toBeNull();
+});
+
+it('#209 R19: owner con perfil y sin plan ve el vacío actual', async () => {
+  mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+  await renderFood();
+  await screen.findByTestId('food-plan-empty');
+  expect(screen.queryByTestId('food-profile-empty')).toBeNull();
+  expect(screen.queryByTestId('food-create-profile')).toBeNull();
+});
+it('#209 R19: Pingo de NutricionSinPerfil mide 150 pt por style', async () => {
+  mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+  mockGetNutritionProfile.mockResolvedValue({ kind: 'not-found' });
+  await renderFood();
+  // docs/conventions.md §Esperas: observar la sección antes de medir.
+  await screen.findByTestId('food-profile-empty');
+  const image = within(screen.getByTestId('food-profile-pingo', { includeHiddenElements: true })).getByTestId('food-profile-pingo-image', { includeHiddenElements: true });
+  expect(image.props.style).toEqual({ width: 150, height: 150 });
+  expect(image.props.className).toBeUndefined();
 });
