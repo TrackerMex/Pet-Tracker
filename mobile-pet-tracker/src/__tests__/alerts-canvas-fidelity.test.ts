@@ -266,10 +266,10 @@ describe('#174 R12: grep-limpio', () => {
     expect(readSource('screens/alerts/index.tsx')).not.toMatch(/(?<![\w-])(?:min-h-20|text-2xs|shadow-sm)\b/);
   });
 
-  it('cada tracking-* va con su text-* (enmendado por #203 R8)', () => {
+  it('cada tracking-* va con su text-* (enmendado por #203 R8) (enmendado por #223 R18)', () => {
     const tracked = classNames(readSource('screens/alerts/index.tsx'))
       .filter((classes) => /(?<![\w-])tracking-/.test(classes));
-    expect(tracked).toHaveLength(1);
+    expect(tracked).toHaveLength(2);
     for (const classes of tracked) expect(classes).toMatch(/(?<![\w-])text-(?:13|15|26)\b/);
   });
 });

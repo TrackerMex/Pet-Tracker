@@ -1667,4 +1667,34 @@ describe('#223 R5: la insignia espera al último cursor y suma las abiertas de t
       await rendered.unmount();
     }
   });
+
+  it('#223 R7: pinta «Atendidas» colapsada con su contador solo asentada y con atendidas', async () => {
+    const attended = [makeAlert({ id: 'read', status: 'acked' }), makeAlert({ id: 'resolved', status: 'closed' })];
+    for (const language of ['es', 'en']) {
+      mockListAlerts.mockReset().mockResolvedValue({ kind: 'ok', items: [makeAlert({ id: 'open' }), ...attended], nextCursor: null });
+      const rendered = await (language === 'es' ? renderAlerts() : renderAlertsInEnglish());
+      await waitFor(() => expect(screen.queryByTestId('alerts-attended')).not.toBeNull());
+      expect(screen.getByTestId('alerts-attended-label')).toHaveTextContent(language === 'es' ? 'Atendidas' : 'Attended', { exact: true });
+      expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('2', { exact: true });
+      expect(screen.getByTestId('alerts-attended-toggle').props.accessibilityState.expanded).toBe(false);
+      expect(screen.getByTestId('alerts-attended-chevron').props.iconName).toBe('ChevronDown');
+      expect(screen.queryByTestId('alert-row-read')).toBeNull();
+      expect(screen.queryByTestId('alert-row-resolved')).toBeNull();
+      await rendered.unmount();
+    }
+    mockListAlerts.mockReset().mockResolvedValue({ kind: 'ok', items: [makeAlert({ id: 'only-open' })], nextCursor: null });
+    const withoutAttended = await renderAlerts();
+    await screen.findByTestId('alert-row-only-open');
+    expect(screen.queryByTestId('alerts-attended')).toBeNull();
+    await withoutAttended.unmount();
+
+    let finishSecond!: (page: AlertsState) => void;
+    mockListAlerts.mockReset().mockResolvedValueOnce({ kind: 'ok', items: [makeAlert({ id: 'pending-open' }), ...attended], nextCursor: 'c1' })
+      .mockReturnValueOnce(new Promise<AlertsState>((resolve) => { finishSecond = resolve; }));
+    await renderAlerts();
+    await screen.findByTestId('alert-row-pending-open');
+    expect(screen.queryByTestId('alerts-attended')).toBeNull();
+    await act(async () => finishSecond({ kind: 'ok', items: [], nextCursor: null }));
+    await waitFor(() => expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('2', { exact: true }));
+  });
 });
