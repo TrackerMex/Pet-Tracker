@@ -2285,3 +2285,52 @@ describe('#216 R4: Nuevo es solo del dueño', () => {
     await waitFor(() => expect(screen.queryByTestId('reminders-add-link')).toBeNull());
   });
 });
+
+describe('#216 R5: borrar y cancelar serie son solo del dueño', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+  });
+
+  it.each([
+    ['owner', 3],
+    ['family', 2],
+    ['walker', 2],
+    ['vet', 2],
+  ] as const)('#216 R5 con el rol %s cada fila tiene %i hijos', async (role, rowChildren) => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: role })] });
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: [makeReminder(), makeReminder({ id: 'reminder-2', recurrence: { unit: 'month', every: 1 } })],
+    });
+    await renderReminders();
+    await screen.findByTestId('reminder-row-reminder-2');
+
+    for (const id of ['reminder-1', 'reminder-2']) {
+      const row = screen.getByTestId(`reminder-row-${id}`);
+      expect(row.children).toHaveLength(rowChildren);
+      expect(row.children[0]).toHaveProperty('props.testID', `reminder-tile-${id}`);
+      expect(row.children[1]).toHaveProperty('props.className', 'min-w-0 flex-1 gap-0.75');
+    }
+    if (role === 'owner') {
+      expect(screen.getByTestId('reminder-row-reminder-1').children[2]).toHaveProperty(
+        'props.testID',
+        'reminder-delete-reminder-1',
+      );
+      expect(screen.getByTestId('reminder-row-reminder-2').children[2]).toHaveProperty(
+        'props.testID',
+        'reminder-cancel-series-reminder-2',
+      );
+    } else {
+      expect(screen.queryByTestId('reminder-delete-reminder-1')).toBeNull();
+      expect(screen.queryByTestId('reminder-cancel-series-reminder-2')).toBeNull();
+    }
+    expect(screen.queryByTestId('reminder-repeats-reminder-2')).not.toBeNull();
+  });
+});
