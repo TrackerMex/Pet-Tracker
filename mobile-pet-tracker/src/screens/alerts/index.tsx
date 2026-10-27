@@ -176,7 +176,7 @@ export function AlertsScreen() {
     }
   }
 
-  const empty = alerts.isPending ? (
+  const empty = alerts.isPending || (draining && rows.length === 0) ? (
     <View testID="alerts-loading" className="gap-3">
       {[1, 2, 3].map((number) => (
         <Skeleton
