@@ -93,3 +93,34 @@ it('#223 R17: Ver más', () => {
 it('#223 R17: el pie', () => {
   expect(readSource('screens/alerts/index.tsx')).toContain('testID="alerts-attended-footer" className="text-xs text-muted"');
 });
+
+it("#223 R17: el encabezado Abiertas", () => {
+  const source = readSource('screens/alerts/index.tsx');
+  expect(source).toContain("testID=\"alerts-open-heading\"");
+  expect(source).toContain("mt-1.5 text-13 font-extrabold uppercase tracking-caps text-muted");
+  expect(source).toContain("accessibilityRole=\"header\"");
+});
+
+it("#223 R17: la tarjeta de calma", () => {
+  const source = readSource('screens/alerts/index.tsx');
+  expect(source).toContain("variant=\"secondary\"");
+  expect(source).toContain("flex-row items-center gap-3.5 border-0 px-4 py-4.5");
+});
+
+it("#223 R17: el disco de calma", () => {
+  const source = readSource('screens/alerts/index.tsx');
+  expect(source).toContain("size-11 items-center justify-center rounded-full bg-surface");
+  expect(source).toContain("size={22}");
+  expect(source).toContain("strokeWidth={2.2}");
+  expect(source).toContain("category-green-strong");
+});
+
+it("#223 R17: el título de calma", () => {
+  const source = readSource('screens/alerts/index.tsx');
+  expect(source).toContain("text-base font-extrabold text-foreground");
+});
+
+it("#223 R17: el cuerpo de calma", () => {
+  const source = readSource('screens/alerts/index.tsx');
+  expect(source).toContain("text-13 text-muted");
+});

@@ -1425,12 +1425,12 @@ describe('#170 R4: cuenta las alertas nuevas', () => {
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
     mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
   });
-  it.each(['carga', 'error', 'vacía', 'todas leídas'])('no pinta el contador con 0 nuevas: %s (enmendado por #203 R8)', async (state) => {
+  it.each(['carga', 'error', 'vacía', 'todas leídas'])('no pinta el contador con 0 nuevas: %s (enmendado por #203 R8) (enmendado por #223 R18)', async (state) => {
     if (state === 'carga') mockListAlerts.mockReturnValue(pending<AlertsState>());
     else if (state === 'error') mockListAlerts.mockResolvedValue({ kind: 'error' });
     else mockListAlerts.mockResolvedValue({ kind: 'ok', items: state === 'vacía' ? [] : [makeAlert({ id: 'a', status: 'acked' }), makeAlert({ id: 'b', status: 'closed' })], nextCursor: null });
     await renderAlerts();
-    await screen.findByTestId(state === 'carga' ? 'alerts-loading' : state === 'error' ? 'alerts-error' : state === 'vacía' ? 'alerts-empty' : 'alert-row-a');
+    await screen.findByTestId(state === 'carga' ? 'alerts-loading' : state === 'error' ? 'alerts-error' : state === 'vacía' ? 'alerts-empty' : 'alerts-calm');
     expect(screen.queryByTestId('alerts-new-count')).toBeNull();
     expect(screen.getByTestId('alerts').children).toHaveLength(2);
     const root = screen.getByTestId('screen-alerts');
@@ -1824,6 +1824,26 @@ describe('#223 R5: la insignia espera al último cursor y suma las abiertas de t
       await fireEvent.press(screen.getByTestId('alerts-attended-toggle'));
       expect(screen.getByTestId('alerts-attended-more')).toHaveTextContent('Show more', { exact: true });
       expect(screen.getByTestId('alerts-attended-footer')).toHaveTextContent('Showing 10 of 23', { exact: true });
+    }
+  });
+
+  it('#223 R11: sin abiertas pinta «Todo en calma» con el nombre de la mascota más reciente', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [
+      makeAlert({ id: 'newer', status: 'acked', petName: 'Rocky', openedAt: '2027-01-02T15:00:00.000Z' }),
+      makeAlert({ id: 'older', status: 'closed', petName: 'Luna', openedAt: '2027-01-01T15:00:00.000Z' }),
+    ], nextCursor: null });
+    for (const language of ['es', 'en']) {
+      const rendered = await (language === 'es' ? renderAlerts() : renderAlertsInEnglish());
+      await waitFor(() => expect(screen.queryByTestId('alerts-calm')).not.toBeNull());
+      expect(screen.getByTestId('alerts-calm-title')).toHaveTextContent(language === 'es' ? 'Todo en calma' : 'All calm', { exact: true });
+      expect(screen.getByTestId('alerts-calm-body')).toHaveTextContent(language === 'es' ? 'No tienes alertas abiertas. Rocky está tranquilo.' : 'You have no open alerts. Rocky is calm.', { exact: true });
+      expect(screen.getByTestId('alerts-open-heading')).toHaveTextContent(language === 'es' ? 'Abiertas' : 'Open', { exact: true });
+      expect(screen.getByTestId('alerts-calm-icon').props.iconName).toBe('Check');
+      expect(screen.getByTestId('alerts-calm-icon').props.color).toBe('--color-category-green-strong');
+      expect(screen.queryByTestId('alerts-empty')).toBeNull();
+      expect(screen.queryByTestId('alerts-new-count')).toBeNull();
+      expect(screen.getByTestId('alerts-attended-toggle')).toBeVisible();
+      await rendered.unmount();
     }
   });
 });
