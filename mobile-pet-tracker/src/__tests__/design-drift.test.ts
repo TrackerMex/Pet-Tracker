@@ -1053,6 +1053,29 @@ describe('#175 R10: Documentos sin deriva', () => {
   });
 });
 
+describe('#209 R25: Cuestionario sin deriva', () => {
+  const featureFiles = ['screens/nutrition-questionnaire/index.tsx'];
+
+  it('#209 R25: no deja hex, clases arbitrarias, StyleSheet ni sombras sueltas', () => {
+    expect(featureFiles.filter((file) =>
+      MEALS_BAR_STYLE_ESCAPES.test(readFileSync(join(sourceRoot, file), 'utf8')),
+    )).toEqual([]);
+  });
+
+  it('#209 R25: no deja text-accent suelto', () => {
+    expect(featureFiles.filter((file) =>
+      /text-accent(?![-\w])/.test(readFileSync(join(sourceRoot, file), 'utf8')),
+    )).toEqual([]);
+  });
+
+  it('#209 R25: no trae dependencias vetadas, useThemeColor ni emoji', () => {
+    expect(featureFiles.filter((file) =>
+      /expo-linear-gradient|expo-symbols|lottie-react-native|@rive-app|\buseThemeColor\b|\p{Extended_Pictographic}/u
+        .test(readFileSync(join(sourceRoot, file), 'utf8')),
+    )).toEqual([]);
+  });
+});
+
 describe('#178 R13: Recordatorios sin deriva', () => {
   const featureFiles = [
     'screens/reminders/index.tsx',
