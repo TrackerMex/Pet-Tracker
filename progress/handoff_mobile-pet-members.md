@@ -674,3 +674,25 @@ Queda autorizado este arreglo y **solo** este, en `mobile-pet-tracker/src/screen
 - Sonda de mutación para esta línea: cambia `behavior="padding"` por `behavior="height"` en la producción.
   El `it` tiene que dar rojo. Revierte la sonda.
 - Cualquier otro rojo inesperado: para, igual que antes.
+
+## Adenda 2 (leader, tras la parada en R4 (2))
+
+Paraste bien: el rojo no estaba en la lista. El leader lo diagnosticó sobre tu diff de R4 sin commit, con los
+pgreps vacíos de su lado:
+
+- `#173 R5 … pinta la cápsula tras el título …` aislado (`-t "#173 R5"`): verde.
+- `src/screens/profile/index.test.tsx` completo con `--testTimeout=30000`, dos veces seguidas: `2 failed, 192
+  passed, 194 total`. Las dos rojas son las filas 8 y 9, que siguen en vuelo hasta R6. `#173 R5`, verde en
+  las dos.
+
+Es carga, no tu cambio: `findByTestId('pet-info-card')` espera con el timeout por defecto de RNTL y cayó
+cuando había otros dos Codex corriendo jest. Lo que queda autorizado:
+
+- Añade `#173 R5` (Perfil, `pet-info-card`) a «Flakes de carga conocidos», con la misma regla: rojo y verde
+  aislado se anota y se sigue; rojo aislado, para.
+- Retoma R4 (2) desde su corrida de verificación, con tu implementación tal cual, y sigue la cadena.
+- No cambies el test ni sus esperas.
+- Anota en el reporte el rojo, los verdes aislados del leader y el tuyo.
+
+Esta adenda y la Adenda 1 son commits del leader con `#214` en el asunto. Solo tocan este fichero, y en la
+comprobación de `git log --oneline 08fe7dab..HEAD` del cierre cuentan igual que el commit del handoff.
