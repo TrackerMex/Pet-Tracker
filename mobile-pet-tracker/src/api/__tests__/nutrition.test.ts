@@ -1,3 +1,4 @@
+import { putJson } from '../http';
 import {
   addMealTime,
   moveMealTime,
@@ -524,5 +525,17 @@ describe('#105 R6: meals history API states', () => {
   it('preserves an unreachable network result', async () => {
     const fetchFn = jest.fn().mockRejectedValue(new Error('network down'));
     await expect(getMealsHistory(baseUrl, 'jwt-token', 'p1', from, to, fetchFn)).resolves.toEqual({ kind: 'unreachable', message: 'network down' });
+  });
+});
+
+it('#209 R1: putJson envía PUT con cuerpo JSON y Bearer', async () => {
+  const backendResponse = response(200, {});
+  const fetchFn = jest.fn().mockResolvedValue(backendResponse) as unknown as typeof fetch;
+  await expect(putJson(baseUrl, '/pets/pet-1/nutrition-profile', 'token-1', { a: 1 }, fetchFn))
+    .resolves.toEqual({ kind: 'response', response: backendResponse });
+  expect(fetchFn).toHaveBeenCalledWith(profileEndpoint, {
+    method: 'PUT',
+    headers: { Authorization: 'Bearer token-1', 'Content-Type': 'application/json' },
+    body: '{"a":1}',
   });
 });
