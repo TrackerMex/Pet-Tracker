@@ -645,3 +645,32 @@ Smoke del humano. Va en el reporte, tal cual; el humano lo corre en dispositivo 
     - aceptar deja seleccionada la mascota nueva en Inicio;
     - el teclado no tapa el botón (KAV).
   - Todo lo anterior en en-US.
+
+## Adenda 1 (leader, tras la parada en R18 (2))
+
+Paraste bien. El rojo viene del test, no de la producción. `KeyboardAvoidingView` de React Native no
+pasa `behavior` a la `View` anfitriona, así que `getByTestId('screen-join-pet').props.behavior` vale
+`undefined` aunque la pantalla declare `behavior="padding"`. El precedente del repo lee el fuente:
+`src/screens/edit-profile/index.test.tsx` (`#194 R5`, `readFileSync` + `toContain('behavior="padding"')`).
+
+Queda autorizado este arreglo y **solo** este, en `mobile-pet-tracker/src/screens/join-pet/index.test.tsx`:
+
+- Arriba del todo, antes de la primera línea de import, añade los dos imports del precedente:
+  `import { readFileSync } from 'fs';` y `import { join } from 'path';`.
+- En `it('R18: el formulario admite 11 caracteres con el placeholder del artboard', …)`, cambia la línea
+  `expect(screen.getByTestId('screen-join-pet').props.behavior).toBe('padding');` por estas dos:
+  ```tsx
+  const source = readFileSync(join(process.cwd(), 'src/screens/join-pet/index.tsx'), 'utf8');
+  expect(source).toContain('<KeyboardAvoidingView testID="screen-join-pet" behavior="padding"');
+  ```
+- No cambies nada más del test ni de la producción que ya tienes sin commit.
+- Commit aparte, solo del test (la producción sigue sin commit):
+  `git commit --only mobile-pet-tracker/src/screens/join-pet/index.test.tsx -m "test(mobile): #214 read the join pet KAV behavior from the source (R18)"`.
+  Sobre el árbol commiteado este test sigue en rojo, porque `index.tsx` commiteado es el stub.
+- Después retoma R18 (2) desde la primera corrida del paso verde, con la producción que ya tienes.
+  El fallo extra tiene que desaparecer, y los 18 de guardas tienen que seguir siendo las filas en vuelo
+  autorizadas. Anota en el reporte el commit nuevo, la causa del rojo y que la cuenta de R18 (1) no cambia
+  (`5745`: es el mismo `it`).
+- Sonda de mutación para esta línea: cambia `behavior="padding"` por `behavior="height"` en la producción.
+  El `it` tiene que dar rojo. Revierte la sonda.
+- Cualquier otro rojo inesperado: para, igual que antes.
