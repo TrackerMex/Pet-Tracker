@@ -23,6 +23,7 @@ function plan(mealTimes: string[]): NutritionPlan {
     objective: 'maintenance',
     warnings: [],
     aiExplanation: null,
+    aiProposal: null,
     inputsHash: 'f'.repeat(64),
     generatedAt: NOW,
   });

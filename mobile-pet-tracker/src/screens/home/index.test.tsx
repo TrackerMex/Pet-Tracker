@@ -6,6 +6,7 @@ import {
   within,
 } from '@testing-library/react-native';
 import { router, useFocusEffect } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect, type ReactNode } from 'react';
 import { Text } from 'react-native';
@@ -111,6 +112,8 @@ jest.mock('../../api/reminders', () => ({
 jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
 }));
+
+jest.mock('expo-status-bar', () => ({ StatusBar: jest.fn(() => null) }));
 
 jest.mock('expo-router', () => ({
   router: { push: jest.fn() },
@@ -416,6 +419,8 @@ function makeReminder(overrides: Partial<Reminder> = {}): Reminder {
     dueAt: localIso(2026, 8, 11),
     advanceMinutes: 60,
     status: 'scheduled',
+    recurrence: null,
+    recurrenceUntil: null,
     ...overrides,
   };
 }
@@ -6482,5 +6487,30 @@ describe('#198 R16: vacío de Inicio conservado', () => {
     expect(screen.getByTestId('home-empty-stage-disc', { includeHiddenElements: true }).props.className).toBe('absolute size-60 rounded-full bg-surface-secondary');
     expect(screen.getByTestId('home-empty-pose').props.source).toEqual([expect.objectContaining({ testUri: expect.stringMatching(/pingo-talk\.webp$/) })]);
     expect(screen.queryByTestId('home-empty-badge', { includeHiddenElements: true }) === null).toBe(true);
+  });
+});
+
+describe('#217 R6: la barra clara depende del hero de Inicio', () => {
+  beforeEach(setupHomeMotion);
+
+  it('#217 R6: con mascotas pide la barra clara', async () => {
+    await renderMotionHome();
+    expect(jest.mocked(StatusBar).mock.calls.at(-1)?.[0]).toEqual({ style: 'light' });
+    const source = readFileSync(join(process.cwd(), 'src/screens/home/index.tsx'), 'utf8');
+    const bar = source.indexOf('{hasPets ? <HeroStatusBar /> : null}');
+    expect(bar).toBeGreaterThan(-1);
+    expect(bar).toBeLessThan(source.indexOf('{hasPets ? ('));
+  });
+
+  it('#217 R6: sin mascotas no pide ninguna barra', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    const view = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
+    await screen.findByTestId('home-no-pets-screen');
+    jest.mocked(StatusBar).mockClear();
+    await view.rerender(<HomeScreen />);
+    expect(screen.getByTestId('home-no-pets-screen')).toBeVisible();
+    expect(StatusBar).not.toHaveBeenCalled();
+    const source = readFileSync(join(process.cwd(), 'src/screens/home/index.tsx'), 'utf8');
+    expect(source).toContain('{hasPets ? <HeroStatusBar /> : null}');
   });
 });

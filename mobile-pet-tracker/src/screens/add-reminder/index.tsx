@@ -1,12 +1,15 @@
+import { useQuery } from '@tanstack/react-query';
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { router, type Href } from 'expo-router';
 import { Button } from 'heroui-native';
 import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Bell } from 'reicon-react-native';
+import { Bell, Minus, Plus, Repeat } from 'reicon-react-native';
 
 import { createReminder } from '../../api/reminders';
+import { listPets } from '../../api/pets';
+import { petKeys } from '../../api/query-keys';
 import type { ReminderType } from '../../api/types';
 import { DateField } from '../../components/date-field';
 import { FieldErrorMessage } from '../../components/field-error-message';
@@ -28,6 +31,15 @@ import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
 const SELECTED_CHIP = 'h-9.5 items-center justify-center rounded-full px-3.5 bg-accent';
+
+const REPEAT_OPTIONS = [
+  { key: 'once', labelKey: 'addReminder.repeatOnce' },
+  { key: 'day', labelKey: 'addReminder.repeatDaily' },
+  { key: 'week', labelKey: 'addReminder.repeatWeekly' },
+  { key: 'month', labelKey: 'addReminder.repeatMonthly' },
+  { key: 'year', labelKey: 'addReminder.repeatYearly' },
+  { key: 'hour', labelKey: 'addReminder.repeatHourly' },
+] as const;
 
 const ADVANCE_OPTIONS = [
   { minutes: 0, labelKey: 'addReminder.advanceSameDay' },
@@ -57,6 +69,58 @@ function initialTime(): Date {
   return time;
 }
 
+function summaryText(
+  repeat: (typeof REPEAT_OPTIONS)[number]['key'],
+  every: number,
+  notifyAt: Date,
+  until: Date | null,
+  locale: string,
+  t: ReturnType<typeof useTranslate>,
+  pet?: string,
+): string {
+  const time = notifyAt.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+  if (repeat === 'once') {
+    return t('addReminder.notifyPreview', {
+      date: notifyAt.toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
+      time,
+    });
+  }
+  const end = until ? t('addReminder.summaryUntil', {
+    date: until.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' }),
+  }) : '';
+  const params = { time, until: end };
+  if (repeat === 'hour') {
+    if (24 % every === 0 && every >= 6) {
+      const times = Array.from({ length: 24 / every }, (_, index) =>
+        new Date(notifyAt.getTime() + index * every * 3600000).toLocaleTimeString(locale, {
+          hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+        }),
+      );
+      const list = times.slice(0, -1).join(', ');
+      const last = times[times.length - 1];
+      const doses = times.length === 1 ? times[0] : t('addReminder.dosesJoin', { list, last });
+      return pet
+        ? t('addReminder.summaryHoursDoses', { ...params, pet, doses })
+        : t('addReminder.summaryHoursDosesNoPet', { ...params, doses });
+    }
+    return every === 1
+      ? t('addReminder.summaryHourly', params)
+      : t('addReminder.summaryHours', { ...params, count: every });
+  }
+  switch (repeat) {
+    case 'day': return t('addReminder.summaryDaily', params);
+    case 'week': return t('addReminder.summaryWeekly', {
+      ...params, weekday: notifyAt.toLocaleDateString(locale, { weekday: 'long' }),
+    });
+    case 'month': return every === 1
+      ? t('addReminder.summaryMonthly', { ...params, day: notifyAt.getDate() })
+      : t('addReminder.summaryMonthlyN', { ...params, day: notifyAt.getDate(), count: every });
+    case 'year': return t('addReminder.summaryYearly', {
+      ...params, date: notifyAt.toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
+    });
+  }
+}
+
 function AddReminderContent({ petId }: { petId: string }) {
   const chunkyLip = useChunkyLip();
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
@@ -64,7 +128,16 @@ function AddReminderContent({ petId }: { petId: string }) {
   const locale = useLocale();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
-  const [muted, accentStrong] = useThemeColors(['muted', 'accent-strong']);
+  const pets = useQuery({
+    queryKey: petKeys.list(),
+    queryFn: () => listPets(baseUrl, token ?? ''),
+  });
+  const petName = pets.data?.kind === 'ok' ? pets.data.pets.find(({ id }) => id === petId)?.name : undefined;
+  const [muted, accentStrong, foreground] = useThemeColors(['muted', 'accent-strong', 'foreground']);
+  const [repeat, setRepeat] = useState<(typeof REPEAT_OPTIONS)[number]['key']>('once');
+  const [hourEvery, setHourEvery] = useState(8);
+  const [monthEvery, setMonthEvery] = useState(1);
+  const [until, setUntil] = useState<Date | null>(null);
   const [type, setType] = useState<ReminderType>('vaccine');
   const [title, setTitle] = useState('');
   const [titleFocused, setTitleFocused] = useState(false);
@@ -91,7 +164,11 @@ function AddReminderContent({ petId }: { petId: string }) {
         type,
         title: trimmedTitle,
         dueAt: dueAt.toISOString(),
-        advanceMinutes: effectiveAdvance(dueAt, advanceMinutes, Date.now()),
+        advanceMinutes: repeat === 'hour' ? 0 : effectiveAdvance(dueAt, advanceMinutes, Date.now()),
+        ...(repeat === 'once' ? {} : {
+          recurrence: { unit: repeat, every: repeat === 'month' ? monthEvery : repeat === 'hour' ? hourEvery : 1 },
+          ...(until === null ? {} : { recurrenceUntil: localDateToIso(until) }),
+        }),
       });
 
       switch (result.kind) {
@@ -121,8 +198,11 @@ function AddReminderContent({ petId }: { petId: string }) {
     }
   }
 
+  const every = repeat === 'month' ? monthEvery : hourEvery;
+  const maxEvery = repeat === 'month' ? 12 : 24;
+  const setEvery = repeat === 'month' ? setMonthEvery : setHourEvery;
   const pickedDueAt = date ? combineDateAndTime(date, time) : null;
-  const selectedAdvance = effectiveAdvance(pickedDueAt, advanceMinutes, now);
+  const selectedAdvance = repeat === 'hour' ? 0 : effectiveAdvance(pickedDueAt, advanceMinutes, now);
   const notifyAt = pickedDueAt ? new Date(pickedDueAt.getTime() - selectedAdvance * 60000) : null;
 
   return (
@@ -153,7 +233,13 @@ function AddReminderContent({ petId }: { petId: string }) {
           <Text className="text-sm font-extrabold text-foreground">
             {t('addReminder.type')}
           </Text>
-          <View className="flex-row flex-wrap gap-2">
+          <ScrollView
+            testID="type-chips-row"
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="-mr-5"
+            contentContainerStyle={{ gap: 8, paddingRight: 20 }}
+          >
             {REMINDER_TYPES.map(([reminderType, meta]) => {
               const selected = type === reminderType;
               const slot = CATEGORY_SLOTS[meta.category];
@@ -179,7 +265,7 @@ function AddReminderContent({ petId }: { petId: string }) {
                 </Pressable>
               );
             })}
-          </View>
+          </ScrollView>
         </View>
 
         <View className="gap-1.5">
@@ -210,8 +296,13 @@ function AddReminderContent({ petId }: { petId: string }) {
               testID="date-field"
               pickerTestID="date-picker"
               value={date === null ? null : localDateToIso(date)}
-              onChange={(next) => { setDate(next === null ? null : isoToLocalDate(next)); setNow(Date.now()); }}
-              minDate={localDateToIso(new Date())}
+              onChange={(next) => {
+                const picked = next === null ? null : isoToLocalDate(next);
+                setDate(picked);
+                if (picked && until && picked.getTime() > until.getTime()) setUntil(null);
+                setNow(Date.now());
+              }}
+              minDate={localDateToIso(new Date(now))}
               placeholder={t('addReminder.selectDate')}
             />
             <FieldErrorMessage testID="date-field" issue={fieldErrors.date} />
@@ -237,10 +328,96 @@ function AddReminderContent({ petId }: { petId: string }) {
         </View>
 
         <View className="gap-2">
+          <Text className="text-sm font-extrabold text-foreground">{t('addReminder.repeat')}</Text>
+          <View className="flex-row flex-wrap gap-2">
+            {REPEAT_OPTIONS.map((option) => {
+              const selected = repeat === option.key;
+              return (
+                <Pressable
+                  key={option.key}
+                  testID={`repeat-chip-${option.key}`}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  hitSlop={TOUCH_SLOP}
+                  className={selected ? SELECTED_CHIP : 'h-9.5 items-center justify-center rounded-full px-3.5 bg-default'}
+                  style={selected ? chunkyLip.primaryCompact : undefined}
+                  onPress={() => setRepeat(option.key)}
+                >
+                  <Text className={`text-sm font-extrabold ${selected ? 'text-accent-foreground' : 'text-foreground'}`}>{t(option.labelKey)}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        {repeat === 'hour' || repeat === 'month' ? (
+          <View className="gap-2">
+            <View testID="repeat-stepper" className="flex-row items-center gap-3 rounded-16 bg-default p-2" style={CONTINUOUS_CORNER}>
+              <Text className="text-15 font-extrabold text-foreground">{t('addReminder.every')}</Text>
+              <Pressable
+                testID="repeat-every-less"
+                accessibilityRole="button"
+                accessibilityLabel={repeat === 'month' ? t('addReminder.monthLess') : t('addReminder.hourLess')}
+                accessibilityState={{ disabled: every === 1 }}
+                disabled={every === 1}
+                hitSlop={TOUCH_SLOP}
+                className={`size-11 items-center justify-center rounded-full border-2 border-lip-gray bg-surface${every === 1 ? ' opacity-50' : ''}`}
+                onPress={() => setEvery((value) => Math.max(1, value - 1))}
+              >
+                <Minus size={20} color={foreground} />
+              </Pressable>
+              <Text testID="repeat-every-value" accessibilityLiveRegion="polite" className="min-w-21 text-center text-22 font-black text-foreground">
+                {repeat === 'month'
+                  ? every === 1 ? t('addReminder.monthsValueOne') : t('addReminder.monthsValue', { count: every })
+                  : every === 1 ? t('addReminder.hoursValueOne') : t('addReminder.hoursValue', { count: every })}
+              </Text>
+              <Pressable
+                testID="repeat-every-more"
+                accessibilityRole="button"
+                accessibilityLabel={repeat === 'month' ? t('addReminder.monthMore') : t('addReminder.hourMore')}
+                accessibilityState={{ disabled: every === maxEvery }}
+                disabled={every === maxEvery}
+                hitSlop={TOUCH_SLOP}
+                className={`size-11 items-center justify-center rounded-full border-2 border-lip-gray bg-surface${every === maxEvery ? ' opacity-50' : ''}`}
+                onPress={() => setEvery((value) => Math.min(maxEvery, value + 1))}
+              >
+                <Plus size={20} color={foreground} />
+              </Pressable>
+            </View>
+            <Text testID="repeat-every-help" className="text-13 font-semibold text-muted">{repeat === 'month' ? t('addReminder.monthsRange') : t('addReminder.hoursRange')}</Text>
+          </View>
+        ) : null}
+
+        {repeat !== 'once' ? (
+          <View className="gap-2">
+            <View className="flex-row items-center justify-between">
+              <Text className="text-sm font-extrabold text-foreground">{t('addReminder.until')}</Text>
+              <Text className="text-13 font-semibold text-muted">{t('addReminder.optional')}</Text>
+            </View>
+            <DateField
+              testID="until-field"
+              pickerTestID="until-picker"
+              allowClear
+              value={until === null ? null : localDateToIso(until)}
+              onChange={(next) => setUntil(next === null ? null : isoToLocalDate(next))}
+              minDate={localDateToIso(date ?? new Date(now))}
+              placeholder={t('addReminder.untilPlaceholder')}
+            />
+          </View>
+        ) : null}
+
+        {repeat !== 'hour' ? (
+        <View className="gap-2">
           <Text className="text-sm font-extrabold text-foreground">
             {t('addReminder.alert')}
           </Text>
-          <View className="flex-row flex-wrap gap-2">
+          <ScrollView
+            testID="advance-chips-row"
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="-mr-5"
+            contentContainerStyle={{ gap: 8, paddingRight: 20 }}
+          >
             {ADVANCE_OPTIONS.map((option) => {
               const selected = selectedAdvance === option.minutes;
               const disabled = isAdvancePast(pickedDueAt, option.minutes, now);
@@ -263,8 +440,10 @@ function AddReminderContent({ petId }: { petId: string }) {
                 </Pressable>
               );
             })}
-          </View>
+          </ScrollView>
         </View>
+
+        ) : null}
 
         {notifyAt ? (
           <View
@@ -272,12 +451,9 @@ function AddReminderContent({ petId }: { petId: string }) {
             className="flex-row items-center gap-2.5 rounded-tile bg-surface-secondary px-3.5 py-3"
             style={CONTINUOUS_CORNER}
           >
-            <Bell size={20} color={accentStrong} />
+            {repeat === 'once' ? <Bell size={20} color={accentStrong} /> : <Repeat size={20} color={accentStrong} />}
             <Text testID="add-reminder-preview-text" className="flex-1 text-13 font-semibold text-foreground">
-              {t('addReminder.notifyPreview', {
-                date: notifyAt.toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
-                time: notifyAt.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }),
-              })}
+              {summaryText(repeat, every, notifyAt, until, locale, t, petName)}
             </Text>
           </View>
         ) : null}

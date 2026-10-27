@@ -14,6 +14,8 @@ interface PetSwitcherProps {
   variant?: 'default' | 'avatars' | 'glass';
   selectedOnline?: boolean;
   trailing?: ReactNode;
+  edgeInset?: number;
+  scrollHint?: string;
 }
 
 export function PetSwitcher({
@@ -23,11 +25,19 @@ export function PetSwitcher({
   variant = 'default',
   selectedOnline,
   trailing,
+  edgeInset,
+  scrollHint,
 }: PetSwitcherProps) {
   if (variant === 'avatars') {
     return (
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View className="flex-row gap-1.5">
+      <ScrollView
+        testID="pet-switcher-scroll"
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={edgeInset === undefined ? undefined : { paddingHorizontal: edgeInset }}
+        accessibilityLabel={scrollHint}
+      >
+        <View className="flex-row">
           {pets.map((pet, index) => {
             const selected = pet.id === selectedPetId;
             const slot = (['amber', 'violet', 'blue', 'green', 'rose'] as const)[index % 5];

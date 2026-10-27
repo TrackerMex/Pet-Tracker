@@ -136,15 +136,15 @@ describe('#65 R4: Map resuelve su copy por clave', () => {
 });
 
 describe('#65 R5: Health resuelve su copy por clave', () => {
-  it('#186 R7: resuelve las 43 ocurrencias normativas (enmendado por #199 R25) (enmendado por #220 R16) (enmendado por #208 R20)', () => {
-    expect(R5_HEALTH).toHaveLength(32 + 1 + 1 - 2 + 3 + 2 + 1 + 1 + 4 - 1 + 1 + 7 - 1 + 1); // #220 R16 // #208 R20; #199 R25: +7; #186 R7 // #186 R2 // +1 #90 R5, +1 #95 R4, -2 #95 R5, +3 #115 R1, +2 #155 R4, +1 #169 R6, +1 #169 R10
+  it('#186 R7: resuelve las 43 ocurrencias normativas (enmendado por #199 R25) (enmendado por #220 R16) (enmendado por #208 R20) (enmendado por #222 R8)', () => {
+    expect(R5_HEALTH).toHaveLength(32 + 1 + 1 - 2 + 3 + 2 + 1 + 1 + 4 - 1 + 1 + 7 - 1 + 1 + 1); // #222 R8 // #220 R16 // #208 R20; #199 R25: +7; #186 R7 // #186 R2 // +1 #90 R5, +1 #95 R4, -2 #95 R5, +3 #115 R1, +2 #155 R4, +1 #169 R6, +1 #169 R10
     checkUses(R5_HEALTH);
   });
 });
 
 describe('#65 R6: Food resuelve su copy por clave', () => {
-  it('resuelve las 51 ocurrencias normativas', () => {
-    expect(R6_FOOD).toHaveLength(35 + 3 + 1 - 2 + 1 + 3 + 9 + 11 + 2 + 1 + 3); // #105 R5; +1 #95 R4, -2 #95 R5, +1 #113 R3, +3 #147 R8, +9 #147 R9, +2 #155 R4, +1 #155 R9, +3 #179 R8
+  it('resuelve las 51 ocurrencias normativas (enmendado por #222 R8)', () => {
+    expect(R6_FOOD).toHaveLength(35 + 3 + 1 - 2 + 1 + 3 + 9 + 11 + 2 + 1 + 3 + 1); // #222 R8 // #105 R5; +1 #95 R4, -2 #95 R5, +1 #113 R3, +3 #147 R8, +9 #147 R9, +2 #155 R4, +1 #155 R9, +3 #179 R8
     checkUses(R6_FOOD);
   });
 });
@@ -176,8 +176,11 @@ describe('#65 R7: Profile resuelve su copy por clave', () => {
 });
 
 describe('#65 R8: Recordatorios resuelve su copy por clave', () => {
-  it('#186 R5: resuelve las 56 ocurrencias normativas', () => {
-    expect(R8_REMINDERS).toHaveLength(50 + 1 - 2 + 1 - 1 + 1 + 1 + 1 + 1 + 3 + 3 - 3); // #186 R5 // #186 R2 // #181 R4 // #178 R12 // +1 #95 R4, -2 #95 R5, +1 #114 R4, -1 #114 R5, +1 #155 R6; // #178 R6; #178 R9
+  it('#186 R5: resuelve las 113 ocurrencias normativas (enmendado por #213 R22)', () => {
+    expect(R8_REMINDERS).toHaveLength(
+      50 + 1 - 2 + 1 - 1 + 1 + 1 + 1 + 1 + 3 + 3 - 3 // #186 R5 // #186 R2 // #181 R4 // #178 R12 // +1 #95 R4, -2 #95 R5, +1 #114 R4, -1 #114 R5, +1 #155 R6; // #178 R6; #178 R9
+      + 57, // #213 R22
+    );
     checkUses(R8_REMINDERS);
   });
 });
@@ -566,5 +569,12 @@ describe('#208 R20: alta de vacuna', () => {
   it('#208 R20: R19_VACCINE_CREATE tiene 29 usos y cuadra con el código', () => {
     expect(R19_VACCINE_CREATE).toHaveLength(29);
     checkUses(R19_VACCINE_CREATE);
+  });
+});
+
+describe('#222 R8: Copy tabHeader.petsScroll y filas de la tabla', () => {
+  it('#222 R8: la clave tabHeader.petsScroll dice el literal en es y en', () => {
+    expect(es['tabHeader.petsScroll' as TranslationKey]).toBe('Mascotas, desliza para ver más');
+    expect(en['tabHeader.petsScroll' as TranslationKey]).toBe('Pets, swipe to see more');
   });
 });

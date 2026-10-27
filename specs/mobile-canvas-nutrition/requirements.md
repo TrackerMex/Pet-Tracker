@@ -187,6 +187,8 @@ actualizan en la lista cerrada de § Candados (R1).
 
 ### R2 — Marco y fila de título
 
+**Enmendado por #222 (C4)**: food-title-row y food-title desaparecen; el selector avatars vive en la cabecera fija food-pet-header (#222 R4).
+
 WHEN Nutrición se pinta en cualquier rama THE SYSTEM SHALL usar en el
 `ScrollView` `screen-food` el `contentContainerStyle`
 `{ paddingHorizontal: 20, paddingTop: insets.top + 12, paddingBottom: insets.bottom + 96, gap: 14 }`
@@ -801,3 +803,17 @@ la feature; no bloquea la implementación.
   Firma delegada, mismo mandato.
 - [ ] Smoke de R2, R3, R4, R6, R7, R10, R12, R13, R14 y R15 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
   Va en el lote `progress/smoke_canvas-parity.md` (plan §6); el `done` no espera al smoke.
+
+## Enmienda #222 — avatares fijos y sin título en las pestañas
+
+`mobile-tab-avatar-header` (#222) modifica una decisión que esta spec dejó
+aprobada. La spec de origen es `specs/mobile-tab-avatar-header/`; el detalle
+de la enmienda está en su `requirements.md` §R11.
+
+- Spec enmendada: `mobile-canvas-nutrition`
+- Qué cambia: `R2: Nutrición sin fila de título, con cabecera fija de avatares`
+- Qué NO cambia: ningún otro requisito de esta spec ni su estado de
+  aprobación. Los tests que cubren lo enmendado se reescriben en #222 (lista
+  en su `requirements.md` §R9 y en su `tasks.md`).
+
+- [ ] Enmienda #222 aprobada por humano

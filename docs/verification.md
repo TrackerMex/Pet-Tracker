@@ -1080,6 +1080,45 @@ peor caso con las cotas de C-3, ≤ 1 500 tokens de entrada (≈ $0.00015) más
 típico del orden de **$0.0003**. La prueba de humo completa hace **una**
 llamada facturada (paso 3).
 
+### Feature 212 — nutrition-ai-structured-plan
+
+Prueba de humo con clave real: la ejecuta exclusivamente un humano tras la revisión. R20 permanece pendiente hasta que marque su casilla en la spec.
+
+```
+0. Pre-vuelo: el mismo de "Feature 18 — nutrition-ai-explainer" (NODE_ENV, ANTHROPIC_* exportadas,
+   mascota con collar y suscripcion vigente).
+1. .env y servidor: el paso 1 de Feature 18 (ANTHROPIC_ENABLED=true, clave real,
+   ANTHROPIC_MODEL=claude-haiku-5-5) y reiniciar el servidor.
+2. API_BASE y AUTH_TOKEN como en el paso 2 de Feature 18. Cambiar kcalPer100g para forzar un hash nuevo.
+3. POST $API_BASE/pets/<petId>/nutrition-plan/generate -> 200 con aiStatus "proposed",
+   aiProposal.mealGrams con una entrada por cada hora de mealTimes y suma de grams
+   dentro de dailyGrams ±10 %, de 1 a 3 recomendaciones sin alimentos toxicos,
+   reviewDate entre hoy+7 y hoy+90 y aiExplanation en español.
+   GET $API_BASE/pets/<petId>/nutrition-plan -> la misma aiProposal y sin aiStatus.
+4. El mismo POST sin tocar nada -> mismo id, aiStatus "proposed" y la IA NO se llama
+   (no aparece un warn nuevo ni sube el contador).
+5. Cambiar kcalPer100g y POST generate dos veces mas, con un kcalPer100g distinto
+   cada vez -> "proposed" las dos. Cambiarlo una cuarta vez y POST generate ->
+   aiStatus "limit_reached", aiProposal null y la IA NO se llama.
+6. En la BD local: SELECT count FROM nutrition_ai_generations WHERE pet_id = '<petId>'
+   ORDER BY local_day DESC LIMIT 1;  -> 3
+7. Dejar ANTHROPIC_API_KEY=PENDING y ANTHROPIC_ENABLED=false en .env y reiniciar el servidor.
+```
+
+Y esta tabla de diagnóstico, para cuando el paso 3 no devuelva "proposed":
+
+| aiStatus o salida del servidor | Significa |
+|---|---|
+| `not_tracked` | mascota sin collar o sin suscripción (`isPetTracked` falso) |
+| `limit_reached` | ya hubo 3 generaciones con IA hoy (día local del dueño) |
+| `unavailable` + `ai explanation disabled` | IA apagada: ver la tabla de Feature 18 |
+| `unavailable` + `ai proposal unusable` + `stopReason` / `usage` | la respuesta no cumple el esquema o se cortó |
+| `rejected` + `ai proposal out of bounds` | franjas distintas de mealTimes o gramos fuera de ±10 % |
+
+**Coste estimado** (Haiku 5.5, $0.10 y $0.50 por millón de tokens de entrada y salida):
+≈ $0.0004 por llamada y ≤ ~$0.0011 en el peor caso con `max_tokens` 2000. La prueba completa
+hace **tres** llamadas facturadas (pasos 3 y 5), menos de $0.01.
+
 ## Notas para el implementer
 
 - No declares done solo porque el build pasa. Prueba los casos edge (errores,

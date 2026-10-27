@@ -746,3 +746,29 @@ describe('#139 R2: tras R15, expo-notifications vuelve a ser el objeto de la cab
     );
   });
 });
+
+
+describe('#213 R20: el toque abre Recordatorios', () => {
+  it.each([
+    [{ petId: 'pet-2', reminderId: 'r-1', kind: 'reminder' }, 'hot', { pathname: '/reminders', params: { petId: 'pet-2' } }],
+    [{ petId: 'pet-2', reminderId: 'r-1', kind: 'reminder' }, 'cold', { pathname: '/reminders', params: { petId: 'pet-2' } }],
+    [{ kind: 'reminder' }, 'hot', '/reminders'],
+    [{ kind: 'reminder' }, 'cold', '/reminders'],
+    [{ kind: 'reminder', petId: '' }, 'hot', '/reminders'],
+    [{ kind: 'reminder', petId: '' }, 'cold', '/reminders'],
+    [{ kind: 'reminder', petId: 7 }, 'hot', '/reminders'],
+    [{ kind: 'reminder', petId: 7 }, 'cold', '/reminders'],
+  ] as const)('#213 R20: el toque de un recordatorio abre Recordatorios con data %p en modo %s', async (data, mode, expected) => {
+    const response = { notification: { request: { content: { data } } } } as unknown as Notifications.NotificationResponse;
+    if (mode === 'cold') mockGetLastResponse.mockResolvedValue(response);
+    await renderHook(() => usePushRegistration());
+    if (mode === 'hot') {
+      await waitFor(() => expect(responseListener).toEqual(expect.any(Function)));
+      responseListener?.(response);
+    }
+    await waitFor(() => {
+      expect(mockRouterPush).toHaveBeenCalledTimes(1);
+      expect(mockRouterPush).toHaveBeenCalledWith(expected);
+    });
+  });
+});

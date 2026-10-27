@@ -26,13 +26,6 @@ jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: jest.fn(),
 }));
 
-jest.mock('react-native-nitro-theme-transition', () => ({
-  withThemeTransition: jest.fn((apply: () => void) => {
-    apply();
-  }),
-  isThemeTransitionAvailable: jest.fn(() => false),
-}));
-
 jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
@@ -95,11 +88,11 @@ describe('R5: placeholders de tabs', () => {
     title: string;
   }>([
     { Screen: ProfileScreen, testID: 'screen-profile', title: 'Perfil' },
-  ])('renders the $title placeholder', async ({ Screen, testID, title }) => {
+  ])('renders the $title placeholder (enmendado por #222 R9)', async ({ Screen, testID, title }) => {
     await renderWithProviders(<Screen />, { wrapper: ProfileWrapper });
 
     expect(screen.getByTestId(testID)).toBeVisible();
-    expect(screen.getByText(title)).toBeVisible();
+    expect(screen.getByRole('header', { name: title })).toBeVisible();
   });
 });
 

@@ -29,7 +29,7 @@ recorrido. Lo que falle abre una feature de arreglo.
 
 - [ ] Smoke de #218 recorrido por el humano (fecha: ____)
 
-## #217 mobile-theme-flash-statusbar (en implementación)
+## #217 mobile-theme-flash-statusbar (mergeada en dev)
 
 Requiere el rebuild G3 (dev build sin nitro).
 
@@ -39,6 +39,17 @@ Requiere el rebuild G3 (dev build sin nitro).
 4. Al salir de Perfil, el estilo automático de la barra vuelve.
 
 - [ ] Smoke de #217 recorrido por el humano (fecha: ____)
+
+## #222 mobile-tab-avatar-header (PR a `dev`; R12/G4 abierto)
+
+1. Salud y Nutrición no muestran título: arriba queda la fila de avatares de mascotas, fija mientras el contenido se desplaza.
+2. El vidrio de la cabecera se lee bien en tema claro y oscuro, con la barra de estado y con el contenido pasando por debajo.
+3. Pulsar un avatar cambia de mascota en la pestaña (Salud y Nutrición) y mantiene la selección al cambiar de pestaña.
+4. Con 7 o más mascotas la fila se desplaza en horizontal.
+5. Perfil no muestra título visible; TalkBack anuncia «Perfil» como encabezado.
+6. Sin mascotas no aparece la fila.
+
+- [ ] Smoke de #222 recorrido por el humano (fecha: ____)
 
 ## #221 mobile-orbit-rename-copy (pendiente)
 
