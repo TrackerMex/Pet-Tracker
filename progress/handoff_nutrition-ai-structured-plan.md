@@ -455,3 +455,27 @@ Reporte: progress/impl_nutrition-ai-structured-plan.md, en español, sin commite
 - cada PARA, «pendiente de medir», espera larga, timeout repetido o diferencia con este handoff.
 No abras la PR ni hagas push.
 Última acción: crea `progress/impl_nutrition-ai-structured-plan.done` con una sola línea, la ruta `progress/impl_nutrition-ai-structured-plan.md`. Git lo ignora y lo vigila scripts/harness/watch-impl.sh. Créalo también si paraste antes de terminar, con el motivo en el reporte.
+
+## Adenda 1 (leader, tras la parada en R4 feat)
+
+Paraste bien: la cadena tenía un hueco. El `it` heredado `R9 (nutrition-ai-explainer #18): parametros exactos
+de la llamada` (en `anthropic-nutrition-explainer.spec.ts`) fija el literal antiguo del prompt, y la cadena no
+lo borra hasta R6 test. Queda autorizado este puente en **R4 feat** y solo este:
+
+1. Aplica tu parche guardado, desde la raíz del worktree:
+   `git apply --check progress/blocked212-r4-prompt.patch.log && git apply progress/blocked212-r4-prompt.patch.log`.
+2. En `N/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`:
+   - añade `NUTRITION_AI_SYSTEM_PROMPT` al import que ya existe de `'./nutrition-prompt'`;
+   - en ese `it` de #18 R9, cambia el `expect(params.system).toBe('Eres el asistente … Máximo 180 palabras.')`
+     por `expect(params.system).toBe(NUTRITION_AI_SYSTEM_PROMPT);`.
+
+   Es un puente tautológico a propósito: el texto aprobado lo fijan los dos `it` de R4 en
+   `nutrition-prompt.spec.ts`, y R6 test borra este describe entero, como dice la cadena. No toques nada más de
+   ese fichero.
+3. Prettier y ESLint en los dos ficheros, y la corrida de R4 feat. Esperado: todo verde y la cuenta sin
+   cambiar, 264 = U0 + 42. Los locks de §R4 dan 1 y 0.
+4. Un solo commit con los dos ficheros y el mensaje de siempre:
+   `git commit -m "feat(nutrition-ai-structured-plan): G2 system prompt literal (R4)"`.
+
+Después sigue la cadena desde R5 test. En la guarda final de `git log`, el commit de esta adenda es del leader
+y no cuenta, igual que el del handoff. La cifra de 38 commits tuyos no cambia.
