@@ -48,7 +48,7 @@ function setup(
     ...projected,
     engineMealsPerDay: 2,
     aiExplanation: null,
-    inputsHash: nutritionInputHash(input),
+    inputsHash: nutritionInputHash(input, []),
     generatedAt: new Date(),
   });
   const updated = new NutritionPlan({ ...inserted, aiExplanation: text });

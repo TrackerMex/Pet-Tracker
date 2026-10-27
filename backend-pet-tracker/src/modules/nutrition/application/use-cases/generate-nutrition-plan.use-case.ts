@@ -55,7 +55,7 @@ export class GenerateNutritionPlanUseCase {
       allergies: profile.allergies,
       diseases: profile.diseases,
     };
-    const inputsHash = nutritionInputHash(input);
+    const inputsHash = nutritionInputHash(input, []);
     const latestPlan = await this.nutrition.findLatestPlan(petId);
     if (latestPlan?.inputsHash === inputsHash) {
       if (latestPlan.aiExplanation !== null) return latestPlan;

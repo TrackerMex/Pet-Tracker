@@ -1,7 +1,12 @@
 import { createHash } from 'node:crypto';
 import type { NutritionEngineInput } from '@/modules/nutrition/domain/nutrition-engine';
+import type { NutritionWeightPoint } from '@/modules/nutrition/domain/ports/nutrition-weight-reader';
 
-export function nutritionInputHash(input: NutritionEngineInput): string {
+export function nutritionInputHash(
+  input: NutritionEngineInput,
+  weightTrend: NutritionWeightPoint[],
+): string {
+  void weightTrend;
   const canonicalInput = {
     species: input.species,
     weightKg: Number(input.weightKg),
