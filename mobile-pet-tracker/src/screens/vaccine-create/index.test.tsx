@@ -522,3 +522,23 @@ it('#208 R17: reintentar con éxito vuelve a Salud', async () => {
   await screen.findByTestId('vaccine-create-returned');
   expect(mockCreateVaccine).toHaveBeenCalledTimes(2);
 });
+
+it('#208 R18: un 400 de appliedAt pinta el error de campo traducido', async () => {
+  mockCreateVaccine.mockResolvedValue({ kind: 'validation', errors: [{ path: 'appliedAt', message: 'SERVER_FUTURE_PRIVATE' }] });
+  await readyVaccineForm();
+  await fireEvent.press(screen.getByTestId('vaccine-create-submit'));
+  expect(await screen.findByTestId('vaccine-create-applied-message')).toHaveTextContent('La fecha de aplicación no puede ser futura.', { exact: true });
+  expect(screen.getByTestId('vaccine-create-applied-value').props.className).toContain('android:border-danger');
+  expect(screen.queryByText('SERVER_FUTURE_PRIVATE')).toBeNull();
+  expect(mockRouter.back).not.toHaveBeenCalled();
+  expect(mockCreateReminder).not.toHaveBeenCalled();
+});
+it('#208 R18: un 400 de otro campo pinta checkDetails y nunca el mensaje del servidor', async () => {
+  mockCreateVaccine.mockResolvedValue({ kind: 'validation', errors: [{ path: 'clinic', message: 'SERVER_DETAILS_PRIVATE' }] });
+  await readyVaccineForm();
+  await fireEvent.press(screen.getByTestId('vaccine-create-submit'));
+  const error = await screen.findByTestId('vaccine-create-error');
+  expect(error).toHaveTextContent('Algo no cuadra en los datos. Revísalos y vuelve a intentarlo.', { exact: true });
+  expect(screen.queryByText('SERVER_DETAILS_PRIVATE')).toBeNull();
+  expect(mockRouter.back).not.toHaveBeenCalled();
+});
