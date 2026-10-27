@@ -52,13 +52,16 @@ En el dev build de Android (no Expo Go), con una mascota propia (owner):
 
 ## #214 mobile-pet-members
 
-Spec: `specs/mobile-pet-members/requirements.md` (§Aprobación). Reviewer APROBADO sobre `7c079da8`
-tras el merge de `dev` y la enmienda 1 de R13 (`progress/review_mobile-pet-members.md`, §Segunda
+Spec: `specs/mobile-pet-members/requirements.md` (§Aprobación). Reviewer APROBADO sobre `2a00094f`
+tras dos merges de `dev` y la enmienda 1 de R13 (`progress/review_mobile-pet-members.md`, §Tercera
 revisión). Como en #208, la spec dice que su smoke **bloquea `done`**.
 
 Necesita el **rebuild del dev build**: #214 añade `expo-clipboard`, un módulo nativo. Sin rebuild,
-«Copiar código» rompe con «Cannot find module». Hacen falta dos cuentas, A (dueña de la mascota) y
-B (sin esa mascota), cada una en su teléfono o una tras otra.
+la pantalla de invitación falla al abrirse (paso 2) con «Cannot find native module
+'ExpoClipboard'», antes de llegar a «Copiar código».
+
+Hacen falta dos cuentas, A (dueña de la mascota) y B (sin esa mascota), cada una en su teléfono o
+una tras otra. Para probar la entrada desde Inicio del paso 6, B no debe tener ninguna mascota.
 
 En el dev build de Android (no Expo Go):
 
@@ -71,12 +74,14 @@ En el dev build de Android (no Expo Go):
 5. De vuelta en Familia, la invitación sale en «Invitaciones pendientes». La nota «Cada código sirve
    una sola vez. Si nadie lo usa, vence solo.» parte la línea dentro de su caja, sin salirse
    (menor 4 de la segunda revisión).
-6. Cuenta B: «Unirme con código» desde Perfil o desde Inicio. Al escribir el código y pulsar
-   «Unirme», B entra en la mascota y la ve en Inicio.
+6. Cuenta B: «Unirme con código» desde Perfil. Desde Inicio solo sale si B no tiene ninguna
+   mascota (R7). Al escribir el código y pulsar «Unirme», B entra en la mascota y la ve en Inicio.
 7. Cuenta B, Familia: ve la vista de familia, sin acciones de dueño. «Salir de esta mascota» pide
    confirmación y, al confirmar, la mascota sale de su lista.
 8. Invita y une otra vez a B. Cuenta A, Familia: «Quitar» en la fila de B pide «¿Quitar a <B>?».
    Al confirmar, B sale de la lista y el subtítulo de la tarjeta vuelve a «Solo tú cuidas a …».
-9. Revocar una invitación pendiente la quita de «Invitaciones pendientes».
+9. Cuenta A: invita otra vez y no uses el código (B ya gastó los de los pasos 2 y 8). Revocar esa
+   invitación la quita. Si era la única, desaparece la sección «Invitaciones pendientes» entera
+   (R12).
 
 - [ ] Smoke de #214 recorrido por el humano (fecha: ____)
