@@ -86,6 +86,9 @@ export class GenerateNutritionPlanUseCase {
     const inputsHash = nutritionInputHash(input, trend);
     const latestPlan = await this.nutrition.findLatestPlan(petId);
     if (latestPlan?.inputsHash === inputsHash) {
+      if (latestPlan.aiProposal !== null) {
+        return { plan: latestPlan, aiStatus: 'proposed' };
+      }
       return this.aiPhase(petId, input, trend, latestPlan, now);
     }
 
