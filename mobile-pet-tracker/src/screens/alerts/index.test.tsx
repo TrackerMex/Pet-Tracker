@@ -1697,4 +1697,28 @@ describe('#223 R5: la insignia espera al último cursor y suma las abiertas de t
     await act(async () => finishSecond({ kind: 'ok', items: [], nextCursor: null }));
     await waitFor(() => expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('2', { exact: true }));
   });
+
+  it('#223 R6: la fila marcada leída conserva su sitio y pasa a Atendidas en el siguiente refetch', async () => {
+    const first = makeAlert({ id: 'first' });
+    const second = makeAlert({ id: 'second' });
+    const read = makeAlert({ id: 'read', status: 'acked' });
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [first, read, second], nextCursor: null });
+    mockAckAlert.mockResolvedValue({ kind: 'ok', alert: { ...first, status: 'acked' } });
+    await renderAlerts();
+    await waitFor(() => expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('1', { exact: true }));
+    const ids = () => screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id);
+    expect(ids()).toEqual(['first', 'second']);
+    expect(screen.getByTestId('alerts-new-count-text')).toHaveTextContent('2 nuevas', { exact: true });
+    await fireEvent.press(screen.getByTestId('alert-row-first-ack'));
+    await waitFor(() => expect(screen.getByTestId('alert-row-first-status')).toHaveTextContent('Leída', { exact: true }));
+    expect(ids()).toEqual(['first', 'second']);
+    expect(screen.getByTestId('alerts-new-count-text')).toHaveTextContent('1 nueva', { exact: true });
+    expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('1', { exact: true });
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [{ ...first, status: 'acked' }, read, second], nextCursor: null });
+    await focusScreen();
+    await waitFor(() => {
+      expect(screen.getByTestId('alerts-attended-count')).toHaveTextContent('2', { exact: true });
+      expect(ids()).toEqual(['second']);
+    });
+  });
 });
