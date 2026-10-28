@@ -23,29 +23,29 @@ tags: [harness, spec]
 
 ## R1 — el saludo dice Orbit en es y en
 
-- [ ] (1) Test rojo: en `src/screens/welcome/index.test.tsx` enmendar los 7 literales de los 4 `it` (títulos intactos) y crear `src/__tests__/orbit-rename-copy.test.ts` con `#221 R1: el catálogo dice Orbit`. Commit: `test(welcome): greeting says Orbit (R1)`.
-- [ ] (2) Cambiar los dos valores en `src/i18n/catalog.ts`. Commit: `feat(i18n): rename greeting to Orbit (R1)`.
-- [ ] (3) Refactor con tests verdes (no hay nada que refactorizar; confirmarlo).
+- [x] (1) Test rojo: en `src/screens/welcome/index.test.tsx` enmendar los 7 literales de los 4 `it` (títulos intactos) y crear `src/__tests__/orbit-rename-copy.test.ts` con `#221 R1: el catálogo dice Orbit`. Commit: `test(welcome): greeting says Orbit (R1)`.
+- [x] (2) Cambiar los dos valores en `src/i18n/catalog.ts`. Commit: `feat(i18n): rename greeting to Orbit (R1)`.
+- [x] (3) Refactor con tests verdes (no hay nada que refactorizar; confirmarlo).
 - Ancla: `grep -cF "Hola, soy Orbit." src/i18n/catalog.ts` = 1; `grep -cF "Orbit" src/i18n/catalog.ts` = 2.
 - Mutación: M1a, M1b.
 
 ## R2 — ninguna cadena visible nombra a Pingo
 
-- [ ] (1) Test rojo: añadir a `orbit-rename-copy.test.ts` los dos `it` de `#221 R2` (rojos antes de R1). Va en el mismo commit de test de R1.
-- [ ] (2) Verde con el commit de R1; ningún cambio de producción adicional.
-- [ ] (3) Refactor con tests verdes.
+- [x] (1) Test rojo: añadir a `orbit-rename-copy.test.ts` los dos `it` de `#221 R2` (rojos antes de R1). Va en el mismo commit de test de R1.
+- [x] (2) Verde con el commit de R1; ningún cambio de producción adicional.
+- [x] (3) Refactor con tests verdes.
 - Mutación: M2a, M2b, M2c.
 
 ## R3 — identificadores pingo-* intactos
 
-- [ ] (1) Test (nace verde): añadir `#221 R3` al fichero de R1; documentar en `progress/impl_mobile-orbit-rename-copy.md` que nace verde por diseño.
-- [ ] (2) Sin producción. Comprobar `git diff <H0>..HEAD --stat`: no aparecen `ui-copy-table.ts` ni `ui-language.test.ts`.
-- [ ] (3) Refactor con tests verdes.
+- [x] (1) Test (nace verde): añadir `#221 R3` al fichero de R1; documentar en `progress/impl_mobile-orbit-rename-copy.md` que nace verde por diseño.
+- [x] (2) Sin producción. Comprobar `git diff <H0>..HEAD --stat`: no aparecen `ui-copy-table.ts` ni `ui-language.test.ts`.
+- [x] (3) Refactor con tests verdes.
 - Mutación: M3a, M3b, M3c.
 
 ## Cierre
 
-- [ ] `bun run typecheck`, `bun run lint` y `bun run test` verdes sin pipe (el código de salida es el de `bun`, no de `tail`).
-- [ ] Rellenar [[traceability]] con hash y mensaje de cada commit.
-- [ ] `progress/impl_mobile-orbit-rename-copy.md`: tabla de mutaciones M1a..M4d con rojo observado y revertido.
+- [x] `bun run typecheck`, `bun run lint` y `bun run test` verdes sin pipe (el código de salida es el de `bun`, no de `tail`).
+- [x] Rellenar [[traceability]] con hash y mensaje de cada commit.
+- [x] `progress/impl_mobile-orbit-rename-copy.md`: tabla de mutaciones M1a..M4d con rojo observado y revertido.
 - [ ] Smoke de la bienvenida en el lote `progress/smoke_ui.md` (humano, G2).
