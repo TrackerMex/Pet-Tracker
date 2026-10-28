@@ -31,6 +31,7 @@ import { MOTION_RING_DELAY_MS, MOTION_RING_TIMING } from '../../theme/motion';
 import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
+import { mealPortionGrams } from '../../utils/meal-portion';
 import { AiExplanation } from './ai-explanation';
 import { parseAiExplanation } from './parse-ai-explanation';
 
@@ -337,9 +338,7 @@ export function FoodScreen() {
 
                   {loadedPlan.mealTimes.map((mealTime, index) => {
                     const served = loadedPlan.servedToday.includes(mealTime);
-                    const portionGrams = Math.round(
-                      loadedPlan.dailyGrams / loadedPlan.mealsPerDay,
-                    );
+                    const portionGrams = mealPortionGrams(loadedPlan, mealTime);
 
                     return (
                       <View

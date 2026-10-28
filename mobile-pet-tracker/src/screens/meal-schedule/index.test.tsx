@@ -1513,3 +1513,65 @@ it.each(FOUR_FOODS)('#209 R22: alimento %s se lee «%s»', async (foodType, text
   await renderMealSchedule();
   expect(await screen.findByTestId('nutrition-profile-food')).toHaveTextContent(text);
 });
+
+describe('#215 R17: Horario abre el plan tras generar y pinta los gramos de la IA', () => {
+  beforeEach(() => {
+    mockGetPet.mockResolvedValue(petState('owner'));
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'not-found' });
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+  });
+
+  it('#215 R17: abre el plan con aiStatus', async () => {
+    mockGenerateNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan(), aiStatus: 'proposed' });
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('generate-plan-button'));
+    await waitFor(() => expect(mockRouter.push).toHaveBeenCalledTimes(1));
+    expect(mockRouter.push.mock.calls[0][0]).toStrictEqual({
+      pathname: '/nutrition-plan',
+      params: { petId: 'pet-1', aiStatus: 'proposed' },
+    });
+  });
+
+  it('#215 R17: abre el plan sin aiStatus', async () => {
+    mockGenerateNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('generate-plan-button'));
+    await waitFor(() => expect(mockRouter.push).toHaveBeenCalledTimes(1));
+    expect(mockRouter.push.mock.calls[0][0]).toStrictEqual({
+      pathname: '/nutrition-plan',
+      params: { petId: 'pet-1' },
+    });
+  });
+
+  it.each<GeneratePlanState>([
+    { kind: 'forbidden' },
+    { kind: 'unprocessable', code: 'NUTRITION_PROFILE_REQUIRED' },
+    { kind: 'unprocessable', code: 'PET_WEIGHT_REQUIRED' },
+    { kind: 'unreachable', message: 'x' },
+    { kind: 'error' },
+    { kind: 'missing-config' },
+    { kind: 'unauthorized' },
+  ])('#215 R17: no navega con %s', async (result) => {
+    const signOut = jest.fn();
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut });
+    mockGenerateNutritionPlan.mockResolvedValue(result);
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('generate-plan-button'));
+    if (result.kind === 'unauthorized') {
+      await waitFor(() => expect(signOut).toHaveBeenCalledTimes(1));
+    } else {
+      expect(await screen.findByTestId('generate-plan-error')).toBeVisible();
+    }
+    expect(mockRouter.push).not.toHaveBeenCalledWith(expect.objectContaining({ pathname: '/nutrition-plan' }));
+  });
+
+  it('#215 R17: gramos de la IA en Horario', async () => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ aiProposal: { mealGrams: [{ mealTime: '07:30', grams: 90 }], recommendations: [], reviewDate: '2027-01-01' } }),
+    });
+    await renderMealSchedule();
+    expect(await screen.findByTestId('meal-time-row-0')).toHaveTextContent('90 g', { exact: false });
+    expect(screen.getByTestId('meal-time-row-1')).toHaveTextContent('94 g', { exact: false });
+  });
+});

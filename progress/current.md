@@ -63,3 +63,26 @@
   #214), y el reporte `progress/impl_mobile-role-aware-actions.md`.
 - Para toda la feature se pierde la separación «quien implementa no revisa»: el `reviewer` lo sabe y lo revisa
   con ese dato.
+
+## Fallback al subagente `implementer` (#215, 2026-10-27)
+
+- Feature: #215 mobile-nutrition-ai-plan. Spec firmada (7b601547) con erratas E1 (b18d7ec2) y E2 (c3da2b3f, tras
+  mergear `dev` con #223 y #224 en 20fc6616).
+- Motivo (CLAUDE.md §Excepciones, «Codex CLI no está disponible»): a la cuota semanal de Codex le queda el 3 %
+  (se renueva el 2 de noviembre a las 14:37).
+- Implementa la feature entera el subagente `implementer`, con el handoff `progress/handoff_mobile-nutrition-ai-plan.md`
+  (H0 c3da2b3f) y el reporte `progress/impl_mobile-nutrition-ai-plan.md`.
+- Para toda la feature se pierde la separación «quien implementa no revisa»: el `reviewer` lo sabe y lo revisa
+  con ese dato.
+- 2026-10-27: la revisión salió APROBADO sobre `bfdbb6d1` (`560cd3cc`), con el `./init.sh` del leader en verde
+  sobre el mismo HEAD. #215 sigue en `spec_ready`, porque el smoke G4 es del humano.
+- Deuda registrada (huecos de candado del review, ninguno bloquea; el código cumple la spec), todo en
+  `mobile-pet-tracker/src/screens/nutrition-plan/index.tsx` salvo H5:
+  - H1 (media): ninguna fila de R11 cubre «propuesta, `status` null, `tracked` false», así que nada congela que la
+    regla 4 (`ai`) gane a la 5 (`no-collar`);
+  - H2: la validación del parámetro de ruta `aiStatus` no tiene test;
+  - H3: `Math.max(insets.bottom, 16)` del pie no se distingue de `insets.bottom`, porque el doble da 24;
+  - H4: `variant="tertiary"` del botón violeta no tiene candado;
+  - H5: en Horario, una navegación desde el `catch` de «Generar plan» solo la detecta el ancla de grep;
+  - H6: «hoy» contra `new Date()` en vez de `dataUpdatedAt` no lo ve ningún test ni eslint;
+  - H7: `key={recommendation}` duplica la clave si la IA repite una recomendación.

@@ -116,6 +116,7 @@ function RootStack() {
         <Stack.Screen name="join-pet" options={{ headerShown: false }} />
         <Stack.Screen name="edit-profile" options={{ ...headerOptions, title: '' }} />
         <Stack.Screen name="nutrition-profile" options={{ headerShown: false }} />
+        <Stack.Screen name="nutrition-plan" options={{ headerShown: false }} />
       </Stack.Protected>
       <Stack.Protected guard={status !== 'authenticated'}>
         <Stack.Screen name="welcome" />

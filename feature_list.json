@@ -3586,7 +3586,7 @@
   {
     "id": 215,
     "name": "mobile-nutrition-ai-plan",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 3). Nutrición muestra la propuesta estructurada de la IA (gramos por comida, recomendaciones, fecha de revisión) o el plan del motor si no la hay; estados de límite diario alcanzado, sin collar y propuesta descartada por cota. Sustituye el copy de ejemplo del canvas por datos reales. Depende de #212, #209 y del gate G1 (artboard PlanIA). Firma delegada al leader. Registrada sin spec."
   },

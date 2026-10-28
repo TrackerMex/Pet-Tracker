@@ -6,6 +6,7 @@ import {
   getNutritionPlan,
   getMealsHistory,
   getNutritionProfile,
+  isNutritionAiStatus,
   serveMeal,
   unserveMeal,
   upsertNutritionProfile,
@@ -575,4 +576,63 @@ it('#209 R2: sin red devuelve unreachable', async () => {
   const fetchFn = jest.fn().mockRejectedValue(new Error('network down')) as unknown as typeof fetch;
   await expect(upsertNutritionProfile(baseUrl, 'token-1', 'pet-1', nutritionInput, fetchFn))
     .resolves.toEqual({ kind: 'unreachable', message: 'network down' });
+});
+
+const PROPOSAL = {
+  mealGrams: [
+    { mealTime: '08:00', grams: 112 },
+    { mealTime: '13:00', grams: 98 },
+    { mealTime: '18:00', grams: 110 },
+  ],
+  recommendations: ['Pasea 10 minutos más por la mañana.', 'Mide la ración con una báscula.'],
+  reviewDate: '2027-01-01',
+};
+
+it.each(['proposed', 'not_tracked', 'limit_reached', 'unavailable', 'rejected'])(
+  '#215 R1: generate devuelve aiStatus %s',
+  async (aiStatus) => {
+    const body = { ...makePlan(), aiStatus };
+    const fetchFn = jest.fn().mockResolvedValue(response(200, body)) as unknown as typeof fetch;
+    await expect(generateNutritionPlan(baseUrl, 'jwt-token', 'pet-1', fetchFn))
+      .resolves.toEqual({ kind: 'ok', plan: body, aiStatus });
+    expect(fetchFn).toHaveBeenCalledWith(generateEndpoint, expect.anything());
+  },
+);
+
+it.each<[unknown, Record<string, unknown>]>([
+  ['weird', { ...makePlan(), aiStatus: 'weird' }],
+  ['PROPOSED', { ...makePlan(), aiStatus: 'PROPOSED' }],
+  [null, { ...makePlan(), aiStatus: null }],
+  [3, { ...makePlan(), aiStatus: 3 }],
+  ['sin la clave', makePlan()],
+])('#215 R1: generate descarta el aiStatus %p', async (_label, body) => {
+  const fetchFn = jest.fn().mockResolvedValue(response(200, body)) as unknown as typeof fetch;
+  const result = await generateNutritionPlan(baseUrl, 'jwt-token', 'pet-1', fetchFn);
+  expect(result.kind).toBe('ok');
+  expect((result as { aiStatus?: unknown }).aiStatus).toBeUndefined();
+});
+
+it.each<[unknown, boolean]>([
+  ['proposed', true],
+  ['not_tracked', true],
+  ['limit_reached', true],
+  ['unavailable', true],
+  ['rejected', true],
+  ['PROPOSED', false],
+  ['', false],
+  [null, false],
+  [undefined, false],
+  [3, false],
+  [{}, false],
+])('#215 R1: isNutritionAiStatus(%p) es %p', (value, expected) => {
+  expect(isNutritionAiStatus(value)).toBe(expected);
+});
+
+it('#215 R1: getNutritionPlan conserva aiProposal', async () => {
+  const fetchFn = jest
+    .fn()
+    .mockResolvedValue(response(200, makePlan({ aiProposal: PROPOSAL }))) as unknown as typeof fetch;
+  const result = await getNutritionPlan(baseUrl, 'jwt-token', 'pet-1', fetchFn);
+  expect(result.kind).toBe('ok');
+  expect((result as { plan: { aiProposal?: unknown } }).plan.aiProposal).toEqual(PROPOSAL);
 });

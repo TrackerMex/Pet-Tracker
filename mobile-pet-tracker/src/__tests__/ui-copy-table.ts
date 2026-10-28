@@ -944,6 +944,37 @@ export const R21_PET_MEMBERS: UseRow[] = [ // #214 R22
   { file: 'src/screens/home/index.tsx', key: 'joinPet.title' },
 ];
 
+export const R22_NUTRITION_PLAN: UseRow[] = [ // #215 R19
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'nutritionPlan.title' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'common.retry' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'mealSchedule.noMealPlanYet' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'nutritionPlan.aiBadgeToday' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'nutritionPlan.aiBadgeDated' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'nutritionPlan.engineBadge' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'nutritionPlan.grams' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'nutritionPlan.before' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'nutritionPlan.total' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'nutritionPlan.perDay' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'nutritionPlan.whyTitle' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'nutritionPlan.recommendationsTitle' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'nutritionPlan.nextReview' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'nutritionPlan.disclaimer' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'nutritionPlan.noCollarNote' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'nutritionPlan.rejectedNote' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'nutritionPlan.limitReached' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'nutritionPlan.requestAnother' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'nutritionPlan.requestAnother' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'home.pairCollar' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'mealSchedule.errorForbidden' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'mealSchedule.errorProfileRequired' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'mealSchedule.registerWeightFirst' },
+  { file: 'src/screens/nutrition-plan/index.tsx', key: 'common.cannotReachServer' },
+];
+
 export const ALL_USES: UseRow[] = [
   ...R1_AUTH,
   ...R2_TABS,
@@ -966,6 +997,7 @@ export const ALL_USES: UseRow[] = [
   ...R19_VACCINE_CREATE,
   ...R20_NUTRITION_QUESTIONNAIRE,
   ...R21_PET_MEMBERS, // #214 R22
+  ...R22_NUTRITION_PLAN, // #215 R19
 ];
 
 describe('#65: la tabla de uso de copy está disponible al runner', () => {
@@ -975,12 +1007,13 @@ describe('#65: la tabla de uso de copy está disponible al runner', () => {
 
   // Enmienda (3): el candado es la consistencia interna, no una constante
   // escrita a mano — es la tercera vez que una cifra congelada envejece.
-  it('#194 R5: cuadra ALL_USES con la suma de sus bloques (enmendado por #220 R16) (enmendado por #208 R20) (enmendado por #214 R22) (enmendado por #209 R23)', () => {
+  it('#194 R5: cuadra ALL_USES con la suma de sus bloques (enmendado por #220 R16) (enmendado por #208 R20) (enmendado por #214 R22) (enmendado por #209 R23) (enmendado por #215 R19)', () => {
     const blocks = [
       R1_AUTH, R2_TABS, R3_HOME, R4_MAP, R5_HEALTH, R6_FOOD,
       R7_PROFILE, R8_REMINDERS, R9_ADD_PET, R10_PAIRING, R11_RESET,
       R12_ALERTS, R13_ALERT_DETAIL, R14_GEOFENCES, R15_GEOFENCE_EDITOR,
       R16_WELCOME, R17_EDIT_PROFILE, R18_DATE_FIELD, R19_VACCINE_CREATE, R20_NUTRITION_QUESTIONNAIRE, R21_PET_MEMBERS, // #214 R22
+      R22_NUTRITION_PLAN, // #215 R19
     ];
 
     expect(ALL_USES).toHaveLength(

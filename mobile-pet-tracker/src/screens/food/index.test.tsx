@@ -2001,3 +2001,14 @@ it('#209 R19: Pingo de NutricionSinPerfil mide 150 pt por style', async () => {
   expect(image.props.style).toEqual({ width: 150, height: 150 });
   expect(image.props.className).toBeUndefined();
 });
+
+it('#215 R18: gramos de la IA en Nutrición', async () => {
+  setupFood168();
+  mockGetNutritionPlan.mockResolvedValue({
+    kind: 'ok',
+    plan: makePlan({ aiProposal: { mealGrams: [{ mealTime: '07:30', grams: 90 }], recommendations: [], reviewDate: '2027-01-01' } }),
+  });
+  await renderFood();
+  expect(await screen.findByTestId('meal-portion-0')).toHaveTextContent('· 90 g');
+  expect(screen.getByTestId('meal-portion-1')).toHaveTextContent('· 94 g');
+});
