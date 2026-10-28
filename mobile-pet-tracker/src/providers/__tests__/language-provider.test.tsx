@@ -165,7 +165,7 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
 it('#191 R1: declara las claves del asistente de dos pasos en los dos idiomas', () => {
   const translations = [
     ['addPet.stepProgress', '{{current}} of {{total}}', '{{current}} de {{total}}'],
-    ['addPet.pingoGreeting', 'Hi. Tell me about your new companion.', '¡Hola! Cuéntame de tu nuevo compañero.'],
+    ['addPet.orbitGreeting', 'Hi. Tell me about your new companion.', '¡Hola! Cuéntame de tu nuevo compañero.'],
     ['addPet.continue', 'Continue', 'Continuar'],
   ];
   for (const [key, english, spanish] of translations) {
@@ -655,10 +655,11 @@ describe('#158 R1: claves y nueva frase de Pingo', () => {
 });
 
 describe('#167 R5: el saludo de Pingo en login', () => {
-  it('#167 R5: declara login.pingoGreeting en los dos idiomas y su registro', () => {
+  it('#167 R5: declara login.pingoGreeting en los dos idiomas y su registro (enmendado por #225 R3)', () => {
     const english = en as Record<string, string>;
     const spanish = es as Record<string, string>;
-    const key = 'login.pingoGreeting';
+    const key = 'login.orbitGreeting';
+    const designKey = 'login.pingoGreeting';
     const languageDesign = readFileSync(
       join(process.cwd(), '../specs/mobile-ui-language/design.md'),
       'utf8',
@@ -667,7 +668,7 @@ describe('#167 R5: el saludo de Pingo en login', () => {
     expect(spanish[key]).toBe('Qué bueno verte de nuevo.');
     expect(languageDesign).toMatch(
       new RegExp(
-        '\\| — \\| `' + escapeRegExp(key) +
+        '\\| — \\| `' + escapeRegExp(designKey) +
           '`[^\\n]*← (?:añadida|cambiada) por #167 \\(R5\\)',
       ),
     );

@@ -41,11 +41,11 @@ jest.mock('../../theme/use-theme-colors', () => ({
   useThemeColors: (tokens: string[]) => tokens.map((token) => `color:${token}`),
 }));
 
-jest.mock('../../components/pingo-float', () => {
+jest.mock('../../components/orbit-float', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
-    PingoFloat(props: { testID: string; children: import('react').ReactNode }) {
+    OrbitFloat(props: { testID: string; children: import('react').ReactNode }) {
       return React.createElement(View, props);
     },
   };
@@ -360,7 +360,7 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
     expect(header.children[1]).toBe(within(header).getByText('Crear cuenta'));
     const top = screen.getByTestId('register-top');
     expect(top.children).toEqual([
-      screen.getByTestId('register-back'), screen.getByTestId('register-pingo-float'),
+      screen.getByTestId('register-back'), screen.getByTestId('register-orbit-float'),
     ]);
     expect(top.props.className).toBe('-ml-2.5 flex-row items-center justify-between'); // #205 R9
     expect(header.props.className).toBe('gap-2');
@@ -391,19 +391,19 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
 
   it('#172 R5: Pingo del registro flota', async () => {
     await renderRegister();
-    const pingo = screen.getByTestId('register-pingo');
-    expect(pingo.parent).toHaveProperty('props.testID', 'register-pingo-float');
-    expect(pingo.parent?.children).toEqual([pingo]);
+    const orbit = screen.getByTestId('register-orbit');
+    expect(orbit.parent).toHaveProperty('props.testID', 'register-orbit-float');
+    expect(orbit.parent?.children).toEqual([orbit]);
   });
 
   it('#167 R7: Pingo del registro usa la pose de la tablilla', async () => {
     await renderRegister();
-    const pingo = screen.getByTestId('register-pingo');
-    expect(pingo.props.source).toEqual([
+    const orbit = screen.getByTestId('register-orbit');
+    expect(orbit.props.source).toEqual([
       expect.objectContaining({ testUri: expect.stringMatching(/orbit-clipboard\.webp$/) }),
     ]);
-    expect(pingo.props.style).toEqual({ width: 56, height: 56 });
-    expect(pingo.props.accessibilityLabel).toBeUndefined();
+    expect(orbit.props.style).toEqual({ width: 56, height: 56 });
+    expect(orbit.props.accessibilityLabel).toBeUndefined();
   });
 
   it('#172 R6: el título de la cabecera pesa 30/900 al inicio (enmendado por #205 R9)', async () => {
@@ -599,8 +599,8 @@ describe('#205 R9: Registro como el artboard', () => {
     expect(screen.getByTestId('register-top').props.className)
       .toBe('-ml-2.5 flex-row items-center justify-between');
     expect(screen.getByTestId('register-top').children)
-      .toEqual([screen.getByTestId('register-back'), screen.getByTestId('register-pingo-float')]);
-    expect(screen.getByTestId('register-pingo').props.style).toEqual({ width: 56, height: 56 });
+      .toEqual([screen.getByTestId('register-back'), screen.getByTestId('register-orbit-float')]);
+    expect(screen.getByTestId('register-orbit').props.style).toEqual({ width: 56, height: 56 });
     expect(within(header).getByText('Crear cuenta').props.className)
       .toBe('text-3xl font-black tracking-display text-foreground');
     const body = screen.getByTestId('register-body');

@@ -20,9 +20,9 @@ describe('#195 R16: pop de la burbuja con movimiento real', () => {
   afterEach(() => { cleanup(); jest.useRealTimers(); });
 
   it('espera 450 ms, alcanza el pico en 240 ms y vuelve en 160 ms', async () => {
-    await render(<BubblePop testID="home-pingo-bubble"><Text testID="home-pingo-text">Pingo</Text></BubblePop>);
-    const bubble = screen.getByTestId('home-pingo-bubble');
-    const text = within(bubble).getByTestId('home-pingo-text');
+    await render(<BubblePop testID="home-orbit-bubble"><Text testID="home-orbit-text">Orbit</Text></BubblePop>);
+    const bubble = screen.getByTestId('home-orbit-bubble');
+    const text = within(bubble).getByTestId('home-orbit-text');
     expect(getAnimatedStyle(bubble)).toEqual({ opacity: 0, transform: [{ scale: 0.6 }] });
     expect(bubble).toBeOnTheScreen();
     expect(text).toBeOnTheScreen();
@@ -53,23 +53,23 @@ describe('#195 R16: pop de la burbuja con movimiento real', () => {
 
   it('con reduce motion nace final y visible sin avanzar el reloj', async () => {
     mockUseReducedMotion.mockReturnValue(true);
-    await render(<BubblePop testID="home-pingo-bubble"><Text testID="home-pingo-text">Pingo</Text></BubblePop>);
-    const bubble = screen.getByTestId('home-pingo-bubble');
+    await render(<BubblePop testID="home-orbit-bubble"><Text testID="home-orbit-text">Orbit</Text></BubblePop>);
+    const bubble = screen.getByTestId('home-orbit-bubble');
     expect(getAnimatedStyle(bubble)).toEqual({ opacity: 1, transform: [{ scale: 1 }] });
     expect(bubble).toBeVisible();
-    expect(within(bubble).getByTestId('home-pingo-text')).toBeVisible();
+    expect(within(bubble).getByTestId('home-orbit-text')).toBeVisible();
   });
 
   it('reenvía testID, className, style y su único hijo sin entering', async () => {
     await render(
-      <BubblePop testID="home-pingo-bubble" className="flex-1" style={{ borderCurve: 'continuous' }}>
-        <Text testID="home-pingo-text">Pingo</Text>
+      <BubblePop testID="home-orbit-bubble" className="flex-1" style={{ borderCurve: 'continuous' }}>
+        <Text testID="home-orbit-text">Orbit</Text>
       </BubblePop>,
     );
-    const bubble = screen.getByTestId('home-pingo-bubble');
+    const bubble = screen.getByTestId('home-orbit-bubble');
     expect(bubble.props.className).toBe('flex-1');
     expect(getAnimatedStyle(bubble)).toEqual({ borderCurve: 'continuous', opacity: 0, transform: [{ scale: 0.6 }] });
-    expect(bubble.children).toEqual([within(bubble).getByTestId('home-pingo-text')]);
+    expect(bubble.children).toEqual([within(bubble).getByTestId('home-orbit-text')]);
     expect(bubble.props.entering).toBeUndefined();
   });
 });

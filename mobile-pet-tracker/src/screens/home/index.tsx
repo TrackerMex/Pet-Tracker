@@ -60,7 +60,7 @@ import {
 } from '../../components/pet-hero-header';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { GlassCircle } from '../../components/glass-circle';
-import { PingoFloat } from '../../components/pingo-float';
+import { OrbitFloat } from '../../components/orbit-float';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import type { TranslationKey } from '../../i18n/catalog';
 import { useAuth } from '../../providers/auth-provider';
@@ -92,7 +92,7 @@ import {
 } from './format';
 import { CollarBatteryBar } from './collar-battery-bar';
 import { HomeEntrance, homeEntering } from './home-entrance';
-import { homePingoPhrase } from './pingo-phrase';
+import { homeOrbitPhrase } from './orbit-phrase';
 import { WeeklyActivityChart } from './weekly-activity-chart';
 
 const WEEKLY_ACTIVITY_SKELETON_HEIGHT = 408;
@@ -312,9 +312,9 @@ export function HomeScreen() {
       ? deviceConnectionState(detail.data.pet.device)
       : null;
 
-  const pingoPhrase =
+  const orbitPhrase =
     hasPets && selectedPetId !== null && detail.data?.kind === 'ok' && activity.data !== undefined
-      ? homePingoPhrase({
+      ? homeOrbitPhrase({
           petName: detail.data.pet.name,
           distanceM: today?.distanceM ?? null,
           meals: mealsToday,
@@ -495,25 +495,25 @@ export function HomeScreen() {
       )}
 
       <View testID="home-content" style={{ paddingHorizontal: 24, gap: 16 }}>
-        {pingoPhrase !== null ? (
-          <HomeEntrance index={0} testID="home-entrance-pingo">
-            <View testID="home-pingo-phrase" className="flex-row items-end gap-2.5">
+        {orbitPhrase !== null ? (
+          <HomeEntrance index={0} testID="home-entrance-orbit">
+            <View testID="home-orbit-phrase" className="flex-row items-end gap-2.5">
               <BubblePop
-                testID="home-pingo-bubble"
+                testID="home-orbit-bubble"
                 className="flex-1 rounded-tile rounded-br-4 border border-border bg-surface-secondary px-3.5 py-3"
                 style={CONTINUOUS_CORNER}
               >
-                <Text testID="home-pingo-text" className="text-15 font-semibold leading-5.25 text-foreground" selectable>
-                  {t(pingoPhrase.labelKey, pingoPhrase.params)}
+                <Text testID="home-orbit-text" className="text-15 font-semibold leading-5.25 text-foreground" selectable>
+                  {t(orbitPhrase.labelKey, orbitPhrase.params)}
                 </Text>
               </BubblePop>
-              <PingoFloat testID="home-pingo-float">
+              <OrbitFloat testID="home-orbit-float">
                 <Image
-                  testID="home-pingo"
+                  testID="home-orbit"
                   source={require('../../../assets/images/orbit-talk.webp')}
                   style={{ width: 56, height: 56 }}
                 />
-              </PingoFloat>
+              </OrbitFloat>
             </View>
           </HomeEntrance>
         ) : null}

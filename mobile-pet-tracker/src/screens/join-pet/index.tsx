@@ -10,7 +10,7 @@ import { CheckCircle, InfoCircle } from 'reicon-react-native';
 import { acceptInvite } from '../../api/pet-members';
 import { petKeys } from '../../api/query-keys';
 import { PingRing } from '../../components/ping-ring';
-import { PingoFloat } from '../../components/pingo-float';
+import { OrbitFloat } from '../../components/orbit-float';
 import { ScreenHeader } from '../../components/screen-header';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
@@ -19,7 +19,7 @@ import { useChunkyLip } from '../../theme/chunky-lip';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
-const PINGO_SOURCE = require('../../../assets/images/orbit-collar.webp');
+const ORBIT_SOURCE = require('../../../assets/images/orbit-collar.webp');
 type JoinError = 'not-acceptable' | 'rate-limited' | 'unreachable' | 'error' | 'missing-config';
 
 export default function JoinPetScreen() {
@@ -63,9 +63,9 @@ export default function JoinPetScreen() {
         <View testID="join-pet-hero" className="h-37.5 w-50 items-center justify-center self-center" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
           <PingRing testID="join-pet-ring" delay={0} className="size-32.5 rounded-full border-3 border-accent" />
           <View className="absolute size-30 rounded-full bg-surface-secondary" />
-          <PingoFloat testID="join-pet-pingo-float">
-            <Image testID="join-pet-pingo" source={PINGO_SOURCE} style={{ width: 104, height: 104 }} contentFit="contain" />
-          </PingoFloat>
+          <OrbitFloat testID="join-pet-orbit-float">
+            <Image testID="join-pet-orbit" source={ORBIT_SOURCE} style={{ width: 104, height: 104 }} contentFit="contain" />
+          </OrbitFloat>
         </View>
         <Text testID="join-pet-title" accessibilityRole="header" className="text-center text-28 font-black tracking-title text-foreground">{t('joinPet.title')}</Text>
         {state !== 'already-member' ? <View testID="join-pet-note" className="flex-row items-center gap-2.5 rounded-tile bg-default px-3.5 py-3">

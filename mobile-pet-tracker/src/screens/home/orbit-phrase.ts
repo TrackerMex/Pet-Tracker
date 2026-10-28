@@ -2,7 +2,7 @@ import type { MealsToday } from '../../api/types';
 import type { TranslationKey } from '../../i18n/catalog';
 import { fmtKm } from './format';
 
-export function homePingoPhrase({ petName, distanceM, meals }: {
+export function homeOrbitPhrase({ petName, distanceM, meals }: {
   petName: string;
   distanceM: number | null;
   meals: MealsToday | null;
@@ -12,15 +12,15 @@ export function homePingoPhrase({ petName, distanceM, meals }: {
 
   if (hasDistance && hasMeals) {
     return {
-      labelKey: 'home.pingoPhraseWalkMeals',
+      labelKey: 'home.orbitPhraseWalkMeals',
       params: { petName, km: fmtKm(distanceM), served: meals.served, total: meals.total },
     };
   }
   if (hasDistance) {
-    return { labelKey: 'home.pingoPhraseWalk', params: { petName, km: fmtKm(distanceM) } };
+    return { labelKey: 'home.orbitPhraseWalk', params: { petName, km: fmtKm(distanceM) } };
   }
   if (hasMeals) {
-    return { labelKey: 'home.pingoPhraseMeals', params: { petName, served: meals.served, total: meals.total } };
+    return { labelKey: 'home.orbitPhraseMeals', params: { petName, served: meals.served, total: meals.total } };
   }
-  return { labelKey: 'home.pingoPhraseCalm', params: { petName } };
+  return { labelKey: 'home.orbitPhraseCalm', params: { petName } };
 }

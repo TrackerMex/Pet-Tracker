@@ -1599,3 +1599,17 @@ Copy del asistente de alta; se retira `addPet.avatarPreview` al integrar la foto
 |---|---|---|---|---|
 | — | `profile.editProfile` | `Edit profile` | `Editar perfil` | ← añadida por #194 (R1) |
 | — | `editProfile.save` | `Save changes` | `Guardar cambios` | ← añadida por #194 (R1) |
+
+### §2.39 — Añadidos por #225 — Orbit renombrado y su pose de actividad
+
+Las claves con `pingo` pasan a `orbit` con los mismos valores; las filas anteriores conservan el nombre viejo como historia.
+
+| Diseño | Clave | en | es | Cambio |
+|---|---|---|---|---|
+| — | `welcome.orbitGreeting` | `Hi, I'm Orbit.` | `Hola, soy Orbit.` | ← renombrada desde `welcome.pingoGreeting` por #225 (R3) |
+| — | `login.orbitGreeting` | `Good to see you again.` | `Qué bueno verte de nuevo.` | ← renombrada desde `login.pingoGreeting` por #225 (R3) |
+| — | `addPet.orbitGreeting` | `Hi. Tell me about your new companion.` | `¡Hola! Cuéntame de tu nuevo compañero.` | ← renombrada desde `addPet.pingoGreeting` por #225 (R3) |
+| — | `home.orbitPhraseWalkMeals` | `{{petName}} has walked {{km}} today and has had {{served}} of {{total}} meals.` | `{{petName}} ya caminó {{km}} hoy y lleva {{served}} de {{total}} comidas.` | ← renombrada desde `home.pingoPhraseWalkMeals` por #225 (R3) |
+| — | `home.orbitPhraseWalk` | `{{petName}} has walked {{km}} today.` | `{{petName}} ya caminó {{km}} hoy.` | ← renombrada desde `home.pingoPhraseWalk` por #225 (R3) |
+| — | `home.orbitPhraseMeals` | `{{petName}} has had {{served}} of {{total}} meals today.` | `{{petName}} lleva {{served}} de {{total}} comidas hoy.` | ← renombrada desde `home.pingoPhraseMeals` por #225 (R3) |
+| — | `home.orbitPhraseCalm` | `I'm keeping an eye on {{petName}}.` | `Estoy pendiente de {{petName}}.` | ← renombrada desde `home.pingoPhraseCalm` por #225 (R3) |

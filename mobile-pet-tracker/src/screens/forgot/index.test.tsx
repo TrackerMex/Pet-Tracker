@@ -21,11 +21,11 @@ jest.mock('../../components/pop-in', () => {
   };
 });
 
-jest.mock('../../components/pingo-float', () => {
+jest.mock('../../components/orbit-float', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
-    PingoFloat(props: { testID: string; children: import('react').ReactNode }) {
+    OrbitFloat(props: { testID: string; children: import('react').ReactNode }) {
       return React.createElement(View, props);
     },
   };
@@ -565,33 +565,33 @@ describe('#117 R11: la pantalla de éxito es la misma para cualquier correo', ()
 });
 
 
-function expectPingoBeforeLock() {
-  const pingo = screen.getByTestId('forgot-pingo');
-  expect(pingo.props.source).toEqual([
+function expectOrbitBeforeLock() {
+  const orbit = screen.getByTestId('forgot-orbit');
+  expect(orbit.props.source).toEqual([
     expect.objectContaining({ testUri: expect.stringMatching(/orbit-talk\.webp$/) }),
   ]);
-  expect(pingo.props.style).toEqual({ position: 'absolute', left: 24, top: 0, width: 120, height: 120, transform: [{ rotate: '6deg' }] }); // #205 R10 (E6)
-  expect(pingo.props.accessibilityLabel).toBeUndefined();
-  expect(screen.queryByTestId('forgot-pingo-float')).toBeNull(); // #205 R10
+  expect(orbit.props.style).toEqual({ position: 'absolute', left: 24, top: 0, width: 120, height: 120, transform: [{ rotate: '6deg' }] }); // #205 R10 (E6)
+  expect(orbit.props.accessibilityLabel).toBeUndefined();
+  expect(screen.queryByTestId('forgot-orbit-float')).toBeNull(); // #205 R10
   const scene = screen.getByTestId('forgot-scene'); // #205 R10
-  expect(pingo.parent).toBe(scene);
+  expect(orbit.parent).toBe(scene);
   expect(lockTile().parent).toBe(scene);
   expect((scene.children as TestInstance[]).map((child) => child.props.testID)).toEqual([
-    'forgot-scene-backdrop', 'forgot-pingo', 'forgot-lock-tile',
+    'forgot-scene-backdrop', 'forgot-orbit', 'forgot-lock-tile',
   ]);
 }
 
 describe('#167 R9: Pingo y pop del candado en recuperar', () => {
   it('#167 R9: Pingo precede al tile del candado en el formulario (enmendado por #205 R10)', async () => {
     await renderRoute();
-    expectPingoBeforeLock();
+    expectOrbitBeforeLock();
   });
 
   it('#167 R9: Pingo precede al tile del candado tras enviar (enmendado por #205 R10)', async () => {
     mockForgotPassword.mockResolvedValue({ kind: 'ok' });
     await renderRoute();
     await submitForgot();
-    expectPingoBeforeLock();
+    expectOrbitBeforeLock();
   });
 
   it('#167 R9: el tile entra con pop en el formulario (enmendado por #205 R10)', async () => {
@@ -626,9 +626,9 @@ describe('#167 R9: Pingo y pop del candado en recuperar', () => {
 describe('#172 R5: flotación de recuperar', () => {
   it('#172 R5: Pingo de recuperar flota (enmendado por #205 R10)', async () => {
     await renderRoute();
-    expect(screen.getByTestId('forgot-pingo').parent)
+    expect(screen.getByTestId('forgot-orbit').parent)
       .toHaveProperty('props.testID', 'forgot-scene'); // #205 R10
-    expect(screen.queryByTestId('forgot-pingo-float')).toBeNull(); // #205 R10
+    expect(screen.queryByTestId('forgot-orbit-float')).toBeNull(); // #205 R10
   });
 });
 
@@ -712,7 +712,7 @@ it('#172 R19: el espaciador empuja la CTA al pie en los dos estados (enmendado p
   expectSpacer('forgot-resend');
 });
 
-const SCENE_CHILDREN = ['forgot-scene-backdrop', 'forgot-pingo', 'forgot-lock-tile'];
+const SCENE_CHILDREN = ['forgot-scene-backdrop', 'forgot-orbit', 'forgot-lock-tile'];
 const TITLE_CLASS = 'mt-7 text-center text-28 leading-8.5 font-black tracking-display text-foreground';
 const BODY_CLASS = 'mt-2.5 max-w-80 text-center text-15 leading-5.5 font-normal text-muted';
 
@@ -745,11 +745,11 @@ describe('#205 R10: Recuperar como el artboard', () => {
 
   it('#205 R10: Pingo no flota y mide 120 girado 6 grados', async () => {
     await renderRoute();
-    const pingo = screen.getByTestId('forgot-pingo');
-    expect(screen.queryByTestId('forgot-pingo-float')).toBeNull();
-    expect(pingo.parent).toBe(screen.getByTestId('forgot-scene'));
-    expect(pingo.props.className).toBeUndefined();
-    expect(pingo.props.style).toEqual({ position: 'absolute', left: 24, top: 0, width: 120, height: 120, transform: [{ rotate: '6deg' }] });
+    const orbit = screen.getByTestId('forgot-orbit');
+    expect(screen.queryByTestId('forgot-orbit-float')).toBeNull();
+    expect(orbit.parent).toBe(screen.getByTestId('forgot-scene'));
+    expect(orbit.props.className).toBeUndefined();
+    expect(orbit.props.style).toEqual({ position: 'absolute', left: 24, top: 0, width: 120, height: 120, transform: [{ rotate: '6deg' }] });
   });
 
   it('#205 R10: título, cuerpo, campo y acciones siguen las medidas del artboard', async () => {

@@ -20,7 +20,7 @@ import { listPets, type PetsState } from '../../api/pets';
 import { nutritionKeys, petKeys } from '../../api/query-keys';
 import { RiseIn } from '../../components/rise-in';
 import { EmptyState } from '../../components/empty-state';
-import { PingoFloat } from '../../components/pingo-float';
+import { OrbitFloat } from '../../components/orbit-float';
 import { TabPetHeader, TAB_PET_HEADER_HEIGHT, TAB_PET_HEADER_SCROLL_MIN } from '../../components/tab-pet-header';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
@@ -451,9 +451,9 @@ export function FoodScreen() {
             <View testID="food-profile-empty" className="items-center gap-3">
               <View className="h-50 w-55 items-center justify-center">
                 <View className="absolute size-47.5 rounded-full bg-surface-secondary" />
-                <PingoFloat testID="food-profile-pingo">
-                  <Image testID="food-profile-pingo-image" source={require('../../../assets/images/orbit-food.webp')} style={{ width: 150, height: 150 }} />
-                </PingoFloat>
+                <OrbitFloat testID="food-profile-orbit">
+                  <Image testID="food-profile-orbit-image" source={require('../../../assets/images/orbit-food.webp')} style={{ width: 150, height: 150 }} />
+                </OrbitFloat>
               </View>
               <Text className="text-center text-24 font-black tracking-title">
                 {t('mealSchedule.noNutritionProfileYet')}

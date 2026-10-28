@@ -416,17 +416,17 @@ describe('#167 R6: Pingo saluda en login y la pantalla entra en dos tiempos', ()
     const greeting = screen.getByTestId('login-greeting');
     expect(greeting.props.className).toBe('mt-2 flex-row items-end gap-3'); // #205 R8
     expect(greeting.children.map((child) => typeof child === 'string' ? child : child.props.testID))
-      .toEqual(['login-pingo', 'login-bubble']);
+      .toEqual(['login-orbit', 'login-bubble']);
   });
 
   it('#167 R6: Pingo saluda con la pose de la mano', async () => {
     await renderLogin();
-    const pingo = screen.getByTestId('login-pingo');
-    expect(pingo.props.source).toEqual([
+    const orbit = screen.getByTestId('login-orbit');
+    expect(orbit.props.source).toEqual([
       expect.objectContaining({ testUri: expect.stringMatching(/orbit-wave\.webp$/) }),
     ]);
-    expect(pingo.props.style).toEqual({ width: 88, height: 88, transform: [{ rotate: '-8deg' }] });
-    expect(pingo.props.accessibilityLabel).toBeUndefined();
+    expect(orbit.props.style).toEqual({ width: 88, height: 88, transform: [{ rotate: '-8deg' }] });
+    expect(orbit.props.accessibilityLabel).toBeUndefined();
   });
 
   it('#167 R6: la burbuja es una card secondary que ocupa el resto (enmendado por #205 R8)', async () => {
@@ -504,10 +504,10 @@ describe('#205 R8: Login como el artboard', () => {
   it('#205 R8: Pingo mide 88 y gira -8 grados', async () => {
     await renderLogin();
     const greeting = screen.getByTestId('login-greeting');
-    const pingo = screen.getByTestId('login-pingo');
-    expect(pingo.props.style).toEqual({ width: 88, height: 88, transform: [{ rotate: '-8deg' }] });
+    const orbit = screen.getByTestId('login-orbit');
+    expect(orbit.props.style).toEqual({ width: 88, height: 88, transform: [{ rotate: '-8deg' }] });
     expect(greeting.props.className).toBe('mt-2 flex-row items-end gap-3');
-    expect(greeting.children[0]).toBe(pingo);
+    expect(greeting.children[0]).toBe(orbit);
   });
 });
 

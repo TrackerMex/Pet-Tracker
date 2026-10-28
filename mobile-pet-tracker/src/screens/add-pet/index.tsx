@@ -276,7 +276,7 @@ export function AddPetScreen() {
           </Pressable>
           <View testID="add-pet-bubble" className="flex-1 rounded-tile bg-surface-secondary px-3 py-2.5" style={CONTINUOUS_CORNER}>
             <View testID="add-pet-bubble-tail" className="absolute -left-1.5 top-5.5 size-3 rotate-45 bg-surface-secondary" />
-            <Text testID="add-pet-bubble-text" className="text-13 font-semibold text-foreground">{t('addPet.pingoGreeting')}</Text>
+            <Text testID="add-pet-bubble-text" className="text-13 font-semibold text-foreground">{t('addPet.orbitGreeting')}</Text>
           </View>
         </RiseIn>
         {renderPhotoError()}

@@ -11,11 +11,11 @@ function sourceFiles(directory = sourceRoot): string[] {
   });
 }
 
-it('#221 R1: el catálogo dice Orbit', () => {
+it('#221 R1: el catálogo dice Orbit (enmendado por #225 R3)', () => {
   const catalog = readSource('i18n/catalog.ts');
   for (const line of [
-    "  'welcome.pingoGreeting': 'Hi, I\\'m Orbit.',",
-    "  'welcome.pingoGreeting': 'Hola, soy Orbit.',",
+    "  'welcome.orbitGreeting': 'Hi, I\\'m Orbit.',",
+    "  'welcome.orbitGreeting': 'Hola, soy Orbit.',",
   ]) {
     expect(catalog.split(line).length - 1).toBe(1);
   }
@@ -47,20 +47,18 @@ it('#221 R2: ninguna cadena visible nombra a Pingo en los valores del catálogo'
   }
 });
 
-it('#221 R3: los identificadores pingo-* no cambian aquí (enmendado por #225 R2)', () => {
+it('#221 R3: los identificadores pingo-* no cambian aquí (enmendado por #225 R2, R3)', () => {
   const catalog = readSource('i18n/catalog.ts');
-  expect(catalog.split("'welcome.pingoGreeting':").length - 1).toBe(2);
-  expect([...catalog.matchAll(/^  '([^']+)':/gm)].map(match => match[1])
-    .filter(key => /orbit/i.test(key))).toEqual([]);
+  expect(catalog.split("'welcome.orbitGreeting':").length - 1).toBe(2);
 
   const welcome = readSource('screens/welcome/index.tsx');
   for (const anchor of [
-    "t('welcome.pingoGreeting')",
+    "t('welcome.orbitGreeting')",
     'testID="welcome-bubble-text"',
-    'testID="welcome-pingo-float"',
+    'testID="welcome-orbit-float"',
   ]) {
     expect(welcome.split(anchor).length - 1).toBe(1);
   }
   const copyTable = readSource('__tests__/ui-copy-table.ts');
-  expect(copyTable.split("{ file: 'src/screens/welcome/index.tsx', key: 'welcome.pingoGreeting' }").length - 1).toBe(1);
+  expect(copyTable.split("{ file: 'src/screens/welcome/index.tsx', key: 'welcome.orbitGreeting' }").length - 1).toBe(1);
 });

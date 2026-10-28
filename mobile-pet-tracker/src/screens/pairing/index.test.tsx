@@ -1058,9 +1058,9 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     expect(avatar.parent!.props.testID).toBe('pairing-header');
     expect(header.children[header.children.length - 1]).toEqual(avatar);
     expect(within(screen.getByTestId('pairing-form')).getAllByTestId(
-      /^(pairing-pet-avatar|pairing-pingo)$/,
+      /^(pairing-pet-avatar|pairing-orbit)$/,
       { includeHiddenElements: true },
-    ).map((node) => node.props.testID)).toEqual(['pairing-pet-avatar', 'pairing-pingo']);
+    ).map((node) => node.props.testID)).toEqual(['pairing-pet-avatar', 'pairing-orbit']);
     expect(screen.queryAllByTestId(/^pet-chip-/)).toHaveLength(0);
   });
 
@@ -1130,32 +1130,32 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     expect(hero.children).toEqual([
       screen.getByTestId('pairing-ring-0', { includeHiddenElements: true }),
       screen.getByTestId('pairing-ring-1', { includeHiddenElements: true }),
-      screen.getByTestId('pairing-pingo-float', { includeHiddenElements: true }),
+      screen.getByTestId('pairing-orbit-float', { includeHiddenElements: true }),
     ]);
-    const pingo = screen.getByTestId('pairing-pingo', { includeHiddenElements: true });
-    expect(pingo).toHaveStyle({ width: 120, aspectRatio: 1 });
-    const style = Object.assign({}, ...[pingo.props.style].flat(Infinity));
+    const orbit = screen.getByTestId('pairing-orbit', { includeHiddenElements: true });
+    expect(orbit).toHaveStyle({ width: 120, aspectRatio: 1 });
+    const style = Object.assign({}, ...[orbit.props.style].flat(Infinity));
     expect(style).not.toHaveProperty('height');
   });
 
   it('#188 R1: shows the collar pose as the first visual content', async () => {
     await renderPairing();
-    const pingo = await screen.findByTestId('pairing-pingo', { includeHiddenElements: true });
-    expect(pingo.props.source).toEqual([
+    const orbit = await screen.findByTestId('pairing-orbit', { includeHiddenElements: true });
+    expect(orbit.props.source).toEqual([
       expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/orbit-collar\.webp$/) }),
     ]);
-    expect(JSON.stringify(pingo.props.source)).not.toContain('orbit-wave.webp');
-    expect(pingo.props.contentFit).toBe('contain');
+    expect(JSON.stringify(orbit.props.source)).not.toContain('orbit-wave.webp');
+    expect(orbit.props.contentFit).toBe('contain');
     const visuals = within(screen.getByTestId('pairing-form')).getAllByTestId(
-      /^(pairing-pingo|pet-chip-pet-1|pairing-plan-free|activation-code-input|pairing-submit)$/,
+      /^(pairing-orbit|pet-chip-pet-1|pairing-plan-free|activation-code-input|pairing-submit)$/,
       { includeHiddenElements: true },
     );
-    expect(visuals[0].props.testID).toBe('pairing-pingo');
+    expect(visuals[0].props.testID).toBe('pairing-orbit');
   });
 
   it('#188 R2: draws exactly two accent rings behind Pingo', async () => {
     await renderPairing();
-    await screen.findByTestId('pairing-pingo', { includeHiddenElements: true });
+    await screen.findByTestId('pairing-orbit', { includeHiddenElements: true });
     for (const index of [0, 1]) {
       const ring = screen.getByTestId(`pairing-ring-${index}`, { includeHiddenElements: true });
       expect(ring.props.className.split(' ')).toEqual(expect.arrayContaining([
@@ -1164,8 +1164,8 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     }
     expect(screen.queryByTestId('pairing-ring-2', { includeHiddenElements: true })).toBeNull();
     const stage = screen.getByTestId('pairing-ring-0', { includeHiddenElements: true }).parent!;
-    expect(within(stage).getAllByTestId(/^pairing-(ring-0|ring-1|pingo)$/, { includeHiddenElements: true })
-      .map((node) => node.props.testID)).toEqual(['pairing-ring-0', 'pairing-ring-1', 'pairing-pingo']);
+    expect(within(stage).getAllByTestId(/^pairing-(ring-0|ring-1|orbit)$/, { includeHiddenElements: true })
+      .map((node) => node.props.testID)).toEqual(['pairing-ring-0', 'pairing-ring-1', 'pairing-orbit']);
   });
 
 
@@ -1208,9 +1208,9 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     jest.useFakeTimers();
     try {
       await renderPairing();
-      const pingo = await screen.findByTestId('pairing-pingo', { includeHiddenElements: true });
-      const float = screen.getByTestId('pairing-pingo-float', { includeHiddenElements: true });
-      expect(within(float).getByTestId('pairing-pingo', { includeHiddenElements: true })).toBe(pingo);
+      const orbit = await screen.findByTestId('pairing-orbit', { includeHiddenElements: true });
+      const float = screen.getByTestId('pairing-orbit-float', { includeHiddenElements: true });
+      expect(within(float).getByTestId('pairing-orbit', { includeHiddenElements: true })).toBe(orbit);
       expect(float).toHaveAnimatedStyle({ transform: [{ translateY: 0 }] }, { shouldMatchAllProps: true });
       await act(async () => { jest.advanceTimersByTime(1500); });
       expect(float).toHaveAnimatedStyle({ transform: [{ translateY: -10 }] }, { shouldMatchAllProps: true });
@@ -1226,7 +1226,7 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     mockUseReducedMotion.mockReturnValue(true);
     try {
       await renderPairing();
-      const float = await screen.findByTestId('pairing-pingo-float', { includeHiddenElements: true });
+      const float = await screen.findByTestId('pairing-orbit-float', { includeHiddenElements: true });
       const rings = [0, 1].map((index) => screen.getByTestId(`pairing-ring-${index}`, { includeHiddenElements: true }));
       for (const elapsed of [0, 1500, 900]) {
         await act(async () => { jest.advanceTimersByTime(elapsed); });
@@ -1287,10 +1287,10 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     await screen.findByTestId('pairing-title');
     const form = within(screen.getByTestId('pairing-form'));
     expect(form.getAllByTestId(
-      /^(pairing-pingo|pairing-title|pairing-plan-free|pairing-activation-code-label|activation-code-input|pairing-code-hint|pairing-submit)$/,
+      /^(pairing-orbit|pairing-title|pairing-plan-free|pairing-activation-code-label|activation-code-input|pairing-code-hint|pairing-submit)$/,
       { includeHiddenElements: true },
     ).map((node) => node.props.testID)).toEqual([
-      'pairing-pingo', 'pairing-title', 'pairing-plan-free', 'pairing-activation-code-label',
+      'pairing-orbit', 'pairing-title', 'pairing-plan-free', 'pairing-activation-code-label',
       'activation-code-input', 'pairing-code-hint', 'pairing-submit',
     ]);
     expect(form.getByTestId('pairing-plan-free')).toHaveTextContent(plan, { exact: true });
@@ -1371,7 +1371,7 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
       expect(screen.getByTestId('device-status-card')).toBeOnTheScreen();
       expect(screen.getByTestId('device-unpair')).toBeOnTheScreen();
     }
-    for (const testID of ['pairing-pingo', 'pairing-ring-0', 'pairing-ring-1', 'pairing-pingo-float']) {
+    for (const testID of ['pairing-orbit', 'pairing-ring-0', 'pairing-ring-1', 'pairing-orbit-float']) {
       expect(screen.queryByTestId(testID, { includeHiddenElements: true })).toBeNull();
     }
   });

@@ -1960,8 +1960,8 @@ it('#209 R19: owner sin perfil ve Crear perfil nutricional y navega al cuestiona
   const section = screen.getByTestId('food-profile-empty');
   expect(mockGetNutritionProfile).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1');
   expect(screen.queryByTestId('food-plan-empty')).toBeNull();
-  const pingo = within(section).getByTestId('food-profile-pingo', { includeHiddenElements: true });
-  expect(foodChild(pingo, 0).props.source).toEqual([
+  const orbit = within(section).getByTestId('food-profile-orbit', { includeHiddenElements: true });
+  expect(foodChild(orbit, 0).props.source).toEqual([
     expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/orbit-food\.webp$/) }),
   ]);
   expect(within(section).getByText('Aún no hay perfil nutricional')).toBeOnTheScreen();
@@ -1997,7 +1997,7 @@ it('#209 R19: Pingo de NutricionSinPerfil mide 150 pt por style', async () => {
   await renderFood();
   // docs/conventions.md §Esperas: observar la sección antes de medir.
   await screen.findByTestId('food-profile-empty');
-  const image = within(screen.getByTestId('food-profile-pingo', { includeHiddenElements: true })).getByTestId('food-profile-pingo-image', { includeHiddenElements: true });
+  const image = within(screen.getByTestId('food-profile-orbit', { includeHiddenElements: true })).getByTestId('food-profile-orbit-image', { includeHiddenElements: true });
   expect(image.props.style).toEqual({ width: 150, height: 150 });
   expect(image.props.className).toBeUndefined();
 });

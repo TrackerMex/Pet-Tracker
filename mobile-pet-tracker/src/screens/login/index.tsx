@@ -94,7 +94,7 @@ export function LoginScreen() {
           </View>
           <View testID="login-greeting" className="mt-2 flex-row items-end gap-3">
             <Image
-              testID="login-pingo"
+              testID="login-orbit"
               source={require('../../../assets/images/orbit-wave.webp')}
               style={{ width: 88, height: 88, transform: [{ rotate: '-8deg' }] }}
             />
@@ -104,7 +104,7 @@ export function LoginScreen() {
               style={CONTINUOUS_CORNER}
             >
               <Text testID="login-bubble-text" className="text-15 font-semibold text-foreground">
-                {t('login.pingoGreeting')}
+                {t('login.orbitGreeting')}
               </Text>
             </View>
           </View>

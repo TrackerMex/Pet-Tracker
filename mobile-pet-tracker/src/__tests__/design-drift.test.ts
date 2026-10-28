@@ -968,7 +968,7 @@ describe('#167 R14: las pantallas de cuenta no traen deriva', () => {
     'theme/motion.ts',
     'components/back-button.tsx',
     'components/form-error.tsx',
-    'components/pingo-float.tsx',
+    'components/orbit-float.tsx',
     'components/password-input.tsx',
   ];
 

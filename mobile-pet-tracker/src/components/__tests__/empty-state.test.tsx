@@ -231,7 +231,7 @@ describe('#155 R11: los vacíos no traen movimiento ni dependencias', () => {
   it('EmptyState solo importa de react, react-native, expo-image, heroui-native, Reanimated y el tema de movimiento (enmendado por #177 R10) (enmendado por #176 R5) (enmendado por #198 R15)', () => {
     const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
     for (const [, specifier] of source.matchAll(/from '([^']+)'/g)) {
-      expect(['react', 'react-native', 'expo-image', 'heroui-native', 'react-native-reanimated', '../theme/chunky-lip', '../theme/motion', 'react-native-svg', '../theme/pingo-stage', '../theme/use-theme-colors', './pingo-float', 'reicon-react-native', '../utils/category-palette' /* #198 R15 */]).toContain(specifier);
+      expect(['react', 'react-native', 'expo-image', 'heroui-native', 'react-native-reanimated', '../theme/chunky-lip', '../theme/motion', 'react-native-svg', '../theme/orbit-stage', '../theme/use-theme-colors', './orbit-float', 'reicon-react-native', '../utils/category-palette' /* #198 R15 */]).toContain(specifier);
     }
   });
 
@@ -247,9 +247,9 @@ describe('#155 R11: los vacíos no traen movimiento ni dependencias', () => {
       "import Svg, { Circle, Ellipse, G } from 'react-native-svg';", // (enmendado por #176 R5)
       "import { useChunkyLip } from '../theme/chunky-lip';",
       "import { MOTION_ENTRANCE_OFFSET_Y, MOTION_FADE_TIMING, MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING, MOTION_SETTLE_SPRING, MOTION_STAGGER_MS } from '../theme/motion';", // (enmendado por #176 R13)
-      "import { PINGO_STAGE_PAW_OPACITY, PINGO_STAGE_SHADOW_COLOR } from '../theme/pingo-stage';", // (enmendado por #176 R5)
+      "import { ORBIT_STAGE_PAW_OPACITY, ORBIT_STAGE_SHADOW_COLOR } from '../theme/orbit-stage';", // (enmendado por #176 R5)
       "import { useThemeColors } from '../theme/use-theme-colors';", // (enmendado por #176 R5)
-      "import { PingoFloat } from './pingo-float';", // (enmendado por #176 R6)
+      "import { OrbitFloat } from './orbit-float';", // (enmendado por #176 R6)
       "import { CATEGORY_SLOTS } from '../utils/category-palette';", // #198 R15
     ]);
     expect(source.match(/\brequire\(/g)).toHaveLength(6);

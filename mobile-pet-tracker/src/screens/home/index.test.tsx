@@ -4770,7 +4770,7 @@ describe('#152 R5: la Home envuelve cada bloque en su entrada escalonada', () =>
       (child) => typeof child === 'string' ? [] : [child.props.testID],
     );
     expect(ids).toEqual([
-      'home-entrance-pingo', // (enmendado por #190 R1)
+      'home-entrance-orbit', // (enmendado por #190 R1)
       'home-entrance-summary',
       'home-entrance-collar',
       'home-entrance-quick-actions',
@@ -4797,7 +4797,7 @@ describe('#152 R5: la Home envuelve cada bloque en su entrada escalonada', () =>
   it('escalona las entradas cada 60 ms en el orden de los bloques (enmendado por #190 R6) (enmendado por #198 R6)', async () => {
     await renderMotionHome();
     for (const [id, delay] of [
-      ['home-entrance-pingo', 0], // (enmendado por #190 R6)
+      ['home-entrance-orbit', 0], // (enmendado por #190 R6)
       ['home-entrance-summary', 120],
       ['home-entrance-collar', 180],
       ['home-entrance-quick-actions', 240],
@@ -4882,7 +4882,7 @@ describe('#152 R5: la Home envuelve cada bloque en su entrada escalonada', () =>
   ];
 
   const homeEnteringIds = [
-    'home-entrance-pingo', // (enmendado por #190 R1)
+    'home-entrance-orbit', // (enmendado por #190 R1)
     'home-entrance-summary',
     'summary-reveal',
     'home-entrance-collar',
@@ -5554,8 +5554,8 @@ describe('#190 R11: la burbuja sigue la receta del canvas', () => {
 
   it('usa View y Text de RN con las clases exactas y un único hijo (enmendado por #195 R16)', async () => {
     await renderHome();
-    const text = await screen.findByTestId('home-pingo-text');
-    const bubble = screen.getByTestId('home-pingo-bubble');
+    const text = await screen.findByTestId('home-orbit-text');
+    const bubble = screen.getByTestId('home-orbit-bubble');
     expect(bubble.props.className).toBe('flex-1 rounded-tile rounded-br-4 border border-border bg-surface-secondary px-3.5 py-3');
     expect(bubble.children).toEqual([text]);
     expect(text.type).toBe('Text');
@@ -5574,11 +5574,11 @@ describe('#190 R1: la frase es el primer bloque con datos completos', () => {
   ])('pinta la entrada y su único hijo con actividad $kind (enmendado por #197 R13)', async (activity) => {
     mockGetDailyActivity.mockResolvedValue(activity);
     await renderHome();
-    await screen.findByTestId('home-pingo-text');
+    await screen.findByTestId('home-orbit-text');
     const content = screen.getByTestId('home-content');
-    const entrance = screen.getByTestId('home-entrance-pingo');
+    const entrance = screen.getByTestId('home-entrance-orbit');
     expect(content.children.slice(0, 2)).toEqual([entrance, screen.getByTestId('home-entrance-summary')]);
-    expect(entrance.children).toEqual([screen.getByTestId('home-pingo-phrase')]);
+    expect(entrance.children).toEqual([screen.getByTestId('home-orbit-phrase')]);
     jest.mocked(withDelay).mockClear();
     expect(entrance.props.entering({}).initialValues).toEqual({ opacity: 0, transform: [{ translateY: 14 }] });
     expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([0, 0]);
@@ -5589,7 +5589,7 @@ describe('#190 R2: no hay frase antes de conocer la mascota y la actividad', () 
   beforeEach(setupHomeMotion);
 
   function expectNoPhrase() {
-    for (const id of ['home-entrance-pingo', 'home-pingo-phrase', 'home-pingo-bubble', 'home-pingo-text', 'home-pingo-float', 'home-pingo']) {
+    for (const id of ['home-entrance-orbit', 'home-orbit-phrase', 'home-orbit-bubble', 'home-orbit-text', 'home-orbit-float', 'home-orbit']) {
       expect(screen.queryByTestId(id)).toBeNull();
     }
   }
@@ -5673,11 +5673,11 @@ describe('#190 R3: la fila alinea burbuja y pose al borde inferior', () => {
 
   it('tiene la clase exacta y solo burbuja y envoltorio de pose, en orden', async () => {
     await renderHome();
-    await screen.findByTestId('home-pingo-text');
-    const row = screen.getByTestId('home-pingo-phrase');
+    await screen.findByTestId('home-orbit-text');
+    const row = screen.getByTestId('home-orbit-phrase');
     expect(row.props.className).toBe('flex-row items-end gap-2.5');
     expect(row.children).toEqual([
-      screen.getByTestId('home-pingo-bubble'), screen.getByTestId('home-pingo-float'),
+      screen.getByTestId('home-orbit-bubble'), screen.getByTestId('home-orbit-float'),
     ]);
   });
 });
@@ -5687,9 +5687,9 @@ describe('#190 R4: Pingo usa su pose decorativa de 56 px', () => {
 
   it('pinta pingo-talk como único hijo directo del envoltorio y sin etiqueta (enmendado por #195 R16)', async () => {
     await renderHome();
-    await screen.findByTestId('home-pingo-text');
-    const pose = screen.getByTestId('home-pingo');
-    expect(screen.getByTestId('home-pingo-float').children).toEqual([pose]);
+    await screen.findByTestId('home-orbit-text');
+    const pose = screen.getByTestId('home-orbit');
+    expect(screen.getByTestId('home-orbit-float').children).toEqual([pose]);
     expect(pose.props.source).toEqual([
       expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/orbit-talk\.webp$/) }),
     ]);
@@ -5705,11 +5705,11 @@ describe('#190 R6: los índices son fijos aunque falte un bloque', () => {
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
     mockGetDailyActivity.mockResolvedValue({ kind: 'error' });
     await renderHome();
-    await screen.findByTestId('home-pingo-text');
+    await screen.findByTestId('home-orbit-text');
     expect(screen.queryByTestId('home-entrance-weekly')).toBeNull();
     expect(screen.queryByTestId('home-entrance-last-position')).toBeNull();
     for (const [id, delay] of [
-      ['home-entrance-pingo', 0], ['home-entrance-summary', 120],
+      ['home-entrance-orbit', 0], ['home-entrance-summary', 120],
       ['home-entrance-collar', 180], ['home-entrance-quick-actions', 240],
       ['home-entrance-reminders', 360],
     ] as const) {
@@ -5740,33 +5740,33 @@ describe('#190 R10: la frase usa los datos de Inicio y reacciona al idioma', () 
 
   it('traduce la misma frase sin recargar ninguna query', async () => {
     await renderWithProviders(<HomeScreen />, { wrapper: HomeLanguageWrapper190 });
-    const text = await screen.findByTestId('home-pingo-text');
+    const text = await screen.findByTestId('home-orbit-text');
     expect(text).toHaveTextContent('Luna ya caminó 2.4 km hoy.');
     const queries = [mockListPets, mockGetPet, mockGetDailyActivity, mockListReminders, mockListAlerts];
     const calls = queries.map((query) => query.mock.calls.length);
     expect(changeLanguage190).toBeDefined();
     await act(async () => { changeLanguage190?.('en'); });
-    expect(screen.getByTestId('home-pingo-text')).toHaveTextContent('Luna has walked 2.4 km today.');
+    expect(screen.getByTestId('home-orbit-text')).toHaveTextContent('Luna has walked 2.4 km today.');
     expect(queries.map((query) => query.mock.calls.length)).toEqual(calls);
   });
 
   it('combina distancia y comidas del detalle actual', async () => {
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(82, { mealsToday: { served: 1, total: 2 } }) });
     await renderHome();
-    expect(await screen.findByTestId('home-pingo-text')).toHaveTextContent('Luna ya caminó 2.4 km hoy y lleva 1 de 2 comidas.');
+    expect(await screen.findByTestId('home-orbit-text')).toHaveTextContent('Luna ya caminó 2.4 km hoy y lleva 1 de 2 comidas.');
   });
 
   it('usa el respaldo cuando no hay tracking ni comidas', async () => {
     mockGetDailyActivity.mockResolvedValue({ kind: 'no-tracking' });
     await renderHome();
-    expect(await screen.findByTestId('home-pingo-text')).toHaveTextContent('Estoy pendiente de Luna.');
+    expect(await screen.findByTestId('home-orbit-text')).toHaveTextContent('Estoy pendiente de Luna.');
   });
 
   it('usa las comidas y el nombre del detalle aunque falle la actividad', async () => {
     mockGetDailyActivity.mockResolvedValue({ kind: 'error' });
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(82, { name: 'Milo', mealsToday: { served: 3, total: 2 } }) });
     await renderHome();
-    expect(await screen.findByTestId('home-pingo-text')).toHaveTextContent('Milo lleva 3 de 2 comidas hoy.');
+    expect(await screen.findByTestId('home-orbit-text')).toHaveTextContent('Milo lleva 3 de 2 comidas hoy.');
   });
 });
 
@@ -5776,15 +5776,15 @@ describe('#190 R7: reduce motion conserva solo la entrada sin desplazamiento', (
   it('parte de translateY cero, conserva el fundido y no añade escala a la burbuja (enmendado por #195 R16) (enmendado por #197 R13)', async () => {
     mockUseReducedMotion.mockReturnValue(true);
     await renderHome();
-    await screen.findByTestId('home-pingo-text');
+    await screen.findByTestId('home-orbit-text');
     mockWithTiming.mockClear();
     jest.mocked(withSpring).mockClear();
     jest.mocked(withDelay).mockClear();
-    expect(screen.getByTestId('home-entrance-pingo').props.entering).toBeUndefined();
+    expect(screen.getByTestId('home-entrance-orbit').props.entering).toBeUndefined();
     expect(mockWithTiming).not.toHaveBeenCalled();
     expect(withSpring).not.toHaveBeenCalled();
     expect(withDelay).not.toHaveBeenCalled();
-    const bubble = screen.getByTestId('home-pingo-bubble');
+    const bubble = screen.getByTestId('home-orbit-bubble');
     expect(bubble.props.entering).toBeUndefined();
     const styles = [bubble.props.style].flat(Infinity);
     expect(styles).toContainEqual({ borderCurve: 'continuous' });
@@ -5797,8 +5797,8 @@ describe('#190 R5: la pose reutiliza PingoFloat', () => {
 
   it('usa Animated.View y repite solo translateY -10 en tramos de 1500 ms invertidos', async () => {
     await renderHome();
-    await screen.findByTestId('home-pingo-text');
-    const float = screen.getByTestId('home-pingo-float');
+    await screen.findByTestId('home-orbit-text');
+    const float = screen.getByTestId('home-orbit-float');
     expect(float).toHaveAnimatedStyle({ transform: [{ translateY: -10 }] }, { shouldMatchAllProps: true });
     expect(jest.mocked(withRepeat)).toHaveBeenCalledWith(-10, -1, true);
     const timing = mockWithTiming.mock.calls.find(([value]) => value === -10)?.[1];
@@ -5807,16 +5807,16 @@ describe('#190 R5: la pose reutiliza PingoFloat', () => {
     const expectedEasing = Easing.bezier(0.42, 0, 0.58, 1).factory();
     for (const point of [0.25, 0.5, 0.75]) expect(actualEasing(point)).toBeCloseTo(expectedEasing(point), 6);
     const source = readFileSync(join(process.cwd(), 'src/screens/home/index.tsx'), 'utf8');
-    const anchor = source.indexOf('testID="home-pingo-float"');
-    expect(source.lastIndexOf('testID="home-pingo-float"')).toBe(anchor);
-    expect(source.slice(source.lastIndexOf('<', anchor), anchor)).toMatch(/^<PingoFloat\s/);
+    const anchor = source.indexOf('testID="home-orbit-float"');
+    expect(source.lastIndexOf('testID="home-orbit-float"')).toBe(anchor);
+    expect(source.slice(source.lastIndexOf('<', anchor), anchor)).toMatch(/^<OrbitFloat\s/);
   });
 
   it('con reduce motion solo tiene translateY cero y no arranca el bucle de Pingo', async () => {
     mockUseReducedMotion.mockReturnValue(true);
     await renderHome();
-    await screen.findByTestId('home-pingo-text');
-    expect(screen.getByTestId('home-pingo-float')).toHaveAnimatedStyle({ transform: [{ translateY: 0 }] }, { shouldMatchAllProps: true });
+    await screen.findByTestId('home-orbit-text');
+    expect(screen.getByTestId('home-orbit-float')).toHaveAnimatedStyle({ transform: [{ translateY: 0 }] }, { shouldMatchAllProps: true });
     expect(jest.mocked(withRepeat)).not.toHaveBeenCalledWith(-10, -1, true);
     expect(mockWithTiming.mock.calls.filter(([value]) => value === -10)).toEqual([]);
   });
