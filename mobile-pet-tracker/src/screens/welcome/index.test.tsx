@@ -451,9 +451,9 @@ describe('#153 R3: las poses entran como WebP', () => {
     expect(bytes.length).toBeLessThanOrEqual(100000);
   });
 
-  it('no mete otras poses de Pingo (enmendado por #225 R2)', () => {
+  it('no mete otras poses de Pingo (enmendado por #225 R2, R5)', () => {
     expect(readdirSync(join(process.cwd(), 'assets', 'images')).filter((name) => /^(orbit|mascot)-/.test(name)).sort())
-      .toEqual(['orbit-celebrate.webp', 'orbit-clipboard.webp', 'orbit-collar.webp', 'orbit-food.webp', 'orbit-health.webp', 'orbit-sleep.webp', 'orbit-talk.webp', 'orbit-wave-blink.webp', 'orbit-wave.webp']);
+      .toEqual(['orbit-celebrate.webp', 'orbit-clipboard.webp', 'orbit-collar.webp', 'orbit-food.webp', 'orbit-health.webp', 'orbit-sleep.webp', 'orbit-talk.webp', 'orbit-walk.webp', 'orbit-wave-blink.webp', 'orbit-wave.webp']);
   });
 });
 
