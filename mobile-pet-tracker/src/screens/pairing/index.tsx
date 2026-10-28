@@ -44,7 +44,7 @@ import { CATEGORY_SLOTS } from '../../utils/category-palette';
 // #188 R3: the collar artboard staggers its second ring by half a cycle.
 const PAIRING_ARTBOARD_RING_DELAY_MS = 1200;
 const PAIRING_RING_CLASS_NAME = 'size-37.5 rounded-full border-3 border-accent';
-const PAIRING_PINGO_SOURCE = require('../../../assets/images/pingo-collar.webp');
+const PAIRING_PINGO_SOURCE = require('../../../assets/images/orbit-collar.webp');
 const PAIRING_AVATAR_SLOTS = ['amber', 'violet', 'blue', 'green', 'rose'] as const;
 
 function PairingPetAvatar({ pet, index }: { pet: PetProfile; index: number }) {

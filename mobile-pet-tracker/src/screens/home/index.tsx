@@ -510,7 +510,7 @@ export function HomeScreen() {
               <PingoFloat testID="home-pingo-float">
                 <Image
                   testID="home-pingo"
-                  source={require('../../../assets/images/pingo-talk.webp')}
+                  source={require('../../../assets/images/orbit-talk.webp')}
                   style={{ width: 56, height: 56 }}
                 />
               </PingoFloat>

@@ -423,7 +423,7 @@ describe('#167 R6: Pingo saluda en login y la pantalla entra en dos tiempos', ()
     await renderLogin();
     const pingo = screen.getByTestId('login-pingo');
     expect(pingo.props.source).toEqual([
-      expect.objectContaining({ testUri: expect.stringMatching(/pingo-wave\.webp$/) }),
+      expect.objectContaining({ testUri: expect.stringMatching(/orbit-wave\.webp$/) }),
     ]);
     expect(pingo.props.style).toEqual({ width: 88, height: 88, transform: [{ rotate: '-8deg' }] });
     expect(pingo.props.accessibilityLabel).toBeUndefined();

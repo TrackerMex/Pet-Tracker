@@ -140,7 +140,7 @@ export function RegisterScreen() {
             <PingoFloat testID="register-pingo-float">
               <Image
                 testID="register-pingo"
-                source={require('../../../assets/images/pingo-clipboard.webp')}
+                source={require('../../../assets/images/orbit-clipboard.webp')}
                 style={{ width: 56, height: 56 }}
               />
             </PingoFloat>

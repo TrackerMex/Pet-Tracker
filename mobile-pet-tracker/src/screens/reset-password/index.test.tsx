@@ -461,7 +461,7 @@ describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
     await renderRoute('reset-token-167');
     const pingo = screen.getByTestId('reset-pingo');
     expect(pingo.props.source).toEqual([
-      expect.objectContaining({ testUri: expect.stringMatching(/pingo-clipboard\.webp$/) }),
+      expect.objectContaining({ testUri: expect.stringMatching(/orbit-clipboard\.webp$/) }),
     ]);
     expect(pingo.props.style).toEqual({ width: 72, height: 72 });
     expect(pingo.props.accessibilityLabel).toBeUndefined();
@@ -473,7 +473,7 @@ describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
     expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
     const pingo = screen.getByTestId('reset-pingo');
     expect(pingo.props.source).toEqual([
-      expect.objectContaining({ testUri: expect.stringMatching(/pingo-clipboard\.webp$/) }),
+      expect.objectContaining({ testUri: expect.stringMatching(/orbit-clipboard\.webp$/) }),
     ]);
     expect(pingo.props.style).toEqual({ width: 72, height: 72 });
     expect(pingo.props.accessibilityLabel).toBeUndefined();

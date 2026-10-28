@@ -131,7 +131,7 @@ export function ResetPasswordScreen() {
         <RiseIn testID="reset-header" delayMs={0} className="flex-row items-center gap-3.5">
           <Image
             testID="reset-pingo"
-            source={require('../../../assets/images/pingo-clipboard.webp')}
+            source={require('../../../assets/images/orbit-clipboard.webp')}
             style={{ width: 72, height: 72 }}
           />
           <Text className="flex-1 text-28 leading-8 font-black tracking-display text-foreground">
@@ -189,7 +189,7 @@ export function ResetPasswordScreen() {
         <RiseIn testID="reset-header" delayMs={0} className="flex-row items-center gap-3.5">
           <Image
             testID="reset-pingo"
-            source={require('../../../assets/images/pingo-clipboard.webp')}
+            source={require('../../../assets/images/orbit-clipboard.webp')}
             style={{ width: 72, height: 72 }}
           />
           <Text className="flex-1 text-28 leading-8 font-black tracking-display text-foreground">

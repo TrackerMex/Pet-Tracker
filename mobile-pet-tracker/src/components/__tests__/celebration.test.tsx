@@ -13,7 +13,7 @@ const flat = (s: unknown) => Object.assign({}, ...[s].flat(Infinity).filter(Bool
 
 describe('#171 R1: la pose celebrate', () => {
   it('pingo-celebrate.webp es WebP con alfa, sin animación, 1024 × 1024 y como mucho 100000 bytes', () => {
-    const bytes = readFileSync(join(process.cwd(), 'assets', 'images', 'pingo-celebrate.webp'));
+    const bytes = readFileSync(join(process.cwd(), 'assets', 'images', 'orbit-celebrate.webp'));
     expect(bytes.toString('ascii', 0, 4)).toBe('RIFF');
     expect(bytes.toString('ascii', 8, 12)).toBe('WEBP');
     expect(bytes.toString('ascii', 12, 16)).toBe('VP8X');
@@ -119,7 +119,7 @@ describe('#171 R2: Celebration', () => {
   it('R2.4 Pingo usa celebrate y la insignia contiene el check del artboard', async () => {
     await renderProbe();
     const image = within(screen.getByTestId('probe-pingo')).getByTestId('probe-pose');
-    expect(image.props.source).toEqual([require('../../../assets/images/pingo-celebrate.webp')]);
+    expect(image.props.source).toEqual([require('../../../assets/images/orbit-celebrate.webp')]);
     const check = within(screen.getByTestId('probe-badge', { includeHiddenElements: true })).getByTestId('probe-check', { includeHiddenElements: true });
     expect([check.props.width, check.props.height, check.props.viewBox]).toEqual([28, 28, '0 0 24 24']);
     expect(check.children).toHaveLength(1);

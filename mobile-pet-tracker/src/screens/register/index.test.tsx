@@ -400,7 +400,7 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
     await renderRegister();
     const pingo = screen.getByTestId('register-pingo');
     expect(pingo.props.source).toEqual([
-      expect.objectContaining({ testUri: expect.stringMatching(/pingo-clipboard\.webp$/) }),
+      expect.objectContaining({ testUri: expect.stringMatching(/orbit-clipboard\.webp$/) }),
     ]);
     expect(pingo.props.style).toEqual({ width: 56, height: 56 });
     expect(pingo.props.accessibilityLabel).toBeUndefined();

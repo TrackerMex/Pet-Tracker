@@ -1189,7 +1189,7 @@ describe('#155 R4: Comida sin mascotas presenta a Pingo', () => {
     await renderFood();
     const pose = await screen.findByTestId('food-empty-pose');
     expect(pose.props.source).toEqual([
-      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/orbit-talk\.webp$/) }),
     ]);
     expect(screen.getByTestId('food-empty-title')).toHaveTextContent('Aún no tienes mascotas');
     expect(screen.getByTestId('food-empty-body')).toHaveTextContent('Añade a tu mascota y te ayudo a saber dónde está y cómo está.');
@@ -1223,7 +1223,7 @@ describe('#155 R9: sin plan de comidas, Pingo enseña el cuenco', () => {
     await renderFood();
     const pose = await screen.findByTestId('food-plan-empty-pose');
     expect(pose.props.source).toEqual([
-      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-food\.webp$/) }),
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/orbit-food\.webp$/) }),
     ]);
     expect(screen.getByTestId('food-plan-empty-title')).toHaveTextContent('Aún no hay plan de alimentación');
     expect(screen.getByTestId('food-plan-empty-body')).toHaveTextContent('Cuando haya un plan, te ayudo a llevar la cuenta de cada comida.');
@@ -1962,7 +1962,7 @@ it('#209 R19: owner sin perfil ve Crear perfil nutricional y navega al cuestiona
   expect(screen.queryByTestId('food-plan-empty')).toBeNull();
   const pingo = within(section).getByTestId('food-profile-pingo', { includeHiddenElements: true });
   expect(foodChild(pingo, 0).props.source).toEqual([
-    expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-food\.webp$/) }),
+    expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/orbit-food\.webp$/) }),
   ]);
   expect(within(section).getByText('Aún no hay perfil nutricional')).toBeOnTheScreen();
   expect(within(section).getByText('Respóndeme unas preguntas sobre Luna y preparo su plan: cuántas calorías necesita y cuántos gramos servir en cada comida.')).toBeOnTheScreen();

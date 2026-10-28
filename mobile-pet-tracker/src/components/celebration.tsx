@@ -125,7 +125,7 @@ export function Celebration({ testID, title, body, details, primary, secondary }
           <Animated.View testID={`${testID}-pingo`} style={[pingoStyle, { width: 170, height: 170 }]}>
             <Image
               testID={`${testID}-pose`}
-              source={require('../../assets/images/pingo-celebrate.webp')}
+              source={require('../../assets/images/orbit-celebrate.webp')}
               style={{ width: 170, height: 170 }}
               contentFit="contain"
               accessible={false}

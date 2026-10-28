@@ -19,7 +19,7 @@ import { useChunkyLip } from '../../theme/chunky-lip';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
-const PINGO_SOURCE = require('../../../assets/images/pingo-collar.webp');
+const PINGO_SOURCE = require('../../../assets/images/orbit-collar.webp');
 type JoinError = 'not-acceptable' | 'rate-limited' | 'unreachable' | 'error' | 'missing-config';
 
 export default function JoinPetScreen() {

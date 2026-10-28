@@ -57,8 +57,8 @@ describe('#155 R1: el copy de los vacíos existe en los dos idiomas', () => {
 
 describe('#155 R2: las poses de los vacíos entran como WebP', () => {
   it.each([
-    'pingo-talk.webp', 'pingo-sleep.webp', 'pingo-clipboard.webp',
-    'pingo-health.webp', 'pingo-collar.webp', 'pingo-food.webp',
+    'orbit-talk.webp', 'orbit-sleep.webp', 'orbit-clipboard.webp',
+    'orbit-health.webp', 'orbit-collar.webp', 'orbit-food.webp',
   ])('%s es un WebP con alfa de 1024×1024 y como mucho 100 000 bytes', (name) => {
     const bytes = readFileSync(join(process.cwd(), 'assets', 'images', name));
     expect(bytes.toString('ascii', 0, 4)).toBe('RIFF');
@@ -84,12 +84,12 @@ async function renderProbe(action?: { label: string; onPress: () => void }) {
 
 describe('#155 R3: un único componente pinta los vacíos ilustrados', () => {
   it.each([
-    ['talk', /assets\/images\/pingo-talk\.webp$/],
-    ['sleep', /assets\/images\/pingo-sleep\.webp$/],
-    ['clipboard', /assets\/images\/pingo-clipboard\.webp$/],
-    ['health', /assets\/images\/pingo-health\.webp$/],
-    ['collar', /assets\/images\/pingo-collar\.webp$/],
-    ['food', /assets\/images\/pingo-food\.webp$/],
+    ['talk', /assets\/images\/orbit-talk\.webp$/],
+    ['sleep', /assets\/images\/orbit-sleep\.webp$/],
+    ['clipboard', /assets\/images\/orbit-clipboard\.webp$/],
+    ['health', /assets\/images\/orbit-health\.webp$/],
+    ['collar', /assets\/images\/orbit-collar\.webp$/],
+    ['food', /assets\/images\/orbit-food\.webp$/],
   ] as const)('pinta la pose %s a 160×160 y sin etiqueta', async (pose, source) => {
     await render(
       <HeroUINativeProvider>

@@ -440,7 +440,7 @@ describe('#153 R2: la carta escribe la voz de Pingo', () => {
 
 
 describe('#153 R3: las poses entran como WebP', () => {
-  it.each(['pingo-wave.webp', 'pingo-wave-blink.webp'])('%s es un WebP con alfa de 1024×1024 y como mucho 100 000 bytes', (name) => {
+  it.each(['orbit-wave.webp', 'orbit-wave-blink.webp'])('%s es un WebP con alfa de 1024×1024 y como mucho 100 000 bytes', (name) => {
     const bytes = readFileSync(join(process.cwd(), 'assets', 'images', name));
     expect(bytes.toString('ascii', 0, 4)).toBe('RIFF');
     expect(bytes.toString('ascii', 8, 12)).toBe('WEBP');
@@ -451,9 +451,9 @@ describe('#153 R3: las poses entran como WebP', () => {
     expect(bytes.length).toBeLessThanOrEqual(100000);
   });
 
-  it('no mete otras poses de Pingo', () => {
-    expect(readdirSync(join(process.cwd(), 'assets', 'images')).filter((name) => /^(pingo|mascot)-/.test(name)).sort())
-      .toEqual(['pingo-celebrate.webp', 'pingo-clipboard.webp', 'pingo-collar.webp', 'pingo-food.webp', 'pingo-health.webp', 'pingo-sleep.webp', 'pingo-talk.webp', 'pingo-wave-blink.webp', 'pingo-wave.webp']);
+  it('no mete otras poses de Pingo (enmendado por #225 R2)', () => {
+    expect(readdirSync(join(process.cwd(), 'assets', 'images')).filter((name) => /^(orbit|mascot)-/.test(name)).sort())
+      .toEqual(['orbit-celebrate.webp', 'orbit-clipboard.webp', 'orbit-collar.webp', 'orbit-food.webp', 'orbit-health.webp', 'orbit-sleep.webp', 'orbit-talk.webp', 'orbit-wave-blink.webp', 'orbit-wave.webp']);
   });
 });
 
@@ -581,8 +581,8 @@ describe('#153 R6: Pingo se pinta con su pose y su capa de parpadeo', () => {
   });
 
   it.each([
-    ['welcome-pingo-wave', /assets\/images\/pingo-wave\.webp$/],
-    ['welcome-pingo-blink-image', /assets\/images\/pingo-wave-blink\.webp$/],
+    ['welcome-pingo-wave', /assets\/images\/orbit-wave\.webp$/],
+    ['welcome-pingo-blink-image', /assets\/images\/orbit-wave-blink\.webp$/],
   ] as const)('%s pinta su pose a 220×220, sin etiqueta de accesibilidad (enmendado por #205 R3)', async (testID, pattern) => {
     await renderWelcome();
     const image = screen.getByTestId(testID);

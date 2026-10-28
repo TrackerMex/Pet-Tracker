@@ -95,7 +95,7 @@ export function LoginScreen() {
           <View testID="login-greeting" className="mt-2 flex-row items-end gap-3">
             <Image
               testID="login-pingo"
-              source={require('../../../assets/images/pingo-wave.webp')}
+              source={require('../../../assets/images/orbit-wave.webp')}
               style={{ width: 88, height: 88, transform: [{ rotate: '-8deg' }] }}
             />
             <View

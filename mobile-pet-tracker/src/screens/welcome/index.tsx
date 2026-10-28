@@ -84,9 +84,9 @@ export function WelcomeScreen() {
               {reduceMotion ? null : [0, 1, 2].map((index) => <PingRing key={index} testID={`welcome-ring-${index}`} delay={index * (MOTION_PING_TIMING.duration / 3)} className="size-65 rounded-full border-2 border-accent" />)}
               <PingoFloat testID="welcome-pingo-float">
                 <Animated.View testID="welcome-pingo" style={[pingoStyle, { width: 220, height: 220 }]}>
-                  <Image testID="welcome-pingo-wave" source={require('../../../assets/images/pingo-wave.webp')} style={{ width: 220, height: 220 }} contentFit="contain" />
+                  <Image testID="welcome-pingo-wave" source={require('../../../assets/images/orbit-wave.webp')} style={{ width: 220, height: 220 }} contentFit="contain" />
                   <Animated.View testID="welcome-pingo-blink" style={[blinkStyle, { position: 'absolute', top: 0, left: 0 }]}>
-                    <Image testID="welcome-pingo-blink-image" source={require('../../../assets/images/pingo-wave-blink.webp')} style={{ width: 220, height: 220 }} contentFit="contain" />
+                    <Image testID="welcome-pingo-blink-image" source={require('../../../assets/images/orbit-wave-blink.webp')} style={{ width: 220, height: 220 }} contentFit="contain" />
                   </Animated.View>
                 </Animated.View>
               </PingoFloat>

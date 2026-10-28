@@ -2003,7 +2003,7 @@ describe('#155 R4: Mapa sin mascotas presenta a Pingo', () => {
     await renderMap();
     const pose = await screen.findByTestId('map-no-pets-pose');
     expect(pose.props.source).toEqual([
-      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/orbit-talk\.webp$/) }),
     ]);
     expect(screen.getByTestId('map-no-pets-title')).toHaveTextContent('Aún no tienes mascotas');
     expect(screen.getByTestId('map-no-pets-body')).toHaveTextContent('Añade a tu mascota y te ayudo a saber dónde está y cómo está.');
@@ -2038,7 +2038,7 @@ describe('#159 R2: Mapa sin seguimiento presenta a Pingo', () => {
     await renderMap();
     const pose = await screen.findByTestId('map-no-tracking-pose');
     expect(pose.props.source).toEqual([
-      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/orbit-talk\.webp$/) }),
     ]);
     expect(screen.getByTestId('map-no-tracking-title')).toHaveTextContent('Sin ubicación en vivo');
     expect(screen.getByTestId('map-no-tracking-body')).toHaveTextContent('Cuando tu mascota tenga un collar con plan activo, te muestro dónde está.');
@@ -2641,7 +2641,7 @@ describe('#201 R11: Pingo en las dos ramas de error', () => {
 
     const pose = await screen.findByTestId(`${id}-pose`);
     expect(pose.props.source).toEqual([
-      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/orbit-talk\.webp$/) }),
     ]);
     expect(screen.getByTestId(`${id}-title`)).toHaveTextContent('Algo salió mal');
     expect(screen.queryByTestId(`${id}-body`)).toBeNull();
@@ -2705,7 +2705,7 @@ describe('#201 R13: Pingo sin rastreo', () => {
 
     const pose = await screen.findByTestId('map-no-tracking-pose');
     expect(pose.props.source).toEqual([
-      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/orbit-talk\.webp$/) }),
     ]);
     const badge = screen.getByTestId('map-no-tracking-badge');
     expect(badge.props.className).toBe(

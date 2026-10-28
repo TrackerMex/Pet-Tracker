@@ -568,7 +568,7 @@ describe('#117 R11: la pantalla de éxito es la misma para cualquier correo', ()
 function expectPingoBeforeLock() {
   const pingo = screen.getByTestId('forgot-pingo');
   expect(pingo.props.source).toEqual([
-    expect.objectContaining({ testUri: expect.stringMatching(/pingo-talk\.webp$/) }),
+    expect.objectContaining({ testUri: expect.stringMatching(/orbit-talk\.webp$/) }),
   ]);
   expect(pingo.props.style).toEqual({ position: 'absolute', left: 24, top: 0, width: 120, height: 120, transform: [{ rotate: '6deg' }] }); // #205 R10 (E6)
   expect(pingo.props.accessibilityLabel).toBeUndefined();

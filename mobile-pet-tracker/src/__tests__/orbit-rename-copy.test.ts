@@ -47,7 +47,7 @@ it('#221 R2: ninguna cadena visible nombra a Pingo en los valores del catálogo'
   }
 });
 
-it('#221 R3: los identificadores pingo-* no cambian aquí', () => {
+it('#221 R3: los identificadores pingo-* no cambian aquí (enmendado por #225 R2)', () => {
   const catalog = readSource('i18n/catalog.ts');
   expect(catalog.split("'welcome.pingoGreeting':").length - 1).toBe(2);
   expect([...catalog.matchAll(/^  '([^']+)':/gm)].map(match => match[1])
@@ -63,15 +63,4 @@ it('#221 R3: los identificadores pingo-* no cambian aquí', () => {
   }
   const copyTable = readSource('__tests__/ui-copy-table.ts');
   expect(copyTable.split("{ file: 'src/screens/welcome/index.tsx', key: 'welcome.pingoGreeting' }").length - 1).toBe(1);
-
-  const images = fs.readdirSync(join(process.cwd(), 'assets', 'images'));
-  expect(images.filter(name => /orbit/i.test(name))).toEqual([]);
-  expect(images.filter(name => /^pingo-.*\.webp$/.test(name))).toHaveLength(9);
-
-  for (const path of sourceFiles()) {
-    const name = relative(sourceRoot, path);
-    expect(name).not.toMatch(/orbit/i);
-    const matches = fs.readFileSync(path, 'utf8').match(/orbit/gi) ?? [];
-    expect(matches).toHaveLength(name === 'i18n/catalog.ts' ? 2 : 0);
-  }
 });

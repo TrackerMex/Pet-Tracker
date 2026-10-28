@@ -15,12 +15,12 @@ import { CATEGORY_SLOTS } from '../utils/category-palette';
 export type EmptyStatePose = 'talk' | 'sleep' | 'clipboard' | 'health' | 'collar' | 'food';
 
 const POSES = {
-  talk: require('../../assets/images/pingo-talk.webp'),
-  sleep: require('../../assets/images/pingo-sleep.webp'),
-  clipboard: require('../../assets/images/pingo-clipboard.webp'),
-  health: require('../../assets/images/pingo-health.webp'),
-  collar: require('../../assets/images/pingo-collar.webp'),
-  food: require('../../assets/images/pingo-food.webp'),
+  talk: require('../../assets/images/orbit-talk.webp'),
+  sleep: require('../../assets/images/orbit-sleep.webp'),
+  clipboard: require('../../assets/images/orbit-clipboard.webp'),
+  health: require('../../assets/images/orbit-health.webp'),
+  collar: require('../../assets/images/orbit-collar.webp'),
+  food: require('../../assets/images/orbit-food.webp'),
 };
 
 type EmptyStateProps = {

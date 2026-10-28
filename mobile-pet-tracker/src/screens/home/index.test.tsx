@@ -5289,7 +5289,7 @@ describe('#155 R4: Inicio sin mascotas presenta a Pingo', () => {
     await renderHome();
     const pose = await screen.findByTestId('home-empty-pose');
     expect(pose.props.source).toEqual([
-      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/orbit-talk\.webp$/) }),
     ]);
     expect(screen.getByTestId('home-empty-title')).toHaveTextContent('Aún no tienes mascotas');
     expect(screen.getByTestId('home-empty-body')).toHaveTextContent('Añade a tu mascota y te ayudo a saber dónde está y cómo está.');
@@ -5691,7 +5691,7 @@ describe('#190 R4: Pingo usa su pose decorativa de 56 px', () => {
     const pose = screen.getByTestId('home-pingo');
     expect(screen.getByTestId('home-pingo-float').children).toEqual([pose]);
     expect(pose.props.source).toEqual([
-      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/orbit-talk\.webp$/) }),
     ]);
     expect(pose.props.style).toEqual({ width: 56, height: 56 });
     expect(pose.props.accessibilityLabel).toBeUndefined();
@@ -6425,7 +6425,7 @@ describe('#198 R15: error hero de Inicio', () => {
     expect(within(screen.getByTestId('home-states')).getByText('Inicio').props.className).toBe('text-26 font-black tracking-title text-foreground');
     expect(screen.getByTestId('home-error').props.className).toBe('w-full items-center gap-3.5');
     expect(screen.getByTestId('home-error-title').props.className).toBe('text-center text-22 font-black tracking-title text-foreground');
-    expect(screen.getByTestId('home-error-pose').props.source).toEqual([expect.objectContaining({ testUri: expect.stringMatching(/pingo-talk\.webp$/) })]);
+    expect(screen.getByTestId('home-error-pose').props.source).toEqual([expect.objectContaining({ testUri: expect.stringMatching(/orbit-talk\.webp$/) })]);
   });
 
   it('#198 R15 reintenta desde home-error-action', async () => {
@@ -6485,7 +6485,7 @@ describe('#198 R16: vacío de Inicio conservado', () => {
     expect(screen.getByTestId('home-empty-body')).toHaveTextContent('Añade a tu mascota y te ayudo a saber dónde está y cómo está.');
     expect(screen.getByTestId('home-empty-action')).toHaveTextContent('Añadir mascota');
     expect(screen.getByTestId('home-empty-stage-disc', { includeHiddenElements: true }).props.className).toBe('absolute size-60 rounded-full bg-surface-secondary');
-    expect(screen.getByTestId('home-empty-pose').props.source).toEqual([expect.objectContaining({ testUri: expect.stringMatching(/pingo-talk\.webp$/) })]);
+    expect(screen.getByTestId('home-empty-pose').props.source).toEqual([expect.objectContaining({ testUri: expect.stringMatching(/orbit-talk\.webp$/) })]);
     expect(screen.queryByTestId('home-empty-badge', { includeHiddenElements: true }) === null).toBe(true);
   });
 });

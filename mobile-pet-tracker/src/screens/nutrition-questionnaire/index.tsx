@@ -241,7 +241,7 @@ function Generating({ phase, name, checkColor }: { phase: 'saving' | 'generating
     <View className="size-45 items-center justify-center">
       {reduceMotion ? null : [0, 1000].map((delay, index) => <PingRing key={delay} testID={`nutrition-generating-ring-${index}`} delay={delay} className="size-45 rounded-full border-3 border-accent" />)}
       <PingoFloat testID="nutrition-generating-pingo">
-        <Image testID="nutrition-generating-pingo-image" source={require('../../../assets/images/pingo-food.webp')} style={{ width: 112, height: 112 }} />
+        <Image testID="nutrition-generating-pingo-image" source={require('../../../assets/images/orbit-food.webp')} style={{ width: 112, height: 112 }} />
       </PingoFloat>
     </View>
     <View className="gap-2">
@@ -365,7 +365,7 @@ function QuestionnaireForm({ initial, pet }: { initial: NutritionProfile | null;
       </View>
       <ScrollView key={step} className="flex-1 bg-background" keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16, gap: step === 'condition' ? 14 : 16 }}>
         <View className="flex-row items-center gap-3">
-          <Image testID="nutrition-questionnaire-pingo" source={require('../../../assets/images/pingo-food.webp')} style={step === 'condition' ? { width: 44, height: 44 } : { width: 52, height: 52 }} />
+          <Image testID="nutrition-questionnaire-pingo" source={require('../../../assets/images/orbit-food.webp')} style={step === 'condition' ? { width: 44, height: 44 } : { width: 52, height: 52 }} />
           <View testID="nutrition-questionnaire-bubble" className="flex-1 rounded-tile bg-surface-secondary px-3 py-2.5" style={CONTINUOUS_CORNER}>
             <View className={step === 'condition' ? 'absolute -left-1.5 top-4.5 size-3 rotate-45 bg-surface-secondary' : 'absolute -left-1.5 top-5.5 size-3 rotate-45 bg-surface-secondary'} />
             <Text className="text-13 font-semibold leading-body text-foreground">{step === 'condition' ? t('nutritionQuestionnaire.bubbleCondition', { name: pet.name }) : step === 'target' ? t('nutritionQuestionnaire.bubbleTargetWeight', { bcs: String(bcs), name: pet.name }) : step === 'food' ? t('nutritionQuestionnaire.bubbleFood', { name: pet.name }) : step === 'health' ? t('nutritionQuestionnaire.bubbleHealth', { name: pet.name }) : t('nutritionQuestionnaire.bubbleActivity', { name: pet.name })}</Text>

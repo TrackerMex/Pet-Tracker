@@ -1142,9 +1142,9 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     await renderPairing();
     const pingo = await screen.findByTestId('pairing-pingo', { includeHiddenElements: true });
     expect(pingo.props.source).toEqual([
-      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-collar\.webp$/) }),
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/orbit-collar\.webp$/) }),
     ]);
-    expect(JSON.stringify(pingo.props.source)).not.toContain('pingo-wave.webp');
+    expect(JSON.stringify(pingo.props.source)).not.toContain('orbit-wave.webp');
     expect(pingo.props.contentFit).toBe('contain');
     const visuals = within(screen.getByTestId('pairing-form')).getAllByTestId(
       /^(pairing-pingo|pet-chip-pet-1|pairing-plan-free|activation-code-input|pairing-submit)$/,
