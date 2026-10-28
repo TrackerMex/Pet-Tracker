@@ -202,6 +202,12 @@ Premisas del plan verificadas contra el árbol:
     del handoff y la cadena de Codex arranca desde él.
 
 > **Fe de erratas E1 del leader (2026-10-27, medida en `c0ffc029` = `origin/dev` `6e59fb2e` + spec).**
+> (d) El ancla `grep -rIil "orbit" src app.json app.config.ts package.json assets` de la
+> tabla de §Contexto cuenta también los tests (`welcome/index.test.tsx` y
+> `orbit-rename-copy.test.ts` llevan «Orbit» por R1) y da 3 ficheros después de R1, no 1.
+> La ancla correcta excluye tests: `grep -rIil "orbit" src --exclude-dir=__tests__
+> --exclude='*.test.*' app.json app.config.ts package.json assets` y da solo
+> `src/i18n/catalog.ts` (antes 0). Es la misma exclusión que usa R3(e).
 > (a) Orden de R4: el último párrafo de R4 manda que el commit de R4 vaya **antes** del
 > handoff. Se invierte: la cadena de Codex (R1 a R3) corre **primero** y el commit de
 > R4 del humano va **después**, antes de la PR. R4 solo toca `welcome/index.test.tsx` en
