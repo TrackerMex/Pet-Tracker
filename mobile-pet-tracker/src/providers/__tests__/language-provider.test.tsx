@@ -48,7 +48,7 @@ function LocaleProbe() {
 
 describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y parámetros', () => {
   // 259 en `303fc19` + 1 de `home.walks` (#67 R7b) + 16 de #68 + 14 de #78 + 2 de #73 + 1 de #90 + 4 de #98 - 6 de #95 R5 (las seis claves de volver) + 1 de #113 R3 (food.kcalConsumedOfTarget) + 2 de #99 R3 (profile.notificationsBlocked, profile.openSettings) + 3 de #100 R1 (alerts.detailTitle, alerts.statusOpen, alerts.openedAt) + 11 de #41 R1 (geofences.*) + 12 de #146 R1 (geofenceEditor.*) + 2 de #146 R1 (geofenceEditor.limitNotice, geofenceEditor.ownerOnly) + 9 de #147 R1 (mealSchedule.* del horario editable).
-  it('#194 R1: mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas (enmendado por #189 R15) (enmendado por #199 R5) (enmendado por #199 R9) (enmendado por #199 R14) (enmendado por #199 R17) (enmendado por #198 R15) (enmendado por #206 R8) (enmendado por #202 R10) (enmendado por #202 R18) (enmendado por #220 R16) (enmendado por #208 R19) (enmendado por #213 R22) (enmendado por #222 R8) (enmendado por #214 R22) (enmendado por #209 R23) (enmendado por #223 R16) (enmendado por #224 R4) (enmendado por #215 R19)', () => {
+  it('#194 R1: mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas (enmendado por #189 R15) (enmendado por #199 R5) (enmendado por #199 R9) (enmendado por #199 R14) (enmendado por #199 R17) (enmendado por #198 R15) (enmendado por #206 R8) (enmendado por #202 R10) (enmendado por #202 R18) (enmendado por #220 R16) (enmendado por #208 R19) (enmendado por #213 R22) (enmendado por #222 R8) (enmendado por #214 R22) (enmendado por #209 R23) (enmendado por #223 R16) (enmendado por #224 R4) (enmendado por #215 R19) (enmendado por #225 R1)', () => {
     const englishKeys = Object.keys(en).sort();
     const spanishKeys = Object.keys(es).sort();
 
@@ -95,7 +95,8 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
         + 6 // #223 R16
         + 77 // #209 R23
         + 3 // #224 R4
-        + 16, // #215 R19
+        + 16 // #215 R19
+        + 1, // #225 R1
     );
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {
@@ -165,7 +166,7 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
 it('#191 R1: declara las claves del asistente de dos pasos en los dos idiomas', () => {
   const translations = [
     ['addPet.stepProgress', '{{current}} of {{total}}', '{{current}} de {{total}}'],
-    ['addPet.pingoGreeting', 'Hi. Tell me about your new companion.', '¡Hola! Cuéntame de tu nuevo compañero.'],
+    ['addPet.orbitGreeting', 'Hi. Tell me about your new companion.', '¡Hola! Cuéntame de tu nuevo compañero.'],
     ['addPet.continue', 'Continue', 'Continuar'],
   ];
   for (const [key, english, spanish] of translations) {
@@ -655,10 +656,11 @@ describe('#158 R1: claves y nueva frase de Pingo', () => {
 });
 
 describe('#167 R5: el saludo de Pingo en login', () => {
-  it('#167 R5: declara login.pingoGreeting en los dos idiomas y su registro', () => {
+  it('#167 R5: declara login.pingoGreeting en los dos idiomas y su registro (enmendado por #225 R3)', () => {
     const english = en as Record<string, string>;
     const spanish = es as Record<string, string>;
-    const key = 'login.pingoGreeting';
+    const key = 'login.orbitGreeting';
+    const designKey = 'login.pingoGreeting';
     const languageDesign = readFileSync(
       join(process.cwd(), '../specs/mobile-ui-language/design.md'),
       'utf8',
@@ -667,7 +669,7 @@ describe('#167 R5: el saludo de Pingo en login', () => {
     expect(spanish[key]).toBe('Qué bueno verte de nuevo.');
     expect(languageDesign).toMatch(
       new RegExp(
-        '\\| — \\| `' + escapeRegExp(key) +
+        '\\| — \\| `' + escapeRegExp(designKey) +
           '`[^\\n]*← (?:añadida|cambiada) por #167 \\(R5\\)',
       ),
     );

@@ -7,20 +7,20 @@ import { Plus } from 'reicon-react-native';
 import Svg, { Circle, Ellipse, G } from 'react-native-svg';
 import { useChunkyLip } from '../theme/chunky-lip';
 import { MOTION_ENTRANCE_OFFSET_Y, MOTION_FADE_TIMING, MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING, MOTION_SETTLE_SPRING, MOTION_STAGGER_MS } from '../theme/motion';
-import { PINGO_STAGE_PAW_OPACITY, PINGO_STAGE_SHADOW_COLOR } from '../theme/pingo-stage';
+import { ORBIT_STAGE_PAW_OPACITY, ORBIT_STAGE_SHADOW_COLOR } from '../theme/orbit-stage';
 import { useThemeColors } from '../theme/use-theme-colors';
-import { PingoFloat } from './pingo-float';
+import { OrbitFloat } from './orbit-float';
 import { CATEGORY_SLOTS } from '../utils/category-palette';
 
 export type EmptyStatePose = 'talk' | 'sleep' | 'clipboard' | 'health' | 'collar' | 'food';
 
 const POSES = {
-  talk: require('../../assets/images/pingo-talk.webp'),
-  sleep: require('../../assets/images/pingo-sleep.webp'),
-  clipboard: require('../../assets/images/pingo-clipboard.webp'),
-  health: require('../../assets/images/pingo-health.webp'),
-  collar: require('../../assets/images/pingo-collar.webp'),
-  food: require('../../assets/images/pingo-food.webp'),
+  talk: require('../../assets/images/orbit-talk.webp'),
+  sleep: require('../../assets/images/orbit-sleep.webp'),
+  clipboard: require('../../assets/images/orbit-clipboard.webp'),
+  health: require('../../assets/images/orbit-health.webp'),
+  collar: require('../../assets/images/orbit-collar.webp'),
+  food: require('../../assets/images/orbit-food.webp'),
 };
 
 type EmptyStateProps = {
@@ -81,7 +81,7 @@ export function EmptyState({ testID, pose, title, body, action, badge, actionIco
     />
   );
   const floatingPose = variant === 'hero' ? (
-    <PingoFloat testID={`${testID}-float`}>{poseImage}</PingoFloat>
+    <OrbitFloat testID={`${testID}-float`}>{poseImage}</OrbitFloat>
   ) : (
     <Animated.View testID={`${testID}-float`} style={floatStyle}>{poseImage}</Animated.View>
   );
@@ -107,7 +107,7 @@ export function EmptyState({ testID, pose, title, body, action, badge, actionIco
       {variant === 'hero' ? (
         <Animated.View testID={`${testID}-stage`} className="h-65 w-70 items-center justify-center" style={stageStyle}>
           <View testID={`${testID}-stage-disc`} className={tone === 'default' ? 'absolute size-60 rounded-full bg-surface-secondary' : `absolute size-60 rounded-full ${CATEGORY_SLOTS.rose.surface}`} />
-          <Svg testID={`${testID}-stage-paw`} width={280} height={260} viewBox="0 0 280 260" style={{ position: 'absolute', opacity: PINGO_STAGE_PAW_OPACITY }}>
+          <Svg testID={`${testID}-stage-paw`} width={280} height={260} viewBox="0 0 280 260" style={{ position: 'absolute', opacity: ORBIT_STAGE_PAW_OPACITY }}>
             <G fill={tone === 'default' ? accent : danger}>
               <G transform="translate(30 40) rotate(-20)">
                 <Circle cx={0} cy={0} r={5} /><Circle cx={10} cy={-6} r={5} /><Circle cx={20} cy={0} r={5} />
@@ -124,7 +124,7 @@ export function EmptyState({ testID, pose, title, body, action, badge, actionIco
             </G>
           </Svg>
           {floatingPose}
-          <View testID={`${testID}-stage-shadow`} className="absolute bottom-4.5 h-3.5 w-30 rounded-full" style={{ backgroundColor: PINGO_STAGE_SHADOW_COLOR }} />
+          <View testID={`${testID}-stage-shadow`} className="absolute bottom-4.5 h-3.5 w-30 rounded-full" style={{ backgroundColor: ORBIT_STAGE_SHADOW_COLOR }} />
           {badge}
         </Animated.View>
       ) : floatingPose}

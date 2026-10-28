@@ -1,0 +1,14 @@
+Generator: built-in image_gen (transparent_background=true).
+Reference: mascot-02-talk.png
+Final image: mascot-11-walk.png (1024x1024 RGBA PNG; resized from generated output with Lanczos).
+
+Use case: identity-preserve.
+Asset type: a single transparent mascot PNG, square 1024x1024.
+Input image: /home/claude/pet-tracker-mascot/mascot-02-talk.png is the exact character identity, proportions, colors, materials, detailing and lighting reference.
+
+Using the reference, generate the SAME character walking; change only pose and camera view, preserving the character design exactly. It has a cream-white rounded head with a purple face mask, large round black eyes with white highlights and white sclera, an open happy smile with pink tongue, long floppy dark-grey ears, a green cap panel on top of the head with a white square antenna base (retain its two small screws), thin grey antenna with a glossy RED ball tip, cream body with a purple belly patch and a small glowing green round light, dark-grey paws and tail. Retain the tiny purple horizontal detail above its eyes. Same 3D soft-clay / glossy toy rendering style, same soft lighting, same proportions (big head, small body), and same level of detail. Do not redesign, recolor, add clothing or accessories, or change its age or head-to-body ratio.
+
+New pose: WALKING naturally toward image-right, shown in a clear 3/4 view facing slightly to the right so the face and both eyes remain visible. One leg stepping forward and the other back, arms swinging naturally in opposition to the legs (one arm forward, one back). Head up, cheerful calm expression with open happy smile and pink tongue, looking ahead toward the right. Antenna and ears bounce slightly with the stride, represented by their pose only, without motion blur or motion lines. Whole body including antenna and all paws visible, nothing cropped; centered with comfortable transparent margin on all sides.
+
+Output exactly 1024x1024 PNG with genuine transparent background and real alpha channel. Background is fully empty alpha transparency. NO ground, NO shadow beneath the character, NO floor, NO checkerboard pattern, NO text, NO watermark, NO props, NO extra objects. Keep natural self-shading on the toy only. Clean anti-aliased edges with no white or colored halo around the silhouette.
+

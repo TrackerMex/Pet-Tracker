@@ -2,7 +2,7 @@ import { act, render, screen, within } from '@testing-library/react-native';
 import { Text } from 'react-native';
 import { getAnimatedStyle } from 'react-native-reanimated';
 
-import { PingoFloat } from '../pingo-float';
+import { OrbitFloat } from '../orbit-float';
 
 const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
 
@@ -25,7 +25,7 @@ describe('#172 R4: PingoFloat', () => {
   afterEach(() => jest.useRealTimers());
 
   it('#172 R4: flota 10 px arriba en 1,5 s y vuelve en bucle', async () => {
-    await render(<PingoFloat testID="float"><Text>Hijo</Text></PingoFloat>);
+    await render(<OrbitFloat testID="float"><Text>Hijo</Text></OrbitFloat>);
     expect(floatTranslateY())
       .toBeCloseTo(0, 0);
     await act(async () => { jest.advanceTimersByTime(750); });
@@ -44,7 +44,7 @@ describe('#172 R4: PingoFloat', () => {
 
   it('#172 R4: con reduce motion no se mueve', async () => {
     mockUseReducedMotion.mockReturnValue(true);
-    await render(<PingoFloat testID="float"><Text>Hijo</Text></PingoFloat>);
+    await render(<OrbitFloat testID="float"><Text>Hijo</Text></OrbitFloat>);
     expect(floatTranslateY()).toBe(0);
     await act(async () => { jest.advanceTimersByTime(750); });
     expect(floatTranslateY()).toBe(0);
@@ -53,12 +53,12 @@ describe('#172 R4: PingoFloat', () => {
   });
 
   it('#172 R4: pasa testID y children', async () => {
-    await render(<PingoFloat testID="float"><Text>Hijo</Text></PingoFloat>);
+    await render(<OrbitFloat testID="float"><Text>Hijo</Text></OrbitFloat>);
     expect(within(screen.getByTestId('float')).getByText('Hijo')).toBeOnTheScreen();
   });
 
   it('#172 R4: la subida y la bajada siguen ease-in-out, no una recta', async () => {
-    await render(<PingoFloat testID="float"><Text>Hijo</Text></PingoFloat>);
+    await render(<OrbitFloat testID="float"><Text>Hijo</Text></OrbitFloat>);
     await act(async () => { jest.advanceTimersByTime(375); });
     expect(floatTranslateY())
       .toBeCloseTo(-1.3, 0);
@@ -69,7 +69,7 @@ describe('#172 R4: PingoFloat', () => {
 
   it('#172 R4: el estilo animado solo lleva translateY', async () => {
     mockUseReducedMotion.mockReturnValue(true);
-    await render(<PingoFloat testID="float"><Text>Hijo</Text></PingoFloat>);
+    await render(<OrbitFloat testID="float"><Text>Hijo</Text></OrbitFloat>);
     const float = screen.getByTestId('float');
     expect(float.props.style).toEqual([{ transform: [{ translateY: 0 }] }]);
   });

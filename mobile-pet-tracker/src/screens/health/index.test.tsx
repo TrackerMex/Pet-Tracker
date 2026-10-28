@@ -963,7 +963,7 @@ describe('#155 R4: Salud sin mascotas presenta a Pingo', () => {
     await renderHealth();
     const pose = await screen.findByTestId('health-empty-pose');
     expect(pose.props.source).toEqual([
-      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/orbit-talk\.webp$/) }),
     ]);
     expect(screen.getByTestId('health-empty-title')).toHaveTextContent('Aún no tienes mascotas');
     expect(screen.getByTestId('health-empty-body')).toHaveTextContent('Añade a tu mascota y te ayudo a saber dónde está y cómo está.');

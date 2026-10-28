@@ -425,7 +425,7 @@ describe('#155 R7: sin documentos, Pingo los guarda', () => {
     await renderDocs();
     const pose = await screen.findByTestId('docs-empty-pose');
     expect(pose.props.source).toEqual([
-      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-health\.webp$/) }),
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/orbit-health\.webp$/) }),
     ]);
     expect(screen.getByTestId('docs-empty-title')).toHaveTextContent('Aún no hay documentos');
     expect(screen.getByTestId('docs-empty-body')).toHaveTextContent('Cuando se suba un documento médico de tu mascota, te lo guardo aquí.');

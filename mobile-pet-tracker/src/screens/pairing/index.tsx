@@ -27,7 +27,7 @@ import { PetSwitcher } from '../../components/pet-switcher';
 import { RiseIn } from '../../components/rise-in';
 import { ScreenHeader } from '../../components/screen-header';
 import { PingRing } from '@/components/ping-ring';
-import { PingoFloat } from '@/components/pingo-float';
+import { OrbitFloat } from '@/components/orbit-float';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import {
@@ -44,7 +44,7 @@ import { CATEGORY_SLOTS } from '../../utils/category-palette';
 // #188 R3: the collar artboard staggers its second ring by half a cycle.
 const PAIRING_ARTBOARD_RING_DELAY_MS = 1200;
 const PAIRING_RING_CLASS_NAME = 'size-37.5 rounded-full border-3 border-accent';
-const PAIRING_PINGO_SOURCE = require('../../../assets/images/pingo-collar.webp');
+const PAIRING_ORBIT_SOURCE = require('../../../assets/images/orbit-collar.webp');
 const PAIRING_AVATAR_SLOTS = ['amber', 'violet', 'blue', 'green', 'rose'] as const;
 
 function PairingPetAvatar({ pet, index }: { pet: PetProfile; index: number }) {
@@ -314,9 +314,9 @@ export function PairingScreen() {
               <View testID="pairing-hero" className="h-37.5 w-50 items-center justify-center" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
                 <PingRing testID="pairing-ring-0" delay={0} className={PAIRING_RING_CLASS_NAME} />
                 <PingRing testID="pairing-ring-1" delay={PAIRING_ARTBOARD_RING_DELAY_MS} className={PAIRING_RING_CLASS_NAME} />
-                <PingoFloat testID="pairing-pingo-float">
-                  <Image testID="pairing-pingo" source={PAIRING_PINGO_SOURCE} style={{ width: 120, aspectRatio: 1 }} contentFit="contain" />
-                </PingoFloat>
+                <OrbitFloat testID="pairing-orbit-float">
+                  <Image testID="pairing-orbit" source={PAIRING_ORBIT_SOURCE} style={{ width: 120, aspectRatio: 1 }} contentFit="contain" />
+                </OrbitFloat>
               </View>
               <Text testID="pairing-title" className="text-center text-28 font-black tracking-title text-foreground">
                 {t('pairing.pairCollar')}

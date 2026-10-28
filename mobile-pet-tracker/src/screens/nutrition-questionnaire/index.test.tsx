@@ -153,20 +153,20 @@ it('#209 R5: Pingo de la burbuja mide 52 pt y 44 pt en Condición por style', as
   await goToCondition();
   // docs/conventions.md §Esperas: observar el paso Condición antes de medir.
   await screen.findByTestId('bcs-option-1');
-  expect(screen.getByTestId('nutrition-questionnaire-pingo', { includeHiddenElements: true }).props.style).toEqual({ width: 44, height: 44 });
+  expect(screen.getByTestId('nutrition-questionnaire-orbit', { includeHiddenElements: true }).props.style).toEqual({ width: 44, height: 44 });
   await pressBack();
   await screen.findByTestId('activity-option-medium');
-  const pingo = screen.getByTestId('nutrition-questionnaire-pingo', { includeHiddenElements: true });
-  expect(pingo.props.style).toEqual({ width: 52, height: 52 });
-  expect(pingo.props.className).toBeUndefined();
+  const orbit = screen.getByTestId('nutrition-questionnaire-orbit', { includeHiddenElements: true });
+  expect(orbit.props.style).toEqual({ width: 52, height: 52 });
+  expect(orbit.props.className).toBeUndefined();
 });
 it('#209 R5: Pingo de la burbuja mide 52 pt en Alimento y en Salud', async () => {
   await goToFood(5);
-  expect(screen.getByTestId('nutrition-questionnaire-pingo', { includeHiddenElements: true }).props.style).toEqual({ width: 52, height: 52 });
+  expect(screen.getByTestId('nutrition-questionnaire-orbit', { includeHiddenElements: true }).props.style).toEqual({ width: 52, height: 52 });
   await fireEvent.press(screen.getByTestId('food-type-dry'));
   await fireEvent.press(screen.getByTestId('nutrition-questionnaire-next'));
   expect(await screen.findByText('Alergias')).toBeVisible();
-  expect(screen.getByTestId('nutrition-questionnaire-pingo', { includeHiddenElements: true }).props.style).toEqual({ width: 52, height: 52 });
+  expect(screen.getByTestId('nutrition-questionnaire-orbit', { includeHiddenElements: true }).props.style).toEqual({ width: 52, height: 52 });
 });
 
 it('#209 R7: Actividad pinta las tres opciones con su copy', async () => {
@@ -575,7 +575,7 @@ it('#209 R16: con PUT en vuelo pinta Generando con Perfil guardado en curso', as
   expect(screen.queryByTestId('nutrition-questionnaire-next')).toBeNull();
   expect(screen.getByTestId('nutrition-generating-ring-0', { includeHiddenElements: true })).toBeOnTheScreen();
   expect(screen.getByTestId('nutrition-generating-ring-1', { includeHiddenElements: true })).toBeOnTheScreen();
-  expect(screen.getByTestId('nutrition-generating-pingo', { includeHiddenElements: true })).toBeOnTheScreen();
+  expect(screen.getByTestId('nutrition-generating-orbit', { includeHiddenElements: true })).toBeOnTheScreen();
   expect(screen.getByText('Preparando el plan de Rocky')).toBeVisible();
   expect(screen.getByText('Estoy calculando sus calorías y el reparto de sus comidas. Tarda unos segundos.')).toBeVisible();
   expect(screen.getByTestId('nutrition-generating-steps')).toHaveProp('accessibilityLiveRegion', 'polite');
@@ -608,11 +608,11 @@ it('#209 R16: con movimiento reducido no pinta anillos', async () => {
   await saveFromHealth();
   expect(screen.queryByTestId('nutrition-generating-ring-0', { includeHiddenElements: true })).toBeNull();
   expect(screen.queryByTestId('nutrition-generating-ring-1', { includeHiddenElements: true })).toBeNull();
-  expect(screen.getByTestId('nutrition-generating-pingo', { includeHiddenElements: true })).toBeOnTheScreen();
+  expect(screen.getByTestId('nutrition-generating-orbit', { includeHiddenElements: true })).toBeOnTheScreen();
 });
 it('#209 R16: Pingo de Generando mide 112 pt por style', async () => {
   await saveFromHealth();
-  const image = within(screen.getByTestId('nutrition-generating-pingo', { includeHiddenElements: true })).getByTestId('nutrition-generating-pingo-image', { includeHiddenElements: true });
+  const image = within(screen.getByTestId('nutrition-generating-orbit', { includeHiddenElements: true })).getByTestId('nutrition-generating-orbit-image', { includeHiddenElements: true });
   expect(image.props.style).toEqual({ width: 112, height: 112 });
   expect(image.props.className).toBeUndefined();
 });

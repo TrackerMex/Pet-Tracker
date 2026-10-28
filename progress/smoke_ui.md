@@ -51,7 +51,7 @@ Requiere el rebuild G3 (dev build sin nitro).
 
 - [ ] Smoke de #222 recorrido por el humano (fecha: ____)
 
-## #221 mobile-orbit-rename-copy (pendiente)
+## #221 mobile-orbit-rename-copy (en dev, PR #282)
 
 1. Con idioma español la burbuja de la bienvenida dice «Hola, soy Orbit.»; con inglés, «Hi, I'm Orbit.».
 2. La burbuja no corta el texto.
@@ -76,3 +76,21 @@ Requiere el rebuild G3 (dev build sin nitro).
 5. Si el recorte de 122 o el degradado de 36 no calzan, se ajustan `AI_CLAMP_HEIGHT` / `AI_FADE_HEIGHT` en una enmienda.
 
 - [ ] Smoke de #224 recorrido por el humano (fecha: ____)
+
+## #225 mobile-orbit-activity-pose (PR a `dev`)
+
+No necesita rebuild: la imagen nueva es un asset de Metro. Sale de `specs/mobile-orbit-activity-pose/requirements.md`
+§Smoke G2.
+
+1. En Inicio, con una mascota que hoy lleva al menos 100 m y en tema claro, la burbuja muestra a Orbit andando
+   (`orbit-walk`). Mide 56 dp, flota como antes y no se recorta. El texto empieza por «<mascota> ya caminó …».
+2. Lo mismo en tema oscuro.
+3. Con una mascota que hoy lleva menos de 100 m, o sin tracking, la burbuja vuelve a la pose base (`orbit-talk`), del
+   mismo tamaño, en claro y en oscuro. **La pose de este paso tiene que ser distinta de la del paso 1.** Los tests de
+   R5 no comprueban qué dibujo hay en `orbit-walk.webp`, así que una copia de la pose base pasaría en verde (H1 del
+   review).
+4. Con TalkBack, en el paso 1 la imagen se anuncia como «Orbit caminando». En el paso 3 no se anuncia.
+5. Bienvenida, iniciar sesión, nueva mascota, estados vacíos y emparejamiento muestran las mismas poses que antes del
+   renombrado, y no falta ninguna imagen.
+
+- [ ] Smoke de #225 recorrido por el humano (fecha: ____)

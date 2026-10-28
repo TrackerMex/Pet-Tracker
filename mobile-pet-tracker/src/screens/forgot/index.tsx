@@ -102,8 +102,8 @@ export function ForgotScreen() {
             style={CONTINUOUS_CORNER}
           />
           <Image
-            testID="forgot-pingo"
-            source={require('../../../assets/images/pingo-talk.webp')}
+            testID="forgot-orbit"
+            source={require('../../../assets/images/orbit-talk.webp')}
             style={{ position: 'absolute', left: 24, top: 0, width: 120, height: 120, transform: [{ rotate: '6deg' }] }}
           />
           <PopIn

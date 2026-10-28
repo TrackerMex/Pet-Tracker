@@ -91,8 +91,8 @@ describe('#65 R3: Home resuelve su copy por clave', () => {
   // 20 en `303fc19` + 1 de `home.walks` (#67 R7b, delta declarado en su R9b).
   // #68 añade el delta medido de weekly-activity-chart, sin recontar la base.
   // #73 añade `home.unknown` para distinguir espera inicial de desconexión.
-  it('#71 R11: registra el copy de accesos rápidos sobre los deltas heredados (enmendado por #198 R15)', () => {
-    expect(R3_HOME).toHaveLength(21 + 15 + 1 + 4 + 7 + 2 + 1 + 2 + 2 + 4 + 1); // +1 #198 R15 // +2 #155 R4; +4 #190 R9/R13 (enmendado por #190 R13)
+  it('#71 R11: registra el copy de accesos rápidos sobre los deltas heredados (enmendado por #198 R15) (enmendado por #225 R1)', () => {
+    expect(R3_HOME).toHaveLength(21 + 15 + 1 + 4 + 7 + 2 + 1 + 2 + 2 + 4 + 1 + 1); // +1 #225 R1 // +1 #198 R15 // +2 #155 R4; +4 #190 R9/R13 (enmendado por #190 R13)
     checkUses(R3_HOME);
   });
 });

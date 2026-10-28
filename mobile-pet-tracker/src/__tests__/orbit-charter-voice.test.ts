@@ -2,7 +2,7 @@ const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
 const { join } = jest.requireActual<typeof import('path')>('path');
 
 describe('#221 R4: la carta nombra a Orbit en el punto 7', () => {
-  it('#221 R4: la carta nombra a Orbit en el punto 7', () => {
+  it('#221 R4: la carta nombra a Orbit en el punto 7 (enmendado por #225 R9)', () => {
     const charter = readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
     const start = charter.indexOf('**7. Voz de ');
     const end = charter.indexOf('## Checklist de autocrítica');
@@ -22,10 +22,11 @@ El humano decidió el 2026-10-26 (feature #221) que la mascota se llama
 (bocadillos, estados vacíos, celebraciones, avisos); el resto del copy sigue el
 punto 6 sin más. Cada frase nueva de Orbit entra con su clave en los dos
 idiomas, como cualquier otra copy.`;
-    const note = `Hasta la feature #225, los identificadores, los testID, las claves del
-catálogo y los assets conservan el prefijo pingo (PingoFloat,
-welcome.pingoGreeting, pingo-wave.webp), y las enmiendas fechadas de esta carta
-conservan «Pingo» como historia.`;
+    const note = `Desde la feature #225, los identificadores, los testID, las claves del
+catálogo y los assets llevan el prefijo orbit (OrbitFloat,
+welcome.orbitGreeting, orbit-wave.webp), y las enmiendas fechadas de esta carta
+conservan «Pingo» y los nombres viejos como historia; la equivalencia está en
+el §Mapa de nombres de specs/mobile-orbit-activity-pose/requirements.md.`;
     expect(block.split(opening).length - 1).toBe(1);
     expect(block.split(note).length - 1).toBe(1);
 

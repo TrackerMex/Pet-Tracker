@@ -8,7 +8,7 @@ import Animated, { cancelAnimation, interpolate, useAnimatedStyle, useReducedMot
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
-import { MOTION_CELEBRATION_BADGE_DELAY_MS, MOTION_CELEBRATION_BADGE_POP_MS, MOTION_CELEBRATION_EASE_OUT, MOTION_CELEBRATION_PING_MS, MOTION_CELEBRATION_POP_MS, MOTION_CELEBRATION_POP_PEAK, MOTION_CELEBRATION_RISE_DELAY_MS, MOTION_CELEBRATION_RISE_OFFSET_Y, MOTION_CELEBRATION_RISE_STAGGER_MS, MOTION_CONFETTI_FALL_TIMING, MOTION_FADE_TIMING, MOTION_PINGO_FLOAT_OFFSET_Y, MOTION_PINGO_FLOAT_TIMING, MOTION_PING_FROM, MOTION_PING_TO_SCALE, MOTION_POP_SCALE, MOTION_SURFACE_MS } from '../theme/motion';
+import { MOTION_CELEBRATION_BADGE_DELAY_MS, MOTION_CELEBRATION_BADGE_POP_MS, MOTION_CELEBRATION_EASE_OUT, MOTION_CELEBRATION_PING_MS, MOTION_CELEBRATION_POP_MS, MOTION_CELEBRATION_POP_PEAK, MOTION_CELEBRATION_RISE_DELAY_MS, MOTION_CELEBRATION_RISE_OFFSET_Y, MOTION_CELEBRATION_RISE_STAGGER_MS, MOTION_CONFETTI_FALL_TIMING, MOTION_FADE_TIMING, MOTION_ORBIT_FLOAT_OFFSET_Y, MOTION_ORBIT_FLOAT_TIMING, MOTION_PING_FROM, MOTION_PING_TO_SCALE, MOTION_POP_SCALE, MOTION_SURFACE_MS } from '../theme/motion';
 import { useThemeColors } from '../theme/use-theme-colors';
 
 type CelebrationProps = {
@@ -30,15 +30,15 @@ export function Celebration({ testID, title, body, details, primary, secondary }
   const bodyStyle = useRise(1);
   const detailsStyle = useRise(2);
   const actionsStyle = useRise(3);
-  const pingoScale = useSharedValue(reduceMotion ? 1 : MOTION_POP_SCALE);
-  const pingoOpacity = useSharedValue(0);
-  const pingoTranslateY = useSharedValue(0);
+  const orbitScale = useSharedValue(reduceMotion ? 1 : MOTION_POP_SCALE);
+  const orbitOpacity = useSharedValue(0);
+  const orbitTranslateY = useSharedValue(0);
   const badgeScale = useSharedValue(reduceMotion ? 1 : MOTION_POP_SCALE);
   const badgeOpacity = useSharedValue(0);
   const ringScale = useSharedValue(MOTION_PING_FROM);
   const ringOpacity = useSharedValue(MOTION_PING_FROM);
-  const pingoStyle = useAnimatedStyle(() => ({
-    opacity: pingoOpacity.get(), transform: [{ translateY: pingoTranslateY.get() }, { scale: pingoScale.get() }],
+  const orbitStyle = useAnimatedStyle(() => ({
+    opacity: orbitOpacity.get(), transform: [{ translateY: orbitTranslateY.get() }, { scale: orbitScale.get() }],
   }));
   const badgeStyle = useAnimatedStyle(() => ({
     opacity: badgeOpacity.get(), transform: [{ scale: badgeScale.get() }],
@@ -52,12 +52,12 @@ export function Celebration({ testID, title, body, details, primary, secondary }
 
   useEffect(() => {
     if (reduceMotion) {
-      pingoOpacity.set(withTiming(1, MOTION_FADE_TIMING));
+      orbitOpacity.set(withTiming(1, MOTION_FADE_TIMING));
       badgeOpacity.set(withDelay(MOTION_CELEBRATION_BADGE_DELAY_MS, withTiming(1, MOTION_FADE_TIMING)));
       return;
     }
-    pingoOpacity.set(withTiming(1, { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_POP_MS * 0.6 }));
-    pingoScale.set(withSequence(
+    orbitOpacity.set(withTiming(1, { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_POP_MS * 0.6 }));
+    orbitScale.set(withSequence(
       withTiming(MOTION_CELEBRATION_POP_PEAK, { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_POP_MS * 0.6 }),
       withTiming(1, { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_POP_MS * 0.4 }),
     ));
@@ -68,8 +68,8 @@ export function Celebration({ testID, title, body, details, primary, secondary }
       withTiming(MOTION_CELEBRATION_POP_PEAK, { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_BADGE_POP_MS * 0.6 }),
       withTiming(1, { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_BADGE_POP_MS * 0.4 }),
     )));
-    pingoTranslateY.set(withDelay(MOTION_CELEBRATION_POP_MS,
-      withRepeat(withTiming(-MOTION_PINGO_FLOAT_OFFSET_Y, MOTION_PINGO_FLOAT_TIMING), -1, true),
+    orbitTranslateY.set(withDelay(MOTION_CELEBRATION_POP_MS,
+      withRepeat(withTiming(-MOTION_ORBIT_FLOAT_OFFSET_Y, MOTION_ORBIT_FLOAT_TIMING), -1, true),
     ));
     ringScale.set(withRepeat(withTiming(MOTION_PING_TO_SCALE, {
       ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_PING_MS,
@@ -80,9 +80,9 @@ export function Celebration({ testID, title, body, details, primary, secondary }
     return () => {
       cancelAnimation(ringScale);
       cancelAnimation(ringOpacity);
-      cancelAnimation(pingoTranslateY);
+      cancelAnimation(orbitTranslateY);
     };
-  }, [badgeOpacity, badgeScale, pingoOpacity, pingoScale, pingoTranslateY, reduceMotion, ringOpacity, ringScale]);
+  }, [badgeOpacity, badgeScale, orbitOpacity, orbitScale, orbitTranslateY, reduceMotion, ringOpacity, ringScale]);
 
   return (
     <Modal
@@ -122,10 +122,10 @@ export function Celebration({ testID, title, body, details, primary, secondary }
               importantForAccessibility="no-hide-descendants"
             />
           ) : null}
-          <Animated.View testID={`${testID}-pingo`} style={[pingoStyle, { width: 170, height: 170 }]}>
+          <Animated.View testID={`${testID}-orbit`} style={[orbitStyle, { width: 170, height: 170 }]}>
             <Image
               testID={`${testID}-pose`}
-              source={require('../../assets/images/pingo-celebrate.webp')}
+              source={require('../../assets/images/orbit-celebrate.webp')}
               style={{ width: 170, height: 170 }}
               contentFit="contain"
               accessible={false}

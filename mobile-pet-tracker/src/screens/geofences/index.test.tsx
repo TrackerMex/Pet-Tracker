@@ -547,7 +547,7 @@ describe('#155 R8: sin zonas seguras, Pingo enseña el collar', () => {
     expect(empty.props.className).toBe('items-center gap-3 py-8');
     const pose = await screen.findByTestId('geofences-empty-pose');
     expect(pose.props.source).toEqual([
-      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-collar\.webp$/) }),
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/orbit-collar\.webp$/) }),
     ]);
     expect(screen.getByTestId('geofences-empty-title')).toHaveTextContent('Aún no hay zonas seguras');
     expect(screen.getByTestId('geofences-empty-body')).toHaveTextContent('Cuando haya una zona segura, te aviso si tu mascota sale de ella.');
@@ -579,7 +579,7 @@ describe('#159 R5: Zonas seguras sin seguimiento presentan a Pingo', () => {
     const empty = await screen.findByTestId('geofences-no-tracking');
     expect(empty.props.className).toBe('items-center gap-3 py-8');
     expect(screen.getByTestId('geofences-no-tracking-pose').props.source).toEqual([
-      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-collar\.webp$/) }),
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/orbit-collar\.webp$/) }),
     ]);
     expect(screen.getByTestId('geofences-no-tracking-title')).toHaveTextContent('Zonas seguras no disponibles');
     expect(screen.getByTestId('geofences-no-tracking-body')).toHaveTextContent('Cuando tu mascota tenga un collar con plan activo, te aviso si sale de una zona segura.');

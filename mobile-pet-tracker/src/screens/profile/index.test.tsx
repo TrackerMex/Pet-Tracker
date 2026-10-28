@@ -1913,7 +1913,7 @@ describe('#181 R5: Perfil conserva la cuenta y compone el vacío ilustrado', () 
     expect(screen.getByTestId('profile-pets-empty-title')).toHaveTextContent(es['common.noPetsYet']);
     expect(screen.getByTestId('profile-pets-empty-body')).toHaveTextContent(es['common.noPetsBody']);
     expect(screen.getByTestId('profile-pets-empty-pose').props.source).toEqual([
-      expect.objectContaining({ testUri: expect.stringMatching(/pingo-talk\.webp$/) }),
+      expect.objectContaining({ testUri: expect.stringMatching(/orbit-talk\.webp$/) }),
     ]);
     const action = screen.getByTestId('profile-pets-empty-action');
     expect(within(action).getByText(es['profile.addPet'])).toBeVisible();

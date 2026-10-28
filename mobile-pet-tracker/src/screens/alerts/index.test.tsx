@@ -1297,7 +1297,7 @@ describe('#155 R5: sin alertas, Pingo duerme', () => {
     await renderAlerts();
     const pose = await screen.findByTestId('alerts-empty-pose');
     expect(pose.props.source).toEqual([
-      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-sleep\.webp$/) }),
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/orbit-sleep\.webp$/) }),
     ]);
     expect(screen.getByTestId('alerts-empty-title')).toHaveTextContent('No hay alertas');
     expect(screen.getByTestId('alerts-empty-body')).toHaveTextContent('Todo está tranquilo. Si pasa algo, te aviso aquí.');

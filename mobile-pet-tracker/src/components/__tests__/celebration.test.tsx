@@ -13,7 +13,7 @@ const flat = (s: unknown) => Object.assign({}, ...[s].flat(Infinity).filter(Bool
 
 describe('#171 R1: la pose celebrate', () => {
   it('pingo-celebrate.webp es WebP con alfa, sin animación, 1024 × 1024 y como mucho 100000 bytes', () => {
-    const bytes = readFileSync(join(process.cwd(), 'assets', 'images', 'pingo-celebrate.webp'));
+    const bytes = readFileSync(join(process.cwd(), 'assets', 'images', 'orbit-celebrate.webp'));
     expect(bytes.toString('ascii', 0, 4)).toBe('RIFF');
     expect(bytes.toString('ascii', 8, 12)).toBe('WEBP');
     expect(bytes.toString('ascii', 12, 16)).toBe('VP8X');
@@ -118,8 +118,8 @@ describe('#171 R2: Celebration', () => {
 
   it('R2.4 Pingo usa celebrate y la insignia contiene el check del artboard', async () => {
     await renderProbe();
-    const image = within(screen.getByTestId('probe-pingo')).getByTestId('probe-pose');
-    expect(image.props.source).toEqual([require('../../../assets/images/pingo-celebrate.webp')]);
+    const image = within(screen.getByTestId('probe-orbit')).getByTestId('probe-pose');
+    expect(image.props.source).toEqual([require('../../../assets/images/orbit-celebrate.webp')]);
     const check = within(screen.getByTestId('probe-badge', { includeHiddenElements: true })).getByTestId('probe-check', { includeHiddenElements: true });
     expect([check.props.width, check.props.height, check.props.viewBox]).toEqual([28, 28, '0 0 24 24']);
     expect(check.children).toHaveLength(1);
@@ -264,7 +264,7 @@ function expectSamples(actual: number[][], expected: readonly (readonly number[]
 }
 
 // E4: [opacidad, escala] del primer tramo de cada pop.
-const PINGO_POP = [[0, 0.6], [0.4157, 0.7995], [0.7422, 0.9563], [0.9555, 1.0586]];
+const ORBIT_POP = [[0, 0.6], [0.4157, 0.7995], [0.7422, 0.9563], [0.9555, 1.0586]];
 const BADGE_POP = [[0, 0.6], [0.4884, 0.8344], [0.8438, 1.005]];
 
 function samplePop(testID: string) {
@@ -350,7 +350,7 @@ describe('#171 R7: pop', () => {
 
   it('R7.1 Pingo empieza transparente y a escala 0.6', async () => {
     await renderProbe();
-    expect(getAnimatedStyle(screen.getByTestId('probe-pingo'))).toEqual({
+    expect(getAnimatedStyle(screen.getByTestId('probe-orbit'))).toEqual({
       width: 170, height: 170, opacity: 0, transform: [{ translateY: 0 }, { scale: 0.6 }],
     });
   });
@@ -365,7 +365,7 @@ describe('#171 R7: pop', () => {
   it('R7.3 Pingo llega a opacidad y escala 1 a los 650 ms', async () => {
     await renderProbe();
     await advance(650);
-    expect(samplePop('probe-pingo')).toEqual([1, 1]);
+    expect(samplePop('probe-orbit')).toEqual([1, 1]);
   });
 
   it('R7.3 la insignia sigue en reposo a los 300 ms', async () => {
@@ -386,12 +386,12 @@ describe('#171 R7: pop', () => {
 
   it('R7.4 Pingo sigue el primer tramo del pop a los 0, 100, 200 y 300 ms', async () => {
     await renderProbe();
-    const samples = [samplePop('probe-pingo')];
+    const samples = [samplePop('probe-orbit')];
     for (let step = 0; step < 3; step++) {
       await advance(100);
-      samples.push(samplePop('probe-pingo'));
+      samples.push(samplePop('probe-orbit'));
     }
-    expectSamples(samples, PINGO_POP, [3, 3]);
+    expectSamples(samples, ORBIT_POP, [3, 3]);
   });
 
   it('R7.4 la insignia sigue el primer tramo del pop a los 450, 550 y 650 ms', async () => {
@@ -406,7 +406,7 @@ describe('#171 R7: pop', () => {
   });
 
   it.each([
-    ['Pingo', 420, 540, 'probe-pingo'],
+    ['Orbit', 420, 540, 'probe-orbit'],
     ['la insignia', 800, 900, 'probe-badge'],
   ] as const)('R7.4 %s baja de 1.08 a 1 entre los %s y los %s ms', async (_name, first, second, id) => {
     await renderProbe();
@@ -467,7 +467,7 @@ describe('#171 R18: flotación de Pingo', () => {
     const samples: number[] = [];
     for (const step of [600, 750, 750]) {
       await advance(step);
-      samples.push(animated('probe-pingo').transform[0].translateY as number);
+      samples.push(animated('probe-orbit').transform[0].translateY as number);
     }
     [0, -5, -10].forEach((value, i) => expect(samples[i]).toBeCloseTo(value, 1));
   });
@@ -475,9 +475,9 @@ describe('#171 R18: flotación de Pingo', () => {
   it('R18.2 la flotación sigue en bucle: 0 a los 3600 ms y -10 a los 5100 ms', async () => {
     await renderProbe();
     await advance(3600);
-    expect(animated('probe-pingo').transform[0].translateY).toBeCloseTo(0, 1);
+    expect(animated('probe-orbit').transform[0].translateY).toBeCloseTo(0, 1);
     await advance(1500);
-    expect(animated('probe-pingo').transform[0].translateY).toBeCloseTo(-10, 1);
+    expect(animated('probe-orbit').transform[0].translateY).toBeCloseTo(-10, 1);
   });
 });
 
@@ -568,7 +568,7 @@ describe('#171 R8: reduce motion', () => {
 
   it('R8.2 Pingo empieza transparente a escala 1', async () => {
     await renderProbe();
-    expect(getAnimatedStyle(screen.getByTestId('probe-pingo'))).toEqual({
+    expect(getAnimatedStyle(screen.getByTestId('probe-orbit'))).toEqual({
       width: 170, height: 170, opacity: 0, transform: [{ translateY: 0 }, { scale: 1 }],
     });
   });
@@ -576,7 +576,7 @@ describe('#171 R8: reduce motion', () => {
   it('R8.2 Pingo conserva el fundido a los 2000 ms', async () => {
     await renderProbe();
     await act(async () => { jest.advanceTimersByTime(2000); });
-    expect(getAnimatedStyle(screen.getByTestId('probe-pingo'))).toEqual({
+    expect(getAnimatedStyle(screen.getByTestId('probe-orbit'))).toEqual({
       width: 170, height: 170, opacity: 1, transform: [{ translateY: 0 }, { scale: 1 }],
     });
   });
@@ -602,7 +602,7 @@ describe('#171 R8: reduce motion', () => {
     await renderProbe();
     expect(screen.queryByTestId('probe-ring', { includeHiddenElements: true })).toBeNull();
     await advance(2000);
-    expect(animated('probe-pingo').transform[0].translateY).toBe(0);
+    expect(animated('probe-orbit').transform[0].translateY).toBe(0);
   });
 
   it('R8.5 con reduce motion el texto y las acciones aparecen sin subir', async () => {
@@ -649,7 +649,7 @@ describe('#171 R13: solo anima transform y opacity', () => {
   it('R13.2 conserva las claves de layout y solo anima transform y opacity a los 0 y 1200 ms', async () => {
     await renderProbe();
     const rows = [
-      ['probe-pingo', ['height', 'opacity', 'transform', 'width']],
+      ['probe-orbit', ['height', 'opacity', 'transform', 'width']],
       ['probe-badge', ['bottom', 'opacity', 'position', 'right', 'transform']],
       ['probe-confetti-0', ['left', 'opacity', 'position', 'top', 'transform']],
       ['probe-ring', ['opacity', 'transform']],

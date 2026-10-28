@@ -389,10 +389,11 @@ El humano decidió el 2026-10-26 (feature #221) que la mascota se llama
 punto 6 sin más. Cada frase nueva de Orbit entra con su clave en los dos
 idiomas, como cualquier otra copy.
 
-Hasta la feature #225, los identificadores, los testID, las claves del
-catálogo y los assets conservan el prefijo pingo (PingoFloat,
-welcome.pingoGreeting, pingo-wave.webp), y las enmiendas fechadas de esta carta
-conservan «Pingo» como historia.
+Desde la feature #225, los identificadores, los testID, las claves del
+catálogo y los assets llevan el prefijo orbit (OrbitFloat,
+welcome.orbitGreeting, orbit-wave.webp), y las enmiendas fechadas de esta carta
+conservan «Pingo» y los nombres viejos como historia; la equivalencia está en
+el §Mapa de nombres de specs/mobile-orbit-activity-pose/requirements.md.
 
 - **Tono:** tranquilo y cálido; da seguridad. En español, tutea.
 - **Persona:** Orbit habla en primera persona («te ayudo», «te recomiendo») y

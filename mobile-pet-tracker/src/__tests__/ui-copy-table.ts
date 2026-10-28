@@ -13,7 +13,7 @@ export const R1_AUTH: UseRow[] = [
   { file: 'src/screens/login/index.tsx', key: 'login.signIn' },
   { file: 'src/screens/login/index.tsx', key: 'login.createAccount' },
   { file: 'src/screens/login/index.tsx', key: 'login.forgotPassword' },
-  { file: 'src/screens/login/index.tsx', key: 'login.pingoGreeting' }, // #167 R6
+  { file: 'src/screens/login/index.tsx', key: 'login.orbitGreeting' }, // #167 R6
   { file: 'src/screens/forgot/index.tsx', key: 'forgot.tooManyAttempts' }, // #117 R7
   { file: 'src/screens/forgot/index.tsx', key: 'common.cannotReachServer' }, // #117 R7
   { file: 'src/screens/forgot/index.tsx', key: 'common.somethingWentWrong' }, // #117 R7
@@ -67,10 +67,10 @@ export const R2_TABS: UseRow[] = [
 
 export const R3_HOME: UseRow[] = [
   // (enmendado por #190 R13): las cuatro frases viven en el helper puro.
-  { file: 'src/screens/home/pingo-phrase.ts', key: 'home.pingoPhraseWalkMeals' },
-  { file: 'src/screens/home/pingo-phrase.ts', key: 'home.pingoPhraseWalk' },
-  { file: 'src/screens/home/pingo-phrase.ts', key: 'home.pingoPhraseMeals' },
-  { file: 'src/screens/home/pingo-phrase.ts', key: 'home.pingoPhraseCalm' },
+  { file: 'src/screens/home/orbit-phrase.ts', key: 'home.orbitPhraseWalkMeals' },
+  { file: 'src/screens/home/orbit-phrase.ts', key: 'home.orbitPhraseWalk' },
+  { file: 'src/screens/home/orbit-phrase.ts', key: 'home.orbitPhraseMeals' },
+  { file: 'src/screens/home/orbit-phrase.ts', key: 'home.orbitPhraseCalm' },
   { file: 'src/screens/home/index.tsx', key: 'home.noLocationDataYet' },
   { file: 'src/screens/home/index.tsx', key: 'home.lastSeen' },
   { file: 'src/screens/home/index.tsx', key: 'home.home' },
@@ -127,6 +127,7 @@ export const R3_HOME: UseRow[] = [
   { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'weeklyActivity.noDataForDay' },
   { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'home.sleep' },
   { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'weeklyActivity.noDataYet' },
+  { file: 'src/screens/home/index.tsx', key: 'home.orbitWalkLabel' },
 ];
 
 export const R4_MAP: UseRow[] = [
@@ -470,7 +471,7 @@ export const R8_REMINDERS: UseRow[] = [
 
 export const R9_ADD_PET: UseRow[] = [
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.continue' }, // #191 R7
-  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.pingoGreeting' }, // #191 R4
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.orbitGreeting' }, // #191 R4
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.stepProgress' }, // #191 R3
   { file: 'src/utils/form-rules.ts', key: 'addPet.nameIsRequired' }, // #186 R2
   { file: 'src/utils/form-rules.ts', key: 'addPet.chooseBirthDate' }, // #186 R2
@@ -711,7 +712,7 @@ export const R16_WELCOME: UseRow[] = [
   { file: 'src/screens/welcome/index.tsx', key: 'welcome.getStarted' },
   { file: 'src/screens/welcome/index.tsx', key: 'welcome.haveAccount' },
   { file: 'src/screens/welcome/index.tsx', key: 'welcome.legalNotice' },
-  { file: 'src/screens/welcome/index.tsx', key: 'welcome.pingoGreeting' }, // #153 R1
+  { file: 'src/screens/welcome/index.tsx', key: 'welcome.orbitGreeting' }, // #153 R1
 ];
 
 export const R17_EDIT_PROFILE: UseRow[] = [

@@ -17,7 +17,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ForkKnife, Map, Stethoscope } from 'reicon-react-native';
 
-import { PingoFloat } from '@/components/pingo-float';
+import { OrbitFloat } from '@/components/orbit-float';
 import { PingRing } from '@/components/ping-ring';
 import { PopIn } from '@/components/pop-in';
 import { RiseIn } from '@/components/rise-in';
@@ -42,17 +42,17 @@ export function WelcomeScreen() {
   const shadows = useShadows();
   const [chipInk] = useThemeColors(['accent-strong']);
   const reduceMotion = useReducedMotion();
-  const pingoScale = useSharedValue(reduceMotion ? 1 : MOTION_ENTRANCE_SCALE);
-  const pingoStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: pingoScale.get() }],
+  const orbitScale = useSharedValue(reduceMotion ? 1 : MOTION_ENTRANCE_SCALE);
+  const orbitStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: orbitScale.get() }],
   }));
-  const pingoBlink = useSharedValue(0);
-  const blinkStyle = useAnimatedStyle(() => ({ opacity: pingoBlink.get() }));
+  const orbitBlink = useSharedValue(0);
+  const blinkStyle = useAnimatedStyle(() => ({ opacity: orbitBlink.get() }));
 
   useEffect(() => {
     if (!reduceMotion) {
-      pingoScale.set(withSpring(1, MOTION_SETTLE_SPRING));
-      pingoBlink.set(
+      orbitScale.set(withSpring(1, MOTION_SETTLE_SPRING));
+      orbitBlink.set(
         withRepeat(
           withSequence(
             withDelay(MOTION_BLINK_INTERVAL_MS, withTiming(1, MOTION_BLINK_TIMING)),
@@ -62,7 +62,7 @@ export function WelcomeScreen() {
         ),
       );
     }
-  }, [reduceMotion, pingoScale, pingoBlink]);
+  }, [reduceMotion, orbitScale, orbitBlink]);
 
   if (status === 'authenticated') return <Redirect href="/home" />;
 
@@ -82,18 +82,18 @@ export function WelcomeScreen() {
             <View testID="welcome-ground" className="absolute bottom-7.5 h-3.5 w-30 rounded-full bg-border" />
             <View testID="welcome-stage" className="items-center justify-center">
               {reduceMotion ? null : [0, 1, 2].map((index) => <PingRing key={index} testID={`welcome-ring-${index}`} delay={index * (MOTION_PING_TIMING.duration / 3)} className="size-65 rounded-full border-2 border-accent" />)}
-              <PingoFloat testID="welcome-pingo-float">
-                <Animated.View testID="welcome-pingo" style={[pingoStyle, { width: 220, height: 220 }]}>
-                  <Image testID="welcome-pingo-wave" source={require('../../../assets/images/pingo-wave.webp')} style={{ width: 220, height: 220 }} contentFit="contain" />
-                  <Animated.View testID="welcome-pingo-blink" style={[blinkStyle, { position: 'absolute', top: 0, left: 0 }]}>
-                    <Image testID="welcome-pingo-blink-image" source={require('../../../assets/images/pingo-wave-blink.webp')} style={{ width: 220, height: 220 }} contentFit="contain" />
+              <OrbitFloat testID="welcome-orbit-float">
+                <Animated.View testID="welcome-orbit" style={[orbitStyle, { width: 220, height: 220 }]}>
+                  <Image testID="welcome-orbit-wave" source={require('../../../assets/images/orbit-wave.webp')} style={{ width: 220, height: 220 }} contentFit="contain" />
+                  <Animated.View testID="welcome-orbit-blink" style={[blinkStyle, { position: 'absolute', top: 0, left: 0 }]}>
+                    <Image testID="welcome-orbit-blink-image" source={require('../../../assets/images/orbit-wave-blink.webp')} style={{ width: 220, height: 220 }} contentFit="contain" />
                   </Animated.View>
                 </Animated.View>
-              </PingoFloat>
+              </OrbitFloat>
             </View>
             <PopIn testID="welcome-bubble-pop" className="absolute top-7 right-5.5">
               <View testID="welcome-bubble" className="rounded-tl-16 rounded-tr-16 rounded-bl-16 rounded-br-4 bg-surface px-3.5 py-2.5" style={[CONTINUOUS_CORNER, shadows.card]}>
-                <Text testID="welcome-bubble-text" className="text-sm font-bold text-foreground">{t('welcome.pingoGreeting')}</Text>
+                <Text testID="welcome-bubble-text" className="text-sm font-bold text-foreground">{t('welcome.orbitGreeting')}</Text>
               </View>
             </PopIn>
           </View>

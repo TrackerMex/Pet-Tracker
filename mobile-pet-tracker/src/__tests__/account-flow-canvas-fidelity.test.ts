@@ -64,7 +64,7 @@ describe('#205 R3: escena de Main', () => {
     expect(welcome).toContain('width: 220');
     expect(welcome).toContain('w-30');
     expect(welcome).toContain('bottom-7.5');
-    expect(welcome).toContain('<PingoFloat testID="welcome-pingo-float">');
+    expect(welcome).toContain('<OrbitFloat testID="welcome-orbit-float">');
   });
 });
 
@@ -146,7 +146,7 @@ describe('#205 R9: Registro', () => {
     const screen = source('screens/register/index.tsx');
     expect(screen).toContain('<RiseIn testID="register-body" delayMs={0} className="mt-4.5 gap-3">');
     expect(screen).toContain('min-h-11');
-    expect(screen).toContain('<PingoFloat');
+    expect(screen).toContain('<OrbitFloat');
   });
 });
 

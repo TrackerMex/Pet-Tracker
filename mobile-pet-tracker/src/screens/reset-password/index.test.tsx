@@ -55,11 +55,11 @@ jest.mock('../../theme/use-theme-colors', () => ({
   useThemeColors: (tokens: string[]) => tokens.map((token) => `color:${token}`),
 }));
 
-jest.mock('../../components/pingo-float', () => {
+jest.mock('../../components/orbit-float', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
-    PingoFloat(props: { testID: string; children: import('react').ReactNode }) {
+    OrbitFloat(props: { testID: string; children: import('react').ReactNode }) {
       return React.createElement(View, props);
     },
   };
@@ -416,13 +416,13 @@ describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
 
   it('#172 R5: Pingo de nueva contraseña flota en el formulario y en el éxito (enmendado por #205 R12, R13)', async () => {
     await renderRoute('reset-token-172');
-    expect(screen.queryByTestId('reset-pingo-float')).toBeNull(); // #205 R12
-    expect(screen.getByTestId('reset-pingo').parent)
+    expect(screen.queryByTestId('reset-orbit-float')).toBeNull(); // #205 R12
+    expect(screen.getByTestId('reset-orbit').parent)
       .toHaveProperty('props.testID', 'reset-header'); // #205 R12
     await submitReset();
     expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
-    expect(screen.queryByTestId('reset-pingo-float')).toBeNull(); // #205 R13
-    expect(screen.getByTestId('reset-pingo').parent)
+    expect(screen.queryByTestId('reset-orbit-float')).toBeNull(); // #205 R13
+    expect(screen.getByTestId('reset-orbit').parent)
       .toHaveProperty('props.testID', 'reset-header'); // #205 R13
   });
 
@@ -440,7 +440,7 @@ describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
     await renderRoute('reset-token-167');
     const header = screen.getByTestId('reset-header');
     expect(header.children).toHaveLength(2);
-    expect(header.children[0]).toHaveProperty('props.testID', 'reset-pingo'); // #205 R12
+    expect(header.children[0]).toHaveProperty('props.testID', 'reset-orbit'); // #205 R12
     expect(header.children[1]).toBe(within(header).getByText('Restablecer contraseña'));
   });
 
@@ -459,24 +459,24 @@ describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
 
   it('#167 R10: Pingo en el formulario usa la tablilla', async () => {
     await renderRoute('reset-token-167');
-    const pingo = screen.getByTestId('reset-pingo');
-    expect(pingo.props.source).toEqual([
-      expect.objectContaining({ testUri: expect.stringMatching(/pingo-clipboard\.webp$/) }),
+    const orbit = screen.getByTestId('reset-orbit');
+    expect(orbit.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/orbit-clipboard\.webp$/) }),
     ]);
-    expect(pingo.props.style).toEqual({ width: 72, height: 72 });
-    expect(pingo.props.accessibilityLabel).toBeUndefined();
+    expect(orbit.props.style).toEqual({ width: 72, height: 72 });
+    expect(orbit.props.accessibilityLabel).toBeUndefined();
   });
 
   it('#167 R10: Pingo en el éxito usa la tablilla', async () => {
     await renderRoute('reset-token-167');
     await submitReset();
     expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
-    const pingo = screen.getByTestId('reset-pingo');
-    expect(pingo.props.source).toEqual([
-      expect.objectContaining({ testUri: expect.stringMatching(/pingo-clipboard\.webp$/) }),
+    const orbit = screen.getByTestId('reset-orbit');
+    expect(orbit.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/orbit-clipboard\.webp$/) }),
     ]);
-    expect(pingo.props.style).toEqual({ width: 72, height: 72 });
-    expect(pingo.props.accessibilityLabel).toBeUndefined();
+    expect(orbit.props.style).toEqual({ width: 72, height: 72 });
+    expect(orbit.props.accessibilityLabel).toBeUndefined();
   });
 
   it('#167 R10: el éxito pinta cabecera, tarjeta y enlace, sin cuerpo', async () => {
@@ -554,7 +554,7 @@ describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
     expect(typeof header.props.entering).toBe('function'); // #205 R13
     expect(header.props.className).toBe('flex-row items-center gap-3.5'); // #205 R13
     expect(header.children).toHaveLength(2);
-    expect(header.children[0]).toHaveProperty('props.testID', 'reset-pingo'); // #205 R13
+    expect(header.children[0]).toHaveProperty('props.testID', 'reset-orbit'); // #205 R13
     expect(header.children[1]).toBe(within(header).getByText('Restablecer contraseña'));
   });
 
@@ -649,13 +649,13 @@ describe('#205 R12: NuevaContrasena, formulario', () => {
     await submitReset();
     expect(await screen.findByTestId('reset-error')).toBeOnTheScreen();
 
-    expect(screen.queryByTestId('reset-pingo-float')).toBeNull();
+    expect(screen.queryByTestId('reset-orbit-float')).toBeNull();
     const header = screen.getByTestId('reset-header');
     expect(typeof header.props.entering).toBe('function');
     expect(header.props.className).toBe('flex-row items-center gap-3.5');
     expect((header.children as TestInstance[]).map((child) => child.props.testID))
-      .toEqual(['reset-pingo', undefined]);
-    expect(screen.getByTestId('reset-pingo').props.style).toEqual({ width: 72, height: 72 });
+      .toEqual(['reset-orbit', undefined]);
+    expect(screen.getByTestId('reset-orbit').props.style).toEqual({ width: 72, height: 72 });
     expect(within(header).getByText('Restablecer contraseña').props.className)
       .toBe('flex-1 text-28 leading-8 font-black tracking-display text-foreground');
 
@@ -713,13 +713,13 @@ describe('#205 R13: NuevaContrasena, éxito', () => {
     expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
 
     expect(mockHomeEntrance).not.toHaveBeenCalled();
-    expect(screen.queryByTestId('reset-pingo-float')).toBeNull();
+    expect(screen.queryByTestId('reset-orbit-float')).toBeNull();
     const header = screen.getByTestId('reset-header');
     expect(typeof header.props.entering).toBe('function');
     expect(header.props.className).toBe('flex-row items-center gap-3.5');
     expect((header.children as TestInstance[]).map((child) => child.props.testID))
-      .toEqual(['reset-pingo', undefined]);
-    expect(screen.getByTestId('reset-pingo').props.style).toEqual({ width: 72, height: 72 });
+      .toEqual(['reset-orbit', undefined]);
+    expect(screen.getByTestId('reset-orbit').props.style).toEqual({ width: 72, height: 72 });
     expect(within(header).getByText('Restablecer contraseña').props.className)
       .toBe('flex-1 text-28 leading-8 font-black tracking-display text-foreground');
     expect(screen.getByTestId('screen-reset-password').props.contentContainerStyle)
@@ -753,7 +753,7 @@ describe('#205 R14: NuevaContrasena sin token', () => {
     expect(missing.props.className).toBe('text-center text-danger');
     expect(missing).toHaveTextContent('Este enlace está incompleto. Ábrelo de nuevo desde tu correo.');
     expect(screen.queryByTestId('reset-header')).toBeNull();
-    expect(screen.queryByTestId('reset-pingo')).toBeNull();
+    expect(screen.queryByTestId('reset-orbit')).toBeNull();
 
     const link = screen.getByTestId('link-login');
     expect(link).toHaveTextContent('Volver al inicio de sesión');

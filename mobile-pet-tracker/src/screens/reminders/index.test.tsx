@@ -1497,7 +1497,7 @@ describe('#155 R6: sin recordatorios, Pingo sostiene su lista', () => {
     await renderReminders();
     const pose = await screen.findByTestId('reminders-empty-pose');
     expect(pose.props.source).toEqual([
-      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-clipboard\.webp$/) }),
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/orbit-clipboard\.webp$/) }),
     ]);
     expect(screen.getByTestId('reminders-empty-title')).toHaveTextContent('Aún no hay recordatorios');
     expect(screen.getByTestId('reminders-empty-body')).toHaveTextContent('Cuando crees un recordatorio, te aviso a tiempo.');
@@ -1715,7 +1715,7 @@ describe('#181 R4: Recordatorios distingue una cuenta sin mascotas', () => {
   it('R4.2: muestra Pingo talk, copy español y una acción hacia pets/add', async () => {
     await renderReminders();
     const pose = await screen.findByTestId('reminders-no-pets-pose');
-    expect(pose.props.source).toEqual([expect.objectContaining({ testUri: expect.stringMatching(/pingo-talk\.webp$/) })]);
+    expect(pose.props.source).toEqual([expect.objectContaining({ testUri: expect.stringMatching(/orbit-talk\.webp$/) })]);
     expect(screen.getByTestId('reminders-no-pets-title')).toHaveTextContent(es['common.noPetsYet']);
     expect(screen.getByTestId('reminders-no-pets-body')).toHaveTextContent(es['common.noPetsBody']);
     const action = screen.getByTestId('reminders-no-pets-action');

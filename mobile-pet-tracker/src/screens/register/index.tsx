@@ -16,7 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { login, register } from '../../api/auth';
 import { BackButton } from '../../components/back-button';
 import { useAuth } from '../../providers/auth-provider';
-import { PingoFloat } from '../../components/pingo-float';
+import { OrbitFloat } from '../../components/orbit-float';
 import { PasswordInput } from '../../components/password-input';
 import { FormError } from '../../components/form-error';
 import { FieldErrorMessage } from '../../components/field-error-message';
@@ -137,13 +137,13 @@ export function RegisterScreen() {
         <View testID="register-header" className="gap-2">
           <View testID="register-top" className="-ml-2.5 flex-row items-center justify-between">
             <BackButton testID="register-back" fallback="/welcome" />
-            <PingoFloat testID="register-pingo-float">
+            <OrbitFloat testID="register-orbit-float">
               <Image
-                testID="register-pingo"
-                source={require('../../../assets/images/pingo-clipboard.webp')}
+                testID="register-orbit"
+                source={require('../../../assets/images/orbit-clipboard.webp')}
                 style={{ width: 56, height: 56 }}
               />
-            </PingoFloat>
+            </OrbitFloat>
           </View>
           <Text className="text-3xl font-black tracking-display text-foreground">
             {t('register.createAccount')}

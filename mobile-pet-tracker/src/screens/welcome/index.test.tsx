@@ -212,18 +212,18 @@ describe('#205 R3: la escena de Main', () => {
     expect(sceneIds).toContain('welcome-ground');
     expect(sceneIds.indexOf('welcome-ground')).toBeLessThan(sceneIds.indexOf('welcome-stage'));
     expect(screen.getByTestId('welcome-ground').props.className).toBe('absolute bottom-7.5 h-3.5 w-30 rounded-full bg-border');
-    expect(ids('welcome-stage')).toEqual(['welcome-ring-0', 'welcome-ring-1', 'welcome-ring-2', 'welcome-pingo-float']);
-    expect(ids('welcome-pingo-float')).toEqual(['welcome-pingo']);
-    expect(ids('welcome-pingo')).toEqual(['welcome-pingo-wave', 'welcome-pingo-blink']);
+    expect(ids('welcome-stage')).toEqual(['welcome-ring-0', 'welcome-ring-1', 'welcome-ring-2', 'welcome-orbit-float']);
+    expect(ids('welcome-orbit-float')).toEqual(['welcome-orbit']);
+    expect(ids('welcome-orbit')).toEqual(['welcome-orbit-wave', 'welcome-orbit-blink']);
 
-    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo-float'))).toEqual({ transform: [{ translateY: 0 }] });
+    expect(getAnimatedStyle(screen.getByTestId('welcome-orbit-float'))).toEqual({ transform: [{ translateY: 0 }] });
     await act(async () => { jest.advanceTimersByTime(2000); });
-    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo-float'))).toEqual({ transform: [{ translateY: -10 }] });
+    expect(getAnimatedStyle(screen.getByTestId('welcome-orbit-float'))).toEqual({ transform: [{ translateY: -10 }] });
 
-    const pingo = getAnimatedStyle(screen.getByTestId('welcome-pingo'));
-    expect(pingo).toMatchObject({ width: 220, height: 220 });
-    expect(JSON.stringify(pingo)).not.toContain('translateY');
-    expect(readSource('screens/welcome/index.tsx')).not.toContain('pingoFloatY');
+    const orbit = getAnimatedStyle(screen.getByTestId('welcome-orbit'));
+    expect(orbit).toMatchObject({ width: 220, height: 220 });
+    expect(JSON.stringify(orbit)).not.toContain('translateY');
+    expect(readSource('screens/welcome/index.tsx')).not.toContain('orbitFloatY');
   });
 });
 
@@ -440,7 +440,7 @@ describe('#153 R2: la carta escribe la voz de Pingo', () => {
 
 
 describe('#153 R3: las poses entran como WebP', () => {
-  it.each(['pingo-wave.webp', 'pingo-wave-blink.webp'])('%s es un WebP con alfa de 1024×1024 y como mucho 100 000 bytes', (name) => {
+  it.each(['orbit-wave.webp', 'orbit-wave-blink.webp'])('%s es un WebP con alfa de 1024×1024 y como mucho 100 000 bytes', (name) => {
     const bytes = readFileSync(join(process.cwd(), 'assets', 'images', name));
     expect(bytes.toString('ascii', 0, 4)).toBe('RIFF');
     expect(bytes.toString('ascii', 8, 12)).toBe('WEBP');
@@ -451,21 +451,21 @@ describe('#153 R3: las poses entran como WebP', () => {
     expect(bytes.length).toBeLessThanOrEqual(100000);
   });
 
-  it('no mete otras poses de Pingo', () => {
-    expect(readdirSync(join(process.cwd(), 'assets', 'images')).filter((name) => /^(pingo|mascot)-/.test(name)).sort())
-      .toEqual(['pingo-celebrate.webp', 'pingo-clipboard.webp', 'pingo-collar.webp', 'pingo-food.webp', 'pingo-health.webp', 'pingo-sleep.webp', 'pingo-talk.webp', 'pingo-wave-blink.webp', 'pingo-wave.webp']);
+  it('no mete otras poses de Pingo (enmendado por #225 R2, R5)', () => {
+    expect(readdirSync(join(process.cwd(), 'assets', 'images')).filter((name) => /^(orbit|mascot)-/.test(name)).sort())
+      .toEqual(['orbit-celebrate.webp', 'orbit-clipboard.webp', 'orbit-collar.webp', 'orbit-food.webp', 'orbit-health.webp', 'orbit-sleep.webp', 'orbit-talk.webp', 'orbit-walk.webp', 'orbit-wave-blink.webp', 'orbit-wave.webp']);
   });
 });
 
 
 describe('#153 R1: el saludo de Pingo existe en los dos idiomas', () => {
   it('declara el saludo en inglés y en español (enmendado por #205 R5)', () => {
-    expect(en['welcome.pingoGreeting']).toBe('Hi, I\'m Orbit.'); // #205 R5 // #221 R1
-    expect(es['welcome.pingoGreeting']).toBe('Hola, soy Orbit.'); // #205 R5 // #221 R1
+    expect(en['welcome.orbitGreeting']).toBe('Hi, I\'m Orbit.'); // #205 R5 // #221 R1
+    expect(es['welcome.orbitGreeting']).toBe('Hola, soy Orbit.'); // #205 R5 // #221 R1
   });
 
   it('no exclama ni lleva emoji en ningún idioma', () => {
-    for (const value of [en['welcome.pingoGreeting'], es['welcome.pingoGreeting']]) {
+    for (const value of [en['welcome.orbitGreeting'], es['welcome.orbitGreeting']]) {
       expect(value).not.toMatch(/[!¡]/);
       expect(value).not.toMatch(/\p{Extended_Pictographic}/u);
     }
@@ -499,7 +499,7 @@ describe('#205 R7: Main sin entradas antiguas', () => {
     expect(source).not.toMatch(/\bopacity\.set\(/);
     expect(source).not.toContain('MOTION_FADE_TIMING');
     expect(source).not.toContain('MOTION_ENTRANCE_OFFSET_Y');
-    expect(source).toMatch(/pingoScale\.set\(\s*withSpring\(\s*1,\s*MOTION_SETTLE_SPRING,?\s*\),?\s*\)/);
+    expect(source).toMatch(/orbitScale\.set\(\s*withSpring\(\s*1,\s*MOTION_SETTLE_SPRING,?\s*\),?\s*\)/);
   });
 });
 
@@ -516,9 +516,9 @@ describe('#205 R6: marca y legal de Main', () => {
 
 describe('#205 R5: saludo de Main', () => {
   it('#205 R5: el saludo dice «Hola, soy Pingo.» y «Hi, I\'m Pingo.»', async () => {
-    expect(es['welcome.pingoGreeting']).toBe('Hola, soy Orbit.');
-    expect(en['welcome.pingoGreeting']).toBe('Hi, I\'m Orbit.');
-    for (const value of [es['welcome.pingoGreeting'], en['welcome.pingoGreeting']]) {
+    expect(es['welcome.orbitGreeting']).toBe('Hola, soy Orbit.');
+    expect(en['welcome.orbitGreeting']).toBe('Hi, I\'m Orbit.');
+    for (const value of [es['welcome.orbitGreeting'], en['welcome.orbitGreeting']]) {
       expect(value).not.toContain('\n');
       expect(value.match(/[.!?]/g)).toHaveLength(1);
       expect(value.endsWith('.')).toBe(true);
@@ -574,15 +574,15 @@ describe('#153 R5: la escena de Pingo sustituye al logo', () => {
 describe('#153 R6: Pingo se pinta con su pose y su capa de parpadeo', () => {
   it('deja en Pingo la pose y la capa de parpadeo, en ese orden', async () => {
     await renderWelcome();
-    expect((screen.getByTestId('welcome-pingo').children as TestInstance[]).map((child) => child.props.testID))
-      .toEqual(['welcome-pingo-wave', 'welcome-pingo-blink']);
-    expect((screen.getByTestId('welcome-pingo-blink').children as TestInstance[]).map((child) => child.props.testID))
-      .toEqual(['welcome-pingo-blink-image']);
+    expect((screen.getByTestId('welcome-orbit').children as TestInstance[]).map((child) => child.props.testID))
+      .toEqual(['welcome-orbit-wave', 'welcome-orbit-blink']);
+    expect((screen.getByTestId('welcome-orbit-blink').children as TestInstance[]).map((child) => child.props.testID))
+      .toEqual(['welcome-orbit-blink-image']);
   });
 
   it.each([
-    ['welcome-pingo-wave', /assets\/images\/pingo-wave\.webp$/],
-    ['welcome-pingo-blink-image', /assets\/images\/pingo-wave-blink\.webp$/],
+    ['welcome-orbit-wave', /assets\/images\/orbit-wave\.webp$/],
+    ['welcome-orbit-blink-image', /assets\/images\/orbit-wave-blink\.webp$/],
   ] as const)('%s pinta su pose a 220×220, sin etiqueta de accesibilidad (enmendado por #205 R3)', async (testID, pattern) => {
     await renderWelcome();
     const image = screen.getByTestId(testID);
@@ -594,7 +594,7 @@ describe('#153 R6: Pingo se pinta con su pose y su capa de parpadeo', () => {
 
   it('coloca la capa de parpadeo encima de Pingo, cerrada', async () => {
     await renderWelcome();
-    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo-blink'))).toEqual({ position: 'absolute', top: 0, left: 0, opacity: 0 });
+    expect(getAnimatedStyle(screen.getByTestId('welcome-orbit-blink'))).toEqual({ position: 'absolute', top: 0, left: 0, opacity: 0 });
   });
 });
 
@@ -646,17 +646,17 @@ describe('#153 R9: Pingo entra con un muelle de escala', () => {
 
   it('arranca al 90 % sin reduce motion (enmendado por #205 R3)', async () => {
     await renderWelcome();
-    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo'))).toEqual({
+    expect(getAnimatedStyle(screen.getByTestId('welcome-orbit'))).toEqual({
       width: 220, height: 220, transform: [{ scale: 0.9 }], // #205 R3
     });
   });
 
   it('termina a tamaño completo sin reduce motion (enmendado por #205 R3)', async () => {
     await renderWelcome();
-    expect(screen.getByTestId('welcome-pingo')).toBeOnTheScreen();
+    expect(screen.getByTestId('welcome-orbit')).toBeOnTheScreen();
     // Unas 1,5 × 250 ms de asentamiento; 1000 ms deja más del doble.
     await act(async () => { jest.advanceTimersByTime(1000); });
-    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo'))).toEqual({
+    expect(getAnimatedStyle(screen.getByTestId('welcome-orbit'))).toEqual({
       width: 220, height: 220, transform: [{ scale: 1 }], // #205 R3
     });
   });
@@ -664,12 +664,12 @@ describe('#153 R9: Pingo entra con un muelle de escala', () => {
   it('con reduce motion nace a tamaño completo y no escala (enmendado por #205 R3)', async () => {
     mockUseReducedMotion.mockReturnValue(true);
     await renderWelcome();
-    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo'))).toEqual({
+    expect(getAnimatedStyle(screen.getByTestId('welcome-orbit'))).toEqual({
       width: 220, height: 220, transform: [{ scale: 1 }], // #205 R3
     });
     // 5000 ms supera el asentamiento y el primer parpadeo de 4000 ms.
     await act(async () => { jest.advanceTimersByTime(5000); });
-    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo'))).toEqual({
+    expect(getAnimatedStyle(screen.getByTestId('welcome-orbit'))).toEqual({
       width: 220, height: 220, transform: [{ scale: 1 }], // #205 R3
     });
     mockUseReducedMotion.mockReturnValue(false);
@@ -677,10 +677,10 @@ describe('#153 R9: Pingo entra con un muelle de escala', () => {
 
   it('usa el muelle de motion.ts', async () => {
     await renderWelcome();
-    expect(screen.getByTestId('welcome-pingo')).toBeOnTheScreen();
+    expect(screen.getByTestId('welcome-orbit')).toBeOnTheScreen();
     const source = readSource('screens/welcome/index.tsx');
     for (const re of [
-      /pingoScale\.set\(\s*withSpring\(\s*1,\s*MOTION_SETTLE_SPRING,?\s*\),?\s*\)/g,
+      /orbitScale\.set\(\s*withSpring\(\s*1,\s*MOTION_SETTLE_SPRING,?\s*\),?\s*\)/g,
       /useSharedValue\(\s*reduceMotion \? 1 : MOTION_ENTRANCE_SCALE,?\s*\)/g,
     ]) {
       expect((source.match(re) ?? []).length).toBe(1);
@@ -694,7 +694,7 @@ describe('#153 R10: Pingo flota en bucle', () => {
 
   it('repite la flotación sin fin y en vaivén', async () => {
     await renderWelcome();
-    expect(screen.getByTestId('welcome-pingo')).toBeOnTheScreen();
+    expect(screen.getByTestId('welcome-orbit')).toBeOnTheScreen();
     const args = mockWithRepeat.mock.calls.map((call) => call.slice(1));
     expect(args.filter((values) => values.length === 2 && values[0] === -1 && values[1] === true)).toEqual([[-1, true]]);
   });
@@ -702,10 +702,10 @@ describe('#153 R10: Pingo flota en bucle', () => {
   it('con reduce motion no flota (enmendado por #205 R3)', async () => {
     mockUseReducedMotion.mockReturnValue(true);
     await renderWelcome();
-    expect(screen.getByTestId('welcome-pingo')).toBeOnTheScreen();
+    expect(screen.getByTestId('welcome-orbit')).toBeOnTheScreen();
     // 5000 ms supera el ciclo de 2400 ms y el primer parpadeo de 4000 ms.
     await act(async () => { jest.advanceTimersByTime(5000); });
-    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo'))).toEqual({
+    expect(getAnimatedStyle(screen.getByTestId('welcome-orbit'))).toEqual({
       width: 220, height: 220, transform: [{ scale: 1 }], // #205 R3
     });
     expect(mockWithRepeat).not.toHaveBeenCalled();
@@ -719,19 +719,19 @@ describe('#153 R11: Pingo parpadea cada cuatro segundos', () => {
 
   it('cierra los ojos a los 4 s y los abre 150 ms después', async () => {
     await renderWelcome();
-    expect(screen.getByTestId('welcome-pingo-blink')).toBeOnTheScreen();
+    expect(screen.getByTestId('welcome-orbit-blink')).toBeOnTheScreen();
     // Los controles quedan al menos 50 ms a cada lado de los cambios.
     await act(async () => { jest.advanceTimersByTime(3900); });
-    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo-blink'))).toEqual({ position: 'absolute', top: 0, left: 0, opacity: 0 });
+    expect(getAnimatedStyle(screen.getByTestId('welcome-orbit-blink'))).toEqual({ position: 'absolute', top: 0, left: 0, opacity: 0 });
     await act(async () => { jest.advanceTimersByTime(200); });
-    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo-blink'))).toEqual({ position: 'absolute', top: 0, left: 0, opacity: 1 });
+    expect(getAnimatedStyle(screen.getByTestId('welcome-orbit-blink'))).toEqual({ position: 'absolute', top: 0, left: 0, opacity: 1 });
     await act(async () => { jest.advanceTimersByTime(200); });
-    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo-blink'))).toEqual({ position: 'absolute', top: 0, left: 0, opacity: 0 });
+    expect(getAnimatedStyle(screen.getByTestId('welcome-orbit-blink'))).toEqual({ position: 'absolute', top: 0, left: 0, opacity: 0 });
   });
 
   it('repite el parpadeo sin fin', async () => {
     await renderWelcome();
-    expect(screen.getByTestId('welcome-pingo-blink')).toBeOnTheScreen();
+    expect(screen.getByTestId('welcome-orbit-blink')).toBeOnTheScreen();
     const args = mockWithRepeat.mock.calls.map((call) => call.slice(1));
     expect(args.filter((values) => values.length === 1 && values[0] === -1)).toEqual([[-1]]);
   });
@@ -739,17 +739,17 @@ describe('#153 R11: Pingo parpadea cada cuatro segundos', () => {
   it('con reduce motion no parpadea', async () => {
     mockUseReducedMotion.mockReturnValue(true);
     await renderWelcome();
-    expect(screen.getByTestId('welcome-pingo-blink')).toBeOnTheScreen();
+    expect(screen.getByTestId('welcome-orbit-blink')).toBeOnTheScreen();
     // 4100 ms queda 100 ms después del cierre de ojos esperado sin reduce motion.
     await act(async () => { jest.advanceTimersByTime(4100); });
-    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo-blink'))).toEqual({ position: 'absolute', top: 0, left: 0, opacity: 0 });
+    expect(getAnimatedStyle(screen.getByTestId('welcome-orbit-blink'))).toEqual({ position: 'absolute', top: 0, left: 0, opacity: 0 });
     expect(mockWithRepeat).not.toHaveBeenCalled();
     mockUseReducedMotion.mockReturnValue(false);
   });
 
   it('usa el intervalo y el cambio de motion.ts', async () => {
     await renderWelcome();
-    expect(screen.getByTestId('welcome-pingo-blink')).toBeOnTheScreen();
+    expect(screen.getByTestId('welcome-orbit-blink')).toBeOnTheScreen();
     const source = readSource('screens/welcome/index.tsx');
     for (const re of [
       /withDelay\(\s*MOTION_BLINK_INTERVAL_MS,\s*withTiming\(\s*1,\s*MOTION_BLINK_TIMING,?\s*\),?\s*\)/g,
@@ -763,7 +763,7 @@ describe('#153 R11: Pingo parpadea cada cuatro segundos', () => {
 describe('#153 R12: la parada de los bucles la hace Reanimated', () => {
   it('no cancela a mano ni devuelve limpieza', async () => {
     await renderWelcome();
-    expect(screen.getByTestId('welcome-pingo')).toBeOnTheScreen();
+    expect(screen.getByTestId('welcome-orbit')).toBeOnTheScreen();
     const source = readSource('screens/welcome/index.tsx');
     for (const re of [/\bcancelAnimation\b/g, /return \(\) =>/g]) {
       expect((source.match(re) ?? []).length).toBe(0);
@@ -842,7 +842,7 @@ describe('#167 R12: anillos de ping', () => {
     await renderWelcome();
     expect(screen.getByTestId('welcome-stage').children
       .map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual([
-      'welcome-ring-0', 'welcome-ring-1', 'welcome-ring-2', 'welcome-pingo-float', // #205 R3
+      'welcome-ring-0', 'welcome-ring-1', 'welcome-ring-2', 'welcome-orbit-float', // #205 R3
     ]);
   });
 
@@ -934,7 +934,7 @@ describe('#167 R13: sin anillos con reduce motion', () => {
   it('#167 R13: con reduce motion el escenario solo lleva a Pingo (enmendado por #205 R3)', async () => {
     await renderWelcome();
     expect(screen.getByTestId('welcome-stage').children
-      .map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['welcome-pingo-float']); // #205 R3
+      .map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['welcome-orbit-float']); // #205 R3
   });
 
   it.each([0, 1, 2])('#167 R13: con reduce motion no hay anillo %i', async (index) => {

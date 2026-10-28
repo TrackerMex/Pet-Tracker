@@ -95,7 +95,7 @@ it('#176 R4: hero dibuja talk a 190×190 sin dimensiones en el estilo de flotaci
   expect(pose.props.style).toEqual({ width: 190, height: 190 });
   expect(pose.props.contentFit).toBe('contain');
   expect(pose.props.source).toEqual([
-    expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
+    expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/orbit-talk\.webp$/) }),
   ]);
   const floatStyle = getAnimatedStyle(screen.getByTestId('home-empty-float'));
   expect(floatStyle).not.toHaveProperty('width');

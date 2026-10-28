@@ -17,8 +17,8 @@ import {
   MOTION_PING_FROM,
   MOTION_PING_TIMING,
   MOTION_PING_TO_SCALE,
-  MOTION_PINGO_FLOAT_OFFSET_Y,
-  MOTION_PINGO_FLOAT_TIMING,
+  MOTION_ORBIT_FLOAT_OFFSET_Y,
+  MOTION_ORBIT_FLOAT_TIMING,
   MOTION_POP_SPRING,
 } from '../motion';
 
@@ -102,8 +102,8 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
       'MOTION_HERO_CAPTION_DELAY_MS',
       'MOTION_HERO_FADE_MS',
       'MOTION_HERO_PING_MS',
-      'MOTION_PINGO_FLOAT_OFFSET_Y',
-      'MOTION_PINGO_FLOAT_TIMING',
+      'MOTION_ORBIT_FLOAT_OFFSET_Y',
+      'MOTION_ORBIT_FLOAT_TIMING',
       'MOTION_PING_FROM',
       'MOTION_PING_TIMING',
       'MOTION_PING_TO_SCALE',
@@ -128,8 +128,8 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
 
 describe('#172 R4: la flotación de Pingo en cuenta vive en motion.ts', () => {
   it('#172 R4: declara la flotación de Pingo del canvas: 10 px y medio ciclo de 1500 ms ease-in-out', () => {
-    expect(MOTION_PINGO_FLOAT_OFFSET_Y).toBe(10);
-    expect(MOTION_PINGO_FLOAT_TIMING).toEqual({
+    expect(MOTION_ORBIT_FLOAT_OFFSET_Y).toBe(10);
+    expect(MOTION_ORBIT_FLOAT_TIMING).toEqual({
       duration: 1500,
       easing: { bezier: [0.42, 0, 0.58, 1] },
       reduceMotion: ReduceMotion.System,
@@ -249,8 +249,8 @@ describe('#171 E4: las constantes de la celebración viven en motion.ts', () => 
 
   it('declara la flotación de Pingo', () => {
     const m = require('../motion');
-    expect(m.MOTION_PINGO_FLOAT_OFFSET_Y).toBe(10);
-    expect(m.MOTION_PINGO_FLOAT_TIMING).toEqual({ duration: 1500, easing: { bezier: [0.42, 0, 0.58, 1] }, reduceMotion: ReduceMotion.System });
+    expect(m.MOTION_ORBIT_FLOAT_OFFSET_Y).toBe(10);
+    expect(m.MOTION_ORBIT_FLOAT_TIMING).toEqual({ duration: 1500, easing: { bezier: [0.42, 0, 0.58, 1] }, reduceMotion: ReduceMotion.System });
   });
 });
 
