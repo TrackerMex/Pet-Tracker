@@ -14,9 +14,9 @@ tags: [harness, spec]
 
 ## Gate G4 — R4 (leader prepara el parche, humano commitea tras la cadena de Codex y antes de la PR)
 
-- [ ] (1) Test rojo: crear `src/__tests__/orbit-charter-voice.test.ts` con `#221 R4: la carta nombra a Orbit en el punto 7` (rojo contra la carta actual).
-- [ ] (2) Aplicar el bloque literal de [[requirements]] R4 a `docs/ui-guidelines.md` y las tres enmiendas T1, T2 y T3. Verde.
-- [ ] (3) El humano marca `- [x] Enmienda de la carta (punto 7) aprobada por humano (fecha: ...)` y commitea con `git commit --only` sobre las cinco rutas de R4. Mensaje: `docs(ui): Orbit voice in charter point 7 (R4)`.
+- [x] (1) Test rojo: crear `src/__tests__/orbit-charter-voice.test.ts` con `#221 R4: la carta nombra a Orbit en el punto 7` (rojo contra la carta actual).
+- [x] (2) Aplicar el bloque literal de [[requirements]] R4 a `docs/ui-guidelines.md` y las tres enmiendas T1, T2 y T3. Verde.
+- [x] (3) El humano marca `- [x] Enmienda de la carta (punto 7) aprobada por humano (fecha: ...)` y commitea con `git commit --only` sobre las cinco rutas de R4. Mensaje: `docs(ui): Orbit voice in charter point 7 (R4)`.
 - Ancla: `grep -c '^## Enmienda' docs/ui-guidelines.md` = 30 antes y después.
 - Ancla: `grep -cF "**7. Voz de Orbit: guardián sereno.**" docs/ui-guidelines.md` = 1 (antes 0).
 - Ancla: `grep -cF "**7. Voz de Pingo" docs/ui-guidelines.md` = 0 (antes 1).
