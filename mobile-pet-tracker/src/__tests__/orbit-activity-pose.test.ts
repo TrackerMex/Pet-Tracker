@@ -30,3 +30,24 @@ it('#225 R5: el maestro PNG y su prompt están congelados en la spec', () => {
   expect(png.toString('ascii', 12, 16)).toBe('IHDR');
   expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([1024, 1024]);
 });
+
+it('#225 R1: declara home.orbitWalkLabel en los dos idiomas y su registro', () => {
+  const { en, es } = jest.requireActual<{ en: Record<string, string>; es: Record<string, string> }>('../i18n/catalog');
+  expect({ en: en['home.orbitWalkLabel'], es: es['home.orbitWalkLabel'] })
+    .toEqual({ en: 'Orbit walking', es: 'Orbit caminando' });
+  for (const catalog of [en, es]) {
+    const keys = Object.keys(catalog);
+    expect(keys.indexOf('home.orbitWalkLabel')).toBe(keys.indexOf('home.orbitPhraseCalm') + 1);
+  }
+
+  const table = fs.readFileSync(join(process.cwd(), 'src', '__tests__', 'ui-copy-table.ts'), 'utf8');
+  const home = table.slice(table.indexOf('export const R3_HOME: UseRow[] = ['));
+  expect(home.split('\n];')[0].trimEnd().split('\n').pop())
+    .toBe("  { file: 'src/screens/home/index.tsx', key: 'home.orbitWalkLabel' },");
+
+  const designPath = join(process.cwd(), '..', 'specs', 'mobile-ui-language', 'design.md');
+  expect(fs.existsSync(designPath)).toBe(true);
+  const design = fs.readFileSync(designPath, 'utf8');
+  const section = design.slice(design.indexOf('### §2.39 — Añadidos por #225 — Orbit renombrado y su pose de actividad'));
+  expect(section.split('\n### ')[0]).toContain('| — | `home.orbitWalkLabel` | `Orbit walking` | `Orbit caminando` | ← añadida por #225 (R1) |');
+});

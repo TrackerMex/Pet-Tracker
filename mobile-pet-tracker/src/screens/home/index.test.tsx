@@ -5685,7 +5685,8 @@ describe('#190 R3: la fila alinea burbuja y pose al borde inferior', () => {
 describe('#190 R4: Pingo usa su pose decorativa de 56 px', () => {
   beforeEach(setupHomeMotion);
 
-  it('pinta pingo-talk como único hijo directo del envoltorio y sin etiqueta (enmendado por #195 R16)', async () => {
+  it('pinta pingo-talk como único hijo directo del envoltorio y sin etiqueta (enmendado por #195 R16) (enmendado por #225 R7)', async () => {
+    mockGetDailyActivity.mockResolvedValue({ kind: 'no-tracking' });
     await renderHome();
     await screen.findByTestId('home-orbit-text');
     const pose = screen.getByTestId('home-orbit');
@@ -5695,6 +5696,55 @@ describe('#190 R4: Pingo usa su pose decorativa de 56 px', () => {
     ]);
     expect(pose.props.style).toEqual({ width: 56, height: 56 });
     expect(pose.props.accessibilityLabel).toBeUndefined();
+  });
+});
+
+describe('#225 R7: Orbit camina cuando la frase es de actividad', () => {
+  beforeEach(setupHomeMotion);
+
+  function expectPose(pose: 'walk' | 'talk') {
+    const image = screen.getByTestId('home-orbit');
+    expect(screen.getByTestId('home-orbit-float').children).toEqual([image]);
+    expect(image.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(pose === 'walk' ? /assets\/images\/orbit-walk\.webp$/ : /assets\/images\/orbit-talk\.webp$/) }),
+    ]);
+    expect(image.props.style).toEqual({ width: 56, height: 56 });
+    expect(image.props.className).toBeUndefined();
+    if (pose === 'walk') {
+      expect(image.props.accessible).toBe(true);
+      expect(image.props.accessibilityLabel).toBe('Orbit caminando');
+    } else {
+      expect(image.props.accessible).not.toBe(true);
+      expect(image.props.accessibilityLabel).toBeUndefined();
+    }
+  }
+
+  it('pinta orbit-walk a 56 dp con su etiqueta cuando la frase es de distancia', async () => {
+    await renderHome();
+    expect(await screen.findByTestId('home-orbit-text')).toHaveTextContent('Luna ya caminó 2.4 km hoy.');
+    expectPose('walk');
+  });
+
+  it('pinta orbit-walk también cuando la frase suma comidas', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ mealsToday: { served: 1, total: 2 } }) });
+    await renderHome();
+    expect(await screen.findByTestId('home-orbit-text')).toHaveTextContent('Luna ya caminó 2.4 km hoy y lleva 1 de 2 comidas.');
+    expectPose('walk');
+  });
+
+  it('vuelve a la pose base sin etiqueta cuando la frase es de comidas', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ mealsToday: { served: 1, total: 2 } }) });
+    mockGetDailyActivity.mockResolvedValue({ kind: 'ok', days: [makeDay({ distanceM: 99 })], weekComparison: { distanceM: null, activeMinutes: null, walkCount: null } });
+    await renderHome();
+    expect(await screen.findByTestId('home-orbit-text')).toHaveTextContent('Luna lleva 1 de 2 comidas hoy.');
+    expectPose('talk');
+  });
+
+  it('vuelve a la pose base sin etiqueta con la frase de respaldo', async () => {
+    mockGetDailyActivity.mockResolvedValue({ kind: 'no-tracking' });
+    await renderHome();
+    expect(await screen.findByTestId('home-orbit-text')).toHaveTextContent('Estoy pendiente de Luna.');
+    expectPose('talk');
   });
 });
 

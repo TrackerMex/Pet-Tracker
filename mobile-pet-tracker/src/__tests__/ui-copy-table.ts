@@ -127,6 +127,7 @@ export const R3_HOME: UseRow[] = [
   { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'weeklyActivity.noDataForDay' },
   { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'home.sleep' },
   { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'weeklyActivity.noDataYet' },
+  { file: 'src/screens/home/index.tsx', key: 'home.orbitWalkLabel' },
 ];
 
 export const R4_MAP: UseRow[] = [
