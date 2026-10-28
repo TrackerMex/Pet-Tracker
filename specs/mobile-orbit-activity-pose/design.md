@@ -226,10 +226,20 @@ el leader aplica luego #221 R4, ese mismo commit cambia en la lista de
 - Fixtures de R7 (`index.test.tsx`; mismo patrón que #190 R6 y R9). Cada `it`
   aserta el texto antes que la pose, así que un fixture equivocado da rojo por el texto:
   - `Walk`: el fixture por defecto del `describe`, que da `Luna ya caminó 2.4 km hoy.`.
-    Si no lo da, fija `mockGetDailyActivity.mockResolvedValue({ kind: 'ok', days: [makeDay()] })`.
+    Si no lo da, fija `mockGetDailyActivity.mockResolvedValue({ kind: 'ok', days: [makeDay()], weekComparison: { distanceM: null, activeMinutes: null, walkCount: null } })`.
   - `WalkMeals`: `mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ mealsToday: { served: 1, total: 2 } }) })`.
-  - `Meals`: lo de `WalkMeals` más `mockGetDailyActivity.mockResolvedValue({ kind: 'ok', days: [makeDay({ distanceM: 99 })] })`.
+  - `Meals`: lo de `WalkMeals` más `mockGetDailyActivity.mockResolvedValue({ kind: 'ok', days: [makeDay({ distanceM: 99 })], weekComparison: { distanceM: null, activeMinutes: null, walkCount: null } })`.
   - `Calm`: `mockGetDailyActivity.mockResolvedValue({ kind: 'no-tracking' })`.
+
+  > **Fe de erratas E2 del firmante (2026-10-28, parada del implementador en C9).**
+  > Los fixtures `Walk` (el de respaldo) y `Meals` no traían `weekComparison`. El
+  > tipo `{ kind: 'ok' }` de `getDailyActivity` lo exige, así que `tsc` daba TS2345.
+  > Sin él, además, el gráfico semanal rompe en
+  > `Cannot read properties of undefined (reading 'activeMinutes')`, y el `it` de
+  > `Meals`, que [[tasks]] C9 da por nacido en verde, caía en rojo por
+  > «Unable to find … home-orbit-text». El valor que se añade es el mismo que ya
+  > usa `setupHomeMotion` en `index.test.tsx`. La regla de la pose no lee
+  > `weekComparison`, así que ningún candado de R7 cambia.
 - `renderHome()` no pisa los mocks fijados antes; así lo hace ya #190 R6. Cada `it`
   usa `await` en `renderHome` y en `findByTestId` (RNTL 14).
 

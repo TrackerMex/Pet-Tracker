@@ -137,6 +137,14 @@ tags: [mobile, ui, mascota, orbit, spec]
   Nacen verdes, porque hoy la pose es siempre talk: los dos `it` de `talk` de R7
   y `#190 R4` enmendado. Sus mutaciones son M5 y M8 de [[design]] §8. Los
   sujetos (`home-orbit-text`, `home-orbit`) existen desde C4.
+
+  > **Fe de erratas E2 (2026-10-28).** Los fixtures `Walk` y `Meals` llevan
+  > `weekComparison` ([[design]] §6, E2). La fila nueva de `ui-copy-table.ts` va
+  > literal, sin `as TranslationKey`. Su clave no existe hasta C10, así que en C9
+  > `bun run typecheck` da TS2322 en esa fila. Es el único error de tipos admitido
+  > en C9, y desde C10 `typecheck` sale 0. Jest no comprueba tipos, así que el rojo
+  > de C9 sigue siendo por aserción.
+
   Commit: `test(mobile): R1 R7 red, walking pose and label on Home (#225)`.
 - [ ] **(2) C10 implementación mínima.** En el mismo commit:
   - `home.orbitWalkLabel` en `en` y `es` de `catalog.ts`, tras `home.orbitPhraseCalm`;
