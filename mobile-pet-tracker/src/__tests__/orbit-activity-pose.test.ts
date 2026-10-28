@@ -51,3 +51,12 @@ it('#225 R1: declara home.orbitWalkLabel en los dos idiomas y su registro', () =
   const section = design.slice(design.indexOf('### §2.39 — Añadidos por #225 — Orbit renombrado y su pose de actividad'));
   expect(section.split('\n### ')[0]).toContain('| — | `home.orbitWalkLabel` | `Orbit walking` | `Orbit caminando` | ← añadida por #225 (R1) |');
 });
+
+it('#225 R8: la hipótesis H3 de #190 queda cerrada', () => {
+  const specPath = join(process.cwd(), '..', 'specs', 'mobile-home-pingo-phrase', 'requirements.md');
+  expect(fs.existsSync(specPath)).toBe(true);
+  const spec = fs.readFileSync(specPath, 'utf8');
+  expect(spec).not.toContain('(H3 pendiente: pose placeholder.)');
+  expect(spec).toContain('(H3 cerrada por #225 R8: la pose de actividad es `orbit-walk.webp`.)');
+  expect(spec).toContain(' Cerrada por #225 (R8).');
+});
