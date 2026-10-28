@@ -24,3 +24,7 @@ export function homeOrbitPhrase({ petName, distanceM, meals }: {
   }
   return { labelKey: 'home.orbitPhraseCalm', params: { petName } };
 }
+
+export function homeOrbitPose(labelKey: TranslationKey): 'walk' | 'talk' {
+  return labelKey === 'home.orbitPhraseWalkMeals' || labelKey === 'home.orbitPhraseWalk' ? 'walk' : 'talk';
+}
