@@ -606,7 +606,7 @@ Metro de la rama, dentro del smoke en lote al final del plan:
   de `progress/plan_ui-2026-10-26.md` §4 (fecha: 2026-10-28)
 - [ ] §Re-verificar al mergear #221 ejecutada con todas las cifras esperadas (fecha: ____)
 - [ ] Smoke G2 en dispositivo, pasos 1–5, claro y oscuro (humano; fecha: ____)
-- [ ] G4: enmienda de la carta de #225 R9 (humano; fecha: ____)
+- [x] G4: enmienda de la carta de #225 R9 (humano; fecha: 2026-10-28)
 
 #225 puede mergearse en `dev` con las dos primeras casillas firmadas y el veredicto
 «aprobado» del `reviewer` sobre R1–R8. Queda `spec_ready`, no `done`, hasta que
