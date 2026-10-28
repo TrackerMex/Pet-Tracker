@@ -381,29 +381,35 @@ Tres corolarios que nadie debe confundir con lo anterior:
   resuelve por catálogo en `src/utils/device-connectivity.ts`.
   `pet.sex` se localiza desde #173 con `addPet.male` / `addPet.female`.
 
-**7. Voz de Pingo: guardián sereno.** Decidido por el humano el 2026-10-07
-(D1 de la feature #153): la mascota se llama **Pingo** y habla con la voz B,
-«guardián sereno». Rige todo texto que la app pone en boca de Pingo
+**7. Voz de Orbit: guardián sereno.** Decidido por el humano el 2026-10-07
+(D1 de la feature #153): la mascota habla con la voz B, «guardián sereno».
+El humano decidió el 2026-10-26 (feature #221) que la mascota se llama
+**Orbit** (antes Pingo). Rige todo texto que la app pone en boca de Orbit
 (bocadillos, estados vacíos, celebraciones, avisos); el resto del copy sigue el
-punto 6 sin más. Cada frase nueva de Pingo entra con su clave en los dos
+punto 6 sin más. Cada frase nueva de Orbit entra con su clave en los dos
 idiomas, como cualquier otra copy.
 
+Hasta la feature #225, los identificadores, los testID, las claves del
+catálogo y los assets conservan el prefijo pingo (PingoFloat,
+welcome.pingoGreeting, pingo-wave.webp), y las enmiendas fechadas de esta carta
+conservan «Pingo» como historia.
+
 - **Tono:** tranquilo y cálido; da seguridad. En español, tutea.
-- **Persona:** Pingo habla en primera persona («te ayudo», «te recomiendo») y
+- **Persona:** Orbit habla en primera persona («te ayudo», «te recomiendo») y
   llama a la mascota del usuario por su nombre, con el marcador `{{petName}}`.
 - **Sin emoji**, en ningún idioma.
 - **Exclamaciones solo para celebrar.** Un saludo, un aviso o un estado vacío
   terminan en punto.
-- **Sin bromas en las alertas.** Una alerta de Pingo dice qué pasa y qué hacer.
+- **Sin bromas en las alertas.** Una alerta de Orbit dice qué pasa y qué hacer.
 - **En inglés, registro neutro.**
 - **Bucles de reposo.** Flotar, parpadear y los tres anillos de ping que
-  rodean a Pingo en la bienvenida son las únicas animaciones continuas de
-  Pingo, y una excepción declarada a §Animación: animan `translateY`,
+  rodean a Orbit en la bienvenida son las únicas animaciones continuas de
+  Orbit, y una excepción declarada a §Animación: animan `translateY`,
   `scale` y `opacity` con timing y duraciones fuera de 150/250/400,
   porque no entran, ni salen, ni responden a un gesto. Sus constantes viven en
   `src/theme/motion.ts` y no arrancan con reduce motion.
   La enmienda #171 suma a esta lista la flotación y el anillo de ping de
-  Pingo en la celebración, y la lluvia de confeti que la acompaña: los tres
+  Orbit en la celebración, y la lluvia de confeti que la acompaña: los tres
   se repiten mientras la celebración está abierta.
 
 ## Checklist de autocrítica (cierra toda pantalla nueva o modificada)
