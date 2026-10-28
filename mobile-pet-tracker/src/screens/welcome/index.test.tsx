@@ -460,8 +460,8 @@ describe('#153 R3: las poses entran como WebP', () => {
 
 describe('#153 R1: el saludo de Pingo existe en los dos idiomas', () => {
   it('declara el saludo en inglés y en español (enmendado por #205 R5)', () => {
-    expect(en['welcome.pingoGreeting']).toBe('Hi, I\'m Pingo.'); // #205 R5
-    expect(es['welcome.pingoGreeting']).toBe('Hola, soy Pingo.'); // #205 R5
+    expect(en['welcome.pingoGreeting']).toBe('Hi, I\'m Orbit.'); // #205 R5 // #221 R1
+    expect(es['welcome.pingoGreeting']).toBe('Hola, soy Orbit.'); // #205 R5 // #221 R1
   });
 
   it('no exclama ni lleva emoji en ningún idioma', () => {
@@ -473,12 +473,12 @@ describe('#153 R1: el saludo de Pingo existe en los dos idiomas', () => {
 
   it('pinta el saludo en el bocadillo en español (enmendado por #205 R5)', async () => {
     await renderWelcome('es');
-    expect(screen.getByText('Hola, soy Pingo.').props.testID).toBe('welcome-bubble-text');
+    expect(screen.getByText('Hola, soy Orbit.').props.testID).toBe('welcome-bubble-text');
   });
 
   it('pinta el saludo en el bocadillo en inglés (enmendado por #205 R5)', async () => {
     await renderWelcome('en');
-    expect(screen.getByText('Hi, I\'m Pingo.').props.testID).toBe('welcome-bubble-text');
+    expect(screen.getByText('Hi, I\'m Orbit.').props.testID).toBe('welcome-bubble-text');
   });
 
   it('registra la clave en la tabla de mobile-ui-language', () => {
@@ -516,15 +516,15 @@ describe('#205 R6: marca y legal de Main', () => {
 
 describe('#205 R5: saludo de Main', () => {
   it('#205 R5: el saludo dice «Hola, soy Pingo.» y «Hi, I\'m Pingo.»', async () => {
-    expect(es['welcome.pingoGreeting']).toBe('Hola, soy Pingo.');
-    expect(en['welcome.pingoGreeting']).toBe('Hi, I\'m Pingo.');
+    expect(es['welcome.pingoGreeting']).toBe('Hola, soy Orbit.');
+    expect(en['welcome.pingoGreeting']).toBe('Hi, I\'m Orbit.');
     for (const value of [es['welcome.pingoGreeting'], en['welcome.pingoGreeting']]) {
       expect(value).not.toContain('\n');
       expect(value.match(/[.!?]/g)).toHaveLength(1);
       expect(value.endsWith('.')).toBe(true);
     }
     await renderWelcome('es');
-    expect(screen.getByTestId('welcome-bubble-text').children).toEqual(['Hola, soy Pingo.']);
+    expect(screen.getByTestId('welcome-bubble-text').children).toEqual(['Hola, soy Orbit.']);
   });
 });
 
