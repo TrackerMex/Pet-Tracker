@@ -3,6 +3,15 @@
 > Este archivo describe el estado de la sesion en curso.
 > Al cerrar la sesion, mueve este contenido a progress/history.md y deja solo esta plantilla.
 
+## Fallback al subagente `implementer` (#225, 2026-10-28)
+
+- Feature: #225 mobile-orbit-activity-pose. Frontend cedió la feature entera al leader @Backend.
+- Motivo (CLAUDE.md §Excepciones, «Codex CLI no está disponible»): a la cuota semanal de Codex le queda el 3 %
+  (se renueva el 2 de noviembre a las 14:37).
+- Implementa el subagente `implementer` de C1 a C13, R9 incluido (fe de erratas E1), con
+  `progress/handoff_mobile-orbit-activity-pose.md`. El reporte va en `progress/impl_mobile-orbit-activity-pose.md`.
+- Se pierde la separación «quien implementa no revisa»: el `reviewer` lo sabe.
+
 ## Fallback al subagente `implementer` (#214, 2026-10-27)
 
 - Feature: #214 mobile-pet-members. Codex implementó R1 a R24 hasta 0a54a98d.
