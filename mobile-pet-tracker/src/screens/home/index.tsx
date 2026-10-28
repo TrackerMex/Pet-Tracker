@@ -92,10 +92,14 @@ import {
 } from './format';
 import { CollarBatteryBar } from './collar-battery-bar';
 import { HomeEntrance, homeEntering } from './home-entrance';
-import { homeOrbitPhrase } from './orbit-phrase';
+import { homeOrbitPhrase, homeOrbitPose } from './orbit-phrase';
 import { WeeklyActivityChart } from './weekly-activity-chart';
 
 const WEEKLY_ACTIVITY_SKELETON_HEIGHT = 408;
+const ORBIT_POSE_SOURCE = {
+  walk: require('../../../assets/images/orbit-walk.webp'),
+  talk: require('../../../assets/images/orbit-talk.webp'),
+};
 export const MEALS_BAR_DURATION_MS = 250;
 export const MEALS_BAR_EASING = Easing.bezier(0.77, 0, 0.175, 1);
 export const MEALS_BAR_TIMING = {
@@ -320,6 +324,7 @@ export function HomeScreen() {
           meals: mealsToday,
         })
       : null;
+  const orbitPose = orbitPhrase !== null ? homeOrbitPose(orbitPhrase.labelKey) : 'talk';
 
   useEffect(() => {
     selectedPetIdRef.current = selectedPetId;
@@ -510,8 +515,10 @@ export function HomeScreen() {
               <OrbitFloat testID="home-orbit-float">
                 <Image
                   testID="home-orbit"
-                  source={require('../../../assets/images/orbit-talk.webp')}
+                  source={ORBIT_POSE_SOURCE[orbitPose]}
                   style={{ width: 56, height: 56 }}
+                  accessible={orbitPose === 'walk'}
+                  accessibilityLabel={orbitPose === 'walk' ? t('home.orbitWalkLabel') : undefined}
                 />
               </OrbitFloat>
             </View>
