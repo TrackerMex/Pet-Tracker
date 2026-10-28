@@ -236,6 +236,13 @@ Valores de las 7 claves, iguales antes y después (los de `welcome` son los de #
   cadena de Codex: lo aplica el leader después de que el humano firme la casilla G4
   de §Aprobación, igual que #221 R4.
 
+  > **Fe de erratas E1 del firmante (2026-10-28, tras la casilla G4 en `5c69aafe`).**
+  > R9 toca dos ficheros de test de `mobile-pet-tracker/`, y `CLAUDE.md` prohíbe al
+  > leader editar código de la aplicación. Por eso R9 no lo teclea el leader: lo
+  > teclea el implementador como **C13** de [[tasks]], en un commit propio que va
+  > después de C12. El contenido de R9 no cambia, y el commit sigue siendo solo
+  > de R9.
+
   WHEN el humano firma la casilla G4 THE SYSTEM SHALL dejar el cuerpo de
   `docs/ui-guidelines.md` sin ninguna línea que nombre un identificador con
   `pingo`. El cuerpo es todo lo que no está bajo un encabezado `## Enmienda #NNN`.

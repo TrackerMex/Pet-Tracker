@@ -16,11 +16,10 @@ tags: [mobile, ui, mascota, orbit, spec]
 | R6 | pendiente: `src/screens/home/orbit-phrase.test.ts::#225 R6: homeOrbitPose elige la pose por la frase` (3 bloques) | pendiente |
 | R7 | pendiente: `src/screens/home/index.test.tsx::#225 R7: Orbit camina cuando la frase es de actividad` (4 `it`) | pendiente |
 | R8 | pendiente: `src/__tests__/orbit-activity-pose.test.ts::#225 R8: la hipótesis H3 de #190 queda cerrada` | pendiente |
-| R9 | pendiente (G4, commit del leader tras la firma): `src/__tests__/orbit-charter-voice.test.ts::#221 R4: la carta nombra a Orbit en el punto 7 (enmendado por #225 R9)` | pendiente (G4) |
+| R9 | pendiente: `src/__tests__/orbit-charter-voice.test.ts::#221 R4: la carta nombra a Orbit en el punto 7 (enmendado por #225 R9)` (C13; G4 firmado en `5c69aafe`) | pendiente |
 
-Regla: el reviewer no aprueba si alguna fila de R1 a R8 queda "pendiente". La
-fila R9 la cierra el leader con el commit de R9, después de la casilla G4. Hasta
-entonces #225 puede estar en `dev`, pero sigue `spec_ready`.
+Regla: el reviewer no aprueba si alguna fila de R1 a R9 queda "pendiente". Con
+la fe de erratas E1 de [[requirements]] R9, R9 es C13 del implementador.
 Convención de commit: `feat(<scope>): <desc> (R1,R2)`.
 El implementer actualiza esta tabla tras cada commit; el reviewer la valida
 al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).

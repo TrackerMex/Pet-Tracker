@@ -165,14 +165,33 @@ tags: [mobile, ui, mascota, orbit, spec]
   Commit: `docs(spec): R8 close #190 H3 with the walking pose (#225)`.
 - [ ] **(3) Refactor.** Ninguno.
 
+## R9: nota de la carta (C13)
+
+> Fe de erratas E1 de [[requirements]] R9: la casilla G4 ya está firmada (`5c69aafe`),
+> y R9 lo teclea el implementador, no el leader.
+
+- [ ] **(1) C13, un solo commit, después de C12.** El contenido es el de
+  [[requirements]] R9, sin otros cambios:
+  - en `docs/ui-guidelines.md`, cambiar el párrafo «Antes» de R9 por el párrafo «Después»;
+  - en `src/__tests__/orbit-charter-voice.test.ts`, la constante `note` pasa al
+    párrafo «Después», y el `it` lleva el sufijo `(enmendado por #225 R9)`;
+  - en `src/__tests__/orbit-rename.test.ts`, borrar las dos filas «R9 la borra», y
+    el segundo `it` de R4 lleva el sufijo `(enmendado por #225 R9)`;
+  - en [[design]] §4, borrar esas mismas dos filas.
+
+  No nace ningún rojo propio: es una enmienda conjunta de la carta y de sus pins.
+  Hay que reproducir las dos mutaciones de R9 y anotar su salida en el reporte:
+  - devolver `Desde la feature #225` a `Hasta la feature #225` en la carta;
+  - dejar una de las dos filas borradas.
+
+  Verde: `bunx jest` completo, `bun run typecheck`, `bun run lint`. Desde la raíz,
+  la medición de [[requirements]] R9 no imprime nada, y
+  `grep -c '^## Enmienda' docs/ui-guidelines.md` sigue dando lo mismo que antes de C13.
+  Commit: `docs(ui): R9 charter note names the orbit prefix (#225)`.
+
 ## Cierre
 
-- [ ] Rellenar `traceability.md` con test y hash de cada R-id en un commit
-  `docs(spec)` aparte. No rebasear después.
+- [ ] Rellenar `traceability.md` con test y hash de cada R-id, R9 incluido, en un
+  commit `docs(spec)` aparte. No rebasear después.
 - [ ] `progress/impl_mobile-orbit-activity-pose.md` con la salida de los verdes y
   la de la conversión de [[design]] §7.
-- [ ] R9 no es de Codex: Codex no toca `docs/ui-guidelines.md` ni las líneas
-  «R9 la borra». El leader aplica R9 en un commit propio cuando el humano firme la
-  casilla G4 de [[requirements]] §Aprobación. Sus enmiendas son las de
-  §Candados enmendados marcadas «R9». La fila R9 de `traceability.md` queda
-  `pendiente (G4)` en el reporte de Codex.
