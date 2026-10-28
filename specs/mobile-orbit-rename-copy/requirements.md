@@ -246,7 +246,7 @@ Premisas del plan verificadas contra el árbol:
 ## Aprobación
 
 - [x] Aprobado por humano (firma delegada del leader, mandato 2026-10-23 ampliado 2026-10-26; fecha: 2026-10-26) ← gate obligatorio antes de implementar R1–R3
-- [ ] Enmienda de la carta (punto 7) aprobada por humano (fecha: ____)
+- [x] Enmienda de la carta (punto 7) aprobada por humano (fecha: 2026-10-28; el humano, fuera de su PC, pidió al leader ejecutar el commit)
   Gate **G4**, no delegado (`progress/plan_ui-2026-10-26.md` §5). Cubre solo R4: el bloque
   del punto 7 de `docs/ui-guidelines.md` y las tres enmiendas de test de la lista. La firma
   es el commit del humano sobre esas rutas. La checklist de firma delegada **no** la cubre; el

@@ -410,7 +410,7 @@ describe('#153 R2: la carta escribe la voz de Pingo', () => {
   const charter = readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
 
   it('declara el punto 7 tras el punto 6 y antes del checklist', () => {
-    const voice = '**7. Voz de Pingo: guardián sereno.**';
+    const voice = '**7. Voz de Orbit: guardián sereno.**';
     const language = '**6. Idioma:';
     const checklist = '## Checklist de autocrítica';
     expect(charter.indexOf(voice)).toBeGreaterThan(charter.indexOf(language));
@@ -797,8 +797,8 @@ describe('#166 R3: el CTA secundario lleva el labio gris', () => {
 describe('#167 R11: la carta declara los anillos de ping', () => {
   const charter = readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
   const idleLoops = `- **Bucles de reposo.** Flotar, parpadear y los tres anillos de ping que
-  rodean a Pingo en la bienvenida son las únicas animaciones continuas de
-  Pingo, y una excepción declarada a §Animación: animan \`translateY\`,
+  rodean a Orbit en la bienvenida son las únicas animaciones continuas de
+  Orbit, y una excepción declarada a §Animación: animan \`translateY\`,
   \`scale\` y \`opacity\` con timing y duraciones fuera de 150/250/400,
   porque no entran, ni salen, ni responden a un gesto. Sus constantes viven en
   \`src/theme/motion.ts\` y no arrancan con reduce motion.`;
