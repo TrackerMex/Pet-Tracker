@@ -11,6 +11,12 @@
 - Implementa el subagente `implementer` de C1 a C13, R9 incluido (fe de erratas E1), con
   `progress/handoff_mobile-orbit-activity-pose.md`. El reporte va en `progress/impl_mobile-orbit-activity-pose.md`.
 - Se pierde la separación «quien implementa no revisa»: el `reviewer` lo sabe.
+- 2026-10-28: el implementador paró en C9. El fixture `Meals` no traía `weekComparison`, y la fe de erratas E2
+  (`bb43a455`) cerró el hueco. La cadena cerró en `3b698dc5`.
+- 2026-10-28: el `./init.sh` del leader salió verde sobre `3b698dc5`, y la revisión salió APROBADO sobre el mismo
+  HEAD (`28448de0`). #225 sigue en `spec_ready`, porque el smoke G2 es del humano.
+- Deuda del review: H1 (media) es que los tests de R5 no comprueban qué pose hay en `orbit-walk.webp`, solo que el
+  fichero es válido. El paso 3 del smoke de #225 en `progress/smoke_ui.md` lo cubre. H2–H5 son bajas.
 
 ## Fallback al subagente `implementer` (#214, 2026-10-27)
 
