@@ -135,8 +135,6 @@ const exceptions = [
   { file: '__tests__/orbit-rename-copy.test.ts', snippet: '/pingo/i.test(match[2])', lines: 1 },
   { file: '__tests__/orbit-charter-voice.test.ts', snippet: "block.split('**7. Voz de Pingo')", lines: 1 },
   { file: '__tests__/orbit-charter-voice.test.ts', snippet: '**Orbit** (antes Pingo).', lines: 1 },
-  { file: '__tests__/orbit-charter-voice.test.ts', snippet: 'catálogo y los assets conservan el prefijo pingo (PingoFloat,', lines: 1 },
-  { file: '__tests__/orbit-charter-voice.test.ts', snippet: 'welcome.pingoGreeting, pingo-wave.webp), y las enmiendas fechadas de esta carta', lines: 1 },
   { file: '__tests__/orbit-charter-voice.test.ts', snippet: 'conservan «Pingo»', lines: 1 },
   { file: '__tests__/orbit-charter-voice.test.ts', snippet: String.raw`/\bPingo\b/`, lines: 1 },
 ];
@@ -159,7 +157,7 @@ it('#225 R4: el código de test solo nombra a Pingo en títulos, comentarios y p
   })).toEqual([]);
 });
 
-it('#225 R4: cada excepción casa exactamente las líneas declaradas', () => {
+it('#225 R4: cada excepción casa exactamente las líneas declaradas (enmendado por #225 R9)', () => {
   const files = scannedTestFiles();
   expect(exceptions.flatMap(({ file, snippet, lines }) => {
     const matched = files.includes(file)

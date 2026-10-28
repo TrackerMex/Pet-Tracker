@@ -159,8 +159,6 @@ dos variantes.
 | B | ídem | `Pingo, y una excepción declarada a §Animación: animan` | 1 | `idleLoops` de #167 R11: punto 7 de la carta |
 | A | `__tests__/orbit-charter-voice.test.ts` | `block.split('**7. Voz de Pingo')` | 1 | #221 R4 exige cero encabezados viejos |
 | A | ídem | `**Orbit** (antes Pingo).` | 1 | `opening` de #221 R4 (la regla ya la salta, ver §3) |
-| A | ídem | `catálogo y los assets conservan el prefijo pingo (PingoFloat,` | 1 | `note` de #221 R4; **R9 la borra** |
-| A | ídem | `welcome.pingoGreeting, pingo-wave.webp), y las enmiendas fechadas de esta carta` | 1 | `note` de #221 R4; **R9 la borra** |
 | A | ídem | `conservan «Pingo»` | 1 | `note` de #221 R4; sobrevive a R9 |
 | A | ídem | `/\bPingo\b/` | 1 | #221 R4 cuenta las «Pingo» de la nota |
 
