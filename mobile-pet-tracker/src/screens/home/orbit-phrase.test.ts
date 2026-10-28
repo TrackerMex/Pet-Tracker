@@ -91,3 +91,42 @@ describe('#190 R8: homePingoPhrase elige por distancia y plan', () => {
     expect(homeOrbitPhrase({ petName: 'Luna', distanceM, meals })).toEqual({ labelKey, params });
   });
 });
+
+describe('#225 R6: homeOrbitPose elige la pose por la frase', () => {
+  const phrase = jest.requireActual<{
+    homeOrbitPhrase: (input: {
+      petName: string;
+      distanceM: number | null;
+      meals: { served: number; total: number } | null;
+    }) => { labelKey: TranslationKey };
+    homeOrbitPose: (labelKey: TranslationKey) => 'walk' | 'talk';
+  }>('./orbit-phrase');
+
+  it.each([
+    ['home.orbitPhraseWalkMeals', 'walk'],
+    ['home.orbitPhraseWalk', 'walk'],
+    ['home.orbitPhraseMeals', 'talk'],
+    ['home.orbitPhraseCalm', 'talk'],
+  ])('%s → %s', (labelKey, pose) => {
+    expect(typeof phrase.homeOrbitPose).toBe('function');
+    expect(phrase.homeOrbitPose(labelKey as TranslationKey)).toBe(pose);
+  });
+
+  it('cualquier otra clave da talk', () => {
+    expect(typeof phrase.homeOrbitPose).toBe('function');
+    expect(['home.orbitWalkLabel', 'welcome.orbitGreeting'].map(labelKey => phrase.homeOrbitPose(labelKey as TranslationKey)))
+      .toEqual(['talk', 'talk']);
+  });
+
+  it.each([
+    [100, null, 'walk'],
+    [99, { served: 1, total: 2 }, 'talk'],
+    [null, null, 'talk'],
+    [2350, { served: 0, total: 0 }, 'walk'],
+    [2350, { served: 1, total: 2 }, 'walk'],
+    [99, null, 'talk'],
+  ] as const)('distancia %s, comidas %j → %s', (distanceM, meals, pose) => {
+    expect(typeof phrase.homeOrbitPose).toBe('function');
+    expect(phrase.homeOrbitPose(phrase.homeOrbitPhrase({ petName: 'Luna', distanceM, meals }).labelKey)).toBe(pose);
+  });
+});
