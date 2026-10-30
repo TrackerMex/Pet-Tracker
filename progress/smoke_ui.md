@@ -13,14 +13,14 @@ recorrido. Lo que falle abre una feature de arreglo.
 3. Probar en Peso, Documentos, Alta de mascota y Recordatorio (fecha y hora).
 4. El botón de limpiar no abre el picker.
 
-- [ ] Smoke de #220 recorrido por el humano (fecha: ____)
+- [X] Smoke de #220 recorrido por el humano (fecha: 2026-10-30)
 
 ## #219 mobile-weekly-average-format (en dev, PR #266)
 
 1. En Inicio, la etiqueta «Media …» de la tarjeta de actividad semanal cabe sin cortarse.
 2. La tendencia muestra punto decimal.
 
-- [ ] Smoke de #219 recorrido por el humano (fecha: ____)
+- [X] Smoke de #219 recorrido por el humano (fecha: 2026-10-30)
 
 ## #218 mobile-sheet-surface-background (en dev, PR #267)
 

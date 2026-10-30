@@ -182,7 +182,7 @@ En el dev build de Android (no Expo Go):
 10. Error de carga (F2): con el teléfono sin red, al abrir el cuestionario sale «Algo salió mal» bajo
     la barra de estado, sin solaparse con ella, y con el botón de volver, que funciona.
 
-- [ ] Smoke de #209 recorrido por el humano (fecha: ____)
+- [X] Smoke de #209 recorrido por el humano (fecha: 2026-10-30)
 
 ## #215 mobile-nutrition-ai-plan
 
@@ -218,4 +218,4 @@ Decisiones que quedan para el humano, fuera de este smoke:
   que pase AA, que es una enmienda de `docs/ui-guidelines.md`.
 - D7: el copy «que está bien para él» supone una mascota macho.
 
-- [ ] Smoke de #215 recorrido por el humano (fecha: ____)
+- [X] Smoke de #215 recorrido por el humano (fecha: 2026-10-30)
