@@ -30,7 +30,7 @@ Los pasos están en `docs/verification.md` §Feature 212. Lo que tiene que salir
 Al terminar, marca también la casilla R20 de la spec. La casilla G2 de la spec ya está cerrada
 (2026-10-27) y no depende de esta prueba.
 
-- [ ] Prueba de humo R20 de #212 con clave real ejecutada por el humano (fecha: ____)
+- [X] Prueba de humo R20 de #212 con clave real ejecutada por el humano (fecha: 2026-10-28)
 
 ## #208 mobile-vaccine-create
 
@@ -46,7 +46,7 @@ En el dev build de Android (no Expo Go), con una mascota propia (owner):
    y un recordatorio de tipo vacuna a las 09:00 locales de ese día (visible en Recordatorios).
 4. La vacuna nueva aparece en la lista de Salud.
 
-- [ ] Smoke de #208 recorrido por el humano (fecha: ____)
+- [X] Smoke de #208 recorrido por el humano (fecha: 2026-10-30)
 
 ## #213 mobile-reminders-recurrence
 
@@ -72,7 +72,7 @@ En el dev build de Android (no Expo Go), con una mascota propia (owner):
    - la hoja tiene fondo surface y pide confirmación;
    - al confirmar, la serie sale de la lista.
 
-- [ ] Smoke de #213 recorrido por el humano (fecha: ____)
+- [X] Smoke de #213 recorrido por el humano (fecha: 2026-10-30)
 
 ## #214 mobile-pet-members
 
@@ -108,7 +108,7 @@ En el dev build de Android (no Expo Go):
    invitación la quita. Si era la única, desaparece la sección «Invitaciones pendientes» entera
    (R12).
 
-- [ ] Smoke de #214 recorrido por el humano (fecha: ____)
+- [X] Smoke de #214 recorrido por el humano (fecha: 2026-10-30)
 
 ## #216 mobile-role-aware-actions
 
@@ -141,7 +141,7 @@ Con la cuenta A, los mismos seis puntos: A lo ve todo («Recordatorio», «Vincu
 formulario de Peso, «Nuevo», los botones de las filas, el formulario de vincular y
 «Desvincular»).
 
-- [ ] Smoke de #216 recorrido por el humano (fecha: ____)
+- [X] Smoke de #216 recorrido por el humano (fecha: 2026-10-30)
 
 ## #209 mobile-nutrition-questionnaire
 
