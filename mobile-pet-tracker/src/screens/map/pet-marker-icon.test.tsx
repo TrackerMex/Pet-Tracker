@@ -1,8 +1,22 @@
 import { act, render, screen } from '@testing-library/react-native';
 import type { ImageRef } from 'expo-image';
 import { PixelRatio } from 'react-native';
+import { blobatar } from 'blobatar';
+import { isValidElement } from 'react';
 
 import { PetMarkerIcon } from './pet-marker-icon';
+
+// #230 R3: los propietarios internos de React no forman parte del dibujo SVG.
+expect.addEqualityTesters([
+  function svgElements(actual, expected, testers) {
+    if (!isValidElement(actual) || !isValidElement(expected)) return undefined;
+    return this.equals(
+      [actual.type, actual.key, actual.props],
+      [expected.type, expected.key, expected.props],
+      testers,
+    );
+  },
+]);
 
 const mockToDataURL = jest.fn();
 const mockUseImage = jest.fn();
@@ -59,4 +73,27 @@ it('#230 R1: el compositor es invisible, no recibe toques y está oculto a la ac
   expect(node.props.accessibilityElementsHidden).toBe(true);
   expect(node.props.importantForAccessibility).toBe('no-hide-descendants');
   expect(node).toHaveStyle({ position: 'absolute', top: 0, right: 0, opacity: 0.01 });
+});
+
+it('#230 R3: sin foto dibuja el blobatar de 38 sobre disco blanco con borde de 3', async () => {
+  await render(<PetMarkerIcon pet={pet} onIcon={jest.fn()} />);
+  const svg = screen.getByTestId('map-marker-fallback-svg', { includeHiddenElements: true });
+  expect(svg.props).toMatchObject({ width: 44, height: 44, viewBox: '0 0 44 44' });
+  expect(svg.props.children.map((child: { props: { testID?: string } }) => child.props.testID ?? 'defs')).toEqual([
+    'defs', 'map-marker-fallback-disc', 'map-marker-blob-clip', 'map-marker-fallback-ring',
+  ]);
+  const clip = screen.getByTestId('map-marker-fallback-clip', { includeHiddenElements: true });
+  expect(clip.props.id).toBe('map-marker-fallback-clip');
+  expect(clip.props.children.props).toMatchObject({ cx: 22, cy: 22, r: 22 });
+  expect(screen.getByTestId('map-marker-fallback-disc', { includeHiddenElements: true }).props).toMatchObject({
+    cx: 22, cy: 22, r: 22, fill: 'sentinel-accent-foreground',
+  });
+  expect(screen.getByTestId('map-marker-blob-clip', { includeHiddenElements: true }).props.clipPath).toBe('url(#map-marker-fallback-clip)');
+  const blob = screen.getByTestId('map-marker-blob', { includeHiddenElements: true });
+  expect(blob.props.transform).toBe('translate(3 3) scale(0.38)');
+  const { parse } = jest.requireActual<typeof import('react-native-svg')>('react-native-svg');
+  expect(blob.props.children).toEqual(parse(blobatar('Luna'))?.children);
+  expect(screen.getByTestId('map-marker-fallback-ring', { includeHiddenElements: true }).props).toMatchObject({
+    cx: 22, cy: 22, r: 20.5, stroke: 'sentinel-accent-foreground', strokeWidth: 3, fill: 'none',
+  });
 });
