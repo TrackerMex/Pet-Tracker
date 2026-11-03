@@ -62,3 +62,49 @@ it('#227 R11: inventario del fuente', () => {
     ['splitReminders(', 1],
   ] as const) expect(source.split(literal).length - 1).toBe(count);
 });
+
+const AMENDED: readonly (readonly [string, string])[] = [
+  ['screens/reminders/index.test.tsx', 'renders summaries and reminder rows by section'],
+  ['screens/reminders/index.test.tsx', 'distingue las recetas de fila próxima, lejana e inactiva'],
+  ['screens/reminders/index.test.tsx', 'ordena mosaico, columna y borrar con la anatomía exacta de cada fila'],
+  ['screens/reminders/index.test.tsx', 'da a cada mosaico su único icono, tamaño, superficie y tinta'],
+  ['screens/reminders/index.test.tsx', 'pinta tipo y título con sus tintas y pesos propios'],
+  ['screens/reminders/index.test.tsx', 'formatea la hora lejana y la meta inactiva con su estado'],
+  ['screens/reminders/index.test.tsx', 'sustituye los emoji de todas las filas por iconos'],
+  ['screens/reminders/index.test.tsx', 'asigna a cada entrada su índice dentro de su sección'],
+  ['screens/reminders/index.test.tsx', 'envuelve cada fila en su propia entrada'],
+  ['screens/reminders/index.test.tsx', "describe('#178 R8: sheet de borrado del canvas"],
+  ['screens/reminders/index.test.tsx', "describe('#218 R1: el cajón de borrar pinta su contenedor con el token surface"],
+  ['screens/reminders/index.test.tsx', '#204 R6: escalona las filas próximas cada 70 ms y la pasada desde 0'],
+  ['screens/reminders/index.test.tsx', "describe('#204 R8: Eliminar de la fila"],
+  ['screens/reminders/index.test.tsx', "describe('#204 R9: Eliminar de la hoja"],
+  ['screens/reminders/index.test.tsx', 'shows a delete action for reminders in every status'],
+  ['screens/reminders/index.test.tsx', '08:00 del 10 de septiembre: ayer a las 09:00 no es de esta semana ni próximo'],
+  ['screens/reminders/index.test.tsx', '#213 R14: sin línea de repetición si no hay recurrencia o la serie no está programada'],
+  ['screens/reminders/index.test.tsx', '#213 R15: una serie cancelada o enviada conserva Eliminar (%s)'],
+  ['screens/reminders/index.test.tsx', '#213 R16: el badge Hoy y el borde ámbar solo marcan el día de hoy'],
+  ['providers/__tests__/language-provider.test.tsx', '#194 R1: mantiene la base más las claves de #68'],
+  ['__tests__/ui-language.test.ts', '#186 R5: resuelve las 113 ocurrencias normativas'],
+  ['__tests__/design-drift.test.ts', 'importa exactamente los iconos prescritos desde un único import de reicon'],
+  ['__tests__/design-drift.test.ts', 'reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto'],
+  ['__tests__/consistency-classnames.test.ts', '%s importa y aplica sus %i esquinas'],
+  ['__tests__/consistency-classnames.test.ts', 'fusiona la esquina una vez y la entrega a las dos ramas de Card'],
+  ['__tests__/consistency-classnames.test.ts', 'deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban'],
+  ['__tests__/consistency-classnames.test.ts', '%s aplica TABULAR_NUMS a sus %i valores'],
+  ['__tests__/consistency-classnames.test.ts', '#69 R10: mantiene la base cerrada más los deltas medidos'],
+  ['__tests__/alerts-canvas-fidelity.test.ts', 'limita $token a su inventario de producción'],
+  ['theme/__tests__/motion.test.ts', 'no exporta nada más'],
+];
+
+it('#227 R13: los candados enmendados nombran su enmienda y las specs enmendadas llevan su casilla', () => {
+  for (const [path, locator] of AMENDED) {
+    const lines = readSource(path).split('\n').filter((line) => line.includes(locator));
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('(enmendado por #227 R13)');
+  }
+  for (const feature of ['mobile-reminders', 'mobile-routine-canvas-fidelity', 'mobile-canvas-routine']) {
+    const spec = readFileSync(join(process.cwd(), '..', 'specs', feature, 'requirements.md'), 'utf8');
+    expect(spec.split('## Enmienda #227 — Recordatorios próximos y pasados').length - 1).toBe(1);
+    expect(spec).toMatch(/- \[[ xX]\] Enmienda #227 aprobada por humano/);
+  }
+});
