@@ -2584,3 +2584,33 @@ describe('#227: próximos y pasados', () => {
     ]);
   });
 });
+
+describe('Acciones de deslizar en Recordatorios (#228 R2 a R9)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers({ now: new Date(2026, 11, 31, 8, 0) });
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [
+      makeReminder({ id: 'once', status: 'scheduled', dueAt: new Date(2027, 0, 1, 9, 0).toISOString(), title: 'Refuerzo de rabia' }),
+      makeReminder({ id: 'series', status: 'scheduled', dueAt: new Date(2027, 0, 2, 9, 0).toISOString(), title: 'Antibiótico', recurrence: { unit: 'month', every: 1 } }),
+      makeReminder({ id: 'pastonce', status: 'sent', dueAt: new Date(2026, 11, 20, 9, 0).toISOString(), title: 'Desparasitación' }),
+      makeReminder({ id: 'pastseries', status: 'scheduled', dueAt: new Date(2026, 11, 30, 9, 0).toISOString(), title: 'Pipeta antipulgas', recurrence: { unit: 'month', every: 1 } }),
+    ] });
+  });
+  afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
+
+  it('#228 R2: la fila del dueño va dentro de su deslizable con el panel a la derecha y sin rebote', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-once');
+    const swipe = screen.getByTestId('reminder-swipe-once');
+    const props = mockSwipeable.mock.calls.filter(([props]) => props.testID === 'reminder-swipe-once').at(-1)?.[0];
+    expect(props).toEqual(expect.objectContaining({ overshootRight: false, renderRightActions: expect.any(Function) }));
+    expect(props?.renderLeftActions).toBeUndefined();
+    expect(within(swipe).getByTestId('reminder-row-once')).toBeOnTheScreen();
+    expect(swipe.parent?.props.className).toBe('overflow-hidden rounded-22');
+    expect(flat(swipe.parent?.props.style)).toEqual({ borderCurve: 'continuous' });
+    expect(swipe.parent?.parent?.props.testID).toBe('reminders-entry-once');
+  });
+});
