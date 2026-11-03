@@ -1655,6 +1655,15 @@ describe('#232 R1: las filas de chips reservan el labio', () => {
     expect(content.paddingBottom).toBe(Number(match![1]));
   });
 
+  it.each(['type-chips-row', 'advance-chips-row'])('#232 R2: %s no desplaza el resto del formulario', async (id) => {
+    await renderAddReminder();
+    await screen.findByTestId('title-input');
+    const row = screen.getByTestId(id);
+    expect(row).toHaveStyle({ marginBottom: -3 });
+    expect(row.props.className).toBe('-mr-5');
+    expect(-(row.props.contentContainerStyle as { paddingBottom: number }).paddingBottom).toBe(-3);
+  });
+
   it('#232 R4: la fila de Repetición no cambia', async () => {
     await renderAddReminder();
     await screen.findByTestId('title-input');
