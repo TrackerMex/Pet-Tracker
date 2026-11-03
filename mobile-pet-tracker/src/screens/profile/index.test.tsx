@@ -2876,3 +2876,40 @@ describe('#235 R1: la cámara de Perfil es solo del dueño', () => {
     expect(screen.getByTestId('profile-add-pet')).toBeOnTheScreen();
   });
 });
+
+describe('#235 R3: la cámara sigue a la mascota seleccionada', () => {
+  beforeEach(setupProfile168);
+
+  it('#235 R3 al pasar a una mascota que no es del dueño, la cámara se va y vuelve', async () => {
+    const luna = makePet();
+    const milo = makePet({ id: 'pet-2', name: 'Milo', myRole: 'family' });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [luna, milo] });
+    mockGetPet.mockImplementation(async (_baseUrl, _token, petId) => ({
+      kind: 'ok', pet: petId === 'pet-2' ? milo : luna,
+    }));
+
+    await renderProfile();
+    await screen.findByTestId('change-photo');
+    await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
+    await waitFor(() => expect(screen.getByTestId('profile-pet-name')).toHaveTextContent('Milo'));
+    expect(screen.queryByTestId('change-photo', { includeHiddenElements: true })).toBeNull();
+    await fireEvent.press(screen.getByTestId('pet-chip-pet-1'));
+    await screen.findByTestId('change-photo');
+  });
+
+  it.each([
+    ['owner', 'family', false],
+    ['family', 'owner', true],
+  ] as const)('#235 R3 con la lista en %s y el detalle en %s la cámara se pinta: %s', async (listRole, detailRole, cameraVisible) => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: listRole })] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ myRole: detailRole }) });
+
+    await renderProfile();
+    await screen.findByTestId('profile-pet-card');
+    if (cameraVisible) {
+      expect(await screen.findByTestId('change-photo')).toBeOnTheScreen();
+    } else {
+      expect(screen.queryByTestId('change-photo', { includeHiddenElements: true })).toBeNull();
+    }
+  });
+});
