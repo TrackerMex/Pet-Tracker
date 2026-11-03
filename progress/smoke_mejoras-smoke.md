@@ -8,6 +8,13 @@ de cada feature la marca solo el humano.
 
 - [ ] Smoke de #224 pasado tras #234 (fecha: ____)
 
+## #235 mobile-profile-photo-owner-only
+
+- [ ] En Perfil, con una mascota propia (rol dueño), el botón de la cámara sobre la foto aparece y abre el cambio de foto.
+- [ ] Con una mascota compartida donde el rol no es dueño (familia, paseador o veterinario), el botón de la cámara no aparece.
+- [ ] Al cambiar entre una mascota propia y una compartida en el selector, la cámara se va y vuelve según el rol de la mascota elegida.
+- [ ] Fecha del smoke: ____
+
 ## #226 backend-vaccine-catalog-migration
 
 Hallazgo: «En agregar vacuna no aparecen las opciones de vacunas solo aparece el boton "Otra vacuna"».

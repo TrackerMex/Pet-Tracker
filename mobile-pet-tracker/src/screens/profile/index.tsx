@@ -213,6 +213,7 @@ export function ProfileScreen() {
   );
 
   const pet = detail.data?.kind === 'ok' ? detail.data.pet : null;
+  const isOwner = pet?.myRole === 'owner';
   const membersQuery = useQuery({
     queryKey: memberKeys.list(pet?.id ?? ''),
     queryFn: async () => {
@@ -372,7 +373,7 @@ export function ProfileScreen() {
               {addPetCapsule}
             </View>
           </PetHeroHeader>
-          {pet ? (
+          {isOwner ? (
             <BubblePop testID="profile-change-photo-pop" className="absolute bottom-24 right-5">
               <Pressable
                 testID="change-photo"
