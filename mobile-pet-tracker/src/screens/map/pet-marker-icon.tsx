@@ -96,7 +96,7 @@ export function PetMarkerIcon(props: { pet: MarkerPet; onIcon: (state: IconReady
     >
       <Svg ref={svgRef} testID="map-marker-fallback-svg" width={44} height={44} viewBox="0 0 44 44">
         <Defs>
-          <ClipPath testID="map-marker-fallback-clip" id="map-marker-fallback-clip">
+          <ClipPath {...{ testID: 'map-marker-fallback-clip' }} id="map-marker-fallback-clip">
             <Circle cx={22} cy={22} r={22} />
           </ClipPath>
         </Defs>
@@ -109,7 +109,7 @@ export function PetMarkerIcon(props: { pet: MarkerPet; onIcon: (state: IconReady
       {frozen.photoUrl && !photoExpired ? (
         <Svg ref={photoRef} testID="map-marker-photo-svg" width={44} height={44} viewBox="0 0 44 44">
           <Defs>
-            <ClipPath testID="map-marker-photo-clip" id="map-marker-photo-clip">
+            <ClipPath {...{ testID: 'map-marker-photo-clip' }} id="map-marker-photo-clip">
               <Circle cx={22} cy={22} r={22} />
             </ClipPath>
           </Defs>
