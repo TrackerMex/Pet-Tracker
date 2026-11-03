@@ -393,7 +393,7 @@ describe('R5: plan del día con horarios y warnings', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('shows a skeleton and schedule link while the plan is pending', async () => {
+  it('shows a skeleton and schedule link while the plan is pending (enmendado por #233 R2)', async () => {
     mockGetNutritionPlan.mockReturnValue(pending<NutritionPlanState>());
 
     await renderFood();
@@ -405,7 +405,8 @@ describe('R5: plan del día con horarios y warnings', () => {
         expect.stringContaining('h-56'),
       );
       expect(screen.queryByTestId('food-schedule-skeleton')).toBeNull();
-      expect(screen.getByTestId('meal-schedule-link')).toBeVisible();
+      expect(screen.queryByTestId('meal-schedule-link', { includeHiddenElements: true })).toBeNull();
+      expect(screen.queryByTestId('meals-history-link', { includeHiddenElements: true })).toBeNull();
     });
   });
 
@@ -1830,6 +1831,141 @@ describe('#200 R10: entrada escalonada de Nutrición', () => {
   });
 });
 
+
+describe('#233 R1 a R5: los enlaces de comidas dependen del perfil nutricional', () => {
+  beforeEach(() => {
+    mockListPets.mockReset();
+    mockGetNutritionPlan.mockReset();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it.each(['owner', 'family', 'walker', 'vet'] as const)(
+    '#233 R1 con el rol %s y sin perfil no hay enlaces de comidas',
+    async (role) => {
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: role })] });
+      mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+      mockGetNutritionProfile.mockResolvedValue({ kind: 'not-found' });
+
+      await renderFood();
+      if (role === 'owner') {
+        await screen.findByTestId('food-create-profile');
+      } else {
+        await screen.findByTestId('food-plan-empty');
+      }
+
+      expect(screen.queryByTestId('food-links', { includeHiddenElements: true })).toBeNull();
+      expect(screen.queryByTestId('meal-schedule-link', { includeHiddenElements: true })).toBeNull();
+      expect(screen.queryByTestId('meals-history-link', { includeHiddenElements: true })).toBeNull();
+      expect(screen.queryByText('Horario de comidas', { includeHiddenElements: true })).toBeNull();
+      expect(screen.queryByText('Historial de comidas', { includeHiddenElements: true })).toBeNull();
+    },
+  );
+
+  it('#233 R2 con el plan resuelto y el perfil pendiente no hay enlaces de comidas', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+    let resolveProfile!: (state: Awaited<ReturnType<typeof getNutritionProfile>>) => void;
+    const profilePromise = new Promise<Awaited<ReturnType<typeof getNutritionProfile>>>((resolve) => {
+      resolveProfile = resolve;
+    });
+    mockGetNutritionProfile.mockReturnValue(profilePromise);
+
+    await renderFood();
+    // Excepción a docs/conventions.md §Esperas: el perfil pendiente no tiene nodo propio; se cierra con la transición positiva.
+    await waitFor(() => expect(mockGetNutritionProfile).toHaveBeenCalledTimes(1));
+    expect(screen.getByTestId('food-plan-skeleton')).toBeVisible();
+    expect(screen.queryByTestId('food-plan-empty', { includeHiddenElements: true })).toBeNull();
+    expect(screen.queryByTestId('food-create-profile', { includeHiddenElements: true })).toBeNull();
+    expect(screen.queryByTestId('food-links', { includeHiddenElements: true })).toBeNull();
+    expect(screen.queryByTestId('meal-schedule-link', { includeHiddenElements: true })).toBeNull();
+    expect(screen.queryByTestId('meals-history-link', { includeHiddenElements: true })).toBeNull();
+
+    await act(async () => {
+      resolveProfile({
+        kind: 'ok',
+        profile: {
+          petId: 'pet-1',
+          activityLevel: 'medium',
+          bodyCondition: 5,
+          targetWeightKg: null,
+          foodType: 'dry',
+          kcalPer100g: 350,
+          allergies: [],
+          diseases: [],
+          updatedAt: '2026-08-22T00:00:00.000Z',
+        },
+      });
+    });
+    await screen.findByTestId('food-plan-empty');
+    expect(screen.getByTestId('food-links')).toBeVisible();
+    expect(screen.getByTestId('meal-schedule-link')).toBeVisible();
+    expect(screen.getByTestId('meals-history-link')).toBeVisible();
+  });
+
+  it.each([
+    { name: 'plan con error', plan: { kind: 'error' }, profile: undefined, anchor: 'food-plan-error' },
+    { name: 'plan sin red', plan: { kind: 'unreachable', message: 'network down' }, profile: undefined, anchor: 'food-plan-error' },
+    { name: 'perfil con error', plan: { kind: 'not-found' }, profile: { kind: 'error' }, anchor: 'food-plan-empty' },
+  ] as const)('#233 R3 con $name no hay enlaces de comidas', async ({ plan, profile, anchor }) => {
+    mockGetNutritionPlan.mockResolvedValue(plan);
+    if (profile !== undefined) {
+      mockGetNutritionProfile.mockResolvedValue(profile);
+    }
+
+    await renderFood();
+    await screen.findByTestId(anchor);
+    if (anchor === 'food-plan-error') {
+      expect(screen.getByTestId('food-plan-retry')).toBeVisible();
+    }
+    expect(screen.queryByTestId('food-links', { includeHiddenElements: true })).toBeNull();
+    expect(screen.queryByTestId('meal-schedule-link', { includeHiddenElements: true })).toBeNull();
+    expect(screen.queryByTestId('meals-history-link', { includeHiddenElements: true })).toBeNull();
+    expect(screen.queryByText('Horario de comidas', { includeHiddenElements: true })).toBeNull();
+    expect(screen.queryByText('Historial de comidas', { includeHiddenElements: true })).toBeNull();
+  });
+
+  it('#233 R4 con perfil y sin plan los enlaces se pintan sin RiseIn', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+    mockGetNutritionProfile.mockResolvedValue({
+      kind: 'ok',
+      profile: {
+        petId: 'pet-1',
+        activityLevel: 'medium',
+        bodyCondition: 5,
+        targetWeightKg: null,
+        foodType: 'dry',
+        kcalPer100g: 350,
+        allergies: [],
+        diseases: [],
+        updatedAt: '2026-08-22T00:00:00.000Z',
+      },
+    });
+
+    await renderFood();
+    await screen.findByTestId('food-plan-empty');
+    const links = screen.getByTestId('food-links');
+    expect(links).toBeVisible();
+    expect(links.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual([
+      'meal-schedule-link',
+      'meals-history-link',
+    ]);
+    expect(riseDelayOf(links)).toBeUndefined();
+    expect(screen.getByTestId('meal-schedule-link-title')).toHaveTextContent('Horario de comidas');
+    expect(screen.getByTestId('meals-history-link-title')).toHaveTextContent('Historial de comidas');
+  });
+
+  it('#233 R5 con plan cargado los enlaces entran con RiseIn aunque el perfil no responda', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'not-found' });
+
+    await renderFood();
+    await screen.findByTestId('food-plan-card');
+    expect(screen.getByTestId('food-links')).toBeVisible();
+    expect(riseDelayOf(screen.getByTestId('food-links'))).toBe(200);
+    expect(screen.getByTestId('meal-schedule-link')).toBeVisible();
+    expect(screen.getByTestId('meals-history-link')).toBeVisible();
+    expect(mockGetNutritionProfile).not.toHaveBeenCalled();
+  });
+});
 
 describe('#222 R7: Encabezado solo para lectores de pantalla', () => {
   beforeEach(setupFood168);

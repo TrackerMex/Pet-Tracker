@@ -1,6 +1,6 @@
 # Plan: arreglos y mejoras tras el smoke G2 (2026-11-03)
 
-Plan vivo de las features #226–#236. Nace del smoke en dispositivo que el humano
+Plan vivo de las features #226–#237. Nace del smoke en dispositivo que el humano
 hizo sobre el dev build de `dev` (lotes de `progress/smoke_mejoras-producto.md` y
 `progress/smoke_ui.md`) y de la lista de dudas y mejoras que envió el 2026-11-03.
 
@@ -194,11 +194,28 @@ son de `6531669f` y caducan al mergear: la spec ancla por contenido.
 - Arreglo: un estado de error con reintento en el selector, distinto del
   catálogo vacío. Si el estado de error lleva copy nuevo, pasa por G1.
 
+### 237 `backend-e2e-vaccine-catalog-teardown` (P2, @Backend)
+
+- Flake visto en el `./init.sh` de @Frontend el 2026-11-03 (wt-233), en
+  `backend-pet-tracker/test/vaccine-catalog-migration.e2e-spec.ts` (#226):
+  «Test suite failed to run: Unhandled error», código `57P01` («terminating
+  connection due to administrator command»), dos veces. El reintento salió
+  verde. El humano pidió registrarlo: «registralo como feature» (2026-11-03).
+- Causa, según `docker logs pet-tracker-postgres`: un `FATAL` y luego los dos
+  `checkpoint starting: immediate force wait` de los
+  `DROP DATABASE IF EXISTS ... WITH (FORCE)` del `afterAll`. Algún cliente de
+  la base A o B sigue vivo al borrar (probablemente el pool de la app Nest, que
+  lee `DATABASE_URL`), y pg, sin listener de `'error'`, lo convierte en un error
+  no manejado. No es interferencia entre sesiones.
+- Arreglo: cerrar todos los pools antes del `DROP`, o escuchar `'error'` en
+  ellos. Solo test e2e; ni producción ni migraciones. Sin copy, así que no hay
+  G1 ni G2.
+
 ## 3. Reparto y paralelismo
 
 | Sesión | Features | Orden |
 |---|---|---|
-| @Backend (leader) | #226, #227, #228, #230, #236 | #226 ya; explorer de #230 ya; #227, #228 y #230 tras G1; #228 tras #227; #230 tras su spike; #236 tras #226 |
+| @Backend (leader) | #226, #227, #228, #230, #236, #237 | #226 ya; explorer de #230 ya; #227, #228 y #230 tras G1; #228 tras #227; #230 tras su spike; #236 tras #226; #237 tras #226 |
 | @Frontend | #229, #231, #232, #233, #234, #235 | sin G1; #235 antes que #229 |
 
 - Frontend propuso #229, #231, #232 y #235, y toma además #233 y #234. Los
@@ -260,8 +277,20 @@ el humano lo corre; ninguna IA lanza `eas build` ni toca AWS real.
    build». El humano lo corre en su PC sobre el dev build actual, sin rebuild.
    La spec de #230 espera a su resultado. Si falla, queda abierta la elección
    entre E (`react-native-view-shot` y rebuild) y D (miniatura en el backend).
+   Resultado del 2026-11-03: B2 sobrevive. La primera corrida cayó al blobatar
+   porque LocalStack devolvía 404 por la foto (objeto perdido; expo-image la
+   seguía pintando desde su caché con `cacheKey`). Tras volver a subirla, el
+   humano confirmó: «el marcador ya muestra la foto de Jev». Detalle en
+   `progress/spike_mobile-map-pet-avatar-marker.md` de la rama
+   `spike/230-avatar-marker`.
 6. ~~Selector de vacunas mudo cuando el catálogo falla~~ Respondida el
    2026-11-03: «si abre como feature nueva». Es #236.
+7. ~~G4 de #228, firma de #236 y flake 57P01~~ Respondida el 2026-11-03:
+   «apruebo G4, al igual apruebo la firma de #236 y registralo como feature».
+   - La casilla G4 de #228 está marcada en su `requirements.md`, y R12 entra en
+     la misma PR de #228.
+   - El leader firmó #236 con la confirmación del humano.
+   - El flake 57P01 del e2e de #226 es #237.
 
 ## 7. Fuera de alcance
 
