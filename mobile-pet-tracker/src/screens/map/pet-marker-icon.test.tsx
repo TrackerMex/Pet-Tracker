@@ -120,3 +120,29 @@ it('#230 R4: desmontado antes del segundo frame no captura', async () => {
   await runFrames();
   expect(mockToDataURL).toHaveBeenCalledTimes(0);
 });
+
+it('#230 R5: con foto dibuja la foto recortada en círculo con borde de 3', async () => {
+  await render(<PetMarkerIcon pet={withPhoto} onIcon={jest.fn()} />);
+  const svg = screen.getByTestId('map-marker-photo-svg', { includeHiddenElements: true });
+  expect(svg.props).toMatchObject({ width: 44, height: 44, viewBox: '0 0 44 44' });
+  const clip = screen.getByTestId('map-marker-photo-clip', { includeHiddenElements: true });
+  expect(clip.props.id).toBe('map-marker-photo-clip');
+  expect(clip.props.children.props).toMatchObject({ cx: 22, cy: 22, r: 22 });
+  expect(screen.getByTestId('map-marker-photo', { includeHiddenElements: true }).props).toMatchObject({
+    href: { uri: 'https://cdn.example/pets/luna.jpg?X-Amz-Signature=aaa' },
+    x: 0, y: 0, width: 44, height: 44, preserveAspectRatio: 'xMidYMid slice',
+    clipPath: 'url(#map-marker-photo-clip)',
+  });
+  expect(screen.getByTestId('map-marker-photo-ring', { includeHiddenElements: true }).props).toMatchObject({
+    cx: 22, cy: 22, r: 20.5, stroke: 'sentinel-accent-foreground', strokeWidth: 3, fill: 'none',
+  });
+  expect(screen.getByTestId('map-marker-fallback-svg', { includeHiddenElements: true })).toBeTruthy();
+});
+
+it('#230 R5: con photoUrl null o vacía no hay Svg de foto', async () => {
+  await render(<PetMarkerIcon pet={pet} onIcon={jest.fn()} />);
+  expect(screen.queryByTestId('map-marker-photo-svg', { includeHiddenElements: true })).toBeNull();
+  await screen.unmount();
+  await render(<PetMarkerIcon pet={{ ...pet, photoUrl: '' }} onIcon={jest.fn()} />);
+  expect(screen.queryByTestId('map-marker-photo-svg', { includeHiddenElements: true })).toBeNull();
+});
