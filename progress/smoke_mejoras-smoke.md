@@ -58,3 +58,12 @@ Hallazgo: en Agregar recordatorio el chip seleccionado de Tipo y Aviso salía co
 4. Compara con antes: la separación entre «Tipo», «Título», «Aviso» y la vista previa no cambia (la pantalla no se mueve 3 px).
 
 - [ ] Smoke de #232 pasado (fecha: ____; tema claro: sí / no; tema oscuro: sí / no)
+
+## #233 mobile-food-links-without-profile
+
+Hallazgo: «En Nutricion sin Perfil, no deben de aparecer Horario de comidas y Historial de comidas ya que aun no se ha registrado un perfil nutricional».
+
+1. Con una mascota sin perfil nutricional, abre Nutrición: sale «Aún no hay perfil nutricional» con el botón «Crear perfil nutricional» y no salen «Horario de comidas» ni «Historial de comidas» (antes de #233 las dos filas aparecían bajo el vacío).
+2. Crea el perfil con el cuestionario y vuelve a Nutrición: ahora sí salen las dos filas.
+
+- [ ] Smoke de #233 pasado (fecha: ____)

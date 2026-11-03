@@ -79,6 +79,7 @@ export function FoodScreen() {
   const activePet = pets.data?.kind === 'ok' ? pets.data.pets.find((pet) => pet.id === selectedPetId) : undefined;
   const profilePending = planNotFound && profile.data === undefined;
   const showProfileEmpty = planNotFound && profile.data?.kind === 'not-found' && activePet?.myRole === 'owner';
+  const hasProfile = loadedPlan !== null || (planNotFound && profile.data?.kind === 'ok');
   const waitingForPetSelection =
     selectedPetId === null &&
     (pets.data === undefined ||
@@ -495,7 +496,7 @@ export function FoodScreen() {
             </View>
           ) : null}
 
-          {loadedPlan !== null ? <RiseIn delayMs={200}>{links}</RiseIn> : links}
+          {hasProfile ? (loadedPlan !== null ? <RiseIn delayMs={200}>{links}</RiseIn> : links) : null}
         </View>
       ) : null}
     </ScrollView>

@@ -204,6 +204,7 @@ Tres límites, no negociables:
     Fuera de la escala, por fidelidad al canvas (#191): `rounded-10` (10 px) y `rounded-14` (14 px), segmentos y contenedor del selector segmentado de Nueva mascota; `rounded-tile` (18 px) de la burbuja de Pingo, que es un `View` y no un `Card`.
 
     Fuera de la escala, por fidelidad al canvas (#199): `rounded-24` (24 px), tarjeta de la gráfica de Peso, panel de la próxima dosis y tarjeta de peso de Salud, que son `View` con `CONTINUOUS_CORNER`; `rounded-16` (16 px), tile del panel de la próxima dosis; `rounded-14` (14 px), enlace al registro de peso de Salud.
+    Fuera de la escala, por fidelidad al canvas (#223): `rounded-16` (16 px), fila atendida de Alertas, que es un `View` y no un `Card` porque `twMerge` no sustituye `rounded-card` por un radio con nombre de valor; `rounded-14` (14 px), «Ver más» de la sección Atendidas.
 
 13. **Botón con cuerpo** (feature #166, 2026-10-11). Los botones de acción
     llevan un labio inferior: una sombra sólida sin desenfoque en `--lip`
