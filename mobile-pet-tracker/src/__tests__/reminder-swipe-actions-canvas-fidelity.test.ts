@@ -82,3 +82,58 @@ it('#228 R11: inventario del fuente', () => {
     ['size={20} color={danger}', 2],
   ] as const) expect(count(source, literal)).toBe(occurrences);
 });
+
+const AMENDED: readonly (readonly [string, string])[] = [
+  ['screens/reminders/index.test.tsx', 'ordena mosaico, columna y borrar con la anatomía exacta de cada fila'],
+  ['screens/reminders/index.test.tsx', 'shows a delete action for reminders in every status'],
+  ['screens/reminders/index.test.tsx', 'closes the confirmation sheet on cancel and native dismiss'],
+  ['screens/reminders/index.test.tsx', 'refetches and removes the row after $kind'],
+  ['screens/reminders/index.test.tsx', 'shows the action error for $state.kind'],
+  ['screens/reminders/index.test.tsx', 'disables only the row being deleted while the request is pending'],
+  ['screens/reminders/index.test.tsx', 'cierra el sheet y elimina su contenido accesible al perder foco'],
+  ['screens/reminders/index.test.tsx', 'borra el error visible al perder foco'],
+  ['screens/reminders/index.test.tsx', 'mantiene deshabilitada solo la fila cuyo delete sigue pendiente'],
+  ['screens/reminders/index.test.tsx', 'pinta reminders-delete-confirm con la variante danger y bg-danger'],
+  ['screens/reminders/index.test.tsx', "describe('#178 R8: sheet de borrado del canvas"],
+  ['screens/reminders/index.test.tsx', '#218 R1: backgroundStyle del BottomSheet de borrar es exactamente el token surface'],
+  ['screens/reminders/index.test.tsx', 'queda en el sitio del vacío que sustituye'],
+  ['screens/reminders/index.test.tsx', 'limpia %s tras cambiar la selección a null'],
+  ['screens/reminders/index.test.tsx', '#204 R5: la cabecera encabeza el estado %s'],
+  ['screens/reminders/index.test.tsx', '#204 R8: Eliminar de fila usa la receta rosa del canvas'],
+  ['screens/reminders/index.test.tsx', '#204 R9: Eliminar de la hoja lleva cuerpo de 56 y labio danger'],
+  ['screens/reminders/index.test.tsx', '#213 R15: la serie programada ofrece Cancelar serie y el puntual Eliminar'],
+  ['screens/reminders/index.test.tsx', '#213 R15: una serie cancelada o enviada conserva Eliminar (%s)'],
+  ['screens/reminders/index.test.tsx', '#213 R17: Cancelar serie abre la hoja con su copy'],
+  ['screens/reminders/index.test.tsx', '#213 R17: sin nombre de mascota el cuerpo omite la mascota'],
+  ['screens/reminders/index.test.tsx', '#213 R17: las dos hojas comparten un solo BottomSheet'],
+  ['screens/reminders/index.test.tsx', '#213 R18: Mantener la serie cierra sin llamar a la API'],
+  ['screens/reminders/index.test.tsx', '#216 R5 con el rol %s cada fila tiene %i hijos'],
+  ['screens/reminders/index.test.tsx', '#227 R12: Eliminar y Cancelar serie siguen en su fila en las dos secciones y solo para el dueño'],
+  ['__tests__/reminders-upcoming-past-canvas-fidelity.test.ts', '#227 R11: inventario del fuente'],
+  ['__tests__/consistency-classnames.test.ts', '%s importa y aplica sus %i esquinas'],
+  ['__tests__/consistency-classnames.test.ts', 'fusiona la esquina una vez y la entrega a las dos ramas de Card'],
+  ['__tests__/consistency-classnames.test.ts', 'deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban'],
+  ['__tests__/design-drift.test.ts', 'reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto'],
+  ['__tests__/routine-canvas-fidelity.test.ts', '#204 R15: %s sigue al canvas'],
+];
+
+it('#228 R13: los candados enmendados nombran su enmienda y las specs enmendadas llevan su casilla', () => {
+  for (const [path, locator] of AMENDED) {
+    const lines = readSource(path).split('\n').filter((line) => line.includes(locator));
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('(enmendado por #228 R13)');
+  }
+  for (const feature of [
+    'mobile-reminders-recurrence',
+    'mobile-reminders-upcoming-past',
+    'mobile-canvas-routine',
+    'mobile-reminders',
+    'mobile-role-aware-actions',
+    'mobile-routine-canvas-fidelity',
+  ]) {
+    const spec = readFileSync(join(process.cwd(), '..', 'specs', feature, 'requirements.md'), 'utf8');
+    // \x23 permite citar el encabezado sin que el guard lo confunda con un color.
+    expect(count(spec, '## Enmienda \x23228 — Acciones de deslizar en Recordatorios')).toBe(1);
+    expect(spec).toMatch(/- \[[ xX]\] Enmienda \x23228 aprobada/);
+  }
+});
