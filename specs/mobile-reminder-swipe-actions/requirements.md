@@ -693,9 +693,10 @@ tres claves. No se retira ni se añade ninguna clave de copy.
   `progress/plan_ui-2026-10-26.md` y los dos de
   `progress/plan_mejoras-smoke-2026-11-03.md` §4; G1 aprobado por el humano en
   el canvas v167; mandato del humano 2026-10-23, ampliado 2026-11-03)
-- [ ] **G4**: enmienda de `docs/ui-guidelines.md` (bloque «Enmienda #228» de
-  [[design]], que sustituye el punto 3 de la Enmienda #204) (fecha: ____) ←
-  gate humano, no delegado; desbloquea R12
+- [x] **G4**: enmienda de `docs/ui-guidelines.md` (bloque «Enmienda #228» de
+  [[design]], que sustituye el punto 3 de la Enmienda #204) (fecha: 2026-11-03) ←
+  gate humano, no delegado; desbloquea R12 (aprobado por el humano en el chat
+  de la sesión @Backend: «apruebo G4»; el leader marca la casilla por él)
 - [ ] **G2**: smoke en el dev build de Android (pasos de «Paso de smoke
   nuevo», tema claro y oscuro) (fecha: ____) ← gate humano, por lote al final;
   lo registra `progress/smoke_mejoras-smoke.md`
