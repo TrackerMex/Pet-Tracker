@@ -471,7 +471,7 @@ nombre de la mascota `pet-1` que devuelve el doble de `listPets` (R13).
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-26) ← gate obligatorio antes de implementar
-- [ ] Smoke de #213 en dev build por el humano (fecha: ____): crear un recordatorio recurrente,
+- [x] Smoke de #213 en dev build por el humano (fecha: 2026-10-30): crear un recordatorio recurrente,
       recibir el push real de dos ocurrencias seguidas (`PUSH_ENABLED=true`), deslizar las filas
       de chips de tipo y de aviso, y cancelar la serie desde la hoja de Recordatorios.
       Va en el lote G4 de `progress/smoke_mejoras-producto.md`. No bloquea tareas; bloquea `done`.

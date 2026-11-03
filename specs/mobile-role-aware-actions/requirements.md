@@ -346,7 +346,7 @@ símbolos se anclan por contenido.
 ## Aprobación
 
 - [x] Aprobado por humano (firma delegada del leader, mandato 2026-10-23 ampliado 2026-10-26; fecha: 2026-10-27) ← gate obligatorio antes de implementar
-- [ ] Smoke de #216 en dev build por el humano (fecha: ____): con una cuenta
+- [x] Smoke de #216 en dev build por el humano (fecha: 2026-10-30): con una cuenta
       dueña y otra `family` de la misma mascota (la family se une con el flujo
       de #214), la family no ve el formulario de Peso, el tile Recordatorio, el
       enlace Vincular collar de Inicio, Nuevo ni los botones de borrar en

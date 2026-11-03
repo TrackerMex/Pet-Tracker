@@ -257,13 +257,13 @@ el foco (R5, R6). `app/(tabs)/_layout.tsx` queda sin cambio (R7).
   (firma delegada en el leader por el mandato del 2026-10-23, ampliado el 2026-10-26,
   tras la checklist de `progress/plan_canvas-parity-2026-10-23.md` §4 y
   `progress/plan_ui-2026-10-26.md` §4).
-- [ ] Smoke G2 hecho y aprobado por el humano (cierre, no gate de implementación; fecha: ____)
+- [x] Smoke G2 hecho y aprobado por el humano (cierre, no gate de implementación; fecha: 2026-11-03)
   Va en `progress/smoke_ui.md`. Debe cubrir, en tema claro y oscuro y con el SO en claro y
   en oscuro: (a) cambiar entre Inicio, Salud, Mapa y Perfil sin parpadeo blanco ni negro;
   (b) el interruptor de tema de Perfil cambia el tema al instante, sin fundido; (c) los
   iconos y el reloj de la barra de estado se leen en Inicio y Perfil con mascotas (hero),
   en Mapa, en Inicio y Perfil sin mascotas, y en una pantalla de detalle; (d) al volver de
   Perfil a Mapa la barra recupera el estilo automático.
-- [ ] G3 hecho por humano: dev build reconstruido sin `react-native-nitro-*` (fecha: ____)
+- [x] G3 hecho por humano: dev build reconstruido sin `react-native-nitro-*` (fecha: 2026-11-03)
   (espera al merge de #217; el binario anterior sigue funcionando porque el código ya no
   importa nitro, pero hay dos binarios en circulación hasta entonces).

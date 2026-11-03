@@ -461,7 +461,7 @@ Función pura `acceptAiOutput(output, plan, localDay)` en
   - dejar `count = 3` en `nutrition_ai_generations`.
 
   Esta prueba no la corre ninguna IA. Coste estimado: 3 llamadas a Haiku 5.5, menos de 0,01 USD.
-  - [ ] R20 prueba de humo con clave real ejecutada por humano (fecha: ____)
+  - [x] R20 prueba de humo con clave real ejecutada por humano (fecha: 2026-10-28)
 
 ## Fuera de alcance
 

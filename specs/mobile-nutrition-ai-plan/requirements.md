@@ -1260,7 +1260,7 @@ habilita, este es el copy:
 
 ## Smoke G4
 
-- [ ] Smoke de #215 recorrido por el humano (fecha: ____)
+- [x] Smoke de #215 recorrido por el humano (fecha: 2026-10-30)
 
 Va en el lote G4 de `progress/smoke_mejoras-producto.md`, con un solo dev build al final.
 **No bloquea tareas; bloquea `done`.**
@@ -1341,5 +1341,5 @@ la IA.
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-27) ← gate obligatorio antes de implementar
-- [ ] Smoke de #215 en dev build por el humano (fecha: ____): ver §Smoke G4. Va en el lote
+- [x] Smoke de #215 en dev build por el humano (fecha: 2026-10-30): ver §Smoke G4. Va en el lote
       G4 de `progress/smoke_mejoras-producto.md`. No bloquea tareas; bloquea `done`.

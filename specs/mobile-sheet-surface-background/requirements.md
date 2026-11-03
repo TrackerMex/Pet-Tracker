@@ -171,7 +171,7 @@ tags: [harness, spec]
   (se firma por delegación del leader, mandato del 2026-10-23 ampliado el 2026-10-26,
   con la checklist de `progress/plan_canvas-parity-2026-10-23.md` §4 y los tres puntos
   de `progress/plan_ui-2026-10-26.md` §4).
-- [ ] Smoke de los dos cajones en dev build Android hecho y aprobado por el humano
+- [x] Smoke de los dos cajones en dev build Android hecho y aprobado por el humano
   (cierre, no gate de implementación; gate G2 del plan, `progress/smoke_ui.md`).
   Pasos: Recordatorios → borrar un recordatorio, y Vinculación → «Desvincular collar»,
   en tema claro y oscuro y con Material You activo (cambiar el fondo de pantalla del

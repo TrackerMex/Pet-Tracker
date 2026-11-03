@@ -612,7 +612,7 @@ Metro de la rama, dentro del smoke en lote al final del plan:
   la checklist de `progress/plan_canvas-parity-2026-10-23.md` §4 y los tres puntos
   de `progress/plan_ui-2026-10-26.md` §4 (fecha: 2026-10-28)
 - [x] §Re-verificar al mergear #221 ejecutada con todas las cifras esperadas (fecha: 2026-10-28)
-- [ ] Smoke G2 en dispositivo, pasos 1–5, claro y oscuro (humano; fecha: ____)
+- [x] Smoke G2 en dispositivo, pasos 1–5, claro y oscuro (humano; fecha: 2026-11-03)
 - [x] G4: enmienda de la carta de #225 R9 (humano; fecha: 2026-10-28)
 
 #225 puede mergearse en `dev` con las dos primeras casillas firmadas y el veredicto
