@@ -3744,7 +3744,7 @@
   {
     "id": 235,
     "name": "mobile-profile-photo-owner-only",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Perfil: el botón de cámara change-photo se muestra al rol family y el backend responde 403 («No se pudo subir la foto»). Mostrarlo solo al owner, como el resto de #216. Responsable: leader @Frontend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
     "acceptance_criteria": null,
