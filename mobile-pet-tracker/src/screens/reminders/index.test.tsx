@@ -67,6 +67,8 @@ jest.mock('reicon-react-native', () => {
     Plus: mockIcon('reminders-icon-plus'),
     Repeat: mockIcon('reminders-icon-repeat'),
     Trash: mockIcon('reminders-icon-trash'),
+    ChevronDown: mockIcon('reminders-icon-chevron-down'),
+    ChevronUp: mockIcon('reminders-icon-chevron-up'),
     Syringe: mockIcon('reminders-icon-syringe'),
     Drop: mockIcon('reminders-icon-drop'),
     Pill: mockIcon('reminders-icon-pill'),
@@ -184,7 +186,7 @@ function makeReminder(overrides: Partial<Reminder> = {}): Reminder {
     petId: 'pet-1',
     type: 'vaccine',
     title: 'Rabies booster',
-    dueAt: '2026-08-27T09:00:00.000Z',
+    dueAt: new Date(Date.now() + 3 * 86_400_000).toISOString(),
     advanceMinutes: 10080,
     status: 'scheduled',
     recurrence: null,
@@ -1358,6 +1360,7 @@ describe('#178 R7: entrada escalonada y badge', () => {
 describe('#178 R8: sheet de borrado del canvas', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
+    jest.useFakeTimers({ now: new Date('2026-12-30T15:00:00.000Z') });
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
     mockUseAuth.mockReturnValue({
       status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
@@ -1368,6 +1371,8 @@ describe('#178 R8: sheet de borrado del canvas', () => {
     await screen.findByTestId('reminder-row-a');
     await fireEvent.press(screen.getByTestId('reminder-delete-a'));
   });
+
+  afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
 
   it('centra los cinco hijos del sheet con el marco del canvas', () => {
     const sheet = screen.getByTestId('reminders-delete-sheet');
@@ -1410,6 +1415,7 @@ describe('#178 R8: sheet de borrado del canvas', () => {
 describe('#218 R1: el cajón de borrar pinta su contenedor con el token surface', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useFakeTimers({ now: new Date('2026-12-30T15:00:00.000Z') });
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
     mockUseAuth.mockReturnValue({
       status: 'authenticated',
@@ -1420,6 +1426,8 @@ describe('#218 R1: el cajón de borrar pinta su contenedor con el token surface'
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: canvasReminders });
   });
+
+  afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
 
   it('#218 R1: backgroundStyle del BottomSheet de borrar es exactamente el token surface', async () => {
     await renderReminders();
@@ -1847,6 +1855,7 @@ describe('#204 R5: estados bajo la cabecera', () => {
 describe('#204 R6: entrada de las filas', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useFakeTimers({ now: new Date('2026-12-30T15:00:00.000Z') });
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
     mockUseAuth.mockReturnValue({
       status: 'authenticated',
@@ -1857,6 +1866,8 @@ describe('#204 R6: entrada de las filas', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: canvasReminders });
   });
+
+  afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
 
   it('#204 R6: escalona las filas 0, 70 y 140 ms con RiseIn', async () => {
     await renderReminders();
@@ -1915,6 +1926,7 @@ describe('#204 R7: ámbar de la fila próxima', () => {
 describe('#204 R8: Eliminar de la fila', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useFakeTimers({ now: new Date('2026-12-30T15:00:00.000Z') });
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
     mockUseAuth.mockReturnValue({
       status: 'authenticated',
@@ -1925,6 +1937,8 @@ describe('#204 R8: Eliminar de la fila', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: canvasReminders });
   });
+
+  afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
 
   it('#204 R8: Eliminar de fila usa la receta rosa del canvas', async () => {
     await renderReminders();
@@ -1940,6 +1954,7 @@ describe('#204 R8: Eliminar de la fila', () => {
 describe('#204 R9: Eliminar de la hoja', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useFakeTimers({ now: new Date('2026-12-30T15:00:00.000Z') });
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
     mockUseAuth.mockReturnValue({
       status: 'authenticated',
@@ -1950,6 +1965,8 @@ describe('#204 R9: Eliminar de la hoja', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: canvasReminders });
   });
+
+  afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
 
   it('#204 R9: Eliminar de la hoja lleva cuerpo de 56 y labio danger', async () => {
     await renderReminders();
