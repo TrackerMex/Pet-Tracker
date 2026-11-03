@@ -154,7 +154,8 @@ el fichero restaurado después. El resultado va a
 ## Paso de smoke
 
 Sección literal que la implementación añade al final de
-`progress/smoke_mejoras-smoke.md`, después de la de `#226`. Lleva una línea en
+`progress/smoke_mejoras-smoke.md`, detrás de la última sección que haya (otra
+feature puede haber añadido la suya después de `#226`). Lleva una línea en
 blanco antes del `##`. El fallo se reproduce con un perro: con un gato, si cae la
 consulta de mascotas, `species` vuelve a `'dog'` y la clave cambia (§Fuera de
 alcance de [[requirements]]).
