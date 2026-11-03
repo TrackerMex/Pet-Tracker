@@ -26,7 +26,7 @@ tags: [mobile, ui, spec]
 | R16 | `__tests__/alerts-attended-canvas-fidelity.test.ts::#223 R16: las seis claves existen en es y en con el literal fijado y una sola invocación cada una` | test `95f7aa9a` — test(mobile): attended-section copy keys exist in both languages (R16); feat / comportamiento existente `fa521ba4` — feat(mobile): all-calm card when there are no open alerts (R11) |
 | R17 | `__tests__/alerts-attended-canvas-fidelity.test.ts::#223 R17: grep-limpio` y `#223 R17: las dianas táctiles llegan a 44 pt`, más los 18 tests de clases de R17 del mismo archivo | test `f1526efa` — test(mobile): attended section classes are clean and targets reach 44 pt (R17); feat / comportamiento existente `fa521ba4` — feat(mobile): all-calm card when there are no open alerts (R11) |
 | R18 | `suite completa verde + __tests__/alerts-attended-canvas-fidelity.test.ts::#223 R18: los candados enmendados nombran su enmienda` | test `71c41948` — test(mobile): amended locks name their amendment (R18); enmienda `e6063116` — test(mobile): detail navigation reaches attended alerts (R18) |
-| R19 | pendiente: G4; no se creó el test ni se enmendó la carta | pendiente: G4 |
+| R19 | `__tests__/alerts-attended-canvas-fidelity.test.ts::#223 R19: la carta declara los radios de la sección Atendidas` | test `8a43f5453f8c6bf2fd27420cc3470dd9dfa0146c` — test(mobile): #223 R19 charter radii line test; docs `e97726562e6bc6fc11273d887cdbe1608b06818e` — docs(ui): #223 R19 charter radii for the attended section |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente" (R19 incluida,
 una vez firmada la casilla G4; si el humano no firma G4, se deja constancia
