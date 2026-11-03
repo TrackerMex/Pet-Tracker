@@ -8,6 +8,13 @@ de cada feature la marca solo el humano.
 
 - [ ] Smoke de #224 pasado tras #234 (fecha: ____)
 
+## #231 mobile-welcome-secondary-pressed
+
+En el dev build de Android, sin sesión, en la pantalla de Bienvenida:
+
+- [ ] Tema claro: al mantener pulsado «Ya tengo una cuenta» la capa se tiñe de gris neutro tenue y el botón se encoge ligeramente; ya no se tiñe de verde.
+- [ ] Tema oscuro: el borde de 2 px del botón se ve claramente (gris `#9CA3AF`) y al mantener pulsado tampoco aparece verde.
+- [ ] «Comenzar ahora» sigue resaltando verde al pulsarlo.
 ## #235 mobile-profile-photo-owner-only
 
 - [ ] En Perfil, con una mascota propia (rol dueño), el botón de la cámara sobre la foto aparece y abre el cambio de foto.

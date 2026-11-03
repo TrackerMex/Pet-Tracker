@@ -390,6 +390,27 @@ describe('R7', () => {
 
 
 describe('R8', () => {
+  it('#231 R1: el secundario declara variant outline y conserva el feedback de escala', async () => {
+    await renderWelcome();
+    const props = screen.getByTestId('welcome-have-account').props;
+    expect(props.variant).toBe('outline');
+    expect(props.animation).toBeUndefined();
+    expect(props.feedbackVariant).toBeUndefined();
+  });
+
+  it('#231 R1: el primario no declara variant', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-get-started').props.variant).toBeUndefined();
+  });
+
+  it('#231 R3: el secundario añade el borde oscuro tras la receta neutra', async () => {
+    await renderWelcome();
+    const props = screen.getByTestId('welcome-have-account').props;
+    const NEW_CLASSES = 'w-full h-14 rounded-16 border-2 border-lip-gray bg-surface dark:border-muted';
+    expect(props.className).toBe(NEW_CLASSES);
+    expect(props.className.split(' ').slice(-3)).toEqual(['border-lip-gray', 'bg-surface', 'dark:border-muted']);
+  });
+
   it('empuja a login sin reemplazar', async () => {
     await renderWelcome();
     await fireEvent.press(screen.getByTestId('welcome-have-account'));
@@ -398,11 +419,42 @@ describe('R8', () => {
     expect(mockRouter.replace).not.toHaveBeenCalled();
   });
 
-  it('es un botón de superficie con labio gris y tinta accent-strong', async () => {
+  it('es un botón de superficie con labio gris y tinta accent-strong (enmendado por #231 R1, R3)', async () => {
     await renderWelcome();
-    expect(screen.getByTestId('welcome-have-account').props.className).toBe('w-full h-14 rounded-16 border-2 border-lip-gray bg-surface');
+    expect(screen.getByTestId('welcome-have-account').props.className).toBe('w-full h-14 rounded-16 border-2 border-lip-gray bg-surface dark:border-muted');
     expect(screen.getByText('Ya tengo una cuenta').props.className).toBe('text-17 font-bold text-accent-strong');
   });
+});
+
+describe('#231 R2', () => {
+  it('#231 R2: HeroUI pinta el pulsado de outline con default-hover y el de primary con accent-hover', () => {
+    const source = readFileSync(join(process.cwd(), 'node_modules', 'heroui-native', 'src', 'components', 'button', 'button.tsx'), 'utf8');
+    const memoStart = source.indexOf('const highlightColorMap = useMemo(');
+    expect(memoStart).toBeGreaterThan(-1);
+    const switchStart = source.indexOf('switch (variant) {', memoStart);
+    expect(switchStart).toBeGreaterThan(memoStart);
+    const memoEnd = source.indexOf('}, [', switchStart);
+    expect(memoEnd).toBeGreaterThan(switchStart);
+    const blocks = source.slice(switchStart, memoEnd).split("case '").slice(1);
+    const primary = blocks.find(block => block.startsWith("primary':"));
+    const outline = blocks.find(block => block.startsWith("outline':"));
+    expect(primary).not.toBeUndefined();
+    expect(outline).not.toBeUndefined();
+    expect(primary).toContain('themeColorAccentHover');
+    expect(outline).toContain('themeColorDefaultHover');
+    expect(outline).not.toContain('themeColorAccentHover');
+  });
+});
+
+it('#231 R6: los candados enmendados nombran su enmienda', () => {
+  const sources = [
+    readSource('screens/welcome/index.test.tsx'),
+    readFileSync(join(sourceRoot, '__tests__', 'chunky-cta-canvas-fidelity.test.ts'), 'utf8'),
+    readFileSync(join(sourceRoot, '__tests__', 'consistency-classnames.test.ts'), 'utf8'),
+  ];
+  for (const source of sources) {
+    expect(source.split('enmendado por #231 R1, R3').length - 1).toBeGreaterThanOrEqual(1);
+  }
 });
 
 

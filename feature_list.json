@@ -3708,7 +3708,7 @@
   {
     "id": 231,
     "name": "mobile-welcome-secondary-pressed",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Bienvenida: «Ya tengo una cuenta» no tiene variant y HeroUI le pinta el resaltado verde del primario al pulsar; en oscuro, borde y labio casi no se ven. Resaltado neutro y borde visible en oscuro. Responsable: leader @Frontend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
     "acceptance_criteria": null,
