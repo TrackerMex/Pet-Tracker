@@ -651,13 +651,13 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
 describe('#166 R3: el secundario neutro lleva el labio gris', () => {
   const recipe = 'h-14 rounded-16 border-2 border-lip-gray bg-surface';
   const rows = [
-    [join('screens', 'welcome', 'index.tsx'), 'welcome-have-account', null],
+    [join('screens', 'welcome', 'index.tsx'), 'welcome-have-account', 'outline'],
     [join('screens', 'forgot', 'index.tsx'), 'forgot-resend', 'secondary'],
     [join('screens', 'docs-upload-form', 'index.tsx'), 'docs-upload-cancel', 'outline'],
     [join('screens', 'reminders', 'index.tsx'), 'reminders-delete-cancel', 'outline'],
   ] as const;
 
-  it.each(rows)('%s pinta %s con la receta del secundario en su tag de apertura (enmendado por #177 R10)', (path, testId, variant) => {
+  it.each(rows)('%s pinta %s con la receta del secundario en su tag de apertura (enmendado por #177 R10) (enmendado por #231 R1, R3)', (path, testId, variant) => {
     const tag = openingTagWithTestId(readSource(path), testId);
 
     expect(tag).toContain(recipe);
