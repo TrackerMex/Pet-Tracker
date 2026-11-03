@@ -2459,4 +2459,23 @@ describe('#227: próximos y pasados', () => {
     expect(yesterday.getByText('· en -1 días')).toBeVisible();
     expect(yesterday.getByTestId('reminder-repeats-yesterday')).toBeVisible();
   });
+
+
+  it('#227 R12: Eliminar y Cancelar serie siguen en su fila en las dos secciones y solo para el dueño', async () => {
+    const owner = await renderReminders();
+    await screen.findByTestId('reminders-pills');
+    expect(screen.queryByTestId('reminders-past-toggle')).not.toBeNull();
+    await expandPast();
+    const row = (id: string) => screen.getByTestId(`reminder-row-${id}`);
+    for (const id of ['today', 'later', 'cancelled', 'oldsent']) expect(within(row(id)).getByTestId(`reminder-delete-${id}`)).toBeVisible();
+    expect(within(row('yesterday')).getByTestId('reminder-cancel-series-yesterday')).toBeVisible();
+    expect(within(row('yesterday')).queryByTestId('reminder-delete-yesterday')).toBeNull();
+    await owner.unmount();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: 'family' })] });
+    await renderReminders();
+    await screen.findByTestId('reminders-past-toggle');
+    await expandPast();
+    expect(screen.getAllByTestId(/^reminder-row-/)).toHaveLength(6);
+    expect(screen.queryAllByTestId(/^reminder-(delete|cancel-series)-/)).toEqual([]);
+  });
 });
