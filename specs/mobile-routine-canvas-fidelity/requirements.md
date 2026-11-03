@@ -1228,4 +1228,6 @@ re-mide la fila; el criterio no cambia.
   `status` y por el día.
 - El `PopIn` del badge.
 
-- [ ] Enmienda #227 aprobada por humano
+- [x] Enmienda #227 aprobada por humano
+  (firma delegada del leader, 2026-11-03; mandato del humano 2026-10-23,
+  ampliado 2026-11-03)

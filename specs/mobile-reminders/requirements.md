@@ -428,7 +428,9 @@ La enmienda la escribe `specs/mobile-reminders-upcoming-past/requirements.md`
 - El badge.
 - El refetch al recuperar el foco.
 
-- [ ] Enmienda #227 aprobada por humano
+- [x] Enmienda #227 aprobada por humano
+  (firma delegada del leader, 2026-11-03; mandato del humano 2026-10-23,
+  ampliado 2026-11-03)
 
 ## Aprobación
 

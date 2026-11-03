@@ -1,6 +1,6 @@
 ---
 feature: "mobile-reminders-upcoming-past"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [mobile, ui, spec]
 ---
 
@@ -686,30 +686,42 @@ El leader lo añade a `progress/smoke_mejoras-smoke.md` al mergear, bajo
 - El copy del badge «Hoy» y el «¡Próximo!» del canvas (Voz B).
 - Backend: ni orden en el servidor ni filtros por sección.
 - La animación `rise` de la caja sin próximos, que el canvas sí anima.
-- El `gap` del marco (14 en producción, 12 en el canvas; ver Preguntas
-  abiertas).
+- El `gap` del marco (14 en producción, 12 en el canvas; ver Decisiones).
 - El smoke en dispositivo (G2), que corre el humano.
 - Enmiendas de `docs/ui-guidelines.md` o `docs/conventions.md`: no hay
   ninguna (sin G4).
 
-## Preguntas abiertas (con valor por defecto aplicado)
+## Decisiones
 
-1. La píldora «Inactivos» cuenta `sent` y `cancelled`, y «Pasados» cuenta
-   además los `scheduled` de días pasados y excluye los `sent` futuros, así
-   que pueden diferir. Por defecto, las píldoras no cambian.
-2. Una fila `scheduled` en Pasados sigue mostrando `· en -N días`. Por
-   defecto, sin cambio de copy.
-3. El canvas separa las secciones con un `gap` de 12 y el marco de
-   producción usa 14 (`#204 R4`). Por defecto se queda en 14.
-4. Un `sent` con `dueAt` de hoy en adelante va a Próximos con opacidad
-   completa y «Enviado». Por defecto, sí.
-5. Expandir «Pasados» se conserva al cambiar de mascota mientras la pantalla
-   sigue montada. Por defecto, sí: un solo `useState`.
-6. El inglés de R1 no se dibujó en G1. Por defecto, los valores de R1.
+Las seis preguntas que el `spec_author` dejó con valor por defecto las cierra
+el leader al firmar. Ninguna cambia copy ni artboards aprobados en G1.
+
+1. **Las píldoras no cambian.** «Inactivos» cuenta `sent` y `cancelled`.
+   «Pasados» cuenta además los `scheduled` de días pasados y excluye los
+   `sent` futuros, así que las dos cifras pueden diferir. Las píldoras quedan
+   fuera de alcance y G1 no las tocó.
+2. **Sin copy nuevo para un `scheduled` en Pasados.** Sigue mostrando
+   `· en -N días` (R7). Cambiarlo sería copy nuevo sin G1.
+3. **El `gap` del marco se queda en 14.** Lo fija `#204 R4`, que esta
+   feature no enmienda; el 12 del canvas no justifica una enmienda.
+4. **Un `sent` con `dueAt` de hoy en adelante va a Próximos.** Va con
+   opacidad completa y «Enviado». Es la regla del plan («no cancelados con
+   `dueAt` de hoy en adelante»).
+5. **Un solo `useState` para «Pasados».** El estado expandido se conserva al
+   cambiar de mascota mientras la pantalla siga montada. Es lo más simple y
+   ningún artboard dibuja otro comportamiento.
+6. **El inglés de R1 lo fija la spec.** G1 aprobó el español del canvas. El
+   inglés es la traducción directa en Voz B, como en las features anteriores
+   del plan. Si el humano quiere otro, es un cambio de copy en `i18n/catalog.ts`
+   y en §2.40.
+
+Recuento de `SCREEN_FILES` (checklist de `plan_ui-2026-10-26.md` §4): no
+cambia. `src/screens/reminders/index.tsx` ya figura en `R8_REMINDERS` y las
+cuatro filas nuevas son del mismo fichero. No se retira ninguna clave de copy.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-11-03) ← gate obligatorio antes de implementar
   (firma delegada del leader con la checklist de
   `progress/plan_canvas-parity-2026-10-23.md` §4, los tres puntos del §4 de
   `progress/plan_ui-2026-10-26.md` y los dos de

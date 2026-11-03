@@ -548,4 +548,6 @@ gate de implementación: lo cierra la casilla «Smoke de R18» de § Aprobación
 - `MOTION_REMINDERS_STAGGER_MS = 70`.
 - `screens/reminders/index.tsx` sigue sin importar `../home/home-entrance`.
 
-- [ ] Enmienda #227 aprobada por humano
+- [x] Enmienda #227 aprobada por humano
+  (firma delegada del leader, 2026-11-03; mandato del humano 2026-10-23,
+  ampliado 2026-11-03)
