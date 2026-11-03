@@ -10,7 +10,9 @@ Rutas relativas a `mobile-pet-tracker/src/`.
 
 Preparación T0: `114f54b0` — test(mobile): swipeable double and hidden-query option for reminders (T0).
 Sondas S1–S9 y verificaciones en `progress/impl_mobile-reminder-swipe-actions.md`.
-R12 queda fuera de la rama mientras G4 siga pendiente; G2 corresponde al humano.
+R12 entró tras G4 (aprobado por el humano el 2026-11-03, `c542a08d`): el rojo es de
+Codex (`progress/impl_mobile-reminder-swipe-actions-r12.md`) y el bloque de la carta,
+del leader. G2 corresponde al humano.
 La suite completa y `./init.sh` los ejecuta el leader según el handoff.
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
@@ -26,7 +28,7 @@ La suite completa y `./init.sh` los ejecuta el leader según el handoff.
 | R9 | `screens/reminders/index.test.tsx::#228 R9: con el ReanimatedSwipeable real la fila y su panel se montan y el panel abre la hoja` | `cd5d19c7` test(mobile): real swipeable mounts the row and its panel (R9); `b28b74f6` feat(mobile): reveal reminder row actions by swiping (R2, R3, R4, R5, R6, R8, R9, R10, R11) |
 | R10 | `__tests__/reminder-swipe-actions-canvas-fidelity.test.ts::#228 R10: %s sigue al artboard %s`; `__tests__/reminder-swipe-actions-canvas-fidelity.test.ts::#228 R10: los tokens rosa y danger del canvas son los de global.css` | `8bd01469` test(mobile): copy, canvas fidelity and source inventory of reminder swipe actions (R1, R10, R11); `b28b74f6` feat(mobile): reveal reminder row actions by swiping (R2, R3, R4, R5, R6, R8, R9, R10, R11) |
 | R11 | `__tests__/reminder-swipe-actions-canvas-fidelity.test.ts::#228 R11: inventario del fuente` | `8bd01469` test(mobile): copy, canvas fidelity and source inventory of reminder swipe actions (R1, R10, R11); `b28b74f6` feat(mobile): reveal reminder row actions by swiping (R2, R3, R4, R5, R6, R8, R9, R10, R11) |
-| R12 | `__tests__/reminder-swipe-actions-canvas-fidelity.test.ts::#228 R12: la carta lleva una vez el bloque de su enmienda` | pendiente (bloqueado por G4) |
+| R12 | `__tests__/reminder-swipe-actions-canvas-fidelity.test.ts::#228 R12: la carta lleva una vez el bloque de su enmienda` | `c3b0f7c2` test(mobile): charter carries the swipe actions amendment (R12); `3f07668d` docs(ui): add the swipe actions amendment to the charter (R12) |
 | R13 | `__tests__/reminder-swipe-actions-canvas-fidelity.test.ts::#228 R13: los candados enmendados nombran su enmienda y las specs enmendadas llevan su casilla` | `85996775` test(mobile): amended locks name their amendment (R13); `a34a7bee` test(mobile): suffix amended locks with #228 R13 (R13) |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente". R12 es la
