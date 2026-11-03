@@ -1,6 +1,6 @@
 ---
 feature: "mobile-welcome-secondary-pressed"
-status: draft        # draft | approved
+status: approved        # draft | approved
 tags: [mobile, ui, spec]
 ---
 
@@ -291,7 +291,7 @@ Bienvenida:
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (firma delegada del leader, mandato 2026-10-23 ampliado 2026-11-03; fecha: 2026-11-03T17:12Z) ← gate obligatorio antes de implementar
   (R1 a R6; la firma delegada la pone el leader con la checklist de
   `progress/plan_canvas-parity-2026-10-23.md` §4 y los tres puntos de
   `progress/plan_ui-2026-10-26.md` §4)
