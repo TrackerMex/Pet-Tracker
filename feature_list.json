@@ -3813,5 +3813,14 @@
     "description": "Flake del e2e backend-pet-tracker/test/vaccine-catalog-migration.e2e-spec.ts (#226): su afterAll hace DROP DATABASE IF EXISTS ... WITH (FORCE) con un cliente aún vivo (probablemente el pool de la app Nest, que lee DATABASE_URL), y pg lo convierte en «Unhandled error» 57P01 («terminating connection due to administrator command»). Tumbó el ./init.sh de @Frontend el 2026-11-03 (wt-233); el reintento salió verde. No es interferencia entre sesiones: el log de Postgres muestra el FATAL y los dos checkpoints de los DROP. Arreglo: cerrar todos los pools antes del DROP, o escuchar 'error' en ellos. Responsable: leader @Backend. El humano pidió registrarlo como feature el 2026-11-03 («registralo como feature»). Plan progress/plan_mejoras-smoke-2026-11-03.md. Registrada sin spec.",
     "acceptance_criteria": null,
     "files_affected": null
+  },
+  {
+    "id": 238,
+    "name": "backend-pg-pool-error-listener",
+    "status": "pending",
+    "priority": "P2",
+    "description": "El pool de Postgres de producción (backend-pet-tracker/src/db/drizzle.module.ts, new Pool en el factory de PG_POOL) no tiene listener de 'error': on('error' sale 0 veces en src/. Si Postgres termina un cliente ocioso (57P01 por un reinicio, un failover o pg_terminate_backend), pg-pool reemite el error en el pool y, sin listener, el EventEmitter lo lanza como error no manejado y tumba el proceso. Mismo mecanismo que el flake de #237, pero en la app. Observación de la spec de #237 (§Fuera de alcance). Arreglo: registrar pool.on('error', …) que loguee y no lance; el pool descarta el cliente y abre otro en la siguiente consulta. Responsable: leader @Backend. El humano pidió registrarlo como feature el 2026-11-03 («si registra como feature el pool en postgres»). Plan progress/plan_mejoras-smoke-2026-11-03.md. Registrada sin spec.",
+    "acceptance_criteria": null,
+    "files_affected": null
   }
 ]

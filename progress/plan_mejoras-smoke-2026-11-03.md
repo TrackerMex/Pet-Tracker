@@ -1,6 +1,6 @@
 # Plan: arreglos y mejoras tras el smoke G2 (2026-11-03)
 
-Plan vivo de las features #226–#237. Nace del smoke en dispositivo que el humano
+Plan vivo de las features #226–#238. Nace del smoke en dispositivo que el humano
 hizo sobre el dev build de `dev` (lotes de `progress/smoke_mejoras-producto.md` y
 `progress/smoke_ui.md`) y de la lista de dudas y mejoras que envió el 2026-11-03.
 
@@ -211,11 +211,26 @@ son de `6531669f` y caducan al mergear: la spec ancla por contenido.
   ellos. Solo test e2e; ni producción ni migraciones. Sin copy, así que no hay
   G1 ni G2.
 
+### 238 `backend-pg-pool-error-listener` (P2, @Backend)
+
+- Observación de la spec de #237 (§Fuera de alcance): el pool de producción,
+  creado con `new Pool(` en el factory de `PG_POOL` de
+  `backend-pet-tracker/src/db/drizzle.module.ts`, no escucha `'error'`
+  (`on('error'` sale 0 veces en `src/`). El humano pidió registrarlo: «si
+  registra como feature el pool en postgres» (2026-11-03).
+- Riesgo: si Postgres termina un cliente ocioso (`57P01` por un reinicio, un
+  failover o `pg_terminate_backend`), `pg-pool` reemite el error en el pool y,
+  sin listener, el `EventEmitter` lo lanza y tumba el proceso. Es el mismo
+  mecanismo del flake de #237, pero en la app.
+- Arreglo: `pool.on('error', …)` que loguee y no lance; el pool descarta el
+  cliente y abre otro en la siguiente consulta. Solo backend, sin copy, así que
+  no hay G1 ni G2. Independiente de #237: no comparten ficheros.
+
 ## 3. Reparto y paralelismo
 
 | Sesión | Features | Orden |
 |---|---|---|
-| @Backend (leader) | #226, #227, #228, #230, #236, #237 | #226 ya; explorer de #230 ya; #227, #228 y #230 tras G1; #228 tras #227; #230 tras su spike; #236 tras #226; #237 tras #226 |
+| @Backend (leader) | #226, #227, #228, #230, #236, #237, #238 | #226 ya; explorer de #230 ya; #227, #228 y #230 tras G1; #228 tras #227; #230 tras su spike; #236 tras #226; #237 tras #226; #238 sin dependencias |
 | @Frontend | #229, #231, #232, #233, #234, #235 | sin G1; #235 antes que #229 |
 
 - Frontend propuso #229, #231, #232 y #235, y toma además #233 y #234. Los
@@ -291,6 +306,11 @@ el humano lo corre; ninguna IA lanza `eas build` ni toca AWS real.
      la misma PR de #228.
    - El leader firmó #236 con la confirmación del humano.
    - El flake 57P01 del e2e de #226 es #237.
+8. ~~Firma de #237 y listener de `'error'` del pool~~ Respondida el 2026-11-03:
+   «si apruebo la firma de 237 y si registra como feature el pool en postgres».
+   - El mandato no cubre #237, así que el leader la firmó con esta aprobación
+     explícita (`d5065fa8`, en su rama).
+   - El listener que falta en el pool de producción es #238.
 
 ## 7. Fuera de alcance
 
