@@ -2730,4 +2730,22 @@ describe('Acciones de deslizar en Recordatorios (#228 R2 a R9)', () => {
     await fireEvent.press(panel);
     expect(screen.getByText('¿Eliminar recordatorio?')).toBeOnTheScreen();
   });
+
+  it('#228 R7: quien no es dueño no tiene deslizable, panel ni acción de accesibilidad', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: 'family' })] });
+    await renderReminders();
+    await screen.findByTestId('reminders-past-toggle');
+    await expandPast();
+    await screen.findByTestId('reminder-row-pastseries');
+    expect(screen.queryAllByTestId(/^reminder-swipe-/)).toEqual([]);
+    expect(screen.queryAllByTestId(/^reminder-(delete|cancel-series)-/, HIDDEN)).toEqual([]);
+    for (const id of ['once', 'series', 'pastonce', 'pastseries']) {
+      const row = screen.getByTestId(`reminder-row-${id}`);
+      expect(row).toBeOnTheScreen();
+      expect(row.props.accessibilityActions).toBeUndefined();
+    }
+    await fireEvent(screen.getByTestId('reminder-row-once'), 'accessibilityAction', { nativeEvent: { actionName: 'delete' } });
+    await fireEvent(screen.getByTestId('reminder-row-series'), 'accessibilityAction', { nativeEvent: { actionName: 'cancelSeries' } });
+    expect(screen.queryByTestId('community-bottom-sheet')).toBeNull();
+  });
 });
