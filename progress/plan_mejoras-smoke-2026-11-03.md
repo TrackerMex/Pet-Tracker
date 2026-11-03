@@ -1,6 +1,6 @@
 # Plan: arreglos y mejoras tras el smoke G2 (2026-11-03)
 
-Plan vivo de las features #226–#235. Nace del smoke en dispositivo que el humano
+Plan vivo de las features #226–#236. Nace del smoke en dispositivo que el humano
 hizo sobre el dev build de `dev` (lotes de `progress/smoke_mejoras-producto.md` y
 `progress/smoke_ui.md`) y de la lista de dudas y mejoras que envió el 2026-11-03.
 
@@ -129,6 +129,17 @@ son de `6531669f` y caducan al mergear: la spec ancla por contenido.
   explorer que diga cómo componer el avatar (imagen pre-renderizada, recorte
   circular, caché) en Android y iOS antes de la spec.
 - Solapa con #192 (ping, sin spec): la spec deja escrito el límite entre ambas.
+- Explorer: `progress/explore_mobile-map-pet-avatar-marker.md` (rama
+  `feature/230-mobile-map-pet-avatar-marker`). Recomienda la opción B2:
+  componer el avatar en un `<Svg>` oculto, sacar un PNG con `toDataURL` y
+  pasarlo a `useImage` → `icon`. No necesita dependencia nueva ni dev build.
+- Spike antes de la spec: código desechable en la rama
+  `spike/230-avatar-marker`, que no se mergea. Lo corre el humano en su dev
+  build (ver §6, pregunta 5). La spec se escribe con su resultado.
+- Decisión del leader para la spec, que no es G1 porque reutiliza boards ya
+  aprobados: mientras carga la foto, o si falla o vence el timeout, el marcador
+  es el de «sin foto» (blobatar). Antes de la primera composición se ve el pin
+  por defecto, para no perder la posición.
 
 ### 231 `mobile-welcome-secondary-pressed` (P2, @Frontend)
 
@@ -172,11 +183,22 @@ son de `6531669f` y caducan al mergear: la spec ancla por contenido.
   el backend responde 403 y la app dice «No se pudo subir la foto».
 - Arreglo: mostrarlo solo al owner, como el resto de acciones de #216.
 
+### 236 `mobile-vaccine-catalog-error-state` (P2, @Backend)
+
+- Hallazgo del leader al especificar #226; el humano pidió abrirlo como
+  feature: «si abre como feature nueva» (2026-11-03).
+- `vaccine-create/index.tsx` pinta `[...entries, other]`. Si
+  `GET /vaccine-catalog` falla, `entries` queda vacío y el selector muestra
+  solo «Otra vacuna». No avisa ni deja reintentar: es el mismo síntoma que vio
+  el humano, pero con otra causa.
+- Arreglo: un estado de error con reintento en el selector, distinto del
+  catálogo vacío. Si el estado de error lleva copy nuevo, pasa por G1.
+
 ## 3. Reparto y paralelismo
 
 | Sesión | Features | Orden |
 |---|---|---|
-| @Backend (leader) | #226, #227, #228, #230 | #226 ya; explorer de #230 ya; #227, #228 y #230 tras G1; #228 tras #227 |
+| @Backend (leader) | #226, #227, #228, #230, #236 | #226 ya; explorer de #230 ya; #227, #228 y #230 tras G1; #228 tras #227; #230 tras su spike; #236 tras #226 |
 | @Frontend | #229, #231, #232, #233, #234, #235 | sin G1; #235 antes que #229 |
 
 - Frontend propuso #229, #231, #232 y #235, y toma además #233 y #234. Los
@@ -213,7 +235,9 @@ puntos de `plan_ui-2026-10-26.md` §4, y dos de este plan:
 | G4 | Enmiendas de `docs/ui-guidelines.md` o `docs/conventions.md` | Con la spec que las pida | `specs/<feature>/requirements.md` |
 | G5 | Mergear `dev` → `main` | Cuando el humano dé la app por lista | PR en GitHub |
 
-- [ ] G1 aprobado por humano: artboards y copy de #227, #228 y #230 (versión del canvas: ____, fecha: ____)
+- [x] G1 aprobado por humano: artboards y copy de #227, #228 y #230 (versión del canvas: v167, fecha: 2026-11-03)
+      Respuesta literal: «Si apruebo G1». La marcó el leader con el mensaje del
+      humano en la mano.
 
 Si #226 necesitara un dev build nuevo o algo que cueste dinero, la spec lo dice y
 el humano lo corre; ninguna IA lanza `eas build` ni toca AWS real.
@@ -230,6 +254,14 @@ el humano lo corre; ninguna IA lanza `eas build` ni toca AWS real.
    implementar: las dos features siguen `spec_ready` hasta su implementación y
    veredicto del `reviewer`.
 3. Paliativo de #226 en el PC del humano: `pnpm -C backend-pet-tracker run seed:vaccines`.
+4. ~~G1 de #227, #228 y #230~~ Aprobado el 2026-11-03 sobre el canvas v167:
+   «Si apruebo G1». La casilla está en §5.
+5. ~~Spike de #230 (opción B2)~~ Respondida el 2026-11-03: «pruebo 230 en el dev
+   build». El humano lo corre en su PC sobre el dev build actual, sin rebuild.
+   La spec de #230 espera a su resultado. Si falla, queda abierta la elección
+   entre E (`react-native-view-shot` y rebuild) y D (miniatura en el backend).
+6. ~~Selector de vacunas mudo cuando el catálogo falla~~ Respondida el
+   2026-11-03: «si abre como feature nueva». Es #236.
 
 ## 7. Fuera de alcance
 
