@@ -128,6 +128,8 @@ describe('R10: las specs enmendadas por #67 llevan su bloque', () => {
 
 const SIGNATURE_LINE_168 = '- [ ] Enmienda #168 aprobada por humano';
 
+const CHARTER_N1_222 = '**Regla N1 (enmienda #222)**: Inicio y Perfil abren con PetHeroHeader a sangre. Salud y Nutrición abren con el selector de mascotas (avatares de 40) en una cabecera fija de vidrio plano, sin título visible; si no hay mascotas la cabecera no se pinta. En Perfil el selector glass y «Añadir mascota» comparten la fila superior del hero. Las tres pestañas conservan un encabezado solo para lectores de pantalla. Devolver el título a una pestaña, el hero a Salud o a Nutrición, o quitárselo a Inicio o a Perfil, es una enmienda a #222.';
+
 const AMENDED_DOCS_168 = [
   {
     file: 'specs/mobile-health-make-parity/requirements.md',
@@ -151,7 +153,7 @@ const AMENDED_DOCS_168 = [
     file: 'docs/ui-guidelines.md',
     feature: 'docs/ui-guidelines.md',
     change: 'regla N1: título grande en Salud, Nutrición y Perfil; hero solo en Inicio',
-    marker: '**Regla N1 (enmienda #196)**: Inicio y Perfil abren con PetHeroHeader a sangre; Salud y Nutrición abren con el título grande. En Perfil el título «Perfil» y «Añadir mascota» van en el slot superior del hero y el nombre con los chips en su pie. Devolver el hero a Salud o a Nutrición, o quitárselo a Inicio o a Perfil, es una enmienda a #196.',
+    marker: CHARTER_N1_222,
   },
 ];
 
@@ -198,7 +200,7 @@ describe('#168 R11: las specs enmendadas por #168 llevan su bloque', () => {
     }
   });
 
-  it('aplica además el marcador en prosa que la tabla R11.2 prescribe (enmendado por #196 R11)', () => {
+  it('aplica además el marcador en prosa que la tabla R11.2 prescribe (enmendado por #196 R11) (enmendado por #222 R12)', () => {
     for (const { file, marker } of AMENDED_DOCS_168) {
       const flowed = readFileSync(join(REPOSITORY_ROOT, file), 'utf8').replace(/\s+/g, ' ');
       expect({
@@ -249,6 +251,12 @@ const AMENDED_DOCS_222 = [
     change: 'R4 y R5: avatars deja las pantallas y la cápsula pierde el título',
     marker: '**Enmendado por #222 (C6)**: variant="avatars" solo vive en components/tab-pet-header.tsx y la cápsula profile-add-pet ya no sigue a un título (#222 R2, R5, R9 L5).',
   },
+  {
+    file: 'docs/ui-guidelines.md',
+    feature: 'docs/ui-guidelines.md',
+    change: 'regla N1: avatares fijos y sin título en Salud y Nutrición',
+    marker: CHARTER_N1_222,
+  },
 ];
 
 function canonicalAmendment222(feature: string, change: string): string {
@@ -271,22 +279,26 @@ function canonicalAmendment222(feature: string, change: string): string {
 }
 
 describe('#222 R11: las specs enmendadas por #222 llevan su bloque', () => {
-  it('#222 R11: inserta el bloque literal de design.md §2 en los siete documentos', () => {
-    expect(AMENDED_DOCS_222).toHaveLength(6);
+  it('#222 R11: inserta el bloque literal de design.md §2 en los siete documentos (enmendado por #222 R12)', () => {
+    expect(AMENDED_DOCS_222).toHaveLength(7);
     for (const { file, feature, change } of AMENDED_DOCS_222) {
       const source = readFileSync(join(REPOSITORY_ROOT, file), 'utf8');
       expect({ file, hasAmendment: source.includes(canonicalAmendment222(feature, change)) }).toEqual({ file, hasAmendment: true });
     }
   });
 
-  it('#222 R11: deja en cada documento su línea de firma propia, marcada o no', () => {
+  it('#222 R11: deja en cada documento su línea de firma propia, marcada o no (enmendado por #222 R12)', () => {
     for (const { file } of AMENDED_DOCS_222) {
       const source = readFileSync(join(REPOSITORY_ROOT, file), 'utf8');
+      if (file === 'docs/ui-guidelines.md') {
+        expect(source).toContain('- [X] Enmienda docs/ui-guidelines.md aprobada por humano\n  Aprobada por el humano en la sesión del leader el 2026-11-03 («si apruebo los cambios»); el leader teclea el commit.\n  Véase `specs/mobile-tab-avatar-header/requirements.md` §Aprobación, casilla G4.');
+        continue;
+      }
       expect({ file, hasSignatureLine: source.includes(SIGNATURE_LINE_222) || source.includes('- [X] Enmienda #222 aprobada por humano') }).toEqual({ file, hasSignatureLine: true });
     }
   });
 
-  it('#222 R11: aplica además el marcador en prosa de la tabla R11.1', () => {
+  it('#222 R11: aplica además el marcador en prosa de la tabla R11.1 (enmendado por #222 R12)', () => {
     for (const { file, marker } of AMENDED_DOCS_222) {
       const source = readFileSync(join(REPOSITORY_ROOT, file), 'utf8').replace(/\s+/g, ' ');
       expect({ file, hasMarker: source.includes(marker.replace(/\s+/g, ' ')) }).toEqual({ file, hasMarker: true });
