@@ -63,9 +63,12 @@ Lista cerrada:
 Si necesitas otro fichero, PARA. No tocar `backend-pet-tracker/`, `docs/`, `src/theme/`,
 `src/i18n/`, `src/__tests__/`, `package.json`, `bun.lock`, `init.sh`, `feature_list.json`,
 `STATUS.md`, `progress/current.md`, `progress/history.md`, `progress/handoff_*.md`,
-`specs/mobile-pet-members/` ni otros `specs/`. Las mutaciones tocan solo `src/screens/profile/index.tsx`
-y se revierten con `git checkout HEAD -- mobile-pet-tracker/src/screens/profile/index.tsx`
-(comprueba `git diff --cached --quiet`); ninguna se commitea.
+`specs/mobile-pet-members/` ni otros `specs/`. Las mutaciones R1 a R5 y R6(a) tocan solo `src/screens/profile/index.tsx`;
+R6(b) toca solo `src/screens/profile/index.test.tsx` (dejar un `it` sin enmendar), y es la única
+excepción. Se revierten con
+`git checkout HEAD -- mobile-pet-tracker/src/screens/profile/index.tsx mobile-pet-tracker/src/screens/profile/index.test.tsx`
+(comprueba `git diff --cached --quiet`); ninguna se commitea. Haz R6(a)-(b) con los cuatro commits
+ya hechos, para que el HEAD sea el definitivo.
 
 ## Reglas críticas
 
