@@ -551,3 +551,32 @@ gate de implementación: lo cierra la casilla «Smoke de R18» de § Aprobación
 - [x] Enmienda #227 aprobada por humano
   (firma delegada del leader, 2026-11-03; mandato del humano 2026-10-23,
   ampliado 2026-11-03)
+
+## Enmienda #228 — Acciones de deslizar en Recordatorios
+
+**Spec enmendada:** `specs/mobile-canvas-routine/requirements.md` (#204),
+**R8** y **R15**. La enmienda la escribe `specs/mobile-reminder-swipe-actions/requirements.md`
+(#228, R3, R10, R12 y R13).
+
+**Qué cambia.**
+
+- R8: la receta de «Eliminar» de fila (variante `danger-soft`,
+  `h-11 rounded-14 px-2.5` y superficie rosa) pasa a la del panel del
+  deslizable: `w-24 items-center justify-center gap-1 bg-category-rose`, con
+  etiqueta `text-center text-13 font-extrabold text-danger` (#228 R3).
+- R15: se retira de la tabla la fila «Eliminar» de fila. La fidelidad al
+  canvas de esa acción la candan los artboards de #228 (R10).
+- El punto 3 del bloque de la Enmienda #204 en `docs/ui-guidelines.md` lo
+  sustituye la Enmienda #228, que se añade al final de la carta (#228 R12,
+  gate G4). El texto del bloque #204 no se edita.
+
+**Qué no cambia.**
+
+- El marco, las píldoras, el ámbar de hoy y la hoja de borrar (R4, R5, R7 y
+  R9).
+- El bloque de la carta que canda R16.
+- El grep-limpio de R17.
+
+- [x] Enmienda #228 aprobada (fecha: 2026-11-03)
+  (firma delegada del leader; mandato del humano 2026-10-23, ampliado
+  2026-11-03)

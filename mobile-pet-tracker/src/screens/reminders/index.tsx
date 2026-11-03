@@ -8,6 +8,7 @@ import { router, type Href, useFocusEffect, useLocalSearchParams } from 'expo-ro
 import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
+import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronDown, ChevronUp, Plus, Repeat, Trash } from 'reicon-react-native';
 
@@ -245,12 +246,28 @@ export function RemindersScreen() {
     const slot = CATEGORY_SLOTS[meta.category];
     const date = due.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
     const time = due.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+    const deleting = deletingId === reminder.id;
+    const actionName = isSeries ? 'cancelSeries' : 'delete';
+    const actionText = isSeries ? t('reminders.cancelSeries') : t('reminders.delete');
+    const openAction = () => {
+      if (isSeries) {
+        setActionError(null);
+        setDeleteCandidate(null);
+        setCancelCandidate(reminder);
+      } else {
+        setCancelCandidate(null);
+        confirmDelete(reminder);
+      }
+    };
 
-    return (
+    const row = (
       <View
         testID={`reminder-row-${reminder.id}`}
         className={`flex-row items-center gap-3 rounded-22 bg-surface p-3.5 ${upcoming ? 'border-2 border-category-amber' : 'border border-border'}${past ? ' opacity-50' : ''}`}
         style={CONTINUOUS_CORNER}
+        accessible
+        accessibilityActions={isOwner && !deleting ? [{ name: actionName, label: isSeries ? t('reminders.cancelSeriesA11y', { title: reminder.title }) : actionText }] : undefined}
+        onAccessibilityAction={(event) => { if (isOwner && !deleting && event.nativeEvent.actionName === actionName) openAction(); }}
       >
         <View
           testID={`reminder-tile-${reminder.id}`}
@@ -306,29 +323,32 @@ export function RemindersScreen() {
             </View>
           ) : null}
         </View>
-        {isOwner ? (
-          <Button
-            testID={isSeries ? `reminder-cancel-series-${reminder.id}` : `reminder-delete-${reminder.id}`}
-            accessibilityLabel={isSeries ? t('reminders.cancelSeriesA11y', { title: reminder.title }) : undefined}
-            className={`h-11 rounded-14 px-2.5 ${CATEGORY_SLOTS.rose.surface}`}
-            isDisabled={deletingId === reminder.id}
-            variant="danger-soft"
-            onPress={() => {
-              if (isSeries) {
-                setActionError(null);
-                setDeleteCandidate(null);
-                setCancelCandidate(reminder);
-              } else {
-                setCancelCandidate(null);
-                confirmDelete(reminder);
-              }
-            }}
-          >
-            <Text className="text-13 font-extrabold text-danger">
-              {isSeries ? t('reminders.cancelSeries') : t('reminders.delete')}
-            </Text>
-          </Button>
-        ) : null}
+      </View>
+    );
+    if (!isOwner) return row;
+    return (
+      <View className="overflow-hidden rounded-22" style={CONTINUOUS_CORNER}>
+        <ReanimatedSwipeable
+          testID={`reminder-swipe-${reminder.id}`}
+          overshootRight={false}
+          renderRightActions={(_progress, _translation, swipeable) => (
+            <Pressable
+              testID={isSeries ? `reminder-cancel-series-${reminder.id}` : `reminder-delete-${reminder.id}`}
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+              className={`w-24 items-center justify-center gap-1 ${CATEGORY_SLOTS.rose.surface}`}
+              disabled={deleting}
+              style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+              onPress={() => { swipeable.close(); openAction(); }}
+            >
+              <View className={`absolute inset-y-0 -left-6 w-6 ${CATEGORY_SLOTS.rose.surface}`} />
+              {isSeries ? <Repeat size={20} color={danger} /> : <Trash size={20} color={danger} />}
+              <Text className="text-center text-13 font-extrabold text-danger">{actionText}</Text>
+            </Pressable>
+          )}
+        >
+          {row}
+        </ReanimatedSwipeable>
       </View>
     );
   };

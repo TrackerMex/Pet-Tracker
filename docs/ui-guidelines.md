@@ -1010,3 +1010,14 @@ de la enmienda está en su `requirements.md` §R11.
 - [X] Enmienda docs/ui-guidelines.md aprobada por humano
   Aprobada por el humano en la sesión del leader el 2026-11-03 («si apruebo los cambios»); el leader teclea el commit.
   Véase `specs/mobile-tab-avatar-header/requirements.md` §Aprobación, casilla G4.
+
+## Enmienda #228 — Acciones de deslizar en Recordatorios
+
+Fecha: 2026-11-03. Feature #228 `mobile-reminder-swipe-actions`. Sustituye el punto 3 («Eliminar» de fila de recordatorio) de la Enmienda #204.
+
+1. **Acción de fila por deslizamiento.** La fila de recordatorio del dueño ya no lleva botón «Eliminar» ni «Cancelar serie». Va dentro de `ReanimatedSwipeable` (`react-native-gesture-handler/ReanimatedSwipeable`, sin rebote: `overshootRight={false}`), envuelta en `overflow-hidden rounded-22` con `CONTINUOUS_CORNER`. Al deslizar a la izquierda aparece un panel de 96 (`w-24 items-center justify-center gap-1`) sobre `CATEGORY_SLOTS.rose.surface`, con una franja rosa `absolute inset-y-0 -left-6 w-6` bajo la esquina de la fila, el icono `Trash` (o `Repeat` en una serie programada) de 20 en `danger` y la etiqueta `text-center text-13 font-extrabold text-danger`. Al pulsar baja la opacidad a 0,8. Sin labio, sin háptica.
+2. **Accesibilidad.** El panel se oculta a los lectores de pantalla y la fila expone la misma acción como acción de accesibilidad (`delete`, con la etiqueta «Eliminar», o `cancelSeries`, con «Cancelar la serie {{title}}»). Quien no es dueño no ve panel ni acción.
+
+Detalle y tests en `specs/mobile-reminder-swipe-actions/requirements.md` (R1 a R13).
+
+- [X] Enmienda #228 aprobada por humano
