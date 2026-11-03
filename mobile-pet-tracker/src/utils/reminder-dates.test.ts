@@ -124,3 +124,26 @@ describe('#227 R2: partición por día civil y status', () => {
     expect(result.past.map(({ id }) => id)).toEqual(section === 'past' ? ['r'] : []);
   });
 });
+
+describe('#227 R3: orden de las secciones', () => {
+  beforeEach(() => { jest.useFakeTimers({ now: new Date(2026, 11, 30, 8, 0) }); });
+  afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
+
+  it('#227 R3: ordena próximos ascendente y pasados descendente, con empate por id', () => {
+    const input = [
+      reminder('p-c', 'scheduled', new Date(2026, 11, 29, 9, 0)),
+      reminder('u-b', 'scheduled', new Date(2027, 0, 2, 9, 0)),
+      reminder('p-a', 'sent', new Date(2026, 11, 3, 9, 0)),
+      reminder('u-c', 'sent', new Date(2027, 0, 1, 0, 30)),
+      reminder('p-b', 'cancelled', new Date(2027, 0, 21, 9, 0)),
+      reminder('u-a2', 'scheduled', new Date(2027, 0, 2, 9, 0)),
+      reminder('p-0', 'scheduled', new Date(2026, 11, 29, 9, 0)),
+      reminder('u-a', 'scheduled', new Date(2026, 11, 30, 23, 0)),
+    ];
+    const original = [...input];
+    const { upcoming, past } = splitReminders(input, new Date(2026, 11, 30, 8, 0));
+    expect(upcoming.map(({ id }) => id)).toEqual(['u-a', 'u-c', 'u-a2', 'u-b']);
+    expect(past.map(({ id }) => id)).toEqual(['p-b', 'p-0', 'p-c', 'p-a']);
+    expect(input).toEqual(original);
+  });
+});
