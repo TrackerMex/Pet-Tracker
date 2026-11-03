@@ -62,7 +62,7 @@ dos `TOTAL PSS`. `pixelRatio` = 3.5 y `requestedPx` = 154.
 
 | # | Resultado | Nota |
 |---|---|---|
-| 1 | **Falla** | Con «Foto», `msToPhotoLoad` = null y `msToCapture` = 4213 (4226 oculto): el `onLoad` del `<Image>` de react-native-svg no llega nunca y a los 4 s cae al blobatar. `base64Length` = 7072 en las cinco capturas, o sea, siempre el mismo PNG del blobatar. La foto sí carga en la pastilla de «Jev» (expo-image), así que la URL firmada es válida |
+| 1 | **Falla** | Con «Foto», `msToPhotoLoad` = null y `msToCapture` = 4213 (4226 oculto): el `onLoad` del `<Image>` de react-native-svg no llega nunca y a los 4 s cae al blobatar. `base64Length` = 7072 en las cinco capturas, o sea, siempre el mismo PNG del blobatar. La foto sale en la pastilla de «Jev», pero desde la caché de expo-image (ver «Causa») |
 | 2 | Pasa | `iconWidth` = `iconHeight` = 154 = 44 × 3.5. `decodedWidth` sale null porque `RNImage.getSize` de Android no acepta `data:`: es el `error` del panel («Unsupported uri scheme for encoded image fetch»), no un fallo de la cadena. El PNG se ve nítido |
 | 3 | Pasa, solo con el blobatar | `stage` = `icon-ready` en las cinco; el marcador del mapa es el blobatar sobre disco blanco, igual que el PNG del panel, no el pin por defecto. La cadena SVG → PNG → `useImage` → icono de expo-maps funciona |
 | 4 | +35 MB, toda la pantalla | `TOTAL PSS` 1 140 009 KB antes de Mapa y 1 175 825 KB en `icon-ready` (+35 816 KB). Mide Mapa entera (Google Maps más el spike), no el marcador solo |
@@ -87,8 +87,17 @@ Logcat del 2026-11-03 (PID 17342): dos `W unknown:ReactNative: RNSVG:
 fetchDecodedImage failed!`, a las 15:23:53 y 15:23:55. Fresco no trae la foto: el
 fallo de 1 es real, no un evento perdido. `FLog.w` imprime la excepción de
 `getFailureCause()` en las líneas siguientes, que el `findstr RNSVG` filtró.
-Pendiente: esas líneas, para saber si la causa tiene arreglo trivial antes de
-elegir E o D.
+
+Causa (15:36:33, `findstr /c:"unknown:ReactNative"`): `java.io.IOException:
+Unexpected HTTP code ... code=404, message=NOT FOUND` desde
+`OkHttpNetworkFetcher`, para
+`http://192.168.1.150:4566/pet-tracker-media-local/pets/01a111d3-…/photo-1792697360826`
+firmada a las 21:36:28Z. Un 404 de LocalStack es objeto o bucket inexistente,
+no firma mala (eso sería 403). La premisa «la foto carga en la pastilla, luego
+la URL es válida» no se sostiene: `pet-avatar.tsx` pasa `cacheKey={pet.id}` a
+expo-image, que pinta la foto de su caché de disco sin pedir la URL. Lo más
+probable es que LocalStack perdiera el objeto al reiniciarse. B2 no está
+descartada: falta repetir «Foto» con una foto que exista en el bucket.
 
 Si falla 1, 3 o 5, la decisión vuelve al humano: E (`react-native-view-shot` y
 rebuild) o D (miniatura en el backend). Ver `plan_mejoras-smoke-2026-11-03.md`
