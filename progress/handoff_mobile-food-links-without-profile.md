@@ -96,8 +96,10 @@ Si necesitas otro fichero, PARA. No tocar `backend-pet-tracker/`, `docs/`, `ai-e
   `bunx expo lint --no-cache > ../progress/lint_233.log 2>&1 && test ! -s ../progress/lint_233.log && echo LINT_OK`.
   Borra esos logs antes de terminar. Guardas: `bunx jest src/__tests__ src/app/__tests__ src/components/__tests__`.
 - **Anclas finales** de R1–R7 con `grep -cF`; `numstat` de R6 `2<TAB>1` y de R7 `<N><TAB>2`.
-- **Diff acotado:** `git diff --name-only 5311e66c..HEAD` solo lista la lista cerrada (más el
-  reporte si lo commiteas; no lo hagas).
+- **Diff acotado:** mídelo desde el commit de este handoff, no desde H0 (H0 es anterior y el
+  propio handoff aparecería en el diff): `B=$(git log -1 --format=%h -- progress/handoff_mobile-food-links-without-profile.md) && git diff --name-only $B..HEAD`
+  solo lista la lista cerrada (más el reporte si lo commiteas; no lo hagas). Enmienda del leader:
+  el candado anterior contra `5311e66c` era imposible por construcción.
 - **Árbol limpio, acotado:** al terminar, `git status --short -- mobile-pet-tracker specs` vacío.
 - **No abras ni edites la PR.** La abre el leader.
 - Si el sandbox te deniega un comando, PARA y repórtalo.
