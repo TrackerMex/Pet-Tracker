@@ -2497,4 +2497,26 @@ describe('#227: próximos y pasados', () => {
     expect(screen.getAllByTestId(/^reminder-row-/)).toHaveLength(6);
     expect(screen.queryAllByTestId(/^reminder-(delete|cancel-series)-/)).toEqual([]);
   });
+
+
+  it('#227 R8: sin próximos pinta la caja «Nada pendiente por ahora» encima de «Pasados»', async () => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [reminders[0], reminders[1], reminders[4]] });
+    await renderReminders();
+    await screen.findByTestId('reminders-upcoming-heading');
+    expect(screen.queryByTestId('reminders-upcoming-empty')).not.toBeNull();
+    const box = screen.getByTestId('reminders-upcoming-empty');
+    expect(box.props.className).toBe('items-center gap-1 rounded-22 bg-default px-4 py-5');
+    expect(box).toHaveStyle({ borderCurve: 'continuous' });
+    const title = within(box).getByTestId('reminders-upcoming-empty-title');
+    expect(title).toHaveTextContent('Nada pendiente por ahora');
+    expect(title.props.className).toBe('text-center text-15 font-extrabold text-foreground');
+    const body = within(box).getByTestId('reminders-upcoming-empty-body');
+    expect(body).toHaveTextContent('Los recordatorios nuevos aparecerán aquí.');
+    expect(body.props.className).toBe('text-center text-13 text-muted');
+    expect(screen.queryByTestId('reminders-upcoming-list')).toBeNull();
+    expect(screen.getByTestId('reminders-past-count')).toHaveTextContent('3');
+    expect(screen.getByTestId('reminders-past-toggle').props.accessibilityState?.expanded).toBe(false);
+    expect(screen.queryByTestId('reminders-past-list')).toBeNull();
+    expect(screen.getAllByTestId(/^reminders-(upcoming-heading|upcoming-empty|past)$/).map(({ props }) => props.testID)).toEqual(['reminders-upcoming-heading', 'reminders-upcoming-empty', 'reminders-past']);
+  });
 });
