@@ -155,7 +155,7 @@ function ProfileWideTile({ testID, slot, icon, label, subtitle, color, onPress }
   onPress: () => void;
 }) {
   return (
-    <Pressable testID={testID} accessibilityRole="button" hitSlop={TOUCH_SLOP} style={CONTINUOUS_CORNER} className={`flex-row items-center gap-2.5 rounded-tile p-3 ${CATEGORY_SLOTS[slot].surface}`} onPress={onPress}>
+    <Pressable testID={testID} accessibilityRole="button" hitSlop={TOUCH_SLOP} style={CONTINUOUS_CORNER} className={`flex-1 flex-row items-center gap-2.5 rounded-tile p-3 ${CATEGORY_SLOTS[slot].surface}`} onPress={onPress}>
       <View testID={`${testID}-icon`} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">{icon}</View>
       <View testID={`${testID}-text`} className="flex-1 gap-0.5">
         <Text testID={`${testID}-label`} className={`text-sm font-extrabold ${CATEGORY_SLOTS[slot].ink}`}>{label}</Text>
