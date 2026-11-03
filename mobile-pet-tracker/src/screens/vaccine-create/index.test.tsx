@@ -260,6 +260,25 @@ it('#236 R2: con el aviso pintado «Otra vacuna» sigue seleccionada y con su ca
   expect(screen.getByTestId('vaccine-chip-other').props.accessibilityState).toEqual({ selected: true });
   expect(screen.getByTestId('vaccine-create-name')).toBeVisible();
 });
+it.each(['vacío', 'con entradas'])('#236 R3: un catálogo ok %s no pinta el aviso de error', async state => {
+  if (state === 'vacío') mockCatalog.mockResolvedValue({ kind: 'ok', entries: [] });
+  await renderVaccineCreate();
+  const chips = await screen.findByTestId('vaccine-create-chips');
+  expect(chips.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(state === 'vacío'
+    ? ['vaccine-chip-other']
+    : ['vaccine-chip-cat-lepto', 'vaccine-chip-cat-dhppi', 'vaccine-chip-cat-rabia', 'vaccine-chip-cat-tos', 'vaccine-chip-other']);
+  if (state === 'vacío') expect(screen.getByTestId('vaccine-chip-other').props.accessibilityState).toEqual({ selected: true });
+  expect(screen.queryByTestId('vaccine-create-catalog-error')).toBeNull();
+  expect(screen.queryByTestId('vaccine-create-catalog-retry')).toBeNull();
+  expect(screen.queryByText('No se pudieron cargar las vacunas')).toBeNull();
+});
+it('#236 R4: mientras carga no pinta el aviso de error', async () => {
+  mockCatalog.mockReturnValue(pending());
+  await renderVaccineCreate();
+  const skeleton = await screen.findByTestId('vaccine-create-chips-skeleton');
+  expect(skeleton.children).toHaveLength(3);
+  expect(screen.queryByTestId('vaccine-create-catalog-error')).toBeNull();
+});
 it('#236 R5: «Reintentar» vuelve a pedir el catálogo y, si responde ok, pinta las entradas y retira el aviso', async () => {
   mockCatalog.mockResolvedValueOnce({ kind: 'error' });
   await renderVaccineCreate();
