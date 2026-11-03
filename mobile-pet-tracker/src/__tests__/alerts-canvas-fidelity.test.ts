@@ -195,7 +195,7 @@ describe('#174 R12: inventarios', () => {
     {
       token: 'tracking-caps',
       pattern: /(?<![\w-])tracking-caps\b/,
-      files: ['screens/alerts/index.tsx', 'screens/food/index.tsx', 'screens/health/index.tsx', 'screens/meal-schedule/index.tsx'], // #179 R5; #174 R12; #200 R5; #199 R14
+      files: ['screens/alerts/index.tsx', 'screens/food/index.tsx', 'screens/health/index.tsx', 'screens/meal-schedule/index.tsx', 'screens/reminders/index.tsx'], // #179 R5; #174 R12; #200 R5; #199 R14; #227 R4
     },
     {
       token: 'text-15',

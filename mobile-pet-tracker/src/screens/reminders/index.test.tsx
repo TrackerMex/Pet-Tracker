@@ -538,6 +538,7 @@ describe('#178 R6: fila del canvas', () => {
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: todayCanvasReminders });
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
+    await expandPast();
     for (const [id, className] of [
       ['a', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border-2 border-category-amber'],
       ['b', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border'],
@@ -552,6 +553,7 @@ describe('#178 R6: fila del canvas', () => {
   it('ordena mosaico, columna y borrar con la anatomía exacta de cada fila', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
+    await expandPast();
     for (const id of ['a', 'b', 'c']) {
       const row = screen.getByTestId(`reminder-row-${id}`);
       expect(row.children).toHaveLength(3);
@@ -565,6 +567,7 @@ describe('#178 R6: fila del canvas', () => {
   it('da a cada mosaico su único icono, tamaño, superficie y tinta', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
+    await expandPast();
     for (const [id, className, iconID, color] of [
       ['a', 'size-11.5 items-center justify-center rounded-14 bg-category-blue', 'reminders-icon-syringe', 'color:category-blue-strong'],
       ['b', 'size-11.5 items-center justify-center rounded-14 bg-category-amber', 'reminders-icon-pill', 'color:category-amber-strong'],
@@ -584,6 +587,7 @@ describe('#178 R6: fila del canvas', () => {
   it('pinta tipo y título con sus tintas y pesos propios', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
+    await expandPast();
     for (const [id, type, title, typeClass] of [
       ['a', 'Vacuna', 'Refuerzo de rabia', 'text-xs font-extrabold text-category-blue-strong'],
       ['b', 'Medicamento', 'Pastilla trimestral', 'text-xs font-extrabold text-category-amber-strong'],
@@ -606,6 +610,7 @@ describe('#178 R6: fila del canvas', () => {
   it('formatea la hora lejana y la meta inactiva con su estado', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
+    await expandPast();
     expect(within(screen.getByTestId('reminder-row-b')).getByText('20 ene, 20:05').props.className).toBe('text-13 font-normal text-muted');
     const row = within(screen.getByTestId('reminder-row-c'));
     expect(row.getByText('3 dic, 11:30').props.className).toBe('text-13 font-normal text-muted');
@@ -617,6 +622,7 @@ describe('#178 R6: fila del canvas', () => {
   it('sustituye los emoji de todas las filas por iconos', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
+    await expandPast();
     for (const id of ['a', 'b', 'c']) {
       const row = screen.getByTestId(`reminder-row-${id}`);
       expect(within(row).queryAllByText(/\p{Extended_Pictographic}/u)).toEqual([]);
@@ -643,7 +649,7 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
     jest.useRealTimers();
   });
 
-  it('renders summaries and reminder rows in API order (enmendado por #213 R16)', async () => {
+  it('renders summaries and reminder rows by section (enmendado por #213 R16)', async () => {
     const reminders = [
       makeReminder({
         id: 'sent',
@@ -685,8 +691,6 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
     expect(
       screen.getAllByTestId(/^reminder-row-/).map(({ props }) => props.testID),
     ).toEqual([
-      'reminder-row-sent',
-      'reminder-row-cancelled',
       'reminder-row-upcoming',
       'reminder-row-later',
     ]);
@@ -704,6 +708,9 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
     expect(upcoming.getByText('· en 3 días')).toBeVisible();
     expect(screen.queryByTestId('reminder-upcoming-upcoming')).toBeNull(); // #213 R16
     expect(screen.queryByTestId('reminder-upcoming-later')).toBeNull();
+
+    await expandPast();
+    expect(screen.getAllByTestId(/^reminder-row-/).map(({ props }) => props.testID)).toEqual(['reminder-row-upcoming', 'reminder-row-later', 'reminder-row-cancelled', 'reminder-row-sent']);
 
     expect(screen.getByTestId('reminder-row-sent').props.className).toContain(
       'opacity-50',
@@ -798,6 +805,7 @@ describe('R7: borrar recordatorio con confirmación', () => {
       expect(screen.getByTestId('reminder-delete-scheduled')).toBeVisible(),
     );
     expect(screen.getByTestId('reminder-delete-sent')).toBeVisible();
+    await expandPast();
     expect(screen.getByTestId('reminder-delete-cancelled')).toBeVisible();
   });
 
@@ -1169,6 +1177,8 @@ describe('#84 R3: recordatorios cuenta días de calendario en la píldora, el ba
     });
 
     await renderReminders();
+    await screen.findByTestId('reminders-past-toggle');
+    await expandPast();
     await waitFor(() => expect(screen.getByTestId('reminder-row-yesterday-later')).toBeVisible());
 
     const yesterday = within(screen.getByTestId('reminder-row-yesterday-later'));
@@ -1324,12 +1334,13 @@ describe('#178 R7: entrada escalonada y badge', () => {
     jest.useRealTimers();
   });
 
-  it('asigna a cada entrada su índice en el orden del fixture (enmendado por #204 R6)', async () => {
+  it('asigna a cada entrada su índice dentro de su sección (enmendado por #204 R6)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
-    for (const [index, id] of ['a', 'b', 'c'].entries()) {
+    await expandPast();
+    for (const [id, delayMs] of [['a', 0], ['b', 70], ['c', 0]] as const) {
       expect(mockRiseIn).toHaveBeenCalledWith(
-        expect.objectContaining({ testID: `reminders-entry-${id}`, delayMs: index * 70 }),
+        expect.objectContaining({ testID: `reminders-entry-${id}`, delayMs }),
       );
     }
   });
@@ -1337,6 +1348,7 @@ describe('#178 R7: entrada escalonada y badge', () => {
   it('envuelve cada fila en su propia entrada', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
+    await expandPast();
     for (const id of ['a', 'b', 'c']) {
       expect(within(screen.getByTestId(`reminders-entry-${id}`)).getByTestId(`reminder-row-${id}`)).toBeVisible();
     }
@@ -1871,9 +1883,10 @@ describe('#204 R6: entrada de las filas', () => {
 
   afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
 
-  it('#204 R6: escalona las filas 0, 70 y 140 ms con RiseIn', async () => {
+  it('#204 R6: escalona las filas próximas cada 70 ms y la pasada desde 0', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
+    await expandPast();
     const delayById = new Map(
       mockRiseIn.mock.calls
         .map(([props]) => props)
@@ -1883,7 +1896,7 @@ describe('#204 R6: entrada de las filas', () => {
     expect([...delayById]).toEqual([
       ['reminders-entry-a', 0],
       ['reminders-entry-b', 70],
-      ['reminders-entry-c', 140],
+      ['reminders-entry-c', 0],
     ]);
   });
 });
@@ -2036,6 +2049,8 @@ describe('#213 R14: series en Recordatorios', () => {
     ] });
     await renderReminders();
     await screen.findByTestId('reminder-row-once');
+    await expandPast();
+    for (const id of ['once', 'cancelled', 'sent']) expect(screen.getByTestId(`reminder-row-${id}`)).toBeVisible();
     for (const id of ['once', 'cancelled', 'sent']) expect(screen.queryByTestId(`reminder-repeats-${id}`)).toBeNull();
   });
   it('#213 R15: la serie programada ofrece Cancelar serie y el puntual Eliminar', async () => {
@@ -2060,8 +2075,10 @@ describe('#213 R14: series en Recordatorios', () => {
   });
 
   it.each(['cancelled', 'sent'] as const)('#213 R15: una serie cancelada o enviada conserva Eliminar (%s)', async (status) => {
-    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [makeReminder({ id: 'series', status, recurrence: { unit: 'month', every: 1 } })] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [makeReminder({ id: 'series', status, dueAt: new Date(2026, 11, 28, 9, 0).toISOString(), recurrence: { unit: 'month', every: 1 } })] });
     await renderReminders();
+    await screen.findByTestId('reminders-past-toggle');
+    await expandPast();
     await screen.findByTestId('reminder-row-series');
     expect(screen.getByTestId('reminder-delete-series')).toHaveTextContent('Eliminar');
     expect(screen.queryByTestId('reminder-cancel-series-series')).toBeNull();
@@ -2076,12 +2093,14 @@ describe('#213 R14: series en Recordatorios', () => {
     ] });
     await renderReminders();
     await screen.findByTestId('reminder-row-today');
+    await expandPast();
     expect(screen.getByTestId('reminder-upcoming-today')).toHaveTextContent('Hoy');
     expect(screen.getByTestId('reminder-row-today').props.className).toBe('flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border-2 border-category-amber');
     for (const id of ['tomorrow', 'yesterday']) {
       expect(screen.queryByTestId(`reminder-upcoming-${id}`)).toBeNull();
-      expect(screen.getByTestId(`reminder-row-${id}`).props.className).toBe('flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border');
     }
+    expect(screen.getByTestId('reminder-row-tomorrow').props.className).toBe('flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border');
+    expect(screen.getByTestId('reminder-row-yesterday').props.className).toBe('flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border opacity-50');
   });
 
   it('#213 R17: Cancelar serie abre la hoja con su copy', async () => {

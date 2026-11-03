@@ -1614,3 +1614,11 @@ Las claves con `pingo` pasan a `orbit` con los mismos valores; las filas anterio
 | — | `home.orbitPhraseMeals` | `{{petName}} has had {{served}} of {{total}} meals today.` | `{{petName}} lleva {{served}} de {{total}} comidas hoy.` | ← renombrada desde `home.pingoPhraseMeals` por #225 (R3) |
 | — | `home.orbitPhraseCalm` | `I'm keeping an eye on {{petName}}.` | `Estoy pendiente de {{petName}}.` | ← renombrada desde `home.pingoPhraseCalm` por #225 (R3) |
 | — | `home.orbitWalkLabel` | `Orbit walking` | `Orbit caminando` | ← añadida por #225 (R1) |
+
+
+### §2.40 — Añadidos por #227 — Recordatorios próximos y pasados
+
+| Diseño | Clave | en | es | Cambio |
+|---|---|---|---|---|
+| — | `reminders.sectionUpcoming` | `Upcoming` | `Próximos` | ← añadida por #227 (R1) |
+| — | `reminders.sectionPast` | `Past` | `Pasados` | ← añadida por #227 (R1) |
