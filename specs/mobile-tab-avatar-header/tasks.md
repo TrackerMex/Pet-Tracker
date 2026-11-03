@@ -105,9 +105,9 @@ tags: [harness, spec, mobile, ui]
 
 ## R12 — Carta: regla N1 (espera a G4)
 
-- [ ] (1) Antes de empezar: `grep -cE '^- \[[xX]\] G4 ' specs/mobile-tab-avatar-header/requirements.md` debe dar 1. Si da 0, **parar**, dejar R12 y R13 sin marcar y decirlo en `progress/impl_mobile-tab-avatar-header.md`. Con G4 marcada: escribir el test que falla (`#222 R12: la carta recoge la enmienda N1 de #222` y la reescritura de la fila marcador de `AMENDED_DOCS_168`)
-- [ ] (2) Implementación mínima que lo pasa: reescribir la regla N1 en `docs/ui-guidelines.md` con el texto de R12.1 y añadir el bloque canónico (R12.2); fila séptima de `AMENDED_DOCS_222` y constante `CHARTER_N1_222`
-- [ ] (3) Refactor con tests verdes (B17 = 0, B18 = 1)
+- [x] (1) Antes de empezar: `grep -cE '^- \[[xX]\] G4 ' specs/mobile-tab-avatar-header/requirements.md` debe dar 1. Si da 0, **parar**, dejar R12 y R13 sin marcar y decirlo en `progress/impl_mobile-tab-avatar-header.md`. Con G4 marcada: escribir el test que falla (`#222 R12: la carta recoge la enmienda N1 de #222` y la reescritura de la fila marcador de `AMENDED_DOCS_168`)
+- [x] (2) Implementación mínima que lo pasa: reescribir la regla N1 en `docs/ui-guidelines.md` con el texto de R12.1 y añadir el bloque canónico (R12.2); fila séptima de `AMENDED_DOCS_222` y constante `CHARTER_N1_222`
+- [x] (3) Refactor con tests verdes (B17 = 0, B18 = 1)
 
 ## R13 — Convenciones: excepción de la cabecera fija
 
