@@ -221,8 +221,18 @@ Sin dobles nuevos. Sentinela `const ICON = { sentinel: 'marker-icon' } as unknow
     `[{ key: '["pet-1","Luna",""]', icon: FALLBACK_ICON }]`.
 
   «desmontado antes del segundo frame no captura»: render, un `runFrame`,
-  `unmount()`, `runFrames()` y 0 llamadas a `mockToDataURL`. Caen los dos
-  porque no hay captura.
+  `unmount()`, `runFrames()` y 0 llamadas a `mockToDataURL`.
+
+  Cae el primero porque no hay captura. El segundo **nace verde**: sin efecto
+  de captura no hay ninguna llamada. Su mutación necesita la captura, así que
+  se planta **después del commit verde de R4** (no antes del rojo): en el
+  efecto de montaje, leer `const svg = svgRef.current` antes del primer
+  `requestAnimationFrame`, llamar a `svg?.toDataURL(…)` en el segundo frame y
+  quitar la comprobación del indicador de limpieza. El ref leído al montar no
+  se anula al desmontar, así que el `it` cae con 1 llamada. Plantar, correr,
+  ver rojo, revertir, sin commitear, y anotarlo en el reporte. *(Enmienda del
+  leader tras la parada de Codex del 2026-11-03: el texto anterior decía «Caen
+  los dos porque no hay captura».)*
   Commit: `test(mobile): marker composer captures the fallback after two frames (R4)`
 - [ ] (2) Implementación mínima que lo pasa:
   - `useRef<Svg>(null)` en el `Svg` de R3;

@@ -10,14 +10,19 @@ Implementador: Codex CLI.
 Primer comando, antes de nada:
 `cd /home/claude/sites/Pet-Tracker-wt-230 && pwd && git branch --show-current && git log --oneline -5`.
 Confirma en el reporte la ruta y la branch `feature/230-mobile-map-pet-avatar-marker`. Los
-commits de arriba abajo: el de este handoff (`docs(progress): #230 codex handoff`), la firma
-`ce5f89af`, el merge de `origin/dev` `c3004d51`, las correcciones de la auditoría `020983dd` y
-`6a0de0c2` (merge de #228 en `dev`).
+commits de arriba abajo: la enmienda de R4 tras tu primera parada
+(`docs(spec): #230 R4 unmount test is born green`), el handoff `764acfe8`, la firma `ce5f89af`,
+el merge de `origin/dev` `c3004d51` y las correcciones de la auditoría `020983dd`.
+
+**Reanudación.** Tu primera sesión paró antes de implementar por la contradicción de R4 (el
+`it` de desmontaje nacía verde). Está resuelta en tasks.md R4 y abajo, en §Orden y commits.
+Reescribe `progress/impl_mobile-map-pet-avatar-marker.md` desde cero y conserva al principio
+una sección «Parada 1» de tres líneas con el motivo y la enmienda.
 
 ## Base
 
 - Feature: mobile-map-pet-avatar-marker (#230). Integra en `dev`, no en `main`.
-- H0 (base del diff final): el commit de este handoff.
+- H0 (base del diff final): el commit de la enmienda de R4, el primero de `git log`.
 - NO hagas `git fetch`, `git merge`, `git rebase`, `git push` ni `bun install`. El worktree ya
   tiene `.env` y `mobile-pet-tracker/node_modules`.
 - Anclas de partida, medidas por el leader en `ce5f89af` desde `mobile-pet-tracker/src/` (la
@@ -56,6 +61,13 @@ commit único con todo.
   caen. Antes de commitear, planta su mutación (la de tasks.md), corre el fichero, anota el `it`
   que cae, revierte con `git checkout HEAD -- <ruta>` y comprueba `git diff --quiet -- <ruta>`.
   Ninguna mutación se commitea. Si la mutación no pone rojo su `it`, PARA.
+- **Excepción, R4.** «#230 R4: desmontado antes del segundo frame no captura»
+  nace verde, pero su mutación necesita la captura: plántala **después** del
+  commit verde de R4, como dice tasks.md R4 (enmendado tras tu parada). El rojo
+  de R4 lo da el primer `it`.
+- **Rojo sin la llamada.** Si un rojo cae porque falta la llamada que el test
+  lee (por ejemplo, `mockToDataURL.mock.calls[1]` es `undefined` antes del
+  verde de R6), vale como rojo: anota el error y la línea.
 - **R8 enmienda un `it` de R6.** En el commit rojo de R8, el literal de clave del primer `it` de
   R6 pasa a `'["pet-1","Luna","https://cdn.example/pets/luna.jpg"]'` y su título gana el sufijo
   ` (enmendado por #230 R8)`.
