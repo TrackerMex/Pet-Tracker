@@ -1,4 +1,6 @@
-import { combineDateAndTime, daysUntil } from './reminder-dates';
+import type { Reminder } from '../api/types';
+
+import { combineDateAndTime, daysUntil, splitReminders } from './reminder-dates';
 
 describe('R4: reminder-dates combina y cuenta días', () => {
   it('combines the local calendar date and local time without seconds', () => {
@@ -91,5 +93,34 @@ describe('#84 R5: el día civil incluye el mes y el año (Enmienda E1)', () => {
     ['Ciudad de México, 31 de diciembre 20:00 → 1 de enero 09:00 = 1', skewed(2026, 11, 31, '2027-01-01T02:00:00.000Z'), skewed(2027, 0, 1, '2027-01-01T15:00:00.000Z'), 1],
   ])('%s', (_title, from, to, expected) => {
     expect(daysUntil(from, to)).toBe(expected);
+  });
+});
+
+
+function reminder(id: string, status: Reminder['status'], due: Date): Reminder {
+  return { id, petId: 'pet-1', type: 'vaccine', title: id, status,
+    dueAt: due.toISOString(), advanceMinutes: 0, recurrence: null, recurrenceUntil: null };
+}
+
+describe('#227 R2: partición por día civil y status', () => {
+  beforeEach(() => { jest.useFakeTimers({ now: new Date(2026, 11, 30, 8, 0) }); });
+  afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
+
+  it.each([
+    ['programado hoy más tarde es próximo', new Date(2026, 11, 30, 8, 0), 'scheduled', new Date(2026, 11, 30, 23, 0), 'upcoming'],
+    ['programado hoy más temprano sigue siendo próximo', new Date(2026, 11, 30, 10, 0), 'scheduled', new Date(2026, 11, 30, 7, 0), 'upcoming'],
+    ['programado ayer es pasado', new Date(2026, 11, 30, 8, 0), 'scheduled', new Date(2026, 11, 29, 9, 0), 'past'],
+    ['el 31 de diciembre es pasado el 1 de enero', new Date(2027, 0, 1, 8, 0), 'scheduled', new Date(2026, 11, 31, 23, 0), 'past'],
+    ['el 1 de enero es próximo el 31 de diciembre', new Date(2026, 11, 31, 22, 0), 'scheduled', new Date(2027, 0, 1, 0, 30), 'upcoming'],
+    ['enviado el 30 de septiembre es pasado el 1 de octubre', new Date(2026, 9, 1, 8, 0), 'sent', new Date(2026, 8, 30, 20, 0), 'past'],
+    ['cancelado mañana es pasado', new Date(2026, 11, 30, 8, 0), 'cancelled', new Date(2026, 11, 31, 9, 0), 'past'],
+    ['cancelado hoy es pasado', new Date(2026, 11, 30, 8, 0), 'cancelled', new Date(2026, 11, 30, 23, 0), 'past'],
+    ['enviado con fecha de mañana es próximo', new Date(2026, 11, 30, 8, 0), 'sent', new Date(2026, 11, 31, 9, 0), 'upcoming'],
+  ] as const)('#227 R2: %s', (_title, now, status, due, section) => {
+    expect(splitReminders).toEqual(expect.any(Function));
+    const r = reminder('r', status, due);
+    const result = splitReminders([r], now);
+    expect(result.upcoming.map(({ id }) => id)).toEqual(section === 'upcoming' ? ['r'] : []);
+    expect(result.past.map(({ id }) => id)).toEqual(section === 'past' ? ['r'] : []);
   });
 });
