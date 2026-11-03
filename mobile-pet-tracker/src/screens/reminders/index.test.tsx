@@ -2613,4 +2613,28 @@ describe('Acciones de deslizar en Recordatorios (#228 R2 a R9)', () => {
     expect(flat(swipe.parent?.props.style)).toEqual({ borderCurve: 'continuous' });
     expect(swipe.parent?.parent?.props.testID).toBe('reminders-entry-once');
   });
+
+  it.each([
+    ['once', 'reminder-delete-once', 'reminders-icon-trash', 'Eliminar'],
+    ['series', 'reminder-cancel-series-series', 'reminders-icon-repeat', 'Cancelar\nserie'],
+  ])('#228 R3: el panel de %s pinta la receta del canvas y se oculta a los lectores de pantalla', async (id, panelId, iconId, label) => {
+    await renderReminders();
+    await screen.findByTestId(`reminder-row-${id}`);
+    const swipe = screen.getByTestId(`reminder-swipe-${id}`);
+    expect(screen.queryByTestId(panelId)).toBeNull();
+    const panel = within(swipe).getByTestId(panelId, HIDDEN);
+    expect(panel).toBeOnTheScreen();
+    expect(panel.props.className).toBe('w-24 items-center justify-center gap-1 bg-category-rose');
+    expect(panel.props.accessibilityElementsHidden).toBe(true);
+    expect(panel.props.importantForAccessibility).toBe('no-hide-descendants');
+    expect(flat(panel.props.style)).toEqual({ opacity: 1 });
+    expect(panel.props.accessibilityState?.disabled).toBe(false);
+    expect(panel.children).toHaveLength(3);
+    expect(panel.children[0]).toHaveProperty('props.className', 'absolute inset-y-0 -left-6 w-6 bg-category-rose');
+    expect(panel.children[1]).toHaveProperty('props.testID', iconId);
+    expect(panel.children[1]).toHaveProperty('props.size', 20);
+    expect(panel.children[1]).toHaveProperty('props.color', 'color:danger');
+    expect(panel.children[2]).toHaveProperty('props.className', 'text-center text-13 font-extrabold text-danger');
+    expect(panel.children[2]).toHaveProperty('props.children', label);
+  });
 });
