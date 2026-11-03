@@ -21,3 +21,16 @@ En el dev build de Android, sin sesión, en la pantalla de Bienvenida:
 - [ ] Con una mascota compartida donde el rol no es dueño (familia, paseador o veterinario), el botón de la cámara no aparece.
 - [ ] Al cambiar entre una mascota propia y una compartida en el selector, la cámara se va y vuelve según el rol de la mascota elegida.
 - [ ] Fecha del smoke: ____
+
+## #226 backend-vaccine-catalog-migration
+
+Hallazgo: «En agregar vacuna no aparecen las opciones de vacunas solo aparece el boton "Otra vacuna"».
+Solo cambia el backend: no hace falta dev build nuevo ni reinstalar la app.
+
+1. Antes de actualizar, con el backend de tu PC tal como está, abre un perro y entra en Salud → «Agregar vacuna». Debe salir solo «Otra vacuna»: es el fallo. Si ya corriste el paliativo `seed:vaccines`, en esa base el fallo no se reproduce; anótalo y sigue.
+2. Actualiza el repo a `dev`, corre `pnpm -C backend-pet-tracker run db:migrate` (debe terminar sin error) y reinicia el backend.
+3. «Agregar vacuna» en el perro: salen Leptospirosis, Polivalente (DHPPi), Rabia y Tos de las perreras, y después «Otra vacuna».
+4. «Agregar vacuna» en un gato: salen Leucemia felina (FeLV), Rabia y Triple felina (FVRCP), y después «Otra vacuna».
+5. Registra Rabia en el perro: aparece en Salud con su próxima dosis.
+
+- [ ] Smoke de #226 pasado (fecha: ____; paso 1, fallo reproducido: sí / no)
