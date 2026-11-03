@@ -1,0 +1,17 @@
+---
+feature: "backend-vaccine-catalog-migration"
+status: draft     # draft | approved
+tags: [harness, spec, backend, health, migration]
+---
+
+# Trazabilidad — [[backend-vaccine-catalog-migration]]
+
+Las filas se rellenan en un único commit al cerrar la cadena ([[tasks]] §Cierre).
+
+| Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
+|---|---|---|
+| R1 | `backend-pet-tracker/test/vaccine-catalog-migration.e2e-spec.ts::#226 R1: el journal registra una sola migracion _vaccine_catalog_data, posterior a la anterior`, `::#226 R1: sin la migracion el catalogo queda vacio, como en la base del humano`, `::#226 R1: GET dog devuelve las 4 vacunas con su esquema, por nombre`, `::#226 R1: GET cat devuelve las 3 vacunas con su esquema, por nombre`, `::#226 R1: una vacuna del catalogo migrado se registra con 201` | pendiente |
+| R2 | `backend-pet-tracker/test/vaccine-catalog-migration.e2e-spec.ts::#226 R2: migrar sobre una base sembrada no falla ni cambia ninguna fila` | pendiente |
+| R3 | `backend-pet-tracker/test/vaccine-catalog-migration.e2e-spec.ts::#226 R3: seed:vaccines sobre el catalogo migrado conserva las 7 filas y sus ids` | pendiente |
+| R4 | `progress/smoke_mejoras-smoke.md` (casilla «Smoke de #226 pasado», la marca el humano) | pendiente |
+| R5 | Comandos de [[tasks]] §R5 (diff vacío fuera de `src/db/migrations/` y `drizzle-kit generate` sin cambios), más `backend-pet-tracker/src/db/seed/vaccine-catalog.spec.ts`, `backend-pet-tracker/test/health-vaccines.e2e-spec.ts::R2: seed idempotente` e `init-e2e-gate.test.mjs::#208 R22: E2E_SETUP_CMD siembra el catálogo de vacunas entre migrar y aprovisionar`, sin tocar | pendiente |
