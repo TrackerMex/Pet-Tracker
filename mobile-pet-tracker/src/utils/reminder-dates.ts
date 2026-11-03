@@ -24,7 +24,7 @@ export function daysUntil(from: Date, to: Date): number {
 export function splitReminders(reminders: Reminder[], now: Date): { upcoming: Reminder[]; past: Reminder[] } {
   const isUpcoming = (reminder: Reminder) => reminder.status !== 'cancelled' && daysUntil(now, new Date(reminder.dueAt)) >= 0;
   return {
-    upcoming: reminders.filter(isUpcoming),
-    past: reminders.filter((reminder) => !isUpcoming(reminder)),
+    upcoming: [...reminders.filter(isUpcoming)].sort((a, b) => Date.parse(a.dueAt) - Date.parse(b.dueAt) || a.id.localeCompare(b.id)),
+    past: [...reminders.filter((reminder) => !isUpcoming(reminder))].sort((a, b) => Date.parse(b.dueAt) - Date.parse(a.dueAt) || a.id.localeCompare(b.id)),
   };
 }
