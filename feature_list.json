@@ -3730,7 +3730,7 @@
   {
     "id": 232,
     "name": "mobile-add-reminder-chip-lip-clip",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Agregar recordatorio: el ScrollView horizontal de Tipo y de Aviso recorta el labio de 3 px del chip seleccionado. Responsable: leader @Frontend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
     "acceptance_criteria": null,
