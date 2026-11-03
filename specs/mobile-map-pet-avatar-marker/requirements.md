@@ -184,6 +184,11 @@ el Mapa). Tipo de mascota: `Pick<PetProfile, 'id' | 'name' | 'photoUrl'>` de
 
 Desde `mobile-pet-tracker/src/` sobre la base de la rama (`46f41a8f`, que
 incluye `origin/dev`). «Después» es lo que debe medir el reviewer.
+Re-medida por el leader tras mergear `origin/dev` (`c3004d51`, con #228): no
+cambian `screens/map/`, `components/pet-map.tsx`, sus tests,
+`__tests__/map-canvas-fidelity.test.ts`, `i18n`, `package.json` ni `bun.lock`,
+así que B1–B9 y el inventario siguen valiendo. Los cambios de
+`consistency-classnames` y `design-drift` son de Recordatorios.
 
 | Id | Comando | Antes | Después |
 |---|---|---|---|
@@ -262,6 +267,6 @@ defecto de esta spec: se para y se enmienda, no se toca la guarda.
 > No hace falta enmienda de la carta (G4): el color es el token
 > `accent-foreground`, no hay sombra y el blobatar es el fallback de la carta.
 
-- [ ] Aprobado (firma delegada del leader o humano, fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado (firma delegada del leader, fecha: 2026-11-03) ← gate obligatorio antes de implementar
 - [ ] G2 Android — prueba de humo en el dev build del PC del humano: marcador con foto, sin foto y con foto rota (blobatar tras ≤ 4 s), en `progress/smoke_mejoras-smoke.md` (fecha: ____)
 - [ ] G2 iOS — la misma prueba de humo en iOS (fecha: ____)
