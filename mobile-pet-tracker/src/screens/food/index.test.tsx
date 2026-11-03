@@ -1922,6 +1922,49 @@ describe('#233 R1 a R5: los enlaces de comidas dependen del perfil nutricional',
     expect(screen.queryByText('Horario de comidas', { includeHiddenElements: true })).toBeNull();
     expect(screen.queryByText('Historial de comidas', { includeHiddenElements: true })).toBeNull();
   });
+
+  it('#233 R4 con perfil y sin plan los enlaces se pintan sin RiseIn', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+    mockGetNutritionProfile.mockResolvedValue({
+      kind: 'ok',
+      profile: {
+        petId: 'pet-1',
+        activityLevel: 'medium',
+        bodyCondition: 5,
+        targetWeightKg: null,
+        foodType: 'dry',
+        kcalPer100g: 350,
+        allergies: [],
+        diseases: [],
+        updatedAt: '2026-08-22T00:00:00.000Z',
+      },
+    });
+
+    await renderFood();
+    await screen.findByTestId('food-plan-empty');
+    const links = screen.getByTestId('food-links');
+    expect(links).toBeVisible();
+    expect(links.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual([
+      'meal-schedule-link',
+      'meals-history-link',
+    ]);
+    expect(riseDelayOf(links)).toBeUndefined();
+    expect(screen.getByTestId('meal-schedule-link-title')).toHaveTextContent('Horario de comidas');
+    expect(screen.getByTestId('meals-history-link-title')).toHaveTextContent('Historial de comidas');
+  });
+
+  it('#233 R5 con plan cargado los enlaces entran con RiseIn aunque el perfil no responda', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'not-found' });
+
+    await renderFood();
+    await screen.findByTestId('food-plan-card');
+    expect(screen.getByTestId('food-links')).toBeVisible();
+    expect(riseDelayOf(screen.getByTestId('food-links'))).toBe(200);
+    expect(screen.getByTestId('meal-schedule-link')).toBeVisible();
+    expect(screen.getByTestId('meals-history-link')).toBeVisible();
+    expect(mockGetNutritionProfile).not.toHaveBeenCalled();
+  });
 });
 
 describe('#222 R7: Encabezado solo para lectores de pantalla', () => {
