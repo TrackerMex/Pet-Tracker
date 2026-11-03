@@ -190,7 +190,7 @@ producción.
        es `null`.
     3. `#234 R1: solo el medidor lleva onLayout`: recorre **todos** los nodos
        host bajo la raíz (también los ocultos), junta el `testID` de los que
-       tienen `typeof props.onLayout === 'function'` y aserta `toEqual(['food-ai-measure'])`
+       tienen `typeof props.onLayout === 'function'` y aserta `toEqual(['food-ai-measure'])` **y** `toHaveLength(1)` (`toEqual` ignora un `undefined` final del array, así que sin la longitud un portador anónimo no rompe la igualdad)
        (un nodo anónimo con `onLayout` aparece como `undefined` y rompe la
        igualdad); además `food-ai-content` y `food-ai-body` tienen
        `props.onLayout` `undefined`.

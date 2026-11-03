@@ -70,6 +70,15 @@ tags: [mobile, nutrition, ui, spec]
   (cada fichero tocado listado explícito) y `git diff --cached` en 0. La
   mutación R1 (b) debe dejar **verdes** R4, R5 y R6 y rojos solo R1: anotarlo.
 
+## Enmienda del leader (2026-11-03): cardinalidad en R1 `it` 3
+
+Codex comprobó que `toEqual(['food-ai-measure'])` acepta un `undefined` final, de modo
+que la mutación R5(c) dejaba verde R1 `it` 3. Entre el par 1 y el par 2 va un commit
+extra, test-primero a su manera: `test(mobile): #234 pin the onLayout carrier count (R1)`,
+que añade `toHaveLength(1)` a R1 `it` 3. Nace verde (nada en producción cambia); su
+prueba es la mutación R5(c) y R1(d), que ahora dejan rojo R1 `it` 3. Anotar «nace verde»
+y el resultado de ambas mutaciones.
+
 ## Par 2 — R2: el medidor repite lo que se ve
 
 - [ ] (1) Test rojo: `describe('#234 R2: el medidor repite lo que se ve')` con el
