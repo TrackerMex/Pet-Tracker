@@ -31,8 +31,9 @@ import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
 const SELECTED_CHIP = 'h-9.5 items-center justify-center rounded-full px-3.5 bg-accent';
-// The 3 px match chunkyLip.primaryCompact.offsetY.
+// The 3 px match chunkyLip.primaryCompact.offsetY; the negative margin cancels the padding's added height.
 const CHIP_ROW_CONTENT = { gap: 8, paddingRight: 20, paddingBottom: 3 };
+const CHIP_ROW_STYLE = { marginBottom: -3 };
 
 const REPEAT_OPTIONS = [
   { key: 'once', labelKey: 'addReminder.repeatOnce' },
@@ -241,6 +242,7 @@ function AddReminderContent({ petId }: { petId: string }) {
             showsHorizontalScrollIndicator={false}
             className="-mr-5"
             contentContainerStyle={CHIP_ROW_CONTENT}
+            style={CHIP_ROW_STYLE}
           >
             {REMINDER_TYPES.map(([reminderType, meta]) => {
               const selected = type === reminderType;
@@ -419,6 +421,7 @@ function AddReminderContent({ petId }: { petId: string }) {
             showsHorizontalScrollIndicator={false}
             className="-mr-5"
             contentContainerStyle={CHIP_ROW_CONTENT}
+            style={CHIP_ROW_STYLE}
           >
             {ADVANCE_OPTIONS.map((option) => {
               const selected = selectedAdvance === option.minutes;
