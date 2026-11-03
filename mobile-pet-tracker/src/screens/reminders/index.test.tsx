@@ -2351,3 +2351,37 @@ describe('#216 R5: borrar y cancelar serie son solo del dueño', () => {
     expect(screen.queryByTestId('reminder-repeats-reminder-2')).not.toBeNull();
   });
 });
+
+describe('#227: próximos y pasados', () => {
+  const reminders = [
+    makeReminder({ id: 'oldsent', status: 'sent', dueAt: new Date(2026, 10, 30, 9, 0).toISOString() }),
+    makeReminder({ id: 'yesterday', status: 'scheduled', dueAt: new Date(2026, 11, 30, 9, 0).toISOString(), recurrence: { unit: 'month', every: 1 } }),
+    makeReminder({ id: 'today', status: 'scheduled', dueAt: new Date(2026, 11, 31, 20, 0).toISOString() }),
+    makeReminder({ id: 'newyear', status: 'scheduled', dueAt: new Date(2027, 0, 1, 0, 30).toISOString() }),
+    makeReminder({ id: 'cancelled', status: 'cancelled', dueAt: new Date(2027, 0, 5, 9, 0).toISOString() }),
+    makeReminder({ id: 'later', status: 'sent', dueAt: new Date(2027, 0, 10, 9, 0).toISOString() }),
+  ];
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers({ now: new Date(2026, 11, 31, 8, 0) });
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders });
+  });
+  afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
+
+  it('#227 R4: pinta «Próximos» y debajo sus filas en orden ascendente', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminders-pills');
+    expect(screen.queryByTestId('reminders-upcoming-heading')).not.toBeNull();
+    const heading = screen.getByTestId('reminders-upcoming-heading');
+    expect(heading).toHaveTextContent('Próximos');
+    expect(heading.props.accessibilityRole).toBe('header');
+    expect(heading.props.className).toBe('mt-1 text-13 font-extrabold uppercase tracking-caps text-muted');
+    const list = screen.getByTestId('reminders-upcoming-list');
+    expect(within(list).getAllByTestId(/^reminder-row-/).map(({ props }) => props.testID)).toEqual(['reminder-row-today', 'reminder-row-newyear', 'reminder-row-later']);
+    expect(screen.getAllByTestId(/^reminders-(pills|upcoming-heading|upcoming-list|past)$/).map(({ props }) => props.testID)).toEqual(['reminders-pills', 'reminders-upcoming-heading', 'reminders-upcoming-list', 'reminders-past']);
+  });
+});
