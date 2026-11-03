@@ -2714,4 +2714,16 @@ describe('Acciones de deslizar en Recordatorios (#228 R2 a R9)', () => {
         : [{ name: 'cancelSeries', label: 'Cancelar la serie Pipeta antipulgas' }]);
     }
   });
+
+  it('#228 R8: la fila ya no lleva botón de texto', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-series');
+    for (const id of ['once', 'series']) {
+      const row = screen.getByTestId(`reminder-row-${id}`);
+      expect(row.children).toHaveLength(2);
+      expect(row.children[0]).toHaveProperty('props.testID', `reminder-tile-${id}`);
+      expect(row.children[1]).toHaveProperty('props.className', 'min-w-0 flex-1 gap-0.75');
+      expect(within(row).queryAllByRole('button', HIDDEN)).toEqual([]);
+    }
+  });
 });
