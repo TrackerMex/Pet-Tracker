@@ -220,6 +220,8 @@ async function renderReminders() {
   });
 }
 
+async function expandPast() { await fireEvent.press(screen.getByTestId('reminders-past-toggle')); }
+
 async function confirmDelete(reminderId: string) {
   await fireEvent.press(screen.getByTestId(`reminder-delete-${reminderId}`));
   const host = screen.getByTestId('reminders-delete-host');
@@ -2383,5 +2385,35 @@ describe('#227: próximos y pasados', () => {
     const list = screen.getByTestId('reminders-upcoming-list');
     expect(within(list).getAllByTestId(/^reminder-row-/).map(({ props }) => props.testID)).toEqual(['reminder-row-today', 'reminder-row-newyear', 'reminder-row-later']);
     expect(screen.getAllByTestId(/^reminders-(pills|upcoming-heading|upcoming-list|past)$/).map(({ props }) => props.testID)).toEqual(['reminders-pills', 'reminders-upcoming-heading', 'reminders-upcoming-list', 'reminders-past']);
+  });
+
+
+  it('#227 R5: «Pasados» empieza colapsada con su contador y el chevron abajo', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminders-pills');
+    expect(screen.queryByTestId('reminders-past-toggle')).not.toBeNull();
+    const toggle = screen.getByTestId('reminders-past-toggle');
+    expect(toggle.props.accessibilityRole).toBe('button');
+    expect(toggle.props.accessibilityState?.expanded).toBe(false);
+    expect(toggle.props.hitSlop).toEqual({ top: 6, bottom: 6, left: 6, right: 6 });
+    expect(within(toggle).getByTestId('reminders-past-label')).toHaveTextContent('Pasados');
+    const count = within(toggle).getByTestId('reminders-past-count');
+    expect(count).toHaveTextContent('3');
+    expect(count.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+    const chevron = within(toggle).getByTestId('reminders-icon-chevron-down', { includeHiddenElements: true });
+    expect(chevron.props.size).toBe(18);
+    expect(chevron.props.color).toBe('color:muted');
+    expect(within(toggle).queryByTestId('reminders-icon-chevron-up', { includeHiddenElements: true })).toBeNull();
+    expect(screen.queryByTestId('reminders-past-list')).toBeNull();
+    for (const id of ['cancelled', 'yesterday', 'oldsent']) expect(screen.queryByTestId(`reminder-row-${id}`)).toBeNull();
+  });
+
+  it('#227 R5: sin pasados no pinta la sección', async () => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [reminders[2], reminders[3]] });
+    await renderReminders();
+    await screen.findByTestId('reminders-pills');
+    expect(screen.queryByTestId('reminders-upcoming-list')).not.toBeNull();
+    expect(screen.queryByTestId('reminders-past')).toBeNull();
+    expect(screen.queryByTestId('reminders-past-toggle')).toBeNull();
   });
 });
