@@ -3712,11 +3712,23 @@
   {
     "id": 230,
     "name": "mobile-map-pet-avatar-marker",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
-    "description": "Mapa: el marcador de la última posición muestra el avatar de la mascota en vez del pin genérico de Google. Decisión del humano 2026-11-03. Requiere explorer (expo-maps ~57 solo acepta un icon estático) y artboard (G1). Solapa con #192. Responsable: leader @Backend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
-    "acceptance_criteria": null,
-    "files_affected": null
+    "description": "Mapa: el marcador de la última posición muestra el avatar de la mascota en vez del pin genérico de Google. Decisión del humano 2026-11-03. Requiere explorer (expo-maps ~57 solo acepta un icon estático) y artboard (G1). Solapa con #192. Responsable: leader @Backend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Spec: specs/mobile-map-pet-avatar-marker/ (opción B2 del spike, G1 v167).",
+    "acceptance_criteria": [
+      "R1–R11 de specs/mobile-map-pet-avatar-marker/requirements.md con su test nombrado en verde",
+      "Sin dependencias nuevas ni copy nuevo; sin cambios en tests existentes (inventario de la spec)",
+      "G2: prueba de humo en Android e iOS (marcador con foto, sin foto y con foto rota)"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/map/pet-marker-icon.tsx",
+      "mobile-pet-tracker/src/screens/map/pet-marker-icon.test.tsx",
+      "mobile-pet-tracker/src/components/pet-map.tsx",
+      "mobile-pet-tracker/src/components/__tests__/pet-map.test.tsx",
+      "mobile-pet-tracker/src/screens/map/index.tsx",
+      "mobile-pet-tracker/src/screens/map/index.test.tsx",
+      "mobile-pet-tracker/src/__tests__/map-canvas-fidelity.test.ts"
+    ]
   },
   {
     "id": 231,
