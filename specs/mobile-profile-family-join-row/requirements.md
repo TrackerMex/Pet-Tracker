@@ -1,6 +1,6 @@
 ---
 feature: "mobile-profile-family-join-row"
-status: spec_ready      # draft | spec_ready | approved
+status: approved      # draft | spec_ready | approved
 tags: [mobile, profile, ui, spec]
 ---
 
@@ -327,13 +327,13 @@ y sin texto.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-11-03; firma delegada del leader, mandato del humano 2026-10-23 ampliado 2026-11-03) ← gate obligatorio antes de implementar
   (R1 a R6; la firma delegada la pone el leader con la checklist de
   `progress/plan_canvas-parity-2026-10-23.md` §4, los tres puntos de
   `progress/plan_ui-2026-10-26.md` §4 y los dos de
   `progress/plan_mejoras-smoke-2026-11-03.md` §4)
-- [ ] Enmienda de #214 R4 y R6 aprobada (la firma de esta spec la cubre; casilla
-  propia porque el plan §4 pide dejar la casilla de la enmienda) (fecha: ____)
+- [X] Enmienda de #214 R4 y R6 aprobada (la firma de esta spec la cubre; casilla
+  propia porque el plan §4 pide dejar la casilla de la enmienda) (fecha: 2026-11-03; firma delegada del leader)
 - [ ] **G2**: smoke en el dev build de Android (claro y oscuro, cinco pasos de
   «Paso de smoke nuevo») (fecha: ____) ← gate humano, por lote al final
   (`progress/smoke_mejoras-smoke.md`)

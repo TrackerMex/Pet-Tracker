@@ -3703,7 +3703,7 @@
   {
     "id": 229,
     "name": "mobile-profile-family-join-row",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P1",
     "description": "Perfil: «Familia» y «Unirme con código» salen a media anchura, en filas separadas y sin texto (ProfileWideTile sin flex-1 dentro de un flex-row). Una fila de dos columnas con el mismo alto, como las filas de ProfileTile; sin copy nuevo. Decisión del humano 2026-11-03 («Lado a lado»). Va detrás de #235. Responsable: leader @Frontend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
     "acceptance_criteria": null,
