@@ -50,10 +50,15 @@ export function AiExplanation({ text }: { text: string }) {
   const expanded = expandedFor === text;
   const needsClamp = contentHeight > AI_CLAMP_HEIGHT;
 
+  // #234 R3: el gemelo mide sin verse, recibir toques ni duplicar la lectura.
   return (
     <View className="gap-2">
       <View
         testID="food-ai-measure"
+        className="absolute inset-x-0 top-0 opacity-0"
+        pointerEvents="none"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
         onLayout={(event) => setContentHeight(event.nativeEvent.layout.height)}
       >
         {renderBlocks(blocks, violetStrong, false)}
