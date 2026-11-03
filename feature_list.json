@@ -3544,7 +3544,7 @@
   {
     "id": 209,
     "name": "mobile-nutrition-questionnaire",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P1",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 2). Cuestionario de nutrición: hoy no hay formulario del perfil y «Generar plan» acaba en 422 en la app real. Wizard por pasos sobre el PUT /v1/pets/:petId/nutrition-profile existente (actividad, BCS 1-9, peso objetivo si BCS >= 7, tipo de alimento y kcal/100 g con precarga, alergias y enfermedades con lista cerrada más «otra» acotada); putJson nuevo en src/api/http.ts; al guardar llama a nutrition-plan/generate. Entradas desde el estado sin perfil y «Editar perfil» en Horario; «Generar plan» oculto a quien no es owner. Preguntas que el motor no modela quedan fuera. Depende del gate G1 (artboard CuestionarioNutricion). Evidencia en progress/explore_nutrition-questionnaire-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },
@@ -3747,6 +3747,15 @@
     "status": "spec_ready",
     "priority": "P2",
     "description": "Perfil: el botón de cámara change-photo se muestra al rol family y el backend responde 403 («No se pudo subir la foto»). Mostrarlo solo al owner, como el resto de #216. Responsable: leader @Frontend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
+    "acceptance_criteria": null,
+    "files_affected": null
+  },
+  {
+    "id": 236,
+    "name": "mobile-vaccine-catalog-error-state",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Agregar vacuna: si GET /vaccine-catalog falla, el selector muestra solo «Otra vacuna» sin avisar ni dejar reintentar. Arreglo: estado de error con reintento, distinto del catálogo vacío. Hallazgo del leader al especificar #226; el humano pidió abrirlo como feature el 2026-11-03 («si abre como feature nueva»). Responsable: leader @Backend, después de #226. Plan progress/plan_mejoras-smoke-2026-11-03.md. Registrada sin spec.",
     "acceptance_criteria": null,
     "files_affected": null
   }
