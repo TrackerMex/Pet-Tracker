@@ -3771,5 +3771,14 @@
     "description": "Agregar vacuna: si GET /vaccine-catalog falla, el selector muestra solo «Otra vacuna» sin avisar ni dejar reintentar. Arreglo: estado de error con reintento, distinto del catálogo vacío. Hallazgo del leader al especificar #226; el humano pidió abrirlo como feature el 2026-11-03 («si abre como feature nueva»). Responsable: leader @Backend, después de #226. Plan progress/plan_mejoras-smoke-2026-11-03.md. Registrada sin spec.",
     "acceptance_criteria": null,
     "files_affected": null
+  },
+  {
+    "id": 237,
+    "name": "backend-e2e-vaccine-catalog-teardown",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Flake del e2e backend-pet-tracker/test/vaccine-catalog-migration.e2e-spec.ts (#226): su afterAll hace DROP DATABASE IF EXISTS ... WITH (FORCE) con un cliente aún vivo (probablemente el pool de la app Nest, que lee DATABASE_URL), y pg lo convierte en «Unhandled error» 57P01 («terminating connection due to administrator command»). Tumbó el ./init.sh de @Frontend el 2026-11-03 (wt-233); el reintento salió verde. No es interferencia entre sesiones: el log de Postgres muestra el FATAL y los dos checkpoints de los DROP. Arreglo: cerrar todos los pools antes del DROP, o escuchar 'error' en ellos. Responsable: leader @Backend. El humano pidió registrarlo como feature el 2026-11-03 («registralo como feature»). Plan progress/plan_mejoras-smoke-2026-11-03.md. Registrada sin spec.",
+    "acceptance_criteria": null,
+    "files_affected": null
   }
 ]
