@@ -1061,3 +1061,24 @@ cifras base, anclas `grep -cF` y la corrida de sondas en
     - `tasks.md` §R21
 
 - [x] Enmienda M3 aprobada (fecha: 2026-10-26)
+
+## Enmienda por #236 (2026-11-03)
+
+Origen: `specs/mobile-vaccine-catalog-error-state/requirements.md` (#236), del
+plan `progress/plan_mejoras-smoke-2026-11-03.md` §6, pregunta 6.
+
+- **R8, párrafo «Error de catálogo».**
+  - Qué cambia: los chips siguen igual (solo `vaccine-chip-other`, seleccionado).
+    Además se pinta el aviso con reintento de `#236 R1`:
+    - texto `health.couldNotLoadVaccines`;
+    - botón `common.retry`;
+    - entre `vaccine-create-legend` y `vaccine-create-chips`.
+  - Qué cae: la frase «No hay copy nueva de error». Sigue sin haber copy nuevo,
+    porque se reutilizan dos claves, pero ahora sí hay aviso.
+  - El test `#208 R8: con el catálogo en error solo queda «Otra vacuna» seleccionado`
+    no cambia.
+- **R20.** `R19_VACCINE_CREATE` pasa de 29 a 31 filas (`#236 R7`). El `it`
+  `#208 R20` gana ` (enmendado por #236 R7)` y su aserción pasa a
+  `toHaveLength(29 + 2)`.
+
+- [ ] Enmienda #236 aprobada (fecha: ____)
