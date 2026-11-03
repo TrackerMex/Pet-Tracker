@@ -1,6 +1,6 @@
 ---
 feature: "backend-e2e-vaccine-catalog-teardown"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, backend, e2e, flake]
 ---
 
@@ -12,7 +12,11 @@ tags: [harness, spec, backend, e2e, flake]
 > están en [[../../docs/architecture|architecture]]. Esta feature no toca
 > ninguna capa: solo cambia un fichero de test.
 >
-> - Base medida: `origin/dev` en `5c7c9547`.
+> - Base medida: `origin/dev` en `5c7c9547`. Re-medida en la firma tras mergear
+>   `origin/dev` (`2fb499b4`): los commits nuevos de `dev` no tocan
+>   `backend-pet-tracker/` ni esta spec. Las cifras de §Base medida del e2e y de
+>   `drizzle.module.ts` dan las mismas (las de `pg-pool` no se re-midieron: el
+>   worktree aún no tiene `node_modules`).
 > - Branch: `feature/237-backend-e2e-vaccine-catalog-teardown`. La PR va contra `dev`.
 > - Alcance: solo `backend-pet-tracker/test/vaccine-catalog-migration.e2e-spec.ts`
 >   (el e2e de #226). **No se tocan `src/`, las migraciones ni las dependencias** (R4).
@@ -302,7 +306,7 @@ del `describe` externo, en un `describe` nuevo con este nombre literal:
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-11-03) ← gate obligatorio antes de implementar
 
 No hay gates humanos aparte: ni G1 (copy y artboards) ni G2 (smoke). El
 mandato del 2026-10-23, ampliado el 2026-11-03, cubre #226–#235, no #237: esta
