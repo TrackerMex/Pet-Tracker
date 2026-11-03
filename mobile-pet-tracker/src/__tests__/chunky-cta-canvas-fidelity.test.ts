@@ -46,6 +46,10 @@ function inventory(pattern: RegExp): Record<string, number> {
 }
 const count = (pattern: RegExp) => Object.values(inventory(pattern)).reduce((sum, n) => sum + n, 0);
 
+it('#231 R3: la excepción dark:border-* vive solo en Bienvenida', () => {
+  expect(inventory(/dark:border-/g)).toEqual({ 'screens/welcome/index.tsx': 1 });
+});
+
 const CTA_ROWS = [
   ['screens/vaccine-create/index.tsx', literalId('vaccine-create-submit'), 'h-14 rounded-16 bg-accent', ['isDisabled={submitting}', 'onPress={() => void handleSubmit()}']], // #208 R21
   ['screens/health/index.tsx', literalId('vaccines-empty-action'), 'w-full h-14 rounded-16 bg-accent', ['onPress={openVaccineCreate}']], // #208 R21
@@ -77,7 +81,7 @@ const CTA_ROWS = [
 ] as const;
 const NEUTRAL_ROWS = [
   ['screens/geofence-editor/index.tsx', literalId('geofence-editor-delete'), 'flex-1 h-13.5 rounded-16 border-2 border-lip-gray bg-surface', 'outline', 'Text', 'text-base font-extrabold text-danger', ['isDisabled={busy}', 'onPress={() => setDeleteVisible(true)}']], // #189 R13
-  ['screens/welcome/index.tsx', literalId('welcome-have-account'), 'w-full h-14 rounded-16 border-2 border-lip-gray bg-surface', null, 'Text', 'text-17 font-bold text-accent-strong', ["onPress={() => router.push('/login')}"]],
+  ['screens/welcome/index.tsx', literalId('welcome-have-account'), 'w-full h-14 rounded-16 border-2 border-lip-gray bg-surface dark:border-muted', 'outline', 'Text', 'text-17 font-bold text-accent-strong', ["onPress={() => router.push('/login')}"]],
   ['screens/forgot/index.tsx', literalId('forgot-resend'), 'w-full h-14 rounded-16 border-2 border-lip-gray bg-surface', 'secondary', 'Text', 'text-17 font-extrabold text-foreground', ['isDisabled={submitting}', 'onPress={() => void send(submittedEmail)}']],
   ['components/celebration.tsx', 'testID={secondary.testID}', 'w-full h-14 rounded-16 border-2 border-lip-gray bg-surface', null, 'Text', 'text-17 font-extrabold text-foreground', ['onPress={secondary.onPress}']],
   ['screens/docs-upload-form/index.tsx', literalId('docs-upload-cancel'), 'h-14 rounded-16 border-2 border-lip-gray bg-surface', 'outline', 'Text', 'text-17 font-extrabold text-foreground', ['isDisabled={uploading}', 'onPress={() => router.back()}']],
@@ -143,7 +147,7 @@ it.each(CTA_ROWS)('#177 R3.2: %s pinta la etiqueta Text 17/800 de %s (enmendado 
 it('#177 R3.3: el inventario de Button con bg-accent está cerrado (enmendado por #208 R21) (enmendado por #214 R13, R15, R18, R20) (enmendado por #209 R24) (enmendado por #215 R20)', () => {
   expect(idsWhere(tag => /\bbg-accent(?=[\s'"`])/.test(tag))).toEqual([...primaryIds, 'reminders-add-link', 'vaccines-add'].sort());
 });
-it.each(NEUTRAL_ROWS)('#177 R4.1: %s pinta la receta neutra de %s (enmendado por E4 R19) (enmendado por #202 R9) (enmendado por #202 R15)', (path, anchor, classes, variant, _label, _labelClasses, keeps) => {
+it.each(NEUTRAL_ROWS)('#177 R4.1: %s pinta la receta neutra de %s (enmendado por E4 R19) (enmendado por #202 R9) (enmendado por #202 R15) (enmendado por #231 R1, R3)', (path, anchor, classes, variant, _label, _labelClasses, keeps) => {
   const tag = openingTagWithTestId(readSource(path), anchor);
   expect(tag).toContain(`className="${classes}"`);
   expect(tag).toContain(path === 'screens/geofence-editor/index.tsx' ? 'style={[chunkyLip.neutral, KEEP_OPACITY]}' : 'style={chunkyLip.neutral}');
@@ -152,7 +156,7 @@ it.each(NEUTRAL_ROWS)('#177 R4.1: %s pinta la receta neutra de %s (enmendado por
   for (const keep of keeps) expect(tag).toContain(keep);
   for (const forbidden of ['border-b-6', 'border-b-4', 'border-black', 'border-accent', 'bg-transparent', 'rounded-xl']) expect(tag).not.toContain(forbidden);
 });
-it.each(NEUTRAL_ROWS)('#177 R4.2: %s pinta la etiqueta de %s', (path, anchor, _classes, _variant, label, classes) => {
+it.each(NEUTRAL_ROWS)('#177 R4.2: %s pinta la etiqueta de %s (enmendado por #231 R1, R3)', (path, anchor, _classes, _variant, label, classes) => {
   const element = elementWithTestId(readSource(path), anchor);
   expect(element).toContain(`<${label} className="${classes}">`);
   if (label === 'Text') {

@@ -162,6 +162,13 @@
       "when": 1793081136834,
       "tag": "0022_nutrition_ai_structured_plan",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1793727687404,
+      "tag": "0023_vaccine_catalog_data",
+      "breakpoints": true
     }
   ]
 }
