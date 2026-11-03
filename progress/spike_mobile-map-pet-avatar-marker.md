@@ -99,6 +99,14 @@ expo-image, que pinta la foto de su caché de disco sin pedir la URL. Lo más
 probable es que LocalStack perdiera el objeto al reiniciarse. B2 no está
 descartada: falta repetir «Foto» con una foto que exista en el bucket.
 
+Repetición (15:41, PID 8646, tras volver a subir la foto de Jev desde la app):
+logcat sin `fetchDecodedImage failed!` y, según el humano, «el marcador ya
+muestra la foto de Jev». Las comprobaciones 1 y 3 pasan con foto real: **B2
+sobrevive** y la spec de #230 se escribe sobre ella, sin dependencias nuevas ni
+rebuild. Para la spec: una foto que da 404 en S3 cae en el blobatar por timeout
+(comprobación 5), y expo-image con `cacheKey` puede seguir pintando en la
+pastilla una foto que ya no existe en el bucket.
+
 Si falla 1, 3 o 5, la decisión vuelve al humano: E (`react-native-view-shot` y
 rebuild) o D (miniatura en el backend). Ver `plan_mejoras-smoke-2026-11-03.md`
 §6, pregunta 5.
