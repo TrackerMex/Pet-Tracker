@@ -220,11 +220,15 @@ el humano lo corre; ninguna IA lanza `eas build` ni toca AWS real.
 
 ## 6. Preguntas abiertas al humano
 
-1. «Agregar el componente»: la frase llegó sin completar. ¿Qué componente y en
-   qué pantalla? Hasta saberlo no hay feature.
-2. G4 pendiente de #209 (`specs/mobile-nutrition-questionnaire/requirements.md` y
-   `docs/ui-guidelines.md`), #222 (R12) y #223 (R19). Con «apruebo, haz tú el
-   commit» el leader marca las casillas citando la frase, como en #225.
+1. ~~«Agregar el componente»~~ Respondida el 2026-11-03: «en agregar componente
+   es el mismo que decia SwipeableRow». Es el `SwipeableRow` de #228; no hay
+   feature nueva. HeroUI Native no trae uno, así que #228 lo construye sobre
+   `ReanimatedSwipeable`.
+2. ~~G4 de #209, #222 (R12) y #223 (R19)~~ Aprobado el 2026-11-03: «si apruebo
+   los cambios». El leader marcó las casillas en `docs/g4-209-222-223`. #209
+   pasa a `done`. #222 R12 y #223 R19 quedan desbloqueados, pero siguen sin
+   implementar: las dos features siguen `spec_ready` hasta su implementación y
+   veredicto del `reviewer`.
 3. Paliativo de #226 en el PC del humano: `pnpm -C backend-pet-tracker run seed:vaccines`.
 
 ## 7. Fuera de alcance
