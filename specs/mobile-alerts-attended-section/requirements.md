@@ -531,8 +531,9 @@ primeras filas abiertas** y la sexta sin envoltorio).
   (firma delegada del leader con la checklist de
   `progress/plan_canvas-parity-2026-10-23.md` §4 y los tres puntos del §4 de
   `progress/plan_ui-2026-10-26.md`; mandato del 2026-10-26)
-- [ ] **G4**: aprobada la enmienda de `docs/ui-guidelines.md` de R19 (casilla
-  humana propia, **no delegada**) (fecha: ____) ← sin esta casilla R19 no se
+- [x] **G4**: aprobada la enmienda de `docs/ui-guidelines.md` de R19 (casilla
+  humana propia, **no delegada**) (fecha: 2026-11-03, en la sesión del leader:
+  «si apruebo los cambios»; el leader teclea el commit) ← sin esta casilla R19 no se
   implementa
 - [x] **G2**: smoke en el dev build de Android (colapsada, expandida con
   «Ver más», sin abiertas, tema claro y oscuro) (fecha: 2026-11-03) ← gate humano,

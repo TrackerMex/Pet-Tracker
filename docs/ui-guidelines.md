@@ -991,4 +991,5 @@ Detalle y tests en `specs/mobile-canvas-tab-bar/requirements.md` (R1 a R10).
 - Fuera de la escala, por fidelidad al canvas (#209): tarjetas de actividad y lista de Generando en `rounded-tile`, filas BCS y campos numéricos en `rounded-14`, badges BCS en `rounded-10`, resumen de peso objetivo en `rounded-16`.
 - Chips de Salud: receta de chip elegido de la regla 13 (`rounded-full bg-accent` + `chunkyLip.primaryCompact`); chips de tipo de alimento: receta de `OptionalChip`, sin labio.
 
-- [ ] Enmienda #209 aprobada por humano
+- [X] Enmienda #209 aprobada por humano
+  Aprobada por el humano en la sesión del leader el 2026-11-03 («si apruebo los cambios»); el leader teclea el commit.
