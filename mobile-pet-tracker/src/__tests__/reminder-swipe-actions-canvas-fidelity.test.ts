@@ -137,3 +137,18 @@ it('#228 R13: los candados enmendados nombran su enmienda y las specs enmendadas
     expect(spec).toMatch(/- \[[ xX]\] Enmienda \x23228 aprobada/);
   }
 });
+
+describe('#228 R12: enmienda de la carta', () => {
+  it('#228 R12: la carta lleva una vez el bloque de su enmienda', () => {
+    // \x23 es el signo de número: la carta lo escribe literal y la fuente no lleva el número de feature desnudo.
+    const checkbox = /- \[[ xX]\] Enmienda \x23228 aprobada por humano/g;
+    const normalize = (text: string) => text.replace(checkbox, '- [ ] Enmienda \x23228 aprobada por humano');
+    const design = readFileSync(join(process.cwd(), '..', 'specs/mobile-reminder-swipe-actions/design.md'), 'utf8');
+    const canonical = /### Bloque «Enmienda \x23228»[\s\S]*?```markdown\n([\s\S]*?)\n```/.exec(design)?.[1];
+    expect(canonical).toBeDefined();
+    const charter = readFileSync(join(process.cwd(), '..', 'docs/ui-guidelines.md'), 'utf8');
+    expect(normalize(charter).split(normalize(canonical ?? '')).length - 1).toBe(1);
+    expect(charter.match(/^## Enmienda \x23228\b/gm)).toHaveLength(1);
+    expect(charter).toMatch(/- \[[ xX]\] Enmienda \x23228 aprobada por humano/);
+  });
+});
