@@ -4,7 +4,7 @@ import { PixelRatio } from 'react-native';
 import { blobatar } from 'blobatar';
 import { isValidElement } from 'react';
 
-import { PetMarkerIcon } from './pet-marker-icon';
+import { PetMarkerIcon, markerCompositionKey } from './pet-marker-icon';
 
 // #230 R3: los propietarios internos de React no forman parte del dibujo SVG.
 expect.addEqualityTesters([
@@ -147,13 +147,13 @@ it('#230 R5: con photoUrl null o vacía no hay Svg de foto', async () => {
   expect(screen.queryByTestId('map-marker-photo-svg', { includeHiddenElements: true })).toBeNull();
 });
 
-it('#230 R6: al cargar la foto la captura y sustituye al blobatar', async () => {
+it('#230 R6: al cargar la foto la captura y sustituye al blobatar (enmendado por #230 R8)', async () => {
   const onIcon = jest.fn();
   await render(<PetMarkerIcon pet={withPhoto} onIcon={onIcon} />);
   await runFrames();
   await act(async () => { mockToDataURL.mock.calls[0][1]('RkFMTEJBQ0s='); });
   expect(onIcon.mock.calls).toEqual([[{
-    key: '["pet-1","Luna","https://cdn.example/pets/luna.jpg?X-Amz-Signature=aaa"]', icon: FALLBACK_ICON,
+    key: '["pet-1","Luna","https://cdn.example/pets/luna.jpg"]', icon: FALLBACK_ICON,
   }]]);
   await fireEvent(screen.getByTestId('map-marker-photo', { includeHiddenElements: true }), 'load');
   await runFrame();
@@ -166,7 +166,7 @@ it('#230 R6: al cargar la foto la captura y sustituye al blobatar', async () => 
   await act(async () => { mockToDataURL.mock.calls[1][1]('UEhPVE8='); });
   expect(mockUseImage.mock.calls.at(-1)).toEqual([{ uri: 'data:image/png;base64,UEhPVE8=' }]);
   expect(onIcon.mock.calls.at(-1)).toEqual([{
-    key: '["pet-1","Luna","https://cdn.example/pets/luna.jpg?X-Amz-Signature=aaa"]', icon: PHOTO_ICON,
+    key: '["pet-1","Luna","https://cdn.example/pets/luna.jpg"]', icon: PHOTO_ICON,
   }]);
 });
 
@@ -205,4 +205,34 @@ describe('#230 R7: plazo de la foto', () => {
     await act(async () => { jest.advanceTimersByTime(4000); });
     expect(screen.getByTestId('map-marker-photo-svg', { includeHiddenElements: true })).toBeTruthy();
   });
+});
+
+it('#230 R8: la clave ignora la firma y distingue id, nombre y ruta', () => {
+  const cases = [
+    [pet, '["pet-1","Luna",""]'],
+    [{ ...pet, photoUrl: '' }, '["pet-1","Luna",""]'],
+    [withPhoto, '["pet-1","Luna","https://cdn.example/pets/luna.jpg"]'],
+    [{ ...withPhoto, photoUrl: 'https://cdn.example/pets/luna.jpg?X-Amz-Signature=bbb' }, '["pet-1","Luna","https://cdn.example/pets/luna.jpg"]'],
+    [{ ...withPhoto, photoUrl: 'https://cdn.example/pets/luna-2.jpg' }, '["pet-1","Luna","https://cdn.example/pets/luna-2.jpg"]'],
+    [{ ...withPhoto, name: 'Milo' }, '["pet-1","Milo","https://cdn.example/pets/luna.jpg"]'],
+    [{ ...withPhoto, id: 'pet-2' }, '["pet-2","Luna","https://cdn.example/pets/luna.jpg"]'],
+  ] as const;
+  for (const [value, expected] of cases) expect(markerCompositionKey(value)).toBe(expected);
+});
+
+it('#230 R8: un rerender con la URL re-firmada no recompone', async () => {
+  const onIcon = jest.fn();
+  await render(<PetMarkerIcon pet={withPhoto} onIcon={onIcon} />);
+  await runFrames();
+  await act(async () => { mockToDataURL.mock.calls[0][1]('RkFMTEJBQ0s='); });
+  await fireEvent(screen.getByTestId('map-marker-photo', { includeHiddenElements: true }), 'load');
+  await runFrames();
+  await act(async () => { mockToDataURL.mock.calls[1][1]('UEhPVE8='); });
+  expect(mockToDataURL).toHaveBeenCalledTimes(2);
+  await screen.rerender(<PetMarkerIcon pet={{ ...withPhoto, photoUrl: 'https://cdn.example/pets/luna.jpg?X-Amz-Signature=bbb' }} onIcon={onIcon} />);
+  await runFrames();
+  expect(screen.getByTestId('map-marker-photo', { includeHiddenElements: true }).props.href).toEqual({
+    uri: 'https://cdn.example/pets/luna.jpg?X-Amz-Signature=aaa',
+  });
+  expect(mockToDataURL).toHaveBeenCalledTimes(2);
 });
