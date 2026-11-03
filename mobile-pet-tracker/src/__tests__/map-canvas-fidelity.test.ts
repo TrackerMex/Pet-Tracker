@@ -607,3 +607,9 @@ describe('#201 R16: guardas de deriva de los tres ficheros', () => {
     expect(hexGuard.test('// #201 R10')).toBe(false);
   });
 });
+
+describe('#230 R1, R10 y R11: compositor del marcador', () => {
+  it('#230 R1: el compositor no trae copy', () => {
+    expect(readProduction('screens/map/pet-marker-icon.tsx')).not.toMatch(/useTranslate|\bt\(|<Text\b/);
+  });
+});
