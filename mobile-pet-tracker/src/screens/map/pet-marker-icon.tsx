@@ -11,7 +11,7 @@ type MarkerPet = Pick<PetProfile, 'id' | 'name' | 'photoUrl'>;
 type IconReady = { key: string; icon: ImageRef };
 
 export function markerCompositionKey(pet: MarkerPet): string {
-  return JSON.stringify([pet.id, pet.name, pet.photoUrl ?? '']);
+  return JSON.stringify([pet.id, pet.name, pet.photoUrl ? pet.photoUrl.split('?')[0] : '']);
 }
 
 function MarkerImage({ uri, compositionKey, onIcon }: {
@@ -27,8 +27,9 @@ function MarkerImage({ uri, compositionKey, onIcon }: {
 }
 
 export function PetMarkerIcon(props: { pet: MarkerPet; onIcon: (state: IconReady) => void }) {
+  const [frozen] = useState(props.pet);
   const [foreground] = useThemeColors(['accent-foreground']);
-  const blob = useMemo(() => parse(blobatar(props.pet.name))?.children, [props.pet.name]);
+  const blob = useMemo(() => parse(blobatar(frozen.name))?.children, [frozen.name]);
   const svgRef = useRef<Svg>(null);
   const [capture, setCapture] = useState<string | null>(null);
   const photoRef = useRef<Svg>(null);
@@ -37,10 +38,10 @@ export function PetMarkerIcon(props: { pet: MarkerPet; onIcon: (state: IconReady
   const [photoExpired, setPhotoExpired] = useState(false);
   const photoTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => {
-    if (!props.pet.photoUrl) return;
+    if (!frozen.photoUrl) return;
     photoTimer.current = setTimeout(() => setPhotoExpired(true), 4000);
     return () => clearTimeout(photoTimer.current);
-  }, [props.pet.photoUrl]);
+  }, [frozen.photoUrl]);
   useEffect(() => {
     let cleaned = false;
     let secondFrame: number | undefined;
@@ -99,7 +100,7 @@ export function PetMarkerIcon(props: { pet: MarkerPet; onIcon: (state: IconReady
         </G>
         <Circle testID="map-marker-fallback-ring" cx={22} cy={22} r={20.5} stroke={foreground} strokeWidth={3} fill="none" />
       </Svg>
-      {props.pet.photoUrl && !photoExpired ? (
+      {frozen.photoUrl && !photoExpired ? (
         <Svg ref={photoRef} testID="map-marker-photo-svg" width={44} height={44} viewBox="0 0 44 44">
           <Defs>
             <ClipPath testID="map-marker-photo-clip" id="map-marker-photo-clip">
@@ -109,11 +110,11 @@ export function PetMarkerIcon(props: { pet: MarkerPet; onIcon: (state: IconReady
           <Image onLoad={() => {
             clearTimeout(photoTimer.current);
             setPhotoLoaded(true);
-          }} testID="map-marker-photo" href={{ uri: props.pet.photoUrl }} x={0} y={0} width={44} height={44} preserveAspectRatio="xMidYMid slice" clipPath="url(#map-marker-photo-clip)" />
+          }} testID="map-marker-photo" href={{ uri: frozen.photoUrl }} x={0} y={0} width={44} height={44} preserveAspectRatio="xMidYMid slice" clipPath="url(#map-marker-photo-clip)" />
           <Circle testID="map-marker-photo-ring" cx={22} cy={22} r={20.5} stroke={foreground} strokeWidth={3} fill="none" />
         </Svg>
       ) : null}
-      {uri ? <MarkerImage uri={uri} compositionKey={markerCompositionKey(props.pet)} onIcon={props.onIcon} /> : null}
+      {uri ? <MarkerImage uri={uri} compositionKey={markerCompositionKey(frozen)} onIcon={props.onIcon} /> : null}
     </View>
   );
 }
