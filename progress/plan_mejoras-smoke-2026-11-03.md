@@ -87,6 +87,9 @@ son de `6531669f` y caducan al mergear: la spec ancla por contenido.
   ascendente) y una sección «Pasados» colapsada al final, con el mismo patrón que
   Alertas atendidas (#223).
 - Reutilizable: `upcomingReminders` de `home/format.ts`.
+- Captura del humano (2026-11-03): arriba salen los pasados atenuados («Enviado»,
+  «Cancelado») y debajo los próximos; el resumen dice «3 Inactivos», que son
+  justo los que irían a «Pasados».
 - Necesita artboard y copy (título de la sección, contador, vacío) en G1.
 
 ### 228 `mobile-reminder-swipe-actions` (P2, @Backend, G1, después de #227)
@@ -100,15 +103,22 @@ son de `6531669f` y caducan al mergear: la spec ancla por contenido.
 - Enmienda #106 R15 y sus candados. Mismo fichero que #227: va detrás.
 - Necesita artboard en G1.
 
-### 229 `mobile-profile-family-join-row` (P2, @Backend, G1, después de #235)
+### 229 `mobile-profile-family-join-row` (P1, @Frontend, después de #235)
 
-- Hoy `ProfileWideTile` (`profile/index.tsx`) pinta «Familia de <mascota>»
-  (`members-link`) y «Unirme con código» (`join-pet-link`) en filas separadas; el
-  Pressable ancho no lleva `flex-1`.
-- Decisión: una fila de dos columnas con el mismo alto.
-- El artboard de #214 (`specs/mobile-pet-members/canvas/PerfilFamilia.dc.html`)
-  solo dibuja Familia; «Unirme» no tiene artboard. Enmienda #214 R4/R6.
-- Mismo fichero que #235: va detrás.
+- Captura del humano (2026-11-03): las dos tarjetas salen a media anchura, en
+  filas separadas y **sin texto**, solo el icono y el chevron.
+- Causa: `ProfileWideTile` (`profile/index.tsx`) va dentro de un `flex-row`
+  (`profile-links-row-2` y `profile-links-row-3`) y su Pressable no lleva
+  `flex-1`; el bloque de texto (`flex-1`) no tiene anchura de la que crecer y se
+  queda en 0.
+- Decisión: una sola fila de dos columnas con el mismo alto, como las filas de
+  `ProfileTile` de encima. Sin copy nuevo: se conservan `profile.membersLink`,
+  `joinPet.title` y sus subtítulos.
+- Sin G1: reutiliza el patrón de fila ya aprobado y la decisión «Lado a lado» del
+  humano fija la disposición. El artboard de #214
+  (`specs/mobile-pet-members/canvas/PerfilFamilia.dc.html`) dibuja Familia a lo
+  ancho: la spec enmienda #214 R4/R6 y lo dice.
+- Mismo fichero que #235: va detrás, en la misma sesión.
 
 ### 230 `mobile-map-pet-avatar-marker` (P2, @Backend, explorer + G1)
 
@@ -166,13 +176,12 @@ son de `6531669f` y caducan al mergear: la spec ancla por contenido.
 
 | Sesión | Features | Orden |
 |---|---|---|
-| @Backend (leader) | #226, #227, #228, #229, #230 | #226 ya; explorer de #230 ya; #227–#230 tras G1; #228 tras #227; #229 tras #235 |
-| @Frontend | #231, #232, #233, #234, #235 | sin G1; #235 primero, que #229 lo espera |
+| @Backend (leader) | #226, #227, #228, #230 | #226 ya; explorer de #230 ya; #227, #228 y #230 tras G1; #228 tras #227 |
+| @Frontend | #229, #231, #232, #233, #234, #235 | sin G1; #235 antes que #229 |
 
-- Frontend propuso #229, #231, #232 y #235. #229 se queda en @Backend porque
-  necesita artboard y el leader es el único escritor del canvas
-  (https://claude.ai/artifact/VqaQQsRTtis9Dbttqy3z7j); a cambio, Frontend toma
-  #233 y #234.
+- Frontend propuso #229, #231, #232 y #235, y toma además #233 y #234. Los
+  artboards de G1 los dibuja el leader, único escritor del canvas
+  (https://claude.ai/artifact/VqaQQsRTtis9Dbttqy3z7j).
 - Codex: como mucho 3 a la vez entre las dos sesiones; reparto por defecto,
   2 de Frontend y 1 de @Backend.
 - `./init.sh`: uno a la vez entre sesiones, avisando a la otra antes.
@@ -199,12 +208,12 @@ puntos de `plan_ui-2026-10-26.md` §4, y dos de este plan:
 
 | Gate | Qué | Cuándo | Casilla |
 |---|---|---|---|
-| G1 | Aprobar los artboards y el copy nuevos de #227, #228, #229 y #230 | Antes de sus specs | este plan, abajo |
+| G1 | Aprobar los artboards y el copy nuevos de #227, #228 y #230 | Antes de sus specs | este plan, abajo |
 | G2 | Smoke en el dev build de Android de las diez features, más el de #224 | En lote, al final (`progress/smoke_mejoras-smoke.md`) | ese fichero |
 | G4 | Enmiendas de `docs/ui-guidelines.md` o `docs/conventions.md` | Con la spec que las pida | `specs/<feature>/requirements.md` |
 | G5 | Mergear `dev` → `main` | Cuando el humano dé la app por lista | PR en GitHub |
 
-- [ ] G1 aprobado por humano: artboards y copy de #227–#230 (versión del canvas: ____, fecha: ____)
+- [ ] G1 aprobado por humano: artboards y copy de #227, #228 y #230 (versión del canvas: ____, fecha: ____)
 
 Si #226 necesitara un dev build nuevo o algo que cueste dinero, la spec lo dice y
 el humano lo corre; ninguna IA lanza `eas build` ni toca AWS real.
