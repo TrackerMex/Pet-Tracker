@@ -14,6 +14,12 @@ export function markerCompositionKey(pet: MarkerPet): string {
   return JSON.stringify([pet.id, pet.name, pet.photoUrl ? pet.photoUrl.split('?')[0] : '']);
 }
 
+export type MarkerIconState = IconReady | null;
+
+export function currentMarkerIcon(state: MarkerIconState, pet: MarkerPet | undefined): ImageRef | null {
+  return state && pet && state.key === markerCompositionKey(pet) ? state.icon : null;
+}
+
 function MarkerImage({ uri, compositionKey, onIcon }: {
   uri: string;
   compositionKey: string;
