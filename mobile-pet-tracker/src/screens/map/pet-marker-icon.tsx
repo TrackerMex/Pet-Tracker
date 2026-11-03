@@ -31,6 +31,9 @@ export function PetMarkerIcon(props: { pet: MarkerPet; onIcon: (state: IconReady
   const blob = useMemo(() => parse(blobatar(props.pet.name))?.children, [props.pet.name]);
   const svgRef = useRef<Svg>(null);
   const [capture, setCapture] = useState<string | null>(null);
+  const photoRef = useRef<Svg>(null);
+  const [photoLoaded, setPhotoLoaded] = useState(false);
+  const [photoCapture, setPhotoCapture] = useState<string | null>(null);
   useEffect(() => {
     let cleaned = false;
     let secondFrame: number | undefined;
@@ -49,6 +52,26 @@ export function PetMarkerIcon(props: { pet: MarkerPet; onIcon: (state: IconReady
       if (secondFrame !== undefined) cancelAnimationFrame(secondFrame);
     };
   }, []);
+  useEffect(() => {
+    if (!photoLoaded) return;
+    let cleaned = false;
+    let secondFrame: number | undefined;
+    const firstFrame = requestAnimationFrame(() => {
+      secondFrame = requestAnimationFrame(() => {
+        if (cleaned) return;
+        const size = Math.round(44 * PixelRatio.get());
+        photoRef.current?.toDataURL((base64) => {
+          if (!cleaned) setPhotoCapture('data:image/png;base64,' + base64);
+        }, { width: size, height: size });
+      });
+    });
+    return () => {
+      cleaned = true;
+      cancelAnimationFrame(firstFrame);
+      if (secondFrame !== undefined) cancelAnimationFrame(secondFrame);
+    };
+  }, [photoLoaded]);
+  const uri = photoCapture ?? capture;
   return (
     <View
       testID="map-marker-icon"
@@ -70,17 +93,17 @@ export function PetMarkerIcon(props: { pet: MarkerPet; onIcon: (state: IconReady
         <Circle testID="map-marker-fallback-ring" cx={22} cy={22} r={20.5} stroke={foreground} strokeWidth={3} fill="none" />
       </Svg>
       {props.pet.photoUrl ? (
-        <Svg testID="map-marker-photo-svg" width={44} height={44} viewBox="0 0 44 44">
+        <Svg ref={photoRef} testID="map-marker-photo-svg" width={44} height={44} viewBox="0 0 44 44">
           <Defs>
             <ClipPath testID="map-marker-photo-clip" id="map-marker-photo-clip">
               <Circle cx={22} cy={22} r={22} />
             </ClipPath>
           </Defs>
-          <Image testID="map-marker-photo" href={{ uri: props.pet.photoUrl }} x={0} y={0} width={44} height={44} preserveAspectRatio="xMidYMid slice" clipPath="url(#map-marker-photo-clip)" />
+          <Image onLoad={() => setPhotoLoaded(true)} testID="map-marker-photo" href={{ uri: props.pet.photoUrl }} x={0} y={0} width={44} height={44} preserveAspectRatio="xMidYMid slice" clipPath="url(#map-marker-photo-clip)" />
           <Circle testID="map-marker-photo-ring" cx={22} cy={22} r={20.5} stroke={foreground} strokeWidth={3} fill="none" />
         </Svg>
       ) : null}
-      {capture ? <MarkerImage uri={capture} compositionKey={markerCompositionKey(props.pet)} onIcon={props.onIcon} /> : null}
+      {uri ? <MarkerImage uri={uri} compositionKey={markerCompositionKey(props.pet)} onIcon={props.onIcon} /> : null}
     </View>
   );
 }
