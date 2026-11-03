@@ -285,6 +285,7 @@ describe('#234 R1: el medidor vive fuera del recorte', () => {
     }
     visit(screen.getByTestId('food-ai-body').parent!);
     expect(carriers).toEqual(['food-ai-measure']);
+    expect(carriers).toHaveLength(1);
     expect(screen.getByTestId('food-ai-content').props.onLayout).toBeUndefined();
     expect(screen.getByTestId('food-ai-body').props.onLayout).toBeUndefined();
   });
