@@ -29,6 +29,7 @@ import { RemindersScreen } from '.';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
 const flat = (s: unknown) => Object.assign({}, ...[s].flat(Infinity).filter(Boolean));
+const HIDDEN = { includeHiddenElements: true } as const;
 
 
 const mockRiseIn = jest.fn<void, [import('react-native').ViewProps & { delayMs: number }]>();
@@ -118,6 +119,37 @@ jest.mock('@expo/ui/community/bottom-sheet', () => {
         : null,
     BottomSheetView: ({ children, ...props }: Record<string, unknown>) =>
       React.createElement(View, props, children as never),
+  };
+});
+
+const mockSwipeable = jest.fn<void, [import('react-native-gesture-handler/ReanimatedSwipeable').SwipeableProps]>();
+const mockSwipeableClose = jest.fn();
+let mockRealSwipeable = false;
+afterEach(() => { mockRealSwipeable = false; });
+
+jest.mock('react-native-gesture-handler/ReanimatedSwipeable', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    __esModule: true,
+    default: (props: import('react-native-gesture-handler/ReanimatedSwipeable').SwipeableProps) => {
+      if (mockRealSwipeable) {
+        const RealSwipeable = jest.requireActual<typeof import('react-native-gesture-handler/ReanimatedSwipeable')>('react-native-gesture-handler/ReanimatedSwipeable').default;
+        return React.createElement(RealSwipeable, props);
+      }
+      mockSwipeable(props);
+      return React.createElement(
+        View,
+        { testID: props.testID },
+        props.renderRightActions?.({ value: 0 } as never, { value: 0 } as never, {
+          close: mockSwipeableClose,
+          openLeft: jest.fn(),
+          openRight: jest.fn(),
+          reset: jest.fn(),
+        }),
+        props.children,
+      );
+    },
   };
 });
 
@@ -223,7 +255,7 @@ async function renderReminders() {
 async function expandPast() { await fireEvent.press(screen.getByTestId('reminders-past-toggle')); }
 
 async function confirmDelete(reminderId: string) {
-  await fireEvent.press(screen.getByTestId(`reminder-delete-${reminderId}`));
+  await fireEvent.press(screen.getByTestId(`reminder-delete-${reminderId}`, HIDDEN));
   const host = screen.getByTestId('reminders-delete-host');
   const sheet = within(host).getByTestId('community-bottom-sheet');
 
@@ -2166,8 +2198,8 @@ describe('#213 R14: series en Recordatorios', () => {
 
   async function openSeriesSheet() {
     await renderReminders();
-    await screen.findByTestId('reminder-cancel-series-series');
-    await fireEvent.press(screen.getByTestId('reminder-cancel-series-series'));
+    await screen.findByTestId('reminder-cancel-series-series', HIDDEN);
+    await fireEvent.press(screen.getByTestId('reminder-cancel-series-series', HIDDEN));
   }
 
   async function pressSeriesConfirmation() {
