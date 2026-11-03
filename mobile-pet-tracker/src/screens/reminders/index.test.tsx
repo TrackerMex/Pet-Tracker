@@ -2519,4 +2519,14 @@ describe('#227: próximos y pasados', () => {
     expect(screen.queryByTestId('reminders-past-list')).toBeNull();
     expect(screen.getAllByTestId(/^reminders-(upcoming-heading|upcoming-empty|past)$/).map(({ props }) => props.testID)).toEqual(['reminders-upcoming-heading', 'reminders-upcoming-empty', 'reminders-past']);
   });
+
+
+  it('#227 R9: sin recordatorios conserva el vacío sin secciones', async () => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+    await renderReminders();
+    expect(await screen.findByTestId('reminders-empty')).toBeVisible();
+    expect(screen.queryByTestId('reminders-upcoming-heading')).toBeNull();
+    expect(screen.queryByTestId('reminders-upcoming-empty')).toBeNull();
+    expect(screen.queryByTestId('reminders-past')).toBeNull();
+  });
 });
