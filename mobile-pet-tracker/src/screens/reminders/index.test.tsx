@@ -67,6 +67,8 @@ jest.mock('reicon-react-native', () => {
     Plus: mockIcon('reminders-icon-plus'),
     Repeat: mockIcon('reminders-icon-repeat'),
     Trash: mockIcon('reminders-icon-trash'),
+    ChevronDown: mockIcon('reminders-icon-chevron-down'),
+    ChevronUp: mockIcon('reminders-icon-chevron-up'),
     Syringe: mockIcon('reminders-icon-syringe'),
     Drop: mockIcon('reminders-icon-drop'),
     Pill: mockIcon('reminders-icon-pill'),
@@ -184,7 +186,7 @@ function makeReminder(overrides: Partial<Reminder> = {}): Reminder {
     petId: 'pet-1',
     type: 'vaccine',
     title: 'Rabies booster',
-    dueAt: '2026-08-27T09:00:00.000Z',
+    dueAt: new Date(Date.now() + 3 * 86_400_000).toISOString(),
     advanceMinutes: 10080,
     status: 'scheduled',
     recurrence: null,
@@ -217,6 +219,8 @@ async function renderReminders() {
     wrapper: RemindersWrapper,
   });
 }
+
+async function expandPast() { await fireEvent.press(screen.getByTestId('reminders-past-toggle')); }
 
 async function confirmDelete(reminderId: string) {
   await fireEvent.press(screen.getByTestId(`reminder-delete-${reminderId}`));
@@ -530,10 +534,11 @@ describe('#178 R6: fila del canvas', () => {
     jest.useRealTimers();
   });
 
-  it('distingue las recetas de fila próxima, lejana e inactiva (enmendado por #204 R7) (enmendado por #213 R16)', async () => {
+  it('distingue las recetas de fila próxima, lejana e inactiva (enmendado por #204 R7) (enmendado por #213 R16) (enmendado por #227 R13)', async () => {
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: todayCanvasReminders });
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
+    await expandPast();
     for (const [id, className] of [
       ['a', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border-2 border-category-amber'],
       ['b', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border'],
@@ -545,9 +550,10 @@ describe('#178 R6: fila del canvas', () => {
     }
   });
 
-  it('ordena mosaico, columna y borrar con la anatomía exacta de cada fila', async () => {
+  it('ordena mosaico, columna y borrar con la anatomía exacta de cada fila (enmendado por #227 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
+    await expandPast();
     for (const id of ['a', 'b', 'c']) {
       const row = screen.getByTestId(`reminder-row-${id}`);
       expect(row.children).toHaveLength(3);
@@ -558,9 +564,10 @@ describe('#178 R6: fila del canvas', () => {
     }
   });
 
-  it('da a cada mosaico su único icono, tamaño, superficie y tinta', async () => {
+  it('da a cada mosaico su único icono, tamaño, superficie y tinta (enmendado por #227 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
+    await expandPast();
     for (const [id, className, iconID, color] of [
       ['a', 'size-11.5 items-center justify-center rounded-14 bg-category-blue', 'reminders-icon-syringe', 'color:category-blue-strong'],
       ['b', 'size-11.5 items-center justify-center rounded-14 bg-category-amber', 'reminders-icon-pill', 'color:category-amber-strong'],
@@ -577,9 +584,10 @@ describe('#178 R6: fila del canvas', () => {
     }
   });
 
-  it('pinta tipo y título con sus tintas y pesos propios', async () => {
+  it('pinta tipo y título con sus tintas y pesos propios (enmendado por #227 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
+    await expandPast();
     for (const [id, type, title, typeClass] of [
       ['a', 'Vacuna', 'Refuerzo de rabia', 'text-xs font-extrabold text-category-blue-strong'],
       ['b', 'Medicamento', 'Pastilla trimestral', 'text-xs font-extrabold text-category-amber-strong'],
@@ -599,9 +607,10 @@ describe('#178 R6: fila del canvas', () => {
     expect(row.getByText('· en 3 días').props.className).toBe('text-13 font-normal text-muted');
   });
 
-  it('formatea la hora lejana y la meta inactiva con su estado', async () => {
+  it('formatea la hora lejana y la meta inactiva con su estado (enmendado por #227 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
+    await expandPast();
     expect(within(screen.getByTestId('reminder-row-b')).getByText('20 ene, 20:05').props.className).toBe('text-13 font-normal text-muted');
     const row = within(screen.getByTestId('reminder-row-c'));
     expect(row.getByText('3 dic, 11:30').props.className).toBe('text-13 font-normal text-muted');
@@ -610,9 +619,10 @@ describe('#178 R6: fila del canvas', () => {
     expect(status.props.className).toBe('text-13 font-semibold text-muted');
   });
 
-  it('sustituye los emoji de todas las filas por iconos', async () => {
+  it('sustituye los emoji de todas las filas por iconos (enmendado por #227 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
+    await expandPast();
     for (const id of ['a', 'b', 'c']) {
       const row = screen.getByTestId(`reminder-row-${id}`);
       expect(within(row).queryAllByText(/\p{Extended_Pictographic}/u)).toEqual([]);
@@ -639,7 +649,7 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
     jest.useRealTimers();
   });
 
-  it('renders summaries and reminder rows in API order (enmendado por #213 R16)', async () => {
+  it('renders summaries and reminder rows by section (enmendado por #213 R16) (enmendado por #227 R13)', async () => {
     const reminders = [
       makeReminder({
         id: 'sent',
@@ -681,8 +691,6 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
     expect(
       screen.getAllByTestId(/^reminder-row-/).map(({ props }) => props.testID),
     ).toEqual([
-      'reminder-row-sent',
-      'reminder-row-cancelled',
       'reminder-row-upcoming',
       'reminder-row-later',
     ]);
@@ -700,6 +708,9 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
     expect(upcoming.getByText('· en 3 días')).toBeVisible();
     expect(screen.queryByTestId('reminder-upcoming-upcoming')).toBeNull(); // #213 R16
     expect(screen.queryByTestId('reminder-upcoming-later')).toBeNull();
+
+    await expandPast();
+    expect(screen.getAllByTestId(/^reminder-row-/).map(({ props }) => props.testID)).toEqual(['reminder-row-upcoming', 'reminder-row-later', 'reminder-row-cancelled', 'reminder-row-sent']);
 
     expect(screen.getByTestId('reminder-row-sent').props.className).toContain(
       'opacity-50',
@@ -778,7 +789,7 @@ describe('R7: borrar recordatorio con confirmación', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('shows a delete action for reminders in every status', async () => {
+  it('shows a delete action for reminders in every status (enmendado por #227 R13)', async () => {
     mockListReminders.mockResolvedValue({
       kind: 'ok',
       reminders: [
@@ -794,6 +805,7 @@ describe('R7: borrar recordatorio con confirmación', () => {
       expect(screen.getByTestId('reminder-delete-scheduled')).toBeVisible(),
     );
     expect(screen.getByTestId('reminder-delete-sent')).toBeVisible();
+    await expandPast();
     expect(screen.getByTestId('reminder-delete-cancelled')).toBeVisible();
   });
 
@@ -1158,13 +1170,15 @@ describe('#84 R3: recordatorios cuenta días de calendario en la píldora, el ba
     expect(within(screen.getByTestId('pill-week')).getByText('2')).toBeVisible();
   });
 
-  it('08:00 del 10 de septiembre: ayer a las 09:00 no es de esta semana ni próximo', async () => {
+  it('08:00 del 10 de septiembre: ayer a las 09:00 no es de esta semana ni próximo (enmendado por #227 R13)', async () => {
     mockListReminders.mockResolvedValue({
       kind: 'ok',
       reminders: [makeReminder({ id: 'yesterday-later', dueAt: new Date(2026, 8, 9, 9, 0).toISOString() })],
     });
 
     await renderReminders();
+    await screen.findByTestId('reminders-past-toggle');
+    await expandPast();
     await waitFor(() => expect(screen.getByTestId('reminder-row-yesterday-later')).toBeVisible());
 
     const yesterday = within(screen.getByTestId('reminder-row-yesterday-later'));
@@ -1320,19 +1334,21 @@ describe('#178 R7: entrada escalonada y badge', () => {
     jest.useRealTimers();
   });
 
-  it('asigna a cada entrada su índice en el orden del fixture (enmendado por #204 R6)', async () => {
+  it('asigna a cada entrada su índice dentro de su sección (enmendado por #204 R6) (enmendado por #227 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
-    for (const [index, id] of ['a', 'b', 'c'].entries()) {
+    await expandPast();
+    for (const [id, delayMs] of [['a', 0], ['b', 70], ['c', 0]] as const) {
       expect(mockRiseIn).toHaveBeenCalledWith(
-        expect.objectContaining({ testID: `reminders-entry-${id}`, delayMs: index * 70 }),
+        expect.objectContaining({ testID: `reminders-entry-${id}`, delayMs }),
       );
     }
   });
 
-  it('envuelve cada fila en su propia entrada', async () => {
+  it('envuelve cada fila en su propia entrada (enmendado por #227 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
+    await expandPast();
     for (const id of ['a', 'b', 'c']) {
       expect(within(screen.getByTestId(`reminders-entry-${id}`)).getByTestId(`reminder-row-${id}`)).toBeVisible();
     }
@@ -1355,9 +1371,10 @@ describe('#178 R7: entrada escalonada y badge', () => {
   });
 });
 
-describe('#178 R8: sheet de borrado del canvas', () => {
+describe('#178 R8: sheet de borrado del canvas (enmendado por #227 R13)', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
+    jest.useFakeTimers({ now: new Date('2026-12-30T15:00:00.000Z') });
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
     mockUseAuth.mockReturnValue({
       status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
@@ -1368,6 +1385,8 @@ describe('#178 R8: sheet de borrado del canvas', () => {
     await screen.findByTestId('reminder-row-a');
     await fireEvent.press(screen.getByTestId('reminder-delete-a'));
   });
+
+  afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
 
   it('centra los cinco hijos del sheet con el marco del canvas', () => {
     const sheet = screen.getByTestId('reminders-delete-sheet');
@@ -1407,9 +1426,10 @@ describe('#178 R8: sheet de borrado del canvas', () => {
   });
 });
 
-describe('#218 R1: el cajón de borrar pinta su contenedor con el token surface', () => {
+describe('#218 R1: el cajón de borrar pinta su contenedor con el token surface (enmendado por #227 R13)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useFakeTimers({ now: new Date('2026-12-30T15:00:00.000Z') });
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
     mockUseAuth.mockReturnValue({
       status: 'authenticated',
@@ -1420,6 +1440,8 @@ describe('#218 R1: el cajón de borrar pinta su contenedor con el token surface'
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: canvasReminders });
   });
+
+  afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
 
   it('#218 R1: backgroundStyle del BottomSheet de borrar es exactamente el token surface', async () => {
     await renderReminders();
@@ -1847,6 +1869,7 @@ describe('#204 R5: estados bajo la cabecera', () => {
 describe('#204 R6: entrada de las filas', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useFakeTimers({ now: new Date('2026-12-30T15:00:00.000Z') });
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
     mockUseAuth.mockReturnValue({
       status: 'authenticated',
@@ -1858,9 +1881,12 @@ describe('#204 R6: entrada de las filas', () => {
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: canvasReminders });
   });
 
-  it('#204 R6: escalona las filas 0, 70 y 140 ms con RiseIn', async () => {
+  afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
+
+  it('#204 R6: escalona las filas próximas cada 70 ms y la pasada desde 0 (enmendado por #227 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
+    await expandPast();
     const delayById = new Map(
       mockRiseIn.mock.calls
         .map(([props]) => props)
@@ -1870,7 +1896,7 @@ describe('#204 R6: entrada de las filas', () => {
     expect([...delayById]).toEqual([
       ['reminders-entry-a', 0],
       ['reminders-entry-b', 70],
-      ['reminders-entry-c', 140],
+      ['reminders-entry-c', 0],
     ]);
   });
 });
@@ -1912,9 +1938,10 @@ describe('#204 R7: ámbar de la fila próxima', () => {
   });
 });
 
-describe('#204 R8: Eliminar de la fila', () => {
+describe('#204 R8: Eliminar de la fila (enmendado por #227 R13)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useFakeTimers({ now: new Date('2026-12-30T15:00:00.000Z') });
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
     mockUseAuth.mockReturnValue({
       status: 'authenticated',
@@ -1925,6 +1952,8 @@ describe('#204 R8: Eliminar de la fila', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: canvasReminders });
   });
+
+  afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
 
   it('#204 R8: Eliminar de fila usa la receta rosa del canvas', async () => {
     await renderReminders();
@@ -1937,9 +1966,10 @@ describe('#204 R8: Eliminar de la fila', () => {
   });
 });
 
-describe('#204 R9: Eliminar de la hoja', () => {
+describe('#204 R9: Eliminar de la hoja (enmendado por #227 R13)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useFakeTimers({ now: new Date('2026-12-30T15:00:00.000Z') });
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
     mockUseAuth.mockReturnValue({
       status: 'authenticated',
@@ -1950,6 +1980,8 @@ describe('#204 R9: Eliminar de la hoja', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: canvasReminders });
   });
+
+  afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
 
   it('#204 R9: Eliminar de la hoja lleva cuerpo de 56 y labio danger', async () => {
     await renderReminders();
@@ -2009,7 +2041,7 @@ describe('#213 R14: series en Recordatorios', () => {
     expect(within(line).getByText(expected).props.className).toBe('text-13 font-bold text-accent-strong');
   });
 
-  it('#213 R14: sin línea de repetición si no hay recurrencia o la serie no está programada', async () => {
+  it('#213 R14: sin línea de repetición si no hay recurrencia o la serie no está programada (enmendado por #227 R13)', async () => {
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [
       makeReminder({ id: 'once', recurrence: null }),
       makeReminder({ id: 'cancelled', recurrence: { unit: 'month', every: 1 }, status: 'cancelled' }),
@@ -2017,6 +2049,8 @@ describe('#213 R14: series en Recordatorios', () => {
     ] });
     await renderReminders();
     await screen.findByTestId('reminder-row-once');
+    await expandPast();
+    for (const id of ['once', 'cancelled', 'sent']) expect(screen.getByTestId(`reminder-row-${id}`)).toBeVisible();
     for (const id of ['once', 'cancelled', 'sent']) expect(screen.queryByTestId(`reminder-repeats-${id}`)).toBeNull();
   });
   it('#213 R15: la serie programada ofrece Cancelar serie y el puntual Eliminar', async () => {
@@ -2040,15 +2074,17 @@ describe('#213 R14: series en Recordatorios', () => {
     expect(screen.queryByTestId('reminder-cancel-series-once')).toBeNull();
   });
 
-  it.each(['cancelled', 'sent'] as const)('#213 R15: una serie cancelada o enviada conserva Eliminar (%s)', async (status) => {
-    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [makeReminder({ id: 'series', status, recurrence: { unit: 'month', every: 1 } })] });
+  it.each(['cancelled', 'sent'] as const)('#213 R15: una serie cancelada o enviada conserva Eliminar (%s) (enmendado por #227 R13)', async (status) => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [makeReminder({ id: 'series', status, dueAt: new Date(2026, 11, 28, 9, 0).toISOString(), recurrence: { unit: 'month', every: 1 } })] });
     await renderReminders();
+    await screen.findByTestId('reminders-past-toggle');
+    await expandPast();
     await screen.findByTestId('reminder-row-series');
     expect(screen.getByTestId('reminder-delete-series')).toHaveTextContent('Eliminar');
     expect(screen.queryByTestId('reminder-cancel-series-series')).toBeNull();
   });
 
-  it('#213 R16: el badge Hoy y el borde ámbar solo marcan el día de hoy', async () => {
+  it('#213 R16: el badge Hoy y el borde ámbar solo marcan el día de hoy (enmendado por #227 R13)', async () => {
     jest.setSystemTime(new Date(2026, 11, 31, 8));
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [
       makeReminder({ id: 'today', dueAt: '2027-01-01T02:00:00.000Z' }),
@@ -2057,12 +2093,14 @@ describe('#213 R14: series en Recordatorios', () => {
     ] });
     await renderReminders();
     await screen.findByTestId('reminder-row-today');
+    await expandPast();
     expect(screen.getByTestId('reminder-upcoming-today')).toHaveTextContent('Hoy');
     expect(screen.getByTestId('reminder-row-today').props.className).toBe('flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border-2 border-category-amber');
     for (const id of ['tomorrow', 'yesterday']) {
       expect(screen.queryByTestId(`reminder-upcoming-${id}`)).toBeNull();
-      expect(screen.getByTestId(`reminder-row-${id}`).props.className).toBe('flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border');
     }
+    expect(screen.getByTestId('reminder-row-tomorrow').props.className).toBe('flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border');
+    expect(screen.getByTestId('reminder-row-yesterday').props.className).toBe('flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border opacity-50');
   });
 
   it('#213 R17: Cancelar serie abre la hoja con su copy', async () => {
@@ -2332,5 +2370,185 @@ describe('#216 R5: borrar y cancelar serie son solo del dueño', () => {
       expect(screen.queryByTestId('reminder-cancel-series-reminder-2')).toBeNull();
     }
     expect(screen.queryByTestId('reminder-repeats-reminder-2')).not.toBeNull();
+  });
+});
+
+describe('#227: próximos y pasados', () => {
+  const reminders = [
+    makeReminder({ id: 'oldsent', status: 'sent', dueAt: new Date(2026, 10, 30, 9, 0).toISOString() }),
+    makeReminder({ id: 'yesterday', status: 'scheduled', dueAt: new Date(2026, 11, 30, 9, 0).toISOString(), recurrence: { unit: 'month', every: 1 } }),
+    makeReminder({ id: 'today', status: 'scheduled', dueAt: new Date(2026, 11, 31, 20, 0).toISOString() }),
+    makeReminder({ id: 'newyear', status: 'scheduled', dueAt: new Date(2027, 0, 1, 0, 30).toISOString() }),
+    makeReminder({ id: 'cancelled', status: 'cancelled', dueAt: new Date(2027, 0, 5, 9, 0).toISOString() }),
+    makeReminder({ id: 'later', status: 'sent', dueAt: new Date(2027, 0, 10, 9, 0).toISOString() }),
+  ];
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers({ now: new Date(2026, 11, 31, 8, 0) });
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders });
+  });
+  afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
+
+  it('#227 R4: pinta «Próximos» y debajo sus filas en orden ascendente', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminders-pills');
+    expect(screen.queryByTestId('reminders-upcoming-heading')).not.toBeNull();
+    const heading = screen.getByTestId('reminders-upcoming-heading');
+    expect(heading).toHaveTextContent('Próximos');
+    expect(heading.props.accessibilityRole).toBe('header');
+    expect(heading.props.className).toBe('mt-1 text-13 font-extrabold uppercase tracking-caps text-muted');
+    const list = screen.getByTestId('reminders-upcoming-list');
+    expect(within(list).getAllByTestId(/^reminder-row-/).map(({ props }) => props.testID)).toEqual(['reminder-row-today', 'reminder-row-newyear', 'reminder-row-later']);
+    expect(screen.getAllByTestId(/^reminders-(pills|upcoming-heading|upcoming-list|past)$/).map(({ props }) => props.testID)).toEqual(['reminders-pills', 'reminders-upcoming-heading', 'reminders-upcoming-list', 'reminders-past']);
+  });
+
+
+  it('#227 R5: «Pasados» empieza colapsada con su contador y el chevron abajo', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminders-pills');
+    expect(screen.queryByTestId('reminders-past-toggle')).not.toBeNull();
+    const toggle = screen.getByTestId('reminders-past-toggle');
+    expect(toggle.props.accessibilityRole).toBe('button');
+    expect(toggle.props.accessibilityState?.expanded).toBe(false);
+    expect(toggle.props.hitSlop).toEqual({ top: 6, bottom: 6, left: 6, right: 6 });
+    expect(within(toggle).getByTestId('reminders-past-label')).toHaveTextContent('Pasados');
+    const count = within(toggle).getByTestId('reminders-past-count');
+    expect(count).toHaveTextContent('3');
+    expect(count.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+    const chevron = within(toggle).getByTestId('reminders-icon-chevron-down', { includeHiddenElements: true });
+    expect(chevron.props.size).toBe(18);
+    expect(chevron.props.color).toBe('color:muted');
+    expect(within(toggle).queryByTestId('reminders-icon-chevron-up', { includeHiddenElements: true })).toBeNull();
+    expect(screen.queryByTestId('reminders-past-list')).toBeNull();
+    for (const id of ['cancelled', 'yesterday', 'oldsent']) expect(screen.queryByTestId(`reminder-row-${id}`)).toBeNull();
+  });
+
+  it('#227 R5: sin pasados no pinta la sección', async () => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [reminders[2], reminders[3]] });
+    await renderReminders();
+    await screen.findByTestId('reminders-pills');
+    expect(screen.queryByTestId('reminders-upcoming-list')).not.toBeNull();
+    expect(screen.queryByTestId('reminders-past')).toBeNull();
+    expect(screen.queryByTestId('reminders-past-toggle')).toBeNull();
+  });
+
+
+  it('#227 R6: el encabezado alterna «Pasados» y sus filas van atenuadas de la más reciente a la más antigua', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminders-pills');
+    expect(screen.queryByTestId('reminders-past-toggle')).not.toBeNull();
+    await expandPast();
+    const list = await screen.findByTestId('reminders-past-list');
+    const rows = within(list).getAllByTestId(/^reminder-row-/);
+    expect(rows.map(({ props }) => props.testID)).toEqual(['reminder-row-cancelled', 'reminder-row-yesterday', 'reminder-row-oldsent']);
+    for (const row of rows) expect(row.props.className).toMatch(/ opacity-50$/);
+    const toggle = screen.getByTestId('reminders-past-toggle');
+    expect(toggle.props.accessibilityState?.expanded).toBe(true);
+    expect(within(toggle).queryByTestId('reminders-icon-chevron-up', { includeHiddenElements: true })).not.toBeNull();
+    expect(within(toggle).queryByTestId('reminders-icon-chevron-down', { includeHiddenElements: true })).toBeNull();
+    await expandPast();
+    expect(screen.getByTestId('reminders-past-toggle').props.accessibilityState?.expanded).toBe(false);
+    expect(screen.queryByTestId('reminders-past-list')).toBeNull();
+  });
+
+
+  it('#227 R7: la opacidad sigue a la sección y el resto de la fila sigue al status', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminders-pills');
+    expect(screen.queryByTestId('reminders-past-toggle')).not.toBeNull();
+    await expandPast();
+    for (const [id, className] of [
+      ['today', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border-2 border-category-amber'],
+      ['newyear', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border'],
+      ['later', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border'],
+      ['cancelled', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border opacity-50'],
+      ['yesterday', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border opacity-50'],
+      ['oldsent', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border opacity-50'],
+    ]) expect(screen.getByTestId(`reminder-row-${id}`).props.className).toBe(className);
+    expect(screen.getByTestId('reminder-upcoming-today')).toHaveTextContent('Hoy');
+    for (const id of ['newyear', 'later', 'yesterday']) expect(screen.queryByTestId(`reminder-upcoming-${id}`)).toBeNull();
+    expect(screen.getByTestId('reminder-status-later')).toHaveTextContent('Enviado');
+    expect(screen.getByTestId('reminder-status-cancelled')).toHaveTextContent('Cancelado');
+    expect(screen.getByTestId('reminder-status-oldsent')).toHaveTextContent('Enviado');
+    const yesterday = within(screen.getByTestId('reminder-row-yesterday'));
+    expect(yesterday.getByText('· en -1 días')).toBeVisible();
+    expect(yesterday.getByTestId('reminder-repeats-yesterday')).toBeVisible();
+  });
+
+
+  it('#227 R12: Eliminar y Cancelar serie siguen en su fila en las dos secciones y solo para el dueño', async () => {
+    const owner = await renderReminders();
+    await screen.findByTestId('reminders-pills');
+    expect(screen.queryByTestId('reminders-past-toggle')).not.toBeNull();
+    await expandPast();
+    const row = (id: string) => screen.getByTestId(`reminder-row-${id}`);
+    for (const id of ['today', 'later', 'cancelled', 'oldsent']) expect(within(row(id)).getByTestId(`reminder-delete-${id}`)).toBeVisible();
+    expect(within(row('yesterday')).getByTestId('reminder-cancel-series-yesterday')).toBeVisible();
+    expect(within(row('yesterday')).queryByTestId('reminder-delete-yesterday')).toBeNull();
+    await owner.unmount();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: 'family' })] });
+    await renderReminders();
+    await screen.findByTestId('reminders-past-toggle');
+    await expandPast();
+    expect(screen.getAllByTestId(/^reminder-row-/)).toHaveLength(6);
+    expect(screen.queryAllByTestId(/^reminder-(delete|cancel-series)-/)).toEqual([]);
+  });
+
+
+  it('#227 R8: sin próximos pinta la caja «Nada pendiente por ahora» encima de «Pasados»', async () => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [reminders[0], reminders[1], reminders[4]] });
+    await renderReminders();
+    await screen.findByTestId('reminders-upcoming-heading');
+    expect(screen.queryByTestId('reminders-upcoming-empty')).not.toBeNull();
+    const box = screen.getByTestId('reminders-upcoming-empty');
+    expect(box.props.className).toBe('items-center gap-1 rounded-22 bg-default px-4 py-5');
+    expect(box).toHaveStyle({ borderCurve: 'continuous' });
+    const title = within(box).getByTestId('reminders-upcoming-empty-title');
+    expect(title).toHaveTextContent('Nada pendiente por ahora');
+    expect(title.props.className).toBe('text-center text-15 font-extrabold text-foreground');
+    const body = within(box).getByTestId('reminders-upcoming-empty-body');
+    expect(body).toHaveTextContent('Los recordatorios nuevos aparecerán aquí.');
+    expect(body.props.className).toBe('text-center text-13 text-muted');
+    expect(screen.queryByTestId('reminders-upcoming-list')).toBeNull();
+    expect(screen.getByTestId('reminders-past-count')).toHaveTextContent('3');
+    expect(screen.getByTestId('reminders-past-toggle').props.accessibilityState?.expanded).toBe(false);
+    expect(screen.queryByTestId('reminders-past-list')).toBeNull();
+    expect(screen.getAllByTestId(/^reminders-(upcoming-heading|upcoming-empty|past)$/).map(({ props }) => props.testID)).toEqual(['reminders-upcoming-heading', 'reminders-upcoming-empty', 'reminders-past']);
+  });
+
+
+  it('#227 R9: sin recordatorios conserva el vacío sin secciones', async () => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+    await renderReminders();
+    expect(await screen.findByTestId('reminders-empty')).toBeVisible();
+    expect(screen.queryByTestId('reminders-upcoming-heading')).toBeNull();
+    expect(screen.queryByTestId('reminders-upcoming-empty')).toBeNull();
+    expect(screen.queryByTestId('reminders-past')).toBeNull();
+  });
+
+
+  it('#227 R10: escalona los próximos cada 70 ms y los pasados cada 30 ms desde 0', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminders-past-toggle');
+    await expandPast();
+    await screen.findByTestId('reminders-past-list');
+    const delayById = new Map(
+      mockRiseIn.mock.calls
+        .map(([props]) => props)
+        .filter((props) => props.testID?.startsWith('reminders-entry-'))
+        .map((props) => [props.testID, props.delayMs] as const),
+    );
+    expect([...delayById]).toEqual([
+      ['reminders-entry-today', 0],
+      ['reminders-entry-newyear', 70],
+      ['reminders-entry-later', 140],
+      ['reminders-entry-cancelled', 0],
+      ['reminders-entry-yesterday', 30],
+      ['reminders-entry-oldsent', 60],
+    ]);
   });
 });

@@ -114,3 +114,5 @@ export const MOTION_TOAST_DELAY_MS = 400;
 
 // #204 R3: paso de entrada de las filas de Recordatorios.
 export const MOTION_REMINDERS_STAGGER_MS = 70;
+// #227 R10: paso de entrada de las filas pasadas de Recordatorios.
+export const MOTION_REMINDERS_PAST_STAGGER_MS = 30;

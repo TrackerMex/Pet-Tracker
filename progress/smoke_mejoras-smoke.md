@@ -34,3 +34,25 @@ Solo cambia el backend: no hace falta dev build nuevo ni reinstalar la app.
 5. Registra Rabia en el perro: aparece en Salud con su próxima dosis.
 
 - [ ] Smoke de #226 pasado (fecha: ____; paso 1, fallo reproducido: sí / no)
+
+## #227 mobile-reminders-upcoming-past
+
+Hallazgo: en Recordatorios los pasados y cancelados salían mezclados con los próximos.
+Necesita el dev build con `dev` actualizado (cambia la app, no el backend).
+
+1. En el dev build de Android, con una mascota que tenga un recordatorio enviado de días pasados, uno cancelado, uno programado de ayer y dos futuros (uno de hoy), abre Recordatorios. Arriba sale «PRÓXIMOS» con los futuros en orden ascendente; el de hoy lleva borde ámbar y «Hoy». Ninguna fila atenuada sale arriba.
+2. Al final sale «PASADOS» con el contador `3` y el chevron abajo, sin filas.
+3. Toca «PASADOS»: se abren las tres filas atenuadas, de la más reciente a la más antigua, y el chevron mira arriba. Vuelve a tocar: se cierran.
+4. Elimina los recordatorios futuros: en su lugar sale la caja «Nada pendiente por ahora / Los recordatorios nuevos aparecerán aquí.», encima de «PASADOS».
+5. Repite 1 a 4 en tema claro y oscuro.
+
+- [ ] Smoke de #227 pasado (fecha: ____; tema claro: sí / no; tema oscuro: sí / no)
+
+## #233 mobile-food-links-without-profile
+
+Hallazgo: «En Nutricion sin Perfil, no deben de aparecer Horario de comidas y Historial de comidas ya que aun no se ha registrado un perfil nutricional».
+
+1. Con una mascota sin perfil nutricional, abre Nutrición: sale «Aún no hay perfil nutricional» con el botón «Crear perfil nutricional» y no salen «Horario de comidas» ni «Historial de comidas» (antes de #233 las dos filas aparecían bajo el vacío).
+2. Crea el perfil con el cuestionario y vuelve a Nutrición: ahora sí salen las dos filas.
+
+- [ ] Smoke de #233 pasado (fecha: ____)

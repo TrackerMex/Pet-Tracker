@@ -107,9 +107,10 @@ describe('#196 R11: alcance de la cabecera a sangre', () => {
     expect(filesMatching(/<PetHeroHeader/).sort()).toEqual(['screens/home/index.tsx', 'screens/profile/index.tsx']);
   });
 
-  it('#196 R11: la carta recoge la enmienda N1 de #196', () => {
+  it('#222 R12: la carta recoge la enmienda N1 de #222', () => {
     const charter = readFileSync(join(process.cwd(), '..', 'docs/ui-guidelines.md'), 'utf8');
-    expect(charter).toContain('**Regla N1 (enmienda #196)**');
+    expect(charter).toContain('**Regla N1 (enmienda #222)**');
+    expect(charter).not.toContain('**Regla N1 (enmienda #196)**');
     expect(charter).not.toContain('Inicio es la única pestaña con PetHeroHeader');
   });
 });

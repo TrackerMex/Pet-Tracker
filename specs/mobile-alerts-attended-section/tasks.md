@@ -141,9 +141,9 @@ tags: [mobile, ui, spec]
 
 ## R19 — línea de docs/ui-guidelines.md (solo tras la casilla G4)
 
-- [ ] (1) Escribir test que falla para R19 (`__tests__/alerts-attended-canvas-fidelity.test.ts` · `#223 R19: …`)
-- [ ] (2) Implementación mínima que lo pasa (`docs/ui-guidelines.md`)
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R19 (`__tests__/alerts-attended-canvas-fidelity.test.ts` · `#223 R19: …`)
+- [x] (2) Implementación mínima que lo pasa (`docs/ui-guidelines.md`)
+- [x] (3) Refactor con tests verdes
 
 ## Notas por tarea
 

@@ -288,3 +288,19 @@ it('#223 R18: los candados enmendados nombran su enmienda', () => {
       ? '(enmendado por #223 R16)' : '(enmendado por #223 R18)');
   }
 });
+
+it('#223 R19: la carta declara los radios de la sección Atendidas', () => {
+  const lines = readFileSync(join(process.cwd(), '..', 'docs/ui-guidelines.md'), 'utf8').split('\n');
+  const radiiLine = '    Fuera de la escala, por fidelidad al canvas (#223): `rounded-16` (16 px), fila atendida de Alertas, que es un `View` y no un `Card` porque `twMerge` no sustituye `rounded-card` por un radio con nombre de valor; `rounded-14` (14 px), «Ver más» de la sección Atendidas.';
+  const radiiIndex = lines.indexOf(radiiLine);
+  const previousIndex = lines.findIndex((line) => line.includes('por fidelidad al canvas (#199): `rounded-24`'));
+  const rule12Index = lines.findIndex((line) => line.includes('12. **Escala de radios**'));
+  const rule13Index = lines.findIndex((line) => line.includes('13. **Botón con cuerpo**'));
+
+  expect(lines.filter((line) => line === radiiLine)).toHaveLength(1);
+  expect(previousIndex).toBeGreaterThan(-1);
+  expect(radiiIndex).toBe(previousIndex + 1);
+  expect(rule12Index).toBeGreaterThan(-1);
+  expect(radiiIndex).toBeGreaterThan(rule12Index);
+  expect(radiiIndex).toBeLessThan(rule13Index);
+});

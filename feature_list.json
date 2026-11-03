@@ -3642,7 +3642,7 @@
   {
     "id": 223,
     "name": "mobile-alerts-attended-section",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P2",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 2, gate G1). Alertas: abiertas arriba y sección colapsable «Atendidas» con Ver más para el listado enorme, contador exacto de abiertas, sin backend. Evidencia en progress/explore_ui-alertas-actividad-ia-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },
@@ -3685,7 +3685,7 @@
   {
     "id": 227,
     "name": "mobile-reminders-upcoming-past",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P1",
     "description": "Lista de recordatorios con «Próximos» arriba (no cancelados con fecha de hoy en adelante, ascendente) y una sección «Pasados» colapsada al final, como Alertas atendidas (#223). Decisión del humano 2026-11-03. Necesita artboard y copy (G1). Responsable: leader @Backend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
     "acceptance_criteria": null,
@@ -3739,7 +3739,7 @@
   {
     "id": 233,
     "name": "mobile-food-links-without-profile",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Nutrición: sin perfil nutricional no se muestran Horario de comidas ni Historial de comidas. Responsable: leader @Frontend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
     "acceptance_criteria": null,
