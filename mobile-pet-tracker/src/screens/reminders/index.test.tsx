@@ -2435,4 +2435,28 @@ describe('#227: próximos y pasados', () => {
     expect(screen.getByTestId('reminders-past-toggle').props.accessibilityState?.expanded).toBe(false);
     expect(screen.queryByTestId('reminders-past-list')).toBeNull();
   });
+
+
+  it('#227 R7: la opacidad sigue a la sección y el resto de la fila sigue al status', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminders-pills');
+    expect(screen.queryByTestId('reminders-past-toggle')).not.toBeNull();
+    await expandPast();
+    for (const [id, className] of [
+      ['today', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border-2 border-category-amber'],
+      ['newyear', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border'],
+      ['later', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border'],
+      ['cancelled', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border opacity-50'],
+      ['yesterday', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border opacity-50'],
+      ['oldsent', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border opacity-50'],
+    ]) expect(screen.getByTestId(`reminder-row-${id}`).props.className).toBe(className);
+    expect(screen.getByTestId('reminder-upcoming-today')).toHaveTextContent('Hoy');
+    for (const id of ['newyear', 'later', 'yesterday']) expect(screen.queryByTestId(`reminder-upcoming-${id}`)).toBeNull();
+    expect(screen.getByTestId('reminder-status-later')).toHaveTextContent('Enviado');
+    expect(screen.getByTestId('reminder-status-cancelled')).toHaveTextContent('Cancelado');
+    expect(screen.getByTestId('reminder-status-oldsent')).toHaveTextContent('Enviado');
+    const yesterday = within(screen.getByTestId('reminder-row-yesterday'));
+    expect(yesterday.getByText('· en -1 días')).toBeVisible();
+    expect(yesterday.getByTestId('reminder-repeats-yesterday')).toBeVisible();
+  });
 });
