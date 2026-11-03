@@ -504,8 +504,6 @@ export function ProfileScreen() {
             </View>
             <View testID="profile-links-row-2" className="flex-row gap-2">
               <ProfileWideTile testID="members-link" slot="rose" icon={<Users size={22} strokeWidth={2.2} color={rose} />} label={t('profile.membersLink')} subtitle={membersSummary} color={rose} onPress={() => router.push(`/pets/${pet.id}/members` as Href)} />
-            </View>
-            <View testID="profile-links-row-3" className="flex-row gap-2">
               {joinPetLink}
             </View>
           </>
