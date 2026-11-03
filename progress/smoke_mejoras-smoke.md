@@ -15,4 +15,9 @@ En el dev build de Android, sin sesión, en la pantalla de Bienvenida:
 - [ ] Tema claro: al mantener pulsado «Ya tengo una cuenta» la capa se tiñe de gris neutro tenue y el botón se encoge ligeramente; ya no se tiñe de verde.
 - [ ] Tema oscuro: el borde de 2 px del botón se ve claramente (gris `#9CA3AF`) y al mantener pulsado tampoco aparece verde.
 - [ ] «Comenzar ahora» sigue resaltando verde al pulsarlo.
+## #235 mobile-profile-photo-owner-only
+
+- [ ] En Perfil, con una mascota propia (rol dueño), el botón de la cámara sobre la foto aparece y abre el cambio de foto.
+- [ ] Con una mascota compartida donde el rol no es dueño (familia, paseador o veterinario), el botón de la cámara no aparece.
+- [ ] Al cambiar entre una mascota propia y una compartida en el selector, la cámara se va y vuelve según el rol de la mascota elegida.
 - [ ] Fecha del smoke: ____
