@@ -426,6 +426,26 @@ describe('R8', () => {
   });
 });
 
+describe('#231 R2', () => {
+  it('#231 R2: HeroUI pinta el pulsado de outline con default-hover y el de primary con accent-hover', () => {
+    const source = readFileSync(join(process.cwd(), 'node_modules', 'heroui-native', 'src', 'components', 'button', 'button.tsx'), 'utf8');
+    const memoStart = source.indexOf('const highlightColorMap = useMemo(');
+    expect(memoStart).toBeGreaterThan(-1);
+    const switchStart = source.indexOf('switch (variant) {', memoStart);
+    expect(switchStart).toBeGreaterThan(memoStart);
+    const memoEnd = source.indexOf('}, [', switchStart);
+    expect(memoEnd).toBeGreaterThan(switchStart);
+    const blocks = source.slice(switchStart, memoEnd).split("case '").slice(1);
+    const primary = blocks.find(block => block.startsWith("primary':"));
+    const outline = blocks.find(block => block.startsWith("outline':"));
+    expect(primary).not.toBeUndefined();
+    expect(outline).not.toBeUndefined();
+    expect(primary).toContain('themeColorAccentHover');
+    expect(outline).toContain('themeColorDefaultHover');
+    expect(outline).not.toContain('themeColorAccentHover');
+  });
+});
+
 it('#231 R6: los candados enmendados nombran su enmienda', () => {
   const sources = [
     readSource('screens/welcome/index.test.tsx'),
