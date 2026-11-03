@@ -4,7 +4,7 @@ import { PixelRatio } from 'react-native';
 import { blobatar } from 'blobatar';
 import { isValidElement } from 'react';
 
-import { PetMarkerIcon, markerCompositionKey } from './pet-marker-icon';
+import { PetMarkerIcon, markerCompositionKey, currentMarkerIcon } from './pet-marker-icon';
 
 // #230 R3: los propietarios internos de React no forman parte del dibujo SVG.
 expect.addEqualityTesters([
@@ -235,4 +235,15 @@ it('#230 R8: un rerender con la URL re-firmada no recompone', async () => {
     uri: 'https://cdn.example/pets/luna.jpg?X-Amz-Signature=aaa',
   });
   expect(mockToDataURL).toHaveBeenCalledTimes(2);
+});
+
+it('#230 R9: solo devuelve el icono de la composición vigente', () => {
+  const cases = [
+    [null, pet, null],
+    [{ key: '["pet-1","Luna",""]', icon: FALLBACK_ICON }, undefined, null],
+    [{ key: '["pet-1","Luna",""]', icon: FALLBACK_ICON }, pet, FALLBACK_ICON],
+    [{ key: '["pet-1","Luna","https://cdn.example/pets/luna.jpg"]', icon: FALLBACK_ICON }, { ...withPhoto, photoUrl: 'https://cdn.example/pets/luna.jpg?X-Amz-Signature=bbb' }, FALLBACK_ICON],
+    [{ key: '["pet-1","Luna",""]', icon: FALLBACK_ICON }, { ...pet, id: 'pet-2' }, null],
+  ] as const;
+  for (const [state, selected, expected] of cases) expect(currentMarkerIcon(state, selected)).toEqual(expected);
 });
