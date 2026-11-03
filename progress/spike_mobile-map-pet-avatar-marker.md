@@ -55,15 +55,33 @@ Contexto: `progress/explore_mobile-map-pet-avatar-marker.md`, §Recomendación.
 
 Lo rellena el leader con lo que envíe el humano.
 
+Corrida del 2026-11-03 (13:56–13:59 en el teléfono): el humano mandó cinco
+capturas del panel: «Foto», «URL rota» y «Sin foto» con «Visible: sí», y luego
+«Foto» y «Sin foto» con «Visible: no». No mandó las líneas `[spike-230]` ni los
+dos `TOTAL PSS`. `pixelRatio` = 3.5 y `requestedPx` = 154.
+
 | # | Resultado | Nota |
 |---|---|---|
-| 1 | | |
-| 2 | | |
-| 3 | | |
-| 4 | | |
-| 5 | | |
-| 6 | | |
-| 7 | | |
+| 1 | **Falla** | Con «Foto», `msToPhotoLoad` = null y `msToCapture` = 4213 (4226 oculto): el `onLoad` del `<Image>` de react-native-svg no llega nunca y a los 4 s cae al blobatar. `base64Length` = 7072 en las cinco capturas, o sea, siempre el mismo PNG del blobatar. La foto sí carga en la pastilla de «Jev» (expo-image), así que la URL firmada es válida |
+| 2 | Pasa | `iconWidth` = `iconHeight` = 154 = 44 × 3.5. `decodedWidth` sale null porque `RNImage.getSize` de Android no acepta `data:`: es el `error` del panel («Unsupported uri scheme for encoded image fetch»), no un fallo de la cadena. El PNG se ve nítido |
+| 3 | Pasa, solo con el blobatar | `stage` = `icon-ready` en las cinco; el marcador del mapa es el blobatar sobre disco blanco, igual que el PNG del panel, no el pin por defecto. La cadena SVG → PNG → `useImage` → icono de expo-maps funciona |
+| 4 | Sin dato | Faltan los dos `TOTAL PSS` |
+| 5 | Pasa | Con «URL rota» (`signature-zeroed`), `msToCapture` = 4226 y acaba en `icon-ready` con el blobatar. Indistinguible de «Foto»: la foto buena tampoco cargó |
+| 6 | Pasa | Blobatar sobre disco blanco; `msToCapture` 218 / 198 ms, `msToIcon` 361 / 345 ms |
+| 7 | Igual en los dos | Con «Visible: no» (opacidad 0.01) llega a `icon-ready` igual que con «Visible: sí»; la foto no carga en ninguno de los dos |
+
+Por qué falla 1, leyendo `react-native-svg` 15.15.4 en Android
+(`android/src/main/java/com/horcrux/svg/ImageView.java`): la foto se pide a
+Fresco con `fetchDecodedImage` en `draw()`; si llega, despacha `SvgLoadEvent`
+(`onLoad`); si falla, solo escribe `RNSVG: fetchDecodedImage failed!` en
+logcat, que Metro no ve. Con lo que hay no se sabe cuál de las dos pasó.
+
+Falla 1, así que la decisión vuelve al humano (§6, pregunta 5 del plan): E
+(`react-native-view-shot` y rebuild) o D (miniatura en el backend). Antes cabe
+una comprobación de un minuto, sin rebuild: `adb logcat -d | findstr RNSVG` con
+la app aún abierta en Mapa. Si sale `fetchDecodedImage failed!` con su causa, se
+sabe por qué Fresco no trae la foto; si no sale nada, la foto llegó y lo que se
+pierde es el evento, y B2 podría seguir viva capturando sin esperar a `onLoad`.
 
 Si falla 1, 3 o 5, la decisión vuelve al humano: E (`react-native-view-shot` y
 rebuild) o D (miniatura en el backend). Ver `plan_mejoras-smoke-2026-11-03.md`
