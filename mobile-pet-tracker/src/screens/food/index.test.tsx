@@ -1900,6 +1900,28 @@ describe('#233 R1 a R5: los enlaces de comidas dependen del perfil nutricional',
     expect(screen.getByTestId('meal-schedule-link')).toBeVisible();
     expect(screen.getByTestId('meals-history-link')).toBeVisible();
   });
+
+  it.each([
+    { name: 'plan con error', plan: { kind: 'error' }, profile: undefined, anchor: 'food-plan-error' },
+    { name: 'plan sin red', plan: { kind: 'unreachable', message: 'network down' }, profile: undefined, anchor: 'food-plan-error' },
+    { name: 'perfil con error', plan: { kind: 'not-found' }, profile: { kind: 'error' }, anchor: 'food-plan-empty' },
+  ] as const)('#233 R3 con $name no hay enlaces de comidas', async ({ plan, profile, anchor }) => {
+    mockGetNutritionPlan.mockResolvedValue(plan);
+    if (profile !== undefined) {
+      mockGetNutritionProfile.mockResolvedValue(profile);
+    }
+
+    await renderFood();
+    await screen.findByTestId(anchor);
+    if (anchor === 'food-plan-error') {
+      expect(screen.getByTestId('food-plan-retry')).toBeVisible();
+    }
+    expect(screen.queryByTestId('food-links', { includeHiddenElements: true })).toBeNull();
+    expect(screen.queryByTestId('meal-schedule-link', { includeHiddenElements: true })).toBeNull();
+    expect(screen.queryByTestId('meals-history-link', { includeHiddenElements: true })).toBeNull();
+    expect(screen.queryByText('Horario de comidas', { includeHiddenElements: true })).toBeNull();
+    expect(screen.queryByText('Historial de comidas', { includeHiddenElements: true })).toBeNull();
+  });
 });
 
 describe('#222 R7: Encabezado solo para lectores de pantalla', () => {
