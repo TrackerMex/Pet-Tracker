@@ -27,7 +27,7 @@ recorrido. Lo que falle abre una feature de arreglo.
 1. Las hojas inferiores de Recordatorios y de Emparejar no muestran la franja rosa en el borde.
 2. Comprobar en tema claro, oscuro y con Material You.
 
-- [ ] Smoke de #218 recorrido por el humano (fecha: ____)
+- [X] Smoke de #218 recorrido por el humano (fecha: 2026-11-03)
 
 ## #217 mobile-theme-flash-statusbar (mergeada en dev)
 
@@ -38,7 +38,7 @@ Requiere el rebuild G3 (dev build sin nitro).
 3. Los iconos de la barra de estado se leen sobre el hero (Inicio, Perfil) y en las pantallas sin hero.
 4. Al salir de Perfil, el estilo automático de la barra vuelve.
 
-- [ ] Smoke de #217 recorrido por el humano (fecha: ____)
+- [X] Smoke de #217 recorrido por el humano (fecha: 2026-11-03)
 
 ## #222 mobile-tab-avatar-header (PR a `dev`; R12/G4 abierto)
 
@@ -49,14 +49,14 @@ Requiere el rebuild G3 (dev build sin nitro).
 5. Perfil no muestra título visible; TalkBack anuncia «Perfil» como encabezado.
 6. Sin mascotas no aparece la fila.
 
-- [ ] Smoke de #222 recorrido por el humano (fecha: ____)
+- [X] Smoke de #222 recorrido por el humano (fecha: 2026-11-03)
 
 ## #221 mobile-orbit-rename-copy (en dev, PR #282)
 
 1. Con idioma español la burbuja de la bienvenida dice «Hola, soy Orbit.»; con inglés, «Hi, I'm Orbit.».
 2. La burbuja no corta el texto.
 
-- [ ] Smoke de #221 recorrido por el humano (fecha: ____)
+- [X] Smoke de #221 recorrido por el humano (fecha: 2026-11-03)
 
 ## #223 mobile-alerts-attended-section (en dev, PR #279; R19/G4 abierto)
 
@@ -65,7 +65,7 @@ Requiere el rebuild G3 (dev build sin nitro).
 3. Sin alertas abiertas, la sección de atendidas se ve sola y la pantalla no queda vacía.
 4. Tema claro y oscuro: la sección y su cabecera se leen bien.
 
-- [ ] Smoke de #223 recorrido por el humano (fecha: ____)
+- [X] Smoke de #223 recorrido por el humano (fecha: 2026-11-03)
 
 ## #224 mobile-nutrition-ai-format (PR a `dev`)
 
@@ -93,4 +93,4 @@ No necesita rebuild: la imagen nueva es un asset de Metro. Sale de `specs/mobile
 5. Bienvenida, iniciar sesión, nueva mascota, estados vacíos y emparejamiento muestran las mismas poses que antes del
    renombrado, y no falta ninguna imagen.
 
-- [ ] Smoke de #225 recorrido por el humano (fecha: ____)
+- [X] Smoke de #225 recorrido por el humano (fecha: 2026-11-03)
