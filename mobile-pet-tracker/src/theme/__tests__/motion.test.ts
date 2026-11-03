@@ -289,3 +289,7 @@ it('#200 R4: el anillo dura 1100 ms con ease-out y espera 200', () => {
 it('#204 R3: declara el paso de 70 ms de las filas de Recordatorios', () => {
   expect(require('../motion').MOTION_REMINDERS_STAGGER_MS).toBe(70);
 });
+
+it('#227 R10: declara el paso de 30 ms de las filas pasadas', () => {
+  expect(require('../motion').MOTION_REMINDERS_PAST_STAGGER_MS).toBe(30);
+});

@@ -2529,4 +2529,26 @@ describe('#227: próximos y pasados', () => {
     expect(screen.queryByTestId('reminders-upcoming-empty')).toBeNull();
     expect(screen.queryByTestId('reminders-past')).toBeNull();
   });
+
+
+  it('#227 R10: escalona los próximos cada 70 ms y los pasados cada 30 ms desde 0', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminders-past-toggle');
+    await expandPast();
+    await screen.findByTestId('reminders-past-list');
+    const delayById = new Map(
+      mockRiseIn.mock.calls
+        .map(([props]) => props)
+        .filter((props) => props.testID?.startsWith('reminders-entry-'))
+        .map((props) => [props.testID, props.delayMs] as const),
+    );
+    expect([...delayById]).toEqual([
+      ['reminders-entry-today', 0],
+      ['reminders-entry-newyear', 70],
+      ['reminders-entry-later', 140],
+      ['reminders-entry-cancelled', 0],
+      ['reminders-entry-yesterday', 30],
+      ['reminders-entry-oldsent', 60],
+    ]);
+  });
 });
