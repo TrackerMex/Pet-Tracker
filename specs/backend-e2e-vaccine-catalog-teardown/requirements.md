@@ -304,6 +304,7 @@ del `describe` externo, en un `describe` nuevo con este nombre literal:
 
 - [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
 
-No hay gates humanos aparte: ni G1 (copy y artboards) ni G2 (smoke). La firma
-delegada del leader cubre esta casilla según el mandato del 2026-10-23,
-ampliado el 2026-11-03.
+No hay gates humanos aparte: ni G1 (copy y artboards) ni G2 (smoke). El
+mandato del 2026-10-23, ampliado el 2026-11-03, cubre #226–#235, no #237: esta
+casilla la firma el leader solo cuando el humano apruebe la firma de forma
+explícita, como hizo con #236.
