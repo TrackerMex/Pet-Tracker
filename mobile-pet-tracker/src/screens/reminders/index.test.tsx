@@ -2416,4 +2416,23 @@ describe('#227: próximos y pasados', () => {
     expect(screen.queryByTestId('reminders-past')).toBeNull();
     expect(screen.queryByTestId('reminders-past-toggle')).toBeNull();
   });
+
+
+  it('#227 R6: el encabezado alterna «Pasados» y sus filas van atenuadas de la más reciente a la más antigua', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminders-pills');
+    expect(screen.queryByTestId('reminders-past-toggle')).not.toBeNull();
+    await expandPast();
+    const list = await screen.findByTestId('reminders-past-list');
+    const rows = within(list).getAllByTestId(/^reminder-row-/);
+    expect(rows.map(({ props }) => props.testID)).toEqual(['reminder-row-cancelled', 'reminder-row-yesterday', 'reminder-row-oldsent']);
+    for (const row of rows) expect(row.props.className).toMatch(/ opacity-50$/);
+    const toggle = screen.getByTestId('reminders-past-toggle');
+    expect(toggle.props.accessibilityState?.expanded).toBe(true);
+    expect(within(toggle).queryByTestId('reminders-icon-chevron-up', { includeHiddenElements: true })).not.toBeNull();
+    expect(within(toggle).queryByTestId('reminders-icon-chevron-down', { includeHiddenElements: true })).toBeNull();
+    await expandPast();
+    expect(screen.getByTestId('reminders-past-toggle').props.accessibilityState?.expanded).toBe(false);
+    expect(screen.queryByTestId('reminders-past-list')).toBeNull();
+  });
 });
