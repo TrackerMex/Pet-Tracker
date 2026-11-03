@@ -181,3 +181,28 @@ it('#230 R6: una captura del blobatar que llega tarde no pisa la foto', async ()
   expect(mockUseImage.mock.calls.at(-1)).toEqual([{ uri: 'data:image/png;base64,UEhPVE8=' }]);
   expect(onIcon.mock.calls.at(-1)?.[0].icon).toEqual(PHOTO_ICON);
 });
+
+describe('#230 R7: plazo de la foto', () => {
+  beforeEach(() => {
+    jest.useFakeTimers({ doNotFake: ['requestAnimationFrame', 'cancelAnimationFrame'] });
+  });
+
+  it('#230 R7: sin onLoad en 4000 ms la foto se desmonta y queda el blobatar', async () => {
+    await render(<PetMarkerIcon pet={withPhoto} onIcon={jest.fn()} />);
+    await act(async () => { jest.advanceTimersByTime(3999); });
+    expect(screen.getByTestId('map-marker-photo-svg', { includeHiddenElements: true })).toBeTruthy();
+    await act(async () => { jest.advanceTimersByTime(1); });
+    expect(screen.queryByTestId('map-marker-photo-svg', { includeHiddenElements: true })).toBeNull();
+    expect(screen.getByTestId('map-marker-fallback-svg', { includeHiddenElements: true })).toBeTruthy();
+    await runFrames();
+    expect(mockToDataURL.mock.calls.map(([id]) => id)).toEqual(['map-marker-fallback-svg']);
+  });
+
+  it('#230 R7: un onLoad antes del plazo lo cancela', async () => {
+    await render(<PetMarkerIcon pet={withPhoto} onIcon={jest.fn()} />);
+    await act(async () => { jest.advanceTimersByTime(1000); });
+    await fireEvent(screen.getByTestId('map-marker-photo', { includeHiddenElements: true }), 'load');
+    await act(async () => { jest.advanceTimersByTime(4000); });
+    expect(screen.getByTestId('map-marker-photo-svg', { includeHiddenElements: true })).toBeTruthy();
+  });
+});
