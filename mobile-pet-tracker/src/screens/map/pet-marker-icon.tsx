@@ -1,7 +1,7 @@
 import { useImage, type ImageRef } from 'expo-image';
 import { PixelRatio, View } from 'react-native';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import Svg, { Circle, ClipPath, Defs, G, parse } from 'react-native-svg';
+import Svg, { Circle, ClipPath, Defs, G, Image, parse } from 'react-native-svg';
 import { blobatar } from 'blobatar';
 
 import type { PetProfile } from '../../api/types';
@@ -69,6 +69,17 @@ export function PetMarkerIcon(props: { pet: MarkerPet; onIcon: (state: IconReady
         </G>
         <Circle testID="map-marker-fallback-ring" cx={22} cy={22} r={20.5} stroke={foreground} strokeWidth={3} fill="none" />
       </Svg>
+      {props.pet.photoUrl ? (
+        <Svg testID="map-marker-photo-svg" width={44} height={44} viewBox="0 0 44 44">
+          <Defs>
+            <ClipPath testID="map-marker-photo-clip" id="map-marker-photo-clip">
+              <Circle cx={22} cy={22} r={22} />
+            </ClipPath>
+          </Defs>
+          <Image testID="map-marker-photo" href={{ uri: props.pet.photoUrl }} x={0} y={0} width={44} height={44} preserveAspectRatio="xMidYMid slice" clipPath="url(#map-marker-photo-clip)" />
+          <Circle testID="map-marker-photo-ring" cx={22} cy={22} r={20.5} stroke={foreground} strokeWidth={3} fill="none" />
+        </Svg>
+      ) : null}
       {capture ? <MarkerImage uri={capture} compositionKey={markerCompositionKey(props.pet)} onIcon={props.onIcon} /> : null}
     </View>
   );
