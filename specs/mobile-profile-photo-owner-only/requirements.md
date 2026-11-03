@@ -1,6 +1,6 @@
 ---
 feature: "mobile-profile-photo-owner-only"
-status: draft        # draft | approved
+status: approved        # draft | approved
 tags: [mobile, roles, profile, spec]
 ---
 
@@ -224,7 +224,7 @@ Cada viñeta trae su evidencia en el árbol de `origin/dev` (f05016d3).
 
 ## Aprobación
 
-- [ ] Aprobado por humano (firma delegada del leader, mandato 2026-10-23 ampliado 2026-11-03; fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (firma delegada del leader, mandato 2026-10-23 ampliado 2026-11-03; fecha: 2026-11-03T17:06Z) ← gate obligatorio antes de implementar
 - [ ] Smoke de #235 en dev build por el humano (fecha: ____): con una cuenta
       dueña y otra `family` de la misma mascota (la family se une con el flujo
       de #214), la cuenta `family` abre Perfil y no ve el botón de cámara sobre
