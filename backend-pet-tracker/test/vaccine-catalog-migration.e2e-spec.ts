@@ -17,6 +17,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import { users } from '@/db/schema/users.schema';
+import { seedVaccineCatalog } from '@/db/seed/vaccine-catalog';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
 import { AppModule } from '../src/app.module';
@@ -52,10 +53,13 @@ describe('#226 vaccine catalog migration (e2e)', () => {
   const originalDatabaseUrl = process.env.DATABASE_URL;
   const runId = Date.now();
   const databaseA = `pet_tracker_226_a_${runId}`;
+  const databaseB = `pet_tracker_226_b_${runId}`;
   const MIGRATIONS = join(__dirname, '..', 'src', 'db', 'migrations');
   let admin: Pool;
   let poolA: Pool;
+  let poolB: Pool;
   let createdA = false;
+  let createdB = false;
   let previousMigrations: string;
   let journal: MigrationJournal;
   let app: INestApplication<App>;
@@ -97,6 +101,7 @@ describe('#226 vaccine catalog migration (e2e)', () => {
     const cleanup: Array<() => void | Promise<unknown>> = [
       () => app?.close(),
       () => poolA?.end(),
+      () => poolB?.end(),
       () => {
         if (originalDatabaseUrl === undefined) delete process.env.DATABASE_URL;
         else process.env.DATABASE_URL = originalDatabaseUrl;
@@ -105,6 +110,12 @@ describe('#226 vaccine catalog migration (e2e)', () => {
         if (createdA)
           await admin.query(
             `DROP DATABASE IF EXISTS "${databaseA}" WITH (FORCE)`,
+          );
+      },
+      async () => {
+        if (createdB)
+          await admin.query(
+            `DROP DATABASE IF EXISTS "${databaseB}" WITH (FORCE)`,
           );
       },
       () => admin?.end(),
@@ -253,6 +264,43 @@ describe('#226 vaccine catalog migration (e2e)', () => {
       const vaccine = response.body as { name: string; nextDoseAt: string };
       expect(vaccine.name).toBe('Rabia');
       expect(vaccine.nextDoseAt).toBe('2025-02-28');
+    });
+  });
+
+  describe('#226 R2: la migracion no cambia una base ya sembrada', () => {
+    it('#226 R2: migrar sobre una base sembrada no falla ni cambia ninguna fila', async () => {
+      await admin.query(`CREATE DATABASE "${databaseB}"`);
+      createdB = true;
+      const urlB = new URL(originalDatabaseUrl!);
+      urlB.pathname = `/${databaseB}`;
+      poolB = new Pool({ connectionString: urlB.toString() });
+      const db = drizzle(poolB);
+      await migrate(db, { migrationsFolder: previousMigrations });
+      await seedVaccineCatalog(db);
+      await poolB.query(
+        'update vaccine_catalog set scheme = $1::jsonb where species = $2 and name = $3',
+        [
+          JSON.stringify({ firstDoseMonths: 3, boosterMonths: 36 }),
+          'dog',
+          'Rabia',
+        ],
+      );
+      const before = await poolB.query<CatalogRow>(
+        'select id, species, name, scheme from vaccine_catalog order by species, name',
+      );
+      expect(before.rows).toHaveLength(7);
+      await expect(
+        migrate(db, { migrationsFolder: MIGRATIONS }),
+      ).resolves.toBeUndefined();
+      const after = await poolB.query<CatalogRow>(
+        'select id, species, name, scheme from vaccine_catalog order by species, name',
+      );
+      expect(after.rows).toHaveLength(7);
+      expect(after.rows).toEqual(before.rows);
+      expect(
+        after.rows.find((row) => row.species === 'dog' && row.name === 'Rabia')
+          ?.scheme,
+      ).toEqual({ firstDoseMonths: 3, boosterMonths: 36 });
     });
   });
 });
