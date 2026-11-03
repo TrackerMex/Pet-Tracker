@@ -582,7 +582,7 @@ describe('#178 R6: fila del canvas', () => {
     }
   });
 
-  it('ordena mosaico, columna y borrar con la anatomía exacta de cada fila (enmendado por #227 R13)', async () => {
+  it('ordena mosaico, columna y borrar con la anatomía exacta de cada fila (enmendado por #227 R13) (enmendado por #228 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     await expandPast();
@@ -820,7 +820,7 @@ describe('R7: borrar recordatorio con confirmación', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('shows a delete action for reminders in every status (enmendado por #227 R13)', async () => {
+  it('shows a delete action for reminders in every status (enmendado por #227 R13) (enmendado por #228 R13)', async () => {
     mockListReminders.mockResolvedValue({
       kind: 'ok',
       reminders: [
@@ -840,7 +840,7 @@ describe('R7: borrar recordatorio con confirmación', () => {
     expect(screen.getByTestId('reminder-delete-cancelled', HIDDEN)).toBeOnTheScreen();
   });
 
-  it('closes the confirmation sheet on cancel and native dismiss', async () => {
+  it('closes the confirmation sheet on cancel and native dismiss (enmendado por #228 R13)', async () => {
     mockListReminders.mockResolvedValue({
       kind: 'ok',
       reminders: [makeReminder()],
@@ -870,7 +870,7 @@ describe('R7: borrar recordatorio con confirmación', () => {
   it.each([
     { kind: 'ok' } as const,
     { kind: 'not-found' } as const,
-  ])('refetches and removes the row after $kind', async (deleteState) => {
+  ])('refetches and removes the row after $kind (enmendado por #228 R13)', async (deleteState) => {
     mockListReminders
       .mockResolvedValueOnce({
         kind: 'ok',
@@ -901,7 +901,7 @@ describe('R7: borrar recordatorio con confirmación', () => {
     [{ kind: 'error' }, 'Algo salió mal'],
     [{ kind: 'missing-config' }, 'Algo salió mal'],
   ] as [DeleteReminderState, string][]) (
-    'shows the action error for $state.kind',
+    'shows the action error for $state.kind (enmendado por #228 R13)',
     async (deleteState, message) => {
       mockListReminders.mockResolvedValue({
         kind: 'ok',
@@ -924,7 +924,7 @@ describe('R7: borrar recordatorio con confirmación', () => {
     },
   );
 
-  it('disables only the row being deleted while the request is pending', async () => {
+  it('disables only the row being deleted while the request is pending (enmendado por #228 R13)', async () => {
     mockListReminders.mockResolvedValue({
       kind: 'ok',
       reminders: [makeReminder(), makeReminder({ id: 'reminder-2' })],
@@ -1044,7 +1044,7 @@ describe(
       });
     });
 
-    it('cierra el sheet y elimina su contenido accesible al perder foco', async () => {
+    it('cierra el sheet y elimina su contenido accesible al perder foco (enmendado por #228 R13)', async () => {
       await renderReminders();
       await waitFor(() =>
         expect(screen.getByTestId('reminder-row-reminder-1')).toBeVisible(),
@@ -1085,7 +1085,7 @@ describe(
       mockDeleteReminder.mockResolvedValue({ kind: 'error' });
     });
 
-    it('borra el error visible al perder foco', async () => {
+    it('borra el error visible al perder foco (enmendado por #228 R13)', async () => {
       await renderReminders();
       await waitFor(() =>
         expect(screen.getByTestId('reminder-delete-reminder-1', HIDDEN)).toBeOnTheScreen(),
@@ -1126,7 +1126,7 @@ describe(
       mockDeleteReminder.mockReturnValue(pending<DeleteReminderState>());
     });
 
-    it('mantiene deshabilitada solo la fila cuyo delete sigue pendiente', async () => {
+    it('mantiene deshabilitada solo la fila cuyo delete sigue pendiente (enmendado por #228 R13)', async () => {
       await renderReminders();
       await waitFor(() =>
         expect(screen.getByTestId('reminder-delete-reminder-1', HIDDEN)).toBeOnTheScreen(),
@@ -1321,7 +1321,7 @@ describe('#128 R4: el botón destructivo del sheet y su etiqueta llevan su recet
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('pinta reminders-delete-confirm con la variante danger y bg-danger, y su única etiqueta Eliminar con text-danger-foreground, haya o no un señuelo en la fuente (enmendado por #204 R9)', async () => {
+  it('pinta reminders-delete-confirm con la variante danger y bg-danger, y su única etiqueta Eliminar con text-danger-foreground, haya o no un señuelo en la fuente (enmendado por #204 R9) (enmendado por #228 R13)', async () => {
     mockListReminders.mockResolvedValue({
       kind: 'ok',
       reminders: [makeReminder()],
@@ -1402,7 +1402,7 @@ describe('#178 R7: entrada escalonada y badge', () => {
   });
 });
 
-describe('#178 R8: sheet de borrado del canvas (enmendado por #227 R13)', () => {
+describe('#178 R8: sheet de borrado del canvas (enmendado por #227 R13) (enmendado por #228 R13)', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     jest.useFakeTimers({ now: new Date('2026-12-30T15:00:00.000Z') });
@@ -1474,7 +1474,7 @@ describe('#218 R1: el cajón de borrar pinta su contenedor con el token surface 
 
   afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
 
-  it('#218 R1: backgroundStyle del BottomSheet de borrar es exactamente el token surface', async () => {
+  it('#218 R1: backgroundStyle del BottomSheet de borrar es exactamente el token surface (enmendado por #228 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     await fireEvent.press(screen.getByTestId('reminder-delete-a', HIDDEN));
@@ -1526,7 +1526,7 @@ describe('#155 R6: sin recordatorios, Pingo sostiene su lista', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('queda en el sitio del vacío que sustituye (enmendado por #204 R4)', async () => {
+  it('queda en el sitio del vacío que sustituye (enmendado por #204 R4) (enmendado por #228 R13)', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo' })] });
     mockListReminders.mockImplementation((_url, _token, petId) => Promise.resolve<RemindersState>({ kind: 'ok', reminders: petId === 'pet-2' ? [makeReminder({ petId: 'pet-2' })] : [] }));
     mockDeleteReminder.mockResolvedValue({ kind: 'forbidden' });
@@ -1627,7 +1627,7 @@ describe('Recordatorios: refetch de foco con selección vigente', () => {
   });
 
   describe('#193 R9: perder foco sin mascota limpia confirmación y error', () => {
-    it.each(['confirmación', 'error'] as const)('limpia %s tras cambiar la selección a null', async (state) => {
+    it.each(['confirmación', 'error'] as const)('limpia %s tras cambiar la selección a null (enmendado por #228 R13)', async (state) => {
       selectedPetId = 'pet-1';
       mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
       const view = await renderWithProviders(
@@ -1857,7 +1857,7 @@ describe('#204 R5: estados bajo la cabecera', () => {
     ['reminders-error'],
     ['reminders-empty'],
     ['reminders-action-error'],
-  ])('#204 R5: la cabecera encabeza el estado %s', async (stateId) => {
+  ])('#204 R5: la cabecera encabeza el estado %s (enmendado por #228 R13)', async (stateId) => {
     if (stateId === 'reminders-loading') {
       mockListReminders.mockReturnValue(pending<RemindersState>());
     } else if (stateId === 'reminders-error') {
@@ -1986,7 +1986,7 @@ describe('#204 R8: Eliminar de la fila (enmendado por #227 R13)', () => {
 
   afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
 
-  it('#204 R8: Eliminar de fila usa la receta rosa del canvas', async () => {
+  it('#204 R8: Eliminar de fila usa la receta rosa del canvas (enmendado por #228 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     const panel = screen.getByTestId('reminder-delete-a', HIDDEN);
@@ -2012,7 +2012,7 @@ describe('#204 R9: Eliminar de la hoja (enmendado por #227 R13)', () => {
 
   afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
 
-  it('#204 R9: Eliminar de la hoja lleva cuerpo de 56 y labio danger', async () => {
+  it('#204 R9: Eliminar de la hoja lleva cuerpo de 56 y labio danger (enmendado por #228 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     await fireEvent.press(screen.getByTestId('reminder-delete-a', HIDDEN));
@@ -2082,7 +2082,7 @@ describe('#213 R14: series en Recordatorios', () => {
     for (const id of ['once', 'cancelled', 'sent']) expect(screen.getByTestId(`reminder-row-${id}`)).toBeVisible();
     for (const id of ['once', 'cancelled', 'sent']) expect(screen.queryByTestId(`reminder-repeats-${id}`)).toBeNull();
   });
-  it('#213 R15: la serie programada ofrece Cancelar serie y el puntual Eliminar', async () => {
+  it('#213 R15: la serie programada ofrece Cancelar serie y el puntual Eliminar (enmendado por #228 R13)', async () => {
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [
       makeReminder({ id: 'series', title: 'Pipeta antipulgas', recurrence: { unit: 'month', every: 1 } }),
       makeReminder({ id: 'once' }),
@@ -2101,7 +2101,7 @@ describe('#213 R14: series en Recordatorios', () => {
     expect(screen.queryByTestId('reminder-cancel-series-once', HIDDEN)).toBeNull();
   });
 
-  it.each(['cancelled', 'sent'] as const)('#213 R15: una serie cancelada o enviada conserva Eliminar (%s) (enmendado por #227 R13)', async (status) => {
+  it.each(['cancelled', 'sent'] as const)('#213 R15: una serie cancelada o enviada conserva Eliminar (%s) (enmendado por #227 R13) (enmendado por #228 R13)', async (status) => {
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [makeReminder({ id: 'series', status, dueAt: new Date(2026, 11, 28, 9, 0).toISOString(), recurrence: { unit: 'month', every: 1 } })] });
     await renderReminders();
     await screen.findByTestId('reminders-past-toggle');
@@ -2130,7 +2130,7 @@ describe('#213 R14: series en Recordatorios', () => {
     expect(screen.getByTestId('reminder-row-yesterday').props.className).toBe('flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border opacity-50');
   });
 
-  it('#213 R17: Cancelar serie abre la hoja con su copy', async () => {
+  it('#213 R17: Cancelar serie abre la hoja con su copy (enmendado por #228 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-cancel-series-series', HIDDEN);
     await fireEvent.press(screen.getByTestId('reminder-cancel-series-series', HIDDEN));
@@ -2162,7 +2162,7 @@ describe('#213 R14: series en Recordatorios', () => {
     }
   });
 
-  it('#213 R17: sin nombre de mascota el cuerpo omite la mascota', async () => {
+  it('#213 R17: sin nombre de mascota el cuerpo omite la mascota (enmendado por #228 R13)', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ id: 'pet-2', name: 'Luna' })] });
     await renderReminders();
     await screen.findByTestId('reminder-cancel-series-series', HIDDEN);
@@ -2172,7 +2172,7 @@ describe('#213 R14: series en Recordatorios', () => {
     await waitFor(() => expect(within(screen.getByTestId('reminders-cancel-series-sheet')).getByText(body)).toHaveTextContent(body));
   });
 
-  it('#213 R17: las dos hojas comparten un solo BottomSheet', async () => {
+  it('#213 R17: las dos hojas comparten un solo BottomSheet (enmendado por #228 R13)', async () => {
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [
       makeReminder({ id: 'series', title: 'Pipeta antipulgas', recurrence: { unit: 'month', every: 1 } }),
       makeReminder({ id: 'once' }),
@@ -2240,7 +2240,7 @@ describe('#213 R14: series en Recordatorios', () => {
     expect(mockUseAuth().signOut).toHaveBeenCalledTimes(1);
   });
 
-  it('#213 R18: Mantener la serie cierra sin llamar a la API', async () => {
+  it('#213 R18: Mantener la serie cierra sin llamar a la API (enmendado por #228 R13)', async () => {
     await openSeriesSheet();
     const keep = screen.getByTestId('reminders-cancel-series-keep');
     await fireEvent.press(keep);
@@ -2368,7 +2368,7 @@ describe('#216 R5: borrar y cancelar serie son solo del dueño', () => {
     ['family', 2],
     ['walker', 2],
     ['vet', 2],
-  ] as const)('#216 R5 con el rol %s cada fila tiene %i hijos', async (role, rowChildren) => {
+  ] as const)('#216 R5 con el rol %s cada fila tiene %i hijos (enmendado por #228 R13)', async (role, rowChildren) => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: role })] });
     mockListReminders.mockResolvedValue({
       kind: 'ok',
@@ -2502,7 +2502,7 @@ describe('#227: próximos y pasados', () => {
   });
 
 
-  it('#227 R12: Eliminar y Cancelar serie siguen en su fila en las dos secciones y solo para el dueño', async () => {
+  it('#227 R12: Eliminar y Cancelar serie siguen en su fila en las dos secciones y solo para el dueño (enmendado por #228 R13)', async () => {
     const owner = await renderReminders();
     await screen.findByTestId('reminders-pills');
     expect(screen.queryByTestId('reminders-past-toggle')).not.toBeNull();

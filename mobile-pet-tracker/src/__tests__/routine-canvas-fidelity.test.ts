@@ -95,7 +95,7 @@ const rows: Row[] = [
 ];
 
 describe('#204 R15: fidelidad al canvas congelado', () => {
-  it.each(rows)('#204 R15: %s sigue al canvas', (_name, board, canvasLiterals, productions) => {
+  it.each(rows)('#204 R15: %s sigue al canvas (enmendado por #228 R13)', (_name, board, canvasLiterals, productions) => {
     const canvas = artboard(board);
     for (const literal of canvasLiterals) expect(canvas).toContain(literal);
     for (const { file, literals, tag } of productions) {
