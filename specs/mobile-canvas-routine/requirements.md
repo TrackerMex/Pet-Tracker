@@ -520,3 +520,34 @@ gate de implementación: lo cierra la casilla «Smoke de R18» de § Aprobación
   Firma delegada, mismo mandato.
 - [ ] Smoke de R18 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
   Va en el lote `progress/smoke_canvas-parity.md` (plan §6); el `done` no espera al smoke.
+
+## Enmienda #227 — Recordatorios próximos y pasados
+
+**Spec enmendada:** `specs/mobile-canvas-routine/requirements.md` (#204),
+**R6**. La enmienda la escribe
+`specs/mobile-reminders-upcoming-past/requirements.md` (#227, R10 y R13).
+
+**Qué cambia.**
+
+- «`delayMs={i * MOTION_REMINDERS_STAGGER_MS}`, en el orden de la lista»
+  pasa a:
+  - `delayMs={i * MOTION_REMINDERS_STAGGER_MS}` para las filas de
+    «Próximos», con `i` la posición en Próximos (0, 70, 140…);
+  - `delayMs={index * MOTION_REMINDERS_PAST_STAGGER_MS}` para las de
+    «Pasados», con `index` la posición en Pasados (0, 30, 60…).
+- `MOTION_REMINDERS_PAST_STAGGER_MS = 30` es un export nuevo de
+  `src/theme/motion.ts` (#227 R10).
+- El `it('#204 R6: escalona las filas 0, 70 y 140 ms con RiseIn')` se
+  renombra a
+  `#204 R6: escalona las filas próximas cada 70 ms y la pasada desde 0 (enmendado por #227 R13)`.
+  Espera `a` 0, `b` 70 y `c` 0.
+
+**Qué no cambia.**
+
+- `RiseIn` y su `testID` `reminders-entry-<id>`.
+- `MOTION_REMINDERS_STAGGER_MS = 70`.
+- `screens/reminders/index.tsx` sigue sin importar `../home/home-entrance`.
+
+- [x] Enmienda #227 aprobada por humano
+  (firma delegada del leader, 2026-11-03; mandato del humano 2026-10-23,
+  ampliado 2026-11-03)

@@ -5,6 +5,22 @@ declare const require: (moduleName: 'fs') => {
 const { readFileSync } = require('fs');
 const globalCss = readFileSync(`${process.cwd()}/src/theme/global.css`, 'utf8');
 
+describe('#231 R4: contraste del borde oscuro de Bienvenida', () => {
+  it('#231 R4: el borde oscuro de Bienvenida contrasta 3:1 con la superficie y el fondo', () => {
+    const source = readFileSync(`${process.cwd()}/src/screens/welcome/index.tsx`, 'utf8');
+    const index = source.indexOf('testID="welcome-have-account"');
+    expect(index).toBeGreaterThan(-1);
+    const tag = source.slice(source.lastIndexOf('<', index), source.indexOf('<', index));
+    const match = tag.match(/(?:^|\s)dark:border-([a-z0-9-]+)(?=\s|")/);
+    expect(match).not.toBeNull();
+    const variables = parseVariables(extractVariant('dark'));
+    const color = variables[match![1]];
+    expect(color).toMatch(/^#[0-9A-Fa-f]{6}$/);
+    expect(contrast(color, variables['surface'])).toBeGreaterThanOrEqual(3);
+    expect(contrast(color, variables['background'])).toBeGreaterThanOrEqual(3);
+  });
+});
+
 describe('#178 R1: tokens de Recordatorios', () => {
   it('define los valores exactos del artboard dentro de @theme', () => {
     expect(parseVariables(extractTheme())).toMatchObject({

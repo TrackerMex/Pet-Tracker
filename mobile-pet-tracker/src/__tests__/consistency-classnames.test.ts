@@ -271,7 +271,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     [join('screens', 'weight-log', 'index.tsx'), 1 + 1], // #199 R3
     [join('screens', 'docs', 'index.tsx'), 1],
     [join('screens', 'profile', 'index.tsx'), 3 + 1 + 4 - 7 + 1], // #41 R9; #168 R6; #173 R10: ProfileTile; #214 R4: ProfileWideTile
-    [join('screens', 'reminders', 'index.tsx'), 4 + 1], // #178 R6 fila sin Card
+    [join('screens', 'reminders', 'index.tsx'), 4 + 1 + 1], // #178 R6 fila sin Card; #227 R8 caja sin próximos
     [join('screens', 'add-pet', 'index.tsx'), 5], // #220 R14
     [join('screens', 'add-reminder', 'index.tsx'), 3 + 1 - 2 + 1], // #178 R12; #220 R15; #213 R6
     [join('screens', 'pairing', 'index.tsx'), 1], // #171 R3: ready-done
@@ -295,7 +295,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     );
   });
 
-  it.each(directUses)('%s importa y aplica sus %i esquinas (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9) (enmendado por #200 R1 y #200 R5 y #200 R7 y #200 R8 y #200 R9) (enmendado por #199 R3) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R2) (enmendado por #205 R3) (enmendado por #220 R4) (enmendado por #220 R14) (enmendado por #220 R15) (enmendado por #208 R21) (enmendado por #214 R4, R18) (enmendado por #209 R24) (enmendado por #223 R18) (enmendado por #215 R20)', (path, count) => {
+  it.each(directUses)('%s importa y aplica sus %i esquinas (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9) (enmendado por #200 R1 y #200 R5 y #200 R7 y #200 R8 y #200 R9) (enmendado por #199 R3) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R2) (enmendado por #205 R3) (enmendado por #220 R4) (enmendado por #220 R14) (enmendado por #220 R15) (enmendado por #208 R21) (enmendado por #214 R4, R18) (enmendado por #209 R24) (enmendado por #223 R18) (enmendado por #215 R20) (enmendado por #227 R13)', (path, count) => {
     const source = readSource(path);
     const uses = [...source.matchAll(/style=\{CONTINUOUS_CORNER\}/g)];
 
@@ -314,7 +314,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     }
   });
 
-  it('fusiona la esquina una vez y la entrega a las dos ramas de Card (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9) (enmendado por #200 R1 y #200 R5 y #200 R7 y #200 R8 y #200 R9) (enmendado por #199 R3) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R2) (enmendado por #205 R3) (enmendado por #220 R4) (enmendado por #220 R14) (enmendado por #220 R15) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R4, R18) (enmendado por #209 R24) (enmendado por #223 R18) (enmendado por #215 R20)', () => {
+  it('fusiona la esquina una vez y la entrega a las dos ramas de Card (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9) (enmendado por #200 R1 y #200 R5 y #200 R7 y #200 R8 y #200 R9) (enmendado por #199 R3) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R2) (enmendado por #205 R3) (enmendado por #220 R4) (enmendado por #220 R14) (enmendado por #220 R15) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R4, R18) (enmendado por #209 R24) (enmendado por #223 R18) (enmendado por #215 R20) (enmendado por #227 R13)', () => {
     const card = readSource(join('components', 'card.tsx'));
 
     expect(card).toContain(
@@ -349,6 +349,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
       + 1 // #223 R9
       + 6 // #209 R24
       + 3 // #215 R20
+      + 1 // #227 R8
     ); // #189 R6; #189 R5 (enmendado por #190 R13) // #191 R11 // #177 R5 // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168 R3, R8, R6; #170 R16; #171 R3: ready-done; #173 R10: ProfileTile
   });
 });
@@ -373,14 +374,14 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
     [join('screens', 'home', 'weekly-activity-chart.tsx'), 4],
     [join('screens', 'health', 'index.tsx'), 2 + 1], // #115 R6
     [join('screens', 'weight-log', 'index.tsx'), 2 + 2], // #169 R6
-    [join('screens', 'reminders', 'index.tsx'), 3],
+    [join('screens', 'reminders', 'index.tsx'), 3 + 1], // #227 R5
     [join('screens', 'geofence-editor', 'index.tsx'), 1],
     [join('screens', 'meals-history', 'index.tsx'), 2], // #105 R11
     [join('screens', 'alerts', 'index.tsx'), 1], // #170 R16
     [join('screens', 'alert-detail', 'index.tsx'), 1], // #170 R16
   ] as const;
 
-  it.each(counters)('%s aplica TABULAR_NUMS a sus %i valores (enmendado por #208 R21)', (path, count) => {
+  it.each(counters)('%s aplica TABULAR_NUMS a sus %i valores (enmendado por #208 R21) (enmendado por #227 R13)', (path, count) => {
     const source = readSource(path);
 
     expect(source).toMatch(
@@ -389,9 +390,9 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
     expect(source.match(/style=\{TABULAR_NUMS\}/g)).toHaveLength(count);
   });
 
-  it('#69 R10: mantiene la base cerrada más los deltas medidos (enmendado por #208 R21)', () => {
+  it('#69 R10: mantiene la base cerrada más los deltas medidos (enmendado por #208 R21) (enmendado por #227 R13)', () => {
     expect(counters.reduce((total, [, count]) => total + count, 0)).toBe(
-      14 + 4 + 1 + 1 + 1 + 1 + 1 + 2 + 1 + 1 + 2 + 1 + 1 + 1, // #208 R21; #146 R18, #105 R11, #116 R5, #115 R6, #169 R6, #170 R16
+      14 + 4 + 1 + 1 + 1 + 1 + 1 + 2 + 1 + 1 + 2 + 1 + 1 + 1 + 1, // #208 R21; #146 R18, #105 R11, #116 R5, #115 R6, #169 R6, #170 R16; #227 R5
     );
   });
 
@@ -420,7 +421,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
 });
 
 describe('#98 R10: los candados que esta feature no mueve', () => {
-  it('deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9) (enmendado por #200 R1 y #200 R5 y #200 R6 y #200 R7 y #200 R8 y #200 R9) (enmendado por #199 R3) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R2, R3, R4, R11, R13) (enmendado por #203 R5) (enmendado por #205 R3) (enmendado por #220 R4) (enmendado por #220 R14) (enmendado por #220 R15) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R4, R18) (enmendado por #209 R24) (enmendado por #223 R18) (enmendado por #215 R20)', () => {
+  it('deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban (enmendado por #177 R10) (enmendado por #190 R13) (enmendado por #197 R9) (enmendado por #200 R1 y #200 R5 y #200 R6 y #200 R7 y #200 R8 y #200 R9) (enmendado por #199 R3) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R2, R3, R4, R11, R13) (enmendado por #203 R5) (enmendado por #205 R3) (enmendado por #220 R4) (enmendado por #220 R14) (enmendado por #220 R15) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R4, R18) (enmendado por #209 R24) (enmendado por #223 R18) (enmendado por #215 R20) (enmendado por #227 R13)', () => {
     const home = readSource(join('screens', 'home', 'index.tsx'));
     const food = readSource(join('screens', 'food', 'index.tsx'));
     const count = (pattern: RegExp) =>
@@ -456,6 +457,7 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
       + 1 // #223 R9
       + 6 // #209 R24
       + 3 // #215 R20
+      + 1 // #227 R8
     ); // #189 R6; #189 R5 (enmendado por #190 R13) // #191 R11 // #177 R5 // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168; #170 R8: alert-detail-map; #171 R3: ready-done; #173 R10: ProfileTile
     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(1 + 1); // #177 R10 // #208 R21
     expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 2 - 1 - 1 - 1 - 1 - 2); // #191 R11 // #179 R6, R7, R11; #178 R5, R10, R12; #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6 // #198 R3 // #198 R11 // #198 R13 // #203 R5 // #205 R18
@@ -651,13 +653,13 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
 describe('#166 R3: el secundario neutro lleva el labio gris', () => {
   const recipe = 'h-14 rounded-16 border-2 border-lip-gray bg-surface';
   const rows = [
-    [join('screens', 'welcome', 'index.tsx'), 'welcome-have-account', null],
+    [join('screens', 'welcome', 'index.tsx'), 'welcome-have-account', 'outline'],
     [join('screens', 'forgot', 'index.tsx'), 'forgot-resend', 'secondary'],
     [join('screens', 'docs-upload-form', 'index.tsx'), 'docs-upload-cancel', 'outline'],
     [join('screens', 'reminders', 'index.tsx'), 'reminders-delete-cancel', 'outline'],
   ] as const;
 
-  it.each(rows)('%s pinta %s con la receta del secundario en su tag de apertura (enmendado por #177 R10)', (path, testId, variant) => {
+  it.each(rows)('%s pinta %s con la receta del secundario en su tag de apertura (enmendado por #177 R10) (enmendado por #231 R1, R3)', (path, testId, variant) => {
     const tag = openingTagWithTestId(readSource(path), testId);
 
     expect(tag).toContain(recipe);
