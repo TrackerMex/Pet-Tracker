@@ -1462,6 +1462,6 @@ delegadas. R26 no cierra hasta entonces.
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-26) ← gate obligatorio antes de implementar
-- [ ] Smoke de #209 en dev build por el humano (fecha: ____): teclado con KAV en los campos
+- [x] Smoke de #209 en dev build por el humano (fecha: 2026-10-30): teclado con KAV en los campos
       numéricos y en «otra», anillos de ping de Generando, guardar el perfil y generar el plan.
       Va en el lote G4 de `progress/smoke_mejoras-producto.md`. No bloquea tareas; bloquea `done`.

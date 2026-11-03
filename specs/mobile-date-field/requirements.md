@@ -412,5 +412,5 @@ pueden pasarla.
   `progress/plan_ui-2026-10-26.md` §4, checklist de firma pasada). F2 (alto único
   `h-12` en Recordatorio) y F3 (etiqueta `9 abr 2024` en Alta de mascota) quedan
   aceptadas como están en la spec; si el humano las rechaza en el smoke G2, es otra spec.
-- [ ] Smoke de `DateField` en dev build Android hecho y aprobado por el humano (cierre, no gate de implementación)
+- [x] Smoke de `DateField` en dev build Android hecho y aprobado por el humano (cierre, no gate de implementación)
   Va en `progress/smoke_ui.md` (plan §5, G2): toque sobre el campo, diálogo nativo, tema oscuro, Peso, Documentos, Alta de mascota, Recordatorio fecha y hora.

@@ -3537,7 +3537,7 @@
   {
     "id": 208,
     "name": "mobile-vaccine-create",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P1",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 2). Alta de vacuna desde la app: hoy solo existe POST /v1/pets/:petId/vaccines (owner) y Salud es de solo lectura, así que en la app real nunca hay vacunas. Ruta delgada app/pets/[petId]/vaccines/new.tsx más pantalla en src/screens/; clientes getVaccineCatalog y createVaccine en src/api/health-records.ts; catálogo por especie o nombre libre (exactamente uno), appliedAt no futuro, nextDoseAt opcional, veterinario, clínica y notas. Toggle «Recordarme la próxima dosis» encendido por defecto, que tras el 201 crea un recordatorio type vaccine con el endpoint existente si nextDoseAt es futuro (hora por defecto la fija la spec). CTA solo para owner. init.sh pasa a correr seed:vaccines (idempotente). Fuera: editar y borrar vacunas. Depende del gate G1 (artboard AltaVacuna). Evidencia en progress/explore_vaccines-reminders-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },
@@ -3565,70 +3565,70 @@
   {
     "id": 212,
     "name": "nutrition-ai-structured-plan",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P1",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 1). Decisión B híbrida del humano: el motor determinista fija las cotas (kcal, gramos, comidas) y la IA propone dentro con salida estructurada validada con zod: gramos por franja existente (respeta #103, sin proponer horarios), recomendaciones de seguimiento y fecha de revisión; fuera de cota o inválida, se sirve el plan del motor. Filtro determinista de alimentos tóxicos. Tendencia de peso entra en el prompt y en el hash. Gate OV3 (collar activo) más límite diario de 3 generaciones con IA por mascota (N = 3, gate G3 cerrado por el humano el 2026-10-26). .max() en allergies y diseases. Enmienda brief §16 y plan 009 en la misma PR. Gate humano G2 (system prompt nuevo y lista de tóxicos) antes del handoff. Coordina su migración con #210 y #211. Evidencia en progress/explore_nutrition-questionnaire-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },
   {
     "id": 213,
     "name": "mobile-reminders-recurrence",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P1",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 2). Repetición en la app: chips en add-reminder (Una vez, Diario, Semanal, Mensual, Anual, Cada N horas con stepper) y campo Hasta opcional; etiqueta «Se repite…» en la lista; «Cancelar serie» con patchJson existente; notificationHref lleva un push de recordatorio a Recordatorios en vez de /alerts. Depende de #210 y del gate G1 (artboard NuevoRecordatorio con Repetición). Firma delegada al leader. Registrada sin spec."
   },
   {
     "id": 214,
     "name": "mobile-pet-members",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P1",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 2). Familia en la app: quinta tarjeta «Familia» en Perfil que abre app/pets/[petId]/members.tsx; owner lista miembros, invita (código y Share nativo con texto en Voz B), revoca invitaciones y quita miembros; family ve la lista y puede salir. «Unirme con código» desde Perfil y desde el estado sin mascotas, reutilizando el patrón de input de pairing; tras aceptar invalida mascotas y selecciona la nueva. Depende de #211 y del gate G1 (artboards Familia). Firma delegada al leader. Registrada sin spec."
   },
   {
     "id": 215,
     "name": "mobile-nutrition-ai-plan",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P2",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 3). Nutrición muestra la propuesta estructurada de la IA (gramos por comida, recomendaciones, fecha de revisión) o el plan del motor si no la hay; estados de límite diario alcanzado, sin collar y propuesta descartada por cota. Sustituye el copy de ejemplo del canvas por datos reales. Depende de #212, #209 y del gate G1 (artboard PlanIA). Firma delegada al leader. Registrada sin spec."
   },
   {
     "id": 216,
     "name": "mobile-role-aware-actions",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P2",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 3). Ocultar a family las acciones de owner que hoy se muestran y acaban en 403: registro de peso, alta de recordatorio, borrado en Recordatorios, vincular collar y subir documentos, con el patrón de solo lectura existente; el 403 del backend queda como red. Depende de #214. Evidencia en progress/explore_roles-sharing-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },
   {
     "id": 217,
     "name": "mobile-theme-flash-statusbar",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P2",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 1). Fondo de escena de navegación por tokens para el flash al cambiar de pestaña, retirar react-native-nitro-theme-transition y react-native-nitro-modules (cambio de tema instantáneo; rebuild del dev build lo hace el humano) y StatusBar auto con iconos claros en las pantallas con hero. Evidencia en progress/explore_ui-tema-barra-drawer-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },
   {
     "id": 218,
     "name": "mobile-sheet-surface-background",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P2",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 1). backgroundStyle con el token surface en los BottomSheet de Recordatorios y Vinculación para quitar la franja rosa del cajón de borrar. Evidencia en progress/explore_ui-tema-barra-drawer-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },
   {
     "id": 219,
     "name": "mobile-weekly-average-format",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P2",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 1). Media de Actividad semanal sin decimales sobrantes: minutos enteros, paseos y km a un decimal, punto decimal en todo (la tendencia deja la coma). Evidencia en progress/explore_ui-alertas-actividad-ia-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },
   {
     "id": 220,
     "name": "mobile-date-field",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P2",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 1). Componente DateField propio sobre piezas de heroui-native y el selector nativo de @expo/ui, modo fecha u hora, valor ISO, mínimo, máximo y borrable; migra Registro de peso, Documentos, Alta de mascota y Nuevo recordatorio. Va antes de #208 y #213. Evidencia en progress/explore_ui-heroui-fechas-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },
   {
     "id": 221,
     "name": "mobile-orbit-rename-copy",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P3",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 1). La mascota pasa de Pingo a Orbit en el texto visible (welcome.pingoGreeting, ES y EN) y en la carta docs/ui-guidelines.md punto 7; los identificadores y assets los renombra #225. Evidencia en progress/explore_ui-mascota-orbit-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },
@@ -3656,8 +3656,98 @@
   {
     "id": 225,
     "name": "mobile-orbit-activity-pose",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P3",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 3, gates G1 y G6). Pose nueva de Orbit caminando para la burbuja de Inicio, que genera el humano, y renombre interno de assets, ids y testIDs de pingo a orbit. Evidencia en progress/explore_ui-mascota-orbit-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
+  },
+  {
+    "id": 226,
+    "name": "backend-vaccine-catalog-migration",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Catálogo de vacunas por migración de datos: hoy la tabla vaccine_catalog solo se llena con pnpm seed:vaccines y en la base del humano quedó vacía, así que Agregar vacuna solo ofrece «Otra vacuna». Evidencia en el plan §2. Responsable: leader @Backend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
+    "acceptance_criteria": null,
+    "files_affected": null
+  },
+  {
+    "id": 227,
+    "name": "mobile-reminders-upcoming-past",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Lista de recordatorios con «Próximos» arriba (no cancelados con fecha de hoy en adelante, ascendente) y una sección «Pasados» colapsada al final, como Alertas atendidas (#223). Decisión del humano 2026-11-03. Necesita artboard y copy (G1). Responsable: leader @Backend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
+    "acceptance_criteria": null,
+    "files_affected": null
+  },
+  {
+    "id": 228,
+    "name": "mobile-reminder-swipe-actions",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Eliminar y Cancelar serie de cada recordatorio pasan a acciones de deslizar con ReanimatedSwipeable de react-native-gesture-handler (HeroUI Native 1.0.8 y 1.0.11 no tienen SwipeableRow), con acción de accesibilidad equivalente. Necesita artboard (G1). Responsable: leader @Backend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
+    "acceptance_criteria": null,
+    "files_affected": null
+  },
+  {
+    "id": 229,
+    "name": "mobile-profile-family-join-row",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Perfil: «Familia» y «Unirme con código» salen a media anchura, en filas separadas y sin texto (ProfileWideTile sin flex-1 dentro de un flex-row). Una fila de dos columnas con el mismo alto, como las filas de ProfileTile; sin copy nuevo. Decisión del humano 2026-11-03 («Lado a lado»). Va detrás de #235. Responsable: leader @Frontend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
+    "acceptance_criteria": null,
+    "files_affected": null
+  },
+  {
+    "id": 230,
+    "name": "mobile-map-pet-avatar-marker",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Mapa: el marcador de la última posición muestra el avatar de la mascota en vez del pin genérico de Google. Decisión del humano 2026-11-03. Requiere explorer (expo-maps ~57 solo acepta un icon estático) y artboard (G1). Solapa con #192. Responsable: leader @Backend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
+    "acceptance_criteria": null,
+    "files_affected": null
+  },
+  {
+    "id": 231,
+    "name": "mobile-welcome-secondary-pressed",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Bienvenida: «Ya tengo una cuenta» no tiene variant y HeroUI le pinta el resaltado verde del primario al pulsar; en oscuro, borde y labio casi no se ven. Resaltado neutro y borde visible en oscuro. Responsable: leader @Frontend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
+    "acceptance_criteria": null,
+    "files_affected": null
+  },
+  {
+    "id": 232,
+    "name": "mobile-add-reminder-chip-lip-clip",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Agregar recordatorio: el ScrollView horizontal de Tipo y de Aviso recorta el labio de 3 px del chip seleccionado. Responsable: leader @Frontend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
+    "acceptance_criteria": null,
+    "files_affected": null
+  },
+  {
+    "id": 233,
+    "name": "mobile-food-links-without-profile",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Nutrición: sin perfil nutricional no se muestran Horario de comidas ni Historial de comidas. Responsable: leader @Frontend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
+    "acceptance_criteria": null,
+    "files_affected": null
+  },
+  {
+    "id": 234,
+    "name": "mobile-nutrition-ai-collapse-flicker",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Arreglo del smoke de #224: la tarjeta de IA colapsada parpadea porque food-ai-content se mide con onLayout dentro de su propio recorte (maxHeight 122). Medir fuera del recorte; enmienda a #224 R6. Cierra también el smoke de #224. Responsable: leader @Frontend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
+    "acceptance_criteria": null,
+    "files_affected": null
+  },
+  {
+    "id": 235,
+    "name": "mobile-profile-photo-owner-only",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Perfil: el botón de cámara change-photo se muestra al rol family y el backend responde 403 («No se pudo subir la foto»). Mostrarlo solo al owner, como el resto de #216. Responsable: leader @Frontend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
+    "acceptance_criteria": null,
+    "files_affected": null
   }
 ]

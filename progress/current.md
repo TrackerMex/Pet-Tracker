@@ -3,6 +3,13 @@
 > Este archivo describe el estado de la sesion en curso.
 > Al cerrar la sesion, mueve este contenido a progress/history.md y deja solo esta plantilla.
 
+## Plan de arreglos del smoke (2026-11-03)
+
+- Smoke G2 del humano sobre `dev` (`6531669f`): pasan todas menos #224 (parpadeo de la tarjeta de IA).
+- 12 features a `done`; #209, #222 y #223 siguen `spec_ready` por su G4; #224 espera a #234.
+- Plan nuevo: `progress/plan_mejoras-smoke-2026-11-03.md`, features #226–#235, firma delegada
+  (ampliación del 2026-11-03 en CLAUDE.md). @Backend: #226–#228 y #230; @Frontend: #229 y #231–#235.
+
 ## Fallback al subagente `implementer` (#225, 2026-10-28)
 
 - Feature: #225 mobile-orbit-activity-pose. Frontend cedió la feature entera al leader @Backend.

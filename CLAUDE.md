@@ -146,6 +146,14 @@ del §4 de ese plan) y PRs a `dev`. No se delegan: los artboards y el copy (G1),
 el smoke en dispositivo (G2), el rebuild del dev build (G3), las enmiendas de
 `docs/ui-guidelines.md` (G4), el PNG de Orbit (G6) y `dev` → `main` (G5).
 
+**Ampliación del 2026-11-03 (arreglos del smoke).** Tras el lote G2, el humano
+pidió arreglos y mejoras y, a la pregunta «¿Las firmo yo con la firma delegada,
+como #208–#225?», eligió «Sí, firma delegada». El mandato cubre las features
+#226–#235 de `progress/plan_mejoras-smoke-2026-11-03.md`, con la misma
+checklist de firma (más los puntos de su §4) y PRs a `dev`. No se delegan: los
+artboards y el copy nuevos (G1), las enmiendas de `docs/ui-guidelines.md` o
+`docs/conventions.md` (G4), el smoke en dispositivo (G2) y `dev` → `main` (G5).
+
 ## UI móvil
 
 Todo trabajo sobre `mobile-pet-tracker/` (specs, handoffs, reviews) se rige

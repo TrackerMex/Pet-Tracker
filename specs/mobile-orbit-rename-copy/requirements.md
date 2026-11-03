@@ -253,6 +253,6 @@ Premisas del plan verificadas contra el árbol:
   `done` de la feature espera a esta casilla, el commit de R4 tiene que estar en la rama antes de la
   PR, y el `reviewer` verifica `[xX]` y que `git log` muestre un único commit que toque
   `docs/ui-guidelines.md`.
-- [ ] Smoke de la bienvenida en el dev build Android (cierre, no gate de implementación)
+- [x] Smoke de la bienvenida en el dev build Android (cierre, no gate de implementación)
   Va en el lote `progress/smoke_ui.md` (plan §5, G2): con idioma español la burbuja de la
   bienvenida dice «Hola, soy Orbit.» y con inglés «Hi, I'm Orbit.»; la burbuja no corta el texto.

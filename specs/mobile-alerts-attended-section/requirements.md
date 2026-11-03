@@ -534,7 +534,7 @@ primeras filas abiertas** y la sexta sin envoltorio).
 - [ ] **G4**: aprobada la enmienda de `docs/ui-guidelines.md` de R19 (casilla
   humana propia, **no delegada**) (fecha: ____) ← sin esta casilla R19 no se
   implementa
-- [ ] **G2**: smoke en el dev build de Android (colapsada, expandida con
-  «Ver más», sin abiertas, tema claro y oscuro) (fecha: ____) ← gate humano,
+- [x] **G2**: smoke en el dev build de Android (colapsada, expandida con
+  «Ver más», sin abiertas, tema claro y oscuro) (fecha: 2026-11-03) ← gate humano,
   por lote al final de la ola; lo registra `progress/smoke_ui.md`
 - Base congelada: `73922b10` (`origin/dev`).

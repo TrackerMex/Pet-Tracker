@@ -292,5 +292,5 @@ ellas. (La **tendencia** sí admite negativos: ver R6.)
 ## Aprobación
 
 - [x] Aprobado por humano (firma delegada del leader, mandato 2026-10-23 ampliado 2026-10-26; fecha: 2026-10-26)
-- [ ] Smoke del formato en dev build Android hecho y aprobado por el humano (cierre, no gate de implementación)
+- [x] Smoke del formato en dev build Android hecho y aprobado por el humano (cierre, no gate de implementación)
   Va en `progress/smoke_ui.md` (plan §5, G2): con datos reales, la etiqueta «Media …» de las tres métricas cabe en la card sin salirse junto al título, y la tendencia muestra punto decimal.

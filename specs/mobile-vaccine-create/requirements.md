@@ -968,7 +968,7 @@ E2E_SETUP_CMD="pnpm -C backend-pet-tracker run db:migrate && pnpm -C backend-pet
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-26) ← gate obligatorio antes de implementar
-- [ ] Smoke de #208 en dev build por el humano (fecha: ____): picker nativo de las dos fechas, teclado con
+- [x] Smoke de #208 en dev build por el humano (fecha: 2026-10-30): picker nativo de las dos fechas, teclado con
       KAV en notas, recordatorio a las 09:00 locales. No bloquea tareas; bloquea `done`.
 
 ## Enmiendas tras el merge de #220 (2026-10-26)

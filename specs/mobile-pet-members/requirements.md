@@ -815,7 +815,7 @@ tags: [mobile, spec, pet-members, invites, expo-router, heroui-native]
 - [x] Enmienda 1 aprobada por el leader con la firma delegada (fecha: 2026-10-27). Tras los menores 1 y 2
       de `progress/review_mobile-pet-members.md`, R13 añade `flex-1` al texto de `pet-members-code-note`,
       igual que en `pet-members-owner-note` y `join-pet-note`, y su `it` del dueño. Solo cambia R13.
-- [ ] Smoke de #214 en dev build por el humano (fecha: ____), tras el rebuild del dev build por
+- [x] Smoke de #214 en dev build por el humano (fecha: 2026-10-30), tras el rebuild del dev build por
       `expo-clipboard`: invitación entre dos cuentas (crear código, «Copiar código», «Compartir»
       con el Share nativo, unirse con el código, salir y quitar a un miembro). Va en el lote G4 de
       `progress/smoke_mejoras-producto.md`. No bloquea tareas; bloquea `done`.

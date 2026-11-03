@@ -594,7 +594,7 @@ Tests en `src/__tests__/tab-headers-canvas.test.ts` (mismo describe `#222`):
 
 - [x] Aprobado por humano (fecha: 2026-10-27, firma delegada del leader: mandato 2026-10-23 ampliado 2026-10-26; G1 aprobado por el humano sobre canvas v153)
 - [ ] G4 — Enmienda #222 a `docs/ui-guidelines.md` (regla N1, R12) aprobada por humano (fecha: ____) ← gate humano, no delegado; sin marcar, R12 no se ejecuta
-- [ ] G2 — Prueba de humo en dev build de Android (R1 a R7: cabecera fija, 10 de separación, último chip cortado con 8 o más mascotas, encabezado leído por TalkBack, claro y oscuro) superada por el humano (fecha: ____) ← en lote, al final de la ola
+- [x] G2 — Prueba de humo en dev build de Android (R1 a R7: cabecera fija, 10 de separación, último chip cortado con 8 o más mascotas, encabezado leído por TalkBack, claro y oscuro) superada por el humano (fecha: 2026-11-03) ← en lote, al final de la ola
 
 Tras la implementación, el humano marca la línea de firma de cada bloque
 `## Enmienda #222` (`- [ ]` a `- [X]`) en los siete documentos de R11 y R12. El
