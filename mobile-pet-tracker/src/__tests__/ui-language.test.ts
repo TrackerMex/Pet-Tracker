@@ -183,7 +183,7 @@ describe('#65 R8: Recordatorios resuelve su copy por clave', () => {
     expect(R8_REMINDERS).toHaveLength(
       50 + 1 - 2 + 1 - 1 + 1 + 1 + 1 + 1 + 3 + 3 - 3 // #186 R5 // #186 R2 // #181 R4 // #178 R12 // +1 #95 R4, -2 #95 R5, +1 #114 R4, -1 #114 R5, +1 #155 R6; // #178 R6; #178 R9
       + 57 // #213 R22
-      + 2, // #227 R1
+      + 4, // #227 R1
     );
     checkUses(R8_REMINDERS);
   });

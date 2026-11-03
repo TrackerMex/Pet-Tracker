@@ -511,7 +511,12 @@ export function RemindersScreen() {
                 <RiseIn key={reminder.id} testID={`reminders-entry-${reminder.id}`} delayMs={i * MOTION_REMINDERS_STAGGER_MS}>{renderRow(reminder, false)}</RiseIn>
               ))}
             </View>
-          ) : null}
+          ) : (
+            <View testID="reminders-upcoming-empty" className="items-center gap-1 rounded-22 bg-default px-4 py-5" style={CONTINUOUS_CORNER}>
+              <Text testID="reminders-upcoming-empty-title" className="text-center text-15 font-extrabold text-foreground">{t('reminders.upcomingEmptyTitle')}</Text>
+              <Text testID="reminders-upcoming-empty-body" className="text-center text-13 text-muted">{t('reminders.upcomingEmptyBody')}</Text>
+            </View>
+          )}
           {sections.past.length > 0 ? (
             <View testID="reminders-past" className="gap-3">
               <Pressable testID="reminders-past-toggle" className="mt-1 h-10 w-full flex-row items-center gap-2" accessibilityRole="button" accessibilityState={{ expanded: pastExpanded }} hitSlop={TOUCH_SLOP} style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })} onPress={() => setPastExpanded((current) => !current)}>

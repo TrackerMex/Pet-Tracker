@@ -225,6 +225,7 @@ describe('#174 R12: inventarios', () => {
         'screens/pairing/index.tsx', // #203 R4
         'screens/profile/index.tsx', // #196 R6
         'screens/register/index.tsx',
+        'screens/reminders/index.tsx', // #227 R8
         'screens/reset-password/index.tsx',
         'screens/vaccine-create/index.tsx', // #208 R21
         'screens/weight-log/index.tsx', // #199 R10
