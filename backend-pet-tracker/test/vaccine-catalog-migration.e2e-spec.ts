@@ -303,4 +303,19 @@ describe('#226 vaccine catalog migration (e2e)', () => {
       ).toEqual({ firstDoseMonths: 3, boosterMonths: 36 });
     });
   });
+
+  describe('#226 R3: el seed sigue funcionando despues de la migracion', () => {
+    it('#226 R3: seed:vaccines sobre el catalogo migrado conserva las 7 filas y sus ids', async () => {
+      const before = await poolA.query<CatalogRow>(
+        'select id, species, name, scheme from vaccine_catalog order by species, name',
+      );
+      expect(before.rows).toHaveLength(7);
+      await expect(seedVaccineCatalog(drizzle(poolA))).resolves.toBeUndefined();
+      const after = await poolA.query<CatalogRow>(
+        'select id, species, name, scheme from vaccine_catalog order by species, name',
+      );
+      expect(after.rows).toHaveLength(7);
+      expect(after.rows).toEqual(before.rows);
+    });
+  });
 });
