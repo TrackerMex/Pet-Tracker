@@ -2726,4 +2726,17 @@ describe('Acciones de deslizar en Recordatorios (#228 R2 a R9)', () => {
       expect(within(row).queryAllByRole('button', HIDDEN)).toEqual([]);
     }
   });
+
+  it('#228 R9: con el ReanimatedSwipeable real la fila y su panel se montan y el panel abre la hoja', async () => {
+    mockRealSwipeable = true;
+    await renderReminders();
+    await screen.findByTestId('reminder-row-once');
+    const swipe = screen.getByTestId('reminder-swipe-once');
+    expect(within(swipe).getByTestId('reminder-row-once')).toBeOnTheScreen();
+    const panel = within(swipe).getByTestId('reminder-delete-once', HIDDEN);
+    expect(panel).toBeOnTheScreen();
+    expect(mockSwipeable).not.toHaveBeenCalled();
+    await fireEvent.press(panel);
+    expect(screen.getByText('¿Eliminar recordatorio?')).toBeOnTheScreen();
+  });
 });
