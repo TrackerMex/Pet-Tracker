@@ -3685,7 +3685,7 @@
   {
     "id": 227,
     "name": "mobile-reminders-upcoming-past",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P1",
     "description": "Lista de recordatorios con «Próximos» arriba (no cancelados con fecha de hoy en adelante, ascendente) y una sección «Pasados» colapsada al final, como Alertas atendidas (#223). Decisión del humano 2026-11-03. Necesita artboard y copy (G1). Responsable: leader @Backend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
     "acceptance_criteria": null,

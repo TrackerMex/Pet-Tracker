@@ -1205,3 +1205,29 @@ re-mide la fila; el criterio no cambia.
 - [X] Enmienda E3 aprobada por humano ← gate obligatorio antes de lanzar a Codex
 - [X] Enmienda E4 aprobada por humano ← gate obligatorio antes de lanzar a Codex
 - [X] Enmienda E5 aprobada por humano ← gate obligatorio antes de lanzar a Codex
+
+## Enmienda #227 — Recordatorios próximos y pasados
+
+**Spec enmendada:** `specs/mobile-routine-canvas-fidelity/requirements.md`
+(#178), **R6** y **R7**. La enmienda la escribe
+`specs/mobile-reminders-upcoming-past/requirements.md` (#227, R7, R10 y R13).
+
+**Qué cambia.**
+
+- **R6**: en el `className` de la fila, `${inactive ? ' opacity-50' : ''}`
+  pasa a `${past ? ' opacity-50' : ''}`. `past` es `true` cuando la fila se
+  pinta en la sección «Pasados» (#227 R7).
+- **R7**: «con `i` la posición en la lista» pasa a la posición de la fila
+  **dentro de su sección**, desde 0 en cada una (#227 R10). La entrada ya es
+  `RiseIn` desde #204 R6.
+
+**Qué no cambia.**
+
+- La anatomía de la fila: el mosaico, la columna, el botón y sus recetas.
+- El borde ámbar y el badge de la fila de hoy, que siguen decididos por
+  `status` y por el día.
+- El `PopIn` del badge.
+
+- [x] Enmienda #227 aprobada por humano
+  (firma delegada del leader, 2026-11-03; mandato del humano 2026-10-23,
+  ampliado 2026-11-03)

@@ -467,6 +467,10 @@ export const R8_REMINDERS: UseRow[] = [
   { file: 'src/screens/reminders/index.tsx', key: 'common.cannotReachServer' }, // #213 R22
   { file: 'src/screens/reminders/index.tsx', key: 'common.somethingWentWrong' }, // #213 R22
   { file: 'src/screens/reminders/index.tsx', key: 'common.somethingWentWrong' }, // #213 R22
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.sectionUpcoming' }, // #227 R1
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.sectionPast' }, // #227 R1
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.upcomingEmptyTitle' }, // #227 R1
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.upcomingEmptyBody' }, // #227 R1
 ];
 
 export const R9_ADD_PET: UseRow[] = [
