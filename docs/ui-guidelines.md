@@ -204,6 +204,7 @@ Tres límites, no negociables:
     Fuera de la escala, por fidelidad al canvas (#191): `rounded-10` (10 px) y `rounded-14` (14 px), segmentos y contenedor del selector segmentado de Nueva mascota; `rounded-tile` (18 px) de la burbuja de Pingo, que es un `View` y no un `Card`.
 
     Fuera de la escala, por fidelidad al canvas (#199): `rounded-24` (24 px), tarjeta de la gráfica de Peso, panel de la próxima dosis y tarjeta de peso de Salud, que son `View` con `CONTINUOUS_CORNER`; `rounded-16` (16 px), tile del panel de la próxima dosis; `rounded-14` (14 px), enlace al registro de peso de Salud.
+    Fuera de la escala, por fidelidad al canvas (#223): `rounded-16` (16 px), fila atendida de Alertas, que es un `View` y no un `Card` porque `twMerge` no sustituye `rounded-card` por un radio con nombre de valor; `rounded-14` (14 px), «Ver más» de la sección Atendidas.
 
 13. **Botón con cuerpo** (feature #166, 2026-10-11). Los botones de acción
     llevan un labio inferior: una sombra sólida sin desenfoque en `--lip`
@@ -574,7 +575,7 @@ de la enmienda está en su `requirements.md` §R11.
 
 - [X] Enmienda #168 aprobada por humano
 
-**Regla N1 (enmienda #196)**: Inicio y Perfil abren con PetHeroHeader a sangre; Salud y Nutrición abren con el título grande. En Perfil el título «Perfil» y «Añadir mascota» van en el slot superior del hero y el nombre con los chips en su pie. Devolver el hero a Salud o a Nutrición, o quitárselo a Inicio o a Perfil, es una enmienda a #196.
+**Regla N1 (enmienda #222)**: Inicio y Perfil abren con PetHeroHeader a sangre. Salud y Nutrición abren con el selector de mascotas (avatares de 40) en una cabecera fija de vidrio plano, sin título visible; si no hay mascotas la cabecera no se pinta. En Perfil el selector glass y «Añadir mascota» comparten la fila superior del hero. Las tres pestañas conservan un encabezado solo para lectores de pantalla. Devolver el título a una pestaña, el hero a Salud o a Nutrición, o quitárselo a Inicio o a Perfil, es una enmienda a #222.
 
 ## Enmienda #171 — confeti, ping y flotación de la celebración
 
@@ -993,3 +994,19 @@ Detalle y tests en `specs/mobile-canvas-tab-bar/requirements.md` (R1 a R10).
 
 - [X] Enmienda #209 aprobada por humano
   Aprobada por el humano en la sesión del leader el 2026-11-03 («si apruebo los cambios»); el leader teclea el commit.
+
+## Enmienda #222 — avatares fijos y sin título en las pestañas
+
+`mobile-tab-avatar-header` (#222) modifica una decisión que esta spec dejó
+aprobada. La spec de origen es `specs/mobile-tab-avatar-header/`; el detalle
+de la enmienda está en su `requirements.md` §R11.
+
+- Spec enmendada: `docs/ui-guidelines.md`
+- Qué cambia: `regla N1: avatares fijos y sin título en Salud y Nutrición`
+- Qué NO cambia: ningún otro requisito de esta spec ni su estado de
+  aprobación. Los tests que cubren lo enmendado se reescriben en #222 (lista
+  en su `requirements.md` §R9 y en su `tasks.md`).
+
+- [X] Enmienda docs/ui-guidelines.md aprobada por humano
+  Aprobada por el humano en la sesión del leader el 2026-11-03 («si apruebo los cambios»); el leader teclea el commit.
+  Véase `specs/mobile-tab-avatar-header/requirements.md` §Aprobación, casilla G4.
