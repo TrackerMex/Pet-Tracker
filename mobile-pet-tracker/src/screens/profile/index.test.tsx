@@ -2839,3 +2839,40 @@ describe('#214 R6: Unirme con código en Perfil', () => {
     expect(profileChild(screen.getByTestId('profile-links'), 1)).toBe(row);
   });
 });
+
+describe('#235 R1: la cámara de Perfil es solo del dueño', () => {
+  beforeEach(setupProfile168);
+
+  it.each([
+    ['owner', true],
+    ['family', false],
+    ['walker', false],
+    ['vet', false],
+  ] as const)('#235 R1 con el rol %s la cámara se pinta: %s', async (role, cameraVisible) => {
+    const pet = makePet({ myRole: role });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+
+    await renderProfile();
+    await screen.findByTestId('profile-pet-card');
+    const hero = screen.getByTestId('profile-hero');
+
+    if (cameraVisible) {
+      expect(screen.getByTestId('change-photo')).toBeOnTheScreen();
+      const pop = screen.getByTestId('profile-change-photo-pop');
+      expect(pop).toBeOnTheScreen();
+      expect(hero.children).toHaveLength(2);
+      expect(profileChild(hero, 1)).toBe(pop);
+    } else {
+      expect(screen.queryByTestId('change-photo', { includeHiddenElements: true })).toBeNull();
+      expect(screen.queryByTestId('profile-change-photo-pop', { includeHiddenElements: true })).toBeNull();
+      expect(screen.queryByTestId('profile-icon-camera', { includeHiddenElements: true })).toBeNull();
+      expect(hero.children).toHaveLength(1);
+    }
+
+    expect(profileChild(hero, 0)).toBe(screen.getByTestId('pet-hero'));
+    expect(screen.getByTestId('profile-pet-name')).toHaveTextContent('Luna');
+    expect(screen.getByTestId('pet-info-card')).toBeOnTheScreen();
+    expect(screen.getByTestId('profile-add-pet')).toBeOnTheScreen();
+  });
+});
