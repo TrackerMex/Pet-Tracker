@@ -33,7 +33,7 @@ import {
   useTranslate,
 } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
-import { MOTION_REMINDERS_STAGGER_MS } from '../../theme/motion';
+import { MOTION_REMINDERS_PAST_STAGGER_MS, MOTION_REMINDERS_STAGGER_MS } from '../../theme/motion';
 import {
   CONTINUOUS_CORNER,
   TABULAR_NUMS,
@@ -531,7 +531,7 @@ export function RemindersScreen() {
               {pastExpanded ? (
                 <View testID="reminders-past-list" className="gap-3">
                   {sections.past.map((reminder, index) => (
-                    <RiseIn key={reminder.id} testID={`reminders-entry-${reminder.id}`} delayMs={index * MOTION_REMINDERS_STAGGER_MS}>{renderRow(reminder, true)}</RiseIn>
+                    <RiseIn key={reminder.id} testID={`reminders-entry-${reminder.id}`} delayMs={index * MOTION_REMINDERS_PAST_STAGGER_MS}>{renderRow(reminder, true)}</RiseIn>
                   ))}
                 </View>
               ) : null}

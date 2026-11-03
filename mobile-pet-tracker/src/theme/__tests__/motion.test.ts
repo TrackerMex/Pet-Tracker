@@ -111,6 +111,7 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
       'MOTION_POINT_POP_MS',
       'MOTION_POP_SCALE',
       'MOTION_POP_SPRING',
+      'MOTION_REMINDERS_PAST_STAGGER_MS',
       'MOTION_REMINDERS_STAGGER_MS',
       'MOTION_RING_DELAY_MS',
       'MOTION_RING_TIMING',
