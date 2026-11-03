@@ -1,6 +1,6 @@
 ---
 feature: "mobile-vaccine-catalog-error-state"
-status: draft        # draft | approved
+status: approved       # draft | approved
 tags: [harness, spec, mobile, health, vaccines]
 ---
 
@@ -125,7 +125,7 @@ propios, antes de la implementación.
 
 ## Anclas tras C3 (`grep -cF` sobre `src/screens/vaccine-create/index.tsx`)
 
-| Patrón | Base (`8187d1fb`) | Tras C3 |
+| Patrón | Base (`8187d1fb`, igual en `b06e688f`) | Tras C3 |
 |---|---|---|
 | `const catalogFailed = !catalog.isPending && catalog.data?.kind !== 'ok';` | 0 | 1 |
 | `testID="vaccine-create-catalog-error"` | 0 | 1 |
@@ -148,5 +148,6 @@ propios, antes de la implementación.
 - En `src/__tests__/ui-language.test.ts`,
   `grep -cF 'expect(R19_VACCINE_CREATE).toHaveLength(29 + 2); // #236 R7'` pasa
   de `0` a `1`.
-- `git diff 8187d1fb -- src/i18n/catalog.ts src/screens/health/index.tsx` sale
-  vacío.
+- `git diff b06e688f -- src/i18n/catalog.ts src/screens/health/index.tsx` sale
+  vacío. `b06e688f` es el merge de `origin/dev`; desde `8187d1fb` el catálogo
+  ganó claves de otras features, así que esa base ya no sirve aquí.

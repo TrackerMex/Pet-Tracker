@@ -1,6 +1,6 @@
 ---
 feature: "mobile-vaccine-catalog-error-state"
-status: draft        # draft | approved
+status: approved       # draft | approved
 tags: [harness, spec, mobile, health, vaccines]
 ---
 
@@ -12,7 +12,11 @@ tags: [harness, spec, mobile, health, vaccines]
 > están en [[../../docs/architecture|architecture]]. La UI se rige por
 > [[../../docs/ui-guidelines|ui-guidelines]].
 >
-> - Base medida: `origin/dev` en `8187d1fb` (merge de #226).
+> - Base medida: `origin/dev` en `8187d1fb` (merge de #226). Re-medida por el
+>   leader tras mergear `origin/dev` (`b06e688f`): `src/screens/vaccine-create/`,
+>   `src/screens/health/index.tsx`, `src/api/` y `src/providers/` no cambian, y
+>   las anclas de [[tasks]] siguen valiendo. `src/i18n/catalog.ts` ganó claves de
+>   otras features que esta spec no toca.
 > - Branch: `feature/236-mobile-vaccine-catalog-error-state`. La PR va contra `dev`.
 > - Capa: solo móvil (`mobile-pet-tracker/`), y en ella solo la pantalla
 >   `src/screens/vaccine-create/index.tsx`, su test y la tabla de copy.
@@ -342,7 +346,13 @@ La casilla de la enmienda va en la spec enmendada, sección
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-11-03) ← gate obligatorio antes de implementar
+  (firma delegada del leader con la checklist de
+  `progress/plan_canvas-parity-2026-10-23.md` §4, los tres puntos del §4 de
+  `progress/plan_ui-2026-10-26.md` y los dos de
+  `progress/plan_mejoras-smoke-2026-11-03.md` §4; el humano confirmó la firma en
+  el chat de la sesión @Backend: «apruebo la firma de #236»; mandato del humano
+  2026-10-23, ampliado 2026-11-03)
 
 La casilla del paso de smoke de R9 es un gate aparte (G2 del plan
 `progress/plan_mejoras-smoke-2026-11-03.md` §5). La firma delegada del leader no
