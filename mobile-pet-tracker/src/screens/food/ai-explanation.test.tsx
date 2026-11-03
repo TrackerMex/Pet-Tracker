@@ -416,3 +416,23 @@ describe('#234 R2: el medidor repite lo que se ve', () => {
     expect(screen.queryAllByTestId(/^food-ai-(block|dot)-\d+$/, { includeHiddenElements: true })).toHaveLength(identifiedCount);
   });
 });
+
+describe('#234 R3: el medidor está oculto e inerte', () => {
+  it('#234 R3: el medidor no se ve, no se toca y no se lee', async () => {
+    await mount();
+    const measure = screen.getByTestId('food-ai-measure', { includeHiddenElements: true });
+    expect(measure.props.className).toBe('absolute inset-x-0 top-0 opacity-0');
+    expect(measure.props.pointerEvents).toBe('none');
+    expect(measure.props.accessibilityElementsHidden).toBe(true);
+    expect(measure.props.importantForAccessibility).toBe('no-hide-descendants');
+    expect(measure.props.accessible).not.toBe(true);
+    expect(measure.props.accessibilityLabel).toBeUndefined();
+  });
+
+  it('#234 R3: las consultas por defecto ven una sola copia del texto', async () => {
+    await mount();
+    expect(screen.getAllByText('Para acompañarlo bien:')).toHaveLength(1);
+    expect(screen.getAllByText('Para acompañarlo bien:', { includeHiddenElements: true })).toHaveLength(2);
+    expect(screen.getByTestId('food-ai-body').props.accessibilityLabel).toBe(SAMPLE_PLAIN);
+  });
+});
