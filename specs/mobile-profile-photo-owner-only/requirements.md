@@ -126,7 +126,9 @@ sale siempre del argumento `myRole` de `makePet` del propio fichero de test.
       añadidas (la declaración de `isOwner` y la condición nueva) y una quitada
       (la condición vieja `{pet ? (`). Es el candado de «no se toca nada más» y
       deja intactas las zonas de #229 (ver Fuera de alcance). Con la
-      condición sin cambiar (M1 o M7 de [[design]]) da `1<TAB>0`.
+      condición sin cambiar da `1<TAB>0` en M1 y `2<TAB>0` en M7 (M7 deja la
+      declaración y el `void isOwner;`; enmienda del leader, 2026-11-03: medido
+      por Codex, la cifra `1<TAB>0` de M7 era un error de la spec) [[design]].
   - Test A: `it('#235 R3 al pasar a una mascota que no es del dueño, la cámara se va y vuelve')`
     en `describe('#235 R3: la cámara sigue a la mascota seleccionada')`, con
     `beforeEach(setupProfile168)`.

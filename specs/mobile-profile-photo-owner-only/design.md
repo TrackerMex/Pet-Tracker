@@ -125,7 +125,7 @@ cambio aplicado (`ok`) y con las mutaciones (`m1`, `m2`, `m5`, `m7`):
 | `grep -cF myRole` | 1 | 1 | 1 | 1 | 1 |
 | `.find(({ id }) => id === selectedPetId)?.myRole` | 0 | 0 | 0 | 1 | 0 |
 | `{pet ? (` | 3 | 4 | 3 | 3 | 4 |
-| numstat contra la base | `2 1` | `1 0` | `2 1` | `2 1` | `1 0` |
+| numstat contra la base | `2 1` | `1 0` | `2 1` | `2 1` | `2 0` |
 
 De ahí salen dos lecciones que la spec ya aplica: `grep -cF isOwner` = 2
 vale en `ok` y en `m7` (ancla ciega, por eso la posicional) y `myRole` = 1
