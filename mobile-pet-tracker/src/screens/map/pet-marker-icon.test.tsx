@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import type { ImageRef } from 'expo-image';
 import { PixelRatio } from 'react-native';
 import { blobatar } from 'blobatar';
@@ -145,4 +145,39 @@ it('#230 R5: con photoUrl null o vacía no hay Svg de foto', async () => {
   await screen.unmount();
   await render(<PetMarkerIcon pet={{ ...pet, photoUrl: '' }} onIcon={jest.fn()} />);
   expect(screen.queryByTestId('map-marker-photo-svg', { includeHiddenElements: true })).toBeNull();
+});
+
+it('#230 R6: al cargar la foto la captura y sustituye al blobatar', async () => {
+  const onIcon = jest.fn();
+  await render(<PetMarkerIcon pet={withPhoto} onIcon={onIcon} />);
+  await runFrames();
+  await act(async () => { mockToDataURL.mock.calls[0][1]('RkFMTEJBQ0s='); });
+  expect(onIcon.mock.calls).toEqual([[{
+    key: '["pet-1","Luna","https://cdn.example/pets/luna.jpg?X-Amz-Signature=aaa"]', icon: FALLBACK_ICON,
+  }]]);
+  await fireEvent(screen.getByTestId('map-marker-photo', { includeHiddenElements: true }), 'load');
+  await runFrame();
+  expect(mockToDataURL).toHaveBeenCalledTimes(1);
+  await runFrames();
+  expect(mockToDataURL.mock.calls.map(([id, , options]) => [id, options])).toEqual([
+    ['map-marker-fallback-svg', { width: 154, height: 154 }],
+    ['map-marker-photo-svg', { width: 154, height: 154 }],
+  ]);
+  await act(async () => { mockToDataURL.mock.calls[1][1]('UEhPVE8='); });
+  expect(mockUseImage.mock.calls.at(-1)).toEqual([{ uri: 'data:image/png;base64,UEhPVE8=' }]);
+  expect(onIcon.mock.calls.at(-1)).toEqual([{
+    key: '["pet-1","Luna","https://cdn.example/pets/luna.jpg?X-Amz-Signature=aaa"]', icon: PHOTO_ICON,
+  }]);
+});
+
+it('#230 R6: una captura del blobatar que llega tarde no pisa la foto', async () => {
+  const onIcon = jest.fn();
+  await render(<PetMarkerIcon pet={withPhoto} onIcon={onIcon} />);
+  await runFrames();
+  await fireEvent(screen.getByTestId('map-marker-photo', { includeHiddenElements: true }), 'load');
+  await runFrames();
+  await act(async () => { mockToDataURL.mock.calls[1][1]('UEhPVE8='); });
+  await act(async () => { mockToDataURL.mock.calls[0][1]('RkFMTEJBQ0s='); });
+  expect(mockUseImage.mock.calls.at(-1)).toEqual([{ uri: 'data:image/png;base64,UEhPVE8=' }]);
+  expect(onIcon.mock.calls.at(-1)?.[0].icon).toEqual(PHOTO_ICON);
 });
