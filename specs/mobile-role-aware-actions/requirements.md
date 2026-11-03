@@ -353,3 +353,31 @@ símbolos se anclan por contenido.
       Recordatorios. En Vincular collar ve la nota y no ve Desvincular. La
       cuenta dueña lo sigue viendo todo. Va en el lote G4 de
       `progress/smoke_mejoras-producto.md`. No bloquea tareas; bloquea `done`.
+
+## Enmienda #228 — Acciones de deslizar en Recordatorios
+
+**Spec enmendada:** `specs/mobile-role-aware-actions/requirements.md` (#216),
+**R5**. La enmienda la escribe `specs/mobile-reminder-swipe-actions/requirements.md`
+(#228, R7, R8 y R13).
+
+**Qué cambia.**
+
+- La fila del dueño tiene dos hijos, el mosaico y la columna, como la del no
+  dueño (#228 R8). Ya no lleva un tercer hijo con el botón final.
+- La acción de dueño (`reminder-delete-<id>` o `reminder-cancel-series-<id>`)
+  vive en el panel del deslizable que envuelve la fila. El no dueño no tiene
+  deslizable, panel ni acción de accesibilidad (#228 R7).
+- Anclas de R5 sobre `src/screens/reminders/index.tsx`, con el código
+  objetivo de `specs/mobile-reminder-swipe-actions/design.md` §D2:
+  - `grep -cF 'reminder-cancel-series-${reminder.id}'` y
+    `grep -cF 'reminder-delete-${reminder.id}'` siguen en 1: los dos viven en
+    el `testID` del panel;
+  - `grep -cF "isOwner"` pasa de 4 a 6: se va el botón de la fila y entran la
+    acción de accesibilidad, su manejador y `if (!isOwner) return row;`.
+
+**Qué no cambia.**
+
+- La regla de dueño de R4 y que el no dueño no pueda borrar ni cancelar.
+- La línea `reminder-repeats-<id>` de una serie.
+
+- [ ] Enmienda #228 aprobada (fecha: ____)

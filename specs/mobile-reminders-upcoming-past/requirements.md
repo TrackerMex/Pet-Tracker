@@ -731,3 +731,28 @@ cuatro filas nuevas son del mismo fichero. No se retira ninguna clave de copy.
   nuevo», tema claro y oscuro) (fecha: ____) ← gate humano, por lote al final;
   lo registra `progress/smoke_mejoras-smoke.md`
 - Base congelada: `230f1c9f` (`origin/dev`).
+
+## Enmienda #228 — Acciones de deslizar en Recordatorios
+
+**Spec enmendada:** `specs/mobile-reminders-upcoming-past/requirements.md`
+(#227), **R12** y **R11**. La enmienda la escribe `specs/mobile-reminder-swipe-actions/requirements.md`
+(#228, R2, R6, R7 y R13).
+
+**Qué cambia.**
+
+- R12: «conservar su botón de acción **dentro de la fila**» pasa a «ofrecer
+  su acción en el panel del deslizable de la fila» (#228 R6). La regla de dueño
+  se queda; el no dueño no tiene deslizable, panel ni acción de accesibilidad
+  (#228 R7).
+- R11: el inventario de `style={CONTINUOUS_CORNER}` en
+  `screens/reminders/index.tsx` pasa de 6 a 7, por el contenedor del
+  deslizable (#228 R2).
+
+**Qué no cambia.**
+
+- Las dos secciones, su orden, el colapso de Pasados y su contador (R4 a R6).
+- La opacidad 0.5 de la fila en Pasados (R7). El contenedor y el panel no se
+  atenúan.
+- El resto del inventario de R11 y los requisitos R1 a R10 y R13.
+
+- [ ] Enmienda #228 aprobada (fecha: ____)

@@ -1231,3 +1231,22 @@ re-mide la fila; el criterio no cambia.
 - [x] Enmienda #227 aprobada por humano
   (firma delegada del leader, 2026-11-03; mandato del humano 2026-10-23,
   ampliado 2026-11-03)
+
+## Enmienda #228 — Acciones de deslizar en Recordatorios
+
+**Spec enmendada:** `specs/mobile-routine-canvas-fidelity/requirements.md`
+(#178), **R6**. La enmienda la escribe `specs/mobile-reminder-swipe-actions/requirements.md`
+(#228, R8 y R13).
+
+**Qué cambia.**
+
+- La anatomía de la fila pasa de mosaico, columna y borrar (tres hijos) a
+  mosaico y columna (dos hijos) (#228 R8). Borrar pasa al panel del
+  deslizable.
+
+**Qué no cambia.**
+
+- Las recetas del mosaico y de la columna.
+- La fila sin `Card`.
+
+- [ ] Enmienda #228 aprobada (fecha: ____)

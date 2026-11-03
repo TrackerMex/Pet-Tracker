@@ -510,3 +510,31 @@ nombre de la mascota `pet-1` que devuelve el doble de `listPets` (R13).
   aserta que la última llamada a `listReminders` recibe `'pet-1'`). El efecto
   no depende de `selectedPetId`, y un `petId` desconocido no provoca un bucle
   de render.
+
+## Enmienda #228 — Acciones de deslizar en Recordatorios
+
+**Spec enmendada:** `specs/mobile-reminders-recurrence/requirements.md` (#213),
+**R15**. La enmienda la escribe `specs/mobile-reminder-swipe-actions/requirements.md`
+(#228, R3 a R5 y R13). `progress/plan_mejoras-smoke-2026-11-03.md` la cita
+como «#106 R15»: es una errata de este R15.
+
+**Qué cambia.**
+
+- La fila ya no lleva el botón `reminder-cancel-series-<id>` ni el
+  `reminder-delete-<id>`. Los dos testID pasan a nombrar el panel derecho del
+  `ReanimatedSwipeable` de la fila del dueño, con la receta del canvas
+  (#228 R3) y la misma etiqueta de hoy («Cancelar\nserie» o «Eliminar»).
+- La receta `h-11 rounded-14 px-2.5 ${CATEGORY_SLOTS.rose.surface}` y la
+  variante `danger-soft` dejan de valer para esta acción.
+- Pulsar el panel cierra el deslizable y abre la misma hoja de hoy (#228 R4).
+- El `accessibilityLabel` «Cancelar la serie <título>» pasa a ser la etiqueta
+  de la acción de accesibilidad `cancelSeries` de la fila (#228 R5). El panel
+  se oculta a los lectores de pantalla.
+
+**Qué no cambia.**
+
+- La regla: una serie `scheduled` con `recurrence !== null` ofrece Cancelar
+  serie; cualquier otra fila ofrece Eliminar.
+- La hoja de Cancelar serie, su copy, su petición y `petId` (R17 a R21).
+
+- [ ] Enmienda #228 aprobada (fecha: ____)
