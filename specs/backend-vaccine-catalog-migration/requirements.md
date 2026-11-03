@@ -1,6 +1,6 @@
 ---
 feature: "backend-vaccine-catalog-migration"
-status: draft     # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, backend, health, migration]
 ---
 
@@ -252,7 +252,7 @@ resultado no depende del estado de la base compartida.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-11-03) ← gate obligatorio antes de implementar
 
 La casilla del paso de smoke de R4 es un gate aparte (G2 del plan
 `progress/plan_mejoras-smoke-2026-11-03.md` §5). La firma delegada del leader no

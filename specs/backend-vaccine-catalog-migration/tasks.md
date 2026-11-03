@@ -1,6 +1,6 @@
 ---
 feature: "backend-vaccine-catalog-migration"
-status: draft     # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, backend, health, migration]
 ---
 
@@ -64,7 +64,7 @@ Nunca `pnpm run test:e2e -- …`: el `--` llega a jest (memoria
     - `GET dog…` (`[]`);
     - `GET cat…` (`[]`);
     - `una vacuna del catalogo migrado…` (`rabia` es `undefined`).
-  - Nace verde: `sin la migracion el catalogo queda vacio…`. Es el ancla anti-vacuidad, y su mutación es la del `when` de §Mutaciones.
+  - Nace verde: `sin la migracion el catalogo queda vacio…`. Es el ancla anti-vacuidad: prueba que la base A parte vacía, así que el rojo de los `GET` bajo M5 (§Mutaciones) se debe a que el migrador saltó la migración. Ninguna mutación de §Mutaciones lo pone rojo, y no hay que anotarlo como tal.
   - Commit: `test(backend-vaccine-catalog-migration): catalog e2e on a database migrated without the seed (R1)`.
 - [ ] (2) Verde:
   1. Generar la migración: `pnpm exec drizzle-kit generate --custom --name vaccine_catalog_data`.

@@ -1,6 +1,6 @@
 ---
 feature: "backend-vaccine-catalog-migration"
-status: draft     # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, backend, health, migration]
 ---
 
@@ -14,4 +14,4 @@ Las filas se rellenan en un único commit al cerrar la cadena ([[tasks]] §Cierr
 | R2 | `backend-pet-tracker/test/vaccine-catalog-migration.e2e-spec.ts::#226 R2: migrar sobre una base sembrada no falla ni cambia ninguna fila` | pendiente |
 | R3 | `backend-pet-tracker/test/vaccine-catalog-migration.e2e-spec.ts::#226 R3: seed:vaccines sobre el catalogo migrado conserva las 7 filas y sus ids` | pendiente |
 | R4 | `progress/smoke_mejoras-smoke.md` (casilla «Smoke de #226 pasado», la marca el humano) | pendiente |
-| R5 | Comandos de [[tasks]] §R5 (diff vacío fuera de `src/db/migrations/` y `drizzle-kit generate` sin cambios), más `backend-pet-tracker/src/db/seed/vaccine-catalog.spec.ts`, `backend-pet-tracker/test/health-vaccines.e2e-spec.ts::R2: seed idempotente` e `init-e2e-gate.test.mjs::#208 R22: E2E_SETUP_CMD siembra el catálogo de vacunas entre migrar y aprovisionar`, sin tocar | pendiente |
+| R5 | Comandos de [[tasks]] §R5 (diff vacío fuera de `src/db/migrations/` y `drizzle-kit generate` sin cambios), más `backend-pet-tracker/src/db/seed/vaccine-catalog.spec.ts`, `backend-pet-tracker/test/health-vaccines.e2e-spec.ts::R2: seed idempotente` (describe, con sus dos its) e `init-e2e-gate.test.mjs::#208 R22: E2E_SETUP_CMD siembra el catálogo de vacunas entre migrar y aprovisionar`, sin tocar | pendiente |
