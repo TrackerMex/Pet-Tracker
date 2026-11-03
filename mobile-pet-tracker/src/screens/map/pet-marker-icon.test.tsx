@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { expect as jestExpect } from '@jest/globals';
 import type { ImageRef } from 'expo-image';
 import { PixelRatio } from 'react-native';
 import { blobatar } from 'blobatar';
@@ -7,7 +8,7 @@ import { isValidElement } from 'react';
 import { PetMarkerIcon, markerCompositionKey, currentMarkerIcon } from './pet-marker-icon';
 
 // #230 R3: los propietarios internos de React no forman parte del dibujo SVG.
-expect.addEqualityTesters([
+jestExpect.addEqualityTesters([
   function svgElements(actual, expected, testers) {
     if (!isValidElement(actual) || !isValidElement(expected)) return undefined;
     return this.equals(
@@ -33,6 +34,7 @@ jest.mock('react-native-svg', () => {
     }));
     return React.createElement(View, props);
   });
+  Svg.displayName = 'Svg';
   return { __esModule: true, default: Svg, Svg, Circle: stub, ClipPath: stub, Defs: stub, G: stub, Image: stub, parse: actual.parse };
 });
 jest.mock('expo-image', () => ({
