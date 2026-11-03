@@ -34,6 +34,13 @@ export function PetMarkerIcon(props: { pet: MarkerPet; onIcon: (state: IconReady
   const photoRef = useRef<Svg>(null);
   const [photoLoaded, setPhotoLoaded] = useState(false);
   const [photoCapture, setPhotoCapture] = useState<string | null>(null);
+  const [photoExpired, setPhotoExpired] = useState(false);
+  const photoTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => {
+    if (!props.pet.photoUrl) return;
+    photoTimer.current = setTimeout(() => setPhotoExpired(true), 4000);
+    return () => clearTimeout(photoTimer.current);
+  }, [props.pet.photoUrl]);
   useEffect(() => {
     let cleaned = false;
     let secondFrame: number | undefined;
@@ -92,14 +99,17 @@ export function PetMarkerIcon(props: { pet: MarkerPet; onIcon: (state: IconReady
         </G>
         <Circle testID="map-marker-fallback-ring" cx={22} cy={22} r={20.5} stroke={foreground} strokeWidth={3} fill="none" />
       </Svg>
-      {props.pet.photoUrl ? (
+      {props.pet.photoUrl && !photoExpired ? (
         <Svg ref={photoRef} testID="map-marker-photo-svg" width={44} height={44} viewBox="0 0 44 44">
           <Defs>
             <ClipPath testID="map-marker-photo-clip" id="map-marker-photo-clip">
               <Circle cx={22} cy={22} r={22} />
             </ClipPath>
           </Defs>
-          <Image onLoad={() => setPhotoLoaded(true)} testID="map-marker-photo" href={{ uri: props.pet.photoUrl }} x={0} y={0} width={44} height={44} preserveAspectRatio="xMidYMid slice" clipPath="url(#map-marker-photo-clip)" />
+          <Image onLoad={() => {
+            clearTimeout(photoTimer.current);
+            setPhotoLoaded(true);
+          }} testID="map-marker-photo" href={{ uri: props.pet.photoUrl }} x={0} y={0} width={44} height={44} preserveAspectRatio="xMidYMid slice" clipPath="url(#map-marker-photo-clip)" />
           <Circle testID="map-marker-photo-ring" cx={22} cy={22} r={20.5} stroke={foreground} strokeWidth={3} fill="none" />
         </Svg>
       ) : null}
