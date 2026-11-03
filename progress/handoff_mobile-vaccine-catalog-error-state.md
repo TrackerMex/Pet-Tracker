@@ -7,6 +7,22 @@ Postgres con otros worktrees).
 
 Implementador: Codex CLI.
 
+## Retoma tras el PARA de C4 (enmienda del leader)
+
+El PARA de M1 venía de este handoff, no de la spec: pedía que cada mutación pusiera rojo
+**solo** su fila. La regla de C4 ya está corregida abajo. M1 cumple la regla nueva: pone rojos
+`#236 R3 … vacío` y `#236 R4`; que caigan también R1 y R2 es esperable, porque la mutación
+pinta el aviso durante la carga.
+
+Al retomar:
+
+- no rehagas C1 a C3 (`1aba44d2`, `89598787`, `ab2262e4`);
+- el primer comando de abajo sigue valiendo, pero ahora el log empieza por el commit de esta
+  enmienda y debajo están C3, C2 y C1;
+- reaplica a mano el diff de C4 que guardaste en tu reporte;
+- anota M1 con la regla nueva y sigue con M2, M3, M4, el commit C4 y C5;
+- conserva tu reporte y añade al final una sección «Retoma».
+
 Primer comando, antes de nada:
 `cd /home/claude/sites/Pet-Tracker-wt-236 && pwd && git branch --show-current && git log --oneline -5`.
 Confirma en el reporte la ruta y la branch `feature/236-mobile-vaccine-catalog-error-state`. Los
@@ -67,7 +83,9 @@ mensajes literales de tasks.md §Orden de commits:
    - corre el fichero y anota la orden y qué `it` cae;
    - revierte con `git checkout HEAD -- mobile-pet-tracker/src/screens/vaccine-create/index.tsx`
      y comprueba `git diff --quiet -- mobile-pet-tracker/src/screens/vaccine-create/index.tsx`.
-   Cada mutación debe poner rojo justo el `it` de su tabla. Si no cae, PARA. Ninguna se
+   Cada mutación debe poner rojo, como mínimo, los `it` de su fila de la tabla (design.md
+   dice «Test que debe ponerse rojo», no «solo»). Si además cae otro `it`, anótalo con la
+   aserción que cae y su motivo, y sigue. Si un `it` de la fila no cae, PARA. Ninguna se
    commitea.
 5. **C5** `docs(progress): paso de smoke y trazabilidad de #236 (R9)`: solo
    `progress/smoke_mejoras-smoke.md`, `specs/mobile-vaccine-catalog-error-state/traceability.md`
