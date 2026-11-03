@@ -1362,7 +1362,7 @@ describe('#213 R4: controles de repetición', () => {
     expect(tree.indexOf('Repetición')).toBeLessThan(tree.indexOf('Aviso'));
   });
 
-  it('#213 R5: Tipo y Aviso son filas horizontales sin salto de línea', () => {
+  it('#213 R5: Tipo y Aviso son filas horizontales sin salto de línea (enmendado por #232 R1)', () => {
     for (const [id, pattern, count] of [
       ['type-chips-row', /^type-chip-/, 7],
       ['advance-chips-row', /^advance-chip-/, 4],
@@ -1372,7 +1372,7 @@ describe('#213 R4: controles de repetición', () => {
       expect(row.props.showsHorizontalScrollIndicator).toBe(false);
       expect(row.props.className).toBe('-mr-5');
       expect(row.props.className).not.toContain('flex-wrap');
-      expect(row.props.contentContainerStyle).toEqual({ gap: 8, paddingRight: 20 });
+      expect(row.props.contentContainerStyle).toEqual({ gap: 8, paddingRight: 20, paddingBottom: 3 });
       expect(within(row).getAllByTestId(pattern)).toHaveLength(count);
     }
   });
@@ -1628,5 +1628,40 @@ describe('#213 R13: notas sin nombre de mascota', () => {
     if (kind === 'sin resolver') expect(screen.getByTestId('add-reminder-preview-text')).toHaveTextContent(expected);
     else await waitFor(() => expect(screen.getByTestId('add-reminder-preview-text')).toHaveTextContent(expected));
     expect(screen.queryByTestId('add-reminder-error')).toBeNull();
+  });
+});
+
+describe('#232 R1: las filas de chips reservan el labio', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockCreateReminder.mockReturnValue(pending());
+  });
+
+  it.each(['type-chips-row', 'advance-chips-row'])('#232 R1: %s reserva 3 px bajo los chips', async (row) => {
+    await renderAddReminder();
+    await screen.findByTestId('title-input');
+    const content = screen.getByTestId(row).props.contentContainerStyle;
+    expect(content).toEqual({ gap: 8, paddingRight: 20, paddingBottom: 3 });
+
+    const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
+    const { join } = jest.requireActual<typeof import('path')>('path');
+    const source = readFileSync(join(process.cwd(), 'src', 'theme', 'chunky-lip.ts'), 'utf8');
+    const match = source.match(/primaryCompact: lipStyle\(\{ offsetY: (\d+),/);
+    expect(match).not.toBeNull();
+    expect(content.paddingBottom).toBe(Number(match![1]));
+  });
+
+  it('#232 R4: la fila de Repetición no cambia', async () => {
+    await renderAddReminder();
+    await screen.findByTestId('title-input');
+    const row = screen.getByTestId('repeat-chip-once').parent!;
+    expect(row.props.className).toBe('flex-row flex-wrap gap-2');
+    expect(row.props.style?.paddingBottom).toBeUndefined();
+    expect(row.props.style?.marginBottom).toBeUndefined();
+    expect(row).not.toHaveStyle({ marginBottom: -3 });
   });
 });
