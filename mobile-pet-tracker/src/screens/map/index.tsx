@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import type { ImageRef } from 'expo-image';
 import { Button, Skeleton } from 'heroui-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
@@ -32,6 +33,7 @@ import {
 } from '../../components/pet-hero-header';
 import { DEFAULT_CENTER, PetMap } from '../../components/pet-map';
 import { PopIn } from '../../components/pop-in';
+import { SpikeAvatarComposer, SpikePanel, type SpikeReport, type SpikeVariant } from '../../components/spike-avatar-marker';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
@@ -127,6 +129,28 @@ export function MapScreen() {
   usePetSelection({ data: pets.data, isRefreshing: pets.isRefetching });
   const [lostModeBusy, setLostModeBusy] = useState(false);
   const [lostModeFailed, setLostModeFailed] = useState(false);
+  const [spikeVariant, setSpikeVariant] = useState<SpikeVariant>('photo');
+  const [spikeVisible, setSpikeVisible] = useState(false);
+  const [spikeReport, setSpikeReport] = useState<SpikeReport | null>(null);
+  const [spikeIcon, setSpikeIcon] = useState<ImageRef | null>(null);
+  const [spikeDataUrl, setSpikeDataUrl] = useState<string | null>(null);
+  const handleSpikeIcon = useCallback((icon: ImageRef | null, dataUrl: string | null) => {
+    setSpikeIcon(icon);
+    setSpikeDataUrl(dataUrl);
+  }, []);
+  const handleSpikeVariant = (variant: SpikeVariant) => {
+    if (variant === spikeVariant) return;
+    setSpikeIcon(null);
+    setSpikeDataUrl(null);
+    setSpikeReport(null);
+    setSpikeVariant(variant);
+  };
+  const handleSpikeVisible = () => {
+    setSpikeIcon(null);
+    setSpikeDataUrl(null);
+    setSpikeReport(null);
+    setSpikeVisible((current) => !current);
+  };
   const detail = useQuery({
     queryKey: petKeys.detail(selectedPetId ?? ''),
     queryFn: () => getPet(baseUrl, token ?? '', selectedPetId!),
@@ -402,11 +426,23 @@ export function MapScreen() {
             key={selectedPetId}
             center={center}
             marker={marker}
+            markerIcon={spikeIcon}
             polylines={polylines}
             polylineWidth={5}
             circles={circles}
             colorScheme={theme === 'dark' ? 'dark' : 'light'}
           />
+          {selectedPet ? (
+            <SpikeAvatarComposer
+              key={`${spikeVariant}-${spikeVisible}-${selectedPet.id}`}
+              name={selectedPet.name}
+              photoUrl={selectedPet.photoUrl}
+              variant={spikeVariant}
+              visible={spikeVisible}
+              onReport={setSpikeReport}
+              onIcon={handleSpikeIcon}
+            />
+          ) : null}
           {position === null ? (
             <Card
               testID="map-empty-overlay"
@@ -597,6 +633,15 @@ export function MapScreen() {
               ) : null}
             </View>
           </Animated.View>
+          <SpikePanel
+            top={insets.top + 8}
+            report={spikeReport}
+            dataUrl={spikeDataUrl}
+            variant={spikeVariant}
+            visible={spikeVisible}
+            onVariant={handleSpikeVariant}
+            onToggleVisible={handleSpikeVisible}
+          />
         </>
       ) : null}
     </View>
