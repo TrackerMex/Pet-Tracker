@@ -56,3 +56,15 @@ Hallazgo: «En Nutricion sin Perfil, no deben de aparecer Horario de comidas y H
 2. Crea el perfil con el cuestionario y vuelve a Nutrición: ahora sí salen las dos filas.
 
 - [ ] Smoke de #233 pasado (fecha: ____)
+
+## #236 mobile-vaccine-catalog-error-state
+
+Hallazgo: si el catálogo de vacunas no carga, «Agregar vacuna» no avisa y solo deja «Otra vacuna».
+Necesita el dev build con `dev` actualizado (cambia la app, no el backend).
+
+1. En el build de antes, con el backend en marcha, abre un perro y entra en Salud. Detén el backend de tu PC y pulsa «Agregar vacuna». Debe salir solo «Otra vacuna», sin ningún aviso: es el fallo.
+2. Con el build nuevo, repite el paso 1. Debajo de «Vacuna» sale «No se pudieron cargar las vacunas» en rojo y el botón «Reintentar». «Otra vacuna» sigue seleccionada, con su campo de nombre.
+3. Pulsa «Reintentar» con el backend todavía detenido: el aviso sigue.
+4. Arranca el backend y pulsa «Reintentar». Salen Leptospirosis, Polivalente (DHPPi), Rabia y Tos de las perreras, después «Otra vacuna», y el aviso desaparece.
+
+- [ ] Smoke de #236 pasado (fecha: ____; paso 1, fallo reproducido: sí / no)
