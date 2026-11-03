@@ -534,7 +534,7 @@ describe('#178 R6: fila del canvas', () => {
     jest.useRealTimers();
   });
 
-  it('distingue las recetas de fila próxima, lejana e inactiva (enmendado por #204 R7) (enmendado por #213 R16)', async () => {
+  it('distingue las recetas de fila próxima, lejana e inactiva (enmendado por #204 R7) (enmendado por #213 R16) (enmendado por #227 R13)', async () => {
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: todayCanvasReminders });
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
@@ -550,7 +550,7 @@ describe('#178 R6: fila del canvas', () => {
     }
   });
 
-  it('ordena mosaico, columna y borrar con la anatomía exacta de cada fila', async () => {
+  it('ordena mosaico, columna y borrar con la anatomía exacta de cada fila (enmendado por #227 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     await expandPast();
@@ -564,7 +564,7 @@ describe('#178 R6: fila del canvas', () => {
     }
   });
 
-  it('da a cada mosaico su único icono, tamaño, superficie y tinta', async () => {
+  it('da a cada mosaico su único icono, tamaño, superficie y tinta (enmendado por #227 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     await expandPast();
@@ -584,7 +584,7 @@ describe('#178 R6: fila del canvas', () => {
     }
   });
 
-  it('pinta tipo y título con sus tintas y pesos propios', async () => {
+  it('pinta tipo y título con sus tintas y pesos propios (enmendado por #227 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     await expandPast();
@@ -607,7 +607,7 @@ describe('#178 R6: fila del canvas', () => {
     expect(row.getByText('· en 3 días').props.className).toBe('text-13 font-normal text-muted');
   });
 
-  it('formatea la hora lejana y la meta inactiva con su estado', async () => {
+  it('formatea la hora lejana y la meta inactiva con su estado (enmendado por #227 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     await expandPast();
@@ -619,7 +619,7 @@ describe('#178 R6: fila del canvas', () => {
     expect(status.props.className).toBe('text-13 font-semibold text-muted');
   });
 
-  it('sustituye los emoji de todas las filas por iconos', async () => {
+  it('sustituye los emoji de todas las filas por iconos (enmendado por #227 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     await expandPast();
@@ -649,7 +649,7 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
     jest.useRealTimers();
   });
 
-  it('renders summaries and reminder rows by section (enmendado por #213 R16)', async () => {
+  it('renders summaries and reminder rows by section (enmendado por #213 R16) (enmendado por #227 R13)', async () => {
     const reminders = [
       makeReminder({
         id: 'sent',
@@ -789,7 +789,7 @@ describe('R7: borrar recordatorio con confirmación', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('shows a delete action for reminders in every status', async () => {
+  it('shows a delete action for reminders in every status (enmendado por #227 R13)', async () => {
     mockListReminders.mockResolvedValue({
       kind: 'ok',
       reminders: [
@@ -1170,7 +1170,7 @@ describe('#84 R3: recordatorios cuenta días de calendario en la píldora, el ba
     expect(within(screen.getByTestId('pill-week')).getByText('2')).toBeVisible();
   });
 
-  it('08:00 del 10 de septiembre: ayer a las 09:00 no es de esta semana ni próximo', async () => {
+  it('08:00 del 10 de septiembre: ayer a las 09:00 no es de esta semana ni próximo (enmendado por #227 R13)', async () => {
     mockListReminders.mockResolvedValue({
       kind: 'ok',
       reminders: [makeReminder({ id: 'yesterday-later', dueAt: new Date(2026, 8, 9, 9, 0).toISOString() })],
@@ -1334,7 +1334,7 @@ describe('#178 R7: entrada escalonada y badge', () => {
     jest.useRealTimers();
   });
 
-  it('asigna a cada entrada su índice dentro de su sección (enmendado por #204 R6)', async () => {
+  it('asigna a cada entrada su índice dentro de su sección (enmendado por #204 R6) (enmendado por #227 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     await expandPast();
@@ -1345,7 +1345,7 @@ describe('#178 R7: entrada escalonada y badge', () => {
     }
   });
 
-  it('envuelve cada fila en su propia entrada', async () => {
+  it('envuelve cada fila en su propia entrada (enmendado por #227 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     await expandPast();
@@ -1371,7 +1371,7 @@ describe('#178 R7: entrada escalonada y badge', () => {
   });
 });
 
-describe('#178 R8: sheet de borrado del canvas', () => {
+describe('#178 R8: sheet de borrado del canvas (enmendado por #227 R13)', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     jest.useFakeTimers({ now: new Date('2026-12-30T15:00:00.000Z') });
@@ -1426,7 +1426,7 @@ describe('#178 R8: sheet de borrado del canvas', () => {
   });
 });
 
-describe('#218 R1: el cajón de borrar pinta su contenedor con el token surface', () => {
+describe('#218 R1: el cajón de borrar pinta su contenedor con el token surface (enmendado por #227 R13)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers({ now: new Date('2026-12-30T15:00:00.000Z') });
@@ -1883,7 +1883,7 @@ describe('#204 R6: entrada de las filas', () => {
 
   afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
 
-  it('#204 R6: escalona las filas próximas cada 70 ms y la pasada desde 0', async () => {
+  it('#204 R6: escalona las filas próximas cada 70 ms y la pasada desde 0 (enmendado por #227 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     await expandPast();
@@ -1938,7 +1938,7 @@ describe('#204 R7: ámbar de la fila próxima', () => {
   });
 });
 
-describe('#204 R8: Eliminar de la fila', () => {
+describe('#204 R8: Eliminar de la fila (enmendado por #227 R13)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers({ now: new Date('2026-12-30T15:00:00.000Z') });
@@ -1966,7 +1966,7 @@ describe('#204 R8: Eliminar de la fila', () => {
   });
 });
 
-describe('#204 R9: Eliminar de la hoja', () => {
+describe('#204 R9: Eliminar de la hoja (enmendado por #227 R13)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers({ now: new Date('2026-12-30T15:00:00.000Z') });
@@ -2041,7 +2041,7 @@ describe('#213 R14: series en Recordatorios', () => {
     expect(within(line).getByText(expected).props.className).toBe('text-13 font-bold text-accent-strong');
   });
 
-  it('#213 R14: sin línea de repetición si no hay recurrencia o la serie no está programada', async () => {
+  it('#213 R14: sin línea de repetición si no hay recurrencia o la serie no está programada (enmendado por #227 R13)', async () => {
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [
       makeReminder({ id: 'once', recurrence: null }),
       makeReminder({ id: 'cancelled', recurrence: { unit: 'month', every: 1 }, status: 'cancelled' }),
@@ -2074,7 +2074,7 @@ describe('#213 R14: series en Recordatorios', () => {
     expect(screen.queryByTestId('reminder-cancel-series-once')).toBeNull();
   });
 
-  it.each(['cancelled', 'sent'] as const)('#213 R15: una serie cancelada o enviada conserva Eliminar (%s)', async (status) => {
+  it.each(['cancelled', 'sent'] as const)('#213 R15: una serie cancelada o enviada conserva Eliminar (%s) (enmendado por #227 R13)', async (status) => {
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [makeReminder({ id: 'series', status, dueAt: new Date(2026, 11, 28, 9, 0).toISOString(), recurrence: { unit: 'month', every: 1 } })] });
     await renderReminders();
     await screen.findByTestId('reminders-past-toggle');
@@ -2084,7 +2084,7 @@ describe('#213 R14: series en Recordatorios', () => {
     expect(screen.queryByTestId('reminder-cancel-series-series')).toBeNull();
   });
 
-  it('#213 R16: el badge Hoy y el borde ámbar solo marcan el día de hoy', async () => {
+  it('#213 R16: el badge Hoy y el borde ámbar solo marcan el día de hoy (enmendado por #227 R13)', async () => {
     jest.setSystemTime(new Date(2026, 11, 31, 8));
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [
       makeReminder({ id: 'today', dueAt: '2027-01-01T02:00:00.000Z' }),

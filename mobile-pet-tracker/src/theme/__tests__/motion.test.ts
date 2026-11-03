@@ -73,7 +73,7 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
     });
   });
 
-  it('no exporta nada más (enmendado por #195 R13) (enmendado por #197 R11) (enmendado por #200 R4) (enmendado por #199 R27) (enmendado por #204 R3)', () => {
+  it('no exporta nada más (enmendado por #195 R13) (enmendado por #197 R11) (enmendado por #200 R4) (enmendado por #199 R27) (enmendado por #204 R3) (enmendado por #227 R13)', () => {
     expect(Object.keys(require('../motion')).sort()).toEqual([
       'MOTION_ALERT_PING_MS',
       'MOTION_BLINK_INTERVAL_MS',
