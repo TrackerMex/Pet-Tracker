@@ -271,7 +271,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     [join('screens', 'weight-log', 'index.tsx'), 1 + 1], // #199 R3
     [join('screens', 'docs', 'index.tsx'), 1],
     [join('screens', 'profile', 'index.tsx'), 3 + 1 + 4 - 7 + 1], // #41 R9; #168 R6; #173 R10: ProfileTile; #214 R4: ProfileWideTile
-    [join('screens', 'reminders', 'index.tsx'), 4 + 1 + 1], // #178 R6 fila sin Card; #227 R8 caja sin próximos
+    [join('screens', 'reminders', 'index.tsx'), 4 + 1 + 1 + 1], // #178 R6 fila sin Card; #227 R8 caja sin próximos; #228 R2 envoltorio de deslizar
     [join('screens', 'add-pet', 'index.tsx'), 5], // #220 R14
     [join('screens', 'add-reminder', 'index.tsx'), 3 + 1 - 2 + 1], // #178 R12; #220 R15; #213 R6
     [join('screens', 'pairing', 'index.tsx'), 1], // #171 R3: ready-done
@@ -350,6 +350,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
       + 6 // #209 R24
       + 3 // #215 R20
       + 1 // #227 R8
+      + 1 // #228 R2
     ); // #189 R6; #189 R5 (enmendado por #190 R13) // #191 R11 // #177 R5 // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168 R3, R8, R6; #170 R16; #171 R3: ready-done; #173 R10: ProfileTile
   });
 });
@@ -458,6 +459,7 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
       + 6 // #209 R24
       + 3 // #215 R20
       + 1 // #227 R8
+      + 1 // #228 R2
     ); // #189 R6; #189 R5 (enmendado por #190 R13) // #191 R11 // #177 R5 // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168; #170 R8: alert-detail-map; #171 R3: ready-done; #173 R10: ProfileTile
     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(1 + 1); // #177 R10 // #208 R21
     expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 2 - 1 - 1 - 1 - 1 - 2); // #191 R11 // #179 R6, R7, R11; #178 R5, R10, R12; #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6 // #198 R3 // #198 R11 // #198 R13 // #203 R5 // #205 R18

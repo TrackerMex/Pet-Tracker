@@ -1164,7 +1164,7 @@ describe('#178 R13: Recordatorios sin deriva', () => {
 
   it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10) (enmendado por #200 R9) (enmendado por #199 R14) (enmendado por #199 R18) (enmendado por #198 R9) (enmendado por #203 R4) (enmendado por #203 R6) (enmendado por #203 R7) (enmendado por #204 R8) (enmendado por #204 R9) (enmendado por #202 R18) (enmendado por #196 R5) (enmendado por #201 R5, R13) (enmendado por #205 R13) (enmendado por #208 R21) (enmendado por #213 R22) (enmendado por #214 R7, R10, R11, R12, R13, R15, R16, R17, R18) (enmendado por #209 R24) (enmendado por #223 R18) (enmendado por #215 R20) (enmendado por #227 R13)', () => {
     for (const [pattern, count] of [
-      [/\brounded-14\b/g, 2], [/\brounded-16\b/g, 5 + 2], [/\brounded-22\b/g, 1 + 1],
+      [/\brounded-14\b/g, 2 - 1], [/\brounded-16\b/g, 5 + 2], [/\brounded-22\b/g, 1 + 1 + 1],
     ] as const) {
       expect(reminders.match(pattern) ?? []).toHaveLength(count);
     }
