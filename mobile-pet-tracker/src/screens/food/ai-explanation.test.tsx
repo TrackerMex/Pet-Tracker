@@ -382,3 +382,37 @@ describe('#234 R6: el recorte no oscila', () => {
     expect(screen.getByText('Ver más')).toBeOnTheScreen();
   });
 });
+
+describe('#234 R2: el medidor repite lo que se ve', () => {
+  it.each([
+    ['SAMPLE', SAMPLE, 6, 9],
+    ['una viñeta tras una línea', LINE_BULLET, 2, 3],
+    ['solo una viñeta', BULLET_ONLY, 1, 2],
+  ] as const)('#234 R2: el medidor repite los bloques de %s', async (_scenario, text, blockCount, identifiedCount) => {
+    await mount(text);
+    const measure = screen.getByTestId('food-ai-measure', { includeHiddenElements: true });
+    const content = screen.getByTestId('food-ai-content');
+    expect(measure.children).toHaveLength(blockCount);
+    expect(content.children).toHaveLength(blockCount);
+    type Shape = string | {
+      type: TestInstance['type'];
+      className: string | undefined;
+      backgroundColor: string | undefined;
+      children: Shape[];
+    };
+    function shape(node: TestInstance | string, measured: boolean): Shape {
+      if (typeof node === 'string') return node;
+      if (measured) expect(node.props.testID).toBeUndefined();
+      return {
+        type: node.type,
+        className: node.props.className,
+        backgroundColor: node.props.style?.backgroundColor,
+        children: node.children.map(child => shape(child, measured)),
+      };
+    }
+    measure.children.forEach((child, index) => {
+      expect(shape(child, true)).toEqual(shape(content.children[index], false));
+    });
+    expect(screen.queryAllByTestId(/^food-ai-(block|dot)-\d+$/, { includeHiddenElements: true })).toHaveLength(identifiedCount);
+  });
+});
