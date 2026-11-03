@@ -2924,6 +2924,7 @@ describe('#229 R1: las tarjetas anchas reparten la fila', () => {
     ['join-pet-link', 'bg-category-amber'],
   ])('#229 R1: %s lleva flex-1', async (id, surface) => {
     await renderProfile();
+    await screen.findByTestId('profile-links-row-2');
     const link = await screen.findByTestId(id);
     expect(link.props.className).toBe(`flex-1 flex-row items-center gap-2.5 rounded-tile p-3 ${surface}`);
   });
@@ -2938,6 +2939,7 @@ describe('#229 R3: el contenido de las tarjetas no cambia', () => {
   ])('#229 R3: %s conserva icono, texto y chevron', async (id, label, ink) => {
     await renderProfile();
     const link = await screen.findByTestId(id);
+    expect(link.children).toHaveLength(3);
     expect(link.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual([`${id}-icon`, `${id}-text`, `${id}-chevron`]);
     expect(screen.getByTestId(`${id}-text`).props.className).toBe('flex-1 gap-0.5');
     expect(screen.getByTestId(`${id}-label`).props.className).toBe(`text-sm font-extrabold ${ink}`);
