@@ -23,16 +23,17 @@ export function AiExplanation({ text }: { text: string }) {
   return (
     <View className="gap-2">
       <View
+        testID="food-ai-measure"
+        onLayout={(event) => setContentHeight(event.nativeEvent.layout.height)}
+      />
+      <View
         testID="food-ai-body"
         accessible
         accessibilityLabel={aiExplanationPlainText(blocks)}
         className="overflow-hidden"
         style={needsClamp && !expanded ? { maxHeight: AI_CLAMP_HEIGHT } : undefined}
       >
-        <View
-          testID="food-ai-content"
-          onLayout={(event) => setContentHeight(event.nativeEvent.layout.height)}
-        >
+        <View testID="food-ai-content">
           {blocks.map((block, index) => {
             const segments = block.segments.map((segment, segmentIndex) => segment.bold ? (
               <Text key={segmentIndex} className="font-extrabold">{segment.text}</Text>
