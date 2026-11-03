@@ -612,4 +612,10 @@ describe('#230 R1, R10 y R11: compositor del marcador', () => {
   it('#230 R1: el compositor no trae copy', () => {
     expect(readProduction('screens/map/pet-marker-icon.tsx')).not.toMatch(/useTranslate|\bt\(|<Text\b/);
   });
+
+  it('#230 R10: el mapa monta el compositor con la clave de composición', () => {
+    const source = readProduction('screens/map/index.tsx');
+    expect(source).toContain('key={markerCompositionKey(selectedPet)}');
+    expect(source).toContain('markerIcon={currentMarkerIcon(markerIcon, selectedPet)}');
+  });
 });
