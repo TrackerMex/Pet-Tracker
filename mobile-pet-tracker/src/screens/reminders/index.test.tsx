@@ -2691,4 +2691,27 @@ describe('Acciones de deslizar en Recordatorios (#228 R2 a R9)', () => {
     expect(mockDeleteReminder).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId('community-bottom-sheet')).toBeNull();
   });
+
+  it('#228 R6: las filas pasadas también se deslizan y solo la fila va atenuada', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminders-past-toggle');
+    await expandPast();
+    await screen.findByTestId('reminder-row-pastonce');
+    for (const [id, panelId] of [
+      ['pastonce', 'reminder-delete-pastonce'],
+      ['pastseries', 'reminder-cancel-series-pastseries'],
+    ]) {
+      const swipe = screen.getByTestId(`reminder-swipe-${id}`);
+      const row = within(swipe).getByTestId(`reminder-row-${id}`);
+      const panel = within(swipe).getByTestId(panelId, HIDDEN);
+      expect(row.props.className).toMatch(/ opacity-50$/);
+      expect(swipe.parent?.props.className).toBe('overflow-hidden rounded-22');
+      expect(flat(swipe.props.style)).toEqual({});
+      expect(flat(swipe.parent?.props.style)).toEqual({ borderCurve: 'continuous' });
+      expect(flat(panel.props.style)).toEqual({ opacity: 1 });
+      expect(row.props.accessibilityActions).toEqual(id === 'pastonce'
+        ? [{ name: 'delete', label: 'Eliminar' }]
+        : [{ name: 'cancelSeries', label: 'Cancelar la serie Pipeta antipulgas' }]);
+    }
+  });
 });
