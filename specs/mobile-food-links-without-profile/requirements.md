@@ -1,6 +1,6 @@
 ---
 feature: "mobile-food-links-without-profile"
-status: draft        # draft | approved
+status: approved      # draft | approved
 tags: [mobile, nutrition, food, spec]
 ---
 
@@ -345,7 +345,7 @@ Cada viñeta trae su evidencia en el árbol de `origin/dev` (426ffd32).
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-11-03; firma delegada del leader, mandato del humano 2026-10-23 ampliado 2026-11-03) ← gate obligatorio antes de implementar
       (firma delegada del leader, mandato 2026-10-23 ampliado 2026-11-03; la
       pone el leader en su commit de firma tras la checklist de
       `progress/plan_canvas-parity-2026-10-23.md` §4)

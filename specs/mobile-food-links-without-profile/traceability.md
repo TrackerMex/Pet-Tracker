@@ -1,6 +1,6 @@
 ---
 feature: "mobile-food-links-without-profile"
-status: draft        # draft | approved
+status: approved      # draft | approved
 tags: [mobile, nutrition, food, spec]
 ---
 
