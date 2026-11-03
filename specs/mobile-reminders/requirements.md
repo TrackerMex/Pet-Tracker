@@ -402,6 +402,36 @@ y su ampliación). Esta spec ratificó el inglés en su día; esa parte queda
 desde #95. Las dos siguen siendo routes delgados. Firma: casilla A14 de
 `specs/mobile-reminders-alerts-to-stack/requirements.md` §Aprobación.
 
+## Enmienda #227 — Recordatorios próximos y pasados
+
+**Spec enmendada:** `specs/mobile-reminders/requirements.md` (#39), **R6**.
+La enmienda la escribe `specs/mobile-reminders-upcoming-past/requirements.md`
+(#227, R4 a R7 y R13).
+
+**Qué cambia.**
+
+- «una fila por reminder en el orden recibido (backend ya ordena asc)» pasa
+  a dos secciones:
+  - **Próximos** arriba: `status !== 'cancelled'` y `dueAt` de hoy en
+    adelante por día civil local, en orden ascendente;
+  - **Pasados** al final: todos los demás, colapsada por defecto, con
+    contador y de la más reciente a la más antigua (#227 R4 a R6).
+- La opacidad 0.5 la decide la sección, no el `status`: toda fila de Pasados
+  va atenuada, incluida una `scheduled` de un día pasado, y ninguna de
+  Próximos, incluida una `sent` con fecha futura (#227 R7).
+
+**Qué no cambia.**
+
+- Las tres pills y sus reglas.
+- El texto de estado («Enviado» / «Cancelado») o `· en N días`, que siguen
+  decididos por `status`.
+- El badge.
+- El refetch al recuperar el foco.
+
+- [x] Enmienda #227 aprobada por humano
+  (firma delegada del leader, 2026-11-03; mandato del humano 2026-10-23,
+  ampliado 2026-11-03)
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-08-24) ← gate obligatorio antes de implementar

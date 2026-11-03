@@ -3544,7 +3544,7 @@
   {
     "id": 209,
     "name": "mobile-nutrition-questionnaire",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P1",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_mejoras-producto-2026-10-26.md (ola 2). Cuestionario de nutrición: hoy no hay formulario del perfil y «Generar plan» acaba en 422 en la app real. Wizard por pasos sobre el PUT /v1/pets/:petId/nutrition-profile existente (actividad, BCS 1-9, peso objetivo si BCS >= 7, tipo de alimento y kcal/100 g con precarga, alergias y enfermedades con lista cerrada más «otra» acotada); putJson nuevo en src/api/http.ts; al guardar llama a nutrition-plan/generate. Entradas desde el estado sin perfil y «Editar perfil» en Horario; «Generar plan» oculto a quien no es owner. Preguntas que el motor no modela quedan fuera. Depende del gate G1 (artboard CuestionarioNutricion). Evidencia en progress/explore_nutrition-questionnaire-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },
@@ -3642,7 +3642,7 @@
   {
     "id": 223,
     "name": "mobile-alerts-attended-section",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P2",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 2, gate G1). Alertas: abiertas arriba y sección colapsable «Atendidas» con Ver más para el listado enorme, contador exacto de abiertas, sin backend. Evidencia en progress/explore_ui-alertas-actividad-ia-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },
@@ -3663,16 +3663,29 @@
   {
     "id": 226,
     "name": "backend-vaccine-catalog-migration",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P1",
-    "description": "Catálogo de vacunas por migración de datos: hoy la tabla vaccine_catalog solo se llena con pnpm seed:vaccines y en la base del humano quedó vacía, así que Agregar vacuna solo ofrece «Otra vacuna». Evidencia en el plan §2. Responsable: leader @Backend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
-    "acceptance_criteria": null,
-    "files_affected": null
+    "description": "Catálogo de vacunas por migración de datos: hoy la tabla vaccine_catalog solo se llena con pnpm seed:vaccines y en la base del humano quedó vacía, así que Agregar vacuna solo ofrece «Otra vacuna». Evidencia en el plan §2. Responsable: leader @Backend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Spec en specs/backend-vaccine-catalog-migration/ (2026-11-03): migración custom de drizzle-kit _vaccine_catalog_data con INSERT de las 7 entradas del seed y ON CONFLICT (species, name) DO NOTHING; el seed se conserva; sin cambios en mobile-pet-tracker/.",
+    "acceptance_criteria": [
+      "R1: sobre una base migrada hasta la entrada anterior y con vaccine_catalog vacía, aplicar _vaccine_catalog_data deja GET /v1/vaccine-catalog?species=dog con 4 entradas y ?species=cat con 3, iguales al literal de la spec y ordenadas por name; registrar Rabia desde el catálogo migrado responde 201",
+      "R2: sobre una base ya sembrada con seed:vaccines (y un scheme editado), la migración termina sin error y no cambia ninguna fila: mismos 7 ids y schemes",
+      "R3: seed:vaccines después de la migración conserva las 7 filas y los ids que puso la migración",
+      "R4: progress/smoke_mejoras-smoke.md gana el paso literal de #226, que reproduce el fallo («Otra vacuna» sola) antes de db:migrate; la casilla la marca solo el humano",
+      "R5: sin diff en mobile-pet-tracker/, el seed, init.config.sh, init-e2e-gate.test.mjs, package.json, pnpm-lock.yaml ni src/db/schema/; drizzle-kit generate posterior no ve cambios de esquema",
+      "Tests en backend-pet-tracker/test/vaccine-catalog-migration.e2e-spec.ts con esperados literales; mutaciones M1-M5 y S1 de tasks.md ponen en rojo el it indicado"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/db/migrations/00NN_vaccine_catalog_data.sql",
+      "backend-pet-tracker/src/db/migrations/meta/00NN_snapshot.json",
+      "backend-pet-tracker/src/db/migrations/meta/_journal.json",
+      "backend-pet-tracker/test/vaccine-catalog-migration.e2e-spec.ts",
+      "progress/smoke_mejoras-smoke.md"
+    ]
   },
   {
     "id": 227,
     "name": "mobile-reminders-upcoming-past",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P1",
     "description": "Lista de recordatorios con «Próximos» arriba (no cancelados con fecha de hoy en adelante, ascendente) y una sección «Pasados» colapsada al final, como Alertas atendidas (#223). Decisión del humano 2026-11-03. Necesita artboard y copy (G1). Responsable: leader @Backend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
     "acceptance_criteria": null,
@@ -3708,7 +3721,7 @@
   {
     "id": 231,
     "name": "mobile-welcome-secondary-pressed",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Bienvenida: «Ya tengo una cuenta» no tiene variant y HeroUI le pinta el resaltado verde del primario al pulsar; en oscuro, borde y labio casi no se ven. Resaltado neutro y borde visible en oscuro. Responsable: leader @Frontend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
     "acceptance_criteria": null,
@@ -3744,9 +3757,18 @@
   {
     "id": 235,
     "name": "mobile-profile-photo-owner-only",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Perfil: el botón de cámara change-photo se muestra al rol family y el backend responde 403 («No se pudo subir la foto»). Mostrarlo solo al owner, como el resto de #216. Responsable: leader @Frontend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
+    "acceptance_criteria": null,
+    "files_affected": null
+  },
+  {
+    "id": 236,
+    "name": "mobile-vaccine-catalog-error-state",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Agregar vacuna: si GET /vaccine-catalog falla, el selector muestra solo «Otra vacuna» sin avisar ni dejar reintentar. Arreglo: estado de error con reintento, distinto del catálogo vacío. Hallazgo del leader al especificar #226; el humano pidió abrirlo como feature el 2026-11-03 («si abre como feature nueva»). Responsable: leader @Backend, después de #226. Plan progress/plan_mejoras-smoke-2026-11-03.md. Registrada sin spec.",
     "acceptance_criteria": null,
     "files_affected": null
   }

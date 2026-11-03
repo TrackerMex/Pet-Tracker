@@ -7,9 +7,9 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, type Href, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Plus, Repeat, Trash } from 'reicon-react-native';
+import { ChevronDown, ChevronUp, Plus, Repeat, Trash } from 'reicon-react-native';
 
 import { listPets } from '../../api/pets';
 import { petKeys, reminderKeys } from '../../api/query-keys';
@@ -33,14 +33,15 @@ import {
   useTranslate,
 } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
-import { MOTION_REMINDERS_STAGGER_MS } from '../../theme/motion';
+import { MOTION_REMINDERS_PAST_STAGGER_MS, MOTION_REMINDERS_STAGGER_MS } from '../../theme/motion';
 import {
   CONTINUOUS_CORNER,
   TABULAR_NUMS,
 } from '../../theme/native-styles';
+import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
-import { daysUntil } from '../../utils/reminder-dates';
+import { daysUntil, splitReminders } from '../../utils/reminder-dates';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
 
 function isRemindersError(state: RemindersState): boolean {
@@ -104,6 +105,7 @@ export function RemindersScreen() {
   const [deleteCandidate, setDeleteCandidate] = useState<Reminder | null>(null);
   const [cancelCandidate, setCancelCandidate] = useState<Reminder | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [pastExpanded, setPastExpanded] = useState(false);
 
   useEffect(() => {
     selectedPetIdRef.current = selectedPetId;
@@ -224,6 +226,112 @@ export function RemindersScreen() {
   const cancelPetName = pets.data?.kind === 'ok' ? pets.data.pets.find(({ id }) => id === cancelCandidate?.petId)?.name : undefined;
   const petsEmpty = pets.data?.kind === 'ok' && pets.data.pets.length === 0;
   const isOwner = pets.data?.kind === 'ok' && pets.data.pets.find(({ id }) => id === selectedPetId)?.myRole === 'owner';
+  const sections = splitReminders(reminders.data?.kind === 'ok' ? reminders.data.reminders : [], new Date(now));
+  const PastChevron = pastExpanded ? ChevronUp : ChevronDown;
+  const renderRow = (reminder: Reminder, past: boolean) => {
+    const meta = REMINDER_TYPE_META[reminder.type];
+    const due = new Date(reminder.dueAt);
+    const days = daysUntil(new Date(now), due);
+    const inactive = reminder.status !== 'scheduled';
+    const recurrence = inactive ? null : reminder.recurrence;
+    const isSeries = Boolean(recurrence);
+    const until = reminder.recurrenceUntil ? isoToLocalDate(reminder.recurrenceUntil) : null;
+    const repeatUntil = until
+      ? until.getFullYear() === new Date(now).getFullYear()
+        ? t('reminders.untilDay', { date: until.toLocaleDateString(locale, { day: 'numeric', month: 'short' }) })
+        : t('reminders.untilMonth', { date: new Intl.DateTimeFormat(locale, { month: 'short', year: 'numeric' }).format(until) })
+      : '';
+    const upcoming = !inactive && days === 0;
+    const slot = CATEGORY_SLOTS[meta.category];
+    const date = due.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
+    const time = due.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+
+    return (
+      <View
+        testID={`reminder-row-${reminder.id}`}
+        className={`flex-row items-center gap-3 rounded-22 bg-surface p-3.5 ${upcoming ? 'border-2 border-category-amber' : 'border border-border'}${past ? ' opacity-50' : ''}`}
+        style={CONTINUOUS_CORNER}
+      >
+        <View
+          testID={`reminder-tile-${reminder.id}`}
+          className={`size-11.5 items-center justify-center rounded-14 ${slot.surface}`}
+          style={CONTINUOUS_CORNER}
+        >
+          <meta.Icon size={22} color={categoryInk[meta.category]} />
+        </View>
+        <View className="min-w-0 flex-1 gap-0.75">
+          <View className="flex-row items-center justify-between">
+            <Text className={`text-xs font-extrabold ${slot.ink}`}>
+              {t(meta.labelKey)}
+            </Text>
+            {upcoming ? (
+              <PopIn testID={`reminder-upcoming-pop-${reminder.id}`}>
+                <Text
+                  testID={`reminder-upcoming-${reminder.id}`}
+                  className={`rounded-full px-2 py-0.75 text-11 font-extrabold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`}
+                >
+                  {t('reminders.upcoming')}
+                </Text>
+              </PopIn>
+            ) : null}
+          </View>
+          <Text className="text-base font-extrabold text-foreground">
+            {reminder.title}
+          </Text>
+          <View className="flex-row items-center gap-1">
+            <Text className="text-13 font-normal text-muted">
+              {t('reminders.dueAt', { date, time })}
+            </Text>
+            {inactive ? (
+              <Text
+                testID={`reminder-status-${reminder.id}`}
+                className="text-13 font-semibold text-muted"
+              >
+                {reminder.status === 'sent'
+                  ? t('reminders.sent')
+                  : t('reminders.cancelled')}
+              </Text>
+            ) : (
+              <Text className="text-13 font-normal text-muted">
+                {t('reminders.dueInDays', { days })}
+              </Text>
+            )}
+          </View>
+          {recurrence ? (
+            <View testID={`reminder-repeats-${reminder.id}`} className="flex-row items-center gap-1">
+              <Repeat size={14} color={accentStrong} />
+              <Text className="text-13 font-bold text-accent-strong">
+                {t('reminders.repeatsEvery', { cadence: cadenceText(recurrence, t), until: repeatUntil })}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+        {isOwner ? (
+          <Button
+            testID={isSeries ? `reminder-cancel-series-${reminder.id}` : `reminder-delete-${reminder.id}`}
+            accessibilityLabel={isSeries ? t('reminders.cancelSeriesA11y', { title: reminder.title }) : undefined}
+            className={`h-11 rounded-14 px-2.5 ${CATEGORY_SLOTS.rose.surface}`}
+            isDisabled={deletingId === reminder.id}
+            variant="danger-soft"
+            onPress={() => {
+              if (isSeries) {
+                setActionError(null);
+                setDeleteCandidate(null);
+                setCancelCandidate(reminder);
+              } else {
+                setCancelCandidate(null);
+                confirmDelete(reminder);
+              }
+            }}
+          >
+            <Text className="text-13 font-extrabold text-danger">
+              {isSeries ? t('reminders.cancelSeries') : t('reminders.delete')}
+            </Text>
+          </Button>
+        ) : null}
+      </View>
+    );
+  };
   if (petsEmpty) {
     return (
       <View
@@ -396,114 +504,39 @@ export function RemindersScreen() {
             </View>
           </View>
 
-          <View className="gap-3">
-            {reminders.data.reminders.map((reminder, i) => {
-              const meta = REMINDER_TYPE_META[reminder.type];
-              const due = new Date(reminder.dueAt);
-              const days = daysUntil(new Date(now), due);
-              const inactive = reminder.status !== 'scheduled';
-              const recurrence = inactive ? null : reminder.recurrence;
-              const isSeries = Boolean(recurrence);
-              const until = reminder.recurrenceUntil ? isoToLocalDate(reminder.recurrenceUntil) : null;
-              const repeatUntil = until
-                ? until.getFullYear() === new Date(now).getFullYear()
-                  ? t('reminders.untilDay', { date: until.toLocaleDateString(locale, { day: 'numeric', month: 'short' }) })
-                  : t('reminders.untilMonth', { date: new Intl.DateTimeFormat(locale, { month: 'short', year: 'numeric' }).format(until) })
-                : '';
-              const upcoming = !inactive && days === 0;
-              const slot = CATEGORY_SLOTS[meta.category];
-              const date = due.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
-              const time = due.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
-
-              return (
-                <RiseIn key={reminder.id} testID={`reminders-entry-${reminder.id}`} delayMs={i * MOTION_REMINDERS_STAGGER_MS}>
-                  <View
-                    testID={`reminder-row-${reminder.id}`}
-                    className={`flex-row items-center gap-3 rounded-22 bg-surface p-3.5 ${upcoming ? 'border-2 border-category-amber' : 'border border-border'}${inactive ? ' opacity-50' : ''}`}
-                    style={CONTINUOUS_CORNER}
-                  >
-                    <View
-                      testID={`reminder-tile-${reminder.id}`}
-                      className={`size-11.5 items-center justify-center rounded-14 ${slot.surface}`}
-                      style={CONTINUOUS_CORNER}
-                    >
-                      <meta.Icon size={22} color={categoryInk[meta.category]} />
-                    </View>
-                    <View className="min-w-0 flex-1 gap-0.75">
-                      <View className="flex-row items-center justify-between">
-                        <Text className={`text-xs font-extrabold ${slot.ink}`}>
-                          {t(meta.labelKey)}
-                        </Text>
-                        {upcoming ? (
-                          <PopIn testID={`reminder-upcoming-pop-${reminder.id}`}>
-                            <Text
-                              testID={`reminder-upcoming-${reminder.id}`}
-                              className={`rounded-full px-2 py-0.75 text-11 font-extrabold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`}
-                            >
-                              {t('reminders.upcoming')}
-                            </Text>
-                          </PopIn>
-                        ) : null}
-                      </View>
-                      <Text className="text-base font-extrabold text-foreground">
-                        {reminder.title}
-                      </Text>
-                      <View className="flex-row items-center gap-1">
-                        <Text className="text-13 font-normal text-muted">
-                          {t('reminders.dueAt', { date, time })}
-                        </Text>
-                        {inactive ? (
-                          <Text
-                            testID={`reminder-status-${reminder.id}`}
-                            className="text-13 font-semibold text-muted"
-                          >
-                            {reminder.status === 'sent'
-                              ? t('reminders.sent')
-                              : t('reminders.cancelled')}
-                          </Text>
-                        ) : (
-                          <Text className="text-13 font-normal text-muted">
-                            {t('reminders.dueInDays', { days })}
-                          </Text>
-                        )}
-                      </View>
-                      {recurrence ? (
-                        <View testID={`reminder-repeats-${reminder.id}`} className="flex-row items-center gap-1">
-                          <Repeat size={14} color={accentStrong} />
-                          <Text className="text-13 font-bold text-accent-strong">
-                            {t('reminders.repeatsEvery', { cadence: cadenceText(recurrence, t), until: repeatUntil })}
-                          </Text>
-                        </View>
-                      ) : null}
-                    </View>
-                    {isOwner ? (
-                      <Button
-                        testID={isSeries ? `reminder-cancel-series-${reminder.id}` : `reminder-delete-${reminder.id}`}
-                        accessibilityLabel={isSeries ? t('reminders.cancelSeriesA11y', { title: reminder.title }) : undefined}
-                        className={`h-11 rounded-14 px-2.5 ${CATEGORY_SLOTS.rose.surface}`}
-                        isDisabled={deletingId === reminder.id}
-                        variant="danger-soft"
-                        onPress={() => {
-                          if (isSeries) {
-                            setActionError(null);
-                            setDeleteCandidate(null);
-                            setCancelCandidate(reminder);
-                          } else {
-                            setCancelCandidate(null);
-                            confirmDelete(reminder);
-                          }
-                        }}
-                      >
-                        <Text className="text-13 font-extrabold text-danger">
-                          {isSeries ? t('reminders.cancelSeries') : t('reminders.delete')}
-                        </Text>
-                      </Button>
-                    ) : null}
-                  </View>
-                </RiseIn>
-              );
-            })}
-          </View>
+          <Text testID="reminders-upcoming-heading" accessibilityRole="header" className="mt-1 text-13 font-extrabold uppercase tracking-caps text-muted">{t('reminders.sectionUpcoming')}</Text>
+          {sections.upcoming.length > 0 ? (
+            <View testID="reminders-upcoming-list" className="gap-3">
+              {sections.upcoming.map((reminder, i) => (
+                <RiseIn key={reminder.id} testID={`reminders-entry-${reminder.id}`} delayMs={i * MOTION_REMINDERS_STAGGER_MS}>{renderRow(reminder, false)}</RiseIn>
+              ))}
+            </View>
+          ) : (
+            <View testID="reminders-upcoming-empty" className="items-center gap-1 rounded-22 bg-default px-4 py-5" style={CONTINUOUS_CORNER}>
+              <Text testID="reminders-upcoming-empty-title" className="text-center text-15 font-extrabold text-foreground">{t('reminders.upcomingEmptyTitle')}</Text>
+              <Text testID="reminders-upcoming-empty-body" className="text-center text-13 text-muted">{t('reminders.upcomingEmptyBody')}</Text>
+            </View>
+          )}
+          {sections.past.length > 0 ? (
+            <View testID="reminders-past" className="gap-3">
+              <Pressable testID="reminders-past-toggle" className="mt-1 h-10 w-full flex-row items-center gap-2" accessibilityRole="button" accessibilityState={{ expanded: pastExpanded }} hitSlop={TOUCH_SLOP} style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })} onPress={() => setPastExpanded((current) => !current)}>
+                <View className="flex-1 flex-row items-center gap-2">
+                  <Text testID="reminders-past-label" className="text-13 font-extrabold uppercase tracking-caps text-muted">{t('reminders.sectionPast')}</Text>
+                  <Text testID="reminders-past-count" className="rounded-full bg-default px-2 py-0.5 text-xs font-extrabold text-muted" style={TABULAR_NUMS}>{sections.past.length}</Text>
+                </View>
+                <View className="size-8 items-center justify-center rounded-full bg-default">
+                  <PastChevron size={18} color={muted} />
+                </View>
+              </Pressable>
+              {pastExpanded ? (
+                <View testID="reminders-past-list" className="gap-3">
+                  {sections.past.map((reminder, index) => (
+                    <RiseIn key={reminder.id} testID={`reminders-entry-${reminder.id}`} delayMs={index * MOTION_REMINDERS_PAST_STAGGER_MS}>{renderRow(reminder, true)}</RiseIn>
+                  ))}
+                </View>
+              ) : null}
+            </View>
+          ) : null}
         </>
       ) : null}
 

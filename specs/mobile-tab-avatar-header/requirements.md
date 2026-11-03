@@ -495,8 +495,11 @@ G4 (R12).
   humano, y la nota de firma que usan #205 y #206
   (`Firma delegada ...` no aplica: G4 es del humano, la nota cita la fecha y la
   casilla G4).
-- **R12.3** (solo con G4 marcada): THE SYSTEM SHALL reescribir, en el mismo
-  commit y no antes, tres aserciones que hoy leen la regla vieja:
+- **R12.3** (solo con G4 marcada): THE SYSTEM SHALL reescribir, en la misma
+  rama y PR que mueve la carta y no antes de que G4 esté marcada (el commit de
+  tests va primero, rojo contra la carta vieja, y el de la carta lo deja verde,
+  C4 de `CHECKPOINTS.md`; enmendado 2026-11-03 para permitir el historial
+  rojo→verde), tres aserciones que hoy leen la regla vieja:
   1. `tab-headers-canvas.test.ts` › `#196 R11: la carta recoge la enmienda N1 de #196` pasa a `#222 R12: la carta recoge la enmienda N1 de #222`: exige `**Regla N1 (enmienda #222)**` y no contiene `**Regla N1 (enmienda #196)**` ni `Inicio es la única pestaña con PetHeroHeader`.
   2. `hero-header-amendments.test.ts` › `AMENDED_DOCS_168`, fila de `docs/ui-guidelines.md`: su `marker` se reescribe con el texto exacto de R12.1 (precedente #196).
   3. La fila de `docs/ui-guidelines.md` de `AMENDED_DOCS_222` usa el mismo texto de R12.1 como `marker`; para no duplicarlo, ambos leen una constante `CHARTER_N1_222` declarada una vez en el fichero.
@@ -593,7 +596,7 @@ Tests en `src/__tests__/tab-headers-canvas.test.ts` (mismo describe `#222`):
 > los documentos de la carta no se delegan: llevan su casilla propia.
 
 - [x] Aprobado por humano (fecha: 2026-10-27, firma delegada del leader: mandato 2026-10-23 ampliado 2026-10-26; G1 aprobado por el humano sobre canvas v153)
-- [ ] G4 — Enmienda #222 a `docs/ui-guidelines.md` (regla N1, R12) aprobada por humano (fecha: ____) ← gate humano, no delegado; sin marcar, R12 no se ejecuta
+- [x] G4 — Enmienda #222 a `docs/ui-guidelines.md` (regla N1, R12) aprobada por humano (fecha: 2026-11-03, en la sesión del leader: «si apruebo los cambios»; el leader teclea el commit) ← gate humano, no delegado; sin marcar, R12 no se ejecuta
 - [x] G2 — Prueba de humo en dev build de Android (R1 a R7: cabecera fija, 10 de separación, último chip cortado con 8 o más mascotas, encabezado leído por TalkBack, claro y oscuro) superada por el humano (fecha: 2026-11-03) ← en lote, al final de la ola
 
 Tras la implementación, el humano marca la línea de firma de cada bloque
