@@ -15,7 +15,7 @@ Rutas de test relativas a `mobile-pet-tracker/src/`.
 | R3 | pendiente — `screens/map/pet-marker-icon.test.tsx`::«#230 R3: sin foto dibuja el blobatar de 38 sobre disco blanco con borde de 3» | pendiente |
 | R4 | pendiente — `screens/map/pet-marker-icon.test.tsx`::«#230 R4: captura el blobatar a 154 px tras dos frames y publica su icono», «#230 R4: desmontado antes del segundo frame no captura» | pendiente |
 | R5 | pendiente — `screens/map/pet-marker-icon.test.tsx`::«#230 R5: con foto dibuja la foto recortada en círculo con borde de 3», «#230 R5: con photoUrl null o vacía no hay Svg de foto» | pendiente |
-| R6 | pendiente — `screens/map/pet-marker-icon.test.tsx`::«#230 R6: al cargar la foto la captura y sustituye al blobatar», «#230 R6: una captura del blobatar que llega tarde no pisa la foto» | pendiente |
+| R6 | pendiente — `screens/map/pet-marker-icon.test.tsx`::«#230 R6: al cargar la foto la captura y sustituye al blobatar (enmendado por #230 R8)», «#230 R6: una captura del blobatar que llega tarde no pisa la foto» | pendiente |
 | R7 | pendiente — `screens/map/pet-marker-icon.test.tsx`::«#230 R7: sin onLoad en 4000 ms la foto se desmonta y queda el blobatar», «#230 R7: un onLoad antes del plazo lo cancela» | pendiente |
 | R8 | pendiente — `screens/map/pet-marker-icon.test.tsx`::«#230 R8: la clave ignora la firma y distingue id, nombre y ruta», «#230 R8: un rerender con la URL re-firmada no recompone» | pendiente |
 | R9 | pendiente — `screens/map/pet-marker-icon.test.tsx`::«#230 R9: solo devuelve el icono de la composición vigente» | pendiente |

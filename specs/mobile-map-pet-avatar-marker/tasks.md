@@ -180,7 +180,7 @@ Sin dobles nuevos. Sentinela `const ICON = { sentinel: 'marker-icon' } as unknow
   `props.pointerEvents === 'none'`, `props.accessibilityElementsHidden === true`,
   `props.importantForAccessibility === 'no-hide-descendants'` y
   `toHaveStyle({ position: 'absolute', top: 0, right: 0, opacity: 0.01 })`. En
-  `__tests__/map-canvas-fidelity.test.ts`, un `describe('#230: compositor del marcador', …)`
+  `__tests__/map-canvas-fidelity.test.ts`, un `describe('#230 R1, R10 y R11: compositor del marcador', …)`
   al final del fichero con «#230 R1: el compositor no trae copy»:
   `readProduction('screens/map/pet-marker-icon.tsx')` no casa con
   `/useTranslate|\bt\(|<Text\b/`. Caen los dos: el módulo no existe.
@@ -334,7 +334,7 @@ Sin dobles nuevos. Sentinela `const ICON = { sentinel: 'marker-icon' } as unknow
 
   «un rerender con la URL re-firmada no recompone»: con `withPhoto`, completar
   la captura de la foto como en R6. Luego
-  `screen.rerender(<PetMarkerIcon pet={{ ...withPhoto, photoUrl: 'https://cdn.example/pets/luna.jpg?X-Amz-Signature=bbb' }} onIcon={onIcon} />)`
+  `await screen.rerender(<PetMarkerIcon pet={{ ...withPhoto, photoUrl: 'https://cdn.example/pets/luna.jpg?X-Amz-Signature=bbb' }} onIcon={onIcon} />)`
   y `runFrames()`. El `href` de `map-marker-photo` sigue con `…=aaa` y el
   número de llamadas a `mockToDataURL` no cambia.
 
@@ -366,8 +366,17 @@ Sin dobles nuevos. Sentinela `const ICON = { sentinel: 'marker-icon' } as unknow
 
 - [ ] (1) Escribir test que falla para R10: dobles de `index.test.tsx` de
   arriba y un `describe('#230 R10: marcador con avatar', …)` con tiempo real.
-  - «con posición monta el compositor oculto»: el escenario por defecto
-    (posición y `makePet()`). Esperar con
+  El `beforeEach` global deja la última posición en `pending`
+  (`mockGetLastPosition.mockReturnValue(pending<LastPositionState>())`), así que
+  el `describe` lleva el mismo `beforeEach` que
+  `describe('R6: mapa y marker con la última posición')`
+  (`mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] })`) y cada
+  `it` fija su posición.
+  - «con posición monta el compositor oculto»:
+    `const position = makeLastPosition({ lat: 19.45, lng: -99.12 });` y
+    `mockGetLastPosition.mockResolvedValue({ kind: 'ok', position });` antes de
+    `await renderMap()`, como el `it` «R3 (android-map-never-ready): centra el
+    mapa y pasa la última posición como marker». Esperar con
     `await waitFor(() => expect(screen.getByTestId('map-marker-icon', { includeHiddenElements: true })).toBeTruthy())`.
   - «sin posición no monta el compositor»: el mismo escenario que el `it`
     existente que espera `map-empty-overlay`
@@ -376,9 +385,11 @@ Sin dobles nuevos. Sentinela `const ICON = { sentinel: 'marker-icon' } as unknow
     es null. **Nace verde**; mutación: montar el compositor sin mirar
     `marker`.
   - «el marcador recibe el icono compuesto»:
+    - la misma posición que el primero (`makeLastPosition({ lat: 19.45, lng: -99.12 })`
+      con `mockResolvedValue({ kind: 'ok', position })`);
     - `mockToDataURL.mockImplementation((_id, callback) => callback('RkFMTEJBQ0s='))`;
     - `mockUseImage.mockImplementation(({ uri }) => uri === 'data:image/png;base64,RkFMTEJBQ0s=' ? FALLBACK_ICON : null)`;
-    - `await waitFor(() => expect(screen.getByTestId('map-view').props.markers).toEqual([{ id: 'last-position', coordinates: <las del escenario>, icon: FALLBACK_ICON, anchor: { x: 0.5, y: 0.5 }, showCallout: false }]))`.
+    - `await waitFor(() => expect(screen.getByTestId('map-view').props.markers).toEqual([{ id: 'last-position', coordinates: { latitude: 19.45, longitude: -99.12 }, icon: FALLBACK_ICON, anchor: { x: 0.5, y: 0.5 }, showCallout: false }]))`.
 
   En `__tests__/map-canvas-fidelity.test.ts`, dentro del `describe` de R1:
   «#230 R10: el mapa monta el compositor con la clave de composición»
@@ -408,7 +419,10 @@ Sin dobles nuevos. Sentinela `const ICON = { sentinel: 'marker-icon' } as unknow
   - `it.each(Object.keys(guards))('#230 R11: screens/map/pet-marker-icon.tsx respeta la guarda %s', …)`,
     con el mismo cuerpo que el de #201 R16;
   - «#230 R11: el compositor importa solo lo suyo»: los especificadores de
-    `import … from '…'` del fichero, ordenados, son
+    `import … from '…'` del fichero, sin repetidos y ordenados
+    (`[...new Set(specifiers)].sort()`: dos imports del mismo módulo, como
+    `import type { ImageRef }` y `import { useImage }` de `'expo-image'`, cuentan
+    una vez), son
     `['../../api/types', '../../theme/use-theme-colors', 'blobatar', 'expo-image', 'react', 'react-native', 'react-native-svg']`
     (orden de `.sort()`; comprobarlo con node antes de commitear).
 
@@ -416,8 +430,11 @@ Sin dobles nuevos. Sentinela `const ICON = { sentinel: 'marker-icon' } as unknow
   - hex: un `'#FFFFFF'`;
   - `StyleSheet.create`;
   - un emoji en un comentario;
-  - `import 'expo-linear-gradient'`;
-  - `className="rounded-[7px]"`;
+  - `import { LinearGradient } from 'expo-linear-gradient';` (la guarda es
+    `/from 'expo-linear-gradient'/`: un `import 'expo-linear-gradient'` sin
+    `from` no la pone roja);
+  - `className="rounded-xl"` (la guarda de radios no casa con `rounded-[7px]`,
+    que solo pone roja la de clase arbitraria);
   - `className="text-accent"`;
   - un import de `'../../components/pet-avatar'`.
 

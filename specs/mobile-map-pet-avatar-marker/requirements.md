@@ -120,15 +120,16 @@ el Mapa). Tipo de mascota: `Pick<PetProfile, 'id' | 'name' | 'photoUrl'>` de
   aunque llegue después: el último `useImage` y el último `onIcon` son los de
   la foto.
   Tests: `screens/map/pet-marker-icon.test.tsx` ::
-  «#230 R6: al cargar la foto la captura y sustituye al blobatar» y
+  «#230 R6: al cargar la foto la captura y sustituye al blobatar (enmendado por #230 R8)»
+  (nace sin el sufijo; R8 enmienda su literal de clave y le pone el sufijo) y
   «#230 R6: una captura del blobatar que llega tarde no pisa la foto».
 
 - **R7** (plazo de la foto): IF `map-marker-photo` no emite `onLoad` en los
   **4000 ms** siguientes al montaje THEN THE SYSTEM SHALL desmontar
   `map-marker-photo-svg` y no capturar la foto; `map-marker-fallback-svg` y su
   icono siguen. WHEN `onLoad` llega antes del plazo THE SYSTEM SHALL cancelar el
-  plazo (el `Svg` de foto sigue montado después de 4000 ms). WHEN el compositor
-  se desmonta THE SYSTEM SHALL cancelar el plazo y los frames pendientes.
+  plazo (el `Svg` de foto sigue montado después de 4000 ms). Los frames
+  pendientes al desmontar los cubre R4.
   Tests: `screens/map/pet-marker-icon.test.tsx` ::
   «#230 R7: sin onLoad en 4000 ms la foto se desmonta y queda el blobatar» y
   «#230 R7: un onLoad antes del plazo lo cancela».
@@ -187,7 +188,7 @@ incluye `origin/dev`). «Después» es lo que debe medir el reviewer.
 | Id | Comando | Antes | Después |
 |---|---|---|---|
 | B1 | `grep -cF "id: 'last-position'" components/pet-map.tsx` | 1 | 1 |
-| B2 | `grep -cF 'markerIcon' components/pet-map.tsx` | 0 | 3 |
+| B2 | `grep -oF 'markerIcon' components/pet-map.tsx \| wc -l` (apariciones, no líneas: el spread puede ocupar una o varias) | 0 | 3 |
 | B3 | `test -e screens/map/pet-marker-icon.tsx && echo sí \|\| echo no` | no | sí |
 | B4 | `test -e screens/map/pet-marker-icon.test.tsx && echo sí \|\| echo no` | no | sí |
 | B5 | `grep -cF '<PetMarkerIcon' screens/map/index.tsx` | 0 | 1 |
