@@ -1,6 +1,6 @@
 ---
 feature: "mobile-reminder-swipe-actions"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [mobile, ui, spec]
 ---
 

@@ -755,4 +755,6 @@ cuatro filas nuevas son del mismo fichero. No se retira ninguna clave de copy.
   atenúan.
 - El resto del inventario de R11 y los requisitos R1 a R10 y R13.
 
-- [ ] Enmienda #228 aprobada (fecha: ____)
+- [x] Enmienda #228 aprobada (fecha: 2026-11-03)
+  (firma delegada del leader; mandato del humano 2026-10-23, ampliado
+  2026-11-03)

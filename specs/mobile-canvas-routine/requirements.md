@@ -577,4 +577,6 @@ gate de implementación: lo cierra la casilla «Smoke de R18» de § Aprobación
 - El bloque de la carta que canda R16.
 - El grep-limpio de R17.
 
-- [ ] Enmienda #228 aprobada (fecha: ____)
+- [x] Enmienda #228 aprobada (fecha: 2026-11-03)
+  (firma delegada del leader; mandato del humano 2026-10-23, ampliado
+  2026-11-03)

@@ -1,6 +1,6 @@
 ---
 feature: "mobile-reminder-swipe-actions"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [mobile, ui, spec]
 ---
 
@@ -192,8 +192,14 @@ Codex (`.claude/agents/leader.md` §Catálogo real de skills de Codex).
 - **Gesto horizontal dentro de un `ScrollView` vertical.** RNGH arbitra los dos
   gestos; el paso 6 del smoke lo comprueba en el dispositivo. Jest no lo ve.
 - **El componente real en jest.** R9 depende de que Reanimated y RNGH corran
-  en el entorno de jest del proyecto (ya lo hacen en otras pantallas). Si R9
-  no puede montar el real, Codex lo reporta y no lo sustituye por el doble.
+  en el entorno de jest del proyecto. Ningún test de hoy monta RNGH real (todos
+  lo mockean), así que el leader lo probó antes de firmar con una sonda fuera
+  del árbol: el `ReanimatedSwipeable` real se monta, `renderRightActions`
+  pinta el panel sin deslizar (visible solo con `includeHiddenElements`) y
+  pulsar el panel llama a `methods.close()`. RNGH escribe en `console.error`
+  «Some of the callbacks in the gesture are worklets and some are not»; es
+  ruido esperado y `test/jest-setup.js` no lo convierte en fallo. Si R9 no
+  puede montar el real, Codex lo reporta y no lo sustituye por el doble.
 
 ### Bloque «Enmienda #228»
 

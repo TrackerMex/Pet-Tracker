@@ -380,4 +380,6 @@ símbolos se anclan por contenido.
 - La regla de dueño de R4 y que el no dueño no pueda borrar ni cancelar.
 - La línea `reminder-repeats-<id>` de una serie.
 
-- [ ] Enmienda #228 aprobada (fecha: ____)
+- [x] Enmienda #228 aprobada (fecha: 2026-11-03)
+  (firma delegada del leader; mandato del humano 2026-10-23, ampliado
+  2026-11-03)

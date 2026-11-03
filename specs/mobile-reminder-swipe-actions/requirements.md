@@ -1,6 +1,6 @@
 ---
 feature: "mobile-reminder-swipe-actions"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [mobile, ui, spec]
 ---
 
@@ -687,7 +687,12 @@ tres claves. No se retira ni se añade ninguna clave de copy.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-11-03) ← gate obligatorio antes de implementar
+  (firma delegada del leader con la checklist de
+  `progress/plan_canvas-parity-2026-10-23.md` §4, los tres puntos del §4 de
+  `progress/plan_ui-2026-10-26.md` y los dos de
+  `progress/plan_mejoras-smoke-2026-11-03.md` §4; G1 aprobado por el humano en
+  el canvas v167; mandato del humano 2026-10-23, ampliado 2026-11-03)
 - [ ] **G4**: enmienda de `docs/ui-guidelines.md` (bloque «Enmienda #228» de
   [[design]], que sustituye el punto 3 de la Enmienda #204) (fecha: ____) ←
   gate humano, no delegado; desbloquea R12

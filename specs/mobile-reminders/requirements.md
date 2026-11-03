@@ -454,7 +454,9 @@ La enmienda la escribe `specs/mobile-reminder-swipe-actions/requirements.md`
 - Que cualquier status se pueda borrar.
 - Los testID `reminder-delete-<id>`, que ahora nombran el panel.
 
-- [ ] Enmienda #228 aprobada (fecha: ____)
+- [x] Enmienda #228 aprobada (fecha: 2026-11-03)
+  (firma delegada del leader; mandato del humano 2026-10-23, ampliado
+  2026-11-03)
 
 ## Aprobación
 

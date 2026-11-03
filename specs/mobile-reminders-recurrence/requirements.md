@@ -537,4 +537,6 @@ como «#106 R15»: es una errata de este R15.
   serie; cualquier otra fila ofrece Eliminar.
 - La hoja de Cancelar serie, su copy, su petición y `petId` (R17 a R21).
 
-- [ ] Enmienda #228 aprobada (fecha: ____)
+- [x] Enmienda #228 aprobada (fecha: 2026-11-03)
+  (firma delegada del leader; mandato del humano 2026-10-23, ampliado
+  2026-11-03)
