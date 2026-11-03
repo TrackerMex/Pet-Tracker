@@ -1081,4 +1081,6 @@ plan `progress/plan_mejoras-smoke-2026-11-03.md` §6, pregunta 6.
   `#208 R20` gana ` (enmendado por #236 R7)` y su aserción pasa a
   `toHaveLength(29 + 2)`.
 
-- [ ] Enmienda #236 aprobada (fecha: ____)
+- [x] Enmienda #236 aprobada (fecha: 2026-11-03)
+  (firma delegada del leader; el humano confirmó la firma de #236 en el chat de
+  la sesión @Backend; mandato del humano 2026-10-23, ampliado 2026-11-03)
