@@ -1,6 +1,6 @@
 ---
 feature: "mobile-add-reminder-chip-lip-clip"
-status: draft        # draft | approved
+status: approved      # draft | approved
 tags: [mobile, reminders, ui, spec]
 ---
 
