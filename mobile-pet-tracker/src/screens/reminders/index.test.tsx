@@ -2637,4 +2637,28 @@ describe('Acciones de deslizar en Recordatorios (#228 R2 a R9)', () => {
     expect(panel.children[2]).toHaveProperty('props.className', 'text-center text-13 font-extrabold text-danger');
     expect(panel.children[2]).toHaveProperty('props.children', label);
   });
+
+  it('#228 R4: pulsar el panel de un puntual cierra el deslizable y abre la hoja de borrar', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-once');
+    await fireEvent.press(screen.getByTestId('reminder-delete-once', HIDDEN));
+    expect(mockSwipeableClose).toHaveBeenCalledTimes(1);
+    expect(within(screen.getByTestId('reminders-delete-host')).getByTestId('community-bottom-sheet').props.index).toBe(0);
+    expect(screen.getByText('¿Eliminar recordatorio?')).toBeOnTheScreen();
+    expect(screen.getByTestId('reminders-delete-reference')).toHaveTextContent('Refuerzo de rabia');
+    expect(screen.queryByTestId('reminders-cancel-series-sheet')).toBeNull();
+    expect(mockDeleteReminder).not.toHaveBeenCalled();
+  });
+
+  it('#228 R4: pulsar el panel de una serie cierra el deslizable y abre la hoja de Cancelar serie', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-series');
+    await fireEvent.press(screen.getByTestId('reminder-cancel-series-series', HIDDEN));
+    expect(mockSwipeableClose).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('reminders-cancel-series-sheet')).toBeOnTheScreen();
+    expect(screen.getByText('¿Cancelar la serie?')).toBeOnTheScreen();
+    expect(screen.getByTestId('reminders-cancel-series-reference')).toHaveTextContent('Antibiótico · cada mes');
+    expect(screen.queryByTestId('reminders-delete-sheet')).toBeNull();
+    expect(mockDeleteReminder).not.toHaveBeenCalled();
+  });
 });
