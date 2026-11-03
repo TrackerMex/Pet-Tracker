@@ -1831,6 +1831,36 @@ describe('#200 R10: entrada escalonada de Nutrición', () => {
 });
 
 
+describe('#233 R1 a R5: los enlaces de comidas dependen del perfil nutricional', () => {
+  beforeEach(() => {
+    mockListPets.mockReset();
+    mockGetNutritionPlan.mockReset();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it.each(['owner', 'family', 'walker', 'vet'] as const)(
+    '#233 R1 con el rol %s y sin perfil no hay enlaces de comidas',
+    async (role) => {
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: role })] });
+      mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+      mockGetNutritionProfile.mockResolvedValue({ kind: 'not-found' });
+
+      await renderFood();
+      if (role === 'owner') {
+        await screen.findByTestId('food-create-profile');
+      } else {
+        await screen.findByTestId('food-plan-empty');
+      }
+
+      expect(screen.queryByTestId('food-links', { includeHiddenElements: true })).toBeNull();
+      expect(screen.queryByTestId('meal-schedule-link', { includeHiddenElements: true })).toBeNull();
+      expect(screen.queryByTestId('meals-history-link', { includeHiddenElements: true })).toBeNull();
+      expect(screen.queryByText('Horario de comidas', { includeHiddenElements: true })).toBeNull();
+      expect(screen.queryByText('Historial de comidas', { includeHiddenElements: true })).toBeNull();
+    },
+  );
+});
+
 describe('#222 R7: Encabezado solo para lectores de pantalla', () => {
   beforeEach(setupFood168);
 
