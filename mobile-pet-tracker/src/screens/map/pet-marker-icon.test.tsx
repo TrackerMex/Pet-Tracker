@@ -97,3 +97,26 @@ it('#230 R3: sin foto dibuja el blobatar de 38 sobre disco blanco con borde de 3
     cx: 22, cy: 22, r: 20.5, stroke: 'sentinel-accent-foreground', strokeWidth: 3, fill: 'none',
   });
 });
+
+it('#230 R4: captura el blobatar a 154 px tras dos frames y publica su icono', async () => {
+  const onIcon = jest.fn();
+  await render(<PetMarkerIcon pet={pet} onIcon={onIcon} />);
+  expect(mockToDataURL).toHaveBeenCalledTimes(0);
+  await runFrame();
+  expect(mockToDataURL).toHaveBeenCalledTimes(0);
+  await runFrame();
+  expect(mockToDataURL.mock.calls.map(([id, , options]) => [id, options])).toEqual([
+    ['map-marker-fallback-svg', { width: 154, height: 154 }],
+  ]);
+  await act(async () => { mockToDataURL.mock.calls[0][1]('RkFMTEJBQ0s='); });
+  expect(mockUseImage.mock.calls.at(-1)).toEqual([{ uri: 'data:image/png;base64,RkFMTEJBQ0s=' }]);
+  expect(onIcon.mock.calls).toEqual([[{ key: '["pet-1","Luna",""]', icon: FALLBACK_ICON }]]);
+});
+
+it('#230 R4: desmontado antes del segundo frame no captura', async () => {
+  await render(<PetMarkerIcon pet={pet} onIcon={jest.fn()} />);
+  await runFrame();
+  await screen.unmount();
+  await runFrames();
+  expect(mockToDataURL).toHaveBeenCalledTimes(0);
+});
