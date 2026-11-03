@@ -2661,4 +2661,34 @@ describe('Acciones de deslizar en Recordatorios (#228 R2 a R9)', () => {
     expect(screen.queryByTestId('reminders-delete-sheet')).toBeNull();
     expect(mockDeleteReminder).not.toHaveBeenCalled();
   });
+
+  it.each([
+    ['once', 'delete', 'Eliminar', 'reminders-delete-sheet'],
+    ['series', 'cancelSeries', 'Cancelar la serie Antibiótico', 'reminders-cancel-series-sheet'],
+  ])('#228 R5: la fila de %s expone su acción de accesibilidad y abre la misma hoja', async (id, name, label, sheetId) => {
+    await renderReminders();
+    const row = await screen.findByTestId(`reminder-row-${id}`);
+    expect(row.props.accessible).toBe(true);
+    expect(row.props.accessibilityActions).toEqual([{ name, label }]);
+    await fireEvent(row, 'accessibilityAction', { nativeEvent: { actionName: 'activate' } });
+    expect(screen.queryByTestId('community-bottom-sheet')).toBeNull();
+    await fireEvent(row, 'accessibilityAction', { nativeEvent: { actionName: name } });
+    expect(screen.getByTestId(sheetId)).toBeOnTheScreen();
+    expect(screen.queryByTestId(id === 'once' ? 'reminders-cancel-series-sheet' : 'reminders-delete-sheet')).toBeNull();
+  });
+
+  it('#228 R5: la fila retira su acción de accesibilidad mientras su borrado sigue pendiente', async () => {
+    mockDeleteReminder.mockReturnValue(new Promise(() => {}));
+    await renderReminders();
+    await screen.findByTestId('reminder-row-once');
+    await fireEvent.press(screen.getByTestId('reminder-delete-once', HIDDEN));
+    await fireEvent.press(screen.getByTestId('reminders-delete-confirm'));
+    await waitFor(() => expect(screen.getByTestId('reminder-delete-once', HIDDEN).props.accessibilityState?.disabled).toBe(true));
+    expect(screen.getByTestId('reminder-row-series').props.accessibilityActions).toEqual([{ name: 'cancelSeries', label: 'Cancelar la serie Antibiótico' }]);
+    const row = screen.getByTestId('reminder-row-once');
+    expect(row.props.accessibilityActions).toBeUndefined();
+    await fireEvent(row, 'accessibilityAction', { nativeEvent: { actionName: 'delete' } });
+    expect(mockDeleteReminder).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('community-bottom-sheet')).toBeNull();
+  });
 });
