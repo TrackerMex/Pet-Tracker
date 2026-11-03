@@ -3748,7 +3748,7 @@
   {
     "id": 234,
     "name": "mobile-nutrition-ai-collapse-flicker",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P1",
     "description": "Arreglo del smoke de #224: la tarjeta de IA colapsada parpadea porque food-ai-content se mide con onLayout dentro de su propio recorte (maxHeight 122). Medir fuera del recorte; enmienda a #224 R6. Cierra también el smoke de #224. Responsable: leader @Frontend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
     "acceptance_criteria": null,
