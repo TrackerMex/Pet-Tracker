@@ -817,3 +817,25 @@ de la enmienda está en su `requirements.md` §R11.
   en su `requirements.md` §R9 y en su `tasks.md`).
 
 - [ ] Enmienda #222 aprobada por humano
+
+## Enmienda #233 — enlaces solo con perfil nutricional
+
+`mobile-food-links-without-profile` (#233) modifica una decisión que esta spec
+dejó aprobada. La spec de origen es `specs/mobile-food-links-without-profile/`;
+el detalle de la enmienda está en su `requirements.md` §R4 y §R5.
+
+- Spec enmendada: `mobile-canvas-nutrition`
+- Qué cambia: `R10: Entrada escalonada de Nutrición`, la frase «WHEN no hay plan
+  cargado THE SYSTEM SHALL pintar `food-links` sin envolver en `RiseIn`». Pasa
+  a valer solo si hay perfil nutricional confirmado; sin perfil o sin
+  confirmar, `food-links` no se pinta. También deja de ser cierta la premisa de
+  `R9: Enlaces del canvas` de que los dos enlaces existen siempre: existen con
+  plan cargado o con perfil `ok`.
+- Qué NO cambia: ningún otro requisito de esta spec ni su estado de
+  aprobación. Con plan cargado los enlaces siguen envueltos en `RiseIn` con
+  `delayMs={200}`; con perfil y sin plan, siguen sin `RiseIn`. Los `it` que
+  cubren lo enmendado no se reescriben: solo cambia el de `R5: plan del día
+  con horarios y warnings` de `src/screens/food/index.test.tsx` (lista en el
+  `requirements.md` de #233 §R2).
+
+- [ ] Enmienda #233 aprobada por humano
