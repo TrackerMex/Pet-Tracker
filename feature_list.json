@@ -3900,7 +3900,7 @@
   {
     "id": 241,
     "name": "mobile-health-vaccines-upcoming-past",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P1",
     "description": "En Salud, la lista de Vacunas (mobile-pet-tracker/src/screens/health/index.tsx) sale tal como llega del API, ordenada por appliedAt descendente, sin separar próximas de pasadas. Decisión del humano (2026-11-04): «Próximas y Pasadas». Arriba «PRÓXIMAS», con nextDoseAt posterior a hoy en orden ascendente; abajo «PASADAS», colapsada, con nextDoseAt hoy o antes, o null, en orden descendente (nextDoseAt, o appliedAt si es null). Cabecera, contador y chevron como en Recordatorios (#227). Las filas y la tarjeta «PRÓXIMA DOSIS» no cambian; el orden se hace en el móvil y el API no cambia. Responsable: leader @Backend. Plan progress/plan_arreglos-smoke-2026-11-04.md §2, firma delegada (ampliación del 2026-11-04). Registrada sin spec.",
     "acceptance_criteria": null,

@@ -1,4 +1,5 @@
-import { addCalendarMonthsIso } from '../vaccine-dates';
+import { addCalendarMonthsIso, splitVaccines } from '../vaccine-dates';
+import type { Vaccine } from '../../api/types';
 
 const rows: [number, string, string][] = [
   [12, '2026-10-06', '2027-10-06'],
@@ -26,4 +27,42 @@ it.each(rows)('#208 R2: suma %i meses a %s y da %s', (months, iso, expected) => 
 it.each(rows)('#208 R2: en America/Mexico_City suma %i meses a %s y da %s', (months, iso, expected) => {
   nativeProcess.env.TZ = 'America/Mexico_City';
   expect(addCalendarMonthsIso(iso, months)).toBe(expected);
+});
+
+function vaccine(id: string, nextDoseAt: string | null, appliedAt = '2026-01-01'): Vaccine {
+  return { id, petId: 'pet-1', catalogId: null, name: id, appliedAt, nextDoseAt, vetName: null, clinic: null, notes: null, documentKey: null };
+}
+
+it.each([
+  ['2026-12-31', '2027-01-01', 'upcoming'],
+  ['2026-12-31', '2026-12-31', 'past'],
+  ['2027-01-01', '2026-12-31', 'past'],
+  ['2026-12-31', null, 'past'],
+  ['2026-09-30', '2026-10-01', 'upcoming'],
+  ['2026-10-01', '2026-09-30', 'past'],
+  ['2026-12-31', '2027-12-31', 'upcoming'],
+  ['2027-02-01', '2026-12-15', 'past'],
+  ['2026-12-15', '2027-02-01', 'upcoming'],
+] as const)('#241 R2: hoy %s, próxima dosis %s, va a %s', (today, nextDoseAt, section) => {
+  const result = splitVaccines([vaccine('v', nextDoseAt)], today);
+  expect(result[section].map(item => item.id)).toEqual(['v']);
+  expect(result[section === 'past' ? 'upcoming' : 'past'].map(item => item.id)).toEqual([]);
+});
+
+it('#241 R3: ordena próximas ascendente y pasadas descendente por su fecha, con empate por id', () => {
+  const input = [
+    vaccine('u3', '2027-03-01', '2026-03-01'),
+    vaccine('p5', null, '2026-10-01'),
+    vaccine('u2', '2027-01-02', '2026-01-02'),
+    vaccine('p1', '2026-12-31', '2025-12-31'),
+    vaccine('p3', '2026-11-30', '2025-11-30'),
+    vaccine('u1', '2027-01-02', '2026-01-05'),
+    vaccine('p4', '2026-10-01', '2025-10-01'),
+    vaccine('p2', null, '2026-12-01'),
+  ];
+  const before = [...input];
+  const result = splitVaccines(input, '2026-12-31');
+  expect(result.upcoming.map(item => item.id)).toEqual(['u1', 'u2', 'u3']);
+  expect(result.past.map(item => item.id)).toEqual(['p1', 'p2', 'p3', 'p4', 'p5']);
+  expect(input).toEqual(before);
 });
