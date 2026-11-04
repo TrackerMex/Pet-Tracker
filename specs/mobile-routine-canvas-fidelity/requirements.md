@@ -1279,6 +1279,6 @@ re-mide la fila; el criterio no cambia.
 - `'3 dic, 11:30'`: la fixture es del mismo año que el reloj.
 - La anatomía de la fila, sus recetas y el «hasta» de las series.
 
-- [ ] Enmienda #240 aprobada (fecha: ____)
+- [x] Enmienda #240 aprobada (fecha: 2026-11-04)
   (firma delegada del leader; mandato del humano 2026-10-23, ampliado
   2026-11-04)

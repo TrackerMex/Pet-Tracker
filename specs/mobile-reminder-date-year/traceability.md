@@ -1,6 +1,6 @@
 ---
 feature: "mobile-reminder-date-year"
-status: draft        # draft | approved
+status: approved      # draft | approved
 tags: [mobile, ui, spec]
 ---
 
