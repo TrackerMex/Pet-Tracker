@@ -18,7 +18,8 @@ tags: [harness, spec, backend, e2e, flake]
 ## Reglas de la cadena
 
 - **Antes de empezar.**
-  - La casilla de aprobación de [[requirements]] tiene que estar marcada.
+  - La casilla de aprobación de [[requirements]] y la de su enmienda E1 tienen
+    que estar marcadas.
   - Worktree: `/home/claude/sites/Pet-Tracker-wt-237`, branch
     `feature/237-backend-e2e-vaccine-catalog-teardown`.
   - El `.env` de la raíz ya existe.
@@ -28,7 +29,9 @@ tags: [harness, spec, backend, e2e, flake]
   bloque. El rojo de R1 va en su propio commit, antes del arreglo.
 - **El rojo falla por aserción**, nunca por `Unhandled error`, `ReferenceError`
   ni un error de tipos. Por eso la sonda `pool.on('error', …)` del it se engancha
-  antes del primer `query` ([[design]] §Los its nuevos).
+  antes del primer `query` ([[design]] §Los its nuevos). La única excepción es el
+  flake de #226 que sale del `afterAll`, con el criterio de la enmienda E1 de
+  [[requirements]].
 - **Cada commit compila.** `tsc` y `eslint` del fichero salen con 0 (§Comandos).
 - **Formato.** `pnpm exec prettier --write test/vaccine-catalog-migration.e2e-spec.ts`
   antes de cada commit que toque el e2e.
@@ -79,7 +82,10 @@ del `.env`, con permiso `CREATEDB`, el mismo que ya usa #226.
   - `Tests: 1 failed, 7 passed, 8 total`;
   - el it de R1 falla con `Received promise resolved instead of rejected`;
   - `grep -cF 'WITH (FORCE)'` sobre el e2e devuelve `1`;
-  - `grep -cF 'DROP DATABASE IF EXISTS'` devuelve `1`.
+  - `grep -cF 'DROP DATABASE IF EXISTS'` devuelve `1`;
+  - si el log trae `Unhandled error`, `grep -cF "database: 'pet_tracker_226_" /tmp/impl-237-e2e.log`
+    da `1` o más y `grep -cF "database: 'pet_tracker_237" /tmp/impl-237-e2e.log` da `0`
+    (enmienda E1). Si no, PARA.
 
   Commit: `test(backend-e2e-vaccine-catalog-teardown): a live session survives dropDatabase (R1)`.
 - [ ] (2) **Verde.** Quitar ` WITH (FORCE)` del SQL de `dropDatabase`. No se
@@ -121,6 +127,8 @@ del `.env`, con permiso `CREATEDB`, el mismo que ya usa #226.
   - correr el e2e;
   - anotar `exit`, la línea `Tests:`, el mensaje del it de R1 y
     `grep -cF 'WITH (FORCE)'` (esperado: `1`);
+  - si el log trae `Unhandled error`, las dos cuentas de la enmienda E1, como en
+    el rojo de R1;
   - restaurar con `git checkout HEAD -- test/vaccine-catalog-migration.e2e-spec.ts`;
   - comprobar `git diff --quiet HEAD -- test/vaccine-catalog-migration.e2e-spec.ts; echo "exit=$?"`
     (esperado: `exit=0`).

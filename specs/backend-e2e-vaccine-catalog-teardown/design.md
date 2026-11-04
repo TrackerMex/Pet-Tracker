@@ -97,6 +97,10 @@ un `finally`, para que un rojo no deje bases huérfanas.
   - El `DROP` con `FORCE` la termina y resuelve.
   - El paso 4 falla con «Received promise resolved instead of rejected».
   - El `57P01` llega a la sonda, no al proceso.
+  - El `afterAll` todavía borra A y B con `FORCE`, así que el flake de #226
+    puede tumbar la suite en esa corrida. Se acepta solo con el criterio de la
+    enmienda E1 de [[requirements]]: el cliente es de `pet_tracker_226_` y
+    ninguno de `pet_tracker_237`.
   - En el `finally`, `pool.end()` resuelve, tanto si `idleListener` ya sacó al
     cliente como si lo saca ese mismo `end()`. `dropDatabase` es un no-op
     porque la base ya no existe.
@@ -127,6 +131,8 @@ un `finally`, para que un rojo no deje bases huérfanas.
     tiene que salir con 0.
   - El R2 de esa corrida puede salir verde o rojo, porque es la carrera. No se
     exige nada de él.
+  - Con `FORCE` plantado vuelve el flake de #226. Un `Unhandled error` en esa
+    corrida se acepta con el mismo criterio de la enmienda E1.
 
 No hay más mutaciones.
 

@@ -12,21 +12,23 @@ Primer comando, antes de nada:
 Confirma en el reporte la ruta y la branch `feature/237-backend-e2e-vaccine-catalog-teardown`.
 Los commits, de arriba abajo:
 
-1. este handoff (`docs(progress): #237 codex handoff`);
-2. la firma `d5065fa8`;
-3. el merge de `origin/dev` `2fb499b4`;
-4. `9f1e6824`.
+1. la firma de la enmienda (`chore(spec): sign #237 E1 (approved by the human 2026-11-04)`);
+2. la enmienda E1 (`docs(spec): #237 E1 accept the #226 flake in the FORCE runs`), que también
+   reescribe este handoff;
+3. el handoff original `021ff9b5`;
+4. la firma `d5065fa8`.
 
 ## Base
 
 - Feature: backend-e2e-vaccine-catalog-teardown (#237). Integra en `dev`, no en `main`.
-- H0, la base del diff final, es el commit de este handoff: el primero de `git log`.
+- H0, la base del diff final, es la firma de la enmienda: el primero de `git log`.
 - El worktree ya tiene el `.env` de la raíz y `backend-pet-tracker/node_modules`; el leader corrió
   `pnpm install --frozen-lockfile`. **No corras `pnpm install`**: el paso «Antes de empezar» de
   tasks.md ya está hecho.
 - No abras, no leas y no imprimas el `.env`: lo cargan el e2e y `dotenv` solos.
 - NO hagas `git fetch`, `git merge`, `git rebase` ni `git push`.
-- Anclas de partida. Las mide el leader en `d5065fa8`, desde `backend-pet-tracker/`, sobre
+- Anclas de partida. Las mide el leader en `d5065fa8`; la enmienda E1 no toca código, así que
+  siguen valiendo. Se miden desde `backend-pet-tracker/`, sobre
   `test/vaccine-catalog-migration.e2e-spec.ts`. Cada una es un `grep -cF '<literal>'` sobre ese
   fichero:
 
@@ -45,7 +47,8 @@ Los commits, de arriba abajo:
 
 ## Spec
 
-- Aprobada: el humano aprobó la firma de forma explícita y el leader la firmó (`d5065fa8`). Lee
+- Aprobada: el humano aprobó la firma de forma explícita y el leader la firmó (`d5065fa8`). La
+  enmienda E1 (requirements.md §Aprobación) también lleva la aprobación del humano. Lee
   enteros `specs/backend-e2e-vaccine-catalog-teardown/requirements.md`, `design.md`, `tasks.md`
   y `traceability.md`.
 - tasks.md manda en el orden, los mensajes de commit literales, los «Esperado» de cada paso y la
@@ -62,12 +65,16 @@ los mensajes literales de tasks.md y en este orden. Nada de un commit único con
 
 1. **T0**, sin commit. Antes de tocar nada, corre el e2e una vez sobre H0. Esperado: `exit=0` y
    `Tests: 7 passed, 7 total`. Si cae con `Unhandled error` y `57P01` (el flake que arregla esta
-   feature), repítelo una vez y anota las dos corridas. Si cae por otra cosa, PARA.
+   feature), mide las dos cuentas del criterio E1 (abajo). Si lo cumple, anótalo y sigue; no hace
+   falta repetir. Si cae por otra cosa, PARA.
 2. **Rojo de R1**: `test(backend-e2e-vaccine-catalog-teardown): a live session survives dropDatabase (R1)`.
    - Esperado: `exit` distinto de 0 y `Tests: 1 failed, 7 passed, 8 total`.
    - Cae solo el `it` de R1, con `Received promise resolved instead of rejected`.
    - El rojo tiene que ser por aserción, nunca por `Unhandled error`, `ReferenceError` ni tipos.
      La sonda `pool.on('error', …)` se engancha antes del primer `query`.
+   - Excepción (enmienda E1): el `afterAll` de esta corrida todavía borra con `FORCE`, así que
+     puede salir el flake de #226. Si el log trae `Unhandled error`, mide el criterio E1. Si lo
+     cumple, el rojo vale; si no, PARA.
    - Anota la aserción y su recibido.
 3. **Verde de R1**: `fix(backend-e2e-vaccine-catalog-teardown): drop test databases without FORCE (R1,R3)`.
    - Esperado: `exit=0` y `Tests: 8 passed, 8 total`.
@@ -79,6 +86,7 @@ los mensajes literales de tasks.md y en este orden. Nada de un commit único con
    - Mide las cuentas de R3 y anota cada una junto a la esperada.
    - Planta M1, corre el e2e y anota el `exit`, la línea `Tests:`, el mensaje del `it` de R1 y el
      `grep -cF 'WITH (FORCE)'` (esperado `1`).
+   - Con M1 plantada vuelve el `FORCE`: si el log trae `Unhandled error`, mide el criterio E1.
    - Si el `it` de R1 no cae con M1 plantada, PARA.
    - Restaura con `git checkout HEAD -- test/vaccine-catalog-migration.e2e-spec.ts` y comprueba
      `git diff --quiet HEAD -- test/vaccine-catalog-migration.e2e-spec.ts; echo "exit=$?"`, que da
@@ -92,6 +100,13 @@ los mensajes literales de tasks.md y en este orden. Nada de un commit único con
    - Cada fila lleva su test (`archivo::nombre`) o su verificación, y el hash y el mensaje de su
      commit.
    - No rebasees después.
+
+**Criterio E1**, desde `backend-pet-tracker/`. Anota las dos cuentas en el reporte:
+
+- `grep -cF "database: 'pet_tracker_226_" /tmp/impl-237-e2e.log` da `1` o más;
+- `grep -cF "database: 'pet_tracker_237" /tmp/impl-237-e2e.log` da `0`.
+
+En el verde, en R2 y en R4 no hay excepción: cualquier `Unhandled error` es PARA.
 
 Por cada commit que toque el e2e, en este orden y desde `backend-pet-tracker/`:
 
@@ -152,7 +167,6 @@ Antes de **cada** corrida de jest, sea e2e o unitaria, corre estos dos comandos 
 
 Otras reglas de espera:
 
-- Ahora mismo el leader corre `init.sh` en otro worktree, así que es normal que T0 espere.
 - Los jest de otros worktrees (móvil) no se esperan: cargan la CPU, pero no comparten Postgres.
 - Un timeout aislado se repite tal cual, con la espera vacía, antes de tocar nada. Si se repite,
   PARA.
@@ -170,9 +184,16 @@ Otras reglas de espera:
 - `#237` en el código y en los títulos va como en design.md. No inventes otros.
 - **Árbol limpio, acotado.** Al terminar, `git status --short -- backend-pet-tracker specs` tiene
   que salir vacío.
-- Borra `/tmp/impl-237-e2e.log` y `/tmp/impl-237-unit.log` antes de terminar.
+- **No borres los logs de `/tmp`.** El sandbox deniega `rm -f`; los borra el leader.
 - **No abras ni edites la PR.** La abre el leader.
 - Si el sandbox te deniega un comando, PARA y repórtalo.
+
+## Reanudación tras la parada del 2026-11-04
+
+- La primera sesión paró en el rojo de R1 por el flake de #226 y al borrar `/tmp`. Su reporte
+  está commiteado en la enmienda E1. No lo borres: añade al final una sección
+  `## Sesión 2 (tras la enmienda E1)` y escribe ahí todo lo de esta sesión.
+- El leader borró el marcador `.done` de la primera sesión.
 
 ## Reporte
 

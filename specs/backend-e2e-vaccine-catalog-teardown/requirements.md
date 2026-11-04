@@ -227,6 +227,9 @@ del `describe` externo, en un `describe` nuevo con este nombre literal:
   - El `DROP` mata la sesión y resuelve.
   - La aserción `rejects` falla con «Received promise resolved instead of rejected».
   - El pool recibe el `57P01`. La sonda lo registra, así que no tumba la suite.
+  - El `afterAll` de esa corrida todavía borra A y B con `FORCE`, así que el
+    flake de #226 puede salir en la misma corrida. No cuenta contra el rojo si
+    cumple el criterio de la enmienda E1 (§Aprobación).
 
 ### R2 — Justo después de `pool.end()`, el borrado funciona y nadie recibe error
 
@@ -307,6 +310,31 @@ del `describe` externo, en un `describe` nuevo con este nombre literal:
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-11-03) ← gate obligatorio antes de implementar
+
+### Enmienda E1 (2026-11-04)
+
+Codex paró en el rojo de R1. El it cayó como pide R1, con «Received promise
+resolved instead of rejected» y `Tests: 1 failed, 7 passed, 8 total`. Pero la
+misma corrida trajo además `● Test suite failed to run` con
+`Unhandled error. (error: terminating connection due to administrator command`
+y `code: '57P01'`. El cliente del error era de la base A de #226
+(`database: 'pet_tracker_226_a_…'`, vía `Client.idleListener`), no de la base de
+R1. Es el flake que arregla esta feature. Sigue vivo en el rojo porque el rojo
+conserva `WITH (FORCE)` en `dropDatabase` a propósito, y M1 lo vuelve a plantar.
+
+- **Qué cambia.** En T0, en el rojo de R1 y en M1 se acepta un
+  `Unhandled error` con `57P01` solo si es el flake de #226, medido con
+  `grep -cF` sobre `/tmp/impl-237-e2e.log`:
+  - `database: 'pet_tracker_226_` da `1` o más;
+  - `database: 'pet_tracker_237` da `0`.
+
+  Un `Unhandled error` que no cumpla las dos cosas sigue siendo PARA. Las
+  cifras de `Tests:` y el mensaje del it de R1 siguen siendo los mismos.
+- **Qué no cambia.** R1–R4, el test, `dropDatabase`, el verde (`exit=0`, sin
+  ningún `Unhandled error`), R2 y lo que planta M1. Con el verde ya no queda `FORCE`, así que
+  el flake no tiene por dónde salir.
+
+- [ ] Enmienda E1 aprobada por humano (fecha: ____)
 
 No hay gates humanos aparte: ni G1 (copy y artboards) ni G2 (smoke). El
 mandato del 2026-10-23, ampliado el 2026-11-03, cubre #226–#235, no #237: esta
