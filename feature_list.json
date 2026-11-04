@@ -3863,11 +3863,30 @@
   {
     "id": 239,
     "name": "mobile-reminder-swipe-past-row-bleed",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P1",
-    "description": "En Recordatorios, al deslizar una fila de Pasados, la franja rosa del panel de borrar (24 de ancho, detrás del borde derecho de la fila) se transparenta a través de la fila atenuada al 50 %. Debe quedar como en Próximos; la fila sigue atenuada en reposo y el borrado no cambia. Hallazgo del humano en el smoke del 2026-11-04 (paso 3 de #228): «el color rojo no se oculta, debe de quedar como en la lista de PROXIMOS». La spec elige entre acortar la franja a la esquina (salida de specs/mobile-reminder-swipe-actions/design.md §Riesgos) y dar a la fila pasada un fondo opaco con el contenido atenuado. Responsable: leader @Backend. Plan progress/plan_arreglos-smoke-2026-11-04.md §2, firma delegada (ampliación del 2026-11-04). Registrada sin spec.",
-    "acceptance_criteria": null,
-    "files_affected": null
+    "description": "En Recordatorios, al deslizar una fila de Pasados, la franja rosa del panel de borrar (24 de ancho, detrás del borde derecho de la fila) se transparenta a través de la fila atenuada al 50 %. Debe quedar como en Próximos; la fila sigue atenuada en reposo y el borrado no cambia. Hallazgo del humano en el smoke del 2026-11-04 (paso 3 de #228): «el color rojo no se oculta, debe de quedar como en la lista de PROXIMOS». La spec elige entre acortar la franja a la esquina (salida de specs/mobile-reminder-swipe-actions/design.md §Riesgos) y dar a la fila pasada un fondo opaco con el contenido atenuado. Responsable: leader @Backend. Plan progress/plan_arreglos-smoke-2026-11-04.md §2, firma delegada (ampliación del 2026-11-04). Spec en specs/mobile-reminder-swipe-past-row-bleed/: base opaca bg-background dentro del deslizable, solo en filas pasadas del dueño.",
+    "acceptance_criteria": [
+      "R1: con el dueño, cada fila de Pasados va, dentro de su ReanimatedSwipeable, en una base View 'rounded-22 bg-background' con CONTINUOUS_CORNER, sin testID, opacidad ni props de accesibilidad y con la fila como único hijo; la fila conserva su className con ' opacity-50' al final y el color de la base es el del ScrollView screen-reminders ('flex-1 bg-background')",
+      "R2: la base no envuelve el panel; el panel sigue siendo hijo directo del deslizable, con su className, su franja 'absolute inset-y-0 -left-6 w-6 bg-category-rose' como primer hijo y estilo { opacity: 1 } en reposo",
+      "R3: las filas de Próximos del dueño siguen siendo hijo directo de su deslizable, sin base",
+      "R4: quien no es dueño ve las filas de Pasados sin deslizable ni base, como hijo directo de reminders-entry-<id>",
+      "R5: con el ReanimatedSwipeable real la fila pasada se monta sobre su base y el panel abre la hoja «¿Eliminar recordatorio?» con su título",
+      "R6: inventario exacto de screens/reminders/index.tsx (base 1, bg-background 4, ' opacity-50' 1, franja 1, contenedor 1, testID= 48; needsOffscreenAlphaCompositing, renderToHardwareTextureAndroid y childrenContainerStyle 0)",
+      "R7: los cinco candados de la Tabla de enmiendas (y los de la Regla de cierre) llevan '(enmendado por #239 R7)'; specs/mobile-reminders-upcoming-past/requirements.md lleva una vez '## Enmienda #239 — Base opaca de la fila pasada' con su casilla; suite completa verde",
+      "Grep-limpio según docs/ui-guidelines.md (sin hex, sin StyleSheet.create, sin clases [...], #NNN seguido de R<n> en comentarios); sin copy, testID ni dependencia nueva",
+      "Commits test-primero (C4): rojo de R1 a R6, verde con los guards enmendados, rojo y verde de R7",
+      "G2: smoke en el dev build de Android en tema claro y oscuro (pasos de requirements.md «Paso de smoke nuevo (G2)»), por lote al final"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/reminders/index.tsx",
+      "mobile-pet-tracker/src/screens/reminders/index.test.tsx",
+      "mobile-pet-tracker/src/__tests__/reminder-swipe-actions-canvas-fidelity.test.ts",
+      "mobile-pet-tracker/src/__tests__/reminders-upcoming-past-canvas-fidelity.test.ts",
+      "mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts",
+      "mobile-pet-tracker/src/__tests__/design-drift.test.ts",
+      "specs/mobile-reminders-upcoming-past/requirements.md"
+    ]
   },
   {
     "id": 240,

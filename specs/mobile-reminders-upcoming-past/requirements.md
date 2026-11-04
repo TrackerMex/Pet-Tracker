@@ -758,3 +758,26 @@ cuatro filas nuevas son del mismo fichero. No se retira ninguna clave de copy.
 - [x] Enmienda #228 aprobada (fecha: 2026-11-03)
   (firma delegada del leader; mandato del humano 2026-10-23, ampliado
   2026-11-03)
+
+## Enmienda #239 — Base opaca de la fila pasada
+
+**Spec enmendada:** `specs/mobile-reminders-upcoming-past/requirements.md`
+(#227), **R11**. La enmienda la escribe
+`specs/mobile-reminder-swipe-past-row-bleed/requirements.md` (#239, R1, R6 y
+R7).
+
+**Qué cambia.**
+
+- R11: el inventario de `style={CONTINUOUS_CORNER}` en
+  `screens/reminders/index.tsx` pasa de 7 a 8, por la base opaca de la fila
+  pasada del dueño dentro del deslizable (#239 R1).
+
+**Qué no cambia.**
+
+- La opacidad 0.5 de la fila en Pasados (R7): la base va debajo de la fila y
+  no se atenúa.
+- Las dos secciones, su orden, el colapso de Pasados y su contador (R4 a R6).
+- R12 tal como la dejó la Enmienda #228.
+- El resto del inventario de R11 y los requisitos R1 a R10 y R13.
+
+- [ ] Enmienda #239 aprobada (fecha: ____)
