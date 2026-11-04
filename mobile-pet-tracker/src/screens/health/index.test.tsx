@@ -1835,12 +1835,12 @@ describe('#241: vacunas próximas y pasadas', () => {
     expect(screen.getByTestId('vaccines-section').children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['vaccines-header', 'vaccines-past']);
   });
 
-  it.each([
+  it.each<{ tz: string; hora: string; now: [number, number, number, number, number]; dosis: string; seccion: 'upcoming' | 'past' }>([
     { tz: 'America/Mexico_City', hora: '23:59', now: [2026, 11, 31, 23, 59], dosis: '2027-01-01', seccion: 'upcoming' },
     { tz: 'Pacific/Auckland', hora: '00:01', now: [2027, 0, 1, 0, 1], dosis: '2027-01-01', seccion: 'past' },
     { tz: 'America/Mexico_City', hora: '23:59', now: [2026, 8, 30, 23, 59], dosis: '2026-10-01', seccion: 'upcoming' },
     { tz: 'Pacific/Auckland', hora: '00:01', now: [2026, 9, 1, 0, 1], dosis: '2026-10-01', seccion: 'past' },
-  ] as const)('#241 R10: a las $hora en $tz la dosis del $dosis va a $seccion', async ({ tz, now, dosis, seccion }) => {
+  ])('#241 R10: a las $hora en $tz la dosis del $dosis va a $seccion', async ({ tz, now, dosis, seccion }) => {
     const hostProcess = process.getBuiltinModule('process');
     const previousZone = hostProcess.env.TZ;
     try {
