@@ -51,3 +51,41 @@ dosis.
 6. Repite 1 a 5 en el otro tema (claro u oscuro).
 
 - [ ] Smoke de #241 pasado (fecha: )
+
+## #240 mobile-reminder-date-year
+
+Hallazgo: la fecha de la fila de Recordatorios no llevaba año, así que un
+recordatorio de dentro de un año se leía como si fuera de este. Ahora lleva año
+solo cuando la fecha cae fuera del año en curso.
+
+1. En el dev build de Android, en español y con el reloj del teléfono en la
+   fecha real, crea con Nuevo recordatorio, para una mascota de la que eres
+   dueño:
+   - uno para **dentro de un año exacto** a las 09:00 (p. ej. hoy 4 nov 2026 →
+     4 nov 2027);
+   - uno para **este año**, dentro de unos días;
+   - uno **en serie** («cada mes») con fin («hasta») en este año, y otro con
+     fin en el año siguiente.
+2. Abre Recordatorios. En «PRÓXIMOS»:
+   - el del año que viene dice «4 nov 2027, 09:00 · en 365 días» (con su fecha
+     real), con año;
+   - el de este año, sin año (p. ej. «20 nov, 09:00 · en 16 días»);
+   - las series dicen «· hasta el <día> <mes>» (este año) y
+     «· hasta <mes> <año>» (otro año), como antes.
+3. Un recordatorio **pasado del año anterior**: si la cuenta no tiene ninguno,
+   se acepta comprobarlo en el paso 5. Si lo tiene, toca «PASADOS»: su fila
+   lleva año (p. ej. «3 dic 2025, 11:30 Enviado»). Los pasados de este año,
+   sin año.
+4. Cambia el idioma a inglés en Perfil y vuelve: el del año que viene dice
+   «Nov 4, 2027, 09:00 · in 365 days»; el de este año, «Nov 20, 09:00 · in 16
+   days».
+5. Si no hubo pasado del año anterior en el paso 3: pon el reloj del teléfono
+   en el 1 ene del año siguiente (sin hora automática), vuelve a Recordatorios
+   y abre «PASADOS»: los recordatorios ya vencidos del año anterior llevan año.
+   Vuelve a poner la hora automática.
+6. El formato en el teléfono es el de Hermes, no el de Node. Si sale distinto
+   de los literales de arriba (p. ej. «4 nov. 2027»), anótalo tal cual aquí:
+   es aceptable si lleva el año solo donde toca.
+7. Repite 2 y 4 en tema claro y oscuro.
+
+- [ ] Smoke de #240 pasado (fecha: )
