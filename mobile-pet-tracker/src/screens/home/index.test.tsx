@@ -54,6 +54,9 @@ const { join } = require('path');
 
 const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
 const mockWithTiming = jest.fn((value: number, _config?: unknown) => value);
+const mockProgressiveBlurProps = jest.fn<void, [Record<string, unknown>]>();
+let mockTheme: 'light' | 'dark' = 'light';
+let mockInsets = { top: 40, right: 0, bottom: 24, left: 0 };
 
 function expectMealsBarTiming(target: number): void {
   const config = mockWithTiming.mock.calls.find(
@@ -123,8 +126,24 @@ jest.mock('expo-router', () => ({
 
 jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
-  useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
+  useSafeAreaInsets: () => mockInsets,
 }));
+
+jest.mock('uniwind', () => ({
+  ...jest.requireActual('uniwind'),
+  useUniwind: () => ({ theme: mockTheme, hasAdaptiveThemes: false }),
+}));
+
+jest.mock('expo-backdrop', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    ProgressiveBlurView: (props: Record<string, unknown>) => {
+      mockProgressiveBlurProps(props);
+      return React.createElement(View, props);
+    },
+  };
+});
 
 jest.mock('react-native-reanimated', () => {
   const actual = jest.requireActual<typeof import('react-native-reanimated')>(
@@ -6695,5 +6714,263 @@ describe('#216 R3: Vincular collar en Inicio es solo del dueño', () => {
     } else {
       expect(screen.queryByTestId('collar-pair-link')).toBeNull();
     }
+  });
+});
+
+describe('#242 R2: Inicio pinta los dos bordes con blur', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockTheme = 'light';
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  afterEach(() => {
+    mockInsets = { top: 40, right: 0, bottom: 24, left: 0 };
+  });
+
+  it.each([['contenido'], ['carga'], ['error']] as const)(
+    '#242 R2: el estado %s pinta ambos bordes',
+    async (state) => {
+      const pet = makePet();
+      mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+      if (state === 'carga') {
+        mockListPets.mockReturnValue(pending<PetsState>());
+      } else if (state === 'error') {
+        mockListPets.mockResolvedValue({ kind: 'error' });
+      } else {
+        mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+      }
+      await renderHome();
+      if (state === 'contenido') {
+        await screen.findByTestId('collar-card');
+      } else if (state === 'error') {
+        await screen.findByTestId('home-error');
+      } else {
+        expect(screen.getByTestId('home-loading')).toBeOnTheScreen();
+      }
+
+      const top = screen.getByTestId('home-edge-blur-top');
+      const bottom = screen.getByTestId('home-edge-blur-bottom');
+      expect(top.props.edge).toBe('top');
+      expect(bottom.props.edge).toBe('bottom');
+      // #242 R2: el View nativo añade children; comprobamos las props recibidas por el doble.
+      for (const overlay of [top, bottom]) {
+        const props = mockProgressiveBlurProps.mock.calls.find(
+          ([received]) => received.testID === overlay.props.testID,
+        )![0];
+        expect(Object.keys(props).sort()).toEqual(['edge', 'style', 'testID', 'tint']);
+      }
+    },
+  );
+});
+
+describe('#242 R3: la geometría sigue a los insets', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockTheme = 'light';
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  afterEach(() => {
+    mockInsets = { top: 40, right: 0, bottom: 24, left: 0 };
+  });
+
+  it.each([
+    [{ top: 47, bottom: 31 }, 71, 131],
+    [{ top: 0, bottom: 0 }, 24, 100],
+  ] as const)('#242 R3: con insets %j las alturas son %i y %i', async (insets, topHeight, bottomHeight) => {
+    mockInsets = { ...insets, left: 0, right: 0 };
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    await renderHome();
+
+    const top = await screen.findByTestId('home-edge-blur-top');
+    expect(top.props.style).toEqual({
+      position: 'absolute', top: 0, left: 0, right: 0, height: topHeight, pointerEvents: 'none',
+    });
+    expect(screen.getByTestId('home-edge-blur-bottom').props.style).toEqual({
+      position: 'absolute', bottom: 0, left: 0, right: 0, height: bottomHeight, pointerEvents: 'none',
+    });
+  });
+});
+
+describe('#242 R4: los overlays no capturan toques', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockTheme = 'light';
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  afterEach(() => {
+    mockInsets = { top: 40, right: 0, bottom: 24, left: 0 };
+  });
+
+  it.each([['home-edge-blur-top'], ['home-edge-blur-bottom']])(
+    '#242 R4: %s lleva pointerEvents none en style',
+    async (id) => {
+      const pet = makePet();
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+      mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+      await renderHome();
+      await screen.findByTestId('collar-card');
+
+      const overlay = screen.getByTestId(id);
+      expect(overlay.props.style.pointerEvents).toBe('none');
+      expect(overlay.props.pointerEvents).toBeUndefined();
+    },
+  );
+});
+
+describe('#242 R5: los overlays son hermanos posteriores al scroll', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockTheme = 'light';
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  afterEach(() => {
+    mockInsets = { top: 40, right: 0, bottom: 24, left: 0 };
+  });
+
+  it('#242 R5: la raíz contiene scroll, borde superior y borde inferior en ese orden', async () => {
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    await renderHome();
+    await screen.findByTestId('collar-card');
+
+    const root = screen.getByTestId('home-screen-root');
+    expect(root.props.className).toBe('flex-1 bg-background');
+    expect(root.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual([
+      'screen-home', 'home-edge-blur-top', 'home-edge-blur-bottom',
+    ]);
+    expect(root.children).toHaveLength(3);
+  });
+});
+
+describe('#242 R6: el tinte sigue al tema', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockTheme = 'light';
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  afterEach(() => {
+    mockInsets = { top: 40, right: 0, bottom: 24, left: 0 };
+  });
+
+  it.each([
+    ['light', 'systemThinMaterialLight'],
+    ['dark', 'systemThinMaterialDark'],
+  ] as const)('#242 R6: con tema %s el tint es %s', async (theme, tint) => {
+    mockTheme = theme;
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    await renderHome();
+    await screen.findByTestId('collar-card');
+
+    expect(screen.getByTestId('home-edge-blur-top').props.tint).toBe(tint);
+    expect(screen.getByTestId('home-edge-blur-bottom').props.tint).toBe(tint);
+  });
+});
+
+describe('#242 R7: sin mascotas no hay blur', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockTheme = 'light';
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  afterEach(() => {
+    mockInsets = { top: 40, right: 0, bottom: 24, left: 0 };
+  });
+
+  it('#242 R7: la pantalla vacía no pinta overlays ni raíz del blur', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderHome();
+    await screen.findByTestId('home-no-pets-screen');
+
+    expect(screen.queryByTestId('home-edge-blur-top', { includeHiddenElements: true })).toBeNull();
+    expect(screen.queryByTestId('home-edge-blur-bottom', { includeHiddenElements: true })).toBeNull();
+    expect(screen.queryByTestId('home-screen-root', { includeHiddenElements: true })).toBeNull();
+    expect(screen.queryByTestId('screen-home')).toBeNull();
+  });
+});
+
+describe('#242 R8: el ScrollView no cambia', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockTheme = 'light';
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  afterEach(() => {
+    mockInsets = { top: 40, right: 0, bottom: 24, left: 0 };
+  });
+
+  it('#242 R8: conserva clase, inset automático y relleno inferior', async () => {
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    await renderHome();
+    await screen.findByTestId('collar-card');
+
+    const scroll = screen.getByTestId('screen-home');
+    expect(scroll.props.className).toBe('flex-1 bg-background');
+    expect(scroll.props.contentInsetAdjustmentBehavior).toBe('automatic');
+    expect(scroll.props.contentContainerStyle).toEqual({ gap: 14, paddingBottom: 120 });
+    expect(scroll.props.onScroll).toBeUndefined();
+    expect(scroll.props.scrollEventThrottle).toBeUndefined();
   });
 });
