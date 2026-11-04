@@ -3837,11 +3837,19 @@
   {
     "id": 237,
     "name": "backend-e2e-vaccine-catalog-teardown",
-    "status": "pending",
+    "status": "done",
     "priority": "P2",
-    "description": "Flake del e2e backend-pet-tracker/test/vaccine-catalog-migration.e2e-spec.ts (#226): su afterAll hace DROP DATABASE IF EXISTS ... WITH (FORCE) con un cliente aún vivo (probablemente el pool de la app Nest, que lee DATABASE_URL), y pg lo convierte en «Unhandled error» 57P01 («terminating connection due to administrator command»). Tumbó el ./init.sh de @Frontend el 2026-11-03 (wt-233); el reintento salió verde. No es interferencia entre sesiones: el log de Postgres muestra el FATAL y los dos checkpoints de los DROP. Arreglo: cerrar todos los pools antes del DROP, o escuchar 'error' en ellos. Responsable: leader @Backend. El humano pidió registrarlo como feature el 2026-11-03 («registralo como feature»). Plan progress/plan_mejoras-smoke-2026-11-03.md. Registrada sin spec.",
-    "acceptance_criteria": null,
-    "files_affected": null
+    "description": "Flake del e2e backend-pet-tracker/test/vaccine-catalog-migration.e2e-spec.ts (#226): su afterAll hace DROP DATABASE IF EXISTS ... WITH (FORCE) con un cliente aún vivo (probablemente el pool de la app Nest, que lee DATABASE_URL), y pg lo convierte en «Unhandled error» 57P01 («terminating connection due to administrator command»). Tumbó el ./init.sh de @Frontend el 2026-11-03 (wt-233); el reintento salió verde. No es interferencia entre sesiones: el log de Postgres muestra el FATAL y los dos checkpoints de los DROP. Arreglo: cerrar todos los pools antes del DROP, o escuchar 'error' en ellos. Responsable: leader @Backend. El humano pidió registrarlo como feature el 2026-11-03 («registralo como feature»). Plan progress/plan_mejoras-smoke-2026-11-03.md. Spec en specs/backend-e2e-vaccine-catalog-teardown/ (2026-11-03), sobre origin/dev 5c7c9547. Causa verificada: ningún pool queda sin cerrar; los tres que tocan A o B (PG_POOL de src/db/drizzle.module.ts vía app.close(), poolA y poolB) se cierran antes del DROP, pero pg-pool 3.14.0 resuelve Pool.end() antes de que sus sockets cierren, WITH (FORCE) mata al backend que aún no leyó el Terminate y su 57P01 llega a un pool sin listener de 'error'. Arreglo: una función dropDatabase(name) en el e2e con DROP DATABASE IF EXISTS sin FORCE (Postgres espera hasta 5 s a los backends que salen; una sesión viva de verdad da 55006 dentro del AggregateError). Rojo determinista con una sesión viva (R1); sin cambios en src/, migraciones ni dependencias.",
+    "acceptance_criteria": [
+      "R1: con una sesión del test aún conectada, dropDatabase(name) rechaza con code '55006', la base sigue en pg_database (count 1) y el pool de esa sesión no recibe ningún error ([]); rojo determinista con el WITH (FORCE) de hoy",
+      "R2: justo después de await pool.end() con una sesión ociosa, dropDatabase(name) resuelve, la base desaparece (count 0) y el pool no recibe ningún error (nace verde tras R1)",
+      "R3: el afterAll borra A y B solo con dropDatabase, después de app.close(), poolA.end() y poolB.end(); grep -cF 'WITH (FORCE)' = 0 en el e2e y el fichero da Tests: 9 passed, 9 total; mutación M1 (volver a poner FORCE) pone R1 en rojo",
+      "R4: git diff --name-only 5c7c9547...HEAD -- backend-pet-tracker/ = solo test/vaccine-catalog-migration.e2e-spec.ts; sin diff en src/, package.json ni pnpm-lock.yaml",
+      "Tests en backend-pet-tracker/test/vaccine-catalog-migration.e2e-spec.ts::#237 R1 y ::#237 R2; sin G1 ni G2"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/test/vaccine-catalog-migration.e2e-spec.ts"
+    ]
   },
   {
     "id": 238,

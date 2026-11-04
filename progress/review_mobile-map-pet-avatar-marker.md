@@ -151,6 +151,10 @@ móvil     Test Suites: 181 passed, 181 total
 ✅ Todo verde. Listo para trabajar.
 ```
 
+Errata del leader (2026-11-04, desde la rama de #237): los rótulos de este bloque están cambiados. Las líneas bajo
+«e2e» (2 suites, 14 tests) son de `infra`. Las dos últimas (33 de 36 suites; 599 passed y 8 skipped) son el e2e
+del backend, no el móvil. Las cifras son correctas.
+
 - El móvil gana 2 suites y 45 tests frente a la base de `dev` de #236 (179 suites y 6613 tests).
   Son los de #230.
 - Las 55 apariciones de `●` en el log son todas `● Console`; ningún test cae.

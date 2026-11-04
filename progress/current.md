@@ -9,6 +9,10 @@
 - 12 features a `done`; #209, #222 y #223 siguen `spec_ready` por su G4; #224 espera a #234.
 - Plan nuevo: `progress/plan_mejoras-smoke-2026-11-03.md`, features #226–#235, firma delegada
   (ampliación del 2026-11-03 en CLAUDE.md). @Backend: #226–#228 y #230; @Frontend: #229 y #231–#235.
+- Fuera del mandato, con la firma aprobada por el humano feature a feature: #236 (estado de error del
+  selector de vacunas), #237 (teardown del e2e del catálogo, flake 57P01 de #226) y #238 (listener
+  de `'error'` en `PG_POOL`). Las enmiendas E1 de #237 y #238 también las aprobó el humano.
+  #236 y #238 ya están en `dev`.
 
 ## Fallback al subagente `implementer` (#225, 2026-10-28)
 

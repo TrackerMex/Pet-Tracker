@@ -239,6 +239,10 @@ Lo corrió el leader sobre `3a53b8f3`, el HEAD revisado. Hubo cuatro corridas.
    ✅ Todo verde
    ```
 
+   Errata del leader (2026-11-04, desde la rama de #237): los rótulos de este bloque están cambiados. Las líneas
+   bajo «e2e» (2 suites, 14 tests) son de `infra`. Las dos últimas (33 de 36 suites; 599 passed y 8 skipped)
+   son el e2e del backend, no el móvil. Las cifras son correctas.
+
    Las 54 apariciones de `●` en el log son todas `● Console`; ningún test cae.
 
 El rojo de las corridas 1 y 2 fue de carga, no de #236: cae en suites que esta

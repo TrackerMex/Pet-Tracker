@@ -75,6 +75,10 @@ describe('#226 vaccine catalog migration (e2e)', () => {
     return response.body as CatalogRow[];
   }
 
+  async function dropDatabase(name: string): Promise<void> {
+    await admin.query(`DROP DATABASE IF EXISTS "${name}"`);
+  }
+
   beforeAll(() => {
     if (!originalDatabaseUrl) throw new Error('DATABASE_URL is required');
     admin = new Pool({ connectionString: originalDatabaseUrl });
@@ -107,16 +111,10 @@ describe('#226 vaccine catalog migration (e2e)', () => {
         else process.env.DATABASE_URL = originalDatabaseUrl;
       },
       async () => {
-        if (createdA)
-          await admin.query(
-            `DROP DATABASE IF EXISTS "${databaseA}" WITH (FORCE)`,
-          );
+        if (createdA) await dropDatabase(databaseA);
       },
       async () => {
-        if (createdB)
-          await admin.query(
-            `DROP DATABASE IF EXISTS "${databaseB}" WITH (FORCE)`,
-          );
+        if (createdB) await dropDatabase(databaseB);
       },
       () => admin?.end(),
       () => {
@@ -316,6 +314,64 @@ describe('#226 vaccine catalog migration (e2e)', () => {
       );
       expect(after.rows).toHaveLength(7);
       expect(after.rows).toEqual(before.rows);
+    });
+  });
+
+  describe('#237: dropDatabase no termina sesiones ajenas', () => {
+    it('#237 R1: con una sesion viva, dropDatabase rechaza con 55006, no borra la base y la sesion no recibe 57P01', async () => {
+      const name = `pet_tracker_237_live_${runId}`;
+      await admin.query(`CREATE DATABASE "${name}"`);
+      const url = new URL(originalDatabaseUrl!);
+      url.pathname = `/${name}`;
+      const pool = new Pool({
+        connectionString: url.toString(),
+        idleTimeoutMillis: 0,
+      });
+      const errors: unknown[] = [];
+      pool.on('error', (error) => {
+        errors.push(error);
+      });
+      try {
+        await pool.query('select 1');
+        await expect(dropDatabase(name)).rejects.toMatchObject({
+          code: '55006',
+        });
+        const { rows } = await admin.query<{ count: number }>(
+          'select count(*)::int as count from pg_database where datname = $1',
+          [name],
+        );
+        expect(rows[0].count).toBe(1);
+        expect(errors).toEqual([]);
+      } finally {
+        if (!pool.ending) await pool.end();
+        await dropDatabase(name);
+      }
+    });
+
+    it('#237 R2: justo despues de pool.end(), dropDatabase borra la base y el pool no recibe ningun error', async () => {
+      const name = `pet_tracker_237_ended_${runId}`;
+      await admin.query(`CREATE DATABASE "${name}"`);
+      const url = new URL(originalDatabaseUrl!);
+      url.pathname = `/${name}`;
+      const pool = new Pool({ connectionString: url.toString() });
+      const errors: unknown[] = [];
+      pool.on('error', (error) => {
+        errors.push(error);
+      });
+      try {
+        await pool.query('select 1');
+        await pool.end();
+        await expect(dropDatabase(name)).resolves.toBeUndefined();
+        const { rows } = await admin.query<{ count: number }>(
+          'select count(*)::int as count from pg_database where datname = $1',
+          [name],
+        );
+        expect(rows[0].count).toBe(0);
+        expect(errors).toEqual([]);
+      } finally {
+        if (!pool.ending) await pool.end();
+        await dropDatabase(name);
+      }
     });
   });
 });
