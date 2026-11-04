@@ -67,3 +67,16 @@ Hallazgo: «En Nutricion sin Perfil, no deben de aparecer Horario de comidas y H
 2. Crea el perfil con el cuestionario y vuelve a Nutrición: ahora sí salen las dos filas.
 
 - [ ] Smoke de #233 pasado (fecha: ____)
+
+## #234 mobile-nutrition-ai-collapse-flicker
+
+Hallazgo: «No marque mobile-nutrition-ai-format porque en eñ colapso de IA queda parpadiando». Necesita el dev build con `dev` actualizado. Reproduce el fallo original, en tema claro y en oscuro, con una mascota que tenga plan de nutrición con «Recomendación IA» (explicación larga).
+
+1. Abre Nutrición. La tarjeta «Recomendación IA» aparece colapsada, con el degradado sobre el borde inferior y «Ver más». Mírala 10 segundos sin tocar nada: antes parpadeaba (cambiaba de alto una y otra vez); ahora queda quieta. Se admite un único salto al primer pintado.
+2. Sal de Nutrición y vuelve a entrar tres veces: cada vez termina colapsada y quieta.
+3. Pulsa «Ver más»: el texto se muestra completo y queda quieto; pulsa «Ver menos»: vuelve a unas seis líneas con degradado y queda quieto. Repite tres veces.
+4. Cambia entre dos mascotas con planes distintos: el texto nuevo aparece colapsado y quieto (si la nueva explicación es corta, sin botón ni degradado).
+5. En tema oscuro y en claro: el degradado se funde con el fondo violeta sin banda visible, igual que en el artboard aprobado; no hay espacio vacío extra bajo la tarjeta.
+6. TalkBack: la explicación se lee una sola vez (un párrafo continuo) y «Ver más» por separado.
+
+- [ ] Smoke de #234 pasado (fecha: ____; tema claro: sí / no; tema oscuro: sí / no). Cierra también el smoke de #224 («Smoke de #224 pasado tras #234»).
