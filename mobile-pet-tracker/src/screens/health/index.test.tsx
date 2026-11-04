@@ -85,6 +85,8 @@ jest.mock('reicon-react-native', () => {
   return {
     Check: icon('health-icon-check'),
     ChevronRight: icon('health-icon-chevron-right'),
+    ChevronDown: icon('health-icon-chevron-down'),
+    ChevronUp: icon('health-icon-chevron-up'),
     Clock: icon('health-icon-clock'),
     HeartPulse: icon('health-icon-heart-pulse'),
     Syringe: icon('health-icon-syringe'),
@@ -1734,5 +1736,39 @@ describe('#241: vacunas próximas y pasadas', () => {
     ]);
     expect(list.props.className).toBe('gap-2.5');
     expect(within(list).getAllByTestId(/^vaccine-row-/).map(row => row.props.testID)).toEqual(['vaccine-row-future', 'vaccine-row-later']);
+  });
+
+  it('#241 R5: «Pasadas» empieza colapsada con su contador y el chevron abajo', async () => {
+    await renderHealth();
+    const toggle = await screen.findByTestId('vaccines-past-toggle');
+    expect(toggle.props.className).toBe('mt-1 h-10 w-full flex-row items-center gap-2');
+    expect(toggle.props.accessibilityRole).toBe('button');
+    expect(toggle.props.accessibilityState?.expanded).toBe(false);
+    expect(toggle.props.hitSlop).toEqual({ top: 6, bottom: 6, left: 6, right: 6 });
+    const label = within(toggle).getByTestId('vaccines-past-label');
+    expect(label).toHaveTextContent('Pasadas', { exact: true });
+    expect(label.props.className).toBe('text-13 font-extrabold uppercase tracking-caps text-muted');
+    const count = within(toggle).getByTestId('vaccines-past-count');
+    expect(count).toHaveTextContent('3', { exact: true });
+    expect(count.props.className).toBe('rounded-full bg-default px-2 py-0.5 text-xs font-extrabold text-muted');
+    expect(count.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+    const chevron = within(toggle).getByTestId('health-icon-chevron-down', { includeHiddenElements: true });
+    expect(chevron.props.size).toBe(18);
+    expect(chevron.props.style).toEqual({ color: 'muted' });
+    expect(chevron.parent!.props.className).toBe('size-8 items-center justify-center rounded-full bg-default');
+    expect(within(toggle).queryByTestId('health-icon-chevron-up', { includeHiddenElements: true })).toBeNull();
+    expect(screen.queryByTestId('vaccines-past-list')).toBeNull();
+    for (const id of ['today', 'none', 'overdue']) expect(screen.queryByTestId(`vaccine-row-${id}`)).toBeNull();
+    const past = screen.getByTestId('vaccines-past');
+    expect(past.props.className).toBe('gap-2.5');
+    expect(past.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['vaccines-past-toggle']);
+  });
+
+  it('#241 R5: sin pasadas no pinta la sección', async () => {
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: FIXTURE_241.filter(vaccine => ['future', 'later'].includes(vaccine.id)) });
+    await renderHealth();
+    await screen.findByTestId('vaccines-upcoming-list');
+    expect(screen.queryByTestId('vaccines-past')).toBeNull();
+    expect(screen.queryByTestId('vaccines-past-toggle')).toBeNull();
   });
 });
