@@ -238,7 +238,10 @@ Error message: "Unhandled error. (Error: terminating connection due to administr
 - **Qué no cambia.** El comportamiento de R1, el test, el listener, M2, R2 y el
   resto de cifras.
 
-- [ ] Enmienda E1 aprobada por humano (fecha: ____)
+- [x] Enmienda E1 aprobada por humano (fecha: 2026-11-04)
+
+  El humano aprobó la enmienda de forma explícita el 2026-11-04 a las 03:47 UTC
+  («si apruebo las 2 enmientas»). El leader la registra con su commit.
 
 No hay gates humanos aparte: ni G1 (copy y artboards) ni G2 (smoke). El
 mandato del 2026-10-23, ampliado el 2026-11-03, cubre #226–#235, no #238: esta
