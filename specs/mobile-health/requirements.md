@@ -405,6 +405,31 @@ y su ampliación). Esta spec ratificó el inglés en su día; esa parte queda
 
 - [X] Enmienda aprobada por humano (fecha: 2026-09-06)
 
+## Enmienda #241 — Salud: vacunas próximas y pasadas
+
+**Spec enmendada:** R5 de esta spec («listar todas las vacunas en el orden
+recibido (descendente por `appliedAt`)»). La enmienda la escribe
+`specs/mobile-health-vaccines-upcoming-past/requirements.md` (#241, R2 a R9 y
+R12).
+
+- **Qué cambia**: la lista de vacunas se parte en dos secciones con el día
+  civil local del dispositivo como «hoy».
+  - **Próximas**: las vacunas con `nextDoseAt > hoy`, ordenadas por
+    `nextDoseAt` ascendente.
+  - **Pasadas**: el resto (`nextDoseAt` de hoy, anterior o `null`), colapsada
+    al entrar y ordenada por `nextDoseAt ?? appliedAt` descendente.
+  - Las dos desempatan por `id` ascendente. El índice del retraso de entrada
+    de cada fila cuenta dentro de su sección.
+- **Qué NO cambia**:
+  - la tarjeta «Próxima dosis» (sigue usando `nextDoseAt >= hoy`);
+  - el vacío, el error y el skeleton;
+  - el contenido de cada fila, el `text-danger` de la fecha vencida y los
+    tiles;
+  - el contrato del API de R1 (orden descendente por `appliedAt`): el orden
+    nuevo se hace en el móvil.
+
+- [ ] Enmienda #241 aprobada por humano (firma delegada del leader; mandato del humano 2026-10-23, ampliado 2026-11-04)
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 22-08-22) ← gate obligatorio antes de implementar
