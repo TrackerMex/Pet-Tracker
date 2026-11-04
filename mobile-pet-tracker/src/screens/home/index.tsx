@@ -101,6 +101,8 @@ const WEEKLY_ACTIVITY_SKELETON_HEIGHT = 408;
 const EDGE_BLUR_TAIL = 24;
 const FLOATING_TAB_BAR_GAP = 12;
 const FLOATING_TAB_BAR_HEIGHT = 64;
+const TOP_EDGE_BLUR_PROPS = { testID: 'home-edge-blur-top' };
+const BOTTOM_EDGE_BLUR_PROPS = { testID: 'home-edge-blur-bottom' };
 const ORBIT_POSE_SOURCE = {
   walk: require('../../../assets/images/orbit-walk.webp'),
   talk: require('../../../assets/images/orbit-talk.webp'),
@@ -999,7 +1001,7 @@ export function HomeScreen() {
         </View>
       </ScrollView>
       <ProgressiveBlurView
-        testID="home-edge-blur-top"
+        {...TOP_EDGE_BLUR_PROPS}
         edge="top"
         tint={blurTint}
         style={{
@@ -1012,7 +1014,7 @@ export function HomeScreen() {
         }}
       />
       <ProgressiveBlurView
-        testID="home-edge-blur-bottom"
+        {...BOTTOM_EDGE_BLUR_PROPS}
         edge="bottom"
         tint={blurTint}
         style={{
