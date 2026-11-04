@@ -1,8 +1,10 @@
+import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import type { Pool } from 'pg';
 import { DrizzleModule } from './drizzle.module';
-import { DRIZZLE } from './drizzle.constants';
+import { DRIZZLE, PG_POOL } from './drizzle.constants';
 
 describe('R4: DrizzleModule exposes a Drizzle client under the DRIZZLE token', () => {
   let moduleRef: TestingModule;
@@ -31,5 +33,46 @@ describe('R4: DrizzleModule exposes a Drizzle client under the DRIZZLE token', (
     expect(db).toBeDefined();
     expect(typeof db.select).toBe('function');
     expect(typeof db.execute).toBe('function');
+  });
+});
+
+describe('#238: PG_POOL logs idle client errors instead of crashing', () => {
+  let moduleRef: TestingModule;
+
+  beforeAll(async () => {
+    moduleRef = await Test.createTestingModule({
+      imports: [DrizzleModule],
+    })
+      .overrideProvider(ConfigService)
+      .useValue({
+        get: (key: string) =>
+          key === 'DATABASE_URL'
+            ? 'postgresql://pet_tracker:pet_tracker@localhost:5432/pet_tracker'
+            : undefined,
+      })
+      .compile();
+  });
+
+  afterAll(async () => {
+    await moduleRef.close();
+  });
+
+  it('#238 R1: an error emitted by PG_POOL is logged with Logger.error and does not throw', () => {
+    const errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation();
+    const pool = moduleRef.get<Pool>(PG_POOL);
+    const error = new Error(
+      'terminating connection due to administrator command',
+    );
+
+    try {
+      expect(() => pool.emit('error', error)).not.toThrow();
+      expect(errorSpy).toHaveBeenCalledTimes(1);
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Idle client error: terminating connection due to administrator command',
+        error.stack,
+      );
+    } finally {
+      errorSpy.mockRestore();
+    }
   });
 });
