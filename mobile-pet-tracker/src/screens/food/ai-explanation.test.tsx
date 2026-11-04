@@ -34,6 +34,12 @@ async function mount(text = SAMPLE, language: 'es' | 'en' = 'es') {
 }
 
 async function layout(height: number) {
+  await fireEvent(screen.getByTestId('food-ai-measure', { includeHiddenElements: true }), 'layout', {
+    nativeEvent: { layout: { x: 0, y: 0, width: 300, height } },
+  });
+}
+
+async function clippedLayout(height: number) {
   await fireEvent(screen.getByTestId('food-ai-content'), 'layout', {
     nativeEvent: { layout: { x: 0, y: 0, width: 300, height } },
   });
@@ -121,7 +127,7 @@ it('#224 R5: la viñeta usa un punto visual sin glifos en el texto', async () =>
 
 it.each([
   [undefined, false], [0, false], [122, false], [123, true], [400, true],
-] as const)('#224 R6: alto %s limita según la frontera de 122', async (height, clamped) => {
+] as const)('#224 R6: alto %s limita según la frontera de 122 (enmendado por #234 R4)', async (height, clamped) => {
   await mount();
   if (height !== undefined) await layout(height);
   const body = screen.getByTestId('food-ai-body');
@@ -243,4 +249,190 @@ it('#224 R11: se monta solo con la prop text, sin tarjeta ni título', async () 
 it('#224 R11: no importa de api/, heroui-native ni ./index', () => {
   const source = readFileSync(join(__dirname, 'ai-explanation.tsx'), 'utf8');
   expect(source.match(/from '(\.\/index|\.\.\/\.\.\/api|heroui-native)/g) ?? []).toHaveLength(0);
+});
+
+describe('#234 R1: el medidor vive fuera del recorte', () => {
+  it('#234 R1: food-ai-measure es hermano anterior de food-ai-body bajo la raíz gap-2', async () => {
+    await mount();
+    const root = screen.getByTestId('food-ai-body').parent!;
+    expect(root.props.className).toBe('gap-2');
+    expect(root.children.map(child => typeof child === 'string' ? child : child.props.testID))
+      .toEqual(['food-ai-measure', 'food-ai-body', 'food-ai-disclaimer']);
+    await layout(400);
+    expect(screen.getByTestId('food-ai-body').parent!.children.map(child => typeof child === 'string' ? child : child.props.testID))
+      .toEqual(['food-ai-measure', 'food-ai-body', 'food-ai-more', 'food-ai-disclaimer']);
+  });
+
+  it('#234 R1: ningún ancestro del medidor es el recorte ni su contenido', async () => {
+    await mount();
+    const measure = screen.getByTestId('food-ai-measure', { includeHiddenElements: true });
+    const ancestors: TestInstance[] = [];
+    for (let ancestor = measure.parent; ancestor !== null; ancestor = ancestor.parent) ancestors.push(ancestor);
+    expect(ancestors.length).toBeGreaterThan(0);
+    expect(ancestors[0].props.className).toBe('gap-2');
+    const ids = ancestors.map(ancestor => ancestor.props.testID);
+    expect(ids).not.toContain('food-ai-body');
+    expect(ids).not.toContain('food-ai-content');
+    expect(within(screen.getByTestId('food-ai-body')).queryByTestId('food-ai-measure', { includeHiddenElements: true })).toBeNull();
+  });
+
+  it('#234 R1: solo el medidor lleva onLayout', async () => {
+    await mount();
+    const carriers: (string | undefined)[] = [];
+    function visit(node: TestInstance) {
+      if (typeof node.type === 'string' && typeof node.props.onLayout === 'function') carriers.push(node.props.testID);
+      node.children.forEach(child => { if (typeof child !== 'string') visit(child); });
+    }
+    visit(screen.getByTestId('food-ai-body').parent!);
+    expect(carriers).toEqual(['food-ai-measure']);
+    expect(carriers).toHaveLength(1);
+    expect(screen.getByTestId('food-ai-content').props.onLayout).toBeUndefined();
+    expect(screen.getByTestId('food-ai-body').props.onLayout).toBeUndefined();
+  });
+});
+
+describe('#234 R5: el nodo recortado no decide', () => {
+  it.each([
+    ['recortado reporta 122 tras medir 400', 400, 122, true],
+    ['recortado reporta 0 tras medir 400', 400, 0, true],
+    ['recortado reporta 400 tras medir 400', 400, 400, true],
+    ['recortado reporta 400 con medida 100', 100, 400, false],
+    ['recortado reporta 400 sin medida', undefined, 400, false],
+  ] as const)('#234 R5: %s', async (_scenario, measured, clipped, clamped) => {
+    await mount();
+    if (measured !== undefined) await layout(measured);
+    await clippedLayout(clipped);
+    const body = screen.getByTestId('food-ai-body');
+    if (clamped) {
+      expect(body.props.style).toEqual({ maxHeight: 122 });
+      expect(screen.getByTestId('food-ai-fade')).toBeOnTheScreen();
+      expect(screen.getByTestId('food-ai-more')).toBeOnTheScreen();
+    } else {
+      expect(body.props.style).toBeUndefined();
+      expect(screen.queryByTestId('food-ai-fade', { includeHiddenElements: true })).toBeNull();
+      expect(screen.queryByTestId('food-ai-more', { includeHiddenElements: true })).toBeNull();
+    }
+  });
+});
+
+describe('#234 R6: el recorte no oscila', () => {
+  it('#234 R6: la secuencia que producía el parpadeo se queda quieta', async () => {
+    await mount();
+    const expectClamped = () => {
+      expect(screen.getByTestId('food-ai-body').props.style).toEqual({ maxHeight: 122 });
+      expect(screen.getByTestId('food-ai-fade')).toBeOnTheScreen();
+      expect(screen.getByText('Ver más')).toBeOnTheScreen();
+    };
+    await layout(400);
+    expectClamped();
+    for (let round = 0; round < 3; round++) {
+      await clippedLayout(122);
+      expectClamped();
+      await layout(400);
+      expectClamped();
+      await clippedLayout(0);
+      expectClamped();
+    }
+  });
+
+  it('#234 R6: expandir y contraer no dependen del nodo recortado', async () => {
+    await mount();
+    const expectExpanded = () => {
+      expect(screen.getByText('Ver menos')).toBeOnTheScreen();
+      expect(screen.getByTestId('food-ai-body').props.style).toBeUndefined();
+      expect(screen.queryByTestId('food-ai-fade', { includeHiddenElements: true })).toBeNull();
+    };
+    await layout(400);
+    await fireEvent.press(screen.getByTestId('food-ai-more'));
+    expectExpanded();
+    await clippedLayout(100);
+    expectExpanded();
+    await layout(400);
+    expectExpanded();
+    await fireEvent.press(screen.getByTestId('food-ai-more'));
+    expect(screen.getByText('Ver más')).toBeOnTheScreen();
+    expect(screen.getByTestId('food-ai-body').props.style).toEqual({ maxHeight: 122 });
+    expect(screen.getByTestId('food-ai-fade')).toBeOnTheScreen();
+    await clippedLayout(400);
+    expect(screen.getByText('Ver más')).toBeOnTheScreen();
+    expect(screen.getByTestId('food-ai-body').props.style).toEqual({ maxHeight: 122 });
+    expect(screen.getByTestId('food-ai-fade')).toBeOnTheScreen();
+  });
+
+  it('#234 R6: un texto nuevo se mide otra vez en el medidor', async () => {
+    await mount();
+    const expectUnclamped = () => {
+      expect(screen.getByTestId('food-ai-body').props.style).toBeUndefined();
+      expect(screen.queryByTestId('food-ai-fade', { includeHiddenElements: true })).toBeNull();
+      expect(screen.queryByTestId('food-ai-more', { includeHiddenElements: true })).toBeNull();
+    };
+    await layout(400);
+    expect(screen.getByTestId('food-ai-body').props.style).toEqual({ maxHeight: 122 });
+    expect(screen.getByTestId('food-ai-fade')).toBeOnTheScreen();
+    expect(screen.getByText('Ver más')).toBeOnTheScreen();
+    await screen.rerender(<LanguageProvider initial="es"><AiExplanation text={OTHER_TEXT} /></LanguageProvider>);
+    await layout(100);
+    expectUnclamped();
+    await clippedLayout(400);
+    expectUnclamped();
+    await screen.rerender(<LanguageProvider initial="es"><AiExplanation text={SAMPLE} /></LanguageProvider>);
+    await layout(400);
+    expect(screen.getByTestId('food-ai-body').props.style).toEqual({ maxHeight: 122 });
+    expect(screen.getByTestId('food-ai-fade')).toBeOnTheScreen();
+    expect(screen.getByText('Ver más')).toBeOnTheScreen();
+  });
+});
+
+describe('#234 R2: el medidor repite lo que se ve', () => {
+  it.each([
+    ['SAMPLE', SAMPLE, 6, 9],
+    ['una viñeta tras una línea', LINE_BULLET, 2, 3],
+    ['solo una viñeta', BULLET_ONLY, 1, 2],
+  ] as const)('#234 R2: el medidor repite los bloques de %s', async (_scenario, text, blockCount, identifiedCount) => {
+    await mount(text);
+    const measure = screen.getByTestId('food-ai-measure', { includeHiddenElements: true });
+    const content = screen.getByTestId('food-ai-content');
+    expect(measure.children).toHaveLength(blockCount);
+    expect(content.children).toHaveLength(blockCount);
+    type Shape = string | {
+      type: TestInstance['type'];
+      className: string | undefined;
+      backgroundColor: string | undefined;
+      children: Shape[];
+    };
+    function shape(node: TestInstance | string, measured: boolean): Shape {
+      if (typeof node === 'string') return node;
+      if (measured) expect(node.props.testID).toBeUndefined();
+      return {
+        type: node.type,
+        className: node.props.className,
+        backgroundColor: node.props.style?.backgroundColor,
+        children: node.children.map(child => shape(child, measured)),
+      };
+    }
+    measure.children.forEach((child, index) => {
+      expect(shape(child, true)).toEqual(shape(content.children[index], false));
+    });
+    expect(screen.queryAllByTestId(/^food-ai-(block|dot)-\d+$/, { includeHiddenElements: true })).toHaveLength(identifiedCount);
+  });
+});
+
+describe('#234 R3: el medidor está oculto e inerte', () => {
+  it('#234 R3: el medidor no se ve, no se toca y no se lee', async () => {
+    await mount();
+    const measure = screen.getByTestId('food-ai-measure', { includeHiddenElements: true });
+    expect(measure.props.className).toBe('absolute inset-x-0 top-0 opacity-0');
+    expect(measure.props.pointerEvents).toBe('none');
+    expect(measure.props.accessibilityElementsHidden).toBe(true);
+    expect(measure.props.importantForAccessibility).toBe('no-hide-descendants');
+    expect(measure.props.accessible).not.toBe(true);
+    expect(measure.props.accessibilityLabel).toBeUndefined();
+  });
+
+  it('#234 R3: las consultas por defecto ven una sola copia del texto', async () => {
+    await mount();
+    expect(screen.getAllByText('Para acompañarlo bien:')).toHaveLength(1);
+    expect(screen.getAllByText('Para acompañarlo bien:', { includeHiddenElements: true })).toHaveLength(2);
+    expect(screen.getByTestId('food-ai-body').props.accessibilityLabel).toBe(SAMPLE_PLAIN);
+  });
 });
