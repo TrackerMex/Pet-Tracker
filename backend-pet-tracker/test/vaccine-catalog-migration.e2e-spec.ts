@@ -76,7 +76,7 @@ describe('#226 vaccine catalog migration (e2e)', () => {
   }
 
   async function dropDatabase(name: string): Promise<void> {
-    await admin.query(`DROP DATABASE IF EXISTS "${name}" WITH (FORCE)`);
+    await admin.query(`DROP DATABASE IF EXISTS "${name}"`);
   }
 
   beforeAll(() => {
