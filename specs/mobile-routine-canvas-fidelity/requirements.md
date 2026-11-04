@@ -1252,3 +1252,33 @@ re-mide la fila; el criterio no cambia.
 - [x] Enmienda #228 aprobada (fecha: 2026-11-03)
   (firma delegada del leader; mandato del humano 2026-10-23, ampliado
   2026-11-03)
+
+## Enmienda #240 — Año en la fecha de Recordatorios
+
+**Spec enmendada:** `specs/mobile-routine-canvas-fidelity/requirements.md`
+(#178), **R6**. La enmienda la escribe `specs/mobile-reminder-date-year/requirements.md`
+(#240, R1 y R5).
+
+**Qué cambia.**
+
+- **R6**: `date = due.toLocaleDateString(locale, { day: 'numeric', month: 'short' })`
+  pasa a llevar `year: 'numeric'` cuando el año local de `due` no es el año
+  local de hoy (`due.getFullYear() !== new Date(now).getFullYear()`). En el
+  año en curso las opciones son las de siempre (#240 R1, R2 y R5).
+- Los candados de R6 en `screens/reminders/index.test.tsx`, `describe('#178 R6: fila del canvas'`:
+  - `formatea la fecha y hora próxima y conserva sus días en text-13`:
+    `'2 ene, 09:00'` pasa a `'2 ene 2027, 09:00'` (reloj de diciembre de 2026);
+  - `formatea la hora lejana y la meta inactiva con su estado (enmendado por #227 R13)`:
+    `'20 ene, 20:05'` pasa a `'20 ene 2027, 20:05'`.
+
+  Los dos ganan ` (enmendado por #240 R1)` al final del título.
+
+**Qué no cambia.**
+
+- `time` y la receta `text-13 font-normal text-muted` de la fila de fecha.
+- `'3 dic, 11:30'`: la fixture es del mismo año que el reloj.
+- La anatomía de la fila, sus recetas y el «hasta» de las series.
+
+- [ ] Enmienda #240 aprobada (fecha: ____)
+  (firma delegada del leader; mandato del humano 2026-10-23, ampliado
+  2026-11-04)
