@@ -1862,4 +1862,13 @@ describe('#241: vacunas próximas y pasadas', () => {
       else hostProcess.env.TZ = previousZone;
     }
   });
+
+  it('#241 R9: sin vacunas conserva el vacío sin secciones', async () => {
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [] });
+    await renderHealth();
+    expect(await screen.findByTestId('vaccines-empty-card')).toBeOnTheScreen();
+    expect(screen.queryByTestId('vaccines-upcoming-heading')).toBeNull();
+    expect(screen.queryByTestId('vaccines-upcoming-list')).toBeNull();
+    expect(screen.queryByTestId('vaccines-past')).toBeNull();
+  });
 });
