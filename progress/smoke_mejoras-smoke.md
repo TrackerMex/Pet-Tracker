@@ -48,6 +48,17 @@ Necesita el dev build con `dev` actualizado (cambia la app, no el backend).
 
 - [ ] Smoke de #227 pasado (fecha: ____; tema claro: sí / no; tema oscuro: sí / no)
 
+## #232 mobile-add-reminder-chip-lip-clip
+
+Hallazgo: en Agregar recordatorio el chip seleccionado de Tipo y Aviso salía con el labio inferior cortado. Necesita el dev build con `dev` actualizado. Reproduce el fallo original, en tema claro y en oscuro.
+
+1. En el dev build de Android abre Recordatorios y pulsa «Agregar». «Vacuna» viene seleccionado: antes el verde se veía cortado por abajo; ahora se ve el labio inferior completo (una franja verde oscura de unos 3 px bajo la cápsula).
+2. Pulsa «Desparasitación», «Otro» y los demás chips de Tipo (desliza la fila para llegar al último): el labio se ve entero en cada uno.
+3. En «Aviso», con «7 días» seleccionado y luego «Mismo día», «1 día» y «3 días»: el labio se ve entero.
+4. Compara con antes: la separación entre «Tipo», «Título», «Aviso» y la vista previa no cambia (la pantalla no se mueve 3 px).
+
+- [ ] Smoke de #232 pasado (fecha: ____; tema claro: sí / no; tema oscuro: sí / no)
+
 ## #233 mobile-food-links-without-profile
 
 Hallazgo: «En Nutricion sin Perfil, no deben de aparecer Horario de comidas y Historial de comidas ya que aun no se ha registrado un perfil nutricional».
@@ -56,6 +67,19 @@ Hallazgo: «En Nutricion sin Perfil, no deben de aparecer Horario de comidas y H
 2. Crea el perfil con el cuestionario y vuelve a Nutrición: ahora sí salen las dos filas.
 
 - [ ] Smoke de #233 pasado (fecha: ____)
+
+## #234 mobile-nutrition-ai-collapse-flicker
+
+Hallazgo: «No marque mobile-nutrition-ai-format porque en eñ colapso de IA queda parpadiando». Necesita el dev build con `dev` actualizado. Reproduce el fallo original, en tema claro y en oscuro, con una mascota que tenga plan de nutrición con «Recomendación IA» (explicación larga).
+
+1. Abre Nutrición. La tarjeta «Recomendación IA» aparece colapsada, con el degradado sobre el borde inferior y «Ver más». Mírala 10 segundos sin tocar nada: antes parpadeaba (cambiaba de alto una y otra vez); ahora queda quieta. Se admite un único salto al primer pintado.
+2. Sal de Nutrición y vuelve a entrar tres veces: cada vez termina colapsada y quieta.
+3. Pulsa «Ver más»: el texto se muestra completo y queda quieto; pulsa «Ver menos»: vuelve a unas seis líneas con degradado y queda quieto. Repite tres veces.
+4. Cambia entre dos mascotas con planes distintos: el texto nuevo aparece colapsado y quieto (si la nueva explicación es corta, sin botón ni degradado).
+5. En tema oscuro y en claro: el degradado se funde con el fondo violeta sin banda visible, igual que en el artboard aprobado; no hay espacio vacío extra bajo la tarjeta.
+6. TalkBack: la explicación se lee una sola vez (un párrafo continuo) y «Ver más» por separado.
+
+- [ ] Smoke de #234 pasado (fecha: ____; tema claro: sí / no; tema oscuro: sí / no). Cierra también el smoke de #224 («Smoke de #224 pasado tras #234»).
 
 ## #236 mobile-vaccine-catalog-error-state
 

@@ -3694,11 +3694,44 @@
   {
     "id": 228,
     "name": "mobile-reminder-swipe-actions",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Eliminar y Cancelar serie de cada recordatorio pasan a acciones de deslizar con ReanimatedSwipeable de react-native-gesture-handler (HeroUI Native 1.0.8 y 1.0.11 no tienen SwipeableRow), con acción de accesibilidad equivalente. Necesita artboard (G1). Responsable: leader @Backend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
-    "acceptance_criteria": null,
-    "files_affected": null
+    "acceptance_criteria": [
+      "R1: el panel y la acción de accesibilidad reutilizan reminders.delete, reminders.cancelSeries y reminders.cancelSeriesA11y con su literal es/en de hoy y el mismo número de invocaciones (2, 1, 1); sin clave ni literal nuevo",
+      "R2: con el dueño, cada fila va dentro de un ReanimatedSwipeable (import de react-native-gesture-handler/ReanimatedSwipeable) con testID reminder-swipe-<id>, solo acciones a la derecha y overshootRight false, dentro de un View overflow-hidden rounded-22 con CONTINUOUS_CORNER",
+      "R3: el panel derecho es un Pressable de w-24 con bg-category-rose, franja absolute -left-6, icono Trash o Repeat de 20 en danger y etiqueta text-center text-13 font-extrabold text-danger; testID reminder-delete-<id> o reminder-cancel-series-<id>; oculto a lectores de pantalla",
+      "R4: pulsar el panel llama a close() del deslizable y abre la misma hoja de hoy (borrar o Cancelar serie) sin llamar al API",
+      "R5: la fila expone una sola acción de accesibilidad (delete con «Eliminar» o cancelSeries con «Cancelar la serie <title>») que abre la misma hoja; otra acción no abre nada; con su borrado pendiente la acción se retira",
+      "R6: las filas de Pasados se deslizan igual; solo la fila va atenuada (opacity-50), no el contenedor ni el panel",
+      "R7: quien no es dueño no tiene deslizable, panel ni acción de accesibilidad, y un disparo de acción no abre nada",
+      "R8: la fila tiene dos hijos (mosaico y columna) y ningún botón",
+      "R9: con el ReanimatedSwipeable real (mockRealSwipeable) la fila y su panel se montan y el panel abre la hoja",
+      "R10: los siete literales de producción corresponden una vez a los artboards congelados RecordatoriosDeslizarEliminar y RecordatoriosDeslizarSerie; los tokens --rose y --danger del canvas son los de theme/global.css; se retira la fila «Eliminar» de fila de #204 R15",
+      "R11: inventario exacto de screens/reminders/index.tsx (ocurrencias 1, 0 y cifras de tasks.md); sin expo-haptics, sin import de react-native-gesture-handler raíz",
+      "R12 (gate G4, no delegable): tras la aprobación humana, docs/ui-guidelines.md lleva una vez al final el bloque «Enmienda #228» de design.md; hasta entonces ni el test ni el bloque entran en la rama",
+      "R13: los candados de la Tabla de enmiendas (lista AMENDED de 31 pares) llevan el sufijo (enmendado por #228 R13) y siguen verdes; las seis specs enmendadas llevan una vez la sección Enmienda #228 con su casilla",
+      "Grep-limpio de la carta (#204 R17, #193 R11, #181 R8.3): sin hex, sin StyleSheet.create, sin clases [...] ni sombras literales; #228 en comentarios de producción seguido de R<n>",
+      "Sin dependencias nuevas: package.json y bun.lock sin diff",
+      "Commits test-primero por requisito, con las sondas S1-S9 de tasks.md poniendo en rojo el it indicado; suite móvil completa, bunx tsc --noEmit y bunx expo lint en verde",
+      "Smoke en dispositivo (G2, humano, no delegable): los ocho pasos de requirements.md §Paso de smoke nuevo (G2) en el dev build de Android, en tema claro y oscuro, incluidos TalkBack y el desplazamiento vertical sin abrir filas"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/reminders/index.tsx",
+      "mobile-pet-tracker/src/screens/reminders/index.test.tsx",
+      "mobile-pet-tracker/src/__tests__/reminder-swipe-actions-canvas-fidelity.test.ts",
+      "mobile-pet-tracker/src/__tests__/reminders-upcoming-past-canvas-fidelity.test.ts",
+      "mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts",
+      "mobile-pet-tracker/src/__tests__/design-drift.test.ts",
+      "mobile-pet-tracker/src/__tests__/routine-canvas-fidelity.test.ts",
+      "docs/ui-guidelines.md",
+      "specs/mobile-reminders-recurrence/requirements.md",
+      "specs/mobile-reminders-upcoming-past/requirements.md",
+      "specs/mobile-canvas-routine/requirements.md",
+      "specs/mobile-reminders/requirements.md",
+      "specs/mobile-role-aware-actions/requirements.md",
+      "specs/mobile-routine-canvas-fidelity/requirements.md"
+    ]
   },
   {
     "id": 229,
@@ -3730,7 +3763,7 @@
   {
     "id": 232,
     "name": "mobile-add-reminder-chip-lip-clip",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Agregar recordatorio: el ScrollView horizontal de Tipo y de Aviso recorta el labio de 3 px del chip seleccionado. Responsable: leader @Frontend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
     "acceptance_criteria": null,
@@ -3748,7 +3781,7 @@
   {
     "id": 234,
     "name": "mobile-nutrition-ai-collapse-flicker",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P1",
     "description": "Arreglo del smoke de #224: la tarjeta de IA colapsada parpadea porque food-ai-content se mide con onLayout dentro de su propio recorte (maxHeight 122). Medir fuera del recorte; enmienda a #224 R6. Cierra también el smoke de #224. Responsable: leader @Frontend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
     "acceptance_criteria": null,
@@ -3788,5 +3821,23 @@
       "mobile-pet-tracker/src/__tests__/ui-language.test.ts",
       "progress/smoke_mejoras-smoke.md"
     ]
+  },
+  {
+    "id": 237,
+    "name": "backend-e2e-vaccine-catalog-teardown",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Flake del e2e backend-pet-tracker/test/vaccine-catalog-migration.e2e-spec.ts (#226): su afterAll hace DROP DATABASE IF EXISTS ... WITH (FORCE) con un cliente aún vivo (probablemente el pool de la app Nest, que lee DATABASE_URL), y pg lo convierte en «Unhandled error» 57P01 («terminating connection due to administrator command»). Tumbó el ./init.sh de @Frontend el 2026-11-03 (wt-233); el reintento salió verde. No es interferencia entre sesiones: el log de Postgres muestra el FATAL y los dos checkpoints de los DROP. Arreglo: cerrar todos los pools antes del DROP, o escuchar 'error' en ellos. Responsable: leader @Backend. El humano pidió registrarlo como feature el 2026-11-03 («registralo como feature»). Plan progress/plan_mejoras-smoke-2026-11-03.md. Registrada sin spec.",
+    "acceptance_criteria": null,
+    "files_affected": null
+  },
+  {
+    "id": 238,
+    "name": "backend-pg-pool-error-listener",
+    "status": "pending",
+    "priority": "P2",
+    "description": "El pool de Postgres de producción (backend-pet-tracker/src/db/drizzle.module.ts, new Pool en el factory de PG_POOL) no tiene listener de 'error': on('error' sale 0 veces en src/. Si Postgres termina un cliente ocioso (57P01 por un reinicio, un failover o pg_terminate_backend), pg-pool reemite el error en el pool y, sin listener, el EventEmitter lo lanza como error no manejado y tumba el proceso. Mismo mecanismo que el flake de #237, pero en la app. Observación de la spec de #237 (§Fuera de alcance). Arreglo: registrar pool.on('error', …) que loguee y no lance; el pool descarta el cliente y abre otro en la siguiente consulta. Responsable: leader @Backend. El humano pidió registrarlo como feature el 2026-11-03 («si registra como feature el pool en postgres»). Plan progress/plan_mejoras-smoke-2026-11-03.md. Registrada sin spec.",
+    "acceptance_criteria": null,
+    "files_affected": null
   }
 ]

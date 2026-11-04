@@ -56,24 +56,6 @@ const rows: Row[] = [
     ],
   ],
   [
-    '«Eliminar» de fila',
-    'Recordatorios',
-    [
-      'height: 44px; padding: 0 10px; border: 0; border-radius: 14px; background: var(--rose); color: var(--danger)',
-      '--rose:#FFF0F3',
-    ],
-    [
-      {
-        file: REMINDERS,
-        literals: [
-          'h-11 rounded-14 px-2.5 ${CATEGORY_SLOTS.rose.surface}',
-          '<Text className="text-13 font-extrabold text-danger">',
-        ],
-      },
-      { file: CSS, literals: ['--color-category-rose: #FFF0F3'] },
-    ],
-  ],
-  [
     'labio del destructivo',
     'Recordatorios',
     ['box-shadow: 0 4px 0 #9F1F15'],
@@ -113,7 +95,7 @@ const rows: Row[] = [
 ];
 
 describe('#204 R15: fidelidad al canvas congelado', () => {
-  it.each(rows)('#204 R15: %s sigue al canvas', (_name, board, canvasLiterals, productions) => {
+  it.each(rows)('#204 R15: %s sigue al canvas (enmendado por #228 R13)', (_name, board, canvasLiterals, productions) => {
     const canvas = artboard(board);
     for (const literal of canvasLiterals) expect(canvas).toContain(literal);
     for (const { file, literals, tag } of productions) {
