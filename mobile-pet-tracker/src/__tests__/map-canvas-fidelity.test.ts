@@ -607,3 +607,28 @@ describe('#201 R16: guardas de deriva de los tres ficheros', () => {
     expect(hexGuard.test('// #201 R10')).toBe(false);
   });
 });
+
+describe('#230 R1, R10 y R11: compositor del marcador', () => {
+  it('#230 R1: el compositor no trae copy', () => {
+    expect(readProduction('screens/map/pet-marker-icon.tsx')).not.toMatch(/useTranslate|\bt\(|<Text\b/);
+  });
+
+  it('#230 R10: el mapa monta el compositor con la clave de composición', () => {
+    const source = readProduction('screens/map/index.tsx');
+    expect(source).toContain('key={markerCompositionKey(selectedPet)}');
+    expect(source).toContain('markerIcon={currentMarkerIcon(markerIcon, selectedPet)}');
+  });
+
+  it.each(Object.keys(guards))('#230 R11: screens/map/pet-marker-icon.tsx respeta la guarda %s', (guard) => {
+    const source = readProduction('screens/map/pet-marker-icon.tsx');
+    expect(guards[guard].filter(pattern => pattern.test(source))).toEqual([]);
+  });
+
+  it('#230 R11: el compositor importa solo lo suyo', () => {
+    const source = readProduction('screens/map/pet-marker-icon.tsx');
+    const specifiers = [...source.matchAll(/import[\s\S]*?from\s*'([^']+)'/g)].map(match => match[1]);
+    expect([...new Set(specifiers)].sort()).toEqual([
+      '../../api/types', '../../theme/use-theme-colors', 'blobatar', 'expo-image', 'react', 'react-native', 'react-native-svg',
+    ]);
+  });
+});

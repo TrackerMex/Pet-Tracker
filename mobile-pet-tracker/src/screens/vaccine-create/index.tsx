@@ -46,6 +46,7 @@ export function VaccineCreateScreen({ petId }: { petId: string }) {
   const [accentStrong, accentForeground, muted, danger, foreground] = useThemeColors(['accent-strong', 'accent-foreground', 'muted', 'danger', 'foreground']);
   const catalog = useQuery({ queryKey: healthKeys.vaccineCatalog(species), queryFn: () => getVaccineCatalog(baseUrl, token ?? '', species), enabled: pet !== undefined });
   const entries = catalog.data?.kind === 'ok' ? catalog.data.entries : [];
+  const catalogFailed = !catalog.isPending && catalog.data?.kind !== 'ok';
   const [selectedDraft, setSelectedDraft] = useState<string | null>(null);
   const selectedId = selectedDraft ?? entries[0]?.id ?? 'other';
   const [name, setName] = useState('');
@@ -131,6 +132,12 @@ export function VaccineCreateScreen({ petId }: { petId: string }) {
         <Text testID="vaccine-create-legend" className="text-sm font-extrabold text-foreground">
           {t('vaccineCreate.vaccine')}<Text testID="vaccine-create-legend-species" className="font-semibold text-muted">{species === 'cat' ? t('vaccineCreate.schemeForCat') : t('vaccineCreate.schemeForDog')}</Text>
         </Text>
+        {catalogFailed && (
+          <View testID="vaccine-create-catalog-error" className="items-start gap-3">
+            <Text testID="vaccine-create-catalog-error-text" className="text-15 leading-body text-danger" accessibilityRole="alert" selectable>{t('health.couldNotLoadVaccines')}</Text>
+            <Button testID="vaccine-create-catalog-retry" onPress={() => void catalog.refetch()}>{t('common.retry')}</Button>
+          </View>
+        )}
         {catalog.isPending ? (
           <View testID="vaccine-create-chips-skeleton" className="flex-row gap-2">
             {[0, 1, 2].map(index => <Skeleton key={index} className="h-9.5 w-28 rounded-full" />)}

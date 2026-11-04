@@ -2,6 +2,7 @@ import {
   Global,
   Inject,
   Injectable,
+  Logger,
   Module,
   OnModuleDestroy,
 } from '@nestjs/common';
@@ -9,6 +10,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { DRIZZLE, PG_POOL } from './drizzle.constants';
+
+const poolLogger = new Logger('PgPool');
 
 @Injectable()
 class DrizzlePoolLifecycle implements OnModuleDestroy {
@@ -26,9 +29,13 @@ class DrizzlePoolLifecycle implements OnModuleDestroy {
     {
       provide: PG_POOL,
       useFactory: (config: ConfigService) => {
-        return new Pool({
+        const pool = new Pool({
           connectionString: config.get<string>('DATABASE_URL'),
         });
+        pool.on('error', (error) => {
+          poolLogger.error(`Idle client error: ${error.message}`, error.stack);
+        });
+        return pool;
       },
       inject: [ConfigService],
     },

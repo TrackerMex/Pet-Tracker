@@ -574,8 +574,8 @@ describe('#194 R5: la pantalla de edición resuelve su copy por clave', () => {
 });
 
 describe('#208 R20: alta de vacuna', () => {
-  it('#208 R20: R19_VACCINE_CREATE tiene 29 usos y cuadra con el código', () => {
-    expect(R19_VACCINE_CREATE).toHaveLength(29);
+  it('#208 R20: R19_VACCINE_CREATE tiene 29 usos y cuadra con el código (enmendado por #236 R7)', () => {
+    expect(R19_VACCINE_CREATE).toHaveLength(29 + 2); // #236 R7
     checkUses(R19_VACCINE_CREATE);
   });
 });
