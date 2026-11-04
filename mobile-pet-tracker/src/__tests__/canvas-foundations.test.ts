@@ -309,9 +309,19 @@ describe('#197 R22: fuentes limpias', () => {
     expect(source).not.toMatch(/\p{Extended_Pictographic}/u);
     expect(source).not.toMatch(/\b(?:shadowColor|shadowOffset|shadowOpacity|shadowRadius|elevation)\s*:/);
   });
-  it('#197 R22: no añade dependencias (enmendado por #217 R8) (enmendado por #214 R23)', () => {
+  it('#197 R22: no añade dependencias (enmendado por #217 R8) (enmendado por #214 R23) (enmendado por #242 R1)', () => {
     const manifest = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8'));
-    expect(Object.keys(manifest.dependencies)).toHaveLength(42 + 1); // #214 R23: expo-clipboard
+    expect(Object.keys(manifest.dependencies)).toHaveLength(42 + 1 + 1); // #214 R23: expo-clipboard // #242 R1: expo-backdrop
     expect(Object.keys(manifest.devDependencies)).toHaveLength(8);
+  });
+});
+
+describe('#242 R1: dependencia del spike', () => {
+  it('#242 R1: expo-backdrop queda fijada exacta en 0.1.3', () => {
+    const manifest = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8'));
+    expect(manifest.dependencies['expo-backdrop']).toBe('0.1.3');
+    expect(manifest.dependencies['expo-linear-gradient']).toBeUndefined();
+    expect(manifest.dependencies['@react-native-masked-view/masked-view']).toBeUndefined();
+    expect(manifest.devDependencies['expo-backdrop']).toBeUndefined();
   });
 });

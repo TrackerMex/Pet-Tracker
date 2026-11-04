@@ -2,6 +2,7 @@ import { useChunkyLip } from '../../theme/chunky-lip';
 import { useShadows } from '../../theme/shadows';
 import { BubblePop } from './bubble-pop';
 import { useQuery } from '@tanstack/react-query';
+import { ProgressiveBlurView } from 'expo-backdrop';
 import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import { Button, Card as HeroUICard, Skeleton } from 'heroui-native';
@@ -39,6 +40,7 @@ import {
   WifiOff,
   type IconComponent,
 } from 'reicon-react-native';
+import { useUniwind } from 'uniwind';
 
 import { getDailyActivity } from '../../api/activity';
 import { listAlerts } from '../../api/alerts';
@@ -96,6 +98,11 @@ import { homeOrbitPhrase, homeOrbitPose } from './orbit-phrase';
 import { WeeklyActivityChart } from './weekly-activity-chart';
 
 const WEEKLY_ACTIVITY_SKELETON_HEIGHT = 408;
+const EDGE_BLUR_TAIL = 24;
+const FLOATING_TAB_BAR_GAP = 12;
+const FLOATING_TAB_BAR_HEIGHT = 64;
+const TOP_EDGE_BLUR_PROPS = { testID: 'home-edge-blur-top' };
+const BOTTOM_EDGE_BLUR_PROPS = { testID: 'home-edge-blur-bottom' };
 const ORBIT_POSE_SOURCE = {
   walk: require('../../../assets/images/orbit-walk.webp'),
   talk: require('../../../assets/images/orbit-talk.webp'),
@@ -213,6 +220,8 @@ export function HomeScreen() {
     petId: string;
   } | null>(null);
   const insets = useSafeAreaInsets();
+  const { theme } = useUniwind();
+  const blurTint = theme === 'dark' ? 'systemThinMaterialDark' : 'systemThinMaterialLight';
   const [accent, muted, vaccineInk, mealsInk, foreground, dangerForeground, accentForeground] =
     useThemeColors([
       'accent-strong',
@@ -368,627 +377,655 @@ export function HomeScreen() {
   }
 
   return (
-    <ScrollView
-      testID="screen-home"
-      className="flex-1 bg-background"
-      contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{
-        gap: 14,
-        paddingBottom: insets.bottom + 96,
-      }}
-    >
-      {/*
-        El hero va a sangre, así que el `padding: 24` y el
-        `paddingTop: insets.top + 12` de §Dimensiones bajan a envoltorios de
-        dentro (excepción A9). El paddingTop lo asume el slot del hero.
-      */}
-      {hasPets ? <HeroStatusBar /> : null}
-      {hasPets ? (
-        <PetHeroHeader
-          pet={detail.data?.kind === 'ok' ? detail.data.pet : null}
-          variant="bleed"
-          status={
-            connection
-              ? {
-                  label: t(HOME_CONNECTION[connection].labelKey),
-                  tone: HOME_CONNECTION[connection].tone,
-                }
-              : undefined
-          }
-          highlight={
-            today
-              ? { value: fmtCount(today.walkCount), label: t('home.walks') }
-              : undefined
-          }
-        >
-          <View testID="home-hero-actions" className="flex-row items-center gap-3">
-            <View className="flex-1">
-              <PetSwitcher
-                pets={petList}
-                selectedPetId={selectedPetId}
-                onSelect={selectPet}
-                variant="glass"
-                selectedOnline={connection === 'online'}
-                trailing={
-                  <GlassCircle testID="home-add-pet" accessibilityLabel={addPetLabel} onPress={() => router.push('/pets/add')}>
-                    <Plus size={20} strokeWidth={2.4} color={muted} />
-                  </GlassCircle>
-                }
-              />
-            </View>
-            <GlassCircle
-              testID="home-alerts-bell"
-              accessibilityLabel={
-                hasOpenAlerts
-                  ? t('home.alertsBellUnread')
-                  : t('home.alertsBell')
-              }
-              onPress={() => router.push('/alerts')}
-            >
-              <Bell size={22} strokeWidth={2} color={foreground} />
-              {hasOpenAlerts ? (
-                <View
-                  testID="home-alerts-dot"
-                  className="absolute right-2.5 top-2.25 size-2.25 rounded-full border-2 border-background bg-danger"
-                />
-              ) : null}
-            </GlassCircle>
-          </View>
-        </PetHeroHeader>
-      ) : null}
-
-      {hasPets ? null : (
-        <View
-          testID="home-states"
-          style={{
-            paddingHorizontal: 24,
-            paddingTop: insets.top + 12,
-            gap: 16,
-          }}
-        >
-          {pets.data !== undefined ? (
-            <Text className="text-26 font-black tracking-title text-foreground">
-              {t('home.home')}
-            </Text>
-          ) : null}
-
-          {pets.data === undefined ? (
-            <View testID="home-loading" className="gap-3.5">
-              <View
-                testID="home-loading-summary"
-                className="gap-4 rounded-card border border-border bg-surface px-4 py-3.5"
-                style={{ ...CONTINUOUS_CORNER, ...shadows.card }}
-              >
-                <Skeleton className="h-4 w-30 rounded-full" />
-                <View className="flex-row gap-2">
-                  {Array.from({ length: 4 }, (_, index) => (
-                    <View key={index} className="flex-1 items-center gap-2">
-                      <Skeleton className="size-9 rounded-xl" />
-                      <Skeleton className="h-3.5 w-13 rounded-full" />
-                      <Skeleton className="h-2.5 w-9 rounded-full" />
-                    </View>
-                  ))}
-                </View>
-              </View>
-              <Skeleton testID="home-loading-collar" className="h-16 w-full rounded-card" />
-              <View testID="home-loading-quick-actions" className="gap-2.5">
-                <Skeleton className="h-3 w-27.5 rounded-full" />
-                <View className="flex-row gap-2.5">
-                  {Array.from({ length: 3 }, (_, index) => (
-                    <Skeleton key={index} className="h-23 flex-1 rounded-card" />
-                  ))}
-                </View>
-              </View>
-              <Skeleton testID="home-loading-weekly" className="h-102 w-full rounded-card" />
-            </View>
-          ) : null}
-
-          {pets.data && isPetsError(pets.data) ? (
-            <EmptyState
-              testID="home-error"
-              variant="hero"
-              tone="danger"
-              pose="talk"
-              title={t('home.loadPetsErrorTitle')}
-              body={t('home.loadPetsErrorBody')}
-              action={{ label: t('common.retry'), onPress: () => void pets.refetch() }}
-              badge={<View testID="home-error-badge" className="absolute right-10.5 top-6.5 size-11 items-center justify-center rounded-full border-3 border-background bg-danger"><Alert size={24} color={dangerForeground} /></View>}
-              actionIcon={<Refresh size={20} color={accentForeground} style={{ marginRight: 8 }} testID="home-error-action-icon" />}
-            />
-          ) : null}
-        </View>
-      )}
-
-      <View testID="home-content" style={{ paddingHorizontal: 24, gap: 16 }}>
-        {orbitPhrase !== null ? (
-          <HomeEntrance index={0} testID="home-entrance-orbit">
-            <View testID="home-orbit-phrase" className="flex-row items-end gap-2.5">
-              <BubblePop
-                testID="home-orbit-bubble"
-                className="flex-1 rounded-tile rounded-br-4 border border-border bg-surface-secondary px-3.5 py-3"
-                style={CONTINUOUS_CORNER}
-              >
-                <Text testID="home-orbit-text" className="text-15 font-semibold leading-5.25 text-foreground" selectable>
-                  {t(orbitPhrase.labelKey, orbitPhrase.params)}
-                </Text>
-              </BubblePop>
-              <OrbitFloat testID="home-orbit-float">
-                <Image
-                  testID="home-orbit"
-                  source={ORBIT_POSE_SOURCE[orbitPose]}
-                  style={{ width: 56, height: 56 }}
-                  accessible={orbitPose === 'walk'}
-                  accessibilityLabel={orbitPose === 'walk' ? t('home.orbitWalkLabel') : undefined}
-                />
-              </OrbitFloat>
-            </View>
-          </HomeEntrance>
-        ) : null}
-
-        {selectedPetId !== null && (detail.data?.kind === 'error' || detail.data?.kind === 'unreachable') ? (
-          <HeroUICard testID="pet-hero-error" className="items-start gap-3 p-4">
-            <Text className="text-danger">
-              {t('common.somethingWentWrong')}
-            </Text>
-            <Button
-              testID="pet-hero-retry"
-              onPress={() => void detail.refetch()}
-            >
-              {t('common.retry')}
-            </Button>
-          </HeroUICard>
-        ) : null}
-
-        {selectedPetId ? (
-          <HomeEntrance index={2} testID="home-entrance-summary">
-            <Card testID="summary-card" className="gap-3 px-2 py-3.5 shadow-none" style={shadows.card}>
-              <Text
-                testID="summary-card-title"
-                className="px-2 text-base font-extrabold text-foreground"
-              >
-                {t('home.summaryTitle')}
-              </Text>
-
-              {activity.data === undefined ? (
-                <Skeleton testID="summary-skeleton" className="h-16 w-full rounded-xl" />
-              ) : null}
-
-              {activity.data !== undefined &&
-              activity.data.kind !== 'unauthorized' ? (
-                <Animated.View testID="summary-reveal" entering={homeEntering(0, 0)}>
-                  <View className="flex-row gap-1">
-                    <View className={activity.data.kind === 'ok'
-                      ? 'flex-1 items-center gap-1.5'
-                      : 'flex-1 items-center gap-1.5 border-r border-border'}>
-                      <View testID="summary-tile-weight" className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS[SUMMARY_TILES[0].slot].surface}`} style={CONTINUOUS_CORNER}>
-                        <Weight size={18} color={summaryInks[0]} />
-                      </View>
-                      <Text
-                        testID="summary-weight"
-                        className="text-base font-extrabold text-foreground"
-                        style={TABULAR_NUMS}
-                      >
-                        {fmtKg(
-                          detail.data?.kind === 'ok'
-                            ? detail.data.pet.currentWeightKg
-                            : null,
-                        )}
-                      </Text>
-                      <Text className="text-11 font-semibold text-muted">
-                        {t('home.weight')}
-                      </Text>
-                    </View>
-                    {activity.data.kind === 'ok' ? (
-                      <>
-                        <View className="flex-1 items-center gap-1.5">
-                          <View testID="summary-tile-activity" className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS[SUMMARY_TILES[1].slot].surface}`} style={CONTINUOUS_CORNER}>
-                            <Walk size={18} color={summaryInks[1]} />
-                          </View>
-                          <Text
-                            testID="summary-activity"
-                            className="text-base font-extrabold text-foreground"
-                            style={TABULAR_NUMS}
-                          >
-                            {fmtMinutes(today?.activeMinutes ?? null)}
-                          </Text>
-                          <Text className="text-11 font-semibold text-muted">
-                            {t('home.activity')}
-                          </Text>
-                        </View>
-                        <View className="flex-1 items-center gap-1.5">
-                          <View testID="summary-tile-sleep" className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS[SUMMARY_TILES[2].slot].surface}`} style={CONTINUOUS_CORNER}>
-                            <Moon size={18} color={summaryInks[2]} />
-                          </View>
-                          <Text
-                            testID="summary-sleep"
-                            className="text-base font-extrabold text-foreground"
-                            style={TABULAR_NUMS}
-                          >
-                            {fmtMinutes(today?.restMinutes ?? null)}
-                          </Text>
-                          <Text className="text-11 font-semibold text-muted">
-                            {t('home.sleep')}
-                          </Text>
-                        </View>
-                        <View className="flex-1 items-center gap-1.5">
-                          <View testID="summary-tile-distance" className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS[SUMMARY_TILES[3].slot].surface}`} style={CONTINUOUS_CORNER}>
-                            <Map size={18} color={summaryInks[3]} />
-                          </View>
-                          <Text
-                            testID="summary-distance"
-                            className="text-base font-extrabold text-foreground"
-                            style={TABULAR_NUMS}
-                          >
-                            {fmtKm(today?.distanceM ?? null)}
-                          </Text>
-                          <Text className="text-11 font-semibold text-muted">
-                            {t('home.distance')}
-                          </Text>
-                        </View>
-                      </>
-                    ) : (
-                      <Text
-                        testID="summary-note"
-                        className="flex-3 self-center pl-3 text-sm leading-5 font-normal text-muted"
-                      >
-                        {activity.data.kind === 'no-tracking'
-                          ? t('home.activityNeedsCollar')
-                          : t('home.couldNotLoadActivity')}
-                      </Text>
-                    )}
-                  </View>
-                </Animated.View>
-              ) : null}
-            </Card>
-          </HomeEntrance>
-        ) : null}
-
-        {detail.data?.kind === 'ok' && connection ? (
-          <HomeEntrance index={3} testID="home-entrance-collar">
-            <Card
-              testID="collar-card"
-              className={detail.data.pet.device
-                ? 'flex-row items-center gap-3 border-0 bg-default px-3.5 py-3 shadow-none'
-                : 'gap-3 border-0 bg-default px-4 py-3.5 shadow-none'}
-            >
-              {detail.data.pet.device ? (
-                <>
-                  <View testID="collar-icon" className="size-10 items-center justify-center rounded-full bg-tab-pill">
-                    {connection === 'online' ? <Wifi size={20} color={accent} /> : <WifiOff size={20} color={accent} />}
-                  </View>
-                  <View className="flex-1 gap-1.5">
-                    <Text testID="collar-status" className="text-15 font-bold text-foreground">
-                      {t(HOME_CONNECTION[connection].labelKey)}
-                    </Text>
-                    {detail.data.pet.device.batteryPct !== null ? (
-                      <CollarBatteryBar pct={detail.data.pet.device.batteryPct} />
-                    ) : null}
-                  </View>
-                  <Text
-                    testID="collar-battery"
-                    style={TABULAR_NUMS}
-                    className={detail.data.pet.device.batteryPct === null
-                      ? 'font-normal text-muted'
-                      : detail.data.pet.device.batteryPct > 60
-                        ? 'text-15 font-extrabold text-accent-strong'
-                        : 'text-15 font-extrabold text-warning-strong'}
-                  >
-                    {detail.data.pet.device.batteryPct === null ? '—' : `${detail.data.pet.device.batteryPct}%`}
-                  </Text>
-                </>
-              ) : (
-                <>
-                  <View className="flex-row items-center gap-3">
-                    <View testID="collar-icon" className="size-9 items-center justify-center rounded-full bg-tab-pill">
-                      <Moon size={20} color={accent} />
-                    </View>
-                    <Text testID="collar-status" className="text-base font-extrabold text-foreground">
-                      {t(HOME_CONNECTION[connection].labelKey)}
-                    </Text>
-                  </View>
-                  <Text className="text-sm font-normal text-muted">{t('home.noCollar')}</Text>
-                </>
-              )}
-              {detail.data.pet.device === null && isOwner ? (
-                    <Pressable
-                      accessibilityRole="button"
-                      testID="collar-pair-link"
-                      className="h-11 items-center justify-center rounded-xl bg-tab-pill"
-                      style={({ pressed }) => ({
-                        ...CONTINUOUS_CORNER,
-                        opacity: pressed ? 0.8 : 1,
-                      })}
-                      onPress={() => router.push('/pairing')}
-                >
-                  <Text className="text-15 font-bold text-foreground">
-                    {t('home.pairCollar')}
-                  </Text>
-                </Pressable>
-              ) : null}
-            </Card>
-          </HomeEntrance>
-        ) : null}
-
-        {selectedPetId ? (
-          <HomeEntrance index={4} testID="home-entrance-quick-actions">
-            <View testID="quick-actions" className="gap-2.5">
-              <Text
-                testID="quick-actions-title"
-                className="text-xs font-bold uppercase tracking-section text-muted"
-              >
-                {t('home.quickActions')}
-              </Text>
-              <View testID="quick-actions-row" className="flex-row gap-2.5">
-                {QUICK_ACTIONS.map(
-                  ({ testID, Icon, labelKey, slot, lip, href }, index) => testID === 'quick-action-reminder' && !isOwner ? null : (
-                    <Pressable
-                      key={testID}
-                      testID={testID}
-                      accessibilityRole="button"
-                      className={`h-23 flex-1 items-center justify-center gap-2 rounded-card ${CATEGORY_SLOTS[slot].surface}`}
-                      style={({ pressed }) => ({
-                        ...CONTINUOUS_CORNER,
-                        ...chunkyLip[lip],
-                        opacity: pressed ? 0.8 : 1,
-                      })}
-                      onPress={() => router.push(href(selectedPetId))}
-                    >
-                      <Icon size={26} color={quickActionInks[index]} />
-                      <Text className={`text-13 font-bold ${CATEGORY_SLOTS[slot].ink}`}>
-                        {t(labelKey)}
-                      </Text>
-                    </Pressable>
-                  ),
-                )}
-              </View>
-            </View>
-          </HomeEntrance>
-        ) : null}
-
-        {selectedPetId && (activity.data === undefined || activity.data.kind === 'ok') ? (
-          <HomeEntrance index={5} testID="home-entrance-weekly">
-            {activity.data === undefined ? (
-              <Skeleton
-                testID="weekly-activity-skeleton"
-                className="w-full rounded-card"
-                style={{ height: WEEKLY_ACTIVITY_SKELETON_HEIGHT }}
-              />
-            ) : null}
-            {activity.data?.kind === 'ok' ? (
-              <WeeklyActivityChart
-                key={selectedPetId}
-                days={activity.data.days}
-                weekComparison={activity.data.weekComparison}
-                onSelectDay={(day) => {
-                  if (selectedPetId) {
-                    setActivitySelection({ day, petId: selectedPetId });
+    <View testID="home-screen-root" className="flex-1 bg-background">
+      <ScrollView
+        testID="screen-home"
+        className="flex-1 bg-background"
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{
+          gap: 14,
+          paddingBottom: insets.bottom + 96,
+        }}
+      >
+        {/*
+          El hero va a sangre, así que el `padding: 24` y el
+          `paddingTop: insets.top + 12` de §Dimensiones bajan a envoltorios de
+          dentro (excepción A9). El paddingTop lo asume el slot del hero.
+        */}
+        {hasPets ? <HeroStatusBar /> : null}
+        {hasPets ? (
+          <PetHeroHeader
+            pet={detail.data?.kind === 'ok' ? detail.data.pet : null}
+            variant="bleed"
+            status={
+              connection
+                ? {
+                    label: t(HOME_CONNECTION[connection].labelKey),
+                    tone: HOME_CONNECTION[connection].tone,
                   }
-                }}
-              />
-            ) : null}
-          </HomeEntrance>
-        ) : null}
-
-        {activity.data?.kind === 'ok' && selectedToday ? (
-          <Button
-            testID="weekly-activity-day-map"
-            className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary}
-            onPress={() => router.push('/map')}
+                : undefined
+            }
+            highlight={
+              today
+                ? { value: fmtCount(today.walkCount), label: t('home.walks') }
+                : undefined
+            }
           >
-            <Text className="text-17 font-extrabold text-accent-foreground">
-              {viewOnMapLabel}
-            </Text>
-          </Button>
-        ) : null}
-
-        {selectedPetId ? (
-          <HomeEntrance index={6} testID="home-entrance-reminders">
-            <View testID="reminders-section" className="gap-1">
-              <View className="flex-row items-center justify-between">
-                <Text
-                  testID="reminders-section-title"
-                  className="text-base font-extrabold text-foreground"
-                >
-                  {t('home.reminders')}
-                </Text>
-                <Pressable
-                  testID="reminders-see-all"
-                  accessibilityRole="button"
-                  className="min-h-11 justify-center pl-3"
-                  style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
-                  onPress={() => router.push('/reminders')}
-                >
-                  <Text className="text-xs font-bold text-accent-strong">
-                    {t('home.remindersSeeAll')}
-                  </Text>
-                </Pressable>
+            <View testID="home-hero-actions" className="flex-row items-center gap-3">
+              <View className="flex-1">
+                <PetSwitcher
+                  pets={petList}
+                  selectedPetId={selectedPetId}
+                  onSelect={selectPet}
+                  variant="glass"
+                  selectedOnline={connection === 'online'}
+                  trailing={
+                    <GlassCircle testID="home-add-pet" accessibilityLabel={addPetLabel} onPress={() => router.push('/pets/add')}>
+                      <Plus size={20} strokeWidth={2.4} color={muted} />
+                    </GlassCircle>
+                  }
+                />
               </View>
-
-              <View testID="reminders-section-body" className="gap-2">
-                {detail.data === undefined ? (
-                  <Skeleton
-                    testID="reminders-section-skeleton"
-                    className="h-16 w-full rounded-card"
+              <GlassCircle
+                testID="home-alerts-bell"
+                accessibilityLabel={
+                  hasOpenAlerts
+                    ? t('home.alertsBellUnread')
+                    : t('home.alertsBell')
+                }
+                onPress={() => router.push('/alerts')}
+              >
+                <Bell size={22} strokeWidth={2} color={foreground} />
+                {hasOpenAlerts ? (
+                  <View
+                    testID="home-alerts-dot"
+                    className="absolute right-2.5 top-2.25 size-2.25 rounded-full border-2 border-background bg-danger"
                   />
                 ) : null}
+              </GlassCircle>
+            </View>
+          </PetHeroHeader>
+        ) : null}
 
-                {nextVaccine && nextVaccineCountdown ? (
-                  <Card
-                    testID="reminders-next-vaccine"
-                    className="flex-row items-center gap-3 px-3.5 py-3 shadow-none"
-                    style={shadows.card}
-                  >
-                    <View
-                      className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.blue.surface}`}
-                    >
-                      <Syringe size={20} color={vaccineInk} />
-                    </View>
-                    <View className="flex-1">
-                      <Text
-                        testID="reminders-next-vaccine-name"
-                        className="text-sm font-bold text-foreground"
-                      >
-                        {nextVaccine.name}
-                      </Text>
-                      <Text
-                        testID="reminders-next-vaccine-date"
-                        className="text-xs font-normal text-muted"
-                      >
-                        {fmtDate(nextVaccine.nextDoseAt, locale)}
-                      </Text>
-                    </View>
-                    <Text
-                      testID="reminders-next-vaccine-days"
-                      accessibilityLabel={nextVaccineCountdown.label}
-                      style={TABULAR_NUMS}
-                      className={`rounded-full px-2.5 py-1 text-xs font-extrabold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`}
-                    >
-                      {nextVaccineCountdown.text}
-                    </Text>
-                  </Card>
+        {hasPets ? null : (
+          <View
+            testID="home-states"
+            style={{
+              paddingHorizontal: 24,
+              paddingTop: insets.top + 12,
+              gap: 16,
+            }}
+          >
+            {pets.data !== undefined ? (
+              <Text className="text-26 font-black tracking-title text-foreground">
+                {t('home.home')}
+              </Text>
+            ) : null}
+
+            {pets.data === undefined ? (
+              <View testID="home-loading" className="gap-3.5">
+                <View
+                  testID="home-loading-summary"
+                  className="gap-4 rounded-card border border-border bg-surface px-4 py-3.5"
+                  style={{ ...CONTINUOUS_CORNER, ...shadows.card }}
+                >
+                  <Skeleton className="h-4 w-30 rounded-full" />
+                  <View className="flex-row gap-2">
+                    {Array.from({ length: 4 }, (_, index) => (
+                      <View key={index} className="flex-1 items-center gap-2">
+                        <Skeleton className="size-9 rounded-xl" />
+                        <Skeleton className="h-3.5 w-13 rounded-full" />
+                        <Skeleton className="h-2.5 w-9 rounded-full" />
+                      </View>
+                    ))}
+                  </View>
+                </View>
+                <Skeleton testID="home-loading-collar" className="h-16 w-full rounded-card" />
+                <View testID="home-loading-quick-actions" className="gap-2.5">
+                  <Skeleton className="h-3 w-27.5 rounded-full" />
+                  <View className="flex-row gap-2.5">
+                    {Array.from({ length: 3 }, (_, index) => (
+                      <Skeleton key={index} className="h-23 flex-1 rounded-card" />
+                    ))}
+                  </View>
+                </View>
+                <Skeleton testID="home-loading-weekly" className="h-102 w-full rounded-card" />
+              </View>
+            ) : null}
+
+            {pets.data && isPetsError(pets.data) ? (
+              <EmptyState
+                testID="home-error"
+                variant="hero"
+                tone="danger"
+                pose="talk"
+                title={t('home.loadPetsErrorTitle')}
+                body={t('home.loadPetsErrorBody')}
+                action={{ label: t('common.retry'), onPress: () => void pets.refetch() }}
+                badge={<View testID="home-error-badge" className="absolute right-10.5 top-6.5 size-11 items-center justify-center rounded-full border-3 border-background bg-danger"><Alert size={24} color={dangerForeground} /></View>}
+                actionIcon={<Refresh size={20} color={accentForeground} style={{ marginRight: 8 }} testID="home-error-action-icon" />}
+              />
+            ) : null}
+          </View>
+        )}
+
+        <View testID="home-content" style={{ paddingHorizontal: 24, gap: 16 }}>
+          {orbitPhrase !== null ? (
+            <HomeEntrance index={0} testID="home-entrance-orbit">
+              <View testID="home-orbit-phrase" className="flex-row items-end gap-2.5">
+                <BubblePop
+                  testID="home-orbit-bubble"
+                  className="flex-1 rounded-tile rounded-br-4 border border-border bg-surface-secondary px-3.5 py-3"
+                  style={CONTINUOUS_CORNER}
+                >
+                  <Text testID="home-orbit-text" className="text-15 font-semibold leading-5.25 text-foreground" selectable>
+                    {t(orbitPhrase.labelKey, orbitPhrase.params)}
+                  </Text>
+                </BubblePop>
+                <OrbitFloat testID="home-orbit-float">
+                  <Image
+                    testID="home-orbit"
+                    source={ORBIT_POSE_SOURCE[orbitPose]}
+                    style={{ width: 56, height: 56 }}
+                    accessible={orbitPose === 'walk'}
+                    accessibilityLabel={orbitPose === 'walk' ? t('home.orbitWalkLabel') : undefined}
+                  />
+                </OrbitFloat>
+              </View>
+            </HomeEntrance>
+          ) : null}
+
+          {selectedPetId !== null && (detail.data?.kind === 'error' || detail.data?.kind === 'unreachable') ? (
+            <HeroUICard testID="pet-hero-error" className="items-start gap-3 p-4">
+              <Text className="text-danger">
+                {t('common.somethingWentWrong')}
+              </Text>
+              <Button
+                testID="pet-hero-retry"
+                onPress={() => void detail.refetch()}
+              >
+                {t('common.retry')}
+              </Button>
+            </HeroUICard>
+          ) : null}
+
+          {selectedPetId ? (
+            <HomeEntrance index={2} testID="home-entrance-summary">
+              <Card testID="summary-card" className="gap-3 px-2 py-3.5 shadow-none" style={shadows.card}>
+                <Text
+                  testID="summary-card-title"
+                  className="px-2 text-base font-extrabold text-foreground"
+                >
+                  {t('home.summaryTitle')}
+                </Text>
+
+                {activity.data === undefined ? (
+                  <Skeleton testID="summary-skeleton" className="h-16 w-full rounded-xl" />
                 ) : null}
 
-                {mealsToday !== null ? (
-                  <Card
-                    testID="reminders-meals"
-                    className="flex-row items-center gap-3 px-3.5 py-3 shadow-none"
-                    style={shadows.card}
-                  >
-                    <View
-                      className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.rose.surface}`}
-                    >
-                      <ForkKnife size={20} color={mealsInk} />
+                {activity.data !== undefined &&
+                activity.data.kind !== 'unauthorized' ? (
+                  <Animated.View testID="summary-reveal" entering={homeEntering(0, 0)}>
+                    <View className="flex-row gap-1">
+                      <View className={activity.data.kind === 'ok'
+                        ? 'flex-1 items-center gap-1.5'
+                        : 'flex-1 items-center gap-1.5 border-r border-border'}>
+                        <View testID="summary-tile-weight" className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS[SUMMARY_TILES[0].slot].surface}`} style={CONTINUOUS_CORNER}>
+                          <Weight size={18} color={summaryInks[0]} />
+                        </View>
+                        <Text
+                          testID="summary-weight"
+                          className="text-base font-extrabold text-foreground"
+                          style={TABULAR_NUMS}
+                        >
+                          {fmtKg(
+                            detail.data?.kind === 'ok'
+                              ? detail.data.pet.currentWeightKg
+                              : null,
+                          )}
+                        </Text>
+                        <Text className="text-11 font-semibold text-muted">
+                          {t('home.weight')}
+                        </Text>
+                      </View>
+                      {activity.data.kind === 'ok' ? (
+                        <>
+                          <View className="flex-1 items-center gap-1.5">
+                            <View testID="summary-tile-activity" className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS[SUMMARY_TILES[1].slot].surface}`} style={CONTINUOUS_CORNER}>
+                              <Walk size={18} color={summaryInks[1]} />
+                            </View>
+                            <Text
+                              testID="summary-activity"
+                              className="text-base font-extrabold text-foreground"
+                              style={TABULAR_NUMS}
+                            >
+                              {fmtMinutes(today?.activeMinutes ?? null)}
+                            </Text>
+                            <Text className="text-11 font-semibold text-muted">
+                              {t('home.activity')}
+                            </Text>
+                          </View>
+                          <View className="flex-1 items-center gap-1.5">
+                            <View testID="summary-tile-sleep" className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS[SUMMARY_TILES[2].slot].surface}`} style={CONTINUOUS_CORNER}>
+                              <Moon size={18} color={summaryInks[2]} />
+                            </View>
+                            <Text
+                              testID="summary-sleep"
+                              className="text-base font-extrabold text-foreground"
+                              style={TABULAR_NUMS}
+                            >
+                              {fmtMinutes(today?.restMinutes ?? null)}
+                            </Text>
+                            <Text className="text-11 font-semibold text-muted">
+                              {t('home.sleep')}
+                            </Text>
+                          </View>
+                          <View className="flex-1 items-center gap-1.5">
+                            <View testID="summary-tile-distance" className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS[SUMMARY_TILES[3].slot].surface}`} style={CONTINUOUS_CORNER}>
+                              <Map size={18} color={summaryInks[3]} />
+                            </View>
+                            <Text
+                              testID="summary-distance"
+                              className="text-base font-extrabold text-foreground"
+                              style={TABULAR_NUMS}
+                            >
+                              {fmtKm(today?.distanceM ?? null)}
+                            </Text>
+                            <Text className="text-11 font-semibold text-muted">
+                              {t('home.distance')}
+                            </Text>
+                          </View>
+                        </>
+                      ) : (
+                        <Text
+                          testID="summary-note"
+                          className="flex-3 self-center pl-3 text-sm leading-5 font-normal text-muted"
+                        >
+                          {activity.data.kind === 'no-tracking'
+                            ? t('home.activityNeedsCollar')
+                            : t('home.couldNotLoadActivity')}
+                        </Text>
+                      )}
+                    </View>
+                  </Animated.View>
+                ) : null}
+              </Card>
+            </HomeEntrance>
+          ) : null}
+
+          {detail.data?.kind === 'ok' && connection ? (
+            <HomeEntrance index={3} testID="home-entrance-collar">
+              <Card
+                testID="collar-card"
+                className={detail.data.pet.device
+                  ? 'flex-row items-center gap-3 border-0 bg-default px-3.5 py-3 shadow-none'
+                  : 'gap-3 border-0 bg-default px-4 py-3.5 shadow-none'}
+              >
+                {detail.data.pet.device ? (
+                  <>
+                    <View testID="collar-icon" className="size-10 items-center justify-center rounded-full bg-tab-pill">
+                      {connection === 'online' ? <Wifi size={20} color={accent} /> : <WifiOff size={20} color={accent} />}
                     </View>
                     <View className="flex-1 gap-1.5">
-                      <View className="flex-row items-center justify-between">
-                        <Text
-                          testID="reminders-meals-title"
-                          className="text-sm font-bold text-foreground"
-                        >
-                          {t('food.mealsToday')}
-                        </Text>
-                        <Text
-                          testID="reminders-meals-count"
-                          accessibilityLabel={t('food.mealsServedOfTotal', {
-                            served: mealsToday.served,
-                            total: mealsToday.total,
-                          })}
-                          style={TABULAR_NUMS}
-                          className="text-xs font-normal text-muted"
-                        >
-                          {mealsToday.served}/{mealsToday.total}
-                        </Text>
-                      </View>
-                      <View
-                        testID="reminders-meals-track"
-                        className="h-1.5 overflow-hidden rounded-full bg-default"
-                      >
-                        <AnimatedView
-                          testID="reminders-meals-fill"
-                          className="h-full rounded-full bg-accent"
-                          style={mealsBarStyle}
-                        />
-                      </View>
+                      <Text testID="collar-status" className="text-15 font-bold text-foreground">
+                        {t(HOME_CONNECTION[connection].labelKey)}
+                      </Text>
+                      {detail.data.pet.device.batteryPct !== null ? (
+                        <CollarBatteryBar pct={detail.data.pet.device.batteryPct} />
+                      ) : null}
                     </View>
-                  </Card>
-                ) : null}
-
-                {detail.data?.kind === 'ok' &&
-                !detail.data.pet.nextVaccine &&
-                upcoming.length === 0 ? (
-                  <Card
-                    testID="reminders-none-upcoming"
-                    className="flex-row items-center gap-3 px-3.5 py-3 shadow-none"
-                    style={shadows.card}
-                  >
-                    <View
-                      className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.neutral.surface}`}
+                    <Text
+                      testID="collar-battery"
+                      style={TABULAR_NUMS}
+                      className={detail.data.pet.device.batteryPct === null
+                        ? 'font-normal text-muted'
+                        : detail.data.pet.device.batteryPct > 60
+                          ? 'text-15 font-extrabold text-accent-strong'
+                          : 'text-15 font-extrabold text-warning-strong'}
                     >
-                      <Syringe size={20} color={muted} />
-                    </View>
-                    <Text className="flex-1 text-sm font-normal text-muted">
-                      {t('home.noUpcomingVaccine')}
+                      {detail.data.pet.device.batteryPct === null ? '—' : `${detail.data.pet.device.batteryPct}%`}
                     </Text>
-                  </Card>
+                  </>
+                ) : (
+                  <>
+                    <View className="flex-row items-center gap-3">
+                      <View testID="collar-icon" className="size-9 items-center justify-center rounded-full bg-tab-pill">
+                        <Moon size={20} color={accent} />
+                      </View>
+                      <Text testID="collar-status" className="text-base font-extrabold text-foreground">
+                        {t(HOME_CONNECTION[connection].labelKey)}
+                      </Text>
+                    </View>
+                    <Text className="text-sm font-normal text-muted">{t('home.noCollar')}</Text>
+                  </>
+                )}
+                {detail.data.pet.device === null && isOwner ? (
+                      <Pressable
+                        accessibilityRole="button"
+                        testID="collar-pair-link"
+                        className="h-11 items-center justify-center rounded-xl bg-tab-pill"
+                        style={({ pressed }) => ({
+                          ...CONTINUOUS_CORNER,
+                          opacity: pressed ? 0.8 : 1,
+                        })}
+                        onPress={() => router.push('/pairing')}
+                  >
+                    <Text className="text-15 font-bold text-foreground">
+                      {t('home.pairCollar')}
+                    </Text>
+                  </Pressable>
                 ) : null}
+              </Card>
+            </HomeEntrance>
+          ) : null}
 
-                {upcoming.map((reminder, index) => {
-                  const dueDay = localDayOf(reminder.dueAt);
-                  const countdown = dueCountdown(
-                    calendarDaysUntil(dueDay, new Date()),
-                    t,
-                  );
-                  const Icon = REMINDER_ROW_ICONS[reminder.type];
-                  const slot = REMINDER_TYPE_META[reminder.type].category;
+          {selectedPetId ? (
+            <HomeEntrance index={4} testID="home-entrance-quick-actions">
+              <View testID="quick-actions" className="gap-2.5">
+                <Text
+                  testID="quick-actions-title"
+                  className="text-xs font-bold uppercase tracking-section text-muted"
+                >
+                  {t('home.quickActions')}
+                </Text>
+                <View testID="quick-actions-row" className="flex-row gap-2.5">
+                  {QUICK_ACTIONS.map(
+                    ({ testID, Icon, labelKey, slot, lip, href }, index) => testID === 'quick-action-reminder' && !isOwner ? null : (
+                      <Pressable
+                        key={testID}
+                        testID={testID}
+                        accessibilityRole="button"
+                        className={`h-23 flex-1 items-center justify-center gap-2 rounded-card ${CATEGORY_SLOTS[slot].surface}`}
+                        style={({ pressed }) => ({
+                          ...CONTINUOUS_CORNER,
+                          ...chunkyLip[lip],
+                          opacity: pressed ? 0.8 : 1,
+                        })}
+                        onPress={() => router.push(href(selectedPetId))}
+                      >
+                        <Icon size={26} color={quickActionInks[index]} />
+                        <Text className={`text-13 font-bold ${CATEGORY_SLOTS[slot].ink}`}>
+                          {t(labelKey)}
+                        </Text>
+                      </Pressable>
+                    ),
+                  )}
+                </View>
+              </View>
+            </HomeEntrance>
+          ) : null}
 
-                  return (
+          {selectedPetId && (activity.data === undefined || activity.data.kind === 'ok') ? (
+            <HomeEntrance index={5} testID="home-entrance-weekly">
+              {activity.data === undefined ? (
+                <Skeleton
+                  testID="weekly-activity-skeleton"
+                  className="w-full rounded-card"
+                  style={{ height: WEEKLY_ACTIVITY_SKELETON_HEIGHT }}
+                />
+              ) : null}
+              {activity.data?.kind === 'ok' ? (
+                <WeeklyActivityChart
+                  key={selectedPetId}
+                  days={activity.data.days}
+                  weekComparison={activity.data.weekComparison}
+                  onSelectDay={(day) => {
+                    if (selectedPetId) {
+                      setActivitySelection({ day, petId: selectedPetId });
+                    }
+                  }}
+                />
+              ) : null}
+            </HomeEntrance>
+          ) : null}
+
+          {activity.data?.kind === 'ok' && selectedToday ? (
+            <Button
+              testID="weekly-activity-day-map"
+              className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary}
+              onPress={() => router.push('/map')}
+            >
+              <Text className="text-17 font-extrabold text-accent-foreground">
+                {viewOnMapLabel}
+              </Text>
+            </Button>
+          ) : null}
+
+          {selectedPetId ? (
+            <HomeEntrance index={6} testID="home-entrance-reminders">
+              <View testID="reminders-section" className="gap-1">
+                <View className="flex-row items-center justify-between">
+                  <Text
+                    testID="reminders-section-title"
+                    className="text-base font-extrabold text-foreground"
+                  >
+                    {t('home.reminders')}
+                  </Text>
+                  <Pressable
+                    testID="reminders-see-all"
+                    accessibilityRole="button"
+                    className="min-h-11 justify-center pl-3"
+                    style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+                    onPress={() => router.push('/reminders')}
+                  >
+                    <Text className="text-xs font-bold text-accent-strong">
+                      {t('home.remindersSeeAll')}
+                    </Text>
+                  </Pressable>
+                </View>
+
+                <View testID="reminders-section-body" className="gap-2">
+                  {detail.data === undefined ? (
+                    <Skeleton
+                      testID="reminders-section-skeleton"
+                      className="h-16 w-full rounded-card"
+                    />
+                  ) : null}
+
+                  {nextVaccine && nextVaccineCountdown ? (
                     <Card
-                      key={reminder.id}
-                      testID={`reminders-item-${reminder.id}`}
+                      testID="reminders-next-vaccine"
                       className="flex-row items-center gap-3 px-3.5 py-3 shadow-none"
                       style={shadows.card}
                     >
                       <View
-                        className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS[slot].surface}`}
+                        className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.blue.surface}`}
                       >
-                        <Icon size={20} color={reminderRowInks[index]} />
+                        <Syringe size={20} color={vaccineInk} />
                       </View>
                       <View className="flex-1">
                         <Text
-                          testID={`reminders-item-${reminder.id}-title`}
+                          testID="reminders-next-vaccine-name"
                           className="text-sm font-bold text-foreground"
                         >
-                          {reminder.title}
+                          {nextVaccine.name}
                         </Text>
                         <Text
-                          testID={`reminders-item-${reminder.id}-date`}
+                          testID="reminders-next-vaccine-date"
                           className="text-xs font-normal text-muted"
                         >
-                          {fmtDate(dueDay, locale)}
+                          {fmtDate(nextVaccine.nextDoseAt, locale)}
                         </Text>
                       </View>
                       <Text
-                        testID={`reminders-item-${reminder.id}-days`}
-                        accessibilityLabel={countdown.label}
+                        testID="reminders-next-vaccine-days"
+                        accessibilityLabel={nextVaccineCountdown.label}
                         style={TABULAR_NUMS}
                         className={`rounded-full px-2.5 py-1 text-xs font-extrabold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`}
                       >
-                        {countdown.text}
+                        {nextVaccineCountdown.text}
                       </Text>
                     </Card>
-                  );
-                })}
+                  ) : null}
 
-              </View>
-            </View>
-          </HomeEntrance>
-        ) : null}
+                  {mealsToday !== null ? (
+                    <Card
+                      testID="reminders-meals"
+                      className="flex-row items-center gap-3 px-3.5 py-3 shadow-none"
+                      style={shadows.card}
+                    >
+                      <View
+                        className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.rose.surface}`}
+                      >
+                        <ForkKnife size={20} color={mealsInk} />
+                      </View>
+                      <View className="flex-1 gap-1.5">
+                        <View className="flex-row items-center justify-between">
+                          <Text
+                            testID="reminders-meals-title"
+                            className="text-sm font-bold text-foreground"
+                          >
+                            {t('food.mealsToday')}
+                          </Text>
+                          <Text
+                            testID="reminders-meals-count"
+                            accessibilityLabel={t('food.mealsServedOfTotal', {
+                              served: mealsToday.served,
+                              total: mealsToday.total,
+                            })}
+                            style={TABULAR_NUMS}
+                            className="text-xs font-normal text-muted"
+                          >
+                            {mealsToday.served}/{mealsToday.total}
+                          </Text>
+                        </View>
+                        <View
+                          testID="reminders-meals-track"
+                          className="h-1.5 overflow-hidden rounded-full bg-default"
+                        >
+                          <AnimatedView
+                            testID="reminders-meals-fill"
+                            className="h-full rounded-full bg-accent"
+                            style={mealsBarStyle}
+                          />
+                        </View>
+                      </View>
+                    </Card>
+                  ) : null}
 
-        {detail.data?.kind === 'ok' && detail.data.pet.device ? (
-          <HomeEntrance index={7} testID="home-entrance-last-position">
-            <Card
-              testID="last-position-card"
-              className="gap-2 border-0 bg-default px-4 py-3.5 shadow-none"
-              onPress={() => router.push('/map')}
-            >
-              <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center gap-2">
-                  <View className="size-9 items-center justify-center rounded-full bg-tab-pill">
-                    <Map size={20} color={accent} />
-                  </View>
-                  <Text className="text-15 font-bold text-accent-strong">
-                    {viewOnMapLabel}
-                  </Text>
+                  {detail.data?.kind === 'ok' &&
+                  !detail.data.pet.nextVaccine &&
+                  upcoming.length === 0 ? (
+                    <Card
+                      testID="reminders-none-upcoming"
+                      className="flex-row items-center gap-3 px-3.5 py-3 shadow-none"
+                      style={shadows.card}
+                    >
+                      <View
+                        className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.neutral.surface}`}
+                      >
+                        <Syringe size={20} color={muted} />
+                      </View>
+                      <Text className="flex-1 text-sm font-normal text-muted">
+                        {t('home.noUpcomingVaccine')}
+                      </Text>
+                    </Card>
+                  ) : null}
+
+                  {upcoming.map((reminder, index) => {
+                    const dueDay = localDayOf(reminder.dueAt);
+                    const countdown = dueCountdown(
+                      calendarDaysUntil(dueDay, new Date()),
+                      t,
+                    );
+                    const Icon = REMINDER_ROW_ICONS[reminder.type];
+                    const slot = REMINDER_TYPE_META[reminder.type].category;
+
+                    return (
+                      <Card
+                        key={reminder.id}
+                        testID={`reminders-item-${reminder.id}`}
+                        className="flex-row items-center gap-3 px-3.5 py-3 shadow-none"
+                        style={shadows.card}
+                      >
+                        <View
+                          className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS[slot].surface}`}
+                        >
+                          <Icon size={20} color={reminderRowInks[index]} />
+                        </View>
+                        <View className="flex-1">
+                          <Text
+                            testID={`reminders-item-${reminder.id}-title`}
+                            className="text-sm font-bold text-foreground"
+                          >
+                            {reminder.title}
+                          </Text>
+                          <Text
+                            testID={`reminders-item-${reminder.id}-date`}
+                            className="text-xs font-normal text-muted"
+                          >
+                            {fmtDate(dueDay, locale)}
+                          </Text>
+                        </View>
+                        <Text
+                          testID={`reminders-item-${reminder.id}-days`}
+                          accessibilityLabel={countdown.label}
+                          style={TABULAR_NUMS}
+                          className={`rounded-full px-2.5 py-1 text-xs font-extrabold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`}
+                        >
+                          {countdown.text}
+                        </Text>
+                      </Card>
+                    );
+                  })}
+
                 </View>
-                <ChevronRight size={20} color={accent} />
               </View>
-              <Text testID="last-position-time" className="text-13 font-normal text-muted">
-                {fmtLastSeen(detail.data.pet.lastCommunicationAt, locale, t)}
-              </Text>
-            </Card>
-          </HomeEntrance>
-        ) : null}
-      </View>
-    </ScrollView>
+            </HomeEntrance>
+          ) : null}
+
+          {detail.data?.kind === 'ok' && detail.data.pet.device ? (
+            <HomeEntrance index={7} testID="home-entrance-last-position">
+              <Card
+                testID="last-position-card"
+                className="gap-2 border-0 bg-default px-4 py-3.5 shadow-none"
+                onPress={() => router.push('/map')}
+              >
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-row items-center gap-2">
+                    <View className="size-9 items-center justify-center rounded-full bg-tab-pill">
+                      <Map size={20} color={accent} />
+                    </View>
+                    <Text className="text-15 font-bold text-accent-strong">
+                      {viewOnMapLabel}
+                    </Text>
+                  </View>
+                  <ChevronRight size={20} color={accent} />
+                </View>
+                <Text testID="last-position-time" className="text-13 font-normal text-muted">
+                  {fmtLastSeen(detail.data.pet.lastCommunicationAt, locale, t)}
+                </Text>
+              </Card>
+            </HomeEntrance>
+          ) : null}
+        </View>
+      </ScrollView>
+      <ProgressiveBlurView
+        {...TOP_EDGE_BLUR_PROPS}
+        edge="top"
+        tint={blurTint}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: insets.top + EDGE_BLUR_TAIL,
+          pointerEvents: 'none',
+        }}
+      />
+      <ProgressiveBlurView
+        {...BOTTOM_EDGE_BLUR_PROPS}
+        edge="bottom"
+        tint={blurTint}
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: insets.bottom + FLOATING_TAB_BAR_GAP + FLOATING_TAB_BAR_HEIGHT + EDGE_BLUR_TAIL,
+          pointerEvents: 'none',
+        }}
+      />
+    </View>
   );
 }
