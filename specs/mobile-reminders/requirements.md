@@ -432,6 +432,32 @@ La enmienda la escribe `specs/mobile-reminders-upcoming-past/requirements.md`
   (firma delegada del leader, 2026-11-03; mandato del humano 2026-10-23,
   ampliado 2026-11-03)
 
+## Enmienda #228 — Acciones de deslizar en Recordatorios
+
+**Spec enmendada:** `specs/mobile-reminders/requirements.md` (#39), **R7**.
+La enmienda la escribe `specs/mobile-reminder-swipe-actions/requirements.md`
+(#228, R2 a R5 y R13).
+
+**Qué cambia.**
+
+- «mostrar su botón de borrado (`testID="reminder-delete-<id>"`)» pasa a:
+  la fila del dueño va dentro de un `ReanimatedSwipeable`; al deslizar a la
+  izquierda aparece el panel `reminder-delete-<id>`, y la fila expone la
+  acción de accesibilidad `delete` (#228 R2 a R5). La fila ya no lleva botón
+  visible.
+- Pulsar el panel cierra el deslizable antes de abrir la confirmación
+  (#228 R4).
+
+**Qué no cambia.**
+
+- La confirmación (hoy la hoja de borrado de #178 R8) y el borrado.
+- Que cualquier status se pueda borrar.
+- Los testID `reminder-delete-<id>`, que ahora nombran el panel.
+
+- [x] Enmienda #228 aprobada (fecha: 2026-11-03)
+  (firma delegada del leader; mandato del humano 2026-10-23, ampliado
+  2026-11-03)
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-08-24) ← gate obligatorio antes de implementar

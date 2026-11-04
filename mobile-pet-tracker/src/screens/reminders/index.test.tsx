@@ -29,6 +29,7 @@ import { RemindersScreen } from '.';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
 const flat = (s: unknown) => Object.assign({}, ...[s].flat(Infinity).filter(Boolean));
+const HIDDEN = { includeHiddenElements: true } as const;
 
 
 const mockRiseIn = jest.fn<void, [import('react-native').ViewProps & { delayMs: number }]>();
@@ -118,6 +119,37 @@ jest.mock('@expo/ui/community/bottom-sheet', () => {
         : null,
     BottomSheetView: ({ children, ...props }: Record<string, unknown>) =>
       React.createElement(View, props, children as never),
+  };
+});
+
+const mockSwipeable = jest.fn<void, [import('react-native-gesture-handler/ReanimatedSwipeable').SwipeableProps]>();
+const mockSwipeableClose = jest.fn();
+let mockRealSwipeable = false;
+afterEach(() => { mockRealSwipeable = false; });
+
+jest.mock('react-native-gesture-handler/ReanimatedSwipeable', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    __esModule: true,
+    default: (props: import('react-native-gesture-handler/ReanimatedSwipeable').SwipeableProps) => {
+      if (mockRealSwipeable) {
+        const RealSwipeable = jest.requireActual<typeof import('react-native-gesture-handler/ReanimatedSwipeable')>('react-native-gesture-handler/ReanimatedSwipeable').default;
+        return React.createElement(RealSwipeable, props);
+      }
+      mockSwipeable(props);
+      return React.createElement(
+        View,
+        { testID: props.testID },
+        props.renderRightActions?.({ value: 0 } as never, { value: 0 } as never, {
+          close: mockSwipeableClose,
+          openLeft: jest.fn(),
+          openRight: jest.fn(),
+          reset: jest.fn(),
+        }),
+        props.children,
+      );
+    },
   };
 });
 
@@ -223,7 +255,7 @@ async function renderReminders() {
 async function expandPast() { await fireEvent.press(screen.getByTestId('reminders-past-toggle')); }
 
 async function confirmDelete(reminderId: string) {
-  await fireEvent.press(screen.getByTestId(`reminder-delete-${reminderId}`));
+  await fireEvent.press(screen.getByTestId(`reminder-delete-${reminderId}`, HIDDEN));
   const host = screen.getByTestId('reminders-delete-host');
   const sheet = within(host).getByTestId('community-bottom-sheet');
 
@@ -550,17 +582,16 @@ describe('#178 R6: fila del canvas', () => {
     }
   });
 
-  it('ordena mosaico, columna y borrar con la anatomía exacta de cada fila (enmendado por #227 R13)', async () => {
+  it('ordena mosaico, columna y borrar con la anatomía exacta de cada fila (enmendado por #227 R13) (enmendado por #228 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     await expandPast();
     for (const id of ['a', 'b', 'c']) {
       const row = screen.getByTestId(`reminder-row-${id}`);
-      expect(row.children).toHaveLength(3);
+      expect(row.children).toHaveLength(2);
       expect(row.children[0]).toHaveProperty('props.testID', `reminder-tile-${id}`);
       expect(row.children[1]).toHaveProperty('props.className', 'min-w-0 flex-1 gap-0.75');
       expect(row.children[1]).toHaveProperty('children.length', 3);
-      expect(row.children[2]).toHaveProperty('props.testID', `reminder-delete-${id}`);
     }
   });
 
@@ -789,7 +820,7 @@ describe('R7: borrar recordatorio con confirmación', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('shows a delete action for reminders in every status (enmendado por #227 R13)', async () => {
+  it('shows a delete action for reminders in every status (enmendado por #227 R13) (enmendado por #228 R13)', async () => {
     mockListReminders.mockResolvedValue({
       kind: 'ok',
       reminders: [
@@ -802,14 +833,14 @@ describe('R7: borrar recordatorio con confirmación', () => {
     await renderReminders();
 
     await waitFor(() =>
-      expect(screen.getByTestId('reminder-delete-scheduled')).toBeVisible(),
+      expect(screen.getByTestId('reminder-delete-scheduled', HIDDEN)).toBeOnTheScreen(),
     );
-    expect(screen.getByTestId('reminder-delete-sent')).toBeVisible();
+    expect(screen.getByTestId('reminder-delete-sent', HIDDEN)).toBeOnTheScreen();
     await expandPast();
-    expect(screen.getByTestId('reminder-delete-cancelled')).toBeVisible();
+    expect(screen.getByTestId('reminder-delete-cancelled', HIDDEN)).toBeOnTheScreen();
   });
 
-  it('closes the confirmation sheet on cancel and native dismiss', async () => {
+  it('closes the confirmation sheet on cancel and native dismiss (enmendado por #228 R13)', async () => {
     mockListReminders.mockResolvedValue({
       kind: 'ok',
       reminders: [makeReminder()],
@@ -817,9 +848,9 @@ describe('R7: borrar recordatorio con confirmación', () => {
 
     await renderReminders();
     await waitFor(() =>
-      expect(screen.getByTestId('reminder-delete-reminder-1')).toBeVisible(),
+      expect(screen.getByTestId('reminder-delete-reminder-1', HIDDEN)).toBeOnTheScreen(),
     );
-    await fireEvent.press(screen.getByTestId('reminder-delete-reminder-1'));
+    await fireEvent.press(screen.getByTestId('reminder-delete-reminder-1', HIDDEN));
 
     await fireEvent(
       screen.getByTestId('community-bottom-sheet'),
@@ -829,7 +860,7 @@ describe('R7: borrar recordatorio con confirmación', () => {
     expect(screen.queryByTestId('reminders-delete-sheet')).toBeNull();
     expect(mockDeleteReminder).not.toHaveBeenCalled();
 
-    await fireEvent.press(screen.getByTestId('reminder-delete-reminder-1'));
+    await fireEvent.press(screen.getByTestId('reminder-delete-reminder-1', HIDDEN));
     await fireEvent.press(screen.getByTestId('reminders-delete-cancel'));
 
     expect(screen.queryByTestId('reminders-delete-sheet')).toBeNull();
@@ -839,7 +870,7 @@ describe('R7: borrar recordatorio con confirmación', () => {
   it.each([
     { kind: 'ok' } as const,
     { kind: 'not-found' } as const,
-  ])('refetches and removes the row after $kind', async (deleteState) => {
+  ])('refetches and removes the row after $kind (enmendado por #228 R13)', async (deleteState) => {
     mockListReminders
       .mockResolvedValueOnce({
         kind: 'ok',
@@ -850,7 +881,7 @@ describe('R7: borrar recordatorio con confirmación', () => {
 
     await renderReminders();
     await waitFor(() =>
-      expect(screen.getByTestId('reminder-delete-reminder-1')).toBeVisible(),
+      expect(screen.getByTestId('reminder-delete-reminder-1', HIDDEN)).toBeOnTheScreen(),
     );
     await confirmDelete('reminder-1');
 
@@ -870,7 +901,7 @@ describe('R7: borrar recordatorio con confirmación', () => {
     [{ kind: 'error' }, 'Algo salió mal'],
     [{ kind: 'missing-config' }, 'Algo salió mal'],
   ] as [DeleteReminderState, string][]) (
-    'shows the action error for $state.kind',
+    'shows the action error for $state.kind (enmendado por #228 R13)',
     async (deleteState, message) => {
       mockListReminders.mockResolvedValue({
         kind: 'ok',
@@ -880,7 +911,7 @@ describe('R7: borrar recordatorio con confirmación', () => {
 
       await renderReminders();
       await waitFor(() =>
-        expect(screen.getByTestId('reminder-delete-reminder-1')).toBeVisible(),
+        expect(screen.getByTestId('reminder-delete-reminder-1', HIDDEN)).toBeOnTheScreen(),
       );
       await confirmDelete('reminder-1');
 
@@ -893,7 +924,7 @@ describe('R7: borrar recordatorio con confirmación', () => {
     },
   );
 
-  it('disables only the row being deleted while the request is pending', async () => {
+  it('disables only the row being deleted while the request is pending (enmendado por #228 R13)', async () => {
     mockListReminders.mockResolvedValue({
       kind: 'ok',
       reminders: [makeReminder(), makeReminder({ id: 'reminder-2' })],
@@ -902,15 +933,15 @@ describe('R7: borrar recordatorio con confirmación', () => {
 
     await renderReminders();
     await waitFor(() =>
-      expect(screen.getByTestId('reminder-delete-reminder-1')).toBeVisible(),
+      expect(screen.getByTestId('reminder-delete-reminder-1', HIDDEN)).toBeOnTheScreen(),
     );
     await confirmDelete('reminder-1');
 
     expect(
-      screen.getByTestId('reminder-delete-reminder-1').props.accessibilityState,
+      screen.getByTestId('reminder-delete-reminder-1', HIDDEN).props.accessibilityState,
     ).toEqual(expect.objectContaining({ disabled: true }));
     expect(
-      screen.getByTestId('reminder-delete-reminder-2').props.accessibilityState,
+      screen.getByTestId('reminder-delete-reminder-2', HIDDEN).props.accessibilityState,
     ).toEqual(expect.objectContaining({ disabled: false }));
   });
 });
@@ -1013,14 +1044,14 @@ describe(
       });
     });
 
-    it('cierra el sheet y elimina su contenido accesible al perder foco', async () => {
+    it('cierra el sheet y elimina su contenido accesible al perder foco (enmendado por #228 R13)', async () => {
       await renderReminders();
       await waitFor(() =>
         expect(screen.getByTestId('reminder-row-reminder-1')).toBeVisible(),
       );
       const cleanups = await focusScreen();
 
-      await fireEvent.press(screen.getByTestId('reminder-delete-reminder-1'));
+      await fireEvent.press(screen.getByTestId('reminder-delete-reminder-1', HIDDEN));
       expect(screen.getByTestId('community-bottom-sheet')).toBeVisible();
 
       await blurScreen(cleanups);
@@ -1054,10 +1085,10 @@ describe(
       mockDeleteReminder.mockResolvedValue({ kind: 'error' });
     });
 
-    it('borra el error visible al perder foco', async () => {
+    it('borra el error visible al perder foco (enmendado por #228 R13)', async () => {
       await renderReminders();
       await waitFor(() =>
-        expect(screen.getByTestId('reminder-delete-reminder-1')).toBeVisible(),
+        expect(screen.getByTestId('reminder-delete-reminder-1', HIDDEN)).toBeOnTheScreen(),
       );
       const cleanups = await focusScreen();
 
@@ -1095,33 +1126,33 @@ describe(
       mockDeleteReminder.mockReturnValue(pending<DeleteReminderState>());
     });
 
-    it('mantiene deshabilitada solo la fila cuyo delete sigue pendiente', async () => {
+    it('mantiene deshabilitada solo la fila cuyo delete sigue pendiente (enmendado por #228 R13)', async () => {
       await renderReminders();
       await waitFor(() =>
-        expect(screen.getByTestId('reminder-delete-reminder-1')).toBeVisible(),
+        expect(screen.getByTestId('reminder-delete-reminder-1', HIDDEN)).toBeOnTheScreen(),
       );
       const cleanups = await focusScreen();
 
       await confirmDelete('reminder-1');
       await waitFor(() =>
         expect(
-          screen.getByTestId('reminder-delete-reminder-1').props
+          screen.getByTestId('reminder-delete-reminder-1', HIDDEN).props
             .accessibilityState.disabled,
         ).toBe(true),
       );
       expect(
-        screen.getByTestId('reminder-delete-reminder-2').props
+        screen.getByTestId('reminder-delete-reminder-2', HIDDEN).props
           .accessibilityState.disabled,
       ).toBe(false);
 
       await blurScreen(cleanups);
 
       expect(
-        screen.getByTestId('reminder-delete-reminder-1').props
+        screen.getByTestId('reminder-delete-reminder-1', HIDDEN).props
           .accessibilityState.disabled,
       ).toBe(true);
       expect(
-        screen.getByTestId('reminder-delete-reminder-2').props
+        screen.getByTestId('reminder-delete-reminder-2', HIDDEN).props
           .accessibilityState.disabled,
       ).toBe(false);
     });
@@ -1290,7 +1321,7 @@ describe('#128 R4: el botón destructivo del sheet y su etiqueta llevan su recet
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('pinta reminders-delete-confirm con la variante danger y bg-danger, y su única etiqueta Eliminar con text-danger-foreground, haya o no un señuelo en la fuente (enmendado por #204 R9)', async () => {
+  it('pinta reminders-delete-confirm con la variante danger y bg-danger, y su única etiqueta Eliminar con text-danger-foreground, haya o no un señuelo en la fuente (enmendado por #204 R9) (enmendado por #228 R13)', async () => {
     mockListReminders.mockResolvedValue({
       kind: 'ok',
       reminders: [makeReminder()],
@@ -1300,7 +1331,7 @@ describe('#128 R4: el botón destructivo del sheet y su etiqueta llevan su recet
     await waitFor(() =>
       expect(screen.getByTestId('reminder-row-reminder-1')).toBeVisible(),
     );
-    await fireEvent.press(screen.getByTestId('reminder-delete-reminder-1'));
+    await fireEvent.press(screen.getByTestId('reminder-delete-reminder-1', HIDDEN));
 
     const confirm = screen.getByTestId('reminders-delete-confirm');
 
@@ -1371,7 +1402,7 @@ describe('#178 R7: entrada escalonada y badge', () => {
   });
 });
 
-describe('#178 R8: sheet de borrado del canvas (enmendado por #227 R13)', () => {
+describe('#178 R8: sheet de borrado del canvas (enmendado por #227 R13) (enmendado por #228 R13)', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     jest.useFakeTimers({ now: new Date('2026-12-30T15:00:00.000Z') });
@@ -1383,7 +1414,7 @@ describe('#178 R8: sheet de borrado del canvas (enmendado por #227 R13)', () => 
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: canvasReminders });
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
-    await fireEvent.press(screen.getByTestId('reminder-delete-a'));
+    await fireEvent.press(screen.getByTestId('reminder-delete-a', HIDDEN));
   });
 
   afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
@@ -1443,10 +1474,10 @@ describe('#218 R1: el cajón de borrar pinta su contenedor con el token surface 
 
   afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
 
-  it('#218 R1: backgroundStyle del BottomSheet de borrar es exactamente el token surface', async () => {
+  it('#218 R1: backgroundStyle del BottomSheet de borrar es exactamente el token surface (enmendado por #228 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
-    await fireEvent.press(screen.getByTestId('reminder-delete-a'));
+    await fireEvent.press(screen.getByTestId('reminder-delete-a', HIDDEN));
     const sheet = within(screen.getByTestId('reminders-delete-host')).getByTestId('community-bottom-sheet');
     expect(flat(sheet.props.backgroundStyle)).toEqual({ backgroundColor: 'color:surface' });
     expect(sheet.props.snapPoints).toEqual(['50%', '100%']);
@@ -1495,7 +1526,7 @@ describe('#155 R6: sin recordatorios, Pingo sostiene su lista', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('queda en el sitio del vacío que sustituye (enmendado por #204 R4)', async () => {
+  it('queda en el sitio del vacío que sustituye (enmendado por #204 R4) (enmendado por #228 R13)', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo' })] });
     mockListReminders.mockImplementation((_url, _token, petId) => Promise.resolve<RemindersState>({ kind: 'ok', reminders: petId === 'pet-2' ? [makeReminder({ petId: 'pet-2' })] : [] }));
     mockDeleteReminder.mockResolvedValue({ kind: 'forbidden' });
@@ -1505,7 +1536,7 @@ describe('#155 R6: sin recordatorios, Pingo sostiene su lista', () => {
     expect(slot.parent?.parent?.props.testID).toBe('screen-reminders');
     expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['reminders', 'RCTScrollView', 'reminders-empty', 'reminders-delete-host']);
     await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
-    await waitFor(() => expect(screen.getByTestId('reminder-delete-reminder-1')).toBeVisible());
+    await waitFor(() => expect(screen.getByTestId('reminder-delete-reminder-1', HIDDEN)).toBeOnTheScreen());
     await confirmDelete('reminder-1');
     await waitFor(() => expect(screen.getByTestId('reminders-action-error')).toBeVisible());
     await fireEvent.press(screen.getByTestId('pet-chip-pet-1'));
@@ -1596,7 +1627,7 @@ describe('Recordatorios: refetch de foco con selección vigente', () => {
   });
 
   describe('#193 R9: perder foco sin mascota limpia confirmación y error', () => {
-    it.each(['confirmación', 'error'] as const)('limpia %s tras cambiar la selección a null', async (state) => {
+    it.each(['confirmación', 'error'] as const)('limpia %s tras cambiar la selección a null (enmendado por #228 R13)', async (state) => {
       selectedPetId = 'pet-1';
       mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
       const view = await renderWithProviders(
@@ -1606,7 +1637,7 @@ describe('Recordatorios: refetch de foco con selección vigente', () => {
       await waitFor(() => expect(view.queryClient.isFetching()).toBe(0));
       const visibleId = state === 'confirmación' ? 'reminders-delete-sheet' : 'reminders-action-error';
       if (state === 'confirmación') {
-        await fireEvent.press(screen.getByTestId('reminder-delete-reminder-1'));
+        await fireEvent.press(screen.getByTestId('reminder-delete-reminder-1', HIDDEN));
       } else {
         await confirmDelete('reminder-1');
       }
@@ -1826,7 +1857,7 @@ describe('#204 R5: estados bajo la cabecera', () => {
     ['reminders-error'],
     ['reminders-empty'],
     ['reminders-action-error'],
-  ])('#204 R5: la cabecera encabeza el estado %s', async (stateId) => {
+  ])('#204 R5: la cabecera encabeza el estado %s (enmendado por #228 R13)', async (stateId) => {
     if (stateId === 'reminders-loading') {
       mockListReminders.mockReturnValue(pending<RemindersState>());
     } else if (stateId === 'reminders-error') {
@@ -1839,7 +1870,7 @@ describe('#204 R5: estados bajo la cabecera', () => {
     }
     await renderReminders();
     if (stateId === 'reminders-action-error') {
-      await screen.findByTestId('reminder-delete-reminder-1');
+      await screen.findByTestId('reminder-delete-reminder-1', HIDDEN);
       await confirmDelete('reminder-1');
     }
     await screen.findByTestId(stateId);
@@ -1955,14 +1986,12 @@ describe('#204 R8: Eliminar de la fila (enmendado por #227 R13)', () => {
 
   afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
 
-  it('#204 R8: Eliminar de fila usa la receta rosa del canvas', async () => {
+  it('#204 R8: Eliminar de fila usa la receta rosa del canvas (enmendado por #228 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
-    const button = screen.getByTestId('reminder-delete-a');
-    expect(button.props.className).toContain('button__root--variant-danger-soft');
-    expect(button.props.className).toContain('button__root--size-md');
-    expect(button.props.className).toContain('h-11 rounded-14 px-2.5 bg-category-rose');
-    expect(within(button).getByText('Eliminar').props.className).toBe('text-13 font-extrabold text-danger');
+    const panel = screen.getByTestId('reminder-delete-a', HIDDEN);
+    expect(panel.props.className).toBe('w-24 items-center justify-center gap-1 bg-category-rose');
+    expect(within(panel).getByText('Eliminar', HIDDEN).props.className).toBe('text-center text-13 font-extrabold text-danger');
   });
 });
 
@@ -1983,10 +2012,10 @@ describe('#204 R9: Eliminar de la hoja (enmendado por #227 R13)', () => {
 
   afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
 
-  it('#204 R9: Eliminar de la hoja lleva cuerpo de 56 y labio danger', async () => {
+  it('#204 R9: Eliminar de la hoja lleva cuerpo de 56 y labio danger (enmendado por #228 R13)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
-    await fireEvent.press(screen.getByTestId('reminder-delete-a'));
+    await fireEvent.press(screen.getByTestId('reminder-delete-a', HIDDEN));
     const confirm = screen.getByTestId('reminders-delete-confirm');
     expect(confirm.props.className).toContain('button__root--variant-danger button__root--size-md');
     expect(confirm.props.className).toContain('h-14 w-full rounded-16 bg-danger');
@@ -2053,35 +2082,33 @@ describe('#213 R14: series en Recordatorios', () => {
     for (const id of ['once', 'cancelled', 'sent']) expect(screen.getByTestId(`reminder-row-${id}`)).toBeVisible();
     for (const id of ['once', 'cancelled', 'sent']) expect(screen.queryByTestId(`reminder-repeats-${id}`)).toBeNull();
   });
-  it('#213 R15: la serie programada ofrece Cancelar serie y el puntual Eliminar', async () => {
+  it('#213 R15: la serie programada ofrece Cancelar serie y el puntual Eliminar (enmendado por #228 R13)', async () => {
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [
       makeReminder({ id: 'series', title: 'Pipeta antipulgas', recurrence: { unit: 'month', every: 1 } }),
       makeReminder({ id: 'once' }),
     ] });
     await renderReminders();
     const row = await screen.findByTestId('reminder-row-series');
-    expect(within(row).queryByTestId('reminder-cancel-series-series')).not.toBeNull();
-    const button = within(row).getByTestId('reminder-cancel-series-series');
-    expect(button.props.accessibilityLabel).toBe('Cancelar la serie Pipeta antipulgas');
-    expect(button.props.className).toContain('button__root--variant-danger-soft');
-    expect(button.props.className).toContain('h-11 rounded-14 px-2.5 bg-category-rose');
-    const label = within(button).getByText('Cancelar serie');
+    expect(row.props.accessibilityActions).toEqual([{ name: 'cancelSeries', label: 'Cancelar la serie Pipeta antipulgas' }]);
+    const panel = within(screen.getByTestId('reminder-swipe-series')).getByTestId('reminder-cancel-series-series', HIDDEN);
+    expect(panel.props.className).toBe('w-24 items-center justify-center gap-1 bg-category-rose');
+    const label = within(panel).getByText('Cancelar serie', HIDDEN);
     expect(label.props.children).toBe('Cancelar\nserie');
-    expect(label.props.className).toBe('text-13 font-extrabold text-danger');
-    expect(within(row).queryByTestId('reminder-delete-series')).toBeNull();
-    expect(within(row).getAllByRole('button')).toHaveLength(1);
-    expect(screen.getByTestId('reminder-delete-once')).toHaveTextContent('Eliminar');
-    expect(screen.queryByTestId('reminder-cancel-series-once')).toBeNull();
+    expect(label.props.className).toBe('text-center text-13 font-extrabold text-danger');
+    expect(screen.queryByTestId('reminder-delete-series', HIDDEN)).toBeNull();
+    expect(within(row).queryAllByRole('button', HIDDEN)).toEqual([]);
+    expect(screen.getByTestId('reminder-delete-once', HIDDEN)).toHaveTextContent('Eliminar');
+    expect(screen.queryByTestId('reminder-cancel-series-once', HIDDEN)).toBeNull();
   });
 
-  it.each(['cancelled', 'sent'] as const)('#213 R15: una serie cancelada o enviada conserva Eliminar (%s) (enmendado por #227 R13)', async (status) => {
+  it.each(['cancelled', 'sent'] as const)('#213 R15: una serie cancelada o enviada conserva Eliminar (%s) (enmendado por #227 R13) (enmendado por #228 R13)', async (status) => {
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [makeReminder({ id: 'series', status, dueAt: new Date(2026, 11, 28, 9, 0).toISOString(), recurrence: { unit: 'month', every: 1 } })] });
     await renderReminders();
     await screen.findByTestId('reminders-past-toggle');
     await expandPast();
     await screen.findByTestId('reminder-row-series');
-    expect(screen.getByTestId('reminder-delete-series')).toHaveTextContent('Eliminar');
-    expect(screen.queryByTestId('reminder-cancel-series-series')).toBeNull();
+    expect(screen.getByTestId('reminder-delete-series', HIDDEN)).toHaveTextContent('Eliminar');
+    expect(screen.queryByTestId('reminder-cancel-series-series', HIDDEN)).toBeNull();
   });
 
   it('#213 R16: el badge Hoy y el borde ámbar solo marcan el día de hoy (enmendado por #227 R13)', async () => {
@@ -2103,10 +2130,10 @@ describe('#213 R14: series en Recordatorios', () => {
     expect(screen.getByTestId('reminder-row-yesterday').props.className).toBe('flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border opacity-50');
   });
 
-  it('#213 R17: Cancelar serie abre la hoja con su copy', async () => {
+  it('#213 R17: Cancelar serie abre la hoja con su copy (enmendado por #228 R13)', async () => {
     await renderReminders();
-    await screen.findByTestId('reminder-cancel-series-series');
-    await fireEvent.press(screen.getByTestId('reminder-cancel-series-series'));
+    await screen.findByTestId('reminder-cancel-series-series', HIDDEN);
+    await fireEvent.press(screen.getByTestId('reminder-cancel-series-series', HIDDEN));
     expect(screen.queryByTestId('reminders-cancel-series-sheet')).not.toBeNull();
     const sheet = screen.getByTestId('reminders-cancel-series-sheet');
     expect(screen.queryByTestId('reminders-delete-sheet')).toBeNull();
@@ -2135,30 +2162,30 @@ describe('#213 R14: series en Recordatorios', () => {
     }
   });
 
-  it('#213 R17: sin nombre de mascota el cuerpo omite la mascota', async () => {
+  it('#213 R17: sin nombre de mascota el cuerpo omite la mascota (enmendado por #228 R13)', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ id: 'pet-2', name: 'Luna' })] });
     await renderReminders();
-    await screen.findByTestId('reminder-cancel-series-series');
-    await fireEvent.press(screen.getByTestId('reminder-cancel-series-series'));
+    await screen.findByTestId('reminder-cancel-series-series', HIDDEN);
+    await fireEvent.press(screen.getByTestId('reminder-cancel-series-series', HIDDEN));
     expect(screen.queryByTestId('reminders-cancel-series-sheet')).not.toBeNull();
     const body = 'No volveré a avisarte de Pipeta antipulgas. Si cambias de idea, puedes crear el recordatorio otra vez.';
     await waitFor(() => expect(within(screen.getByTestId('reminders-cancel-series-sheet')).getByText(body)).toHaveTextContent(body));
   });
 
-  it('#213 R17: las dos hojas comparten un solo BottomSheet', async () => {
+  it('#213 R17: las dos hojas comparten un solo BottomSheet (enmendado por #228 R13)', async () => {
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [
       makeReminder({ id: 'series', title: 'Pipeta antipulgas', recurrence: { unit: 'month', every: 1 } }),
       makeReminder({ id: 'once' }),
     ] });
     await renderReminders();
-    await screen.findByTestId('reminder-cancel-series-series');
-    await fireEvent.press(screen.getByTestId('reminder-cancel-series-series'));
+    await screen.findByTestId('reminder-cancel-series-series', HIDDEN);
+    await fireEvent.press(screen.getByTestId('reminder-cancel-series-series', HIDDEN));
     const host = screen.getByTestId('reminders-delete-host');
     expect(within(host).getAllByTestId('community-bottom-sheet')).toHaveLength(1);
     expect(screen.queryByTestId('reminders-cancel-series-sheet')).not.toBeNull();
     expect(screen.queryByTestId('reminders-delete-sheet')).toBeNull();
     await fireEvent(within(host).getByTestId('community-bottom-sheet'), 'onClose');
-    await fireEvent.press(screen.getByTestId('reminder-delete-once'));
+    await fireEvent.press(screen.getByTestId('reminder-delete-once', HIDDEN));
     expect(within(host).getAllByTestId('community-bottom-sheet')).toHaveLength(1);
     expect(screen.getByTestId('reminders-delete-sheet')).toBeVisible();
     expect(screen.queryByTestId('reminders-cancel-series-sheet')).toBeNull();
@@ -2166,8 +2193,8 @@ describe('#213 R14: series en Recordatorios', () => {
 
   async function openSeriesSheet() {
     await renderReminders();
-    await screen.findByTestId('reminder-cancel-series-series');
-    await fireEvent.press(screen.getByTestId('reminder-cancel-series-series'));
+    await screen.findByTestId('reminder-cancel-series-series', HIDDEN);
+    await fireEvent.press(screen.getByTestId('reminder-cancel-series-series', HIDDEN));
   }
 
   async function pressSeriesConfirmation() {
@@ -2213,13 +2240,13 @@ describe('#213 R14: series en Recordatorios', () => {
     expect(mockUseAuth().signOut).toHaveBeenCalledTimes(1);
   });
 
-  it('#213 R18: Mantener la serie cierra sin llamar a la API', async () => {
+  it('#213 R18: Mantener la serie cierra sin llamar a la API (enmendado por #228 R13)', async () => {
     await openSeriesSheet();
     const keep = screen.getByTestId('reminders-cancel-series-keep');
     await fireEvent.press(keep);
     await waitFor(() => expect(screen.queryByTestId('reminders-cancel-series-sheet')).toBeNull());
     expect(mockCancelReminderSeries).not.toHaveBeenCalled();
-    await fireEvent.press(screen.getByTestId('reminder-cancel-series-series'));
+    await fireEvent.press(screen.getByTestId('reminder-cancel-series-series', HIDDEN));
     await fireEvent(screen.getByTestId('community-bottom-sheet'), 'onClose');
     expect(screen.queryByTestId('reminders-cancel-series-sheet')).toBeNull();
     expect(mockCancelReminderSeries).not.toHaveBeenCalled();
@@ -2337,11 +2364,11 @@ describe('#216 R5: borrar y cancelar serie son solo del dueño', () => {
   });
 
   it.each([
-    ['owner', 3],
+    ['owner', 2],
     ['family', 2],
     ['walker', 2],
     ['vet', 2],
-  ] as const)('#216 R5 con el rol %s cada fila tiene %i hijos', async (role, rowChildren) => {
+  ] as const)('#216 R5 con el rol %s cada fila tiene %i hijos (enmendado por #228 R13)', async (role, rowChildren) => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: role })] });
     mockListReminders.mockResolvedValue({
       kind: 'ok',
@@ -2357,17 +2384,12 @@ describe('#216 R5: borrar y cancelar serie son solo del dueño', () => {
       expect(row.children[1]).toHaveProperty('props.className', 'min-w-0 flex-1 gap-0.75');
     }
     if (role === 'owner') {
-      expect(screen.getByTestId('reminder-row-reminder-1').children[2]).toHaveProperty(
-        'props.testID',
-        'reminder-delete-reminder-1',
-      );
-      expect(screen.getByTestId('reminder-row-reminder-2').children[2]).toHaveProperty(
-        'props.testID',
-        'reminder-cancel-series-reminder-2',
-      );
+      expect(within(screen.getByTestId('reminder-swipe-reminder-1')).getByTestId('reminder-delete-reminder-1', HIDDEN)).toBeOnTheScreen();
+      expect(within(screen.getByTestId('reminder-swipe-reminder-2')).getByTestId('reminder-cancel-series-reminder-2', HIDDEN)).toBeOnTheScreen();
     } else {
-      expect(screen.queryByTestId('reminder-delete-reminder-1')).toBeNull();
-      expect(screen.queryByTestId('reminder-cancel-series-reminder-2')).toBeNull();
+      expect(screen.queryAllByTestId(/^reminder-swipe-/)).toEqual([]);
+      expect(screen.queryByTestId('reminder-delete-reminder-1', HIDDEN)).toBeNull();
+      expect(screen.queryByTestId('reminder-cancel-series-reminder-2', HIDDEN)).toBeNull();
     }
     expect(screen.queryByTestId('reminder-repeats-reminder-2')).not.toBeNull();
   });
@@ -2480,22 +2502,22 @@ describe('#227: próximos y pasados', () => {
   });
 
 
-  it('#227 R12: Eliminar y Cancelar serie siguen en su fila en las dos secciones y solo para el dueño', async () => {
+  it('#227 R12: Eliminar y Cancelar serie siguen en su fila en las dos secciones y solo para el dueño (enmendado por #228 R13)', async () => {
     const owner = await renderReminders();
     await screen.findByTestId('reminders-pills');
     expect(screen.queryByTestId('reminders-past-toggle')).not.toBeNull();
     await expandPast();
-    const row = (id: string) => screen.getByTestId(`reminder-row-${id}`);
-    for (const id of ['today', 'later', 'cancelled', 'oldsent']) expect(within(row(id)).getByTestId(`reminder-delete-${id}`)).toBeVisible();
-    expect(within(row('yesterday')).getByTestId('reminder-cancel-series-yesterday')).toBeVisible();
-    expect(within(row('yesterday')).queryByTestId('reminder-delete-yesterday')).toBeNull();
+    const swipe = (id: string) => screen.getByTestId(`reminder-swipe-${id}`);
+    for (const id of ['today', 'later', 'cancelled', 'oldsent']) expect(within(swipe(id)).getByTestId(`reminder-delete-${id}`, HIDDEN)).toBeOnTheScreen();
+    expect(within(swipe('yesterday')).getByTestId('reminder-cancel-series-yesterday', HIDDEN)).toBeOnTheScreen();
+    expect(within(swipe('yesterday')).queryByTestId('reminder-delete-yesterday', HIDDEN)).toBeNull();
     await owner.unmount();
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: 'family' })] });
     await renderReminders();
     await screen.findByTestId('reminders-past-toggle');
     await expandPast();
     expect(screen.getAllByTestId(/^reminder-row-/)).toHaveLength(6);
-    expect(screen.queryAllByTestId(/^reminder-(delete|cancel-series)-/)).toEqual([]);
+    expect(screen.queryAllByTestId(/^reminder-(delete|cancel-series)-/, HIDDEN)).toEqual([]);
   });
 
 
@@ -2550,5 +2572,180 @@ describe('#227: próximos y pasados', () => {
       ['reminders-entry-yesterday', 30],
       ['reminders-entry-oldsent', 60],
     ]);
+  });
+});
+
+describe('Acciones de deslizar en Recordatorios (#228 R2 a R9)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers({ now: new Date(2026, 11, 31, 8, 0) });
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [
+      makeReminder({ id: 'once', status: 'scheduled', dueAt: new Date(2027, 0, 1, 9, 0).toISOString(), title: 'Refuerzo de rabia' }),
+      makeReminder({ id: 'series', status: 'scheduled', dueAt: new Date(2027, 0, 2, 9, 0).toISOString(), title: 'Antibiótico', recurrence: { unit: 'month', every: 1 } }),
+      makeReminder({ id: 'pastonce', status: 'sent', dueAt: new Date(2026, 11, 20, 9, 0).toISOString(), title: 'Desparasitación' }),
+      makeReminder({ id: 'pastseries', status: 'scheduled', dueAt: new Date(2026, 11, 30, 9, 0).toISOString(), title: 'Pipeta antipulgas', recurrence: { unit: 'month', every: 1 } }),
+    ] });
+  });
+  afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
+
+  it('#228 R2: la fila del dueño va dentro de su deslizable con el panel a la derecha y sin rebote', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-once');
+    const swipe = screen.getByTestId('reminder-swipe-once');
+    const props = mockSwipeable.mock.calls.filter(([props]) => props.testID === 'reminder-swipe-once').at(-1)?.[0];
+    expect(props?.overshootRight).toBe(false);
+    expect(props?.renderRightActions).toEqual(expect.any(Function));
+    expect(props?.renderLeftActions).toBeUndefined();
+    expect(within(swipe).getByTestId('reminder-row-once')).toBeOnTheScreen();
+    expect(swipe.parent?.props.className).toBe('overflow-hidden rounded-22');
+    expect(flat(swipe.parent?.props.style)).toEqual({ borderCurve: 'continuous' });
+    expect(swipe.parent?.parent?.props.testID).toBe('reminders-entry-once');
+  });
+
+  it.each([
+    ['once', 'reminder-delete-once', 'reminders-icon-trash', 'Eliminar'],
+    ['series', 'reminder-cancel-series-series', 'reminders-icon-repeat', 'Cancelar\nserie'],
+  ])('#228 R3: el panel de %s pinta la receta del canvas y se oculta a los lectores de pantalla', async (id, panelId, iconId, label) => {
+    await renderReminders();
+    await screen.findByTestId(`reminder-row-${id}`);
+    const swipe = screen.getByTestId(`reminder-swipe-${id}`);
+    expect(screen.queryByTestId(panelId)).toBeNull();
+    const panel = within(swipe).getByTestId(panelId, HIDDEN);
+    expect(panel).toBeOnTheScreen();
+    expect(panel.props.className).toBe('w-24 items-center justify-center gap-1 bg-category-rose');
+    expect(panel.props.accessibilityElementsHidden).toBe(true);
+    expect(panel.props.importantForAccessibility).toBe('no-hide-descendants');
+    expect(flat(panel.props.style)).toEqual({ opacity: 1 });
+    expect(panel.props.accessibilityState?.disabled).toBe(false);
+    expect(panel.children).toHaveLength(3);
+    expect(panel.children[0]).toHaveProperty('props.className', 'absolute inset-y-0 -left-6 w-6 bg-category-rose');
+    expect(panel.children[1]).toHaveProperty('props.testID', iconId);
+    expect(panel.children[1]).toHaveProperty('props.size', 20);
+    expect(panel.children[1]).toHaveProperty('props.color', 'color:danger');
+    expect(panel.children[2]).toHaveProperty('props.className', 'text-center text-13 font-extrabold text-danger');
+    expect(panel.children[2]).toHaveProperty('props.children', label);
+  });
+
+  it('#228 R4: pulsar el panel de un puntual cierra el deslizable y abre la hoja de borrar', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-once');
+    await fireEvent.press(screen.getByTestId('reminder-delete-once', HIDDEN));
+    expect(mockSwipeableClose).toHaveBeenCalledTimes(1);
+    expect(within(screen.getByTestId('reminders-delete-host')).getByTestId('community-bottom-sheet').props.index).toBe(0);
+    expect(screen.getByText('¿Eliminar recordatorio?')).toBeOnTheScreen();
+    expect(screen.getByTestId('reminders-delete-reference')).toHaveTextContent('Refuerzo de rabia');
+    expect(screen.queryByTestId('reminders-cancel-series-sheet')).toBeNull();
+    expect(mockDeleteReminder).not.toHaveBeenCalled();
+  });
+
+  it('#228 R4: pulsar el panel de una serie cierra el deslizable y abre la hoja de Cancelar serie', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-series');
+    await fireEvent.press(screen.getByTestId('reminder-cancel-series-series', HIDDEN));
+    expect(mockSwipeableClose).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('reminders-cancel-series-sheet')).toBeOnTheScreen();
+    expect(screen.getByText('¿Cancelar la serie?')).toBeOnTheScreen();
+    expect(screen.getByTestId('reminders-cancel-series-reference')).toHaveTextContent('Antibiótico · cada mes');
+    expect(screen.queryByTestId('reminders-delete-sheet')).toBeNull();
+    expect(mockDeleteReminder).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['once', 'delete', 'Eliminar', 'reminders-delete-sheet'],
+    ['series', 'cancelSeries', 'Cancelar la serie Antibiótico', 'reminders-cancel-series-sheet'],
+  ])('#228 R5: la fila de %s expone su acción de accesibilidad y abre la misma hoja', async (id, name, label, sheetId) => {
+    await renderReminders();
+    const row = await screen.findByTestId(`reminder-row-${id}`);
+    expect(row.props.accessible).toBe(true);
+    expect(row.props.accessibilityActions).toEqual([{ name, label }]);
+    await fireEvent(row, 'accessibilityAction', { nativeEvent: { actionName: 'activate' } });
+    expect(screen.queryByTestId('community-bottom-sheet')).toBeNull();
+    await fireEvent(row, 'accessibilityAction', { nativeEvent: { actionName: name } });
+    expect(screen.getByTestId(sheetId)).toBeOnTheScreen();
+    expect(screen.queryByTestId(id === 'once' ? 'reminders-cancel-series-sheet' : 'reminders-delete-sheet')).toBeNull();
+  });
+
+  it('#228 R5: la fila retira su acción de accesibilidad mientras su borrado sigue pendiente', async () => {
+    mockDeleteReminder.mockReturnValue(new Promise(() => {}));
+    await renderReminders();
+    await screen.findByTestId('reminder-row-once');
+    await fireEvent.press(screen.getByTestId('reminder-delete-once', HIDDEN));
+    await fireEvent.press(screen.getByTestId('reminders-delete-confirm'));
+    await waitFor(() => expect(screen.getByTestId('reminder-delete-once', HIDDEN).props.accessibilityState?.disabled).toBe(true));
+    expect(screen.getByTestId('reminder-row-series').props.accessibilityActions).toEqual([{ name: 'cancelSeries', label: 'Cancelar la serie Antibiótico' }]);
+    const row = screen.getByTestId('reminder-row-once');
+    expect(row.props.accessibilityActions).toBeUndefined();
+    await fireEvent(row, 'accessibilityAction', { nativeEvent: { actionName: 'delete' } });
+    expect(mockDeleteReminder).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('community-bottom-sheet')).toBeNull();
+  });
+
+  it('#228 R6: las filas pasadas también se deslizan y solo la fila va atenuada', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminders-past-toggle');
+    await expandPast();
+    await screen.findByTestId('reminder-row-pastonce');
+    for (const [id, panelId] of [
+      ['pastonce', 'reminder-delete-pastonce'],
+      ['pastseries', 'reminder-cancel-series-pastseries'],
+    ]) {
+      const swipe = screen.getByTestId(`reminder-swipe-${id}`);
+      const row = within(swipe).getByTestId(`reminder-row-${id}`);
+      const panel = within(swipe).getByTestId(panelId, HIDDEN);
+      expect(row.props.className).toMatch(/ opacity-50$/);
+      expect(swipe.parent?.props.className).toBe('overflow-hidden rounded-22');
+      expect(flat(swipe.props.style)).toEqual({});
+      expect(flat(swipe.parent?.props.style)).toEqual({ borderCurve: 'continuous' });
+      expect(flat(panel.props.style)).toEqual({ opacity: 1 });
+      expect(row.props.accessibilityActions).toEqual(id === 'pastonce'
+        ? [{ name: 'delete', label: 'Eliminar' }]
+        : [{ name: 'cancelSeries', label: 'Cancelar la serie Pipeta antipulgas' }]);
+    }
+  });
+
+  it('#228 R8: la fila ya no lleva botón de texto', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-series');
+    for (const id of ['once', 'series']) {
+      const row = screen.getByTestId(`reminder-row-${id}`);
+      expect(row.children).toHaveLength(2);
+      expect(row.children[0]).toHaveProperty('props.testID', `reminder-tile-${id}`);
+      expect(row.children[1]).toHaveProperty('props.className', 'min-w-0 flex-1 gap-0.75');
+      expect(within(row).queryAllByRole('button', HIDDEN)).toEqual([]);
+    }
+  });
+
+  it('#228 R9: con el ReanimatedSwipeable real la fila y su panel se montan y el panel abre la hoja', async () => {
+    mockRealSwipeable = true;
+    await renderReminders();
+    await screen.findByTestId('reminder-row-once');
+    const swipe = screen.getByTestId('reminder-swipe-once');
+    expect(within(swipe).getByTestId('reminder-row-once')).toBeOnTheScreen();
+    const panel = within(swipe).getByTestId('reminder-delete-once', HIDDEN);
+    expect(panel).toBeOnTheScreen();
+    expect(mockSwipeable).not.toHaveBeenCalled();
+    await fireEvent.press(panel);
+    expect(screen.getByText('¿Eliminar recordatorio?')).toBeOnTheScreen();
+  });
+
+  it('#228 R7: quien no es dueño no tiene deslizable, panel ni acción de accesibilidad', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: 'family' })] });
+    await renderReminders();
+    await screen.findByTestId('reminders-past-toggle');
+    await expandPast();
+    await screen.findByTestId('reminder-row-pastseries');
+    expect(screen.queryAllByTestId(/^reminder-swipe-/)).toEqual([]);
+    expect(screen.queryAllByTestId(/^reminder-(delete|cancel-series)-/, HIDDEN)).toEqual([]);
+    for (const id of ['once', 'series', 'pastonce', 'pastseries']) {
+      const row = screen.getByTestId(`reminder-row-${id}`);
+      expect(row).toBeOnTheScreen();
+      expect(row.props.accessibilityActions).toBeUndefined();
+    }
+    await fireEvent(screen.getByTestId('reminder-row-once'), 'accessibilityAction', { nativeEvent: { actionName: 'delete' } });
+    await fireEvent(screen.getByTestId('reminder-row-series'), 'accessibilityAction', { nativeEvent: { actionName: 'cancelSeries' } });
+    expect(screen.queryByTestId('community-bottom-sheet')).toBeNull();
   });
 });
