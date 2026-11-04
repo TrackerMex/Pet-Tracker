@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
+import type { ImageRef } from 'expo-image';
 
 import { MAP_ZOOM, PetMap, type PetMapProps } from '../pet-map';
 
@@ -105,6 +106,27 @@ describe('R3: marker y polylines llegan a la vista como arrays', () => {
     expect(screen.getByTestId('map-view').props.markers).toEqual([
       { id: 'last-position', coordinates: marker },
     ]);
+  });
+
+  it('#230 R2: con icono el marcador lleva icon, anchor centrado y sin callout', async () => {
+    const ICON = { sentinel: 'marker-icon' } as unknown as ImageRef;
+    await render(<PetMap center={center} marker={{ latitude: 19.45, longitude: -99.12 }} markerIcon={ICON} polylines={[]} colorScheme="light" />);
+    expect(screen.getByTestId('map-view').props.markers).toStrictEqual([
+      { id: 'last-position', coordinates: { latitude: 19.45, longitude: -99.12 }, icon: ICON, anchor: { x: 0.5, y: 0.5 }, showCallout: false },
+    ]);
+  });
+
+  it('#230 R2: sin icono el marcador conserva su forma exacta', async () => {
+    await render(<PetMap center={center} marker={center} markerIcon={null} polylines={[]} colorScheme="light" />);
+    expect(screen.getByTestId('map-view').props.markers).toStrictEqual([{ id: 'last-position', coordinates: center }]);
+    await screen.rerender(<PetMap center={center} marker={center} polylines={[]} colorScheme="light" />);
+    expect(screen.getByTestId('map-view').props.markers).toStrictEqual([{ id: 'last-position', coordinates: center }]);
+  });
+
+  it('#230 R2: sin posición no hay marcador aunque haya icono', async () => {
+    const ICON = { sentinel: 'marker-icon' } as unknown as ImageRef;
+    await render(<PetMap center={center} marker={null} markerIcon={ICON} polylines={[]} colorScheme="light" />);
+    expect(screen.getByTestId('map-view').props.markers).toStrictEqual([]);
   });
 
   it('conserva orden, id y coordenadas de todas las polylines', async () => {
