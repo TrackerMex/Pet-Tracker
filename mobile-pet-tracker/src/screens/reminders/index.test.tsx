@@ -2934,6 +2934,22 @@ describe('#240: año en la fecha de la fila', () => {
     expect(within(row).getByText(suffix)).toBeOnTheScreen();
   });
 
+  it.each([
+    ['hasta este año visto el 1 ene', 'es', ENE, '2027-01-31', 'Se repite cada mes · hasta el 31 ene'],
+    ['hasta otro año visto el 1 ene', 'es', ENE, '2028-02-10', 'Se repite cada mes · hasta feb 2028'],
+    ['hasta enero visto el 31 dic local con 2027 en UTC', 'es', DIC_NOCHE, '2027-01-31', 'Se repite cada mes · hasta ene 2027'],
+    ['inglés, hasta este año visto el 1 ene', 'en', ENE, '2027-01-31', 'Repeats every month · until Jan 31'],
+    ['inglés, hasta otro año visto el 1 ene', 'en', ENE, '2028-02-10', 'Repeats every month · until Feb 2028'],
+  ] as const)('#240 R4: %s', async (_case, language, clock, recurrenceUntil, line) => {
+    const row = await renderCase(language, clock, 'upcoming', {
+      dueAt: '2027-01-15T15:00:00.000Z',
+      status: 'scheduled',
+      recurrence: { unit: 'month', every: 1 },
+      recurrenceUntil,
+    });
+    expect(within(within(row).getByTestId('reminder-repeats-r')).getByText(line)).toBeOnTheScreen();
+  });
+
   it('#240 R5: pasa es-MX y el año a toLocaleDateString para una fecha de otro año', async () => {
     const formatDate = jest.spyOn(Date.prototype, 'toLocaleDateString');
     try {
