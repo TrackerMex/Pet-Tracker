@@ -59,6 +59,11 @@ tags: [mobile, home, ui, spike, native, spec]
    declarados.
 4. `feat(mobile): #242 render progressive edge blur overlays on Home (R2, R3, R4, R5, R6)`:
    solo `src/screens/home/index.tsx`. Verde todo.
+4b. (Enmienda del 2026-11-04.) `fix(mobile): #242 pass the overlay testID through a typed spread (D12)`:
+   solo `src/screens/home/index.tsx`; sin cambios de tests. Antes y después:
+   `bunx tsc --noEmit` pasa de 2 errores TS2322 a exit 0 y `bunx jest src/screens/home`
+   sigue verde con las mismas cifras. Si la traceability ya está commiteada,
+   este commit va después y se anota en ella sin reescribir hashes.
 5. `docs(specs): #242 fill traceability` (único commit de arnés, tras el
    último verde; sin rebase después).
 

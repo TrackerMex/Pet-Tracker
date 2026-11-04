@@ -101,6 +101,15 @@ el paquete publicado `expo-backdrop@0.1.3` (README, `src/`, fuentes Kotlin):
 - **D11. La feature no pasa a `done` con los tests verdes.** Se queda en
   `spec_ready` hasta que el humano cierre G2 y G3 (§Aprobación). El
   `reviewer` aprueba el código; el humano decide si el spike convence.
+- **D12. `testID` pasa por spread tipado (enmienda del 2026-11-04).**
+  `IProgressiveBlurViewProps` de `expo-backdrop` 0.1.3 solo declara `style` y
+  `children`, así que `testID` como atributo explícito da TS2322. El componente
+  hace `<Native {...props}>`, de modo que en ejecución `testID` llega igual. Los
+  overlays pasan `testID` esparciendo un objeto con nombre
+  (`{...TOP_EDGE_BLUR_PROPS}`), sin `@ts-ignore`, sin `as` y sin
+  `declare module`: TypeScript no aplica el chequeo de propiedades sobrantes a un
+  spread en JSX. Los props en ejecución son los mismos de R2 a R6, así que ningún
+  test cambia.
 
 ## Convenciones de esta spec
 
