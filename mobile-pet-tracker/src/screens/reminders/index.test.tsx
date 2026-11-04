@@ -630,19 +630,19 @@ describe('#178 R6: fila del canvas', () => {
     }
   });
 
-  it('formatea la fecha y hora próxima y conserva sus días en text-13', async () => {
+  it('formatea la fecha y hora próxima y conserva sus días en text-13 (enmendado por #240 R1)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     const row = within(screen.getByTestId('reminder-row-a'));
-    expect(row.getByText('2 ene, 09:00').props.className).toBe('text-13 font-normal text-muted');
+    expect(row.getByText('2 ene 2027, 09:00').props.className).toBe('text-13 font-normal text-muted');
     expect(row.getByText('· en 3 días').props.className).toBe('text-13 font-normal text-muted');
   });
 
-  it('formatea la hora lejana y la meta inactiva con su estado (enmendado por #227 R13)', async () => {
+  it('formatea la hora lejana y la meta inactiva con su estado (enmendado por #227 R13) (enmendado por #240 R1)', async () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-a');
     await expandPast();
-    expect(within(screen.getByTestId('reminder-row-b')).getByText('20 ene, 20:05').props.className).toBe('text-13 font-normal text-muted');
+    expect(within(screen.getByTestId('reminder-row-b')).getByText('20 ene 2027, 20:05').props.className).toBe('text-13 font-normal text-muted');
     const row = within(screen.getByTestId('reminder-row-c'));
     expect(row.getByText('3 dic, 11:30').props.className).toBe('text-13 font-normal text-muted');
     const status = row.getByTestId('reminder-status-c');
@@ -2853,5 +2853,94 @@ describe('Base opaca de la fila pasada (#239 R1 a R5)', () => {
     await fireEvent.press(panel);
     expect(screen.getByText('¿Eliminar recordatorio?')).toBeOnTheScreen();
     expect(screen.getByTestId('reminders-delete-reference')).toHaveTextContent('Desparasitación');
+  });
+});
+
+describe('#240: año en la fecha de la fila', () => {
+  const NOV = '2026-11-04T15:00:00.000Z';
+  const DIC = '2026-12-31T14:00:00.000Z';
+  const DIC_NOCHE = '2027-01-01T02:00:00.000Z';
+  const ENE = '2027-01-01T15:00:00.000Z';
+
+  beforeEach(() => {
+    hostProcess.env.TZ = 'America/Mexico_City';
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockReset();
+  });
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+    if (originalTimezone === undefined) delete hostProcess.env.TZ;
+    else hostProcess.env.TZ = originalTimezone;
+  });
+
+  function EnglishWrapper({ children }: { children: ReactNode }) {
+    return (
+      <HeroUINativeProvider>
+        <LanguageProvider initial="en">
+          <SelectedPetProvider>{children}</SelectedPetProvider>
+        </LanguageProvider>
+      </HeroUINativeProvider>
+    );
+  }
+
+  async function renderCase(language: 'es' | 'en', clock: string, section: 'upcoming' | 'past', overrides: Partial<Reminder>) {
+    jest.useFakeTimers({ now: new Date(clock) });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [makeReminder({ id: 'r', recurrence: null, recurrenceUntil: null, ...overrides })] });
+    await renderWithProviders(<RemindersScreen />, { wrapper: language === 'en' ? EnglishWrapper : RemindersWrapper });
+    if (section === 'past') {
+      await screen.findByTestId('reminders-past-toggle');
+      await expandPast();
+    } else {
+      await screen.findByTestId('reminder-row-r');
+    }
+    return within(screen.getByTestId(section === 'past' ? 'reminders-past-list' : 'reminders-upcoming-list')).getByTestId('reminder-row-r');
+  }
+
+  it.each([
+    ['próximo del año que viene (ejemplo del humano)', 'es', NOV, '2027-11-04T15:00:00.000Z', 'scheduled', 'upcoming', '4 nov 2027, 09:00', '· en 365 días'],
+    ['mañana 1 ene visto el 31 dic', 'es', DIC, '2027-01-01T15:00:00.000Z', 'scheduled', 'upcoming', '1 ene 2027, 09:00', '· en 1 días'],
+    ['enviado de diciembre visto el 1 ene', 'es', ENE, '2026-12-03T17:30:00.000Z', 'sent', 'past', '3 dic 2026, 11:30', 'Enviado'],
+    ['inglés, próximo del año que viene', 'en', NOV, '2027-11-04T15:00:00.000Z', 'scheduled', 'upcoming', 'Nov 4, 2027, 09:00', '· in 365 days'],
+  ] as const)('#240 R1: %s', async (_case, language, clock, dueAt, status, section, dateTime, suffix) => {
+    const row = await renderCase(language, clock, section, { dueAt, status });
+    expect(within(row).getByText(dateTime)).toBeOnTheScreen();
+    expect(within(row).getByText(suffix)).toBeOnTheScreen();
+  });
+
+  it.each([
+    ['próximo de este año', 'es', NOV, '2026-11-20T15:00:00.000Z', 'scheduled', 'upcoming', '20 nov, 09:00', '· en 16 días'],
+    ['hoy 1 ene por la noche visto el 1 ene', 'es', ENE, '2027-01-02T02:00:00.000Z', 'scheduled', 'upcoming', '1 ene, 20:00', '· en 0 días'],
+    ['pasado programado de este año', 'es', NOV, '2026-10-30T15:00:00.000Z', 'scheduled', 'past', '30 oct, 09:00', '· en -5 días'],
+    ['inglés, próximo de este año', 'en', NOV, '2026-11-20T15:00:00.000Z', 'scheduled', 'upcoming', 'Nov 20, 09:00', '· in 16 days'],
+  ] as const)('#240 R2: %s', async (_case, language, clock, dueAt, status, section, dateTime, suffix) => {
+    const row = await renderCase(language, clock, section, { dueAt, status });
+    expect(within(row).getByText(dateTime)).toBeOnTheScreen();
+    expect(within(row).getByText(suffix)).toBeOnTheScreen();
+  });
+
+  it.each([
+    ['31 dic 20:00 local, ya 2027 en UTC, visto el 31 dic', 'es', DIC, '2027-01-01T02:00:00.000Z', 'scheduled', 'upcoming', '31 dic, 20:00', '· en 0 días'],
+    ['31 dic 22:00 local con reloj y fecha ya en 2027 UTC', 'es', DIC_NOCHE, '2027-01-01T04:00:00.000Z', 'scheduled', 'upcoming', '31 dic, 22:00', '· en 0 días'],
+    ['31 dic 18:00 local, ya 2027 en UTC, visto el 1 ene', 'es', ENE, '2027-01-01T00:00:00.000Z', 'scheduled', 'past', '31 dic 2026, 18:00', '· en -1 días'],
+    ['inglés, 31 dic 20:00 local visto el 31 dic', 'en', DIC, '2027-01-01T02:00:00.000Z', 'scheduled', 'upcoming', 'Dec 31, 20:00', '· in 0 days'],
+    ['inglés, 31 dic 18:00 local visto el 1 ene', 'en', ENE, '2027-01-01T00:00:00.000Z', 'scheduled', 'past', 'Dec 31, 2026, 18:00', '· in -1 days'],
+  ] as const)('#240 R3: %s', async (_case, language, clock, dueAt, status, section, dateTime, suffix) => {
+    const row = await renderCase(language, clock, section, { dueAt, status });
+    expect(within(row).getByText(dateTime)).toBeOnTheScreen();
+    expect(within(row).getByText(suffix)).toBeOnTheScreen();
+  });
+
+  it('#240 R5: pasa es-MX y el año a toLocaleDateString para una fecha de otro año', async () => {
+    const formatDate = jest.spyOn(Date.prototype, 'toLocaleDateString');
+    try {
+      await renderCase('es', NOV, 'upcoming', { dueAt: '2027-11-04T15:00:00.000Z', status: 'scheduled' });
+      expect(formatDate).toHaveBeenCalledWith('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
+    } finally {
+      formatDate.mockRestore();
+    }
   });
 });
