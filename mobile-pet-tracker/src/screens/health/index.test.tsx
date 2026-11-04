@@ -1791,4 +1791,22 @@ describe('#241: vacunas próximas y pasadas', () => {
       expect(screen.queryByTestId('vaccines-past-list')).toBeNull();
     });
   });
+
+  it.each([
+    { id: 'future', list: 'upcoming', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', delay: 80 },
+    { id: 'later', list: 'upcoming', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', delay: 140 },
+    { id: 'today', list: 'past', surface: 'size-10 items-center justify-center rounded-xl bg-category-amber', icon: 'health-icon-clock', color: 'category-amber-strong', delay: 80 },
+    { id: 'none', list: 'past', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', delay: 140 },
+    { id: 'overdue', list: 'past', surface: 'size-10 items-center justify-center rounded-xl bg-category-rose', icon: 'health-icon-clock', color: 'category-rose-strong', delay: 200 },
+  ])('#241 R7: $id conserva su tile en $list y entra a los $delay ms', async ({ id, list, surface, icon, color, delay }) => {
+    await renderHealth();
+    await expandVaccinesPast();
+    await screen.findByTestId('vaccines-past-list');
+    const section = await screen.findByTestId(`vaccines-${list}-list`);
+    const row = await within(section).findByTestId(`vaccine-row-${id}`);
+    const tile = within(row).getByTestId(`vaccine-tile-${id}`, { includeHiddenElements: true });
+    expect(tile.props.className).toBe(surface);
+    expect(within(tile).getByTestId(icon, { includeHiddenElements: true }).props.style).toEqual({ color });
+    expect(riseDelayOf(row)).toBe(delay);
+  });
 });
