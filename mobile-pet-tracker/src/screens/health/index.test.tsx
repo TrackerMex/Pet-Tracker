@@ -1831,4 +1831,32 @@ describe('#241: vacunas próximas y pasadas', () => {
     expect(screen.queryByTestId('vaccines-upcoming-list')).toBeNull();
     expect(screen.getByTestId('vaccines-section').children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['vaccines-header', 'vaccines-past']);
   });
+
+  it.each([
+    { tz: 'America/Mexico_City', hora: '23:59', now: [2026, 11, 31, 23, 59], dosis: '2027-01-01', seccion: 'upcoming' },
+    { tz: 'Pacific/Auckland', hora: '00:01', now: [2027, 0, 1, 0, 1], dosis: '2027-01-01', seccion: 'past' },
+    { tz: 'America/Mexico_City', hora: '23:59', now: [2026, 8, 30, 23, 59], dosis: '2026-10-01', seccion: 'upcoming' },
+    { tz: 'Pacific/Auckland', hora: '00:01', now: [2026, 9, 1, 0, 1], dosis: '2026-10-01', seccion: 'past' },
+  ] as const)('#241 R10: a las $hora en $tz la dosis del $dosis va a $seccion', async ({ tz, now, dosis, seccion }) => {
+    const hostProcess = process.getBuiltinModule('process');
+    const previousZone = hostProcess.env.TZ;
+    try {
+      hostProcess.env.TZ = tz;
+      jest.setSystemTime(new Date(...now));
+      mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [makeVaccine({ id: 'edge', nextDoseAt: dosis })] });
+      await renderHealth();
+      if (seccion === 'upcoming') {
+        const list = await screen.findByTestId('vaccines-upcoming-list');
+        expect(within(list).getByTestId('vaccine-row-edge')).toBeOnTheScreen();
+      } else {
+        expect(await screen.findByTestId('vaccines-past-count')).toHaveTextContent('1', { exact: true });
+        await expandVaccinesPast();
+        const list = await screen.findByTestId('vaccines-past-list');
+        expect(within(list).getByTestId('vaccine-row-edge')).toBeOnTheScreen();
+      }
+    } finally {
+      if (previousZone === undefined) delete hostProcess.env.TZ;
+      else hostProcess.env.TZ = previousZone;
+    }
+  });
 });
