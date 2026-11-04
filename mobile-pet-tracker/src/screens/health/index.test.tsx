@@ -190,6 +190,8 @@ function elementChild(node: TestInstance, index: number): TestInstance {
   return child;
 }
 
+async function expandVaccinesPast() { await fireEvent.press(await screen.findByTestId('vaccines-past-toggle')); }
+
 function HealthWrapper({
   children,
   language = 'es',
@@ -1770,5 +1772,23 @@ describe('#241: vacunas próximas y pasadas', () => {
     await screen.findByTestId('vaccines-upcoming-list');
     expect(screen.queryByTestId('vaccines-past')).toBeNull();
     expect(screen.queryByTestId('vaccines-past-toggle')).toBeNull();
+  });
+
+  it('#241 R6: el encabezado alterna «Pasadas» y sus filas van de la más reciente a la más antigua', async () => {
+    await renderHealth();
+    await expandVaccinesPast();
+    const list = await screen.findByTestId('vaccines-past-list');
+    const toggle = screen.getByTestId('vaccines-past-toggle');
+    expect(toggle.props.accessibilityState?.expanded).toBe(true);
+    expect(within(toggle).getByTestId('health-icon-chevron-up', { includeHiddenElements: true })).toBeOnTheScreen();
+    expect(within(toggle).queryByTestId('health-icon-chevron-down', { includeHiddenElements: true })).toBeNull();
+    expect(screen.getByTestId('vaccines-past').children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['vaccines-past-toggle', 'vaccines-past-list']);
+    expect(list.props.className).toBe('gap-2.5');
+    expect(within(list).getAllByTestId(/^vaccine-row-/).map(row => row.props.testID)).toEqual(['vaccine-row-today', 'vaccine-row-none', 'vaccine-row-overdue']);
+    await fireEvent.press(toggle);
+    await waitFor(() => {
+      expect(screen.getByTestId('vaccines-past-toggle').props.accessibilityState?.expanded).toBe(false);
+      expect(screen.queryByTestId('vaccines-past-list')).toBeNull();
+    });
   });
 });
