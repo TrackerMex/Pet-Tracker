@@ -428,7 +428,7 @@ R12).
   - el contrato del API de R1 (orden descendente por `appliedAt`): el orden
     nuevo se hace en el móvil.
 
-- [ ] Enmienda #241 aprobada por humano (firma delegada del leader; mandato del humano 2026-10-23, ampliado 2026-11-04)
+- [x] Enmienda #241 aprobada por humano (firma delegada del leader; mandato del humano 2026-10-23, ampliado 2026-11-04)
 
 ## Aprobación
 

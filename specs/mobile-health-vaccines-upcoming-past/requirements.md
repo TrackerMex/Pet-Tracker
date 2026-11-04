@@ -1,6 +1,6 @@
 ---
 feature: "mobile-health-vaccines-upcoming-past"
-status: draft        # draft | approved
+status: approved        # draft | approved
 tags: [mobile, ui, spec]
 ---
 
@@ -608,6 +608,6 @@ mascota, igual que en #227. No lleva test.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar (firma delegada del leader con la checklist de `progress/plan_canvas-parity-2026-10-23.md` §4, los tres puntos del §4 de `progress/plan_ui-2026-10-26.md` y los dos de `progress/plan_mejoras-smoke-2026-11-03.md` §4; mandato del humano 2026-10-23, ampliado el 2026-11-04)
+- [X] Aprobado por humano (fecha: 2026-11-04; firma delegada del leader, mandato del humano 2026-10-23 ampliado 2026-11-04) ← gate obligatorio antes de implementar (firma delegada del leader con la checklist de `progress/plan_canvas-parity-2026-10-23.md` §4, los tres puntos del §4 de `progress/plan_ui-2026-10-26.md` y los dos de `progress/plan_mejoras-smoke-2026-11-03.md` §4; mandato del humano 2026-10-23, ampliado el 2026-11-04)
 - [ ] **G2**: smoke en el dev build de Android (pasos de «Paso de smoke nuevo», tema claro y oscuro) (fecha: ____) ← gate humano, por lote al final; lo registra `progress/smoke_arreglos-smoke.md`
 - Base congelada: `0f1ab26f` (`origin/dev`).
