@@ -86,6 +86,7 @@ Solo capa de presentación móvil y manifiesto:
 | Pantalla | `src/screens/home/index.tsx` | Imports `ProgressiveBlurView` (`'expo-backdrop'`) y `useUniwind` (`'uniwind'`); `const { theme } = useUniwind();` junto a `insets`; constantes de módulo con nombre para `24`, `12` y `64`; el return principal pasa a `View` raíz (`home-screen-root`) con el `ScrollView` intacto y los dos overlays después. El return de `home-no-pets-screen` no cambia. |
 | Tests | `src/screens/home/index.test.tsx` | Doble de `expo-backdrop` y de `uniwind` de fichero; `mockInsets`; doce `it` nuevos en siete `describe('#242 R<n>: …')` al final (R2–R8). |
 | Tests | `src/__tests__/canvas-foundations.test.ts` | Enmienda de `#197 R22` (`42 + 1 + 1`) y el `describe('#242 R1: …')` con un `it`. |
+| Tests | `src/__tests__/zones-canvas-fidelity.test.ts` | Enmienda de `#202 R25` (`42 + 1 + 1`), candado omitido; solo esa línea y el título. |
 | Specs | `specs/mobile-home-scroll-edge-blur/` | Esta carpeta. |
 
 Nada en `src/components/`, `src/app/`, `src/i18n/`, `src/theme/`, `docs/`,

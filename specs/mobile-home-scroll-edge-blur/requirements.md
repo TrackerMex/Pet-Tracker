@@ -209,7 +209,8 @@ El handoff pone `T0` (suites `src/screens/home` y `src/__tests__` en verde
   `"0.1.3"` (sin `~` ni `^`), dejar `bun.lock` consistente con ella y dejar
   `dependencies` con 44 claves y `devDependencies` con 8, sin
   `expo-linear-gradient` ni `@react-native-masked-view/masked-view`.
-  - Test: `src/__tests__/canvas-foundations.test.ts`.
+  - Test: `src/__tests__/canvas-foundations.test.ts` y, por la enmienda (c),
+    `src/__tests__/zones-canvas-fidelity.test.ts`.
     (a) Se **enmienda** el `it` `#197 R22: no añade dependencias (enmendado por
     #217 R8) (enmendado por #214 R23)`: el título gana el sufijo
     ` (enmendado por #242 R1)`, la longitud pasa de `42 + 1` a `42 + 1 + 1` con el
@@ -232,6 +233,15 @@ El handoff pone `T0` (suites `src/screens/home` y `src/__tests__` en verde
     (c) añadir también `expo-linear-gradient` → rojo (recuento 45 y la ausencia
     explícita); (d) dejar el título sin el sufijo ` (enmendado por #242 R1)` →
     rojo el ancla `grep -c "(enmendado por #242 R"` (cuenta 0 en vez de 1).
+    (e) **Enmienda del 2026-11-04 (candado omitido).** `src/__tests__/zones-canvas-fidelity.test.ts`
+    tiene un segundo candado global de dependencias, el `it` `#202 R25:
+    package.json no añade dependencias (enmendado por #217 R8) (enmendado por
+    #214 R23)`, que espera `42 + 1`. Se enmienda igual que (a): el título gana
+    el sufijo ` (enmendado por #242 R1)`, la longitud pasa a `42 + 1 + 1` con el
+    comentario `// #242 R1: expo-backdrop` (el de `#214 R23` se conserva) y el
+    resto del `it` no cambia. Mutación: devolver la cifra a `42 + 1` → rojo
+    (la suite falla con 44 claves). Ancla: `grep -c "(enmendado por #242 R"
+    src/__tests__/zones-canvas-fidelity.test.ts` pasa de 0 a 1.
 
 - **R2**: WHILE Inicio pinta su `return` principal (el `ScrollView`, en los
   estados de carga, de error y de contenido), THE SYSTEM SHALL renderizar dos
@@ -373,7 +383,9 @@ El handoff pone `T0` (suites `src/screens/home` y `src/__tests__` en verde
 - **R9**: WHEN termina la implementación, THE SYSTEM SHALL limitar el cambio a
   `package.json`, `bun.lock`, `src/screens/home/index.tsx`,
   `src/screens/home/index.test.tsx` y
-  `src/__tests__/canvas-foundations.test.ts`, no añadir copy, no tocar
+  `src/__tests__/canvas-foundations.test.ts`,
+  `src/__tests__/zones-canvas-fidelity.test.ts` (solo la enmienda R1 (e)), no
+  añadir copy, no tocar
   `floating-tab-bar.tsx` ni otra pantalla, y mantener verdes los guards de la
   carta.
   - Test A (anclas, handoff): las cifras de «Tras #242» de la tabla de
@@ -383,7 +395,8 @@ El handoff pone `T0` (suites `src/screens/home` y `src/__tests__` en verde
     `mobile-pet-tracker/package.json`, `mobile-pet-tracker/bun.lock`,
     `mobile-pet-tracker/src/screens/home/index.tsx`,
     `mobile-pet-tracker/src/screens/home/index.test.tsx`,
-    `mobile-pet-tracker/src/__tests__/canvas-foundations.test.ts` y ficheros
+    `mobile-pet-tracker/src/__tests__/canvas-foundations.test.ts`,
+    `mobile-pet-tracker/src/__tests__/zones-canvas-fidelity.test.ts` y ficheros
     bajo `progress/` y `specs/mobile-home-scroll-edge-blur/traceability.md`; ni
     `src/components/`, ni `src/app/`, ni `src/i18n/`, ni `ui-copy-table.ts`, ni
     `docs/`, ni `app.json`/`app.config.ts`. `git diff -w --numstat <H0>..HEAD --
@@ -404,6 +417,7 @@ El handoff pone `T0` (suites `src/screens/home` y `src/__tests__` en verde
 | Enmendado | Ruta | Qué cambia | Dónde se anota |
 |---|---|---|---|
 | #197 R22 (ya enmendado por #217 R8 y #214 R23) | `src/__tests__/canvas-foundations.test.ts`, `it` `#197 R22: no añade dependencias (enmendado por #217 R8) (enmendado por #214 R23)` | El recuento de `dependencies` pasa de `42 + 1` a `42 + 1 + 1` por `expo-backdrop`; `devDependencies` sigue en 8 | Sufijo ` (enmendado por #242 R1)` en el título del `it` y comentario `// #242 R1: expo-backdrop` junto a la cifra. El texto de la spec de #197 no se edita: la enmienda y su casilla viven aquí (§Aprobación) |
+| #202 R25 (ya enmendado por #217 R8 y #214 R23) | `src/__tests__/zones-canvas-fidelity.test.ts`, `it` `#202 R25: package.json no añade dependencias (enmendado por #217 R8) (enmendado por #214 R23)` | El recuento de `dependencies` pasa de `42 + 1` a `42 + 1 + 1` por `expo-backdrop` | Sufijo ` (enmendado por #242 R1)` en el título del `it` y comentario `// #242 R1: expo-backdrop`. Candado omitido por la spec original; enmienda del 2026-11-04 |
 
 ## Paso de smoke nuevo (G2, humano) y rebuild (G3, humano)
 
@@ -456,6 +470,9 @@ pantallas es decisión suya y otra feature.
   (R1 a R9)
 - [X] Enmienda de #197 R22 aprobada (la firma de esta spec la cubre; casilla
   propia porque la checklist de firma pide dejar la casilla de la enmienda)
+  (fecha: 2026-11-04)
+- [X] Enmienda de #202 R25 (R1 (e)) aprobada por el leader con el permiso
+  permanente de desbloquear a Codex; mecánica, mismo cambio que #197 R22
   (fecha: 2026-11-04)
 - [ ] **G3**: dev build reconstruido con `expo-backdrop` (prebuild) (fecha: ____)
   ← gate humano; sin él no hay smoke

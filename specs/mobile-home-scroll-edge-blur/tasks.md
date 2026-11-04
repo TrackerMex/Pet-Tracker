@@ -45,6 +45,12 @@ tags: [mobile, home, ui, spike, native, spec]
    si `package.json` deja `~`/`^`, editar a `"expo-backdrop": "0.1.3"` y correr
    `bun install`. Solo `package.json` y `bun.lock`. Verde: R1.
    Comprobar `bun install --frozen-lockfile` en exit 0.
+2b. (Enmienda del 2026-11-04.) `test(mobile): #242 amend the second dependency count lock (R1)`:
+   solo `src/__tests__/zones-canvas-fidelity.test.ts`: sufijo
+   ` (enmendado por #242 R1)` en el título del `it` de `#202 R25`, `42 + 1 + 1`
+   y comentario `// #242 R1: expo-backdrop`. Va **después** del commit 2 porque
+   ese test ya estaba rojo con la dependencia añadida; este commit lo deja verde.
+   Tras él, `bunx jest src/__tests__` queda sin rojos.
 3. `test(mobile): #242 pin the edge blur overlays on Home (R2, R3, R4, R5, R6, R7, R8)`:
    solo `src/screens/home/index.test.tsx`: el doble de `expo-backdrop`, el de
    `uniwind` con `mockTheme`, `mockInsets` y los siete `describe` de R2 a R8.
@@ -124,6 +130,7 @@ tags: [mobile, home, ui, spike, native, spec]
 - [ ] (3) Anclas de la columna «Tras #242» de [[requirements]] §Evidencia con
   `grep -cF --`; `grep -cE '\bBlurView\b' src/screens/home/index.tsx` imprime
   `0`; `grep -c "(enmendado por #242 R" src/__tests__/canvas-foundations.test.ts`
+  imprime `1`; `grep -c "(enmendado por #242 R" src/__tests__/zones-canvas-fidelity.test.ts`
   imprime `1`; `git diff -w --numstat <H0>..HEAD -- src/screens/home/index.tsx`
   borra como mucho 2 líneas.
 - [ ] Guards: `cd /home/claude/sites/Pet-Tracker-wt-242/mobile-pet-tracker && bunx jest src/screens/home src/__tests__ > /tmp/t1-242.log 2>&1; echo "exit=$?"`
