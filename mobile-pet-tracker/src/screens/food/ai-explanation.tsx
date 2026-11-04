@@ -11,6 +11,36 @@ import { aiExplanationPlainText, parseAiExplanation } from './parse-ai-explanati
 const AI_CLAMP_HEIGHT = 122; // #224 R6
 const AI_FADE_HEIGHT = 36; // #224 R6
 
+function renderBlocks(blocks: ReturnType<typeof parseAiExplanation>, violetStrong: string, withTestIDs: boolean) {
+  return blocks.map((block, index) => {
+    const segments = block.segments.map((segment, segmentIndex) => segment.bold ? (
+      <Text key={segmentIndex} className="font-extrabold">{segment.text}</Text>
+    ) : segment.text);
+    if (block.kind === 'paragraph') {
+      return (
+        <Text
+          key={index}
+          testID={withTestIDs ? `food-ai-block-${index}` : undefined}
+          className={`${index > 0 ? 'mt-2 ' : ''}text-13 font-medium leading-body text-foreground`}
+        >
+          {segments}
+        </Text>
+      );
+    }
+    const margin = index === 0 ? '' : blocks[index - 1].kind === 'bullet' ? 'mt-1 ' : 'mt-1.5 ';
+    return (
+      <View key={index} testID={withTestIDs ? `food-ai-block-${index}` : undefined} className={`${margin}flex-row gap-2`}>
+        <View
+          testID={withTestIDs ? `food-ai-dot-${index}` : undefined}
+          className="mt-1.75 size-1.25 shrink-0 rounded-full"
+          style={{ backgroundColor: violetStrong }}
+        />
+        <Text className="flex-1 text-13 font-medium leading-body text-foreground">{segments}</Text>
+      </View>
+    );
+  });
+}
+
 export function AiExplanation({ text }: { text: string }) {
   const t = useTranslate();
   const [violetStrong, violet] = useThemeColors(['category-violet-strong', 'category-violet']);
@@ -20,8 +50,19 @@ export function AiExplanation({ text }: { text: string }) {
   const expanded = expandedFor === text;
   const needsClamp = contentHeight > AI_CLAMP_HEIGHT;
 
+  // #234 R3: el gemelo mide sin verse, recibir toques ni duplicar la lectura.
   return (
     <View className="gap-2">
+      <View
+        testID="food-ai-measure"
+        className="absolute inset-x-0 top-0 opacity-0"
+        pointerEvents="none"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        onLayout={(event) => setContentHeight(event.nativeEvent.layout.height)}
+      >
+        {renderBlocks(blocks, violetStrong, false)}
+      </View>
       <View
         testID="food-ai-body"
         accessible
@@ -29,37 +70,8 @@ export function AiExplanation({ text }: { text: string }) {
         className="overflow-hidden"
         style={needsClamp && !expanded ? { maxHeight: AI_CLAMP_HEIGHT } : undefined}
       >
-        <View
-          testID="food-ai-content"
-          onLayout={(event) => setContentHeight(event.nativeEvent.layout.height)}
-        >
-          {blocks.map((block, index) => {
-            const segments = block.segments.map((segment, segmentIndex) => segment.bold ? (
-              <Text key={segmentIndex} className="font-extrabold">{segment.text}</Text>
-            ) : segment.text);
-            if (block.kind === 'paragraph') {
-              return (
-                <Text
-                  key={index}
-                  testID={`food-ai-block-${index}`}
-                  className={`${index > 0 ? 'mt-2 ' : ''}text-13 font-medium leading-body text-foreground`}
-                >
-                  {segments}
-                </Text>
-              );
-            }
-            const margin = index === 0 ? '' : blocks[index - 1].kind === 'bullet' ? 'mt-1 ' : 'mt-1.5 ';
-            return (
-              <View key={index} testID={`food-ai-block-${index}`} className={`${margin}flex-row gap-2`}>
-                <View
-                  testID={`food-ai-dot-${index}`}
-                  className="mt-1.75 size-1.25 shrink-0 rounded-full"
-                  style={{ backgroundColor: violetStrong }}
-                />
-                <Text className="flex-1 text-13 font-medium leading-body text-foreground">{segments}</Text>
-              </View>
-            );
-          })}
+        <View testID="food-ai-content">
+          {renderBlocks(blocks, violetStrong, true)}
         </View>
         {needsClamp && !expanded ? (
           <View
