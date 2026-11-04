@@ -770,6 +770,8 @@ export const R19_VACCINE_CREATE: UseRow[] = [
   { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.saveError' },
   { file: 'src/screens/vaccine-create/index.tsx', key: 'vaccineCreate.appliedAtFuture' },
   { file: 'src/screens/vaccine-create/index.tsx', key: 'validation.checkDetails' },
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'health.couldNotLoadVaccines' }, // #236 R7
+  { file: 'src/screens/vaccine-create/index.tsx', key: 'common.retry' }, // #236 R7
   { file: 'src/utils/form-rules.ts', key: 'vaccineCreate.nameRequired' },
 ];
 

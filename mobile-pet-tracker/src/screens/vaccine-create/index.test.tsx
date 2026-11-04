@@ -223,6 +223,108 @@ it('#208 R8: con el catálogo en error solo queda «Otra vacuna» seleccionado',
   expect(screen.queryByTestId('vaccine-create-chips-skeleton')).toBeNull();
 });
 
+it.each(['error', 'unreachable', 'unauthorized', 'missing-config'] as const)('#236 R1: con el catálogo en %s pinta el aviso y «Reintentar» entre la leyenda y los chips', async kind => {
+  mockCatalog.mockResolvedValue(kind === 'unreachable' ? { kind, message: 'SERVER_NETWORK_PRIVATE' } : { kind });
+  await renderVaccineCreate();
+  const error = await screen.findByTestId('vaccine-create-catalog-error');
+  const legend = screen.getByTestId('vaccine-create-legend');
+  expect(error.props.className).toBe('items-start gap-3');
+  expect(error.parent).toBe(legend.parent);
+  expect(error.parent).toBe(screen.getByTestId('vaccine-create-chips').parent);
+  const siblings = legend.parent?.children.map(child => typeof child === 'string' ? child : child.props.testID);
+  const legendIndex = siblings?.indexOf('vaccine-create-legend');
+  expect(siblings?.slice(legendIndex, (legendIndex ?? 0) + 3)).toEqual(['vaccine-create-legend', 'vaccine-create-catalog-error', 'vaccine-create-chips']);
+  expect(error.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['vaccine-create-catalog-error-text', 'vaccine-create-catalog-retry']);
+  const text = within(error).getByTestId('vaccine-create-catalog-error-text');
+  expect(text.props.className).toBe('text-15 leading-body text-danger');
+  expect(text.props.accessibilityRole).toBe('alert');
+  expect(text.props.selectable).toBe(true);
+  expect(text).toHaveTextContent('No se pudieron cargar las vacunas', { exact: true });
+  expect(within(error).getByTestId('vaccine-create-catalog-retry')).toHaveTextContent('Reintentar', { exact: true });
+  expect(screen.queryByText('SERVER_NETWORK_PRIVATE', { exact: false })).toBeNull();
+});
+it('#236 R1: si la consulta del catálogo rechaza pinta el mismo aviso', async () => {
+  mockCatalog.mockRejectedValue(new Error('SERVER_THROWN_PRIVATE'));
+  await renderVaccineCreate();
+  const error = await screen.findByTestId('vaccine-create-catalog-error');
+  expect(within(error).getByTestId('vaccine-create-catalog-error-text')).toHaveTextContent('No se pudieron cargar las vacunas', { exact: true });
+  expect(within(error).getByTestId('vaccine-create-catalog-retry')).toHaveTextContent('Reintentar', { exact: true });
+  expect(screen.queryByText('SERVER_THROWN_PRIVATE', { exact: false })).toBeNull();
+});
+it('#236 R2: con el aviso pintado «Otra vacuna» sigue seleccionada y con su campo de nombre', async () => {
+  mockCatalog.mockResolvedValue({ kind: 'error' });
+  await renderVaccineCreate();
+  await screen.findByTestId('vaccine-create-catalog-error');
+  const chips = screen.getByTestId('vaccine-create-chips');
+  expect(chips.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['vaccine-chip-other']);
+  expect(screen.getByTestId('vaccine-chip-other').props.accessibilityState).toEqual({ selected: true });
+  expect(screen.getByTestId('vaccine-create-name')).toBeVisible();
+});
+it.each(['vacío', 'con entradas'])('#236 R3: un catálogo ok %s no pinta el aviso de error', async state => {
+  if (state === 'vacío') mockCatalog.mockResolvedValue({ kind: 'ok', entries: [] });
+  await renderVaccineCreate();
+  const chips = await screen.findByTestId('vaccine-create-chips');
+  expect(chips.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(state === 'vacío'
+    ? ['vaccine-chip-other']
+    : ['vaccine-chip-cat-lepto', 'vaccine-chip-cat-dhppi', 'vaccine-chip-cat-rabia', 'vaccine-chip-cat-tos', 'vaccine-chip-other']);
+  if (state === 'vacío') expect(screen.getByTestId('vaccine-chip-other').props.accessibilityState).toEqual({ selected: true });
+  expect(screen.queryByTestId('vaccine-create-catalog-error')).toBeNull();
+  expect(screen.queryByTestId('vaccine-create-catalog-retry')).toBeNull();
+  expect(screen.queryByText('No se pudieron cargar las vacunas')).toBeNull();
+});
+it('#236 R4: mientras carga no pinta el aviso de error', async () => {
+  mockCatalog.mockReturnValue(pending());
+  await renderVaccineCreate();
+  const skeleton = await screen.findByTestId('vaccine-create-chips-skeleton');
+  expect(skeleton.children).toHaveLength(3);
+  expect(screen.queryByTestId('vaccine-create-catalog-error')).toBeNull();
+});
+it('#236 R5: «Reintentar» vuelve a pedir el catálogo y, si responde ok, pinta las entradas y retira el aviso', async () => {
+  mockCatalog.mockResolvedValueOnce({ kind: 'error' });
+  await renderVaccineCreate();
+  await fireEvent.press(await screen.findByTestId('vaccine-create-catalog-retry'));
+  const first = await screen.findByTestId('vaccine-chip-cat-lepto');
+  expect(mockCatalog).toHaveBeenCalledTimes(2);
+  expect(mockCatalog).toHaveBeenNthCalledWith(1, apiUrl, 'jwt-token', 'dog');
+  expect(mockCatalog).toHaveBeenNthCalledWith(2, apiUrl, 'jwt-token', 'dog');
+  expect(mockListPets).toHaveBeenCalledTimes(1);
+  expect(screen.getByTestId('vaccine-create-chips').children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['vaccine-chip-cat-lepto', 'vaccine-chip-cat-dhppi', 'vaccine-chip-cat-rabia', 'vaccine-chip-cat-tos', 'vaccine-chip-other']);
+  expect(first.props.accessibilityState).toEqual({ selected: true });
+  await waitFor(() => expect(screen.queryByTestId('vaccine-create-catalog-error')).toBeNull());
+});
+it('#236 R6: mientras el reintento está en vuelo el aviso sigue y no vuelven los esqueletos', async () => {
+  mockCatalog.mockResolvedValueOnce({ kind: 'error' }).mockReturnValueOnce(pending());
+  await renderVaccineCreate();
+  await fireEvent.press(await screen.findByTestId('vaccine-create-catalog-retry'));
+  await waitFor(() => expect(mockCatalog).toHaveBeenCalledTimes(2));
+  expect(screen.getByTestId('vaccine-create-catalog-error')).toBeVisible();
+  expect(screen.getByTestId('vaccine-chip-other').props.accessibilityState).toEqual({ selected: true });
+  expect(screen.queryByTestId('vaccine-create-chips-skeleton')).toBeNull();
+});
+it('#236 R6: si el reintento vuelve a fallar el aviso sigue y se puede reintentar otra vez', async () => {
+  mockCatalog.mockResolvedValue({ kind: 'error' });
+  await renderVaccineCreate();
+  await fireEvent.press(await screen.findByTestId('vaccine-create-catalog-retry'));
+  await waitFor(() => expect(mockCatalog).toHaveBeenCalledTimes(2));
+  expect(screen.getByTestId('vaccine-create-catalog-error')).toBeVisible();
+  expect(screen.getByTestId('vaccine-chip-other').props.accessibilityState).toEqual({ selected: true });
+  expect(screen.queryByTestId('vaccine-create-chips-skeleton')).toBeNull();
+  await fireEvent.press(screen.getByTestId('vaccine-create-catalog-retry'));
+  await waitFor(() => expect(mockCatalog).toHaveBeenCalledTimes(3));
+  expect(screen.getByTestId('vaccine-create-catalog-error')).toBeVisible();
+  expect(screen.getByTestId('vaccine-create-catalog-retry')).toHaveTextContent('Reintentar', { exact: true });
+  expect(screen.getByTestId('vaccine-chip-other').props.accessibilityState).toEqual({ selected: true });
+  expect(screen.queryByTestId('vaccine-create-chips-skeleton')).toBeNull();
+});
+it('#236 R8: el aviso y el reintento usan la receta de Salud sin clases ni labio', () => {
+  const source = readFileSync('src/screens/vaccine-create/index.tsx', 'utf8');
+  for (const literal of [
+    '<View testID="vaccine-create-catalog-error" className="items-start gap-3">',
+    '<Text testID="vaccine-create-catalog-error-text" className="text-15 leading-body text-danger" accessibilityRole="alert" selectable>{t(\'health.couldNotLoadVaccines\')}</Text>',
+    '<Button testID="vaccine-create-catalog-retry" onPress={() => void catalog.refetch()}>{t(\'common.retry\')}</Button>',
+  ]) expect(source.split(literal).length - 1).toBe(1);
+});
+
 it('#208 R9: «Otra vacuna» muestra nombre, contador 0/120 y lo actualiza a 13/120 con «Leishmaniasis»', async () => {
   await renderVaccineCreate();
   await fireEvent.press(await screen.findByTestId('vaccine-chip-other'));

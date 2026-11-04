@@ -3799,11 +3799,28 @@
   {
     "id": 236,
     "name": "mobile-vaccine-catalog-error-state",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
-    "description": "Agregar vacuna: si GET /vaccine-catalog falla, el selector muestra solo «Otra vacuna» sin avisar ni dejar reintentar. Arreglo: estado de error con reintento, distinto del catálogo vacío. Hallazgo del leader al especificar #226; el humano pidió abrirlo como feature el 2026-11-03 («si abre como feature nueva»). Responsable: leader @Backend, después de #226. Plan progress/plan_mejoras-smoke-2026-11-03.md. Registrada sin spec.",
-    "acceptance_criteria": null,
-    "files_affected": null
+    "description": "Agregar vacuna: si GET /vaccine-catalog falla, el selector muestra solo «Otra vacuna» sin avisar ni dejar reintentar. Arreglo: estado de error con reintento, distinto del catálogo vacío. Hallazgo del leader al especificar #226; el humano pidió abrirlo como feature el 2026-11-03 («si abre como feature nueva»). Responsable: leader @Backend, después de #226. Plan progress/plan_mejoras-smoke-2026-11-03.md. Spec en specs/mobile-vaccine-catalog-error-state/ (2026-11-03, base origin/dev 8187d1fb): aviso vaccine-create-catalog-error con health.couldNotLoadVaccines y «Reintentar» (common.retry, catalog.refetch()) entre la leyenda y los chips cuando la consulta terminó y su dato no es ok; «Otra vacuna» sigue seleccionada; sin copy nuevo ni G1; sin artboard propio en el canvas v167 (patrón de Salud); enmienda #208 R8 y R20.",
+    "acceptance_criteria": [
+      "R1: con el catálogo en error, unreachable, unauthorized o missing-config, o con la consulta rechazada, se pinta vaccine-create-catalog-error entre vaccine-create-legend y vaccine-create-chips: texto «No se pudieron cargar las vacunas» (text-15 leading-body text-danger, accessibilityRole alert, selectable) y Button vaccine-create-catalog-retry «Reintentar»; nunca el message del servidor",
+      "R2: con el aviso pintado, vaccine-create-chips solo tiene vaccine-chip-other, seleccionado, y vaccine-create-name está montado",
+      "R3: un catálogo ok, vacío o con entradas, no pinta el aviso ni el reintento",
+      "R4: mientras el catálogo carga salen los tres esqueletos y no el aviso",
+      "R5: pulsar «Reintentar» llama otra vez a getVaccineCatalog(apiUrl, token, 'dog') (2 llamadas, listPets sigue en 1); si responde ok salen los cinco chips de #208 R8 con el primero seleccionado y el aviso desaparece",
+      "R6: mientras el reintento (tras un fallo resuelto como dato) está en vuelo el aviso sigue y no vuelven los esqueletos; si vuelve a fallar, el aviso sigue y se puede reintentar otra vez",
+      "R7: R19_VACCINE_CREATE pasa de 29 a 31 filas (health.couldNotLoadVaccines y common.retry, // #236 R7); el it #208 R20 se enmienda a toHaveLength(29 + 2); src/i18n/catalog.ts no cambia",
+      "R8: el bloque usa los tres literales exactos de la spec (Button sin className ni variant, sin labio); siguen verdes #177 R3.3, R6.2, R7.3, R8.4, R12.1/R12.2, R12.3 y #208 R21",
+      "R9: progress/smoke_mejoras-smoke.md gana la sección literal de #236, que reproduce el fallo con el backend detenido en el build de antes; la casilla la marca solo el humano",
+      "Tests en mobile-pet-tracker/src/screens/vaccine-create/index.test.tsx (#236 R1-R6, R8) y src/__tests__/ui-language.test.ts (R7); commits test primero C1-C5 de tasks.md; R3 y R4 nacen verdes y sus mutaciones de design.md ponen en rojo el it indicado"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/vaccine-create/index.tsx",
+      "mobile-pet-tracker/src/screens/vaccine-create/index.test.tsx",
+      "mobile-pet-tracker/src/__tests__/ui-copy-table.ts",
+      "mobile-pet-tracker/src/__tests__/ui-language.test.ts",
+      "progress/smoke_mejoras-smoke.md"
+    ]
   },
   {
     "id": 237,
