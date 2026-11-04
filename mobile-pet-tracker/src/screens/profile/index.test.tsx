@@ -1591,12 +1591,12 @@ describe('#168 R6 (enmendado por #173 R10): los accesos son tiles pastel en reji
     expect(mockRouter.push).toHaveBeenCalledWith(destination);
   });
 
-  it('con mascota ordena dos filas de dos tiles (enmendado por #214 R4, R6)', async () => {
+  it('con mascota ordena dos filas de dos tiles (enmendado por #214 R4, R6) (enmendado por #229 R2)', async () => {
     await renderProfile();
     await screen.findByTestId('pet-info-card');
     const grid = screen.getByTestId('profile-links');
     expect(grid.props.className).toBe('gap-2');
-    expect(grid.children).toHaveLength(2 + 2); // #214 R4, R6
+    expect(grid.children).toHaveLength(2 + 1); // #229 R2
     const first = profileChild(grid, 0);
     const second = profileChild(grid, 1);
     expect(first.props.testID).toBe('profile-links-row-0');
@@ -2714,14 +2714,15 @@ describe('#217 R10: el cambio de tema es inmediato y persistido', () => {
 describe('#214 R4: tarjeta de Familia', () => {
   beforeEach(setupProfile168);
 
-  it('R4: con mascota añade la fila de Familia a ancho completo y navega a members', async () => {
+  it('R4: con mascota añade la fila de Familia a ancho completo y navega a members (enmendado por #229 R1, R2)', async () => {
     await renderProfile();
     const link = await screen.findByTestId('members-link');
     const row = screen.getByTestId('profile-links-row-2');
     expect(row.props.className).toBe('flex-row gap-2');
-    expect(row.children).toHaveLength(1);
-    expect(profileChild(row, 0)).toBe(link);
-    expect(link.props.className).toBe(`flex-row items-center gap-2.5 rounded-tile p-3 ${CATEGORY_SLOTS.rose.surface}`);
+    expect(row.children).toHaveLength(2);
+    expect(profileChild(row, 0).props.testID).toBe('members-link');
+    expect(profileChild(row, 1).props.testID).toBe('join-pet-link');
+    expect(link.props.className).toBe('flex-1 flex-row items-center gap-2.5 rounded-tile p-3 bg-category-rose');
     expect(screen.getByTestId('members-link-label').props.className).toBe(`text-sm font-extrabold ${CATEGORY_SLOTS.rose.ink}`);
     expect(screen.getByTestId('members-link-label')).toHaveTextContent('Familia');
     expect(link.props.accessibilityRole).toBe('button');
@@ -2812,15 +2813,15 @@ describe('#214 R5: subtítulo de Familia', () => {
 describe('#214 R6: Unirme con código en Perfil', () => {
   beforeEach(setupProfile168);
 
-  it('R6: con mascota la cuarta fila es Unirme con código y navega a join-pet', async () => {
+  it('R6: con mascota la cuarta fila es Unirme con código y navega a join-pet (enmendado por #229 R1, R2)', async () => {
     await renderProfile();
     await screen.findByTestId('pet-info-card');
-    const row = screen.getByTestId('profile-links-row-3');
+    const row = screen.getByTestId('profile-links-row-2');
     const link = screen.getByTestId('join-pet-link');
-    expect(row.children).toHaveLength(1);
-    expect(profileChild(row, 0)).toBe(link);
-    expect(profileChild(screen.getByTestId('profile-links'), 3)).toBe(row);
-    expect(link.props.className).toBe(`flex-row items-center gap-2.5 rounded-tile p-3 ${CATEGORY_SLOTS.amber.surface}`);
+    expect(row.children).toHaveLength(2);
+    expect(profileChild(row, 1).props.testID).toBe('join-pet-link');
+    expect(profileChild(screen.getByTestId('profile-links'), 2).props.testID).toBe('profile-links-row-2');
+    expect(link.props.className).toBe('flex-1 flex-row items-center gap-2.5 rounded-tile p-3 bg-category-amber');
     expect(screen.getByTestId('join-pet-link-label')).toHaveTextContent('Unirme con código');
     expect(screen.getByTestId('join-pet-link-subtitle')).toHaveTextContent('¿Te invitaron a cuidar una mascota?');
     expect(screen.getByTestId('join-pet-link-subtitle').props.className).toBe(`text-xs font-semibold ${CATEGORY_SLOTS.amber.ink}`);
@@ -2911,5 +2912,92 @@ describe('#235 R3: la cámara sigue a la mascota seleccionada', () => {
     } else {
       expect(screen.queryByTestId('change-photo', { includeHiddenElements: true })).toBeNull();
     }
+  });
+});
+
+
+describe('#229 R1: las tarjetas anchas reparten la fila', () => {
+  beforeEach(setupProfile168);
+
+  it.each([
+    ['members-link', 'bg-category-rose'],
+    ['join-pet-link', 'bg-category-amber'],
+  ])('#229 R1: %s lleva flex-1', async (id, surface) => {
+    await renderProfile();
+    await screen.findByTestId('profile-links-row-2');
+    const link = await screen.findByTestId(id);
+    expect(link.props.className).toBe(`flex-1 flex-row items-center gap-2.5 rounded-tile p-3 ${surface}`);
+  });
+});
+
+describe('#229 R3: el contenido de las tarjetas no cambia', () => {
+  beforeEach(setupProfile168);
+
+  it.each([
+    ['members-link', 'Familia', 'text-category-rose-strong'],
+    ['join-pet-link', 'Unirme con código', 'text-category-amber-strong'],
+  ])('#229 R3: %s conserva icono, texto y chevron', async (id, label, ink) => {
+    await renderProfile();
+    const link = await screen.findByTestId(id);
+    expect(link.children).toHaveLength(3);
+    expect(link.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual([`${id}-icon`, `${id}-text`, `${id}-chevron`]);
+    expect(screen.getByTestId(`${id}-text`).props.className).toBe('flex-1 gap-0.5');
+    expect(screen.getByTestId(`${id}-label`).props.className).toBe(`text-sm font-extrabold ${ink}`);
+    expect(screen.getByTestId(`${id}-label`)).toHaveTextContent(label);
+    if (id === 'join-pet-link') {
+      expect(screen.getByTestId('join-pet-link-subtitle')).toHaveTextContent('¿Te invitaron a cuidar una mascota?');
+    }
+  });
+});
+
+describe('#229 R4: sin mascota Unirme con código ocupa la fila', () => {
+  beforeEach(setupProfile168);
+
+  it('#229 R4: sin mascota Unirme con código lleva flex-1 en la fila 1', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    mockGetPet.mockReturnValue(pending<PetState>());
+    await renderProfile();
+    const row = await screen.findByTestId('profile-links-row-1');
+    expect(screen.getByTestId('profile-links').children).toHaveLength(2);
+    expect(row.props.className).toBe('flex-row gap-2');
+    expect(row.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['join-pet-link']);
+    expect(screen.getByTestId('join-pet-link').props.className).toBe('flex-1 flex-row items-center gap-2.5 rounded-tile p-3 bg-category-amber');
+    expect(screen.queryByTestId('members-link', { includeHiddenElements: true })).toBeNull();
+    expect(screen.queryByTestId('profile-links-row-2', { includeHiddenElements: true })).toBeNull();
+  });
+});
+
+describe('#229 R5: las tarjetas de la fila 2 se estiran por igual', () => {
+  beforeEach(setupProfile168);
+
+  it('#229 R5: las tres filas son flex-row gap-2 y las tarjetas no fijan alto', async () => {
+    await renderProfile();
+    await screen.findByTestId('profile-links-row-2');
+    for (const id of ['profile-links-row-0', 'profile-links-row-1', 'profile-links-row-2']) {
+      expect(screen.getByTestId(id).props.className).toBe('flex-row gap-2');
+    }
+    for (const id of ['members-link', 'join-pet-link']) {
+      const tokens = screen.getByTestId(id).props.className.split(' ');
+      expect(tokens.filter((token: string) => token === 'flex-1')).toHaveLength(1);
+      expect(tokens.some((token: string) => /^(h|min-h|max-h|w|min-w|max-w|self|basis)-|^(grow|shrink|flex-none|flex-auto)$/.test(token))).toBe(false);
+    }
+  });
+});
+
+
+describe('#229 R2: Familia y Unirme con código comparten fila', () => {
+  beforeEach(setupProfile168);
+
+  it('#229 R2: con mascota ambas tarjetas van lado a lado en la fila 2', async () => {
+    await renderProfile();
+    const row = await screen.findByTestId('profile-links-row-2');
+    expect(screen.getByTestId('profile-links').children).toHaveLength(3);
+    expect(row.props.className).toBe('flex-row gap-2');
+    expect(row.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['members-link', 'join-pet-link']);
+    expect(screen.queryByTestId('profile-links-row-3', { includeHiddenElements: true })).toBeNull();
+    await fireEvent.press(screen.getByTestId('join-pet-link'));
+    expect(mockRouter.push).toHaveBeenCalledWith('/join-pet');
+    await fireEvent.press(screen.getByTestId('members-link'));
+    expect(mockRouter.push).toHaveBeenCalledWith('/pets/pet-1/members');
   });
 });
