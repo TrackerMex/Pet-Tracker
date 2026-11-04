@@ -80,3 +80,15 @@ Hallazgo: «No marque mobile-nutrition-ai-format porque en eñ colapso de IA que
 6. TalkBack: la explicación se lee una sola vez (un párrafo continuo) y «Ver más» por separado.
 
 - [ ] Smoke de #234 pasado (fecha: ____; tema claro: sí / no; tema oscuro: sí / no). Cierra también el smoke de #224 («Smoke de #224 pasado tras #234»).
+
+## #229 mobile-profile-family-join-row
+
+Hallazgo: «Cards Familia y Unirme con código» (decisión «Lado a lado»); antes las dos salían a media anchura, en filas separadas y sin texto. Necesita el dev build con `dev` actualizado. Reproduce el fallo original, en tema claro y en oscuro.
+
+1. En el dev build de Android abre Perfil con una mascota seleccionada: bajo las filas de Documentos/Emparejar y Zonas seguras/Recordatorios hay una sola fila con dos tarjetas lado a lado, Familia a la izquierda y Unirme con código a la derecha, con el mismo alto y el mismo ancho.
+2. Cada tarjeta muestra su texto (Familia con su resumen; Unirme con código con «¿Te invitaron a cuidar una mascota?»), icono y chevron; ninguna sale vacía. Apunta si el texto se parte en 3 o 4 líneas en este teléfono: si lo rechazas, es otra feature.
+3. Pulsa Familia: abre los miembros de la mascota. Pulsa Unirme con código: abre «Unirme con código».
+4. Perfil sin mascotas: Unirme con código ocupa el ancho entero de su fila.
+5. Repite 1 a 4 en tema claro y en oscuro.
+
+- [ ] Smoke de #229 pasado (fecha: ____; tema claro: sí / no; tema oscuro: sí / no)
