@@ -21,7 +21,7 @@ Los hashes completos y sus mensajes se desarrollan debajo de la tabla.
 | R6 | `index.test.tsx::#242 R6: con tema light el tint es systemThinMaterialLight`; `…con tema dark el tint es systemThinMaterialDark` | `d184d16d` tests de overlays; `51df26c7` implementación |
 | R7 | `index.test.tsx::#242 R7: la pantalla vacía no pinta overlays ni raíz del blur` | `d184d16d` candado de ausencia nacido verde; `51df26c7` verificado por mutaciones R7a–c |
 | R8 | `index.test.tsx::#242 R8: conserva clase, inset automático y relleno inferior` | `d184d16d` candado de conservación nacido verde; `51df26c7` verificado por mutaciones R8a–d |
-| R9 | Anclas de requirements.md §Evidencia, alcance propio por diff y guards de `tasks.md` §R9; T1 de ambos prefijos y mutaciones R9a–c | `51df26c7` artefacto verificado, junto con los commits R1 y `d184d16d`; gate de tipos rojo, descrito abajo |
+| R9 | Anclas de requirements.md §Evidencia, alcance propio por diff y guards de `tasks.md` §R9; T1 de ambos prefijos y mutaciones R9a–c | `51df26c7` artefacto verificado, junto con los commits R1 y `d184d16d`; gate de tipos inicial resuelto por D12, descrito abajo |
 
 ## Commits test-primero
 
@@ -59,20 +59,43 @@ carga solicitada por el leader.
 - Alcance propio: diff desde `155c8a02`, más los commits 1 y 2. Solo los seis ficheros autorizados de móvil y esta trazabilidad; los tres ficheros de specs de `155c8a02` son del leader.
 - Lint exacto de tasks.md: exit 0 y log vacío (`progress/242-lint.log`, copia de `/tmp/lint-242.log`).
 
-## Gate de tipos incumplido
+## Gate de tipos inicial (resuelto por D12)
 
-`test ! -e .expo/types/router.d.ts` pasó antes de ejecutar
+En el código anterior a D12, `test ! -e .expo/types/router.d.ts` pasó antes de ejecutar
 `bunx tsc --noEmit`. **tsc salió en 2**, con dos TS2322 en index.tsx:
 `testID` no existe en `IProgressiveBlurViewProps` de expo-backdrop 0.1.3.
 `IBlurSurfaceProps` solo declara style y children, sin heredar ViewProps.
 Log entero: `progress/242-tsc.log` y `/tmp/tsc-242.log`.
 
 No se usaron supresiones, casts para ocultar el error, declare module ni
-cambios al paquete instalado. La implementación y la verificación Jest son
-revisables, pero el cierre está **bloqueado por tipos**. No se declara done
-ni se crea el marcador `.done`. Resolver este conflicto entre el contrato de
-la spec y los tipos publicados requiere una decisión del leader/humano.
+cambios al paquete instalado. En ese punto el cierre quedó bloqueado por
+tipos y no se creó el marcador `.done`. La enmienda D12 del leader
+`37a6267a` autorizó la resolución verificada en la sección siguiente.
 
 G3 (rebuild) y G2 (smoke Android) siguen sin ejecutar, a cargo del humano en
 [[requirements]] §Aprobación. No se tocó ninguna casilla ni campo status.
 No se ejecutaron init.sh, fetch/merge/rebase, prebuild, EAS ni emuladores.
+
+## Commit 6 — D12 y verificación final
+
+`83b0ade11a8acb17dafe162fcd542f17eacdb3d4` —
+`fix(mobile): #242 pass the overlay testID through a typed spread (D12)`.
+Solo cambia `src/screens/home/index.tsx`: constantes de módulo
+TOP_EDGE_BLUR_PROPS/BOTTOM_EDGE_BLUR_PROPS con los testID y sus spreads en
+cada overlay. No cambian tests, tipos del paquete ni props en ejecución.
+Se conservan todos los hashes anteriores y no se reescribe el historial.
+
+- Guard `test ! -e .expo/types/router.d.ts` pasado; `bunx tsc --noEmit` **exit 0**, log vacío `progress/242-d12-tsc.log`.
+- `bunx jest src/screens/home`: **7 suites / 546 tests verdes**, las mismas cifras (49.358 s); `progress/242-d12-home.log`.
+- `bunx expo lint > /tmp/lint-242-d12.log 2>&1 && test ! -s /tmp/lint-242-d12.log`: **exit 0**, log vacío; copia `progress/242-d12-lint.log`.
+- `git diff --check`: exit 0. Tests sin cambios desde la enmienda del leader.
+- Mutación D12: quitar `{...TOP_EDGE_BLUR_PROPS}` dio **3 rojos de R2**, por ausencia de `home-edge-blur-top`, sin errores de ejecución; `progress/242-d12-mutation.log` y `242-d12-mutation.json.log`.
+- Restauración mediante `git checkout HEAD -- src/screens/home/index.tsx`; staged y diff de la ruta en 0. Control R2 restaurado: **3 tests verdes** (`progress/242-d12-restored-r2.log`, 6.611 s).
+
+El bloqueo de tipos queda resuelto con la enmienda autorizada, sin as,
+supresiones ni declare module. Esta variante se suma a las 38 anteriores:
+**39 variantes verificadas**. Se respetó la pausa de carga y se ejecutó una
+Jest pesada a la vez, sin timeouts ni SIGKILL.
+
+La implementación queda lista para revisión. La feature conserva su estado
+y G2/G3 siguen a cargo del humano.
