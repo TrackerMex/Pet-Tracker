@@ -3837,7 +3837,7 @@
   {
     "id": 237,
     "name": "backend-e2e-vaccine-catalog-teardown",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P2",
     "description": "Flake del e2e backend-pet-tracker/test/vaccine-catalog-migration.e2e-spec.ts (#226): su afterAll hace DROP DATABASE IF EXISTS ... WITH (FORCE) con un cliente aún vivo (probablemente el pool de la app Nest, que lee DATABASE_URL), y pg lo convierte en «Unhandled error» 57P01 («terminating connection due to administrator command»). Tumbó el ./init.sh de @Frontend el 2026-11-03 (wt-233); el reintento salió verde. No es interferencia entre sesiones: el log de Postgres muestra el FATAL y los dos checkpoints de los DROP. Arreglo: cerrar todos los pools antes del DROP, o escuchar 'error' en ellos. Responsable: leader @Backend. El humano pidió registrarlo como feature el 2026-11-03 («registralo como feature»). Plan progress/plan_mejoras-smoke-2026-11-03.md. Spec en specs/backend-e2e-vaccine-catalog-teardown/ (2026-11-03), sobre origin/dev 5c7c9547. Causa verificada: ningún pool queda sin cerrar; los tres que tocan A o B (PG_POOL de src/db/drizzle.module.ts vía app.close(), poolA y poolB) se cierran antes del DROP, pero pg-pool 3.14.0 resuelve Pool.end() antes de que sus sockets cierren, WITH (FORCE) mata al backend que aún no leyó el Terminate y su 57P01 llega a un pool sin listener de 'error'. Arreglo: una función dropDatabase(name) en el e2e con DROP DATABASE IF EXISTS sin FORCE (Postgres espera hasta 5 s a los backends que salen; una sesión viva de verdad da 55006 dentro del AggregateError). Rojo determinista con una sesión viva (R1); sin cambios en src/, migraciones ni dependencias.",
     "acceptance_criteria": [

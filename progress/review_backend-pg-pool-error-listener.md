@@ -140,7 +140,8 @@ Este veredicto pasa a definitivo solo si ese init.sh sale con exit 0.
 
 Leader, 2026-11-04, sobre HEAD `96ba7455`, medido sin pipe (`./init.sh > log 2>&1; echo "init=$?"`):
 
-- **Corrida 1 (03:58–04:08 UTC): `init=1`.** El backend salió verde: 1651/1651 unitarios y 14/14 e2e. Cayeron 12
+- **Corrida 1 (03:58–04:08 UTC): `init=1`.** El backend unitario salió verde: 1651/1651. La infra también: 14/14.
+  init.sh se paró en el jest móvil, así que el e2e del backend no llegó a correr. Cayeron 12
   tests móviles en 5 ficheros (`home`, `food`, `map`, `register` y `celebration`). Fueron 14 `Exceeded timeout`
   más dos «Unable to find an element» en `home`. La carga media llegó a 27,8 con 4 CPU, y era el primer jest
   móvil del worktree después del `bun install` que hizo init.sh. La rama no toca `mobile-pet-tracker/`
@@ -149,9 +150,13 @@ Leader, 2026-11-04, sobre HEAD `96ba7455`, medido sin pipe (`./init.sh > log 2>&
 - **Corrida 2 (04:09–04:17 UTC), con `/tmp/jest_ru/perf-cache-*` borrado antes para que el sequencer no adelante
   los ficheros rojos: `init=0`.**
   - backend unitario: `Tests: 1651 passed, 1651 total`;
-  - backend e2e: `Tests: 14 passed, 14 total`;
+  - infra: `Tests: 14 passed, 14 total`;
   - móvil: `Test Suites: 180 passed, 180 total`, `Tests: 6646 passed, 6646 total`;
-  - `Tests: 8 skipped, 599 passed, 607 total` (33 de 36 suites).
+  - backend e2e: `Test Suites: 3 skipped, 33 passed, 33 of 36 total`, `Tests: 8 skipped, 599 passed, 607 total`.
+
+  Errata del leader, 2026-11-04, añadida desde la rama de #237. Una primera versión de esta sección y la
+  descripción de la PR #303 llamaban «backend e2e 14/14» a la suite de `infra`. El e2e del backend es la última línea
+  de la lista.
 
 El veredicto queda **aprobado**. Los 12 rojos móviles de la corrida 1 son de carga, en código que esta rama no
 toca. No son deuda de #238.
