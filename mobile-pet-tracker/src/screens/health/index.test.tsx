@@ -1704,3 +1704,35 @@ describe('#222 R3: Salud', () => {
     }
   });
 });
+
+const FIXTURE_241 = [
+  makeVaccine({ id: 'none', name: 'Bordetella', appliedAt: '2026-12-15', nextDoseAt: null }),
+  makeVaccine({ id: 'later', name: 'Leptospirosis', appliedAt: '2026-03-01', nextDoseAt: '2027-03-01' }),
+  makeVaccine({ id: 'future', name: 'Moquillo', appliedAt: '2026-01-02', nextDoseAt: '2027-01-02' }),
+  makeVaccine({ id: 'today', name: 'Rabia', appliedAt: '2025-12-31', nextDoseAt: '2026-12-31' }),
+  makeVaccine({ id: 'overdue', name: 'Parvovirus', appliedAt: '2025-11-30', nextDoseAt: '2026-11-30' }),
+];
+
+describe('#241: vacunas próximas y pasadas', () => {
+  beforeEach(() => {
+    setupHealth168();
+    mockSemanticColors = true;
+    jest.useFakeTimers({ now: new Date(2026, 11, 31, 12, 0) });
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: FIXTURE_241 });
+  });
+  afterEach(() => jest.useRealTimers());
+
+  it('#241 R4: pinta «Próximas» y debajo sus filas de la más cercana a la más lejana', async () => {
+    await renderHealth();
+    const list = await screen.findByTestId('vaccines-upcoming-list');
+    const heading = await screen.findByTestId('vaccines-upcoming-heading');
+    expect(heading).toHaveTextContent('Próximas', { exact: true });
+    expect(heading.props.accessibilityRole).toBe('header');
+    expect(heading.props.className).toBe('mt-1 text-13 font-extrabold uppercase tracking-caps text-muted');
+    expect(screen.getByTestId('vaccines-section').children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual([
+      'vaccines-header', 'vaccines-upcoming-heading', 'vaccines-upcoming-list', 'vaccines-past',
+    ]);
+    expect(list.props.className).toBe('gap-2.5');
+    expect(within(list).getAllByTestId(/^vaccine-row-/).map(row => row.props.testID)).toEqual(['vaccine-row-future', 'vaccine-row-later']);
+  });
+});
