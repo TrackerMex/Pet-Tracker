@@ -2749,3 +2749,106 @@ describe('Acciones de deslizar en Recordatorios (#228 R2 a R9)', () => {
     expect(screen.queryByTestId('community-bottom-sheet')).toBeNull();
   });
 });
+
+describe('Base opaca de la fila pasada (#239 R1 a R5)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers({ now: new Date(2026, 11, 31, 8, 0) });
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [
+      makeReminder({ id: 'once', status: 'scheduled', dueAt: new Date(2027, 0, 1, 9, 0).toISOString(), title: 'Refuerzo de rabia' }),
+      makeReminder({ id: 'series', status: 'scheduled', dueAt: new Date(2027, 0, 2, 9, 0).toISOString(), title: 'Antibiótico', recurrence: { unit: 'month', every: 1 } }),
+      makeReminder({ id: 'pastonce', status: 'sent', dueAt: new Date(2026, 11, 20, 9, 0).toISOString(), title: 'Desparasitación' }),
+      makeReminder({ id: 'pastseries', status: 'scheduled', dueAt: new Date(2026, 11, 30, 9, 0).toISOString(), title: 'Pipeta antipulgas', recurrence: { unit: 'month', every: 1 } }),
+    ] });
+  });
+  afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
+
+  it('#239 R1: la fila pasada del dueño va sobre una base opaca dentro de su deslizable', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminders-past-toggle');
+    await expandPast();
+    await screen.findByTestId('reminder-row-pastonce');
+    for (const id of ['pastonce', 'pastseries']) {
+      const swipe = screen.getByTestId(`reminder-swipe-${id}`);
+      const row = within(swipe).getByTestId(`reminder-row-${id}`);
+      const base = row.parent;
+      expect(base?.props.className).toBe('rounded-22 bg-background');
+      expect(flat(base?.props.style)).toEqual({ borderCurve: 'continuous' });
+      expect(base?.props.testID).toBeUndefined();
+      expect(base?.props.accessible).toBeUndefined();
+      expect(base?.props.accessibilityElementsHidden).toBeUndefined();
+      expect(base?.props.importantForAccessibility).toBeUndefined();
+      expect(base?.parent?.props.testID).toBe(`reminder-swipe-${id}`);
+      expect(base?.children).toHaveLength(1);
+      expect(base?.children[0]).toHaveProperty('props.testID', `reminder-row-${id}`);
+      expect(row.props.className).toMatch(/ opacity-50$/);
+    }
+    expect(screen.getByTestId('screen-reminders').props.className).toBe('flex-1 bg-background');
+  });
+
+  it('#239 R2: la base no envuelve el panel y la franja de Pasados es la de Próximos', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminders-past-toggle');
+    await expandPast();
+    await screen.findByTestId('reminder-row-pastonce');
+    for (const [id, panelId] of [
+      ['pastonce', 'reminder-delete-pastonce'],
+      ['pastseries', 'reminder-cancel-series-pastseries'],
+    ]) {
+      const swipe = screen.getByTestId(`reminder-swipe-${id}`);
+      const row = within(swipe).getByTestId(`reminder-row-${id}`);
+      const base = row.parent;
+      const panel = within(swipe).getByTestId(panelId, HIDDEN);
+      expect(base).not.toBeNull();
+      expect(within(base!).queryByTestId(panelId, HIDDEN)).toBeNull();
+      expect(panel).toBeOnTheScreen();
+      expect(panel.parent?.props.testID).toBe(`reminder-swipe-${id}`);
+      expect(panel.props.className).toBe('w-24 items-center justify-center gap-1 bg-category-rose');
+      expect(panel.children).toHaveLength(3);
+      expect(panel.children[0]).toHaveProperty('props.className', 'absolute inset-y-0 -left-6 w-6 bg-category-rose');
+      expect(flat(panel.props.style)).toEqual({ opacity: 1 });
+    }
+  });
+
+  it('#239 R3: las filas de Próximos no llevan base', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-series');
+    for (const id of ['once', 'series']) {
+      const row = screen.getByTestId(`reminder-row-${id}`);
+      expect(row.parent?.props.testID).toBe(`reminder-swipe-${id}`);
+      expect(row.parent?.props.className).toBeUndefined();
+    }
+  });
+
+  it('#239 R4: quien no es dueño no lleva base en Pasados', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: 'family' })] });
+    await renderReminders();
+    await screen.findByTestId('reminders-past-toggle');
+    await expandPast();
+    await screen.findByTestId('reminder-row-pastonce');
+    for (const id of ['pastonce', 'pastseries']) {
+      const row = screen.getByTestId(`reminder-row-${id}`);
+      expect(row.parent?.props.testID).toBe(`reminders-entry-${id}`);
+    }
+  });
+
+  it('#239 R5: con el ReanimatedSwipeable real la fila pasada va sobre su base y el panel abre la hoja', async () => {
+    mockRealSwipeable = true;
+    await renderReminders();
+    await screen.findByTestId('reminders-past-toggle');
+    await expandPast();
+    await screen.findByTestId('reminder-row-pastonce');
+    const swipe = screen.getByTestId('reminder-swipe-pastonce');
+    const row = within(swipe).getByTestId('reminder-row-pastonce');
+    expect(row.parent?.props.className).toBe('rounded-22 bg-background');
+    const panel = within(swipe).getByTestId('reminder-delete-pastonce', HIDDEN);
+    expect(panel).toBeOnTheScreen();
+    expect(mockSwipeable).not.toHaveBeenCalled();
+    await fireEvent.press(panel);
+    expect(screen.getByText('¿Eliminar recordatorio?')).toBeOnTheScreen();
+    expect(screen.getByTestId('reminders-delete-reference')).toHaveTextContent('Desparasitación');
+  });
+});
