@@ -347,5 +347,31 @@ describe('#226 vaccine catalog migration (e2e)', () => {
         await dropDatabase(name);
       }
     });
+
+    it('#237 R2: justo despues de pool.end(), dropDatabase borra la base y el pool no recibe ningun error', async () => {
+      const name = `pet_tracker_237_ended_${runId}`;
+      await admin.query(`CREATE DATABASE "${name}"`);
+      const url = new URL(originalDatabaseUrl!);
+      url.pathname = `/${name}`;
+      const pool = new Pool({ connectionString: url.toString() });
+      const errors: unknown[] = [];
+      pool.on('error', (error) => {
+        errors.push(error);
+      });
+      try {
+        await pool.query('select 1');
+        await pool.end();
+        await expect(dropDatabase(name)).resolves.toBeUndefined();
+        const { rows } = await admin.query<{ count: number }>(
+          'select count(*)::int as count from pg_database where datname = $1',
+          [name],
+        );
+        expect(rows[0].count).toBe(0);
+        expect(errors).toEqual([]);
+      } finally {
+        if (!pool.ending) await pool.end();
+        await dropDatabase(name);
+      }
+    });
   });
 });
