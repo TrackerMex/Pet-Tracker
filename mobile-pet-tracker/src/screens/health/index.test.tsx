@@ -365,7 +365,7 @@ describe('R5: vacunas con la próxima destacada', () => {
     expect(screen.getByText('Vacunas')).toBeVisible();
   });
 
-  it('highlights the nearest future dose and sorts upcoming rows by next dose (enmendado por #199 R14)', async () => {
+  it('highlights the nearest future dose and sorts upcoming rows by next dose (enmendado por #199 R14) (enmendado por #241 R12)', async () => {
     const vaccines = [
       makeVaccine({
         id: 'vaccine-2',
@@ -416,7 +416,7 @@ describe('R5: vacunas con la próxima destacada', () => {
     });
   });
 
-  it('omits the next card when every dose is past or null', async () => {
+  it('omits the next card when every dose is past or null (enmendado por #241 R12)', async () => {
     mockListVaccines.mockResolvedValue({
       kind: 'ok',
       vaccines: [
@@ -431,7 +431,7 @@ describe('R5: vacunas con la próxima destacada', () => {
     expect(screen.queryByTestId('next-vaccine-card')).toBeNull();
   });
 
-  it('marks an overdue next-dose date with the danger token (enmendado por #199 R17)', async () => {
+  it('marks an overdue next-dose date with the danger token (enmendado por #199 R17) (enmendado por #241 R12)', async () => {
     mockListVaccines.mockResolvedValue({
       kind: 'ok',
       vaccines: [makeVaccine({ nextDoseAt: '2000-06-01' })],
@@ -1084,7 +1084,7 @@ describe('#168 R3: cada vacuna lleva su tile pastel', () => {
     { id: 'next', past: true, surface: 'size-10 items-center justify-center rounded-xl bg-category-amber', icon: 'health-icon-clock', color: 'category-amber-strong', texts: ['Próxima', 'Aplicada 2 ene 2026 · Próxima 31 mar 2026'], dateClass: undefined },
     { id: 'future', past: false, surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Futura', 'Aplicada 3 ene 2026 · Próxima 2 abr 2026'], dateClass: undefined },
     { id: 'completed', past: true, surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Sin próxima dosis', 'Aplicada 4 ene 2026'], dateClass: undefined },
-  ])('pinta el estado de $id con su icono y textos (enmendado por #199 R16) (enmendado por #199 R17)', async ({ id, past, surface, icon, color, texts, dateClass }) => {
+  ])('pinta el estado de $id con su icono y textos (enmendado por #199 R16) (enmendado por #199 R17) (enmendado por #241 R12)', async ({ id, past, surface, icon, color, texts, dateClass }) => {
     await renderHealth();
     if (past) await expandVaccinesPast();
     const row = await screen.findByTestId(`vaccine-row-${id}`);
@@ -1256,7 +1256,7 @@ describe('#199 R15: título de Vacunas', () => {
 });
 
 
-describe('#199 R16: filas de vacunas', () => {
+describe('#199 R16: filas de vacunas (enmendado por #241 R12)', () => {
   beforeEach(() => {
     setupHealth168();
     mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [0, 1, 2, 3].map(index => makeVaccine({ id: `vax-${index}`, name: `Vacuna ${index}`, nextDoseAt: null })) });
@@ -1281,7 +1281,7 @@ describe('#199 R16: filas de vacunas', () => {
 });
 
 
-describe('#199 R17: subtítulo de vacunas', () => {
+describe('#199 R17: subtítulo de vacunas (enmendado por #241 R12)', () => {
   beforeEach(() => {
     setupHealth168();
     jest.useFakeTimers();
