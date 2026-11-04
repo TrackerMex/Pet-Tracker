@@ -334,7 +334,10 @@ conserva `WITH (FORCE)` en `dropDatabase` a propósito, y M1 lo vuelve a plantar
   ningún `Unhandled error`), R2 y lo que planta M1. Con el verde ya no queda `FORCE`, así que
   el flake no tiene por dónde salir.
 
-- [ ] Enmienda E1 aprobada por humano (fecha: ____)
+- [x] Enmienda E1 aprobada por humano (fecha: 2026-11-04)
+
+  El humano aprobó la enmienda de forma explícita el 2026-11-04 a las 03:47 UTC
+  («si apruebo las 2 enmientas»). El leader la registra con su commit.
 
 No hay gates humanos aparte: ni G1 (copy y artboards) ni G2 (smoke). El
 mandato del 2026-10-23, ampliado el 2026-11-03, cubre #226–#235, no #237: esta
