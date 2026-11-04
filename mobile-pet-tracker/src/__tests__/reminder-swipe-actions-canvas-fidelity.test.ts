@@ -170,3 +170,22 @@ it('#239 R6: inventario del fuente', () => {
     ['childrenContainerStyle', 0],
   ] as const) expect(count(source, literal)).toBe(occurrences);
 });
+
+const AMENDED_PAST_ROW_BASE: readonly (readonly [string, string])[] = [
+  ['__tests__/reminders-upcoming-past-canvas-fidelity.test.ts', '#227 R11: inventario del fuente'],
+  ['__tests__/consistency-classnames.test.ts', '%s importa y aplica sus %i esquinas'],
+  ['__tests__/consistency-classnames.test.ts', 'fusiona la esquina una vez y la entrega a las dos ramas de Card'],
+  ['__tests__/consistency-classnames.test.ts', 'deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban'],
+  ['__tests__/design-drift.test.ts', 'reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto'],
+];
+
+it('#239 R7: los candados enmendados nombran su enmienda y la spec enmendada lleva su casilla', () => {
+  for (const [path, locator] of AMENDED_PAST_ROW_BASE) {
+    const lines = readSource(path).split('\n').filter((line) => line.includes(locator));
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('(enmendado por #239 R7)');
+  }
+  const spec = readFileSync(join(process.cwd(), '..', 'specs', 'mobile-reminders-upcoming-past', 'requirements.md'), 'utf8');
+  expect(count(spec, '## Enmienda \x23239 — Base opaca de la fila pasada')).toBe(1);
+  expect(spec).toMatch(/- \[[ xX]\] Enmienda \x23239 aprobada/);
+});
