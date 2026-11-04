@@ -1822,4 +1822,13 @@ describe('#241: vacunas próximas y pasadas', () => {
     const past = await screen.findByTestId('vaccines-past-list');
     expect(within(past).getAllByTestId(/^vaccine-row-/)[0].props.testID).toBe('vaccine-row-today');
   });
+
+  it('#241 R9: sin próximas no pinta su cabecera ni su lista', async () => {
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: FIXTURE_241.filter(vaccine => ['today', 'none', 'overdue'].includes(vaccine.id)) });
+    await renderHealth();
+    expect(await screen.findByTestId('vaccines-past-count')).toHaveTextContent('3', { exact: true });
+    expect(screen.queryByTestId('vaccines-upcoming-heading')).toBeNull();
+    expect(screen.queryByTestId('vaccines-upcoming-list')).toBeNull();
+    expect(screen.getByTestId('vaccines-section').children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['vaccines-header', 'vaccines-past']);
+  });
 });
