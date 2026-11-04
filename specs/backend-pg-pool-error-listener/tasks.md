@@ -15,7 +15,8 @@ tags: [harness, spec, backend, db, resiliencia]
 ## Reglas de la cadena
 
 - **Antes de empezar.**
-  - La casilla de aprobación de [[requirements]] tiene que estar marcada.
+  - La casilla de aprobación de [[requirements]] y la de su enmienda E1 tienen
+    que estar marcadas.
   - Worktree: `/home/claude/sites/Pet-Tracker-wt-238`, branch
     `feature/238-backend-pg-pool-error-listener`.
   - `backend-pet-tracker/node_modules` no existe. Antes del primer comando:
@@ -23,7 +24,7 @@ tags: [harness, spec, backend, db, resiliencia]
   - Los tests de esta feature no necesitan Postgres ni `.env`.
 - **Commits test-primero, separados.** Cada commit lleva el mensaje literal de su
   bloque. El rojo de R1 va en su propio commit, antes del arreglo.
-- **El rojo falla por aserción** (`Expected the function not to throw an error.`),
+- **El rojo falla por aserción** (`expect(received).not.toThrow()`, enmienda E1),
   nunca por `ReferenceError`, un import que falta o un error de tipos.
 - **Cada commit compila.** `tsc` y `eslint` de los dos ficheros salen con 0
   (§Comandos).
@@ -73,7 +74,9 @@ Nunca `pnpm run test -- …`: el `--` llega a jest (memoria
   Esperado (fichero):
   - `exit` distinto de 0;
   - `Tests: 1 failed, 1 passed, 2 total`;
-  - el it de R1 falla con `Expected the function not to throw an error.`;
+  - cae solo el it de R1;
+  - `grep -cF 'expect(received).not.toThrow()' /tmp/impl-238-file.log` da `1`;
+  - `grep -cF 'Error message: "Unhandled error.' /tmp/impl-238-file.log` da `1`;
   - `tsc` y `eslint` con `exit=0`.
 
   Commit: `test(backend-pg-pool-error-listener): PG_POOL error is logged and does not throw (R1)`.

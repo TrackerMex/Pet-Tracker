@@ -136,7 +136,8 @@ Detalle y alternativas en [[design]].
   listener:
   - `pool.emit('error', error)` lanza;
   - la primera aserción, `expect(() => pool.emit('error', error)).not.toThrow()`,
-    falla con `Expected the function not to throw an error.`;
+    falla, y el log del fichero muestra `expect(received).not.toThrow()` y
+    `Error message: "Unhandled error.` (cada uno con `grep -cF` = `1`; enmienda E1);
   - el fichero sale con `Tests: 1 failed, 1 passed, 2 total` (el it de R4 sigue verde).
 - **Verificación estática al final de la cadena** (`grep -cF` sobre
   `src/db/drizzle.module.ts`):
@@ -214,6 +215,30 @@ Detalle y alternativas en [[design]].
 
   El humano aprobó la firma de forma explícita el 2026-11-04 a las 00:38 UTC
   («apruebo la firma de 238»). El leader la registra con su commit.
+
+### Enmienda E1 (2026-11-04)
+
+Codex paró en el rojo de R1. El it cayó por aserción, como pide R1, pero el
+log no traía `Expected the function not to throw an error.`. Ese es el texto de
+jest 29. El backend usa jest 30 (`expect@30.4.1`), que para `.not.toThrow()`
+imprime:
+
+```text
+expect(received).not.toThrow()
+
+Error name:    "Error"
+Error message: "Unhandled error. (Error: terminating connection due to administrator command
+```
+
+- **Qué cambia.** El rojo de R1 y la mutación M1 se reconocen por
+  `expect(received).not.toThrow()` y `Error message: "Unhandled error.` en el
+  log, cada uno con `grep -cF` = `1` (medido en el log del rojo de Codex). El
+  segundo literal confirma lo que ya decía design.md: Node lanza
+  `ERR_UNHANDLED_ERROR`.
+- **Qué no cambia.** El comportamiento de R1, el test, el listener, M2, R2 y el
+  resto de cifras.
+
+- [ ] Enmienda E1 aprobada por humano (fecha: ____)
 
 No hay gates humanos aparte: ni G1 (copy y artboards) ni G2 (smoke). El
 mandato del 2026-10-23, ampliado el 2026-11-03, cubre #226–#235, no #238: esta

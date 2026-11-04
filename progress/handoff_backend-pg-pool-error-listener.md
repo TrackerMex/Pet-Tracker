@@ -12,21 +12,23 @@ Primer comando, antes de nada:
 Confirma en el reporte la ruta y la branch `feature/238-backend-pg-pool-error-listener`.
 Los commits, de arriba abajo:
 
-1. este handoff (`docs(progress): #238 codex handoff`);
-2. la firma `f5093b22`;
-3. el merge de `origin/dev` `7e24ba36`;
-4. `fd6244a2`.
+1. la firma de la enmienda (`chore(spec): sign #238 E1 (approved by the human 2026-11-04)`);
+2. la enmienda E1 (`docs(spec): #238 E1 red message is jest 30's`), que también reescribe este
+   handoff;
+3. el handoff original `3298a0a9`;
+4. la firma `f5093b22`.
 
 ## Base
 
 - Feature: backend-pg-pool-error-listener (#238). Integra en `dev`, no en `main`.
-- H0, la base del diff final, es el commit de este handoff: el primero de `git log`.
+- H0, la base del diff final, es la firma de la enmienda: el primero de `git log`.
 - El leader ya corrió `pnpm install --frozen-lockfile` en `backend-pet-tracker/`. **No corras
   `pnpm install`**: el paso «Antes de empezar» de tasks.md ya está hecho.
 - Los tests de esta feature no necesitan Postgres ni `.env`. No abras, no leas y no imprimas el
   `.env`.
 - NO hagas `git fetch`, `git merge`, `git rebase` ni `git push`.
-- Anclas de partida. Las midió el leader en `f5093b22`, desde `backend-pet-tracker/`. Cada una
+- Anclas de partida. Las midió el leader en `f5093b22`; la enmienda E1 no toca código, así que
+  siguen valiendo. Se miden desde `backend-pet-tracker/`. Cada una
   es un `grep -cF '<literal>'` sobre el fichero de su fila:
 
   | Fichero | Literal | Da |
@@ -49,7 +51,8 @@ Los commits, de arriba abajo:
 
 ## Spec
 
-- Aprobada: el humano aprobó la firma de forma explícita y el leader la firmó (`f5093b22`). Lee
+- Aprobada: el humano aprobó la firma de forma explícita y el leader la firmó (`f5093b22`). La
+  enmienda E1 (requirements.md §Aprobación) también lleva la aprobación del humano. Lee
   enteros `specs/backend-pg-pool-error-listener/requirements.md`, `design.md`, `tasks.md` y
   `traceability.md`.
 - tasks.md manda en el orden, los mensajes de commit literales y los «Esperado» de cada paso.
@@ -68,7 +71,9 @@ mensajes literales de tasks.md y en este orden. Nada de un commit único con tod
 2. **Rojo de R1**: `test(backend-pg-pool-error-listener): PG_POOL error is logged and does not throw (R1)`.
    - Solo `src/db/drizzle.module.spec.ts`; no se toca `src/db/drizzle.module.ts`.
    - Esperado (fichero): `exit` distinto de 0 y `Tests: 1 failed, 1 passed, 2 total`.
-   - Cae solo el it de R1, con `Expected the function not to throw an error.`
+   - Cae solo el it de R1. Con jest 30 el log trae `expect(received).not.toThrow()` y
+     `Error message: "Unhandled error.`. Mide los dos con `grep -cF` sobre `/tmp/impl-238-file.log`;
+     cada uno da `1` (enmienda E1).
    - El rojo tiene que ser por aserción, nunca por `ReferenceError`, un import que falta o tipos.
    - Anota la aserción y su recibido.
 3. **Verde de R1**: `fix(backend-pg-pool-error-listener): log idle client errors on PG_POOL instead of crashing (R1)`.
@@ -80,7 +85,8 @@ mensajes literales de tasks.md y en este orden. Nada de un commit único con tod
 4. **Refactor**: no se espera ninguno. Si hiciera falta, PARA y anótalo antes de commitear.
 5. **M1 y M2**, sin commit (design.md §Mutaciones), sobre el HEAD del verde.
    - Por cada una: plantar, correr el fichero, anotar el `exit`, la línea `Tests:` y el mensaje
-     del it de R1. En M1, además, `grep -cF "on('error'" src/db/drizzle.module.ts` (esperado `0`).
+     del it de R1. En M1, además, `grep -cF "on('error'" src/db/drizzle.module.ts` (esperado `0`)
+     y los dos `grep -cF` del rojo sobre el log (esperado `1` cada uno).
    - Si el it de R1 no cae con una de las dos plantada, PARA.
    - Restaura con `git checkout HEAD -- src/db/drizzle.module.ts` y comprueba
      `git diff --quiet HEAD -- src/db/drizzle.module.ts; echo "exit=$?"`, que da `exit=0`.
@@ -167,9 +173,18 @@ Otras reglas de espera:
 - `#238` en los títulos va como en design.md. No inventes otros.
 - **Árbol limpio, acotado.** Al terminar, `git status --short -- backend-pet-tracker specs` tiene
   que salir vacío.
-- Borra `/tmp/impl-238-file.log` y `/tmp/impl-238-unit.log` antes de terminar.
+- **No borres los logs de `/tmp`.** El sandbox deniega `rm -f`; los borra el leader.
 - **No abras ni edites la PR.** La abre el leader.
 - Si el sandbox te deniega un comando, PARA y repórtalo.
+
+## Reanudación tras la parada del 2026-11-04
+
+- La primera sesión paró en el rojo de R1 por el literal de jest 29 y al borrar `/tmp`. Su
+  reporte está commiteado en la enmienda E1. No lo borres: añade al final una sección
+  `## Sesión 2 (tras la enmienda E1)` y escribe ahí todo lo de esta sesión.
+- El diff del test que conserva ese reporte es el que pide design.md. Puedes reaplicarlo tal
+  cual; vuelve a medir T0 y las anclas antes.
+- El leader borró el marcador `.done` de la primera sesión.
 
 ## Reporte
 

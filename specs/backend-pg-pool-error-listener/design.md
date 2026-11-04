@@ -92,8 +92,9 @@ existente, que no se toca:
 Con el código de hoy no hay listener. `emit` lanza: bajo Jest el `Error` nace
 en el realm del test, así que Node lanza `ERR_UNHANDLED_ERROR` («Unhandled
 error.») en vez del propio error; en ambos casos lanza. La primera aserción
-falla con `Expected the function not to throw an error.` Es un rojo por
-aserción, no por excepción fuera del `expect`.
+falla. Con jest 30 el log muestra `expect(received).not.toThrow()` y
+`Error message: "Unhandled error.` (enmienda E1 de [[requirements]]). Es un
+rojo por aserción, no por excepción fuera del `expect`.
 
 ### Mutaciones
 
@@ -105,7 +106,8 @@ anota y se restaura con
 - **M1 — sin listener.** Borrar las tres líneas de
   `pool.on('error', (error) => { ... });`.
   - Esperado: `exit` distinto de 0; `Tests: 1 failed, 1 passed, 2 total`; el it
-    de R1 falla con `Expected the function not to throw an error.`;
+    de R1 falla y el log muestra `expect(received).not.toThrow()` y
+    `Error message: "Unhandled error.` (`grep -cF` = `1` cada uno);
     `grep -cF "on('error'" src/db/drizzle.module.ts` da `0`.
 - **M2 — listener sin log.** Borrar solo la línea
   ``poolLogger.error(`Idle client error: ${error.message}`, error.stack);``,
