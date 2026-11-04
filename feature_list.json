@@ -3886,5 +3886,14 @@
     "description": "En Salud, la lista de Vacunas (mobile-pet-tracker/src/screens/health/index.tsx) sale tal como llega del API, ordenada por appliedAt descendente, sin separar próximas de pasadas. Decisión del humano (2026-11-04): «Próximas y Pasadas». Arriba «PRÓXIMAS», con nextDoseAt posterior a hoy en orden ascendente; abajo «PASADAS», colapsada, con nextDoseAt hoy o antes, o null, en orden descendente (nextDoseAt, o appliedAt si es null). Cabecera, contador y chevron como en Recordatorios (#227). Las filas y la tarjeta «PRÓXIMA DOSIS» no cambian; el orden se hace en el móvil y el API no cambia. Responsable: leader @Backend. Plan progress/plan_arreglos-smoke-2026-11-04.md §2, firma delegada (ampliación del 2026-11-04). Registrada sin spec.",
     "acceptance_criteria": null,
     "files_affected": null
+  },
+  {
+    "id": 242,
+    "name": "mobile-home-scroll-edge-blur",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Spike pedido por el humano (2026-11-04) para probar la librería expo-backdrop (https://github.com/rit3zh/expo-backdrop, v0.1.3, módulo nativo) en la Home: un ProgressiveBlurView en el borde superior (bajo la barra de estado) y otro en el borde inferior (tras la tab bar flotante) que aparecen al hacer scroll del contenido. Solo Home; la tab bar global (floating-tab-bar.tsx, expo-blur) no se toca. Dependencia nueva expo-backdrop, módulo nativo: exige rebuild del dev build (G3) y smoke en Android (G2) del humano. Si el spike no convence se revierte; extender a otras pantallas es decisión del humano. Responsable: leader @Frontend. Registrada sin spec.",
+    "acceptance_criteria": null,
+    "files_affected": null
   }
 ]
