@@ -50,7 +50,7 @@ it.each([
   expect(readSource('screens/reminders/index.tsx').split(productionLiteral).length - 1).toBe(1);
 });
 
-it('#227 R11: inventario del fuente (enmendado por #228 R13)', () => {
+it('#227 R11: inventario del fuente (enmendado por #228 R13) (enmendado por #239 R7)', () => {
   const source = readSource('screens/reminders/index.tsx');
   for (const [literal, count] of [
     ['style={CONTINUOUS_CORNER}', 6 + 1 + 1], // #228 R2; #239 R1
