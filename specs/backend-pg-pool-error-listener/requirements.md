@@ -1,6 +1,6 @@
 ---
 feature: "backend-pg-pool-error-listener"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, backend, db, resiliencia]
 ---
 
@@ -12,7 +12,9 @@ tags: [harness, spec, backend, db, resiliencia]
 > están en [[../../docs/architecture|architecture]]: `src/db/drizzle.module.ts`
 > es infraestructura compartida («provee pg Pool + cliente drizzle»).
 >
-> - Base medida: `origin/dev` en `6fe140ee`.
+> - Base medida: `origin/dev` en `6fe140ee`. Al firmar, la branch mergeó
+>   `origin/dev` en `fd6244a2` (merge `7e24ba36`); ese merge no toca
+>   `backend-pet-tracker/`, así que las anclas siguen valiendo.
 > - Worktree: `/home/claude/sites/Pet-Tracker-wt-238`. Branch:
 >   `feature/238-backend-pg-pool-error-listener`. La PR va contra `dev`.
 > - Alcance: `backend-pet-tracker/src/db/drizzle.module.ts` y su test
@@ -208,7 +210,10 @@ Detalle y alternativas en [[design]].
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-11-04) ← gate obligatorio antes de implementar
+
+  El humano aprobó la firma de forma explícita el 2026-11-04 a las 00:38 UTC
+  («apruebo la firma de 238»). El leader la registra con su commit.
 
 No hay gates humanos aparte: ni G1 (copy y artboards) ni G2 (smoke). El
 mandato del 2026-10-23, ampliado el 2026-11-03, cubre #226–#235, no #238: esta
