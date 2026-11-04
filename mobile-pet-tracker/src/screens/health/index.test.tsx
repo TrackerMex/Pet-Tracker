@@ -1809,4 +1809,17 @@ describe('#241: vacunas próximas y pasadas', () => {
     expect(within(tile).getByTestId(icon, { includeHiddenElements: true }).props.style).toEqual({ color });
     expect(riseDelayOf(row)).toBe(delay);
   });
+
+  it('#241 R8: la dosis de hoy sale en «Próxima dosis» y en «Pasadas», no en «Próximas»', async () => {
+    await renderHealth();
+    const hero = await screen.findByTestId('next-vaccine-card');
+    expect(within(hero).getByText('Rabia')).toBeOnTheScreen();
+    expect(within(hero).getByTestId('next-vaccine-date')).toHaveTextContent('31 de diciembre · hoy', { exact: true });
+    expect(within(hero).getByTestId('next-vaccine-days')).toHaveTextContent('Hoy', { exact: true });
+    const upcoming = await screen.findByTestId('vaccines-upcoming-list');
+    expect(within(upcoming).queryByTestId('vaccine-row-today')).toBeNull();
+    await expandVaccinesPast();
+    const past = await screen.findByTestId('vaccines-past-list');
+    expect(within(past).getAllByTestId(/^vaccine-row-/)[0].props.testID).toBe('vaccine-row-today');
+  });
 });
