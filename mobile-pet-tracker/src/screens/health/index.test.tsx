@@ -365,7 +365,7 @@ describe('R5: vacunas con la próxima destacada', () => {
     expect(screen.getByText('Vacunas')).toBeVisible();
   });
 
-  it('highlights the nearest future dose and keeps row order (enmendado por #199 R14)', async () => {
+  it('highlights the nearest future dose and sorts upcoming rows by next dose (enmendado por #199 R14)', async () => {
     const vaccines = [
       makeVaccine({
         id: 'vaccine-2',
@@ -388,8 +388,8 @@ describe('R5: vacunas con la próxima destacada', () => {
     expect(nextCard.getByTestId('next-vaccine-date')).toHaveTextContent(/^1 de mayo · en \d+ días$/);
     expect(nextCard.queryByText('2099-05-01')).toBeNull();
     expect(screen.getAllByTestId(/^vaccine-row-/).map(({ props }) => props.testID)).toEqual([
-      'vaccine-row-vaccine-2',
       'vaccine-row-vaccine-1',
+      'vaccine-row-vaccine-2',
     ]);
   });
 
@@ -427,9 +427,7 @@ describe('R5: vacunas con la próxima destacada', () => {
 
     await renderHealth();
 
-    await waitFor(() =>
-      expect(screen.getByTestId('vaccine-row-vaccine-1')).toBeVisible(),
-    );
+    await waitFor(() => expect(screen.getByTestId('vaccines-past-count')).toHaveTextContent('2', { exact: true }));
     expect(screen.queryByTestId('next-vaccine-card')).toBeNull();
   });
 
@@ -440,6 +438,7 @@ describe('R5: vacunas con la próxima destacada', () => {
     });
 
     await renderHealth();
+    await expandVaccinesPast();
 
     await waitFor(() =>
       expect(screen.getByTestId('vaccine-row-vaccine-1')).toBeVisible(),
@@ -1081,12 +1080,13 @@ describe('#168 R3: cada vacuna lleva su tile pastel', () => {
   afterEach(() => jest.useRealTimers());
 
   it.each([
-    { id: 'overdue', surface: 'size-10 items-center justify-center rounded-xl bg-category-rose', icon: 'health-icon-clock', color: 'category-rose-strong', texts: ['Vencida', 'Aplicada 1 ene 2026 · Próxima 28 feb 2026'], dateClass: 'text-danger' },
-    { id: 'next', surface: 'size-10 items-center justify-center rounded-xl bg-category-amber', icon: 'health-icon-clock', color: 'category-amber-strong', texts: ['Próxima', 'Aplicada 2 ene 2026 · Próxima 31 mar 2026'], dateClass: undefined },
-    { id: 'future', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Futura', 'Aplicada 3 ene 2026 · Próxima 2 abr 2026'], dateClass: undefined },
-    { id: 'completed', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Sin próxima dosis', 'Aplicada 4 ene 2026'], dateClass: undefined },
-  ])('pinta el estado de $id con su icono y textos (enmendado por #199 R16) (enmendado por #199 R17)', async ({ id, surface, icon, color, texts, dateClass }) => {
+    { id: 'overdue', past: true, surface: 'size-10 items-center justify-center rounded-xl bg-category-rose', icon: 'health-icon-clock', color: 'category-rose-strong', texts: ['Vencida', 'Aplicada 1 ene 2026 · Próxima 28 feb 2026'], dateClass: 'text-danger' },
+    { id: 'next', past: true, surface: 'size-10 items-center justify-center rounded-xl bg-category-amber', icon: 'health-icon-clock', color: 'category-amber-strong', texts: ['Próxima', 'Aplicada 2 ene 2026 · Próxima 31 mar 2026'], dateClass: undefined },
+    { id: 'future', past: false, surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Futura', 'Aplicada 3 ene 2026 · Próxima 2 abr 2026'], dateClass: undefined },
+    { id: 'completed', past: true, surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Sin próxima dosis', 'Aplicada 4 ene 2026'], dateClass: undefined },
+  ])('pinta el estado de $id con su icono y textos (enmendado por #199 R16) (enmendado por #199 R17)', async ({ id, past, surface, icon, color, texts, dateClass }) => {
     await renderHealth();
+    if (past) await expandVaccinesPast();
     const row = await screen.findByTestId(`vaccine-row-${id}`);
     const scope = within(row);
     expect(row.children).toHaveLength(2);
@@ -1263,6 +1263,7 @@ describe('#199 R16: filas de vacunas', () => {
   });
   it('#199 R16 cada vacuna es un Card flat con py-3.5 y nombre text-15 font-extrabold', async () => {
     await renderHealth();
+    await expandVaccinesPast();
     const row = await screen.findByTestId('vaccine-row-vax-0');
     expect(row.props.className).toBe('rounded-card border border-border bg-surface px-3.5 flex-row items-center gap-3 py-3.5');
     const name = within(row).getByText('Vacuna 0');
@@ -1274,6 +1275,7 @@ describe('#199 R16: filas de vacunas', () => {
   });
   it.each([[0, 80], [1, 140], [2, 200], [3, 200]])('#199 R16 la fila %i entra a los %i ms', async (index, delay) => {
     await renderHealth();
+    await expandVaccinesPast();
     expect(riseDelayOf(await screen.findByTestId(`vaccine-row-vax-${index}`))).toBe(delay);
   });
 });
@@ -1286,9 +1288,10 @@ describe('#199 R17: subtítulo de vacunas', () => {
     jest.setSystemTime(new Date(2026, 2, 31, 12));
   });
   afterEach(() => jest.useRealTimers());
-  async function renderDates199(overrides: Partial<Vaccine>) {
+  async function renderDates199(overrides: Partial<Vaccine>, past = true) {
     mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [makeVaccine(overrides)] });
     await renderHealth();
+    if (past) await expandVaccinesPast();
     return screen.findByTestId('vaccine-dates-vaccine-1');
   }
   it('#199 R17 dice Aplicada y Próxima en una línea', async () => {
@@ -1304,7 +1307,7 @@ describe('#199 R17: subtítulo de vacunas', () => {
     expect(within(dates).getByText('Próxima 30 mar 2026').props.className).toBe('text-danger');
   });
   it('#199 R17 una dosis vigente no pinta text-danger', async () => {
-    const dates = await renderDates199({ nextDoseAt: '2026-04-01' });
+    const dates = await renderDates199({ nextDoseAt: '2026-04-01' }, false);
     expect(within(dates).getByText('Próxima 1 abr 2026').props.className).not.toBe('text-danger');
   });
   it('#199 R17 sin próxima dosis solo dice Aplicada', async () => {

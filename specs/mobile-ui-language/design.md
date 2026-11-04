@@ -1624,3 +1624,10 @@ Las claves con `pingo` pasan a `orbit` con los mismos valores; las filas anterio
 | — | `reminders.sectionPast` | `Past` | `Pasados` | ← añadida por #227 (R1) |
 | — | `reminders.upcomingEmptyTitle` | `Nothing pending for now` | `Nada pendiente por ahora` | ← añadida por #227 (R1) |
 | — | `reminders.upcomingEmptyBody` | `New reminders will show up here.` | `Los recordatorios nuevos aparecerán aquí.` | ← añadida por #227 (R1) |
+
+### §2.41 — Añadidos por #241 — Salud: vacunas próximas y pasadas
+
+| Diseño | Clave | en | es | Cambio |
+|---|---|---|---|---|
+| — | `health.sectionUpcoming` | `Upcoming` | `Próximas` | ← añadida por #241 (R1) |
+| — | `health.sectionPast` | `Past` | `Pasadas` | ← añadida por #241 (R1) |
