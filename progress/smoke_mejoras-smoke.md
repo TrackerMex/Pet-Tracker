@@ -6,21 +6,21 @@ de cada feature la marca solo el humano.
 
 ## #224 mobile-nutrition-ai-format (pendiente del lote anterior)
 
-- [ ] Smoke de #224 pasado tras #234 (fecha: ____)
+- [X] Smoke de #224 pasado tras #234 (fecha: 2026-11-04)
 
 ## #231 mobile-welcome-secondary-pressed
 
 En el dev build de Android, sin sesión, en la pantalla de Bienvenida:
 
-- [ ] Tema claro: al mantener pulsado «Ya tengo una cuenta» la capa se tiñe de gris neutro tenue y el botón se encoge ligeramente; ya no se tiñe de verde.
-- [ ] Tema oscuro: el borde de 2 px del botón se ve claramente (gris `#9CA3AF`) y al mantener pulsado tampoco aparece verde.
-- [ ] «Comenzar ahora» sigue resaltando verde al pulsarlo.
+- [X] Tema claro: al mantener pulsado «Ya tengo una cuenta» la capa se tiñe de gris neutro tenue y el botón se encoge ligeramente; ya no se tiñe de verde.
+- [X] Tema oscuro: el borde de 2 px del botón se ve claramente (gris `#9CA3AF`) y al mantener pulsado tampoco aparece verde.
+- [X] «Comenzar ahora» sigue resaltando verde al pulsarlo.
 ## #235 mobile-profile-photo-owner-only
 
-- [ ] En Perfil, con una mascota propia (rol dueño), el botón de la cámara sobre la foto aparece y abre el cambio de foto.
-- [ ] Con una mascota compartida donde el rol no es dueño (familia, paseador o veterinario), el botón de la cámara no aparece.
-- [ ] Al cambiar entre una mascota propia y una compartida en el selector, la cámara se va y vuelve según el rol de la mascota elegida.
-- [ ] Fecha del smoke: ____
+- [X] En Perfil, con una mascota propia (rol dueño), el botón de la cámara sobre la foto aparece y abre el cambio de foto.
+- [X] Con una mascota compartida donde el rol no es dueño (familia, paseador o veterinario), el botón de la cámara no aparece.
+- [X] Al cambiar entre una mascota propia y una compartida en el selector, la cámara se va y vuelve según el rol de la mascota elegida.
+- [X] Fecha del smoke: 2026-11-04
 
 ## #226 backend-vaccine-catalog-migration
 
@@ -33,7 +33,7 @@ Solo cambia el backend: no hace falta dev build nuevo ni reinstalar la app.
 4. «Agregar vacuna» en un gato: salen Leucemia felina (FeLV), Rabia y Triple felina (FVRCP), y después «Otra vacuna».
 5. Registra Rabia en el perro: aparece en Salud con su próxima dosis.
 
-- [ ] Smoke de #226 pasado (fecha: ____; paso 1, fallo reproducido: sí / no)
+- [X] Smoke de #226 pasado (fecha: 2026-11-04; paso 1, fallo reproducido: sí)
 
 ## #227 mobile-reminders-upcoming-past
 
@@ -46,7 +46,7 @@ Necesita el dev build con `dev` actualizado (cambia la app, no el backend).
 4. Elimina los recordatorios futuros: en su lugar sale la caja «Nada pendiente por ahora / Los recordatorios nuevos aparecerán aquí.», encima de «PASADOS».
 5. Repite 1 a 4 en tema claro y oscuro.
 
-- [ ] Smoke de #227 pasado (fecha: ____; tema claro: sí / no; tema oscuro: sí / no)
+- [X] Smoke de #227 pasado (fecha: 2026-11-04; tema claro: sí; tema oscuro: sí)
 
 ## #232 mobile-add-reminder-chip-lip-clip
 
@@ -57,7 +57,7 @@ Hallazgo: en Agregar recordatorio el chip seleccionado de Tipo y Aviso salía co
 3. En «Aviso», con «7 días» seleccionado y luego «Mismo día», «1 día» y «3 días»: el labio se ve entero.
 4. Compara con antes: la separación entre «Tipo», «Título», «Aviso» y la vista previa no cambia (la pantalla no se mueve 3 px).
 
-- [ ] Smoke de #232 pasado (fecha: ____; tema claro: sí / no; tema oscuro: sí / no)
+- [X] Smoke de #232 pasado (fecha: 2026-11-04; tema claro: sí; tema oscuro: sí)
 
 ## #233 mobile-food-links-without-profile
 
@@ -66,7 +66,7 @@ Hallazgo: «En Nutricion sin Perfil, no deben de aparecer Horario de comidas y H
 1. Con una mascota sin perfil nutricional, abre Nutrición: sale «Aún no hay perfil nutricional» con el botón «Crear perfil nutricional» y no salen «Horario de comidas» ni «Historial de comidas» (antes de #233 las dos filas aparecían bajo el vacío).
 2. Crea el perfil con el cuestionario y vuelve a Nutrición: ahora sí salen las dos filas.
 
-- [ ] Smoke de #233 pasado (fecha: ____)
+- [x] Smoke de #233 pasado (fecha: 2026-11-04)
 
 ## #234 mobile-nutrition-ai-collapse-flicker
 
@@ -79,7 +79,7 @@ Hallazgo: «No marque mobile-nutrition-ai-format porque en eñ colapso de IA que
 5. En tema oscuro y en claro: el degradado se funde con el fondo violeta sin banda visible, igual que en el artboard aprobado; no hay espacio vacío extra bajo la tarjeta.
 6. TalkBack: la explicación se lee una sola vez (un párrafo continuo) y «Ver más» por separado.
 
-- [ ] Smoke de #234 pasado (fecha: ____; tema claro: sí / no; tema oscuro: sí / no). Cierra también el smoke de #224 («Smoke de #224 pasado tras #234»).
+- [X] Smoke de #234 pasado (fecha: 2026-11-04; tema claro: sí; tema oscuro: sí). Cierra también el smoke de #224 («Smoke de #224 pasado tras #234»).
 
 ## #229 mobile-profile-family-join-row
 
@@ -91,7 +91,7 @@ Hallazgo: «Cards Familia y Unirme con código» (decisión «Lado a lado»); an
 4. Perfil sin mascotas: Unirme con código ocupa el ancho entero de su fila.
 5. Repite 1 a 4 en tema claro y en oscuro.
 
-- [ ] Smoke de #229 pasado (fecha: ____; tema claro: sí / no; tema oscuro: sí / no)
+- [X] Smoke de #229 pasado (fecha: 2026-11-04; tema claro: sí; tema oscuro: sí)
 
 ## #236 mobile-vaccine-catalog-error-state
 
@@ -103,7 +103,7 @@ Necesita el dev build con `dev` actualizado (cambia la app, no el backend).
 3. Pulsa «Reintentar» con el backend todavía detenido: el aviso sigue.
 4. Arranca el backend y pulsa «Reintentar». Salen Leptospirosis, Polivalente (DHPPi), Rabia y Tos de las perreras, después «Otra vacuna», y el aviso desaparece.
 
-- [ ] Smoke de #236 pasado (fecha: ____; paso 1, fallo reproducido: sí / no)
+- [X] Smoke de #236 pasado (fecha: 2026-11-04; paso 1, fallo reproducido: sí)
 
 ## #228 mobile-reminder-swipe-actions
 
@@ -118,7 +118,7 @@ Hallazgo: los botones «Eliminar» y «Cancelar serie» ocupaban sitio en cada f
 7. Como familiar (rol `family`), la fila no se desliza.
 8. Repite 2 a 4 en tema claro y oscuro.
 
-- [ ] Smoke de #228 pasado (fecha: ____; tema claro: sí / no; tema oscuro: sí / no)
+- [X] Smoke de #228 pasado (fecha: 2026-11-04; tema claro: sí; tema oscuro: sí)
 
 ## #230 mobile-map-pet-avatar-marker
 
@@ -129,4 +129,4 @@ Hallazgo: «Pin genérico: quiero avatar». Necesita el dev build con `dev` actu
 3. Con una mascota cuya foto no carga (por ejemplo, borrando el objeto de la foto en el bucket de LocalStack): en 4 segundos como mucho el marcador muestra el blobatar sobre fondo blanco, y no se queda en el pin genérico ni en blanco.
 4. Mueve, gira e inclina el mapa: el avatar sigue pegado a la posición, sin desfase.
 
-- [ ] Smoke de #230 pasado en Android (fecha: ____; con foto: sí / no; sin foto: sí / no; foto rota: sí / no). La casilla G2 iOS sigue en `specs/mobile-map-pet-avatar-marker/requirements.md`.
+- [X] Smoke de #230 pasado en Android (fecha: 2026-11-04; con foto: sí; sin foto: sí; foto rota: sí). La casilla G2 iOS sigue en `specs/mobile-map-pet-avatar-marker/requirements.md`.
