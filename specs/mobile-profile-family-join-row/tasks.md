@@ -98,3 +98,12 @@ tags: [mobile, profile, ui, spec]
   en 0 (el lint traga SIGKILL: memoria `expo-lint-traga-sigkill`).
 - [ ] Rellenar [[traceability]] con los hashes tras cada commit; sin rebase
   tras la trazabilidad.
+
+## Enmienda del leader (2026-11-04): commit extra de tests
+
+Entre el commit 4 y el de trazabilidad hay un sexto commit,
+`test(mobile): #229 harden R3 count and wait for row 2 in R1 (R1, R3)`, solo en
+`index.test.tsx`: `toHaveLength(3)` junto al `toEqual` de R3 (que ignora un
+cuarto `<View />` final) y, en R1, esperar a `profile-links-row-2` antes de
+leer la rama sin mascota. Nace verde; su prueba es que las mutaciones R3(c) y
+R4(b) quedan rojas tras él. Lo autorizó el leader cuando Codex lo preguntó.
