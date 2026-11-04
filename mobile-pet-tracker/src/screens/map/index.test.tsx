@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import type { ImageRef } from 'expo-image';
 import {
   act,
   fireEvent,
@@ -58,6 +59,23 @@ let mockFocusCleanup: (() => void) | undefined;
 let mockTheme: 'light' | 'dark' = 'light';
 let mockIsFocused = true;
 const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
+const mockToDataURL = jest.fn();
+const mockUseImage = jest.fn();
+const FALLBACK_ICON = { sentinel: 'fallback-icon' } as unknown as ImageRef;
+
+jest.mock('react-native-svg', () => {
+  const actual = jest.requireActual<typeof import('react-native-svg')>('react-native-svg');
+  class Svg extends actual.default {
+    toDataURL = (callback: (base64: string) => void, options?: object) =>
+      mockToDataURL(this.props.testID, callback, options);
+  }
+  return { __esModule: true, ...actual, default: Svg, Svg };
+});
+jest.mock('expo-image', () => ({
+  __esModule: true,
+  ...jest.requireActual<typeof import('expo-image')>('expo-image'),
+  useImage: (source: { uri: string }) => mockUseImage(source),
+}));
 
 jest.mock('../../api/geofences', () => ({ listGeofences: jest.fn() }));
 
@@ -310,6 +328,8 @@ async function renderMap() {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockToDataURL.mockImplementation(() => undefined);
+  mockUseImage.mockImplementation(() => null);
   mockFocusCleanup = undefined;
   mockTheme = 'light';
   initialSelectedPetId = null;
@@ -2765,5 +2785,38 @@ describe('#201 R15: la ruta del día se dibuja con trazo 5', () => {
       .polylines as { width?: number }[]) {
       expect(polyline.width).toBe(5);
     }
+  });
+});
+
+describe('#230 R10: marcador con avatar', () => {
+  beforeEach(() => {
+    jest.useRealTimers();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('#230 R10: con posición monta el compositor oculto', async () => {
+    const position = makeLastPosition({ lat: 19.45, lng: -99.12 });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position });
+    await renderMap();
+    await waitFor(() => expect(screen.getByTestId('map-marker-icon', { includeHiddenElements: true })).toBeTruthy());
+  });
+
+  it('#230 R10: sin posición no monta el compositor', async () => {
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: null });
+    await renderMap();
+    expect(await screen.findByTestId('map-empty-overlay')).toBeVisible();
+    expect(screen.queryByTestId('map-marker-icon', { includeHiddenElements: true })).toBeNull();
+  });
+
+  it('#230 R10: el marcador recibe el icono compuesto', async () => {
+    const position = makeLastPosition({ lat: 19.45, lng: -99.12 });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position });
+    mockToDataURL.mockImplementation((_id, callback) => callback('RkFMTEJBQ0s='));
+    mockUseImage.mockImplementation(({ uri }: { uri: string }) => uri === 'data:image/png;base64,RkFMTEJBQ0s=' ? FALLBACK_ICON : null);
+    await renderMap();
+    await waitFor(() => expect(screen.getByTestId('map-view').props.markers).toEqual([{
+      id: 'last-position', coordinates: { latitude: 19.45, longitude: -99.12 },
+      icon: FALLBACK_ICON, anchor: { x: 0.5, y: 0.5 }, showCallout: false,
+    }]));
   });
 });

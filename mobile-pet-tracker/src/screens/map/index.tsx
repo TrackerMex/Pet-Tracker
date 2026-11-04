@@ -51,6 +51,7 @@ import {
   type DeviceConnectionState,
 } from '../../utils/device-connectivity';
 import { homeEntering } from '../home/home-entrance';
+import { PetMarkerIcon, currentMarkerIcon, markerCompositionKey, type MarkerIconState } from './pet-marker-icon';
 
 function isPetsError(state: PetsState): boolean {
   switch (state.kind) {
@@ -127,6 +128,7 @@ export function MapScreen() {
   usePetSelection({ data: pets.data, isRefreshing: pets.isRefetching });
   const [lostModeBusy, setLostModeBusy] = useState(false);
   const [lostModeFailed, setLostModeFailed] = useState(false);
+  const [markerIcon, setMarkerIcon] = useState<MarkerIconState>(null);
   const detail = useQuery({
     queryKey: petKeys.detail(selectedPetId ?? ''),
     queryFn: () => getPet(baseUrl, token ?? '', selectedPetId!),
@@ -402,11 +404,15 @@ export function MapScreen() {
             key={selectedPetId}
             center={center}
             marker={marker}
+            markerIcon={currentMarkerIcon(markerIcon, selectedPet)}
             polylines={polylines}
             polylineWidth={5}
             circles={circles}
             colorScheme={theme === 'dark' ? 'dark' : 'light'}
           />
+          {selectedPet && marker ? (
+            <PetMarkerIcon key={markerCompositionKey(selectedPet)} pet={selectedPet} onIcon={setMarkerIcon} />
+          ) : null}
           {position === null ? (
             <Card
               testID="map-empty-overlay"

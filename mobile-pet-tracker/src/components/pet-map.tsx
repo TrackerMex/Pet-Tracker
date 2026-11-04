@@ -1,4 +1,5 @@
 import { GoogleMaps } from 'expo-maps';
+import type { ImageRef } from 'expo-image';
 
 import { useThemeColors } from '../theme/use-theme-colors';
 
@@ -11,6 +12,7 @@ export type PetMapProps = {
   onPress?: (coordinates: MapCoordinates) => void;
   center: MapCoordinates;
   marker: MapCoordinates | null;
+  markerIcon?: ImageRef | null;
   polylines: MapPolyline[];
   polylineWidth?: number;
   colorScheme: 'light' | 'dark';
@@ -34,7 +36,7 @@ export function PetMap(props: PetMapProps) {
       zoom: props.zoom ?? MAP_ZOOM,
     },
     markers: props.marker
-      ? [{ id: 'last-position', coordinates: props.marker }]
+      ? [{ id: 'last-position', coordinates: props.marker, ...(props.markerIcon ? { icon: props.markerIcon, anchor: { x: 0.5, y: 0.5 }, showCallout: false } : {}) }]
       : [],
     polylines: props.polylines.map((polyline) => ({
       ...polyline,
