@@ -268,5 +268,5 @@ defecto de esta spec: se para y se enmienda, no se toca la guarda.
 > `accent-foreground`, no hay sombra y el blobatar es el fallback de la carta.
 
 - [x] Aprobado (firma delegada del leader, fecha: 2026-11-03) ← gate obligatorio antes de implementar
-- [ ] G2 Android — prueba de humo en el dev build del PC del humano: marcador con foto, sin foto y con foto rota (blobatar tras ≤ 4 s), en `progress/smoke_mejoras-smoke.md` (fecha: ____)
+- [x] G2 Android — prueba de humo en el dev build del PC del humano: marcador con foto, sin foto y con foto rota (blobatar tras ≤ 4 s), en `progress/smoke_mejoras-smoke.md` (fecha: 2026-11-04)
 - [ ] G2 iOS — la misma prueba de humo en iOS (fecha: ____)

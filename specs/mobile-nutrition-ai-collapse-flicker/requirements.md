@@ -440,7 +440,7 @@ dispositivo deje de oscilar es lo que confirma el smoke.
 - Enmienda de #224 R6: la casilla vive en
   `specs/mobile-nutrition-ai-format/requirements.md` § Aprobación («Enmienda de
   R6 por #234 aprobada», sin marcar). La firma de esta spec no la marca.
-- [ ] **G2**: smoke en el dev build de Android (claro y oscuro, seis pasos de
-  «Paso de smoke nuevo») (fecha: ____) ← gate humano, por lote al final
+- [x] **G2**: smoke en el dev build de Android (claro y oscuro, seis pasos de
+  «Paso de smoke nuevo») (fecha: 2026-11-04) ← gate humano, por lote al final
   (`progress/smoke_mejoras-smoke.md`); cierra también el smoke de #224
 - Base congelada: `26b86621` (`origin/dev` en `feature/234-mobile-nutrition-ai-collapse-flicker`).

@@ -357,7 +357,7 @@ Cada viñeta trae su evidencia en el árbol de `origin/dev` (426ffd32).
       añadir «y con perfil nutricional confirmado; sin perfil no se pintan»
       (#233 R1). El humano decide si la carta lo recoge; la spec es
       implementable sin ella.
-- [ ] Smoke de #233 en dev build por el humano (fecha: ____): con una mascota
+- [x] Smoke de #233 en dev build por el humano (fecha: 2026-11-04): con una mascota
       sin perfil nutricional, abre Nutrición y ve «Aún no hay perfil
       nutricional» con el botón «Crear perfil nutricional» y no ve «Horario de
       comidas» ni «Historial de comidas»; crea el perfil con el cuestionario,
