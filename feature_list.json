@@ -3649,7 +3649,7 @@
   {
     "id": 224,
     "name": "mobile-nutrition-ai-format",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P2",
     "description": "Registrada el 2026-10-26 por el plan progress/plan_ui-2026-10-26.md (ola 2, gate G1). Formato de la recomendación de IA en Nutrición: markdown mínimo propio, Ver más y aviso fijo; sin tocar el prompt (es de #212). Evidencia en progress/explore_ui-alertas-actividad-ia-2026-10-26.md. Firma delegada al leader. Registrada sin spec."
   },
@@ -3663,7 +3663,7 @@
   {
     "id": 226,
     "name": "backend-vaccine-catalog-migration",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P1",
     "description": "Catálogo de vacunas por migración de datos: hoy la tabla vaccine_catalog solo se llena con pnpm seed:vaccines y en la base del humano quedó vacía, así que Agregar vacuna solo ofrece «Otra vacuna». Evidencia en el plan §2. Responsable: leader @Backend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Spec en specs/backend-vaccine-catalog-migration/ (2026-11-03): migración custom de drizzle-kit _vaccine_catalog_data con INSERT de las 7 entradas del seed y ON CONFLICT (species, name) DO NOTHING; el seed se conserva; sin cambios en mobile-pet-tracker/.",
     "acceptance_criteria": [
@@ -3685,7 +3685,7 @@
   {
     "id": 227,
     "name": "mobile-reminders-upcoming-past",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P1",
     "description": "Lista de recordatorios con «Próximos» arriba (no cancelados con fecha de hoy en adelante, ascendente) y una sección «Pasados» colapsada al final, como Alertas atendidas (#223). Decisión del humano 2026-11-03. Necesita artboard y copy (G1). Responsable: leader @Backend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
     "acceptance_criteria": null,
@@ -3694,7 +3694,7 @@
   {
     "id": 228,
     "name": "mobile-reminder-swipe-actions",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P2",
     "description": "Eliminar y Cancelar serie de cada recordatorio pasan a acciones de deslizar con ReanimatedSwipeable de react-native-gesture-handler (HeroUI Native 1.0.8 y 1.0.11 no tienen SwipeableRow), con acción de accesibilidad equivalente. Necesita artboard (G1). Responsable: leader @Backend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
     "acceptance_criteria": [
@@ -3736,7 +3736,7 @@
   {
     "id": 229,
     "name": "mobile-profile-family-join-row",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P1",
     "description": "Perfil: «Familia» y «Unirme con código» salen a media anchura, en filas separadas y sin texto (ProfileWideTile sin flex-1 dentro de un flex-row). Una fila de dos columnas con el mismo alto, como las filas de ProfileTile; sin copy nuevo. Decisión del humano 2026-11-03 («Lado a lado»). Va detrás de #235. Responsable: leader @Frontend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
     "acceptance_criteria": null,
@@ -3766,7 +3766,7 @@
   {
     "id": 231,
     "name": "mobile-welcome-secondary-pressed",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P2",
     "description": "Bienvenida: «Ya tengo una cuenta» no tiene variant y HeroUI le pinta el resaltado verde del primario al pulsar; en oscuro, borde y labio casi no se ven. Resaltado neutro y borde visible en oscuro. Responsable: leader @Frontend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
     "acceptance_criteria": null,
@@ -3775,7 +3775,7 @@
   {
     "id": 232,
     "name": "mobile-add-reminder-chip-lip-clip",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P2",
     "description": "Agregar recordatorio: el ScrollView horizontal de Tipo y de Aviso recorta el labio de 3 px del chip seleccionado. Responsable: leader @Frontend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
     "acceptance_criteria": null,
@@ -3784,7 +3784,7 @@
   {
     "id": 233,
     "name": "mobile-food-links-without-profile",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P2",
     "description": "Nutrición: sin perfil nutricional no se muestran Horario de comidas ni Historial de comidas. Responsable: leader @Frontend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
     "acceptance_criteria": null,
@@ -3793,7 +3793,7 @@
   {
     "id": 234,
     "name": "mobile-nutrition-ai-collapse-flicker",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P1",
     "description": "Arreglo del smoke de #224: la tarjeta de IA colapsada parpadea porque food-ai-content se mide con onLayout dentro de su propio recorte (maxHeight 122). Medir fuera del recorte; enmienda a #224 R6. Cierra también el smoke de #224. Responsable: leader @Frontend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
     "acceptance_criteria": null,
@@ -3802,7 +3802,7 @@
   {
     "id": 235,
     "name": "mobile-profile-photo-owner-only",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P2",
     "description": "Perfil: el botón de cámara change-photo se muestra al rol family y el backend responde 403 («No se pudo subir la foto»). Mostrarlo solo al owner, como el resto de #216. Responsable: leader @Frontend. Registrada el 2026-11-03 por el plan progress/plan_mejoras-smoke-2026-11-03.md tras el smoke G2 del humano. Firma delegada al leader (ampliación del 2026-11-03). Registrada sin spec.",
     "acceptance_criteria": null,
@@ -3811,7 +3811,7 @@
   {
     "id": 236,
     "name": "mobile-vaccine-catalog-error-state",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P2",
     "description": "Agregar vacuna: si GET /vaccine-catalog falla, el selector muestra solo «Otra vacuna» sin avisar ni dejar reintentar. Arreglo: estado de error con reintento, distinto del catálogo vacío. Hallazgo del leader al especificar #226; el humano pidió abrirlo como feature el 2026-11-03 («si abre como feature nueva»). Responsable: leader @Backend, después de #226. Plan progress/plan_mejoras-smoke-2026-11-03.md. Spec en specs/mobile-vaccine-catalog-error-state/ (2026-11-03, base origin/dev 8187d1fb): aviso vaccine-create-catalog-error con health.couldNotLoadVaccines y «Reintentar» (common.retry, catalog.refetch()) entre la leyenda y los chips cuando la consulta terminó y su dato no es ok; «Otra vacuna» sigue seleccionada; sin copy nuevo ni G1; sin artboard propio en el canvas v167 (patrón de Salud); enmienda #208 R8 y R20.",
     "acceptance_criteria": [
@@ -3857,6 +3857,33 @@
     "status": "done",
     "priority": "P2",
     "description": "El pool de Postgres de producción (backend-pet-tracker/src/db/drizzle.module.ts, new Pool en el factory de PG_POOL) no tiene listener de 'error': on('error' sale 0 veces en src/. Si Postgres termina un cliente ocioso (57P01 por un reinicio, un failover o pg_terminate_backend), pg-pool reemite el error en el pool y, sin listener, el EventEmitter lo lanza como error no manejado y tumba el proceso. Mismo mecanismo que el flake de #237, pero en la app. Observación de la spec de #237 (§Fuera de alcance). Arreglo: registrar pool.on('error', …) que loguee y no lance; el pool descarta el cliente y abre otro en la siguiente consulta. Responsable: leader @Backend. El humano pidió registrarlo como feature el 2026-11-03 («si registra como feature el pool en postgres»). Plan progress/plan_mejoras-smoke-2026-11-03.md. Registrada sin spec.",
+    "acceptance_criteria": null,
+    "files_affected": null
+  },
+  {
+    "id": 239,
+    "name": "mobile-reminder-swipe-past-row-bleed",
+    "status": "pending",
+    "priority": "P1",
+    "description": "En Recordatorios, al deslizar una fila de Pasados, la franja rosa del panel de borrar (24 de ancho, detrás del borde derecho de la fila) se transparenta a través de la fila atenuada al 50 %. Debe quedar como en Próximos; la fila sigue atenuada en reposo y el borrado no cambia. Hallazgo del humano en el smoke del 2026-11-04 (paso 3 de #228): «el color rojo no se oculta, debe de quedar como en la lista de PROXIMOS». La spec elige entre acortar la franja a la esquina (salida de specs/mobile-reminder-swipe-actions/design.md §Riesgos) y dar a la fila pasada un fondo opaco con el contenido atenuado. Responsable: leader @Backend. Plan progress/plan_arreglos-smoke-2026-11-04.md §2, firma delegada (ampliación del 2026-11-04). Registrada sin spec.",
+    "acceptance_criteria": null,
+    "files_affected": null
+  },
+  {
+    "id": 240,
+    "name": "mobile-reminder-date-year",
+    "status": "pending",
+    "priority": "P2",
+    "description": "La fecha de cada fila de Recordatorios (mobile-pet-tracker/src/screens/reminders/index.tsx, toLocaleDateString con day y month) no lleva año, y «4 nov, 09:00 · en 365 días» parece de hoy. Decisión del humano (2026-11-04): «Año si no es este año». Vale para Próximos y Pasados; la cuenta «en N días» y el orden no cambian. La spec decide si el «hasta» de las series (reminders.untilDay) sigue la misma regla. Responsable: leader @Backend. Plan progress/plan_arreglos-smoke-2026-11-04.md §2, firma delegada (ampliación del 2026-11-04). Registrada sin spec.",
+    "acceptance_criteria": null,
+    "files_affected": null
+  },
+  {
+    "id": 241,
+    "name": "mobile-health-vaccines-upcoming-past",
+    "status": "pending",
+    "priority": "P1",
+    "description": "En Salud, la lista de Vacunas (mobile-pet-tracker/src/screens/health/index.tsx) sale tal como llega del API, ordenada por appliedAt descendente, sin separar próximas de pasadas. Decisión del humano (2026-11-04): «Próximas y Pasadas». Arriba «PRÓXIMAS», con nextDoseAt posterior a hoy en orden ascendente; abajo «PASADAS», colapsada, con nextDoseAt hoy o antes, o null, en orden descendente (nextDoseAt, o appliedAt si es null). Cabecera, contador y chevron como en Recordatorios (#227). Las filas y la tarjeta «PRÓXIMA DOSIS» no cambian; el orden se hace en el móvil y el API no cambia. Responsable: leader @Backend. Plan progress/plan_arreglos-smoke-2026-11-04.md §2, firma delegada (ampliación del 2026-11-04). Registrada sin spec.",
     "acceptance_criteria": null,
     "files_affected": null
   }

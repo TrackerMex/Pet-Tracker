@@ -697,7 +697,7 @@ tres claves. No se retira ni se añade ninguna clave de copy.
   [[design]], que sustituye el punto 3 de la Enmienda #204) (fecha: 2026-11-03) ←
   gate humano, no delegado; desbloquea R12 (aprobado por el humano en el chat
   de la sesión @Backend: «apruebo G4»; el leader marca la casilla por él)
-- [ ] **G2**: smoke en el dev build de Android (pasos de «Paso de smoke
-  nuevo», tema claro y oscuro) (fecha: ____) ← gate humano, por lote al final;
+- [x] **G2**: smoke en el dev build de Android (pasos de «Paso de smoke
+  nuevo», tema claro y oscuro) (fecha: 2026-11-04) ← gate humano, por lote al final;
   lo registra `progress/smoke_mejoras-smoke.md`
 - Base congelada: `77788959` (`origin/dev`).

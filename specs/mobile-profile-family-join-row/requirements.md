@@ -334,8 +334,8 @@ y sin texto.
   `progress/plan_mejoras-smoke-2026-11-03.md` §4)
 - [X] Enmienda de #214 R4 y R6 aprobada (la firma de esta spec la cubre; casilla
   propia porque el plan §4 pide dejar la casilla de la enmienda) (fecha: 2026-11-03; firma delegada del leader)
-- [ ] **G2**: smoke en el dev build de Android (claro y oscuro, cinco pasos de
-  «Paso de smoke nuevo») (fecha: ____) ← gate humano, por lote al final
+- [x] **G2**: smoke en el dev build de Android (claro y oscuro, cinco pasos de
+  «Paso de smoke nuevo») (fecha: 2026-11-04) ← gate humano, por lote al final
   (`progress/smoke_mejoras-smoke.md`)
 - Base congelada: `26b86621` (`feature/229-mobile-profile-family-join-row` sobre
   `dev`; `origin/dev` `5c7c9547` solo añade documentos).

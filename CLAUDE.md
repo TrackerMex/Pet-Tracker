@@ -154,6 +154,13 @@ checklist de firma (más los puntos de su §4) y PRs a `dev`. No se delegan: los
 artboards y el copy nuevos (G1), las enmiendas de `docs/ui-guidelines.md` o
 `docs/conventions.md` (G4), el smoke en dispositivo (G2) y `dev` → `main` (G5).
 
+**Ampliación del 2026-11-04 (arreglos del segundo smoke).** Tras el lote G2 del
+plan del 2026-11-03, a la pregunta «¿Quién firma las specs de estos tres
+arreglos?», el humano eligió «Firma delegada». El mandato cubre las features
+#239–#241 de `progress/plan_arreglos-smoke-2026-11-04.md`, con la misma
+checklist de firma y PRs a `dev`. No se delegan los mismos gates: G1, G4, G2 y
+`dev` → `main` (G5).
+
 ## UI móvil
 
 Todo trabajo sobre `mobile-pet-tracker/` (specs, handoffs, reviews) se rige

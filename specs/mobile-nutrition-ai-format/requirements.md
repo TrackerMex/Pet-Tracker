@@ -477,7 +477,7 @@ párrafo, viñeta, viñeta, viñeta, párrafo, con 3 tramos en negrita (`1200 kc
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-27, firma delegada del leader: mandato 2026-10-23 ampliado 2026-10-26; G1 aprobado por el humano sobre canvas v153)
-- [ ] Smoke de la tarjeta de IA en dev build Android hecho y aprobado por el humano (cierre, no gate de implementación)
+- [x] Smoke de la tarjeta de IA en dev build Android hecho y aprobado por el humano (cierre, no gate de implementación) (fecha: 2026-11-04, con el smoke de #234)
   Va en `progress/smoke_ui.md` (plan §5, G2): con un plan real y una explicación larga, el texto se recorta en unas seis líneas con el degradado sobre el borde, «Ver más» expande y «Ver menos» vuelve, la zona táctil del botón es de 44 de alto, TalkBack lee el texto como un párrafo continuo con el botón por separado, y el tema oscuro mantiene el degradado sin banda visible. Si el recorte de 122 o el degradado de 36 no calzan, se ajustan las constantes `AI_CLAMP_HEIGHT` / `AI_FADE_HEIGHT` en una enmienda.
 - [ ] Enmienda de R6 por #234 aprobada por humano (fecha: ____)
   #234 (`specs/mobile-nutrition-ai-collapse-flicker/requirements.md`, R4) mide el alto que decide el recorte en un nodo oculto `food-ai-measure` fuera del recorte, en lugar de en `food-ai-content` (dentro). Cambia solo el nodo que emite el evento `layout`; 122, 36, la frontera `>` y el degradado no cambian. El texto de R6 no se edita. El smoke de esta spec cierra con el de #234.

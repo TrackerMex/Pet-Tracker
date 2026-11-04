@@ -3,6 +3,15 @@
 > Este archivo describe el estado de la sesion en curso.
 > Al cerrar la sesion, mueve este contenido a progress/history.md y deja solo esta plantilla.
 
+## Plan de arreglos del segundo smoke (2026-11-04)
+
+- Smoke G2 del humano sobre `dev` (`3c059343`): el humano marcó todas las casillas de
+  `progress/smoke_mejoras-smoke.md` en `3fa245a0`. El leader las copió a las casillas G2 de cada spec.
+- A `done`: #224, #226–#229 y #231–#236. #230 sigue `spec_ready` por su G2 iOS.
+- Hallazgos del smoke: franja rosa en Pasados (paso 3 de #228), fechas sin año en Recordatorios, y
+  Vacunas sin orden ni secciones. Plan nuevo: `progress/plan_arreglos-smoke-2026-11-04.md`, features
+  #239–#241, firma delegada (ampliación del 2026-11-04 en CLAUDE.md), todas en @Backend.
+
 ## Plan de arreglos del smoke (2026-11-03)
 
 - Smoke G2 del humano sobre `dev` (`6531669f`): pasan todas menos #224 (parpadeo de la tarjeta de IA).

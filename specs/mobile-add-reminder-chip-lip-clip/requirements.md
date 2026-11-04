@@ -258,7 +258,7 @@ el fallo original, en el dev build de Android, en tema **claro** y en **oscuro**
   `progress/plan_mejoras-smoke-2026-11-03.md` §4)
 - [X] Enmienda de #213 R5 aprobada (la firma de esta spec la cubre; casilla
   propia porque el plan §4 pide dejar la casilla de la enmienda) (fecha: 2026-11-03)
-- [ ] **G2**: smoke en el dev build de Android (claro y oscuro, cuatro pasos de
-  «Paso de smoke nuevo») (fecha: ____) ← gate humano, por lote al final
+- [x] **G2**: smoke en el dev build de Android (claro y oscuro, cuatro pasos de
+  «Paso de smoke nuevo») (fecha: 2026-11-04) ← gate humano, por lote al final
   (`progress/smoke_mejoras-smoke.md`)
 - Base congelada: `bfc65ca6` (`origin/dev` mergeado en `feature/232-mobile-add-reminder-chip-lip-clip`).

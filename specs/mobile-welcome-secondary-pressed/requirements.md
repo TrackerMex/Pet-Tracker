@@ -298,7 +298,7 @@ Bienvenida:
 - [ ] **G4**: aprobada la enmienda de `docs/ui-guidelines.md` de R7 (casilla
   humana propia, **no delegada**) (fecha: ____) ← sin esta casilla R7 no se
   implementa
-- [ ] **G2**: smoke en el dev build de Android (claro y oscuro, tres pasos de
-  «Paso de smoke nuevo») (fecha: ____) ← gate humano, por lote al final
+- [x] **G2**: smoke en el dev build de Android (claro y oscuro, tres pasos de
+  «Paso de smoke nuevo») (fecha: 2026-11-04) ← gate humano, por lote al final
   (`progress/smoke_mejoras-smoke.md`)
 - Base congelada: `f05016d3` (`origin/dev`).
