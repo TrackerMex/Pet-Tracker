@@ -130,3 +130,17 @@ Hallazgo: «Pin genérico: quiero avatar». Necesita el dev build con `dev` actu
 4. Mueve, gira e inclina el mapa: el avatar sigue pegado a la posición, sin desfase.
 
 - [X] Smoke de #230 pasado en Android (fecha: 2026-11-04; con foto: sí; sin foto: sí; foto rota: sí). La casilla G2 iOS sigue en `specs/mobile-map-pet-avatar-marker/requirements.md`.
+
+## #242 mobile-home-scroll-edge-blur
+
+Prueba (spike) de la librería nativa `expo-backdrop` 0.1.3 en Inicio: difuminado progresivo en el borde superior (bajo la barra de estado) y en el inferior (tras la tab bar flotante) al hacer scroll. Solo Inicio; la tab bar sigue con `expo-blur`. **Necesita reconstruir el dev build de Android** (`expo prebuild` + build): la librería es un módulo nativo y no corre en Expo Go ni en el dev build actual. Sin ese rebuild no hay smoke. Si no te convence, se revierte quitando el import, los overlays y la dependencia (D10 de la spec).
+
+1. Con el dev build reconstruido, abre Inicio con una mascota: el contenido se ve completo; con el scroll arriba del todo no hay franja ni lavado de color visible (si lo hay, anota cómo se ve).
+2. Desplázate hacia abajo: cuando el contenido pasa por debajo de la barra de estado aparece el difuminado del borde superior y se ve progresivo.
+3. Con contenido por debajo de la tab bar flotante, el difuminado del borde inferior aparece detrás de ella y no tapa sus pestañas ni el indicador.
+4. Los toques atraviesan ambos bordes: puedes pulsar un tile o un enlace justo bajo el difuminado y el scroll no se atasca al arrastrar sobre él.
+5. Sin tirones al desplazarte rápido, sin cuelgues ni cierres de la app, y con Inicio sin mascotas no se ve el efecto.
+6. Repite 1 a 5 en tema claro y oscuro; apunta si el tinte desentona con el fondo en alguno.
+
+- [ ] G3: dev build reconstruido con `expo-backdrop` (fecha: ____)
+- [ ] Smoke de #242 pasado (fecha: ____; tema claro: ___; tema oscuro: ___; ¿conservar el efecto o revertir?: ___)
