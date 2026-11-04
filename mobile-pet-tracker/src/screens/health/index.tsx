@@ -1,13 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
+import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BellOff, Check, ChevronRight, Clock, Plus, Syringe } from 'reicon-react-native';
+import { BellOff, Check, ChevronDown, ChevronRight, ChevronUp, Clock, Plus, Syringe } from 'reicon-react-native';
 
 import { listVaccines, listWeights } from '../../api/health-records';
 import { listPets, type PetsState } from '../../api/pets';
 import { healthKeys, petKeys } from '../../api/query-keys';
+import type { Vaccine } from '../../api/types';
 import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
 import { TabPetHeader, TAB_PET_HEADER_HEIGHT, TAB_PET_HEADER_SCROLL_MIN } from '../../components/tab-pet-header';
@@ -27,6 +29,7 @@ import { useThemeColors } from '../../theme/use-theme-colors';
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
+import { splitVaccines } from '../../utils/vaccine-dates';
 import { calendarDaysUntil, fmtDate, fmtDayMonthLong } from '../home/format';
 
 const VARIATION_TONE = {
@@ -86,6 +89,7 @@ export function HealthScreen() {
   });
   const variation = weight.data?.kind === 'ok' ? weight.data.weights[0]?.variation ?? null : null;
   const variationTone = VARIATION_TONE[variation === null || variation === 0 ? 'flat' : variation > 0 ? 'up' : 'down'];
+  const [pastExpanded, setPastExpanded] = useState(false);
   const today = localTodayIso();
   const nextVaccine =
     vaccines.data?.kind === 'ok'
@@ -100,6 +104,51 @@ export function HealthScreen() {
   const days = nextVaccine
     ? calendarDaysUntil(nextVaccine.nextDoseAt!, new Date())
     : 0;
+  const sections = vaccines.data?.kind === 'ok' ? splitVaccines(vaccines.data.vaccines, today) : undefined;
+  const PastChevron = pastExpanded ? ChevronUp : ChevronDown;
+
+  function renderVaccineRow(vaccine: Vaccine, index: number) {
+    const slot = vaccine.nextDoseAt !== null && vaccine.nextDoseAt < today
+      ? 'rose'
+      : vaccine.id === nextVaccine?.id ? 'amber' : 'green';
+    const Icon = slot === 'green' ? Check : Clock;
+    const color = slot === 'rose' ? rose : slot === 'amber' ? amber : green;
+    return (
+    <RiseIn key={vaccine.id} delayMs={80 + 60 * Math.min(index, 2)}>
+    <Card
+      variant="flat"
+      testID={`vaccine-row-${vaccine.id}`}
+      className="flex-row items-center gap-3 py-3.5"
+    >
+      <View
+        testID={`vaccine-tile-${vaccine.id}`}
+        className={`size-10 items-center justify-center rounded-xl ${CATEGORY_SLOTS[slot].surface}`}
+        style={CONTINUOUS_CORNER}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      >
+        <Icon size={20} color={color} />
+      </View>
+      <View testID={`vaccine-text-${vaccine.id}`} className="flex-1 gap-1">
+      <Text className="text-15 font-extrabold text-foreground">
+        {vaccine.name}
+      </Text>
+      <Text testID={`vaccine-dates-${vaccine.id}`} className="text-xs text-muted">
+        {t('health.appliedOn', { date: fmtDate(vaccine.appliedAt, locale) })}
+        {vaccine.nextDoseAt ? (
+          <>
+            {' · '}
+            <Text className={vaccine.nextDoseAt < today ? 'text-danger' : undefined}>
+              {t('health.nextOn', { date: fmtDate(vaccine.nextDoseAt, locale) })}
+            </Text>
+          </>
+        ) : null}
+      </Text>
+      </View>
+    </Card>
+    </RiseIn>
+    );
+  }
 
   return (
     <View testID="health-root" className="flex-1">
@@ -198,50 +247,39 @@ export function HealthScreen() {
                   </View>
                 ) : null}
 
-                {vaccines.data?.kind === 'ok'
-                  ? vaccines.data.vaccines.map((vaccine, index) => {
-                      const slot = vaccine.nextDoseAt !== null && vaccine.nextDoseAt < today
-                        ? 'rose'
-                        : vaccine.id === nextVaccine?.id ? 'amber' : 'green';
-                      const Icon = slot === 'green' ? Check : Clock;
-                      const color = slot === 'rose' ? rose : slot === 'amber' ? amber : green;
-                      return (
-                      <RiseIn key={vaccine.id} delayMs={80 + 60 * Math.min(index, 2)}>
-                      <Card
-                        variant="flat"
-                        testID={`vaccine-row-${vaccine.id}`}
-                        className="flex-row items-center gap-3 py-3.5"
-                      >
-                        <View
-                          testID={`vaccine-tile-${vaccine.id}`}
-                          className={`size-10 items-center justify-center rounded-xl ${CATEGORY_SLOTS[slot].surface}`}
-                          style={CONTINUOUS_CORNER}
-                          accessibilityElementsHidden
-                          importantForAccessibility="no-hide-descendants"
-                        >
-                          <Icon size={20} color={color} />
-                        </View>
-                        <View testID={`vaccine-text-${vaccine.id}`} className="flex-1 gap-1">
-                        <Text className="text-15 font-extrabold text-foreground">
-                          {vaccine.name}
+                {sections && sections.upcoming.length > 0 ? (
+                  <>
+                    <Text testID="vaccines-upcoming-heading" accessibilityRole="header" className="mt-1 text-13 font-extrabold uppercase tracking-caps text-muted">
+                      {t('health.sectionUpcoming')}
+                    </Text>
+                    <View testID="vaccines-upcoming-list" className="gap-2.5">
+                      {sections.upcoming.map(renderVaccineRow)}
+                    </View>
+                  </>
+                ) : null}
+
+                {sections && sections.past.length > 0 ? (
+                  <View testID="vaccines-past" className="gap-2.5">
+                    <Pressable testID="vaccines-past-toggle" className="mt-1 h-10 w-full flex-row items-center gap-2" accessibilityRole="button" accessibilityState={{ expanded: pastExpanded }} hitSlop={TOUCH_SLOP} style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })} onPress={() => setPastExpanded((current) => !current)}>
+                      <View className="flex-1 flex-row items-center gap-2">
+                        <Text testID="vaccines-past-label" className="text-13 font-extrabold uppercase tracking-caps text-muted">
+                          {t('health.sectionPast')}
                         </Text>
-                        <Text testID={`vaccine-dates-${vaccine.id}`} className="text-xs text-muted">
-                          {t('health.appliedOn', { date: fmtDate(vaccine.appliedAt, locale) })}
-                          {vaccine.nextDoseAt ? (
-                            <>
-                              {' · '}
-                              <Text className={vaccine.nextDoseAt < today ? 'text-danger' : undefined}>
-                                {t('health.nextOn', { date: fmtDate(vaccine.nextDoseAt, locale) })}
-                              </Text>
-                            </>
-                          ) : null}
+                        <Text testID="vaccines-past-count" className="rounded-full bg-default px-2 py-0.5 text-xs font-extrabold text-muted" style={TABULAR_NUMS}>
+                          {sections.past.length}
                         </Text>
-                        </View>
-                      </Card>
-                      </RiseIn>
-                      );
-                    })
-                  : null}
+                      </View>
+                      <View className="size-8 items-center justify-center rounded-full bg-default">
+                        <PastChevron size={18} color={muted} />
+                      </View>
+                    </Pressable>
+                    {pastExpanded ? (
+                      <View testID="vaccines-past-list" className="gap-2.5">
+                        {sections.past.map(renderVaccineRow)}
+                      </View>
+                    ) : null}
+                  </View>
+                ) : null}
               </View>
             ) : null}
 

@@ -374,7 +374,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
         HOME_TABULAR_DELTA_98,
     ],
     [join('screens', 'home', 'weekly-activity-chart.tsx'), 4],
-    [join('screens', 'health', 'index.tsx'), 2 + 1], // #115 R6
+    [join('screens', 'health', 'index.tsx'), 2 + 1 + 1], // #115 R6; #241 R5
     [join('screens', 'weight-log', 'index.tsx'), 2 + 2], // #169 R6
     [join('screens', 'reminders', 'index.tsx'), 3 + 1], // #227 R5
     [join('screens', 'geofence-editor', 'index.tsx'), 1],
@@ -383,7 +383,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
     [join('screens', 'alert-detail', 'index.tsx'), 1], // #170 R16
   ] as const;
 
-  it.each(counters)('%s aplica TABULAR_NUMS a sus %i valores (enmendado por #208 R21) (enmendado por #227 R13)', (path, count) => {
+  it.each(counters)('%s aplica TABULAR_NUMS a sus %i valores (enmendado por #208 R21) (enmendado por #227 R13) (enmendado por #241 R12)', (path, count) => {
     const source = readSource(path);
 
     expect(source).toMatch(
@@ -392,9 +392,9 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
     expect(source.match(/style=\{TABULAR_NUMS\}/g)).toHaveLength(count);
   });
 
-  it('#69 R10: mantiene la base cerrada más los deltas medidos (enmendado por #208 R21) (enmendado por #227 R13)', () => {
+  it('#69 R10: mantiene la base cerrada más los deltas medidos (enmendado por #208 R21) (enmendado por #227 R13) (enmendado por #241 R12)', () => {
     expect(counters.reduce((total, [, count]) => total + count, 0)).toBe(
-      14 + 4 + 1 + 1 + 1 + 1 + 1 + 2 + 1 + 1 + 2 + 1 + 1 + 1 + 1, // #208 R21; #146 R18, #105 R11, #116 R5, #115 R6, #169 R6, #170 R16; #227 R5
+      14 + 4 + 1 + 1 + 1 + 1 + 1 + 2 + 1 + 1 + 2 + 1 + 1 + 1 + 1 + 1, // #208 R21; #146 R18, #105 R11, #116 R5, #115 R6, #169 R6, #170 R16; #227 R5; #241 R5
     );
   });
 

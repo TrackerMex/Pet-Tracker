@@ -28,3 +28,26 @@ a través de la fila atenuada. Reproduce el paso 3 del smoke de #228.
 8. Repite 2 a 6 en tema claro y en tema oscuro.
 
 - [ ] Smoke de #239 pasado (fecha: )
+
+## #241 mobile-health-vaccines-upcoming-past
+
+Hallazgo: en Salud, la lista de vacunas mezclaba las próximas con las pasadas.
+Ahora se parte en «Próximas» y «Pasadas» (colapsada), con la receta de
+Recordatorios (#227).
+
+Prepara una mascota con cuatro vacunas: una con próxima dosis **hoy**, una con
+próxima dosis **futura**, una con próxima dosis **vencida** y una **sin** próxima
+dosis.
+
+1. En el dev build de Android, abre Salud. La tarjeta «PRÓXIMA DOSIS» muestra la
+   vacuna de hoy con «hoy» y «Hoy».
+2. Debajo de «Vacunas», «PRÓXIMAS» lista solo la futura.
+3. «PASADAS» sale colapsada, con contador 3 y el chevron hacia abajo.
+4. Pulsa «PASADAS»: se abre con la de hoy (ámbar) primero, y el resto va de la
+   más reciente a la más antigua por su fecha (próxima dosis o, si no tiene,
+   fecha de aplicación): la vencida en rosa y la que no tiene próxima dosis en
+   verde. El chevron apunta hacia arriba.
+5. Pulsa otra vez: se colapsa.
+6. Repite 1 a 5 en el otro tema (claro u oscuro).
+
+- [ ] Smoke de #241 pasado (fecha: )

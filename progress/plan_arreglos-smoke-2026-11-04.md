@@ -117,8 +117,10 @@ La checklist de firma es la de ese §4, sin cambios.
 - [x] G1 de #241, copy: «PRÓXIMAS» y «PASADAS» (fecha: 2026-11-04). El humano eligió la
       opción «Próximas y Pasadas», cuyo texto daba esos dos literales. La marcó el leader con
       la respuesta en la mano.
-- [ ] G1 de #241, artboard: solo si la spec se aparta de la cabecera de Recordatorios (#227,
-      canvas v167). Si no, no hace falta y esta casilla se tacha.
+- ~~[ ] G1 de #241, artboard: solo si la spec se aparta de la cabecera de Recordatorios (#227,
+      canvas v167). Si no, no hace falta y esta casilla se tacha.~~ Tachada el 2026-11-04 al
+      firmar #241: la cabecera de Pasadas copia la receta de #227 literal por literal (R11), así
+      que no hace falta artboard.
 
 Ninguna IA lanza `eas build` ni toca AWS real.
 
