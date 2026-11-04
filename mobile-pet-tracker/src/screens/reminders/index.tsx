@@ -244,7 +244,9 @@ export function RemindersScreen() {
       : '';
     const upcoming = !inactive && days === 0;
     const slot = CATEGORY_SLOTS[meta.category];
-    const date = due.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
+    const date = due.toLocaleDateString(locale, due.getFullYear() === new Date(now).getFullYear()
+      ? { day: 'numeric', month: 'short' }
+      : { day: 'numeric', month: 'short', year: 'numeric' });
     const time = due.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
     const deleting = deletingId === reminder.id;
     const actionName = isSeries ? 'cancelSeries' : 'delete';

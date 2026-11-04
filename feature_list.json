@@ -3891,11 +3891,23 @@
   {
     "id": 240,
     "name": "mobile-reminder-date-year",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
-    "description": "La fecha de cada fila de Recordatorios (mobile-pet-tracker/src/screens/reminders/index.tsx, toLocaleDateString con day y month) no lleva año, y «4 nov, 09:00 · en 365 días» parece de hoy. Decisión del humano (2026-11-04): «Año si no es este año». Vale para Próximos y Pasados; la cuenta «en N días» y el orden no cambian. La spec decide si el «hasta» de las series (reminders.untilDay) sigue la misma regla. Responsable: leader @Backend. Plan progress/plan_arreglos-smoke-2026-11-04.md §2, firma delegada (ampliación del 2026-11-04). Registrada sin spec.",
-    "acceptance_criteria": null,
-    "files_affected": null
+    "description": "La fecha de cada fila de Recordatorios (mobile-pet-tracker/src/screens/reminders/index.tsx, toLocaleDateString con day y month) no lleva año, y «4 nov, 09:00 · en 365 días» parece de hoy. Decisión del humano (2026-11-04): «Año si no es este año». Vale para Próximos y Pasados; la cuenta «en N días» y el orden no cambian. La spec decide si el «hasta» de las series (reminders.untilDay) sigue la misma regla. Responsable: leader @Backend. Plan progress/plan_arreglos-smoke-2026-11-04.md §2, firma delegada (ampliación del 2026-11-04). Spec en specs/mobile-reminder-date-year/ (2026-11-04), sobre origin/dev 0f1ab26f. Una sola línea de producción: const date = due.toLocaleDateString(locale, …) añade year: 'numeric' cuando due.getFullYear() !== new Date(now).getFullYear(). El «hasta» de las series no cambia: ya compara años locales con now (R4). Enmienda #178 R6 y fija el reloj del candado de #65 R15. Sin copy nuevo; el handoff se reancla tras mergear #239 en dev.",
+    "acceptance_criteria": [
+      "R1: con el año local de due distinto del de hoy, la fila pinta toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' }) y la hora de hoy, en Próximos y Pasados: «4 nov 2027, 09:00» / «· en 365 días» con reloj 4 nov 2026; «Nov 4, 2027, 09:00» en inglés; cruza 31 dic ↔ 1 ene con reloj en diciembre y en enero",
+      "R2: con el año local de due igual al de hoy, la fila sigue con { day: 'numeric', month: 'short' }: «20 nov, 09:00», «1 ene, 20:00» visto el 1 ene, «30 oct, 09:00» en Pasados, «Nov 20, 09:00» en inglés (nace verde)",
+      "R3: la comparación es due.getFullYear() con new Date(now).getFullYear() en America/Mexico_City (hostProcess.env.TZ), nunca UTC ni año fijo: «31 dic, 20:00» visto el 31 dic aunque sea 2027 en UTC; «31 dic 2026, 18:00» visto el 1 ene",
+      "R4: el «hasta» de las series no cambia: «Se repite cada mes · hasta el 31 ene» y «· hasta feb 2028» con reloj de enero; «· hasta ene 2027» visto el 31 dic local con 2027 en UTC; «until Jan 31» / «until Feb 2028» en inglés (nace verde)",
+      "R5: una sola llamada a Date.prototype.toLocaleDateString con 'es-MX' / 'en-US' y exactamente { day: 'numeric', month: 'short' } o { day: 'numeric', month: 'short', year: 'numeric' }; el candado de #65 R15 gana reloj fijo y sufijo (enmendado por #240 R5)",
+      "Enmiendas: #178 R6 ('2 ene, 09:00' a '2 ene 2027, 09:00' y '20 ene, 20:05' a '20 ene 2027, 20:05', sufijo (enmendado por #240 R1)) con sección y casilla en specs/mobile-routine-canvas-fidelity/requirements.md; '3 dic, 11:30' no cambia",
+      "Tests en mobile-pet-tracker/src/screens/reminders/index.test.tsx::#240 R1 a R5 (describe '#240: año en la fecha de la fila'); sin copy nuevo, sin G1, G3 ni G4; G2 con un recordatorio del año que viene, uno de este año y uno pasado"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/reminders/index.tsx",
+      "mobile-pet-tracker/src/screens/reminders/index.test.tsx",
+      "specs/mobile-routine-canvas-fidelity/requirements.md"
+    ]
   },
   {
     "id": 241,
