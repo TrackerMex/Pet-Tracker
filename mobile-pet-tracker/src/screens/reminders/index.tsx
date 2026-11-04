@@ -347,7 +347,11 @@ export function RemindersScreen() {
             </Pressable>
           )}
         >
-          {row}
+          {past ? (
+            <View className="rounded-22 bg-background" style={CONTINUOUS_CORNER}>
+              {row}
+            </View>
+          ) : row}
         </ReanimatedSwipeable>
       </View>
     );

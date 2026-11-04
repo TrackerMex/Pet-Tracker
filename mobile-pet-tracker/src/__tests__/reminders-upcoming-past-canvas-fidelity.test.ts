@@ -53,7 +53,7 @@ it.each([
 it('#227 R11: inventario del fuente (enmendado por #228 R13)', () => {
   const source = readSource('screens/reminders/index.tsx');
   for (const [literal, count] of [
-    ['style={CONTINUOUS_CORNER}', 6 + 1], // #228 R2
+    ['style={CONTINUOUS_CORNER}', 6 + 1 + 1], // #228 R2; #239 R1
     ['style={TABULAR_NUMS}', 4],
     ['hitSlop={TOUCH_SLOP}', 1],
     ['delayMs={i * MOTION_REMINDERS_STAGGER_MS}', 1],
