@@ -142,5 +142,4 @@ Prueba (spike) de la librería nativa `expo-backdrop` 0.1.3 en Inicio: difuminad
 5. Sin tirones al desplazarte rápido, sin cuelgues ni cierres de la app, y con Inicio sin mascotas no se ve el efecto.
 6. Repite 1 a 5 en tema claro y oscuro; apunta si el tinte desentona con el fondo en alguno.
 
-- [ ] G3: dev build reconstruido con `expo-backdrop` (fecha: ____)
-- [ ] Smoke de #242 pasado (fecha: ____; tema claro: ___; tema oscuro: ___; ¿conservar el efecto o revertir?: ___)
+- [X] Spike revertido (fecha: 2026-11-04): el humano decidió quitar el efecto porque le restaba mucho rendimiento a la app. Ya no hay que reconstruir el dev build ni pasar este smoke; los pasos de arriba quedan solo como registro.
