@@ -483,11 +483,11 @@ pantallas es decisión suya y otra feature.
 - [X] Enmienda de #202 R25 (R1 (e)) aprobada por el leader con el permiso
   permanente de desbloquear a Codex; mecánica, mismo cambio que #197 R22
   (fecha: 2026-11-04)
-- [ ] **G3**: dev build reconstruido con `expo-backdrop` (prebuild) (fecha: ____)
-  ← gate humano; sin él no hay smoke
-- [ ] **G2**: smoke de #242 pasado en dev build Android (claro y oscuro, seis
-  pasos de «Paso de smoke nuevo») (fecha: ____) ← gate humano; la feature
-  no pasa a `done` hasta que G2 y G3 estén marcadas (D11)
+- [X] **G3**: no aplica; el humano revirtió el spike por rendimiento antes de
+  reconstruir el dev build (fecha: 2026-11-04)
+- [X] **G2**: no aplica; decisión D10 tomada por el humano sin smoke: revertir
+  (fecha: 2026-11-04). El código de Inicio y `expo-backdrop` se quitaron en la
+  rama `feature/242-revert-home-edge-blur`; esta spec queda como registro.
 - Base congelada: `25c8f0f6` (`feature/242-mobile-home-scroll-edge-blur`;
   `origin/dev` `0f1ab26f`, la rama solo añade el registro de #242 en
   `feature_list.json`). Si `dev` avanza antes del handoff, se mergea `dev` y se
