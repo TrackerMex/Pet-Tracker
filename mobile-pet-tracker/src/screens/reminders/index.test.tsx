@@ -776,6 +776,7 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
 
 describe('#65 R15: la fecha del recordatorio se formatea con el locale del idioma', () => {
   beforeEach(() => {
+    jest.useFakeTimers({ now: new Date(2026, 7, 24, 9, 0) });
     jest.clearAllMocks();
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
     mockUseAuth.mockReturnValue({
@@ -791,7 +792,9 @@ describe('#65 R15: la fecha del recordatorio se formatea con el locale del idiom
     });
   });
 
-  it('passes es-MX explicitly to the date formatter', async () => {
+  afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
+
+  it('passes es-MX explicitly to the date formatter (enmendado por #240 R5)', async () => {
     const formatDate = jest.spyOn(Date.prototype, 'toLocaleDateString');
 
     try {
