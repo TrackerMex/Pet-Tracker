@@ -68,3 +68,27 @@ it('#241 R11: inventario del fuente', () => {
     ['accessibilityState', 1],
   ] as const) expect(source.split(literal).length - 1).toBe(count);
 });
+
+const AMENDED: readonly (readonly [string, string])[] = [
+  ['screens/health/index.test.tsx', 'highlights the nearest future dose and sorts upcoming rows by next dose'],
+  ['screens/health/index.test.tsx', 'omits the next card when every dose is past or null'],
+  ['screens/health/index.test.tsx', 'marks an overdue next-dose date with the danger token'],
+  ['screens/health/index.test.tsx', 'pinta el estado de $id con su icono y textos'],
+  ['screens/health/index.test.tsx', "describe('#199 R16: filas de vacunas"],
+  ['screens/health/index.test.tsx', "describe('#199 R17: subtítulo de vacunas"],
+  ['__tests__/consistency-classnames.test.ts', '%s aplica TABULAR_NUMS a sus %i valores'],
+  ['__tests__/consistency-classnames.test.ts', '#69 R10: mantiene la base cerrada más los deltas medidos'],
+  ['providers/__tests__/language-provider.test.tsx', '#194 R1: mantiene la base más las claves de #68'],
+  ['__tests__/ui-language.test.ts', '#186 R7: resuelve las 43 ocurrencias normativas'],
+];
+
+it('#241 R12: los candados enmendados nombran su enmienda y la spec enmendada lleva su casilla', () => {
+  for (const [path, locator] of AMENDED) {
+    const lines = readSource(path).split('\n').filter(line => line.includes(locator));
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('(enmendado por #241 R12)');
+  }
+  const spec = readFileSync(join(process.cwd(), '..', 'specs', 'mobile-health', 'requirements.md'), 'utf8');
+  expect(spec.split('## Enmienda #241 — Salud: vacunas próximas y pasadas').length - 1).toBe(1);
+  expect(spec).toMatch(/- \[[ xX]\] Enmienda #241 aprobada por humano/);
+});
