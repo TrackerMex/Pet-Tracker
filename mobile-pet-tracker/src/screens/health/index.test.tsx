@@ -85,6 +85,8 @@ jest.mock('reicon-react-native', () => {
   return {
     Check: icon('health-icon-check'),
     ChevronRight: icon('health-icon-chevron-right'),
+    ChevronDown: icon('health-icon-chevron-down'),
+    ChevronUp: icon('health-icon-chevron-up'),
     Clock: icon('health-icon-clock'),
     HeartPulse: icon('health-icon-heart-pulse'),
     Syringe: icon('health-icon-syringe'),
@@ -187,6 +189,8 @@ function elementChild(node: TestInstance, index: number): TestInstance {
   if (typeof child === 'string') throw new Error('Expected an element child');
   return child;
 }
+
+async function expandVaccinesPast() { await fireEvent.press(await screen.findByTestId('vaccines-past-toggle')); }
 
 function HealthWrapper({
   children,
@@ -361,7 +365,7 @@ describe('R5: vacunas con la próxima destacada', () => {
     expect(screen.getByText('Vacunas')).toBeVisible();
   });
 
-  it('highlights the nearest future dose and keeps row order (enmendado por #199 R14)', async () => {
+  it('highlights the nearest future dose and sorts upcoming rows by next dose (enmendado por #199 R14) (enmendado por #241 R12)', async () => {
     const vaccines = [
       makeVaccine({
         id: 'vaccine-2',
@@ -384,8 +388,8 @@ describe('R5: vacunas con la próxima destacada', () => {
     expect(nextCard.getByTestId('next-vaccine-date')).toHaveTextContent(/^1 de mayo · en \d+ días$/);
     expect(nextCard.queryByText('2099-05-01')).toBeNull();
     expect(screen.getAllByTestId(/^vaccine-row-/).map(({ props }) => props.testID)).toEqual([
-      'vaccine-row-vaccine-2',
       'vaccine-row-vaccine-1',
+      'vaccine-row-vaccine-2',
     ]);
   });
 
@@ -412,7 +416,7 @@ describe('R5: vacunas con la próxima destacada', () => {
     });
   });
 
-  it('omits the next card when every dose is past or null', async () => {
+  it('omits the next card when every dose is past or null (enmendado por #241 R12)', async () => {
     mockListVaccines.mockResolvedValue({
       kind: 'ok',
       vaccines: [
@@ -423,19 +427,18 @@ describe('R5: vacunas con la próxima destacada', () => {
 
     await renderHealth();
 
-    await waitFor(() =>
-      expect(screen.getByTestId('vaccine-row-vaccine-1')).toBeVisible(),
-    );
+    await waitFor(() => expect(screen.getByTestId('vaccines-past-count')).toHaveTextContent('2', { exact: true }));
     expect(screen.queryByTestId('next-vaccine-card')).toBeNull();
   });
 
-  it('marks an overdue next-dose date with the danger token (enmendado por #199 R17)', async () => {
+  it('marks an overdue next-dose date with the danger token (enmendado por #199 R17) (enmendado por #241 R12)', async () => {
     mockListVaccines.mockResolvedValue({
       kind: 'ok',
       vaccines: [makeVaccine({ nextDoseAt: '2000-06-01' })],
     });
 
     await renderHealth();
+    await expandVaccinesPast();
 
     await waitFor(() =>
       expect(screen.getByTestId('vaccine-row-vaccine-1')).toBeVisible(),
@@ -1077,12 +1080,13 @@ describe('#168 R3: cada vacuna lleva su tile pastel', () => {
   afterEach(() => jest.useRealTimers());
 
   it.each([
-    { id: 'overdue', surface: 'size-10 items-center justify-center rounded-xl bg-category-rose', icon: 'health-icon-clock', color: 'category-rose-strong', texts: ['Vencida', 'Aplicada 1 ene 2026 · Próxima 28 feb 2026'], dateClass: 'text-danger' },
-    { id: 'next', surface: 'size-10 items-center justify-center rounded-xl bg-category-amber', icon: 'health-icon-clock', color: 'category-amber-strong', texts: ['Próxima', 'Aplicada 2 ene 2026 · Próxima 31 mar 2026'], dateClass: undefined },
-    { id: 'future', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Futura', 'Aplicada 3 ene 2026 · Próxima 2 abr 2026'], dateClass: undefined },
-    { id: 'completed', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Sin próxima dosis', 'Aplicada 4 ene 2026'], dateClass: undefined },
-  ])('pinta el estado de $id con su icono y textos (enmendado por #199 R16) (enmendado por #199 R17)', async ({ id, surface, icon, color, texts, dateClass }) => {
+    { id: 'overdue', past: true, surface: 'size-10 items-center justify-center rounded-xl bg-category-rose', icon: 'health-icon-clock', color: 'category-rose-strong', texts: ['Vencida', 'Aplicada 1 ene 2026 · Próxima 28 feb 2026'], dateClass: 'text-danger' },
+    { id: 'next', past: true, surface: 'size-10 items-center justify-center rounded-xl bg-category-amber', icon: 'health-icon-clock', color: 'category-amber-strong', texts: ['Próxima', 'Aplicada 2 ene 2026 · Próxima 31 mar 2026'], dateClass: undefined },
+    { id: 'future', past: false, surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Futura', 'Aplicada 3 ene 2026 · Próxima 2 abr 2026'], dateClass: undefined },
+    { id: 'completed', past: true, surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Sin próxima dosis', 'Aplicada 4 ene 2026'], dateClass: undefined },
+  ])('pinta el estado de $id con su icono y textos (enmendado por #199 R16) (enmendado por #199 R17) (enmendado por #241 R12)', async ({ id, past, surface, icon, color, texts, dateClass }) => {
     await renderHealth();
+    if (past) await expandVaccinesPast();
     const row = await screen.findByTestId(`vaccine-row-${id}`);
     const scope = within(row);
     expect(row.children).toHaveLength(2);
@@ -1252,13 +1256,14 @@ describe('#199 R15: título de Vacunas', () => {
 });
 
 
-describe('#199 R16: filas de vacunas', () => {
+describe('#199 R16: filas de vacunas (enmendado por #241 R12)', () => {
   beforeEach(() => {
     setupHealth168();
     mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [0, 1, 2, 3].map(index => makeVaccine({ id: `vax-${index}`, name: `Vacuna ${index}`, nextDoseAt: null })) });
   });
   it('#199 R16 cada vacuna es un Card flat con py-3.5 y nombre text-15 font-extrabold', async () => {
     await renderHealth();
+    await expandVaccinesPast();
     const row = await screen.findByTestId('vaccine-row-vax-0');
     expect(row.props.className).toBe('rounded-card border border-border bg-surface px-3.5 flex-row items-center gap-3 py-3.5');
     const name = within(row).getByText('Vacuna 0');
@@ -1270,21 +1275,23 @@ describe('#199 R16: filas de vacunas', () => {
   });
   it.each([[0, 80], [1, 140], [2, 200], [3, 200]])('#199 R16 la fila %i entra a los %i ms', async (index, delay) => {
     await renderHealth();
+    await expandVaccinesPast();
     expect(riseDelayOf(await screen.findByTestId(`vaccine-row-vax-${index}`))).toBe(delay);
   });
 });
 
 
-describe('#199 R17: subtítulo de vacunas', () => {
+describe('#199 R17: subtítulo de vacunas (enmendado por #241 R12)', () => {
   beforeEach(() => {
     setupHealth168();
     jest.useFakeTimers();
     jest.setSystemTime(new Date(2026, 2, 31, 12));
   });
   afterEach(() => jest.useRealTimers());
-  async function renderDates199(overrides: Partial<Vaccine>) {
+  async function renderDates199(overrides: Partial<Vaccine>, past = true) {
     mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [makeVaccine(overrides)] });
     await renderHealth();
+    if (past) await expandVaccinesPast();
     return screen.findByTestId('vaccine-dates-vaccine-1');
   }
   it('#199 R17 dice Aplicada y Próxima en una línea', async () => {
@@ -1300,7 +1307,7 @@ describe('#199 R17: subtítulo de vacunas', () => {
     expect(within(dates).getByText('Próxima 30 mar 2026').props.className).toBe('text-danger');
   });
   it('#199 R17 una dosis vigente no pinta text-danger', async () => {
-    const dates = await renderDates199({ nextDoseAt: '2026-04-01' });
+    const dates = await renderDates199({ nextDoseAt: '2026-04-01' }, false);
     expect(within(dates).getByText('Próxima 1 abr 2026').props.className).not.toBe('text-danger');
   });
   it('#199 R17 sin próxima dosis solo dice Aplicada', async () => {
@@ -1702,5 +1709,166 @@ describe('#222 R3: Salud', () => {
       expect(screen.getByTestId('pet-switcher-scroll').props.accessibilityLabel).toBe(count === 6 ? undefined : 'Mascotas, desliza para ver más');
       await cleanup();
     }
+  });
+});
+
+const FIXTURE_241 = [
+  makeVaccine({ id: 'none', name: 'Bordetella', appliedAt: '2026-12-15', nextDoseAt: null }),
+  makeVaccine({ id: 'later', name: 'Leptospirosis', appliedAt: '2026-03-01', nextDoseAt: '2027-03-01' }),
+  makeVaccine({ id: 'future', name: 'Moquillo', appliedAt: '2026-01-02', nextDoseAt: '2027-01-02' }),
+  makeVaccine({ id: 'today', name: 'Rabia', appliedAt: '2025-12-31', nextDoseAt: '2026-12-31' }),
+  makeVaccine({ id: 'overdue', name: 'Parvovirus', appliedAt: '2025-11-30', nextDoseAt: '2026-11-30' }),
+];
+
+describe('#241: vacunas próximas y pasadas', () => {
+  beforeEach(() => {
+    setupHealth168();
+    mockSemanticColors = true;
+    jest.useFakeTimers({ now: new Date(2026, 11, 31, 12, 0) });
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: FIXTURE_241 });
+  });
+  afterEach(() => jest.useRealTimers());
+
+  it('#241 R4: pinta «Próximas» y debajo sus filas de la más cercana a la más lejana', async () => {
+    await renderHealth();
+    const list = await screen.findByTestId('vaccines-upcoming-list');
+    const heading = await screen.findByTestId('vaccines-upcoming-heading');
+    expect(heading).toHaveTextContent('Próximas', { exact: true });
+    expect(heading.props.accessibilityRole).toBe('header');
+    expect(heading.props.className).toBe('mt-1 text-13 font-extrabold uppercase tracking-caps text-muted');
+    expect(screen.getByTestId('vaccines-section').children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual([
+      'vaccines-header', 'vaccines-upcoming-heading', 'vaccines-upcoming-list', 'vaccines-past',
+    ]);
+    expect(list.props.className).toBe('gap-2.5');
+    expect(within(list).getAllByTestId(/^vaccine-row-/).map(row => row.props.testID)).toEqual(['vaccine-row-future', 'vaccine-row-later']);
+  });
+
+  it('#241 R5: «Pasadas» empieza colapsada con su contador y el chevron abajo', async () => {
+    await renderHealth();
+    const toggle = await screen.findByTestId('vaccines-past-toggle');
+    expect(toggle.props.className).toBe('mt-1 h-10 w-full flex-row items-center gap-2');
+    expect(toggle.props.accessibilityRole).toBe('button');
+    expect(toggle.props.accessibilityState?.expanded).toBe(false);
+    expect(toggle.props.hitSlop).toEqual({ top: 6, bottom: 6, left: 6, right: 6 });
+    const label = within(toggle).getByTestId('vaccines-past-label');
+    expect(label).toHaveTextContent('Pasadas', { exact: true });
+    expect(label.props.className).toBe('text-13 font-extrabold uppercase tracking-caps text-muted');
+    const count = within(toggle).getByTestId('vaccines-past-count');
+    expect(count).toHaveTextContent('3', { exact: true });
+    expect(count.props.className).toBe('rounded-full bg-default px-2 py-0.5 text-xs font-extrabold text-muted');
+    expect(count.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+    const chevron = within(toggle).getByTestId('health-icon-chevron-down', { includeHiddenElements: true });
+    expect(chevron.props.size).toBe(18);
+    expect(chevron.props.style).toEqual({ color: 'muted' });
+    expect(chevron.parent!.props.className).toBe('size-8 items-center justify-center rounded-full bg-default');
+    expect(within(toggle).queryByTestId('health-icon-chevron-up', { includeHiddenElements: true })).toBeNull();
+    expect(screen.queryByTestId('vaccines-past-list')).toBeNull();
+    for (const id of ['today', 'none', 'overdue']) expect(screen.queryByTestId(`vaccine-row-${id}`)).toBeNull();
+    const past = screen.getByTestId('vaccines-past');
+    expect(past.props.className).toBe('gap-2.5');
+    expect(past.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['vaccines-past-toggle']);
+  });
+
+  it('#241 R5: sin pasadas no pinta la sección', async () => {
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: FIXTURE_241.filter(vaccine => ['future', 'later'].includes(vaccine.id)) });
+    await renderHealth();
+    await screen.findByTestId('vaccines-upcoming-list');
+    expect(screen.queryByTestId('vaccines-past')).toBeNull();
+    expect(screen.queryByTestId('vaccines-past-toggle')).toBeNull();
+  });
+
+  it('#241 R6: el encabezado alterna «Pasadas» y sus filas van de la más reciente a la más antigua', async () => {
+    await renderHealth();
+    await expandVaccinesPast();
+    const list = await screen.findByTestId('vaccines-past-list');
+    const toggle = screen.getByTestId('vaccines-past-toggle');
+    expect(toggle.props.accessibilityState?.expanded).toBe(true);
+    expect(within(toggle).getByTestId('health-icon-chevron-up', { includeHiddenElements: true })).toBeOnTheScreen();
+    expect(within(toggle).queryByTestId('health-icon-chevron-down', { includeHiddenElements: true })).toBeNull();
+    expect(screen.getByTestId('vaccines-past').children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['vaccines-past-toggle', 'vaccines-past-list']);
+    expect(list.props.className).toBe('gap-2.5');
+    expect(within(list).getAllByTestId(/^vaccine-row-/).map(row => row.props.testID)).toEqual(['vaccine-row-today', 'vaccine-row-none', 'vaccine-row-overdue']);
+    await fireEvent.press(toggle);
+    await waitFor(() => {
+      expect(screen.getByTestId('vaccines-past-toggle').props.accessibilityState?.expanded).toBe(false);
+      expect(screen.queryByTestId('vaccines-past-list')).toBeNull();
+    });
+  });
+
+  it.each([
+    { id: 'future', list: 'upcoming', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', delay: 80 },
+    { id: 'later', list: 'upcoming', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', delay: 140 },
+    { id: 'today', list: 'past', surface: 'size-10 items-center justify-center rounded-xl bg-category-amber', icon: 'health-icon-clock', color: 'category-amber-strong', delay: 80 },
+    { id: 'none', list: 'past', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', delay: 140 },
+    { id: 'overdue', list: 'past', surface: 'size-10 items-center justify-center rounded-xl bg-category-rose', icon: 'health-icon-clock', color: 'category-rose-strong', delay: 200 },
+  ])('#241 R7: $id conserva su tile en $list y entra a los $delay ms', async ({ id, list, surface, icon, color, delay }) => {
+    await renderHealth();
+    await expandVaccinesPast();
+    await screen.findByTestId('vaccines-past-list');
+    const section = await screen.findByTestId(`vaccines-${list}-list`);
+    const row = await within(section).findByTestId(`vaccine-row-${id}`);
+    const tile = within(row).getByTestId(`vaccine-tile-${id}`, { includeHiddenElements: true });
+    expect(tile.props.className).toBe(surface);
+    expect(within(tile).getByTestId(icon, { includeHiddenElements: true }).props.style).toEqual({ color });
+    expect(riseDelayOf(row)).toBe(delay);
+  });
+
+  it('#241 R8: la dosis de hoy sale en «Próxima dosis» y en «Pasadas», no en «Próximas»', async () => {
+    await renderHealth();
+    const hero = await screen.findByTestId('next-vaccine-card');
+    expect(within(hero).getByText('Rabia')).toBeOnTheScreen();
+    expect(within(hero).getByTestId('next-vaccine-date')).toHaveTextContent('31 de diciembre · hoy', { exact: true });
+    expect(within(hero).getByTestId('next-vaccine-days')).toHaveTextContent('Hoy', { exact: true });
+    const upcoming = await screen.findByTestId('vaccines-upcoming-list');
+    expect(within(upcoming).queryByTestId('vaccine-row-today')).toBeNull();
+    await expandVaccinesPast();
+    const past = await screen.findByTestId('vaccines-past-list');
+    expect(within(past).getAllByTestId(/^vaccine-row-/)[0].props.testID).toBe('vaccine-row-today');
+  });
+
+  it('#241 R9: sin próximas no pinta su cabecera ni su lista', async () => {
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: FIXTURE_241.filter(vaccine => ['today', 'none', 'overdue'].includes(vaccine.id)) });
+    await renderHealth();
+    expect(await screen.findByTestId('vaccines-past-count')).toHaveTextContent('3', { exact: true });
+    expect(screen.queryByTestId('vaccines-upcoming-heading')).toBeNull();
+    expect(screen.queryByTestId('vaccines-upcoming-list')).toBeNull();
+    expect(screen.getByTestId('vaccines-section').children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual(['vaccines-header', 'vaccines-past']);
+  });
+
+  it.each<{ tz: string; hora: string; now: [number, number, number, number, number]; dosis: string; seccion: 'upcoming' | 'past' }>([
+    { tz: 'America/Mexico_City', hora: '23:59', now: [2026, 11, 31, 23, 59], dosis: '2027-01-01', seccion: 'upcoming' },
+    { tz: 'Pacific/Auckland', hora: '00:01', now: [2027, 0, 1, 0, 1], dosis: '2027-01-01', seccion: 'past' },
+    { tz: 'America/Mexico_City', hora: '23:59', now: [2026, 8, 30, 23, 59], dosis: '2026-10-01', seccion: 'upcoming' },
+    { tz: 'Pacific/Auckland', hora: '00:01', now: [2026, 9, 1, 0, 1], dosis: '2026-10-01', seccion: 'past' },
+  ])('#241 R10: a las $hora en $tz la dosis del $dosis va a $seccion', async ({ tz, now, dosis, seccion }) => {
+    const hostProcess = process.getBuiltinModule('process');
+    const previousZone = hostProcess.env.TZ;
+    try {
+      hostProcess.env.TZ = tz;
+      jest.setSystemTime(new Date(...now));
+      mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [makeVaccine({ id: 'edge', nextDoseAt: dosis })] });
+      await renderHealth();
+      if (seccion === 'upcoming') {
+        const list = await screen.findByTestId('vaccines-upcoming-list');
+        expect(within(list).getByTestId('vaccine-row-edge')).toBeOnTheScreen();
+      } else {
+        expect(await screen.findByTestId('vaccines-past-count')).toHaveTextContent('1', { exact: true });
+        await expandVaccinesPast();
+        const list = await screen.findByTestId('vaccines-past-list');
+        expect(within(list).getByTestId('vaccine-row-edge')).toBeOnTheScreen();
+      }
+    } finally {
+      if (previousZone === undefined) delete hostProcess.env.TZ;
+      else hostProcess.env.TZ = previousZone;
+    }
+  });
+
+  it('#241 R9: sin vacunas conserva el vacío sin secciones', async () => {
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [] });
+    await renderHealth();
+    expect(await screen.findByTestId('vaccines-empty-card')).toBeOnTheScreen();
+    expect(screen.queryByTestId('vaccines-upcoming-heading')).toBeNull();
+    expect(screen.queryByTestId('vaccines-upcoming-list')).toBeNull();
+    expect(screen.queryByTestId('vaccines-past')).toBeNull();
   });
 });
