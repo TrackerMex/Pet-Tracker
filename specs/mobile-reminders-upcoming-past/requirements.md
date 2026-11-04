@@ -780,4 +780,4 @@ R7).
 - R12 tal como la dejó la Enmienda #228.
 - El resto del inventario de R11 y los requisitos R1 a R10 y R13.
 
-- [ ] Enmienda #239 aprobada (fecha: ____)
+- [x] Enmienda #239 aprobada (fecha: 2026-11-04)

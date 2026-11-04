@@ -458,7 +458,7 @@ cambia. No se retira ni se añade ninguna clave de copy.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-11-04; firma delegada del leader, mandato del humano 2026-10-23 ampliado 2026-11-04) ← gate obligatorio antes de implementar
   (firma delegada del leader con la checklist de
   `progress/plan_canvas-parity-2026-10-23.md` §4, los tres puntos del §4 de
   `progress/plan_ui-2026-10-26.md` y los dos de

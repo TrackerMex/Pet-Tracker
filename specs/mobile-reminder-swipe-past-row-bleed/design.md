@@ -1,6 +1,6 @@
 ---
 feature: "mobile-reminder-swipe-past-row-bleed"
-status: draft
+status: approved
 tags: [mobile, ui, spec]
 ---
 
