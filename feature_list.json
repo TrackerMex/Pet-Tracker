@@ -3926,5 +3926,14 @@
     "description": "Spike pedido por el humano (2026-11-04) para probar la librería expo-backdrop (https://github.com/rit3zh/expo-backdrop, v0.1.3, módulo nativo) en la Home: un ProgressiveBlurView en el borde superior (bajo la barra de estado) y otro en el borde inferior (tras la tab bar flotante) que aparecen al hacer scroll del contenido. Solo Home; la tab bar global (floating-tab-bar.tsx, expo-blur) no se toca. Dependencia nueva expo-backdrop, módulo nativo: exige rebuild del dev build (G3) y smoke en Android (G2) del humano. Si el spike no convence se revierte; extender a otras pantallas es decisión del humano. Responsable: leader @Frontend. Registrada sin spec. Resultado: el humano decidió revertir el spike (2026-11-04) porque el blur costaba mucho rendimiento; el código se revirtió en la rama feature/242-revert-home-edge-blur y la spec queda como registro. Sin G3 ni G2 pendientes.",
     "acceptance_criteria": null,
     "files_affected": null
+  },
+  {
+    "id": 243,
+    "name": "mobile-orbit-cachorro-art",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Registrada el 2026-11-05 a pedido del humano tras un feedback externo: la mascota «se parece más a una persona que a un animal». El humano eligió la variante A (cachorro sentado, de frente) entre tres propuestas; su set de poses ya está generado fuera del repo en ~/pet-tracker-mascot/v2/ (variante en pingo-v2-a-sit.png, nueve poses en v2/poses/: wave, wave-blink, talk, celebrate, sleep, collar, health, food, clipboard, con su .prompt.txt y REPORT.md). Diseño nuevo: cachorro crema con parche morado sobre un ojo, orejas y cola gris oscuro, nariz negra, lengua rosa y collar morado con placa GPS y luz verde #178255; sin antena, sin manos ni botón en el pecho. Alcance: sustituir en la app (mobile-pet-tracker/assets/images/orbit-*.webp) el arte de las diez poses actuales, conservando los nombres de archivo con prefijo orbit; convertir los PNG a WebP con alfa 1024x1024 y ≤100000 bytes limpiando el alfa residual de 1 a 3 píxeles fuera del contorno; actualizar los tests que bloquean la lista, el formato y el tamaño de los assets, y cualquier texto de docs o copy que describa la mascota anterior (antena, gorro verde, cara morada, mapa de nombres Pingo/Orbit). Falta generar la pose walk (la app la usa en la burbuja de Inicio) y quizá worried y search. Decisión abierta: el nombre de la mascota. En dev es Orbit desde #225 y la landing todavía dice Pingo. Gates humanos, no delegados: G1 (aprobar el arte final y el copy), G4 (enmienda de docs/ui-guidelines.md con la nueva descripción de la mascota), G6 (PNG de la pose walk, si se genera aparte) y G2 (smoke en dispositivo, en lote al final). Responsable: leader @Frontend. Registrada sin spec.",
+    "acceptance_criteria": null,
+    "files_affected": null
   }
 ]
