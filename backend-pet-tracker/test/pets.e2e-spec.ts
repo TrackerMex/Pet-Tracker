@@ -9,6 +9,8 @@ import { DRIZZLE } from '@/db/drizzle.constants';
 import { auditLog } from '@/db/schema/audit-log.schema';
 import { pets, petUsers } from '@/db/schema/pets.schema';
 import { users } from '@/db/schema/users.schema';
+import { PET_REPOSITORY } from '@/modules/pets/domain/repositories/pet.repository';
+import type { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
 import { localDayOf, shiftDay } from '@/pipeline/local-day';
@@ -55,7 +57,7 @@ function listBody(response: Response): PetProfileBody[] {
  * (R9) es obligatorio por acceptance criteria: usuario B sobre mascota de
  * A recibe el MISMO 404 que una mascota inexistente, en GET, PATCH y
  * DELETE. Los tokens se firman con el TokenService de la app (el AuthGuard
- * no consulta `users`, solo verifica la firma — auth-login-me R8), y los
+ * consulta `users` por PK — #247 R2), y los
  * usuarios se siembran directo en la base: la gestion de miembros por API
  * esta fuera de alcance de #5.
  */
@@ -205,22 +207,16 @@ describe('Pets CRUD (e2e)', () => {
     });
 
     it('si el insert de pet_users falla, la fila de pets no persiste (rollback)', async () => {
-      // Token valido para un usuario que NO existe en `users`: el AuthGuard
-      // pasa (solo verifica firma), pero el insert de pet_users viola la FK
-      // user_id -> users.id dentro de la transaccion.
-      const ghostId = uuidv7();
-      const ghostToken = tokenService.sign({
-        sub: ghostId,
-        email: `ghost-${RUN_ID}@example.com`,
-      });
+      // Se llama al repositorio para provocar la FK: el guard rechaza al usuario ausente (#247 R2).
       const uniqueName = `Rollback-${RUN_ID}`;
-
-      const response = await api()
-        .post('/v1/pets')
-        .set('Authorization', `Bearer ${ghostToken}`)
-        .send({ name: uniqueName, species: 'dog', birthDate: '2024-01-15' });
-
-      expect(response.status).toBeGreaterThanOrEqual(500);
+      await expect(
+        app
+          .get<PetRepository>(PET_REPOSITORY)
+          .createWithOwner(
+            { name: uniqueName, species: 'dog', birthDate: '2024-01-15' },
+            uuidv7(),
+          ),
+      ).rejects.toThrow();
 
       const orphanPets = await db
         .select()

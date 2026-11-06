@@ -9,6 +9,8 @@ import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
+import { USER_REPOSITORY } from '@/modules/auth/domain/repositories/user.repository';
+import type { UserRepository } from '@/modules/auth/domain/repositories/user.repository';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 export interface AuthenticatedRequest extends Request {
@@ -27,32 +29,35 @@ export class AuthGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     @Inject(TOKEN_SERVICE) private readonly tokenService: TokenService,
+    @Inject(USER_REPOSITORY) private readonly users: UserRepository,
   ) {}
 
-  canActivate(context: ExecutionContext): boolean {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+  canActivate(context: ExecutionContext): Promise<boolean> {
+    return Promise.resolve().then(() => {
+      const isPublic = this.reflector.getAllAndOverride<boolean>(
+        IS_PUBLIC_KEY,
+        [context.getHandler(), context.getClass()],
+      );
 
-    if (isPublic) {
-      return true;
-    }
+      if (isPublic) {
+        return true;
+      }
 
-    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
-    const token = extractBearerToken(request.headers.authorization);
+      const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
+      const token = extractBearerToken(request.headers.authorization);
 
-    if (!token) {
-      throw new UnauthorizedException();
-    }
+      if (!token) {
+        throw new UnauthorizedException();
+      }
 
-    try {
-      const payload = this.tokenService.verify(token);
-      request.user = { id: payload.sub, email: payload.email };
-      return true;
-    } catch {
-      throw new UnauthorizedException();
-    }
+      try {
+        const payload = this.tokenService.verify(token);
+        request.user = { id: payload.sub, email: payload.email };
+        return true;
+      } catch {
+        throw new UnauthorizedException();
+      }
+    });
   }
 }
 
