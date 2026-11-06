@@ -886,6 +886,66 @@ de `aws.module.spec.ts` y revertir con `git checkout HEAD -- src/app-setup.ts`.
 
 - **Commit**: `test(backend-container-image): widen two env inventory locks to the readers of R11-R13`.
 
+## Enmienda del leader (2026-11-06, 2): fixtures e2e que cambiaban `DATABASE_URL`
+
+PARA de Codex en Cierre (2): los dos `it` de `describe('R8: GET /v1/health responde 503
+con Postgres caído')` dan `expected 503 "Service Unavailable", got 200 "OK"`.
+
+Causa, medida en `@nestjs/config` 4.0.4: con `validate` (R13), `ConfigModule.forRoot`
+guarda el objeto que devuelve `validateEnv` como entorno validado. Lo guarda al evaluar
+`AppConfigModule.forRoot()`, es decir, al importar `AppModule`. `ConfigService.get` lee
+esa copia antes que `process.env`. Producción no escribe en `process.env` después del
+arranque (`grep` de asignaciones a `process.env` en `src/` y `scripts/` sin specs: 0), así
+que R13 queda como está. Lo que pierde efecto es cualquier fixture que cambie
+`process.env.DATABASE_URL` después de importar `AppModule`. Hay dos:
+
+1. `test/health.e2e-spec.ts`:
+   - `bootstrapApp` pasa a `bootstrapApp(pool?: Pool)`. Con `pool`, encadena
+     `.overrideProvider(PG_POOL).useValue(pool)` antes de `.compile()`; sin `pool`, queda
+     igual.
+   - En `describe('R8: GET /v1/health responde 503 con Postgres caído')`, el `beforeAll`
+     pasa a `app = await bootstrapApp(new Pool({ connectionString: UNREACHABLE_DATABASE_URL }));`.
+   - Se borran `const originalDatabaseUrl`, la asignación a `process.env.DATABASE_URL` y su
+     restauración en el `afterAll`. El pool lo cierra `app.close()` (R5).
+   - Imports nuevos: `import { Pool } from 'pg';` y
+     `import { PG_POOL } from './../src/db/drizzle.constants';`.
+   - El comentario de cabecera sobre `UNREACHABLE_DATABASE_URL` pasa a decir que R8
+     sustituye `PG_POOL` por un pool contra un puerto que nadie escucha, y que no cambia
+     `DATABASE_URL` porque desde #245 R13 `ConfigService` lee la copia del entorno tomada
+     al importar `AppModule`.
+   - Los nombres de los `it` no cambian.
+2. `test/vaccine-catalog-migration.e2e-spec.ts`, `beforeAll` de
+   `describe('#226 R1: la migracion llena un catalogo vacio')`:
+   - se borra `process.env.DATABASE_URL = urlA.toString();`;
+   - el módulo pasa a
+     `Test.createTestingModule({ imports: [AppModule] }).overrideProvider(PG_POOL).useValue(new Pool({ connectionString: urlA.toString() })).compile()`.
+     Es un pool propio, no `poolA`: `app.close()` lo cierra (R5) y el `afterAll` ya cierra
+     `poolA`, así que reusarlo lo cerraría dos veces;
+   - se borra del array `cleanup` del `afterAll` la entrada que restaura
+     `process.env.DATABASE_URL`. `originalDatabaseUrl` se queda: construye `urlA` y `urlB`;
+   - import nuevo: `import { PG_POOL } from '@/db/drizzle.constants';`.
+
+Las suites que cambian `SIM_MODE` (`alerts-engine`, `ingestion`, `resource-isolation`) y
+`ANTHROPIC_ENABLED` (`nutrition`, `nutrition-ai-explainer`, `nutrition-ai-structured-plan`)
+no se tocan. El `.env` del VPS ya trae `SIM_MODE=true` y no define `ANTHROPIC_ENABLED`, y el
+factory trata cualquier valor distinto de `'true'` como apagado. Queda como riesgo
+latente, sin cambio: un `.env` con `SIM_MODE=false` dejaría sin efecto su `beforeAll`.
+
+Comprobaciones desde `backend-pet-tracker/`, con las Esperas del handoff antes de cada jest:
+
+1. Antes de editar, sobre el HEAD actual:
+   ```
+   FORCE_COLOR=0 pnpm exec jest --config ./test/jest-e2e.json test/health.e2e-spec.ts test/vaccine-catalog-migration.e2e-spec.ts > /tmp/impl-245-fixtures-before.log 2>&1; echo "exit=$?"
+   ```
+   Anota `exit=`, `Test Suites:`, `Tests:` y los `it` que caen. Se esperan los dos de R8. Lo
+   que dé `vaccine-catalog-migration` se anota sin parar.
+2. Tras editar, la cadena del handoff (prettier, eslint, tsc) sobre los dos ficheros y el
+   mismo jest con log `/tmp/impl-245-fixtures-after.log`. Da `exit=0`.
+
+- **Commit**: `test(backend-container-image): e2e fixtures override PG_POOL instead of DATABASE_URL`.
+
+Después se sigue con Cierre (2), el mismo comando de siempre, y el resto del Cierre.
+
 ## Cierre
 
 1. **Suite unitaria completa**:

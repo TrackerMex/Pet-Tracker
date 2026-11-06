@@ -335,6 +335,8 @@ método `live()` (R8).
 
 - `src/modules/nutrition/nutrition-scope.spec.ts`
 - `src/aws/aws.module.spec.ts`
+- `test/vaccine-catalog-migration.e2e-spec.ts` (enmienda 2 del 2026-11-06, ver tasks.md
+  §Enmienda del leader (2026-11-06, 2); `test/health.e2e-spec.ts` ya está más abajo)
 
 **Tests nuevos**:
 
