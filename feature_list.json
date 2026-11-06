@@ -4003,7 +4003,7 @@
   {
     "id": 245,
     "name": "backend-container-image",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P0",
     "description": "Imagen de contenedor del backend para ECS Fargate (decisión del humano 2026-11-06: Fargate, no Lambda). Dockerfile multi-stage sin herramientas de build y no root, endpoint de health para ALB y Route 53, apagado ordenado con SIGTERM, migraciones y seeds como tarea única de ECS, validación de configuración al arrancar, TLS hacia Aurora con el CA de RDS y credenciales del task role sin endpoint de LocalStack en AWS real. Fija el contrato que consume #246 (ruta del Dockerfile, puerto, health, comando de migración, variables de entorno). Explore: progress/explore_produccion-aws.md. Registrada el 2026-11-06 por el plan progress/plan_produccion-aws-2026-11-06.md. Firma delegada al leader (ampliación del 2026-11-06 en CLAUDE.md). Responsable: leader @Backend.",
     "acceptance_criteria": [
