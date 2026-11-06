@@ -1,3 +1,4 @@
+import * as rds from 'aws-cdk-lib/aws-rds';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
@@ -33,7 +34,7 @@ export class PetTrackerProdStack extends Stack {
     if (props.apiDomain !== props.hostedZoneName && !props.apiDomain.endsWith(`.${props.hostedZoneName}`)) {
       throw new Error(`apiDomain "${props.apiDomain}" is not inside hosted zone "${props.hostedZoneName}"`);
     }
-    new ec2.Vpc(this, 'Vpc', {
+    const vpc = new ec2.Vpc(this, 'Vpc', {
       availabilityZones: [`${this.region}a`, `${this.region}b`, `${this.region}c`],
       natGateways: 0,
       subnetConfiguration: [
@@ -90,6 +91,19 @@ export class PetTrackerProdStack extends Stack {
       enforceSSL: true,
       removalPolicy: RemovalPolicy.RETAIN,
       lifecycleRules: [{ noncurrentVersionExpiration: Duration.days(30), expiredObjectDeleteMarker: true }],
+    });
+    const dbSecret = new rds.DatabaseSecret(this, 'DbSecret', { username: 'pet_tracker' });
+    dbSecret.applyRemovalPolicy(RemovalPolicy.RETAIN);
+    new rds.DatabaseCluster(this, 'Db', {
+      vpc, vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_ISOLATED },
+      engine: rds.DatabaseClusterEngine.auroraPostgres({ version: rds.AuroraPostgresEngineVersion.VER_17_4 }),
+      credentials: rds.Credentials.fromSecret(dbSecret),
+      writer: rds.ClusterInstance.serverlessV2('Writer', { availabilityZone: `${this.region}a` }),
+      readers: [rds.ClusterInstance.serverlessV2('Reader', { scaleWithWriter: true, availabilityZone: `${this.region}b` })],
+      serverlessV2MinCapacity: 0.5, serverlessV2MaxCapacity: 4,
+      storageEncrypted: true, deletionProtection: true,
+      removalPolicy: RemovalPolicy.SNAPSHOT,
+      backup: { retention: Duration.days(7) }, defaultDatabaseName: 'pet_tracker',
     });
   }
 }
