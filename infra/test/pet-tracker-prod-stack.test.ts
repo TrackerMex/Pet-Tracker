@@ -601,3 +601,26 @@ describe('#246 R16: task definition ops sin task role', () => {
     synthesized(region).template.resourceCountIs('AWS::ECS::Service', 2);
   });
 });
+
+describe('#246 R17: Aurora solo acepta tráfico de la API y de workers', () => {
+  it('#246 R17: dos reglas de entrada desde grupos, ninguna desde CIDR', () => {
+    const region = 'mx-central-1';
+    const db = ofType(region, 'AWS::RDS::DBCluster')[0];
+    const dbGroups = db?.[1].Properties?.VpcSecurityGroupIds as unknown[] | undefined;
+    const dbSg = securityGroupIdOf(dbGroups?.[0]);
+    expect(dbSg).toBeDefined();
+    expect(dbSg ? synthesized(region).resources[dbSg]?.Properties?.SecurityGroupIngress : undefined).toBeUndefined();
+    const rules = ingressesTo(region, dbSg ?? '');
+    const expected = (['api', 'workers'] as const).map((which) => {
+      const network = service(region, which)?.[1].NetworkConfiguration as { AwsvpcConfiguration?: { SecurityGroups?: unknown[] } } | undefined;
+      const sg = securityGroupIdOf(network?.AwsvpcConfiguration?.SecurityGroups?.[0]);
+      return {
+        IpProtocol: 'tcp', FromPort: { 'Fn::GetAtt': [db?.[0], 'Endpoint.Port'] }, ToPort: { 'Fn::GetAtt': [db?.[0], 'Endpoint.Port'] },
+        GroupId: { 'Fn::GetAtt': [dbSg, 'GroupId'] }, SourceSecurityGroupId: { 'Fn::GetAtt': [sg, 'GroupId'] },
+      };
+    });
+    expect(rules.sort((a,b) => JSON.stringify(a).localeCompare(JSON.stringify(b))))
+      .toEqual(expected.sort((a,b) => JSON.stringify(a).localeCompare(JSON.stringify(b))));
+    expect(rules.some((rule) => rule.CidrIp !== undefined)).toBe(false);
+  });
+});
