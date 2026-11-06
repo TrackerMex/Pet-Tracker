@@ -111,7 +111,9 @@ export class PetDataPurgerAwsAdapter implements PetDataPurger {
           pending = result.UnprocessedItems?.[table] ?? [];
         }
         if (pending.length)
-          throw new Error('UnprocessedItems after 3 attempts');
+          throw new Error(
+            `UnprocessedItems after ${BATCH_WRITE_ATTEMPTS} attempts`,
+          );
       }
       exclusiveStartKey = page.LastEvaluatedKey;
     } while (exclusiveStartKey);
