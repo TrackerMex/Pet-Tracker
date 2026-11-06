@@ -9,6 +9,7 @@ import {
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
+import { buildPoolConfig } from './pool-config';
 import { DRIZZLE, PG_POOL } from './drizzle.constants';
 
 const poolLogger = new Logger('PgPool');
@@ -29,9 +30,7 @@ class DrizzlePoolLifecycle implements OnModuleDestroy {
     {
       provide: PG_POOL,
       useFactory: (config: ConfigService) => {
-        const pool = new Pool({
-          connectionString: config.get<string>('DATABASE_URL'),
-        });
+        const pool = new Pool(buildPoolConfig(config));
         pool.on('error', (error) => {
           poolLogger.error(`Idle client error: ${error.message}`, error.stack);
         });
