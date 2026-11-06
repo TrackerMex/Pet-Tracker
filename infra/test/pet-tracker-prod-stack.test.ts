@@ -624,3 +624,58 @@ describe('#246 R17: Aurora solo acepta tráfico de la API y de workers', () => {
     expect(rules.some((rule) => rule.CidrIp !== undefined)).toBe(false);
   });
 });
+
+describe('#246 R18: alarmas por correo', () => {
+  it('#246 R18: topic y suscripción email', () => {
+    const region = 'mx-central-1';
+    const { template } = synthesized(region);
+    template.resourceCountIs('AWS::SNS::Topic', 1);
+    template.resourceCountIs('AWS::SNS::Subscription', 1);
+    template.hasResourceProperties('AWS::SNS::Subscription', {
+      Endpoint: PROPS.alarmEmail, Protocol: 'email', TopicArn: { Ref: ofType(region, 'AWS::SNS::Topic')[0]?.[0] },
+    });
+  });
+  it('#246 R18: ocho alarmas exactas', () => {
+    const region = 'mx-central-1';
+    synthesized(region).template.resourceCountIs('AWS::CloudWatch::Alarm', 8);
+    const topic = ofType(region, 'AWS::SNS::Topic')[0]?.[0];
+    const alarms = ofType(region, 'AWS::CloudWatch::Alarm').map(([, resource]) => resource.Properties ?? {});
+    for (const alarm of alarms) {
+      expect(alarm.ComparisonOperator).toBe('GreaterThanOrEqualToThreshold');
+      expect(alarm.TreatMissingData).toBe('notBreaching');
+      expect(alarm.AlarmActions).toEqual([{ Ref: topic }]);
+      expect(alarm.Period).toBe(300);
+      expect(alarm.EvaluationPeriods).toBe(1);
+    }
+    expect(alarms.map((alarm) => {
+      const dimensions = (alarm.Dimensions ?? []) as Array<{ Name: string; Value: unknown }>;
+      return `${String(alarm.Namespace)} ${String(alarm.MetricName)} ${String(alarm.Statistic)} ${String(alarm.Threshold)} ${dimensions.map((d) => d.Name).sort().join('+')}`;
+    }).sort()).toEqual([
+      'AWS/ApplicationELB HTTPCode_ELB_5XX_Count Sum 5 LoadBalancer',
+      'AWS/ApplicationELB HTTPCode_Target_5XX_Count Sum 5 LoadBalancer+TargetGroup',
+      'AWS/ApplicationELB UnHealthyHostCount Maximum 1 LoadBalancer+TargetGroup',
+      ...Array<string>(3).fill('AWS/SQS ApproximateNumberOfMessagesVisible Maximum 1 QueueName'),
+      'AWS/RDS CPUUtilization Average 80 DBInstanceIdentifier',
+      'AWS/RDS ACUUtilization Average 80 DBInstanceIdentifier',
+    ].sort());
+    const lb = ofType(region, 'AWS::ElasticLoadBalancingV2::LoadBalancer')[0]?.[0];
+    const tg = ofType(region, 'AWS::ElasticLoadBalancingV2::TargetGroup')[0]?.[0];
+    const writer = ofType(region, 'AWS::RDS::DBInstance').find(([, resource]) => resource.Properties?.PromotionTier === 0)?.[0];
+    for (const alarm of alarms) {
+      const dimensions = (alarm.Dimensions ?? []) as Array<{ Name: string; Value: unknown }>;
+      const map = Object.fromEntries(dimensions.map(({ Name, Value }) => [Name, Value]));
+      if (alarm.MetricName === 'HTTPCode_ELB_5XX_Count') expect(map.LoadBalancer).toEqual({ 'Fn::GetAtt': [lb, 'LoadBalancerFullName'] });
+      if (alarm.MetricName === 'HTTPCode_Target_5XX_Count' || alarm.MetricName === 'UnHealthyHostCount') {
+        expect(map.TargetGroup).toEqual({ 'Fn::GetAtt': [tg, 'TargetGroupFullName'] });
+        expect(map.LoadBalancer).toBeDefined();
+      }
+      if (alarm.Namespace === 'AWS/RDS') expect(map.DBInstanceIdentifier).toEqual({ Ref: writer });
+    }
+    const queues = alarms.filter((alarm) => alarm.Namespace === 'AWS/SQS').map((alarm) => {
+      const dimensions = (alarm.Dimensions ?? []) as Array<{ Name: string; Value: unknown }>;
+      return JSON.stringify(dimensions.find((d) => d.Name === 'QueueName')?.Value);
+    }).sort();
+    expect(queues).toEqual(['positions-raw-dlq', 'notifications-dlq', 'geofence-events-dlq']
+      .map((name) => JSON.stringify({ 'Fn::GetAtt': [queueId(region, name), 'QueueName'] })).sort());
+  });
+});
