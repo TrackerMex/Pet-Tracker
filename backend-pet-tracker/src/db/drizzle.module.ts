@@ -4,7 +4,7 @@ import {
   Injectable,
   Logger,
   Module,
-  OnModuleDestroy,
+  OnApplicationShutdown,
 } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { drizzle } from 'drizzle-orm/node-postgres';
@@ -15,10 +15,10 @@ import { DRIZZLE, PG_POOL } from './drizzle.constants';
 const poolLogger = new Logger('PgPool');
 
 @Injectable()
-class DrizzlePoolLifecycle implements OnModuleDestroy {
+class DrizzlePoolLifecycle implements OnApplicationShutdown {
   constructor(@Inject(PG_POOL) private readonly pool: Pool) {}
 
-  async onModuleDestroy(): Promise<void> {
+  async onApplicationShutdown(): Promise<void> {
     await this.pool.end();
   }
 }
