@@ -532,6 +532,11 @@ claro si `DATABASE_URL` falta o está vacía — no hace falta exportarla a mano
 | Variable | Para qué | Estado |
 |---|---|---|
 | `DB_POOL_MAX` | Tamaño máximo del pool de pg; default 10 fuera de producción y obligatoria en producción (#245) | Comentada en `.env.example` |
+| `PGHOST` | Endpoint escritor de Aurora; solo producción (#245) | Comentada en `.env.example` |
+| `PGPORT` | Puerto Postgres, entero de 1 a 65535; solo producción (#245) | Comentada en `.env.example` |
+| `PGDATABASE` | Base de datos; solo producción (#245) | Comentada en `.env.example` |
+| `PGUSER` | Usuario Postgres; solo producción (#245) | Comentada en `.env.example` |
+| `PGPASSWORD` | Contraseña inyectada por Secrets Manager; nunca se commitea; solo producción (#245) | Comentada en `.env.example` |
 | `DATABASE_URL` | Connection string de Postgres (Docker local) | en `.env.example` — la app la consume desde la primera feature con persistencia |
 | `PORT` | Puerto HTTP del backend (default 3000) | en `.env.example` |
 | `NODE_ENV` | Solo `production` activa PG* con TLS, logs JSON y validación de arranque (#245); jest lo fija a `test` | La imagen lo fija con `ENV NODE_ENV=production`; no va en `.env.example` |
