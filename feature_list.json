@@ -3930,11 +3930,34 @@
   {
     "id": 243,
     "name": "mobile-orbit-cachorro-art",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
-    "description": "Registrada el 2026-11-05 a pedido del humano tras un feedback externo: la mascota «se parece más a una persona que a un animal». El humano eligió la variante A (cachorro sentado, de frente) entre tres propuestas; su set de poses ya está generado fuera del repo en ~/pet-tracker-mascot/v2/ (variante en pingo-v2-a-sit.png, nueve poses en v2/poses/: wave, wave-blink, talk, celebrate, sleep, collar, health, food, clipboard, con su .prompt.txt y REPORT.md). Diseño nuevo: cachorro crema con parche morado sobre un ojo, orejas y cola gris oscuro, nariz negra, lengua rosa y collar morado con placa GPS y luz verde #178255; sin antena, sin manos ni botón en el pecho. Alcance: sustituir en la app (mobile-pet-tracker/assets/images/orbit-*.webp) el arte de las diez poses actuales, conservando los nombres de archivo con prefijo orbit; convertir los PNG a WebP con alfa 1024x1024 y ≤100000 bytes limpiando el alfa residual de 1 a 3 píxeles fuera del contorno; actualizar los tests que bloquean la lista, el formato y el tamaño de los assets, y cualquier texto de docs o copy que describa la mascota anterior (antena, gorro verde, cara morada, mapa de nombres Pingo/Orbit). Falta generar la pose walk (la app la usa en la burbuja de Inicio) y quizá worried y search. Decisión abierta: el nombre de la mascota. En dev es Orbit desde #225 y la landing todavía dice Pingo. Gates humanos, no delegados: G1 (aprobar el arte final y el copy), G4 (enmienda de docs/ui-guidelines.md con la nueva descripción de la mascota), G6 (PNG de la pose walk, si se genera aparte) y G2 (smoke en dispositivo, en lote al final). Responsable: leader @Frontend. Registrada sin spec.",
-    "acceptance_criteria": null,
-    "files_affected": null
+    "description": "Registrada el 2026-11-05 a pedido del humano tras un feedback externo: la mascota «se parece más a una persona que a un animal». El humano eligió la variante A (cachorro sentado, de frente) entre tres propuestas; las diez poses ya están generadas y congeladas en specs/mobile-orbit-cachorro-art/design-src/ (las nueve de la variante A más walk), con su origen en ~/pet-tracker-mascot/v2/. Diseño nuevo: cachorro crema con parche morado sobre un ojo, orejas y cola gris oscuro, nariz negra, lengua rosa y collar morado con placa GPS y luz verde #178255; sin antena, sin manos ni botón en el pecho. Alcance: sustituir en la app (mobile-pet-tracker/assets/images/orbit-*.webp) el arte de las diez poses actuales, conservando los nombres de archivo con prefijo orbit; convertir los PNG a WebP con alfa 1024x1024 y ≤100000 bytes limpiando el alfa residual de 1 a 3 píxeles fuera del contorno; actualizar los tests que bloquean la lista, el formato y el tamaño de los assets, y cualquier texto de docs o copy que describa la mascota anterior (antena, gorro verde, cara morada, mapa de nombres Pingo/Orbit). El nombre de la mascota sigue siendo Orbit (decidido por el humano el 2026-11-05); worried y search quedan fuera. Spec firmada por delegación el 2026-11-06. Gates humanos, no delegados: G1 (aprobar el arte final y el copy), G4 (enmienda de docs/ui-guidelines.md con la nueva descripción de la mascota), G6 (PNG de la pose walk, si se genera aparte) y G2 (smoke en dispositivo, en lote al final). Responsable: leader @Frontend. Registrada sin spec.",
+    "acceptance_criteria": [
+      "R1: assets/images contiene exactamente las diez orbit-<pose>.webp (wave, wave-blink, talk, walk, celebrate, sleep, collar, health, food, clipboard), cada una WebP VP8X con alfa, estático, 1024x1024 y como mucho 100000 bytes.",
+      "R2: cada pose tiene el sha256 del arte nuevo del cachorro y ningún fichero de assets/images conserva un sha256 del arte viejo.",
+      "R3: los once PNG de specs/mobile-orbit-cachorro-art/design-src están congelados por sha256 y el script convert-orbit.py (uvx pillow==13.0.0, quality=80, method=6, limpieza de alfa) vive en la spec.",
+      "R4: el script termina con código 0 solo si cada WebP cumple tamaño, cabecera, alfa mínimo >= 16 y margen >= 24 px; su salida es determinista.",
+      "R5: ningún fichero de mobile-pet-tracker/src fuera del test nuevo cambia y los tests existentes que asertan formato y tamaño pasan sin modificación.",
+      "R6: docs/ui-guidelines.md lleva una sola Enmienda #243 con la descripción nueva de Orbit y Pingo como historia (gate G4, humano).",
+      "R7: icono, splash y notificaciones no se tocan; assets/ solo cambia en las diez poses.",
+      "Gates humanos: G1 (arte final), G4 (enmienda de la carta) y G2 (smoke en dispositivo, en lote al final). G6 (icono de Orbit) queda fuera."
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/assets/images/orbit-wave.webp",
+      "mobile-pet-tracker/assets/images/orbit-wave-blink.webp",
+      "mobile-pet-tracker/assets/images/orbit-talk.webp",
+      "mobile-pet-tracker/assets/images/orbit-walk.webp",
+      "mobile-pet-tracker/assets/images/orbit-celebrate.webp",
+      "mobile-pet-tracker/assets/images/orbit-sleep.webp",
+      "mobile-pet-tracker/assets/images/orbit-collar.webp",
+      "mobile-pet-tracker/assets/images/orbit-health.webp",
+      "mobile-pet-tracker/assets/images/orbit-food.webp",
+      "mobile-pet-tracker/assets/images/orbit-clipboard.webp",
+      "mobile-pet-tracker/src/__tests__/orbit-cachorro-art.test.ts",
+      "specs/mobile-orbit-cachorro-art/convert-orbit.py",
+      "docs/ui-guidelines.md"
+    ]
   },
   {
     "id": 244,

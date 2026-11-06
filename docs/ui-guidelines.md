@@ -1021,3 +1021,29 @@ Fecha: 2026-11-03. Feature #228 `mobile-reminder-swipe-actions`. Sustituye el pu
 Detalle y tests en `specs/mobile-reminder-swipe-actions/requirements.md` (R1 a R13).
 
 - [X] Enmienda #228 aprobada por humano
+
+## Enmienda #243 — Orbit es un cachorro
+
+Fecha: 2026-11-06. Feature #243 `mobile-orbit-cachorro-art`. Sustituye la
+descripción gráfica de la mascota; no cambia su nombre ni su voz (punto 7).
+
+1. **Aspecto.** Orbit es un cachorro crema, sentado y visto de frente, en render 3D
+   de plastilina suave. Lleva un parche morado sobre un ojo, orejas y cola gris
+   oscuro, nariz negra, lengua rosa y un collar morado con una placa GPS cuya luz es
+   el verde de marca `#178255`. No lleva antena, manos ni botón en el pecho.
+2. **Las diez poses.** `orbit-wave`, `orbit-wave-blink`, `orbit-talk`, `orbit-walk`,
+   `orbit-celebrate`, `orbit-sleep`, `orbit-collar`, `orbit-health`, `orbit-food` y
+   `orbit-clipboard` (`.webp`, 1024 × 1024 con alfa, como mucho 100000 bytes)
+   conservan nombre, tamaño en pantalla y copy. Una pose nueva entra con su propia
+   feature.
+3. **Historia.** Hasta la feature #243 Orbit era un robot-perro bípedo con antena,
+   gorro verde y cara morada, y antes de #225 se llamaba «Pingo». Las enmiendas
+   fechadas anteriores conservan «Pingo» y ese aspecto como historia; no se
+   reescriben.
+4. **Pendiente.** El icono, el splash y las notificaciones siguen con la cabeza
+   anterior hasta que el humano entregue el PNG del icono (G6) y exista una feature
+   para sustituirlos.
+
+Detalle y tests en `specs/mobile-orbit-cachorro-art/requirements.md` (R1 a R7).
+
+- [ ] Enmienda #243 aprobada por humano
