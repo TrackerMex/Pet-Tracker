@@ -26,7 +26,7 @@ import {
   DETAIL_TYPE_POSITION_UPDATED, DETAIL_TYPE_BATTERY_LOW, RULE_GEOFENCE_EVENTS,
 } from '@backend/aws/constants';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
-import { Aws, Duration, RemovalPolicy, Stack, StackProps, Token } from 'aws-cdk-lib';
+import { Aws, CfnOutput, Duration, Fn, RemovalPolicy, Stack, StackProps, Token } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 
 export interface PetTrackerProdStackProps extends StackProps {
@@ -248,5 +248,11 @@ export class PetTrackerProdStack extends Stack {
       });
       alarm.addAlarmAction(new cloudwatchActions.SnsAction(topic));
     }
+    new CfnOutput(this, 'AlbDnsName', { value: api.loadBalancer.loadBalancerDnsName });
+    new CfnOutput(this, 'ClusterName', { value: cluster.clusterName });
+    new CfnOutput(this, 'OpsTaskDefinitionArn', { value: opsTask.taskDefinitionArn });
+    new CfnOutput(this, 'PublicSubnetIds', { value: Fn.join(',', vpc.publicSubnets.map((subnet) => subnet.subnetId)) });
+    new CfnOutput(this, 'OneOffSecurityGroupId', { value: workersSg.securityGroupId });
+    new CfnOutput(this, 'MediaBucketName', { value: bucket.bucketName });
   }
 }
