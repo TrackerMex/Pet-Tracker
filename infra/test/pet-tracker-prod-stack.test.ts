@@ -190,3 +190,41 @@ describe('#246 R7: bucket de media versionado, SSE-S3 y Retain', () => {
     });
   });
 });
+
+describe('#246 R8: Aurora Serverless v2 en subredes aisladas', () => {
+  it.each(REGIONS)('#246 R8: Aurora de %s', (region) => {
+    const { template } = synthesized(region);
+    template.resourceCountIs('AWS::RDS::DBSubnetGroup', 1);
+    template.resourceCountIs('AWS::RDS::DBCluster', 1);
+    template.resourceCountIs('AWS::RDS::DBInstance', 2);
+    template.resourceCountIs('AWS::SecretsManager::Secret', 1);
+    const subnetGroup = ofType(region, 'AWS::RDS::DBSubnetGroup')[0];
+    const subnetIds = (subnetGroup?.[1].Properties?.SubnetIds ?? []) as unknown[];
+    expect(subnetIds.map((value) => JSON.stringify(value)).sort())
+      .toEqual(subnetIdsByAz(region, 'Isolated').map((id) => JSON.stringify({ Ref: id })).sort());
+    template.hasResourceProperties('AWS::RDS::DBCluster', {
+      Engine: 'aurora-postgresql', EngineVersion: '17.4',
+      ServerlessV2ScalingConfiguration: { MinCapacity: 0.5, MaxCapacity: 4 },
+      StorageEncrypted: true, KmsKeyId: Match.absent(), DeletionProtection: true,
+      BackupRetentionPeriod: 7, DatabaseName: 'pet_tracker', DBSubnetGroupName: { Ref: subnetGroup?.[0] },
+    });
+    const db = ofType(region, 'AWS::RDS::DBCluster')[0];
+    const secret = ofType(region, 'AWS::SecretsManager::Secret')[0];
+    expect(JSON.stringify(db?.[1].Properties?.MasterUserPassword)).toContain(JSON.stringify({ Ref: secret?.[0] }));
+    expect(JSON.stringify(db?.[1].Properties?.MasterUserPassword)).toContain(':SecretString:password::}}');
+    expect(db?.[1].DeletionPolicy).toBe('Snapshot');
+    expect(db?.[1].UpdateReplacePolicy).toBe('Snapshot');
+    for (const [tier, az] of [[0, 'a'], [1, 'b']] as const) {
+      template.hasResourceProperties('AWS::RDS::DBInstance', {
+        DBInstanceClass: 'db.serverless', Engine: 'aurora-postgresql', PubliclyAccessible: false,
+        DBClusterIdentifier: { Ref: db?.[0] }, PromotionTier: tier, AvailabilityZone: `${region}${az}`,
+      });
+    }
+    template.hasResourceProperties('AWS::SecretsManager::Secret', {
+      GenerateSecretString: { SecretStringTemplate: '{"username":"pet_tracker"}', GenerateStringKey: 'password' },
+      SecretString: Match.absent(),
+    });
+    expect(secret?.[1].DeletionPolicy).toBe('Retain');
+    expect(secret?.[1].UpdateReplacePolicy).toBe('Retain');
+  });
+});
