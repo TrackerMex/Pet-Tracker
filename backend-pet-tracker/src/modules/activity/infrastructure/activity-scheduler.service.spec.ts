@@ -1,6 +1,7 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { ConfigService } from '@nestjs/config';
+import { InFlightTicks } from '@/lifecycle/in-flight-ticks';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import {
   ACTIVITY_TICK_INTERVAL_MS,
@@ -42,6 +43,7 @@ describe('R15: el tick del agregador solo se agenda con la env activa y fuera de
       configWith(values),
       registry as unknown as SchedulerRegistry,
       aggregator,
+      new InFlightTicks(),
     );
   }
 
@@ -150,5 +152,59 @@ describe('R22: ACTIVITY_AGGREGATOR_ENABLED documentada donde manda AGENTS.md §4
       /config\.get<string>\('ACTIVITY_AGGREGATOR_ENABLED'\)/,
     );
     expect(source).not.toMatch(/process\.env/);
+  });
+});
+
+function deferred245() {
+  let resolve!: () => void;
+  const promise = new Promise<void>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+}
+
+describe('#245 R7: ACTIVITY_TICK_NAME corre su tick vía InFlightTicks', () => {
+  let ticks: InFlightTicks;
+  let task: ReturnType<typeof deferred245>;
+  let tick: jest.Mock<Promise<void>, []>;
+  let scheduler: ActivitySchedulerService;
+  beforeEach(() => {
+    jest.useFakeTimers();
+    ticks = new InFlightTicks();
+    task = deferred245();
+    tick = jest.fn<Promise<void>, []>().mockReturnValue(task.promise);
+    scheduler = new ActivitySchedulerService(
+      configWith({
+        ACTIVITY_AGGREGATOR_ENABLED: 'true',
+        NODE_ENV: 'development',
+      }),
+      { addInterval: jest.fn() } as unknown as SchedulerRegistry,
+      { runOnce: tick } as unknown as AggregateDailyActivityUseCase,
+      ticks,
+    );
+  });
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+  it('#245 R7: ACTIVITY_TICK_NAME: drain no se resuelve mientras el tick está pendiente', async () => {
+    scheduler.onApplicationBootstrap();
+    jest.advanceTimersByTime(ACTIVITY_TICK_INTERVAL_MS);
+    expect(tick).toHaveBeenCalledTimes(1);
+    let settled = false;
+    const drain = ticks.drain(1000).then((value) => {
+      settled = true;
+      return value;
+    });
+    await jest.advanceTimersByTimeAsync(0);
+    expect(settled).toBe(false);
+    task.resolve();
+    await expect(drain).resolves.toBe('drained');
+  });
+  it('#245 R7: ACTIVITY_TICK_NAME: tras beforeApplicationShutdown el intervalo no invoca aggregator.runOnce', () => {
+    scheduler.onApplicationBootstrap();
+    void ticks.beforeApplicationShutdown();
+    jest.advanceTimersByTime(ACTIVITY_TICK_INTERVAL_MS);
+    expect(tick).not.toHaveBeenCalled();
   });
 });

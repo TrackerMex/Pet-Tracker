@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InFlightTicks } from '@/lifecycle/in-flight-ticks';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { PollerService } from './poller.service';
 import { PositionsConsumerService } from './positions-consumer.service';
@@ -28,6 +29,7 @@ export class IngestionSchedulerService implements OnApplicationBootstrap {
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly poller: PollerService,
     private readonly consumer: PositionsConsumerService,
+    private readonly ticks: InFlightTicks,
   ) {}
 
   onApplicationBootstrap(): void {
@@ -37,11 +39,17 @@ export class IngestionSchedulerService implements OnApplicationBootstrap {
 
     this.schedulerRegistry.addInterval(
       POLLER_INTERVAL_NAME,
-      setInterval(() => void this.poller.runOnce(), POLLER_INTERVAL_MS),
+      setInterval(
+        () => this.ticks.run(() => this.poller.runOnce()),
+        POLLER_INTERVAL_MS,
+      ),
     );
     this.schedulerRegistry.addInterval(
       CONSUMER_INTERVAL_NAME,
-      setInterval(() => void this.consumer.drainOnce(), CONSUMER_INTERVAL_MS),
+      setInterval(
+        () => this.ticks.run(() => this.consumer.drainOnce()),
+        CONSUMER_INTERVAL_MS,
+      ),
     );
 
     this.logger.log(

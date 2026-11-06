@@ -1,9 +1,10 @@
 import { parseArgs } from 'node:util';
-import { config as loadDotenv } from 'dotenv';
+import { ConfigService } from '@nestjs/config';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
+import { buildPoolConfig } from '@/db/pool-config';
 import { devices } from '@/db/schema/devices.schema';
 import { deviceSubscriptions } from '@/db/schema/subscriptions.schema';
 import {
@@ -98,8 +99,8 @@ export async function setDeviceSubscription(
     .onConflictDoUpdate({
       target: deviceSubscriptions.deviceId,
       set: {
-        status: status as DeviceSubscriptionStatus,
-        planCode: planCode as DeviceSubscriptionPlanCode,
+        status: status,
+        planCode: planCode,
         currentPeriodEnd,
         updatedAt: now,
       },
@@ -131,7 +132,6 @@ export async function setDeviceSubscription(
 }
 
 async function main(): Promise<void> {
-  loadDotenv({ path: '../.env' });
   const { values } = parseArgs({
     args: process.argv.slice(2).filter((arg) => arg !== '--'),
     options: {
@@ -142,7 +142,8 @@ async function main(): Promise<void> {
       'period-end': { type: 'string' },
     },
   });
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const config = new ConfigService();
+  const pool = new Pool(buildPoolConfig(config));
 
   try {
     const result = await setDeviceSubscription(drizzle(pool), {

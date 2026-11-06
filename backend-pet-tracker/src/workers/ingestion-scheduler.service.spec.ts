@@ -1,6 +1,8 @@
 import { ConfigService } from '@nestjs/config';
+import { InFlightTicks } from '@/lifecycle/in-flight-ticks';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import {
+  CONSUMER_INTERVAL_MS,
   CONSUMER_INTERVAL_NAME,
   IngestionSchedulerService,
   POLLER_INTERVAL_MS,
@@ -39,6 +41,7 @@ describe('R8: scheduling gated — cron solo con POLLER_ENABLED=true y NODE_ENV 
       registry as unknown as SchedulerRegistry,
       poller,
       consumer,
+      new InFlightTicks(),
     );
   }
 
@@ -88,5 +91,105 @@ describe('R8: scheduling gated — cron solo con POLLER_ENABLED=true y NODE_ENV 
     jest.advanceTimersByTime(POLLER_INTERVAL_MS);
     expect(runOnce).toHaveBeenCalledTimes(2);
     expect(drainOnce).toHaveBeenCalled();
+  });
+});
+
+function deferred245() {
+  let resolve!: () => void;
+  const promise = new Promise<void>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+}
+
+describe('#245 R7: ingestion-poller corre su tick vía InFlightTicks', () => {
+  let ticks: InFlightTicks;
+  let task: ReturnType<typeof deferred245>;
+  let tick: jest.Mock<Promise<void>, []>;
+  let scheduler: IngestionSchedulerService;
+  beforeEach(() => {
+    jest.useFakeTimers();
+    ticks = new InFlightTicks();
+    task = deferred245();
+    tick = jest.fn<Promise<void>, []>().mockReturnValue(task.promise);
+    scheduler = new IngestionSchedulerService(
+      configWith({ POLLER_ENABLED: 'true', NODE_ENV: 'development' }),
+      { addInterval: jest.fn() } as unknown as SchedulerRegistry,
+      { runOnce: tick } as unknown as PollerService,
+      {
+        drainOnce: jest.fn().mockResolvedValue(undefined),
+      } as unknown as PositionsConsumerService,
+      ticks,
+    );
+  });
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+  it('#245 R7: ingestion-poller: drain no se resuelve mientras el tick está pendiente', async () => {
+    scheduler.onApplicationBootstrap();
+    jest.advanceTimersByTime(POLLER_INTERVAL_MS);
+    expect(tick).toHaveBeenCalledTimes(1);
+    let settled = false;
+    const drain = ticks.drain(1000).then((value) => {
+      settled = true;
+      return value;
+    });
+    await jest.advanceTimersByTimeAsync(0);
+    expect(settled).toBe(false);
+    task.resolve();
+    await expect(drain).resolves.toBe('drained');
+  });
+  it('#245 R7: ingestion-poller: tras beforeApplicationShutdown el intervalo no invoca poller.runOnce', () => {
+    scheduler.onApplicationBootstrap();
+    void ticks.beforeApplicationShutdown();
+    jest.advanceTimersByTime(POLLER_INTERVAL_MS);
+    expect(tick).not.toHaveBeenCalled();
+  });
+});
+
+describe('#245 R7: ingestion-consumer corre su tick vía InFlightTicks', () => {
+  let ticks: InFlightTicks;
+  let task: ReturnType<typeof deferred245>;
+  let tick: jest.Mock<Promise<void>, []>;
+  let scheduler: IngestionSchedulerService;
+  beforeEach(() => {
+    jest.useFakeTimers();
+    ticks = new InFlightTicks();
+    task = deferred245();
+    tick = jest.fn<Promise<void>, []>().mockReturnValue(task.promise);
+    scheduler = new IngestionSchedulerService(
+      configWith({ POLLER_ENABLED: 'true', NODE_ENV: 'development' }),
+      { addInterval: jest.fn() } as unknown as SchedulerRegistry,
+      {
+        runOnce: jest.fn().mockResolvedValue(undefined),
+      } as unknown as PollerService,
+      { drainOnce: tick } as unknown as PositionsConsumerService,
+      ticks,
+    );
+  });
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+  it('#245 R7: ingestion-consumer: drain no se resuelve mientras el tick está pendiente', async () => {
+    scheduler.onApplicationBootstrap();
+    jest.advanceTimersByTime(CONSUMER_INTERVAL_MS);
+    expect(tick).toHaveBeenCalledTimes(1);
+    let settled = false;
+    const drain = ticks.drain(1000).then((value) => {
+      settled = true;
+      return value;
+    });
+    await jest.advanceTimersByTimeAsync(0);
+    expect(settled).toBe(false);
+    task.resolve();
+    await expect(drain).resolves.toBe('drained');
+  });
+  it('#245 R7: ingestion-consumer: tras beforeApplicationShutdown el intervalo no invoca consumer.drainOnce', () => {
+    scheduler.onApplicationBootstrap();
+    void ticks.beforeApplicationShutdown();
+    jest.advanceTimersByTime(CONSUMER_INTERVAL_MS);
+    expect(tick).not.toHaveBeenCalled();
   });
 });

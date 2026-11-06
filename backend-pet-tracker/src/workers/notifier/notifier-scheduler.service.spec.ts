@@ -1,4 +1,5 @@
 import { ConfigService } from '@nestjs/config';
+import { InFlightTicks } from '@/lifecycle/in-flight-ticks';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import type { NotifierConsumerService } from './notifier-consumer.service';
 import {
@@ -30,6 +31,7 @@ describe('R15: scheduler gateado por NOTIFIER_ENABLED (+ NODE_ENV=test), D6', ()
       configWith(values),
       registry as unknown as SchedulerRegistry,
       consumer,
+      new InFlightTicks(),
     );
   }
 
@@ -86,5 +88,56 @@ describe('R15: scheduler gateado por NOTIFIER_ENABLED (+ NODE_ENV=test), D6', ()
     expect(drainOnce).toHaveBeenCalledTimes(1);
     jest.advanceTimersByTime(NOTIFIER_INTERVAL_MS);
     expect(drainOnce).toHaveBeenCalledTimes(2);
+  });
+});
+
+function deferred245() {
+  let resolve!: () => void;
+  const promise = new Promise<void>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+}
+
+describe('#245 R7: notifier-consumer corre su tick vía InFlightTicks', () => {
+  let ticks: InFlightTicks;
+  let task: ReturnType<typeof deferred245>;
+  let tick: jest.Mock<Promise<void>, []>;
+  let scheduler: NotifierSchedulerService;
+  beforeEach(() => {
+    jest.useFakeTimers();
+    ticks = new InFlightTicks();
+    task = deferred245();
+    tick = jest.fn<Promise<void>, []>().mockReturnValue(task.promise);
+    scheduler = new NotifierSchedulerService(
+      configWith({ NOTIFIER_ENABLED: 'true', NODE_ENV: 'development' }),
+      { addInterval: jest.fn() } as unknown as SchedulerRegistry,
+      { drainOnce: tick } as unknown as NotifierConsumerService,
+      ticks,
+    );
+  });
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+  it('#245 R7: notifier-consumer: drain no se resuelve mientras el tick está pendiente', async () => {
+    scheduler.onApplicationBootstrap();
+    jest.advanceTimersByTime(NOTIFIER_INTERVAL_MS);
+    expect(tick).toHaveBeenCalledTimes(1);
+    let settled = false;
+    const drain = ticks.drain(1000).then((value) => {
+      settled = true;
+      return value;
+    });
+    await jest.advanceTimersByTimeAsync(0);
+    expect(settled).toBe(false);
+    task.resolve();
+    await expect(drain).resolves.toBe('drained');
+  });
+  it('#245 R7: notifier-consumer: tras beforeApplicationShutdown el intervalo no invoca consumer.drainOnce', () => {
+    scheduler.onApplicationBootstrap();
+    void ticks.beforeApplicationShutdown();
+    jest.advanceTimersByTime(NOTIFIER_INTERVAL_MS);
+    expect(tick).not.toHaveBeenCalled();
   });
 });

@@ -1,5 +1,6 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { validateEnv } from './env.validation';
 
 const DEFAULT_ENV_FILE_PATH = ['../.env'];
 
@@ -12,6 +13,7 @@ export class AppConfigModule {
         ConfigModule.forRoot({
           isGlobal: true,
           envFilePath,
+          validate: validateEnv,
         }),
       ],
     };

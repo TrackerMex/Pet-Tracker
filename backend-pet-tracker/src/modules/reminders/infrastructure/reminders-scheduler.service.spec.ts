@@ -1,4 +1,5 @@
 import { ConfigService } from '@nestjs/config';
+import { InFlightTicks } from '@/lifecycle/in-flight-ticks';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import type { RemindersDispatchService } from './reminders-dispatch.service';
 import {
@@ -28,6 +29,7 @@ describe('R12: scheduler gateado por REMINDERS_ENABLED y NODE_ENV', () => {
       configWith(values),
       registry as unknown as SchedulerRegistry,
       { dispatchOnce } as unknown as RemindersDispatchService,
+      new InFlightTicks(),
     );
   }
 
@@ -55,5 +57,56 @@ describe('R12: scheduler gateado por REMINDERS_ENABLED y NODE_ENV', () => {
     );
     jest.advanceTimersByTime(REMINDERS_INTERVAL_MS);
     expect(dispatchOnce).toHaveBeenCalledTimes(1);
+  });
+});
+
+function deferred245() {
+  let resolve!: () => void;
+  const promise = new Promise<void>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+}
+
+describe('#245 R7: reminders-dispatch corre su tick vía InFlightTicks', () => {
+  let ticks: InFlightTicks;
+  let task: ReturnType<typeof deferred245>;
+  let tick: jest.Mock<Promise<void>, []>;
+  let scheduler: RemindersSchedulerService;
+  beforeEach(() => {
+    jest.useFakeTimers();
+    ticks = new InFlightTicks();
+    task = deferred245();
+    tick = jest.fn<Promise<void>, []>().mockReturnValue(task.promise);
+    scheduler = new RemindersSchedulerService(
+      configWith({ REMINDERS_ENABLED: 'true', NODE_ENV: 'development' }),
+      { addInterval: jest.fn() } as unknown as SchedulerRegistry,
+      { dispatchOnce: tick } as unknown as RemindersDispatchService,
+      ticks,
+    );
+  });
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+  it('#245 R7: reminders-dispatch: drain no se resuelve mientras el tick está pendiente', async () => {
+    scheduler.onApplicationBootstrap();
+    jest.advanceTimersByTime(REMINDERS_INTERVAL_MS);
+    expect(tick).toHaveBeenCalledTimes(1);
+    let settled = false;
+    const drain = ticks.drain(1000).then((value) => {
+      settled = true;
+      return value;
+    });
+    await jest.advanceTimersByTimeAsync(0);
+    expect(settled).toBe(false);
+    task.resolve();
+    await expect(drain).resolves.toBe('drained');
+  });
+  it('#245 R7: reminders-dispatch: tras beforeApplicationShutdown el intervalo no invoca dispatcher.dispatchOnce', () => {
+    scheduler.onApplicationBootstrap();
+    void ticks.beforeApplicationShutdown();
+    jest.advanceTimersByTime(REMINDERS_INTERVAL_MS);
+    expect(tick).not.toHaveBeenCalled();
   });
 });

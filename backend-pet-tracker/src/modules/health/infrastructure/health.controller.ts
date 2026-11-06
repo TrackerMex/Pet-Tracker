@@ -7,6 +7,12 @@ export class HealthController {
   constructor(private readonly checkHealthUseCase: CheckHealthUseCase) {}
 
   @Public()
+  @Get('live')
+  live() {
+    return { status: 'ok' };
+  }
+
+  @Public()
   @Get()
   async check() {
     const result = await this.checkHealthUseCase.execute();

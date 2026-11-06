@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { LifecycleModule } from '@/lifecycle/lifecycle.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -28,6 +29,7 @@ import { NotifierModule } from './workers/notifier/notifier.module';
     AppConfigModule.forRoot(),
     // Primer cron del repo (#8); #10/#16 heredan este forRoot (design.md).
     ScheduleModule.forRoot(),
+    LifecycleModule,
     DrizzleModule,
     AwsModule,
     AuditModule,

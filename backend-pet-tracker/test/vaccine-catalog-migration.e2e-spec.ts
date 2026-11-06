@@ -16,6 +16,7 @@ import { Pool } from 'pg';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
+import { PG_POOL } from '@/db/drizzle.constants';
 import { users } from '@/db/schema/users.schema';
 import { seedVaccineCatalog } from '@/db/seed/vaccine-catalog';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
@@ -106,10 +107,6 @@ describe('#226 vaccine catalog migration (e2e)', () => {
       () => app?.close(),
       () => poolA?.end(),
       () => poolB?.end(),
-      () => {
-        if (originalDatabaseUrl === undefined) delete process.env.DATABASE_URL;
-        else process.env.DATABASE_URL = originalDatabaseUrl;
-      },
       async () => {
         if (createdA) await dropDatabase(databaseA);
       },
@@ -147,10 +144,12 @@ describe('#226 vaccine catalog migration (e2e)', () => {
       );
       countBeforeMigration = Number(rows[0].count);
       await migrate(drizzle(poolA), { migrationsFolder: MIGRATIONS });
-      process.env.DATABASE_URL = urlA.toString();
       const module = await Test.createTestingModule({
         imports: [AppModule],
-      }).compile();
+      })
+        .overrideProvider(PG_POOL)
+        .useValue(new Pool({ connectionString: urlA.toString() }))
+        .compile();
       app = module.createNestApplication();
       app.setGlobalPrefix('v1');
       await app.init();

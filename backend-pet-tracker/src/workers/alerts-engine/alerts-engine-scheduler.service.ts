@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InFlightTicks } from '@/lifecycle/in-flight-ticks';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { AlertsEngineConsumerService } from './alerts-engine-consumer.service';
 
@@ -23,6 +24,7 @@ export class AlertsEngineSchedulerService implements OnApplicationBootstrap {
     private readonly config: ConfigService,
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly consumer: AlertsEngineConsumerService,
+    private readonly ticks: InFlightTicks,
   ) {}
 
   onApplicationBootstrap(): void {
@@ -33,7 +35,7 @@ export class AlertsEngineSchedulerService implements OnApplicationBootstrap {
     this.schedulerRegistry.addInterval(
       ALERTS_ENGINE_INTERVAL_NAME,
       setInterval(
-        () => void this.consumer.drainOnce(),
+        () => this.ticks.run(() => this.consumer.drainOnce()),
         ALERTS_ENGINE_INTERVAL_MS,
       ),
     );
