@@ -1,7 +1,7 @@
 # Implementación mobile-orbit-splash-icono — tanda C1a, C1b, C2
 
-Fecha: 2026-11-06. **Bloqueada por la guarda de lint**; alcance R1–R9 y R11.
-C1a y C1b commiteados; C2 aplicado y verificado parcialmente, sin commit.
+Fecha: 2026-11-06. Alcance R1–R9 y R11. Estado final: C1a, C1b y C2 commiteados (ver «Reanudación»).
+_Nota del leader: la parada original por la guarda de lint fue un error del handoff, resuelto en fix1; se conserva abajo como historia._
 No se hicieron C4 ni C5.
 
 Ruta confirmada: `/home/claude/sites/Pet-Tracker-wt-244`.

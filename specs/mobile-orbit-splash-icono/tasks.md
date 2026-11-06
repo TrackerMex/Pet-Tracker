@@ -125,12 +125,13 @@ bunx jest app.assets.test.ts app.config.test.ts            # verdes
 bunx jest src/__tests__/orbit-cachorro-art.test.ts src/__tests__/orbit-rename.test.ts src/__tests__/orbit-rename-copy.test.ts src/__tests__/orbit-activity-pose.test.ts src/__tests__/orbit-charter-voice.test.ts src/__tests__/design-drift.test.ts   # verdes
 bunx jest src/app/__tests__/index.test.tsx src/screens/welcome/index.test.tsx   # verdes
 bun run typecheck > /tmp/typecheck-244.log 2>&1; echo "exit=$?"   # exit=0
-bun run lint > /tmp/lint-244.log 2>&1 && test ! -s /tmp/lint-244.log; echo "exit=$?"   # exit=0
+bunx expo lint --no-cache > ../progress/lint-244.log 2>&1 && test ! -s ../progress/lint-244.log; echo "exit=$?"   # exit=0 (desde mobile-pet-tracker/)
 ```
 
 Tras C5 añade `bunx jest src/__tests__/home-photo-hero-canvas.test.ts` (verde). Sin
-`| tail` en ningún comando de código de salida. Si `bun run lint` no existe como script,
-usa el que declare `package.json` (`grep -n '"lint"' package.json`). La suite entera la
+`| tail` en ningún comando de código de salida. El lint va con `bunx expo lint --no-cache`,
+no con `bun run lint`: el banner `$ expo lint` de Bun llena el log y `test ! -s` nunca da 0
+(enmienda del leader 2026-11-06, omisión de la spec original). La suite entera la
 corre el leader con `./init.sh`.
 
 Si un test existente se pone rojo al sustituir los binarios, es un hallazgo: PARA y
