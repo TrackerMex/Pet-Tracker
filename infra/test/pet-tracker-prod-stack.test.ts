@@ -420,3 +420,34 @@ describe('#246 R10: entorno y secretos del contenedor api', () => {
       .toEqual(['anthropic-api-key', 'db', 'jwt', 'resend-api-key', 'wialon-token']);
   });
 });
+
+function statementsOf(region: string, roleId: string | undefined): unknown[] {
+  if (!roleId) return [];
+  return ofType(region, 'AWS::IAM::Policy').flatMap(([, policy]) => {
+    const roles = (policy.Properties?.Roles ?? []) as unknown[];
+    if (!roles.some((role) => JSON.stringify(role) === JSON.stringify({ Ref: roleId }))) return [];
+    const document = policy.Properties?.PolicyDocument as { Statement?: Array<Record<string, unknown>> } | undefined;
+    return (document?.Statement ?? []).map((statement) => ({
+      ...statement,
+      Action: (typeof statement.Action === 'string' ? [statement.Action] : statement.Action as string[]).sort(),
+      Resource: Array.isArray(statement.Resource) ? (statement.Resource as unknown[]).sort((a,b) => JSON.stringify(a).localeCompare(JSON.stringify(b))) : statement.Resource,
+    }));
+  }).sort((a,b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+}
+
+describe('#246 R11: task role de la API con permisos mínimos', () => {
+  it('#246 R11: cuatro sentencias exactas, sin políticas administradas', () => {
+    const region = 'mx-central-1';
+    const roleId = roleIdOf(taskDefinition(region, 'api')?.[1].TaskRoleArn);
+    const bucket = ofType(region, 'AWS::S3::Bucket')[0]?.[0];
+    const table = ofType(region, 'AWS::DynamoDB::GlobalTable')[0]?.[0];
+    const expected = [
+      { Effect: 'Allow', Action: ['s3:GetObject', 's3:PutObject'], Resource: { 'Fn::Join': ['', [{ 'Fn::GetAtt': [bucket, 'Arn'] }, '/*']] } },
+      { Effect: 'Allow', Action: ['s3:DeleteObject'], Resource: { 'Fn::Join': ['', [{ 'Fn::GetAtt': [bucket, 'Arn'] }, '/pets/*']] } },
+      { Effect: 'Allow', Action: ['s3:ListBucket'], Resource: { 'Fn::GetAtt': [bucket, 'Arn'] }, Condition: { StringLike: { 's3:prefix': 'pets/*' } } },
+      { Effect: 'Allow', Action: ['dynamodb:BatchWriteItem', 'dynamodb:Query'], Resource: { 'Fn::GetAtt': [table, 'Arn'] } },
+    ].sort((a,b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+    expect(statementsOf(region, roleId)).toEqual(expected);
+    expect(roleId ? synthesized(region).resources[roleId]?.Properties?.ManagedPolicyArns : undefined).toBeUndefined();
+  });
+});
