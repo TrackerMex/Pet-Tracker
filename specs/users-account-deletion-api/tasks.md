@@ -525,6 +525,102 @@ fichero.
 Cuenta final: `git rev-list --count 0e70fff2..HEAD` da `16` (13, más esta enmienda, más
 los commits 14 y 15).
 
+## Enmienda del leader (2026-11-06, 2): candado D3 del claim
+
+El `reviewer` rechazó la ronda anterior (`progress/review_users-account-deletion-api.md`,
+H1). La enmienda 1 dejó el `it` de `devices.e2e` R15 con el caché en `'available'` tras el
+DELETE, y ese era el único test que reclamaba un collar con `devices.status = 'assigned'`
+sin fila activa en `pet_devices`. Sin él, un claim que vete `status === 'assigned'` no rompe
+nada, y la regla D3 de `devices-claim` (R15) queda sin candado. Importa en producción: los
+collares que quedaron huérfanos antes de #247 siguen en `'assigned'` y la migración 0024 no
+los repara.
+
+### Commit 16: reponer el estado huérfano en el `it`
+
+Fichero: `backend-pet-tracker/test/devices.e2e-spec.ts`, mismo `describe` y mismo `it` que
+la enmienda 1, con los nombres sin cambios. Dentro de ese `it`, justo después de
+`expect(assignments).toHaveLength(0);` (la línea sale dos veces en el fichero: vale la
+que está dentro de este `it`) y antes del comentario
+`// La disponibilidad se deriva de la fila activa, no del cache de`, se inserta:
+
+```ts
+
+      // Los collares que quedaron huerfanos antes de #247 conservan el cache
+      // en 'assigned' sin fila activa: se siembra ese estado a mano.
+      await db
+        .update(devices)
+        .set({ status: 'assigned' })
+        .where(eq(devices.id, device.id));
+```
+
+El resto del `it` no se toca: el `released.status` en `'available'` sigue fijando #247 R10,
+y el reclamo `201` de `ownerB` pasa a fijar D3. El test nace verde. Su rojo se prueba con
+la sonda de abajo.
+
+Anclas, desde `backend-pet-tracker/`:
+
+| Orden | Antes | Después |
+|---|---|---|
+| `grep -cF ".set({ status: 'assigned' })" test/devices.e2e-spec.ts` | `1` | `2` |
+| `grep -cF "conservan el cache" test/devices.e2e-spec.ts` | `0` | `1` |
+| `grep -cF "expect(released.status).toBe('available');" test/devices.e2e-spec.ts` | `1` | `1` |
+
+Pasos, desde `backend-pet-tracker/`:
+
+1. Aplicar el cambio y correr, según §Esperas del handoff,
+   `FORCE_COLOR=0 pnpm exec jest --config ./test/jest-e2e.json test/devices.e2e-spec.ts > /tmp/impl-247-d3-verde.log 2>&1; echo "exit=$?"`.
+   Debe dar `exit=0`.
+2. Sonda de mutación. En
+   `src/modules/devices/application/use-cases/claim-device.use-case.ts`, añadir la línea
+   `      device.status === 'assigned' ||` justo debajo de
+   `      device.status === 'inactive' ||`. Correr la misma orden con el log en
+   `/tmp/impl-247-d3-sonda.log`. Debe dar `exit=1`. El log debe tener un solo `●`, en
+   `R15: borrar una mascota con collar deja el device reclamable (D3) › claim -> DELETE /v1/pets/:petId -> claim con otra mascota responde 201`,
+   por aserción: el claim responde un estado distinto de `201`. Si sale cualquier otro rojo,
+   o `Test suite failed to run`, se para.
+3. Revertir con
+   `git checkout HEAD -- src/modules/devices/application/use-cases/claim-device.use-case.ts`.
+   `git diff --quiet -- src; echo "src=$?"` debe dar `src=0`.
+4. La cadena prettier, eslint y tsc del handoff sobre `test/devices.e2e-spec.ts`, y luego
+   el commit.
+
+- **Commit 16**: `test(devices): R15 e2e reclaims a collar whose cache still says assigned`.
+
+### Commit 17: el mensaje de `UnprocessedItems` usa la constante (H3)
+
+En `backend-pet-tracker/src/modules/pets/infrastructure/pet-data-purger.aws.adapter.ts`,
+`throw new Error('UnprocessedItems after 3 attempts');` pasa a
+``throw new Error(`UnprocessedItems after ${BATCH_WRITE_ATTEMPTS} attempts`);``. El texto
+resultante no cambia. Es el mismo patrón que `src/workers/positions-consumer.service.ts`.
+
+Anclas, desde `backend-pet-tracker/`:
+
+| Orden | Antes | Después |
+|---|---|---|
+| `grep -cF "after 3 attempts" src/modules/pets/infrastructure/pet-data-purger.aws.adapter.ts` | `1` | `0` |
+| `grep -cF 'after ${BATCH_WRITE_ATTEMPTS} attempts' src/modules/pets/infrastructure/pet-data-purger.aws.adapter.ts` | `0` | `1` |
+
+Comprobación: `FORCE_COLOR=0 pnpm exec jest src/modules/pets > /tmp/impl-247-h3.log 2>&1; echo "exit=$?"`
+da `exit=0`. Antes del commit, la cadena prettier, eslint y tsc del handoff sobre ese
+fichero.
+
+- **Commit 17**: `refactor(pets): build the UnprocessedItems message from BATCH_WRITE_ATTEMPTS`.
+
+### Commit 18: registro
+
+Una sección «Enmienda del leader 2: candado D3» al final de
+`progress/impl_users-account-deletion-api.md`, con:
+
+- las anclas de los commits 16 y 17;
+- los tres `exit=` del commit 16 (verde, sonda y `src=`) y el del commit 17;
+- las líneas `Test Suites:` y `Tests:` de cada log;
+- la línea `●` de la sonda.
+
+Mensaje: `docs(users-account-deletion-api): record the D3 lock amendment`.
+
+Cuenta final: `git rev-list --count 0e70fff2..HEAD` da `20` (16, más esta enmienda, más
+los commits 16, 17 y 18).
+
 ## Mutaciones para el reviewer
 
 Cada una debe poner rojo al menos el test indicado:
@@ -533,7 +629,7 @@ Cada una debe poner rojo al menos el test indicado:
 |---|---|
 | Quitar el `null ⇒ 401` del guard | guard `#247 R2` (b); users e2e `#247 R2`, `#247 R4` (los dos) |
 | Mapear el error de `deleteMe` con `mapProfileError` (`404`) | controller `#247 R7` |
-| Quitar `{ onDelete: 'set null' }` de una de las 5 columnas | `#247 R1` (its de esquema y de FKs); e2e `#247 R9` si es `meal_servings` |
+| Quitar `{ onDelete: 'set null' }` de una de las 5 columnas del esquema TS | `#247 R1` (its de esquema y de FKs). La e2e no lo ve: su base sale de las migraciones SQL, no del esquema TS |
 | Meter `findById` dentro del `try/catch` de `verify` | guard `#247 R2` (e) |
 | Mapear `InvalidCredentialsError` a `UnauthorizedException` | controller y e2e `#247 R6` |
 | Quitar `eq(petUsers.role, 'owner')` | e2e `#247 R9` |
@@ -545,3 +641,4 @@ Cada una debe poner rojo al menos el test indicado:
 | `BATCH_WRITE_MAX_ITEMS = 26` | `#247 R15` (d) |
 | `BATCH_WRITE_ATTEMPTS = 2` | `#247 R15` (e) |
 | `Quiet: false` | `#247 R15` (b) |
+| Vetar en el claim `device.status === 'assigned'` (`claim-device.use-case.ts`) | devices e2e `R15: borrar una mascota con collar deja el device reclamable (D3)` |
