@@ -1,13 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
+import { Pool } from 'pg';
+import { PG_POOL } from './../src/db/drizzle.constants';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 
-// El escenario "Postgres caído" (R8) fuerza un DATABASE_URL a un puerto que
-// nadie escucha, sin importar el entorno — dotenv (usado por ConfigModule)
-// nunca pisa un process.env ya seteado, así que esto tiene prioridad sobre
-// el ../.env real sin tocar ese archivo.
+// R8 sustituye PG_POOL por un pool contra un puerto que nadie escucha.
+// No cambia DATABASE_URL: desde #245 R13, ConfigService lee la copia del
+// entorno tomada al importar AppModule.
 const UNREACHABLE_DATABASE_URL =
   'postgresql://pet_tracker:pet_tracker@localhost:5599/pet_tracker';
 
@@ -22,10 +23,14 @@ const UNREACHABLE_DATABASE_URL =
 // shell apuntando a un Postgres 16 propio (initdb/pg_ctl, sin Docker) —
 // ver progress/current.md y progress/impl_db-setup-drizzle.md. Ningún
 // archivo de código ni de test quedó con ese valor hardcodeado.
-async function bootstrapApp(): Promise<INestApplication<App>> {
-  const moduleFixture: TestingModule = await Test.createTestingModule({
+async function bootstrapApp(pool?: Pool): Promise<INestApplication<App>> {
+  const builder = Test.createTestingModule({
     imports: [AppModule],
-  }).compile();
+  });
+  if (pool) {
+    builder.overrideProvider(PG_POOL).useValue(pool);
+  }
+  const moduleFixture: TestingModule = await builder.compile();
 
   const app = moduleFixture.createNestApplication();
   app.setGlobalPrefix('v1');
@@ -64,16 +69,15 @@ describe('R7: GET /v1/health responde 200 con Postgres arriba', () => {
 
 describe('R8: GET /v1/health responde 503 con Postgres caído', () => {
   let app: INestApplication<App>;
-  const originalDatabaseUrl = process.env.DATABASE_URL;
 
   beforeAll(async () => {
-    process.env.DATABASE_URL = UNREACHABLE_DATABASE_URL;
-    app = await bootstrapApp();
+    app = await bootstrapApp(
+      new Pool({ connectionString: UNREACHABLE_DATABASE_URL }),
+    );
   });
 
   afterAll(async () => {
     await app.close();
-    process.env.DATABASE_URL = originalDatabaseUrl;
   });
 
   it('devuelve 503 con { postgres: "error" }, sin exponer la excepción cruda del driver', async () => {
