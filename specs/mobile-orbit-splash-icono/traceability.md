@@ -20,6 +20,15 @@ tags: [mobile, ui, mascota, orbit, assets, icono, splash, spec]
 | R10 | `src/__tests__/orbit-brand-assets.test.ts::#244 R10: la carta lleva la Enmienda #244 una sola vez, con la marca de Orbit` (C4 y C5, tras la firma G4 del humano) | pendiente |
 | R11 | guarda de `assets/` de tasks.md §Guardas finales (trece rutas; sin test de jest) | pendiente |
 
+Tanda del 2026-11-06 detenida antes del commit C2 por la guarda de lint (exit 1;
+log de 12 bytes, solo la invocación que imprime Bun). Commits TDD disponibles:
+`91b91fd7` — `test(mobile): R1 R2 R3 R8 red, Orbit brand art locked by content (#244)`;
+`1abb6782` — `test(mobile): R5 R6 R7 red, safe circle and brand pixels (#244)`.
+Las filas siguen pendientes de cierre: 41 tests verdes sobre C2 en el worktree y
+typecheck exit 0 no sustituyen la guarda fallida, las mutaciones ni las guardas finales.
+Detalle y ocho hashes medidos en `progress/impl_mobile-orbit-splash-icono.md`.
+C4 y C5 no se ejecutaron.
+
 Regla: el reviewer no aprueba si alguna fila de R1 a R9 y R11 queda sin cerrar. R10 queda
 condicionada a la casilla G4 de [[requirements]] §Aprobación; sin ella, la feature
 sigue `spec_ready` tras C3. Los gates G3 (rebuild) y G2 (smoke) son del humano y no se
