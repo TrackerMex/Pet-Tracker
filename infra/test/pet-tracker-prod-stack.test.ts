@@ -1,5 +1,5 @@
 import { App } from 'aws-cdk-lib';
-import { Template } from 'aws-cdk-lib/assertions';
+import { Match, Template } from 'aws-cdk-lib/assertions';
 import * as cxapi from 'aws-cdk-lib/cx-api';
 import { join } from 'path';
 import { PetTrackerProdStack } from '../lib/pet-tracker-prod-stack';
@@ -144,5 +144,25 @@ describe('#246 R5: colas con DLQ, bus y regla de geocercas', () => {
     expect(document?.Statement?.some((statement) =>
       JSON.stringify(statement.Principal) === JSON.stringify({ Service: 'events.amazonaws.com' }) &&
       [statement.Action].flat().includes('sqs:SendMessage'))).toBe(true);
+  });
+});
+
+describe('#246 R6: tabla positions on-demand con PITR, protección y clave de AWS', () => {
+  it('#246 R6: GlobalTable de una réplica, Retain y sin KMS', () => {
+    const region = 'mx-central-1';
+    const { template } = synthesized(region);
+    template.resourceCountIs('AWS::DynamoDB::GlobalTable', 1);
+    template.hasResourceProperties('AWS::DynamoDB::GlobalTable', {
+      TableName: 'positions', BillingMode: 'PAY_PER_REQUEST',
+      KeySchema: [{ AttributeName: 'pk', KeyType: 'HASH' }, { AttributeName: 'sk', KeyType: 'RANGE' }],
+      AttributeDefinitions: [{ AttributeName: 'pk', AttributeType: 'S' }, { AttributeName: 'sk', AttributeType: 'N' }],
+      TimeToLiveSpecification: { AttributeName: 'expires_at', Enabled: true },
+      SSESpecification: Match.absent(),
+    });
+    const table = ofType(region, 'AWS::DynamoDB::GlobalTable')[0]?.[1];
+    expect(table?.Properties?.Replicas).toEqual([{ Region: region, PointInTimeRecoverySpecification: { PointInTimeRecoveryEnabled: true }, DeletionProtectionEnabled: true }]);
+    expect(table?.DeletionPolicy).toBe('Retain');
+    expect(table?.UpdateReplacePolicy).toBe('Retain');
+    template.resourceCountIs('AWS::KMS::Key', 0);
   });
 });
