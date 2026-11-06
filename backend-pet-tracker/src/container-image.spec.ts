@@ -212,3 +212,24 @@ describe('R20: start:prod arranca el main compilado', () => {
     expect(packageScripts()['start:prod']).toBe('node dist/src/main.js');
   });
 });
+
+describe('R21: provision-device y set-device-subscription sin dotenv en código', () => {
+  it('R21: ninguno de los dos scripts contiene dotenv', () => {
+    for (const file of ['provision-device.ts', 'set-device-subscription.ts']) {
+      const source = readFileSync(
+        join(__dirname, '..', 'scripts', file),
+        'utf8',
+      );
+      expect(source).toContain('parseArgs');
+      expect(source).not.toContain('dotenv');
+    }
+  });
+  it('R21: provision:device y subscription:set cargan ../.env con --env-file-if-exists', () => {
+    expect(packageScripts()['provision:device']).toBe(
+      'node --env-file-if-exists=../.env -r ts-node/register -r tsconfig-paths/register scripts/provision-device.ts',
+    );
+    expect(packageScripts()['subscription:set']).toBe(
+      'node --env-file-if-exists=../.env -r ts-node/register -r tsconfig-paths/register scripts/set-device-subscription.ts',
+    );
+  });
+});
