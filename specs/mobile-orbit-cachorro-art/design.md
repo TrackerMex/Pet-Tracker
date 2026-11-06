@@ -95,7 +95,7 @@ sys.exit(1 if bad else 0)
    | wave-blink | 40048 | (121, 115, 123, 82) | 16 |
    | talk | 40484 | (112, 116, 164, 82) | 16 |
    | celebrate | 45710 | (94, 79, 99, 120) | 16 |
-   | sleep | 32570 | (29, 222, 35, 224) | 16 |
+   | sleep | 25882 | (114, 274, 122, 275) | 16 |
    | collar | 39430 | (116, 116, 118, 77) | 16 |
    | health | 43316 | (123, 118, 126, 82) | 16 |
    | food | 42862 | (106, 119, 113, 82) | 16 |
@@ -220,7 +220,7 @@ Cada una se planta sobre el verde final, se corre el test indicado y se revierte
 | M5 | Quitar `orbit-health.webp` | R1 y `orbit-rename.test.ts` (los `require` de `EmptyState` no resuelven) |
 | M6 | Cambiar un byte de un PNG de `design-src/` | R3 «fuentes congeladas» |
 | M7 | Borrar `convert-orbit.py` o cambiar `quality=80` por `quality=82` en él | R3 «script» |
-| M8 | Reconvertir `orbit-sleep.webp` con un reescalado al 80 % (zona ciega: márgenes) | R2 y, en el script, `FALLA` solo si el margen baja de 24 |
+| M8 | Reconvertir `orbit-sleep.webp` desde la fuente original sin reescalar (zona ciega: márgenes y ancho) | R2 y, en el script, `FALLA` solo si el margen baja de 24 |
 | M9 | Copiar el arte viejo de una pose con otro nombre en `assets/images/` (`orbit-old.webp`) | R1 (lista) y R2 (arte viejo presente) |
 | M10 | Duplicar la sección `## Enmienda #243` en la carta | R6 «una sola vez» |
 | M11 | Quitar «Pingo» del cuerpo de la enmienda | R6 (literal `Pingo`) |
@@ -241,8 +241,8 @@ de bytes. Plantarlas confirma que el pin mira donde el resto de los candados no.
 - **Un test de jest que lance Python**: CI no tiene `uv` (D2).
 - **Decodificar WebP en jest** (por ejemplo con un paquete de pixeles): una dependencia
   nueva por una comprobación que ya cubre el pin de bytes (D9).
-- **Reescalar o recentrar `sleep`** para igualar el ancho de las otras poses: cambia el
-  arte aprobado; el humano lo compara en el smoke (D5).
+- **Recentrar `sleep` o reescalar otras poses**: solo `sleep` se reescala (82 %, D5);
+  el resto se queda como lo generó Codex.
 - **Enmendar el punto 7 de la carta** con la descripción: lo fija
   `orbit-charter-voice.test.ts` y no es el sitio de un aspecto gráfico (D6).
 - **Pin solo por tamaño en bytes**: dos conversiones distintas pueden coincidir en

@@ -36,8 +36,7 @@ No firmé nada: las cuatro casillas de requirements.md §Aprobación están sin 
    cabeza y otro parche, y `welcome` las superpone con opacidad 0 a 1. Habrá un salto
    visible. Está en el smoke G2 paso 2. Si el humano lo rechaza, hay que regenerar
    `wave-blink` y reabrir G1 solo para esa pose.
-3. **`sleep` se ve ≈ 20 % más ancha** (márgenes 29 y 35 px). No se reescala (D5); el
-   humano lo valora en el smoke.
+3. **`sleep`** se reescaló al 82 % por decisión del leader delegada por el humano (D5): ancho 788 px, márgenes 114, 274, 122 y 275 px.
 4. **G1 antes del handoff.** La casilla G1 es sobre los diez PNG de `design-src/` con
    sus hashes. Si el humano cambia una pose después de firmar, hay que enmendar la
    tabla de §Constantes y el test, y reabrir el gate solo para ese cambio.

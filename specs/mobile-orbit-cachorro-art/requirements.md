@@ -131,7 +131,7 @@ cambiar el binario no mueve ningún cálculo de layout.
   que la sigan SHALL empezar por `## Enmienda #`.
   - Prueba: `::#243 R6: la carta lleva la Enmienda #243 una sola vez, con la descripción nueva` (usa
     `[ xX]` en la casilla: al firmar, el humano la marca y no debe ponerse rojo).
-  - Este requisito **no entra** en la cadena hasta que el humano firme G4 (§Aprobación).
+  - G4 quedó firmada el 2026-11-06 (§Aprobación): este requisito entra en la cadena.
     Se hace al final (tasks.md C4 y C5) y es del leader o de Codex según el handoff.
   - `orbit-charter-voice.test.ts` (que fija el bloque del punto 7) no cambia: la
     enmienda se añade al final y no toca el punto 7.
@@ -163,7 +163,7 @@ leader reabre el gate solo para ese cambio.
 | talk | 40484 | `b0e292c12012c2d9468146d5ca8a436b3ea5017ab09db908756d50f950136014` | `af16821827af1d6ff432fd124e22d9c2121ce67c97c3c9d1335d4cda1ad275fb` | `ddf23c63c24f049c066f4413993f7d181e9ed62e3ac0108ae74c13d9a78c48bc` |
 | walk | 38914 | `391db95f89c993be39263e8d81ddc8d899c2841aecf3436a4fb75895a7faba41` | `12c52706e7b5cc7124a0974e04834e5e5c6c96a0549bcaacbbef10766cac9687` | `a1f2e72a850f099c985aba55ea0e809137ec055fc9118ee4efd6f45203fe8d00` |
 | celebrate | 45710 | `dc04b17c2141975dc7f94f891fceee027d35ea641752b911430e7e2a7899f2f7` | `b8e9745f73dedc6d72f89a588046a7440f32df4b2e9685e70fa96a2b70e3a254` | `a41f9391595cdb2b55c975a1544eba1fdd2b266e9ee13121ed44233ca038962e` |
-| sleep | 32570 | `7dc5ee5f8e6a55b63d03bb3a633ff9e541f4c7c3fad46ba8e8d799a7c2170f7c` | `e7fba39ad9c9d24c3520c82c26b2dc3055103f329b13a60715e15f6acba6938b` | `e00e457f8b9ec6641bb2769292b702a39e1c6cec0c776a223cb7b94859a9273b` |
+| sleep | 25882 | `29c241fdfaf29f91b0468b6c4332e59ccabec3f9bf6f475d92dac4045669790e` | `e7fba39ad9c9d24c3520c82c26b2dc3055103f329b13a60715e15f6acba6938b` | `9929b377ffc90d53e3b392317768ca1a55a98cdef0d1a029d1dce85d428b1dca` |
 | collar | 39430 | `e398800a813d36d2d2fc401dd298df41f72f856c253126ed98ff47b1fda8edc9` | `298e8a956c853a00b737ab05a0ba3497912cf7bf8f29f86d25bb515031d085b1` | `4fc777280109bcfa96dbc3ad1a30f53f2c9db2c506ea6c16bdb12292005bc820` |
 | health | 43316 | `77dcf90cbcada5d500692b4fd1e3bd2507fcd52971584c7fa14035de507c84d8` | `bc02bf6f4b67ba2834847b5c9dac919b66df227e918502238e2e9fe5884f3ccc` | `2033fa59f8bbf0b4e3dafd64f99fc87cc5de592d282b3a18bccebbd8ddbd3b1a` |
 | food | 42862 | `c7737dfe65188b16fb42f2e70ce59bfd6aec655d5c7cb3818c675d9ab5d93b13` | `da68c5bbbe82b2bcb448f6a12d7da77774adc261e75d356c747c0a9614fb483f` | `dd61cf8121382a41b87fd6b161207bf479b9df5b5943cda63c2410c8af748760` |
@@ -238,10 +238,17 @@ Ningún texto de `docs/` ni de `mobile-pet-tracker/src/` describe el aspecto vie
   tiene candados propios. Consecuencia que el humano acepta al firmar: hasta la
   feature de seguimiento, el splash de arranque y el icono mostrarán el robot viejo,
   y Bienvenida el cachorro. Se recomienda registrar esa feature.
-- **D5. No se reescala nada.** `sleep` queda con 29 px (izquierda) y 35 px (derecha) de
-  margen transparente en su marco de 1024 y se ve ≈ 20 % más ancho que las demás; es
-  la composición que el humano eligió. El script exige un margen ≥ 24 px y falla si
-  alguna pose lo incumple.
+- **D5. `sleep` se reescala al 82 % y es la única.** La fuente generada por Codex
+  ocupaba 960 px de ancho (márgenes 29 y 35 px), un 23 % más que las demás poses
+  (≈ 780 px), y en `EmptyState` (160 / 190) se habría visto desproporcionada junto a
+  `talk` o `clipboard`. El humano delegó la decisión en el leader (2026-11-06) y la
+  fuente `design-src/orbit-sleep.png` es la original reescalada con Lanczos al 82 %
+  alrededor del centro de su silueta (ancho 788 px, márgenes 114, 274, 122 y 275 px),
+  con `specs/mobile-orbit-cachorro-art/rescale-sleep.py`
+  (`uvx --with pillow==13.0.0 python -I … <entrada> <salida> 0.82`). El original sin
+  reescalar queda fuera del repo, en `~/pet-tracker-mascot/v2/poses/pingo-sleep.png`.
+  Ninguna otra pose se reescala ni se recentra. El script de conversión sigue
+  exigiendo un margen ≥ 24 px.
 - **D6. La enmienda de la carta (G4) es una sección nueva y separada.** El punto 7 de
   la carta no se toca (lo fija `orbit-charter-voice.test.ts`). Todo encabezado `##`
   posterior a la Enmienda #195 debe empezar por `## Enmienda #`
@@ -285,15 +292,17 @@ oscuro:
 - [x] Firmada por el leader con la firma delegada (mandato 2026-10-26 UI), tras la
   checklist de `progress/plan_canvas-parity-2026-10-23.md` §4 y los tres puntos de
   `progress/plan_ui-2026-10-26.md` §4 (fecha: 2026-11-06)
-- [ ] G1: arte final aprobado por el humano, los diez PNG de `design-src/` con los
-  sha256 de §Constantes, y el copy sin cambios (humano; fecha: ____)
-- [ ] G4: enmienda de `docs/ui-guidelines.md` aprobada por el humano, con el literal
-  de design.md §4 (humano; fecha: ____)
+- [x] G1: arte final aprobado por el humano, los diez PNG de `design-src/` con los
+  sha256 de §Constantes, y el copy sin cambios (humano; fecha: 2026-11-06; fuente: su
+  mensaje en la sesión de Frontend, cuenta alexfdgf32@gmail.com, «G1 ok»; el mismo
+  mensaje autoriza el reescalado de `sleep`, D5)
+- [x] G4: enmienda de `docs/ui-guidelines.md` aprobada por el humano, con el literal
+  de design.md §4 (humano; fecha: 2026-11-06; fuente: su mensaje en la sesión de
+  Frontend, cuenta alexfdgf32@gmail.com, «apruebo G4»; lo registra el leader)
 - [ ] Smoke G2 en dispositivo, pasos 1–6, claro y oscuro (humano; fecha: ____)
 
 G6 (PNG del icono de Orbit) **no** es una casilla de esta feature: queda fuera (D4).
 
-#243 puede implementarse (C1 a C3 de tasks.md) y mergearse en `dev` con la primera y
-la segunda casilla firmadas y el veredicto «aprobado» del `reviewer` sobre R1–R5 y R7.
-R6 (C4 y C5) espera a la casilla G4. Queda `spec_ready`, no `done`, hasta que estén
+#243 se implementa entera (C1 a C5 de tasks.md) y se mergea en `dev` con las tres
+primeras casillas firmadas y el veredicto «aprobado» del `reviewer` sobre R1–R7. Queda `spec_ready`, no `done`, hasta que estén
 cerradas las cuatro.
