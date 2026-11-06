@@ -3,6 +3,7 @@ const { join } = jest.requireActual<typeof import('path')>('path');
 const { createHash } = jest.requireActual<typeof import('crypto')>('crypto');
 const imagesRoot = join(process.cwd(), 'assets', 'images');
 const specRoot = join(process.cwd(), '..', 'specs', 'mobile-orbit-cachorro-art');
+const charterPath = join(process.cwd(), '..', 'docs', 'ui-guidelines.md');
 
 const POSES = ['wave', 'wave-blink', 'talk', 'walk', 'celebrate', 'sleep', 'collar', 'health', 'food', 'clipboard'] as const;
 const NEW_SHA = {
@@ -94,4 +95,18 @@ it('#243 R3: el script de conversión está en la spec con sus parámetros', () 
   expect(script).toContain('pillow==13.0.0');
   expect(script).toContain('quality=80, method=6');
   expect(script).toContain('def clean(');
+});
+
+it('#243 R6: la carta lleva la Enmienda #243 una sola vez, con la descripción nueva', () => {
+  const charter = fs.readFileSync(charterPath, 'utf8');
+  const heading = '## Enmienda #243 — ';
+  expect(charter.split(heading).length - 1).toBe(1);
+  const following = charter.split(heading)[1];
+  const body = following.split('\n## ')[0];
+  for (const literal of ['cachorro', 'parche morado', '#178255', 'antena', 'Pingo', 'diez poses']) {
+    expect(body).toContain(literal);
+  }
+  expect(body).toMatch(/- \[[ xX]\] Enmienda #243 aprobada por humano/);
+  const followingHeadings = following.match(/^## .+$/gm) ?? [];
+  followingHeadings.forEach(followingHeading => expect(followingHeading).toMatch(/^## Enmienda #/));
 });
