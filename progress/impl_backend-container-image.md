@@ -1062,3 +1062,95 @@ La primera lectura del handoff estuvo precedida por pwd y git status --short (va
 `git rev-list --count 08dd2515..HEAD`: **50** (47 de Codex + 3 enmiendas del leader), incluido el commit que contiene este reporte; comprobado tras crearlo. Las filas R1–R23 de traceability están completas. El árbol de backend-pet-tracker, specs, docs y .env.example queda limpio; solo se dejará sin commit el marcador solicitado.
 
 PARA de R21 resuelto por la enmienda 430aabf6 del leader: los dos casts preexistentes de onConflictDoUpdate.set impedían eslint=0. Se quitaron solo los dos autorizados, con anclas status 4→3 y planCode 4→3; los de values, validación y retorno siguen. La reanudación completó el verde de R21 y su E2E antes de avanzar. El PARA de Cierre (1) se resolvió mediante c14f6256 y el commit de candados con su mutación de control. El PARA de Cierre (2) se resolvió mediante 65473389 y el commit de fixtures PG_POOL con sus comprobaciones de antes y después. No quedan bloqueos. El leader conserva los gates init.sh y Docker, la revisión y la PR.
+
+## Enmienda 3
+
+Spec del leader: `8a6e1fa0`. Worktree `/home/claude/sites/Pet-Tracker-wt-245`, branch `feature/245-backend-container-image`. Base de esta reanudación: 51 commits sobre H0 `08dd2515`.
+
+El gate Docker del leader sobre aaabb4c4 construyó la imagen, pero node abortó con exit 13: BuildKit creó los padres /etc/ssl y /etc/ssl/certs con 0444 al copiar el PEM. La enmienda manda llevarlo directamente a /app, que WORKDIR ya creó con permisos transitables. Codex no ejecutó init.sh ni ningún comando Docker ni volvió a descargar el bundle. El nuevo gate de imagen corresponde al leader.
+
+### Paso 1: rojo
+
+`ab06d779 test(backend-container-image): pin RDS CA bundle directly under /app (R17)`. Solo cambiaron tres literales de src/container-image.spec.ts; los nombres de los it se conservaron. Prettier, prettier --check, eslint y tsc: exit=0.
+
+Jest `/tmp/impl-245-R17b-red.log`: exit=1. El grep de ReferenceError/Cannot find module/error TS/TypeError da 0. Fallan exactamente los dos it indicados por la enmienda, ambos por toContain; los otros 16 pasan.
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 16 passed, 18 total
+R17: la etapa runtime trae el bundle de CA de RDS versionado › R17: runtime copia el PEM con 0444 y NODE_EXTRA_CA_CERTS apunta a su destino, ambos antes de USER
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: "COPY --from=build --chmod=0444 /app/certs/rds-global-bundle.pem /app/rds-global-bundle.pem"
+    Received array: ["FROM node:24-bookworm-slim AS runtime", "WORKDIR /app", "ENV NODE_ENV=production", "COPY --from=deps /app/node_modules ./node_modules", "COPY --from=build /app/dist ./dist", "EXPOSE 3000", "COPY --from=build --chmod=0444 /app/certs/rds-global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem", "ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/rds-global-bundle.pem", "COPY --from=build /app/src/db/migrations ./dist/src/db/migrations", "USER node", …]
+
+      139 |       'COPY --from=build --chmod=0444 /app/certs/rds-global-bundle.pem /app/rds-global-bundle.pem';
+      140 |     const env = 'ENV NODE_EXTRA_CA_CERTS=/app/rds-global-bundle.pem';
+
+R17: la etapa runtime trae el bundle de CA de RDS versionado › R17: ninguna instrucción ADD descarga de una URL
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: "COPY --from=build --chmod=0444 /app/certs/rds-global-bundle.pem /app/rds-global-bundle.pem"
+    Received array: ["FROM node:24-bookworm-slim AS runtime", "WORKDIR /app", "ENV NODE_ENV=production", "COPY --from=deps /app/node_modules ./node_modules", "COPY --from=build /app/dist ./dist", "EXPOSE 3000", "COPY --from=build --chmod=0444 /app/certs/rds-global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem", "ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/rds-global-bundle.pem", "COPY --from=build /app/src/db/migrations ./dist/src/db/migrations", "USER node", …]
+
+      153 |   });
+      154 |   it('R17: ninguna instrucción ADD descarga de una URL', () => {
+```
+
+### Paso 2: verde
+
+`b9ebb0c4 fix(backend-container-image): copy RDS CA bundle into /app so --chmod spares /etc/ssl (R17)`. Solo cambiaron el destino del COPY y NODE_EXTRA_CA_CERTS en runtime, ambos a /app/rds-global-bundle.pem, antes de USER node. Se conservan --chmod=0444 y la prohibición de RUN. Prettier/check, eslint y tsc sobre el spec: exit=0.
+
+Jest `/tmp/impl-245-R17b-green.log`: exit=0. `grep -cF "/etc/ssl" Dockerfile` da 0.
+
+```text
+Test Suites: 1 passed, 1 total
+Tests:       18 passed, 18 total
+```
+
+### Paso 3: mutación revertida
+
+Se devolvieron temporalmente el destino del COPY y el valor del ENV a /etc/ssl/certs/rds-global-bundle.pem y se ejecutó el mismo Jest con las Esperas. No se commiteó la mutación. Prettier/check, eslint y tsc: exit=0.
+
+Log `/tmp/impl-245-R17b-mutation.log`: exit=1, exactamente los dos it del paso 1, por toContain:
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 16 passed, 18 total
+R17: la etapa runtime trae el bundle de CA de RDS versionado › R17: runtime copia el PEM con 0444 y NODE_EXTRA_CA_CERTS apunta a su destino, ambos antes de USER
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: "COPY --from=build --chmod=0444 /app/certs/rds-global-bundle.pem /app/rds-global-bundle.pem"
+    Received array: ["FROM node:24-bookworm-slim AS runtime", "WORKDIR /app", "ENV NODE_ENV=production", "COPY --from=deps /app/node_modules ./node_modules", "COPY --from=build /app/dist ./dist", "EXPOSE 3000", "COPY --from=build --chmod=0444 /app/certs/rds-global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem", "ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/rds-global-bundle.pem", "COPY --from=build /app/src/db/migrations ./dist/src/db/migrations", "USER node", …]
+
+      139 |       'COPY --from=build --chmod=0444 /app/certs/rds-global-bundle.pem /app/rds-global-bundle.pem';
+      140 |     const env = 'ENV NODE_EXTRA_CA_CERTS=/app/rds-global-bundle.pem';
+
+R17: la etapa runtime trae el bundle de CA de RDS versionado › R17: ninguna instrucción ADD descarga de una URL
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: "COPY --from=build --chmod=0444 /app/certs/rds-global-bundle.pem /app/rds-global-bundle.pem"
+    Received array: ["FROM node:24-bookworm-slim AS runtime", "WORKDIR /app", "ENV NODE_ENV=production", "COPY --from=deps /app/node_modules ./node_modules", "COPY --from=build /app/dist ./dist", "EXPOSE 3000", "COPY --from=build --chmod=0444 /app/certs/rds-global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem", "ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/rds-global-bundle.pem", "COPY --from=build /app/src/db/migrations ./dist/src/db/migrations", "USER node", …]
+
+      153 |   });
+      154 |   it('R17: ninguna instrucción ADD descarga de una URL', () => {
+```
+
+Restauración: `git checkout HEAD -- Dockerfile`. Después, `git diff --quiet && git diff --cached --quiet` dio clean exit=0.
+
+### Paso 4: trazabilidad y cierre
+
+La fila R17 conserva b918e1bf y añade el hash y mensaje del fix b9ebb0c4. El commit documental es `HEAD` al cerrar: `docs(backend-container-image): record the RDS CA bundle path amendment` (referencia a su propio commit para evitar un hash circular). El conteo final de esta enmienda es `git rev-list --count 08dd2515..HEAD`: 54, incluido ese commit. Las cifras 50 de las secciones anteriores describen el cierre previo, antes de la enmienda del leader y de estos tres commits.
+
+Antes de cada Jest se comprobaron DATABASE_URL no exportada (0) y la espera sin procesos de init.sh (espera=1). Tras restaurar se vuelve a ejecutar el mismo spec en verde antes del commit documental. Los logs permanecen en /tmp.
+
+Jest final tras restaurar, `/tmp/impl-245-R17b-restored.log`: exit=0; prettier/check, eslint y tsc exit=0.
+
+```text
+Test Suites: 1 passed, 1 total
+Tests:       18 passed, 18 total
+```
