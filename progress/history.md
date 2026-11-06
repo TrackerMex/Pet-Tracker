@@ -10391,3 +10391,4 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
 
 - **Acciones:** el humano firmó G4 en chat el 2026-11-06 y el leader lo registró en `requirements.md` (`f201b9df`). Codex CLI hizo C4 (`2a53b995`, test en rojo por aserción: la cuenta de `## Enmienda #244 — ` era 0) y C5 (`1cdf6c63`, la Enmienda #244 al final de `docs/ui-guidelines.md`, con la casilla desmarcada porque el test la exige así). Reviewer: aprobado, con una mutación propia (encabezado duplicado, rojo con esperado 1 y recibido 2).
 - **Estado final:** spec_ready. `done` espera a G3 (rebuild del dev build) y al smoke G2 en dispositivo.
+- **Cierre (2026-11-06):** el humano marcó G3 y G2 en `requirements.md` (rebuild del dev build y smoke en dispositivo, pasos 1–6). Con G4, G3 y G2 cerradas y los veredictos «aprobado» del `reviewer` de los dos tramos, `feature_list.json` pasa #244 a `done`.
