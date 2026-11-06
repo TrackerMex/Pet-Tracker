@@ -1,3 +1,4 @@
+import * as iam from 'aws-cdk-lib/aws-iam';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as ecsPatterns from 'aws-cdk-lib/aws-ecs-patterns';
@@ -80,7 +81,7 @@ export class PetTrackerProdStack extends Stack {
       eventPattern: { source: [EVENT_SOURCE], detailType: [DETAIL_TYPE_POSITION_UPDATED, DETAIL_TYPE_BATTERY_LOW] },
     });
     geofenceEventsRule.addTarget(new targets.SqsQueue(geofenceEventsQueue));
-    new dynamodb.TableV2(this, 'PositionsTable', {
+    const table = new dynamodb.TableV2(this, 'PositionsTable', {
       tableName: TABLE_POSITIONS,
       billing: dynamodb.Billing.onDemand(),
       partitionKey: { name: TABLE_POSITIONS_PARTITION_KEY, type: dynamodb.AttributeType.STRING },
@@ -151,5 +152,17 @@ export class PetTrackerProdStack extends Stack {
     });
     api.targetGroup.configureHealthCheck({ path: '/v1/health/live', healthyHttpCodes: '200' });
     api.targetGroup.setAttribute('deregistration_delay.timeout_seconds', '30');
+    api.taskDefinition.taskRole.addToPrincipalPolicy(new iam.PolicyStatement({
+      actions: ['s3:GetObject', 's3:PutObject'], resources: [bucket.arnForObjects('*')],
+    }));
+    api.taskDefinition.taskRole.addToPrincipalPolicy(new iam.PolicyStatement({
+      actions: ['s3:DeleteObject'], resources: [bucket.arnForObjects('pets/*')],
+    }));
+    api.taskDefinition.taskRole.addToPrincipalPolicy(new iam.PolicyStatement({
+      actions: ['s3:ListBucket'], resources: [bucket.bucketArn], conditions: { StringLike: { 's3:prefix': 'pets/*' } },
+    }));
+    api.taskDefinition.taskRole.addToPrincipalPolicy(new iam.PolicyStatement({
+      actions: ['dynamodb:Query', 'dynamodb:BatchWriteItem'], resources: [table.tableArn],
+    }));
   }
 }
