@@ -472,8 +472,8 @@ Sin casilla: iOS no se verifica (D8, feature #60).
   design.md §5 (humano; fecha: 2026-11-06; fuente: mensaje del humano en la sesión
   @Frontend el 2026-11-06, «tienes mi aprobacion para G4 puedes empezar mientras yo
   realizo el dev build»)
-- [ ] G3: rebuild del dev build con los iconos nuevos (humano; fecha: ____)
-- [ ] Smoke G2 en dispositivo, pasos 1–6 (humano; fecha: ____)
+- [X] G3: rebuild del dev build con los iconos nuevos (humano; fecha: 2026-11-06)
+- [X] Smoke G2 en dispositivo, pasos 1–6 (humano; fecha: 2026-11-06)
 
 #244 se implementa en dos tramos (tasks.md): C1 a C3 (R1 a R9 y R11) no necesitan
 G4 y se mergean en `dev` con la firma del leader, G6 y el veredicto «aprobado» del

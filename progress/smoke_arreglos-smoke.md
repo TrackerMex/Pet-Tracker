@@ -27,7 +27,7 @@ a través de la fila atenuada. Reproduce el paso 3 del smoke de #228.
    deslizan.
 8. Repite 2 a 6 en tema claro y en tema oscuro.
 
-- [ ] Smoke de #239 pasado (fecha: )
+- [X] Smoke de #239 pasado (fecha: 2026-11-06)
 
 ## #241 mobile-health-vaccines-upcoming-past
 
@@ -50,7 +50,7 @@ dosis.
 5. Pulsa otra vez: se colapsa.
 6. Repite 1 a 5 en el otro tema (claro u oscuro).
 
-- [ ] Smoke de #241 pasado (fecha: )
+- [X] Smoke de #241 pasado (fecha: 2026-11-06)
 
 ## #240 mobile-reminder-date-year
 
@@ -88,4 +88,4 @@ solo cuando la fecha cae fuera del año en curso.
    es aceptable si lleva el año solo donde toca.
 7. Repite 2 y 4 en tema claro y oscuro.
 
-- [ ] Smoke de #240 pasado (fecha: )
+- [X] Smoke de #240 pasado (fecha: 2026-11-06)
