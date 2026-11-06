@@ -1,6 +1,5 @@
 import { parseArgs } from 'node:util';
 import { ConfigService } from '@nestjs/config';
-import { config as loadDotenv } from 'dotenv';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -99,7 +98,6 @@ export async function provisionDevice(
 }
 
 async function main(): Promise<void> {
-  loadDotenv({ path: '../.env' });
   const { values } = parseArgs({
     // pnpm reenvia el separador `--` literal; parseArgs lo leeria como fin
     // de opciones y rechazaria el resto como posicionales.

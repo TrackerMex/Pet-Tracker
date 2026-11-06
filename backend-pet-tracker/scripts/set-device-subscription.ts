@@ -1,5 +1,4 @@
 import { parseArgs } from 'node:util';
-import { config as loadDotenv } from 'dotenv';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -98,8 +97,8 @@ export async function setDeviceSubscription(
     .onConflictDoUpdate({
       target: deviceSubscriptions.deviceId,
       set: {
-        status: status as DeviceSubscriptionStatus,
-        planCode: planCode as DeviceSubscriptionPlanCode,
+        status: status,
+        planCode: planCode,
         currentPeriodEnd,
         updatedAt: now,
       },
@@ -131,7 +130,6 @@ export async function setDeviceSubscription(
 }
 
 async function main(): Promise<void> {
-  loadDotenv({ path: '../.env' });
   const { values } = parseArgs({
     args: process.argv.slice(2).filter((arg) => arg !== '--'),
     options: {
