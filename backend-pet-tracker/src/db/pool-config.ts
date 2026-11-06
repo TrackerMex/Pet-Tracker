@@ -8,5 +8,13 @@ export class DatabaseConfigError extends Error {
   }
 }
 export function buildPoolConfig(config: ConfigService): PoolConfig {
-  return { connectionString: config.get<string>('DATABASE_URL') };
+  const raw = config.get<string>('DB_POOL_MAX')?.trim();
+  if (raw && !/^[1-9]\d*$/.test(raw))
+    throw new DatabaseConfigError(
+      'Invalid database configuration: DB_POOL_MAX',
+    );
+  return {
+    connectionString: config.get<string>('DATABASE_URL'),
+    max: raw ? Number(raw) : DEFAULT_DB_POOL_MAX,
+  };
 }
