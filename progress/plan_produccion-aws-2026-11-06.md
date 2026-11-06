@@ -62,7 +62,7 @@ cierra el leader. Las de costo o de producto pasan al §5 (D2, D4).
 | 3 | TLS con el bundle global de CA de RDS dentro de la imagen y `NODE_EXTRA_CA_CERTS`, con verificación del certificado | #245 |
 | 4, 5 | El dispatcher de recordatorios sigue en proceso. El servicio de workers despliega con `minHealthyPercent: 0` y `maxHealthyPercent: 100`: nunca hay dos tareas vivas. EventBridge Scheduler no vuelve | #246 |
 | 7 | `trust proxy` en la API. El límite de correo sigue en memoria por tarea. Se acepta: con N tareas el límite efectivo es N veces el nominal. Queda como deuda | #245 |
-| 8 | El apagado ordenado (shutdown hooks y cierre del pool) y los logs en JSON de una línea entran en #245 | #245 |
+| 8 | El apagado ordenado (shutdown hooks y cierre del pool) y los logs en JSON de una línea entran en #245. Si un tick del dispatcher sigue vivo al vencer el drenaje, se abandona y puede reenviar un recordatorio en la tarea siguiente. Se acepta como deuda | #245 |
 | 9 | El ALB y ECS usan un liveness que no toca la base. `/v1/health`, que sí la toca, queda para el health check de Route 53 en #249 | #245, #246 |
 | 10 | Aurora 17 (ver arriba) | #246 |
 | 11 | Imagen x86_64: `cdk deploy` construye la imagen en la máquina del humano. arm64 se deja para cuando haya pipeline | #245, #246 |
@@ -85,7 +85,7 @@ El backend tiene que poder correr en Fargate. La explore
 - `Dockerfile` multi-stage con una imagen final sin herramientas de build y usuario no root;
 - endpoint de health para el ALB y para Route 53;
 - apagado ordenado con SIGTERM;
-- migraciones y seeds ejecutables como tarea única de ECS;
+- migraciones ejecutables como tarea única de ECS (no hay seeds: el catálogo de vacunas va en la migración 0023), y también `provision-device` y `set-device-subscription`, para dar de alta los collares reales que pide D4;
 - validación de la configuración al arrancar;
 - TLS hacia Aurora con el CA de RDS;
 - en AWS real, uso de las credenciales del task role, sin endpoint de LocalStack.
@@ -103,9 +103,9 @@ miércoles se despliega solo en mx-central-1, como `primary`. Contiene:
   - un cluster ECS;
   - un servicio Fargate de API detrás de un ALB con HTTPS (ACM) y autoescalado;
   - un servicio Fargate de workers con 1 tarea en `primary` y 0 en `standby`.
-- **Base de datos:** Aurora PostgreSQL Serverless v2 ≥ 16.4 con escritor y lector en AZ distintas.
+- **Base de datos:** Aurora PostgreSQL 17 (17.4 o posterior) Serverless v2 con escritor y lector en AZ distintas.
 - **Datos y mensajería:**
-  - DynamoDB `positions` con PITR, declarada para poder sumar réplicas (#249);
+  - DynamoDB `positions` en modo on-demand (decisión del leader: sin capacidad que dimensionar) con PITR, declarada para poder sumar réplicas (#249);
   - las colas SQS y sus DLQ;
   - el bus y la regla de EventBridge;
   - el bucket S3 de media, versionado, cifrado y con acceso público bloqueado.
@@ -168,7 +168,7 @@ de conmutación es GA7, del humano.
 |---|---|---|
 | Vie 6 | Plan; explores de producción y de borrado; specs de #245–#248 | Contesta D1–D3 (§5) |
 | Sáb 7–Dom 8 | Firma delegada; Codex en #245 y #246 en paralelo (`backend-pet-tracker/` frente a `infra/`); después #247 y #248 | GA1: dominio, zona y certificado |
-| Lun 9 | Reviews y merges a `dev` | GA2 secretos, GA3 `cdk bootstrap` + `cdk deploy` mx-central-1, GA4 migraciones y seeds |
+| Lun 9 | Reviews y merges a `dev` | GA2 secretos, GA3 `cdk bootstrap` + `cdk deploy` mx-central-1, GA4 migraciones y alta de los collares reales |
 | Mar 10 | Apoyo al smoke | GA5 smoke contra producción; la app apunta a `https://api.<dominio>`; ensayo |
 | Mié 11 | — | Presentación. **Plan B:** el backend local de siempre, listo en el PC |
 | Semana del 16 | #249 | GA3 en us-east-2, GA7 simulacro de failover |
@@ -201,7 +201,7 @@ A la checklist de firma se le suman tres puntos:
 | GA1 | Dominio, zona hospedada y certificado ACM | Antes de GA3 | este plan |
 | GA2 | Crear en Secrets Manager los secretos que nombra #246 | Antes de GA3 | este plan |
 | GA3 | `cdk bootstrap` y `cdk deploy` (mx-central-1; us-east-2 con #249) | Lunes 9 | este plan |
-| GA4 | Migraciones y seeds en producción | Tras GA3 | este plan |
+| GA4 | Migraciones en producción y alta de los collares reales (`provision-device`, `set-device-subscription`) como tareas únicas de ECS | Tras GA3 | este plan |
 | GA5 | Smoke contra producción | Martes 10 | este plan |
 | GA6 | Alarma de presupuesto en AWS Budgets | Con GA3 | este plan |
 | GA7 | Simulacro de failover a us-east-2 | Con #249 | este plan |
