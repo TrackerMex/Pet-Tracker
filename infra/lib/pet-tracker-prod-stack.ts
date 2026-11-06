@@ -1,3 +1,4 @@
+import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import * as events from 'aws-cdk-lib/aws-events';
@@ -7,11 +8,12 @@ import {
   QUEUE_NOTIFICATIONS, QUEUE_NOTIFICATIONS_DLQ,
   QUEUE_GEOFENCE_EVENTS, QUEUE_GEOFENCE_EVENTS_DLQ,
   SQS_MAX_RECEIVE_COUNT, EVENT_BUS_NAME, EVENT_SOURCE,
+  BUCKET_MEDIA_BASE, resourceName,
   TABLE_POSITIONS, TABLE_POSITIONS_PARTITION_KEY, TABLE_POSITIONS_SORT_KEY, TABLE_POSITIONS_TTL_ATTRIBUTE,
   DETAIL_TYPE_POSITION_UPDATED, DETAIL_TYPE_BATTERY_LOW, RULE_GEOFENCE_EVENTS,
 } from '@backend/aws/constants';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
-import { Duration, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
+import { Aws, Duration, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 
 export interface PetTrackerProdStackProps extends StackProps {
@@ -79,6 +81,15 @@ export class PetTrackerProdStack extends Stack {
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
       deletionProtection: true,
       removalPolicy: RemovalPolicy.RETAIN,
+    });
+    new s3.Bucket(this, 'MediaBucket', {
+      bucketName: resourceName(BUCKET_MEDIA_BASE, `prod-${this.region}-${Aws.ACCOUNT_ID}`),
+      versioned: true,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      enforceSSL: true,
+      removalPolicy: RemovalPolicy.RETAIN,
+      lifecycleRules: [{ noncurrentVersionExpiration: Duration.days(30), expiredObjectDeleteMarker: true }],
     });
   }
 }
