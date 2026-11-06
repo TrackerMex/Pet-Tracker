@@ -761,7 +761,19 @@ En los ficheros nuevos basta `R<n>:`.
   - **Commit**: `test(backend-container-image): pin one-off scripts free of dotenv (R21)`.
 - [ ] (2) **Verde**:
   - en los dos scripts, quitar `import { config as loadDotenv } from 'dotenv';`
-    y la llamada `loadDotenv({ path: '../.env' });` de `main()`. Nada más;
+    y la llamada `loadDotenv({ path: '../.env' });` de `main()`;
+  - **Enmienda del leader (2026-11-06, PARA de Codex en R21):** en
+    `scripts/set-device-subscription.ts`, dentro del `set: { ... }` de
+    `.onConflictDoUpdate(...)`, quitar también los dos casts que eslint marca con
+    `@typescript-eslint/no-unnecessary-type-assertion` (deuda previa a H0: el fichero
+    nunca había pasado por eslint). Quedan `status: status,` y `planCode: planCode,`
+    (el leader lo probó con `eslint --stdin`: sale `0`). Los casts de
+    `.values({ ... })`, de la validación y del `console.log` final se quedan, y los dos
+    imports de tipo siguen en uso. Anclas tras el cambio, desde `backend-pet-tracker/`:
+    `grep -cF 'status as DeviceSubscriptionStatus' scripts/set-device-subscription.ts`
+    da `3` (antes `4`) y
+    `grep -cF 'planCode as DeviceSubscriptionPlanCode' scripts/set-device-subscription.ts`
+    da `3` (antes `4`). Nada más;
   - cambiar esos dos scripts de `package.json` a los literales de R21;
   - comprobar que el e2e que ya lanza `provision-device.ts` sigue en verde
     (sus dos `spawnSync` fallan antes de conectar y no necesitan `.env`):
