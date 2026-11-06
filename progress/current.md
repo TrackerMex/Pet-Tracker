@@ -3,6 +3,12 @@
 > Este archivo describe el estado de la sesion en curso.
 > Al cerrar la sesion, mueve este contenido a progress/history.md y deja solo esta plantilla.
 
+## Cierre de #239–#241 (2026-11-06)
+
+- Smoke G2 del humano sobre `dev`: marcó las tres casillas de `progress/smoke_arreglos-smoke.md` en
+  `0d583d4e`. El leader las copió a la casilla G2 de cada spec.
+- A `done`: #239, #240 y #241. Queda G5 (`dev` → `main`), del humano.
+
 ## Plan de arreglos del segundo smoke (2026-11-04)
 
 - Smoke G2 del humano sobre `dev` (`3c059343`): el humano marcó todas las casillas de

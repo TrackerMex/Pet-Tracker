@@ -3863,7 +3863,7 @@
   {
     "id": 239,
     "name": "mobile-reminder-swipe-past-row-bleed",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P1",
     "description": "En Recordatorios, al deslizar una fila de Pasados, la franja rosa del panel de borrar (24 de ancho, detrás del borde derecho de la fila) se transparenta a través de la fila atenuada al 50 %. Debe quedar como en Próximos; la fila sigue atenuada en reposo y el borrado no cambia. Hallazgo del humano en el smoke del 2026-11-04 (paso 3 de #228): «el color rojo no se oculta, debe de quedar como en la lista de PROXIMOS». La spec elige entre acortar la franja a la esquina (salida de specs/mobile-reminder-swipe-actions/design.md §Riesgos) y dar a la fila pasada un fondo opaco con el contenido atenuado. Responsable: leader @Backend. Plan progress/plan_arreglos-smoke-2026-11-04.md §2, firma delegada (ampliación del 2026-11-04). Spec en specs/mobile-reminder-swipe-past-row-bleed/: base opaca bg-background dentro del deslizable, solo en filas pasadas del dueño.",
     "acceptance_criteria": [
@@ -3891,7 +3891,7 @@
   {
     "id": 240,
     "name": "mobile-reminder-date-year",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P2",
     "description": "La fecha de cada fila de Recordatorios (mobile-pet-tracker/src/screens/reminders/index.tsx, toLocaleDateString con day y month) no lleva año, y «4 nov, 09:00 · en 365 días» parece de hoy. Decisión del humano (2026-11-04): «Año si no es este año». Vale para Próximos y Pasados; la cuenta «en N días» y el orden no cambian. La spec decide si el «hasta» de las series (reminders.untilDay) sigue la misma regla. Responsable: leader @Backend. Plan progress/plan_arreglos-smoke-2026-11-04.md §2, firma delegada (ampliación del 2026-11-04). Spec en specs/mobile-reminder-date-year/ (2026-11-04), sobre origin/dev 0f1ab26f. Una sola línea de producción: const date = due.toLocaleDateString(locale, …) añade year: 'numeric' cuando due.getFullYear() !== new Date(now).getFullYear(). El «hasta» de las series no cambia: ya compara años locales con now (R4). Enmienda #178 R6 y fija el reloj del candado de #65 R15. Sin copy nuevo; el handoff se reancla tras mergear #239 en dev.",
     "acceptance_criteria": [
@@ -3912,7 +3912,7 @@
   {
     "id": 241,
     "name": "mobile-health-vaccines-upcoming-past",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P1",
     "description": "En Salud, la lista de Vacunas (mobile-pet-tracker/src/screens/health/index.tsx) sale tal como llega del API, ordenada por appliedAt descendente, sin separar próximas de pasadas. Decisión del humano (2026-11-04): «Próximas y Pasadas». Arriba «PRÓXIMAS», con nextDoseAt posterior a hoy en orden ascendente; abajo «PASADAS», colapsada, con nextDoseAt hoy o antes, o null, en orden descendente (nextDoseAt, o appliedAt si es null). Cabecera, contador y chevron como en Recordatorios (#227). Las filas y la tarjeta «PRÓXIMA DOSIS» no cambian; el orden se hace en el móvil y el API no cambia. Responsable: leader @Backend. Plan progress/plan_arreglos-smoke-2026-11-04.md §2, firma delegada (ampliación del 2026-11-04). Registrada sin spec.",
     "acceptance_criteria": null,
