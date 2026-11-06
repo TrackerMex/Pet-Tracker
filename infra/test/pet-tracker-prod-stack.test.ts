@@ -679,3 +679,17 @@ describe('#246 R18: alarmas por correo', () => {
       .map((name) => JSON.stringify({ 'Fn::GetAtt': [queueId(region, name), 'QueueName'] })).sort());
   });
 });
+
+describe('#246 R19: outputs para la operación', () => {
+  it('#246 R19: seis outputs con sus valores', () => {
+    const region = 'mx-central-1';
+    const { outputs } = synthesized(region);
+    expect(outputs.AlbDnsName?.Value).toEqual({ 'Fn::GetAtt': [ofType(region, 'AWS::ElasticLoadBalancingV2::LoadBalancer')[0]?.[0], 'DNSName'] });
+    expect(outputs.ClusterName?.Value).toEqual({ Ref: ofType(region, 'AWS::ECS::Cluster')[0]?.[0] });
+    expect(outputs.OpsTaskDefinitionArn?.Value).toEqual({ Ref: taskDefinition(region, 'ops')?.[0] });
+    expect(outputs.PublicSubnetIds?.Value).toEqual({ 'Fn::Join': [',', subnetIdsByAz(region, 'Public').map((id) => ({ Ref: id }))] });
+    const network = service(region, 'workers')?.[1].NetworkConfiguration as { AwsvpcConfiguration?: { SecurityGroups?: unknown[] } } | undefined;
+    expect(outputs.OneOffSecurityGroupId?.Value).toEqual(network?.AwsvpcConfiguration?.SecurityGroups?.[0]);
+    expect(outputs.MediaBucketName?.Value).toEqual({ Ref: ofType(region, 'AWS::S3::Bucket')[0]?.[0] });
+  });
+});
