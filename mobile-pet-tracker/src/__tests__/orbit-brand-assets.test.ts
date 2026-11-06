@@ -116,3 +116,19 @@ it('#244 R8: expo.icon/Assets contiene solo orbit.png', () => {
   expect(fs.existsSync(path)).toBe(true);
   expect(fs.readdirSync(path).sort()).toEqual(['orbit.png']);
 });
+
+it('#244 R10: la carta lleva la Enmienda #244 una sola vez, con la marca de Orbit', () => {
+  const charter = fs.readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
+  const heading = '## Enmienda #244 — ';
+  expect(charter.split(heading).length - 1).toBe(1);
+  const section = charter.slice(charter.indexOf(heading) + heading.length);
+  const nextHeading = section.indexOf('\n## ');
+  const body = nextHeading === -1 ? section : section.slice(0, nextHeading);
+  for (const literal of ['Orbit', 'icono adaptativo', 'splash', 'radio 338', '#9460FC', 'Enmienda #243', 'rebuild']) {
+    expect(body).toContain(literal);
+  }
+  expect(body).toMatch(/- \[[ xX]\] Enmienda #244 aprobada por humano/);
+  for (const followingHeading of section.match(/^## .+$/gm) ?? []) {
+    expect(followingHeading).toMatch(/^## Enmienda #/);
+  }
+});

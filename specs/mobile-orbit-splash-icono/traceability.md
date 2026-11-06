@@ -17,7 +17,7 @@ tags: [mobile, ui, mascota, orbit, assets, icono, splash, spec]
 | R7 | `app.assets.test.ts::#244 R7: el monocromo y la notificación 96 solo tienen píxeles blancos`, `::#244 R7: las dos notificaciones dejan 4 px de margen` y `::#244 R7: la notificación en color conserva su color` (nacen verdes; M6, M7, M8) | C1b `1abb6782` → C2 `3c4832a9`; M6 y M7 rojas en ambas filas, M8 roja; todas revertidas |
 | R8 | `src/__tests__/orbit-brand-assets.test.ts::#244 R8: icon.json compone solo a Orbit sobre el violeta de marca` y `::#244 R8: expo.icon/Assets contiene solo orbit.png` | C1a `91b91fd7` → C2 `3c4832a9`; literal JSON y listado verdes |
 | R9 | suites de tasks.md §Verde de la cadena y guarda de `mobile-pet-tracker` (tres rutas) de §Guardas finales (sin test de jest propio) | C2 `3c4832a9`; 11 suites/335 tests, tipos y lint corregido verdes; guarda de tres rutas exacta |
-| R10 | `src/__tests__/orbit-brand-assets.test.ts::#244 R10: la carta lleva la Enmienda #244 una sola vez, con la marca de Orbit` (C4 y C5, tras la firma G4 del humano) | pendiente |
+| R10 | `src/__tests__/orbit-brand-assets.test.ts::#244 R10: la carta lleva la Enmienda #244 una sola vez, con la marca de Orbit` (C4 y C5, tras la firma G4 del humano) | C4 `2a53b995ab2eeb546107b4038b4af1d68bf0ae0b` — `test(mobile): R10 red, charter amendment for the brand assets (#244)` → C5 `1cdf6c63c53bfd6e41795f213d91dcf83144189b` — `docs(ui): R10 charter amendment, the icon and splash are Orbit (#244)`; rojo 0/1, seis suites/220 tests verdes, tipos y lint verdes; M18 roja 2/1 y revertida, 22/22 verdes tras restaurar |
 | R11 | guarda de `assets/` de tasks.md §Guardas finales (trece rutas; sin test de jest) | C2 `3c4832a9`; trece rutas exactas contra H0; poses y logo sin cambios |
 
 Commits de la cadena (mensajes completos para los hashes de la tabla):
@@ -32,8 +32,9 @@ vacío. Tras las ocho mutaciones autorizadas y revertidas, las dos suites afecta
 volvieron a pasar (41/41); índice sin mutaciones. M2 y M3 no se plantaron por fix1.
 Detalle, salidas de guardas y ocho hashes medidos en
 `progress/impl_mobile-orbit-splash-icono.md` §Reanudación.
-R1–R9 y R11 quedan implementados y verificados para revisión; R10 sigue pendiente
-de G4. C4 y C5 no se ejecutaron. No se cambian las firmas ni el estado de la feature.
+R1–R9 y R11 quedaron implementados y verificados (PR #315). R10 estaba pendiente de G4
+al cerrar C3; el humano firmó G4 el 2026-11-06 y C4 y C5 se ejecutaron después en el
+tramo R10 (ver la fila de R10). No se cambian las firmas ni el estado de la feature.
 
 Regla: el reviewer no aprueba si alguna fila de R1 a R9 y R11 queda sin cerrar. R10 queda
 condicionada a la casilla G4 de [[requirements]] §Aprobación; sin ella, la feature
