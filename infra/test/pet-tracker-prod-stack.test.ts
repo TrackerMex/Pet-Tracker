@@ -537,3 +537,20 @@ describe('#246 R14: entorno y secretos del contenedor workers', () => {
     expect(secretsReadBy(region, roleIdOf(taskDefinition(region, 'workers')?.[1].ExecutionRoleArn))).toEqual(['db', 'jwt', 'wialon-token']);
   });
 });
+
+describe('#246 R15: task role de workers con permisos mínimos', () => {
+  it('#246 R15: cuatro sentencias exactas, sin políticas administradas', () => {
+    const region = 'mx-central-1';
+    const roleId = roleIdOf(taskDefinition(region, 'workers')?.[1].TaskRoleArn);
+    const receiveResources = ['positions-raw', 'geofence-events', 'notifications'].map((name) => ({ 'Fn::GetAtt': [queueId(region, name), 'Arn'] })).sort((a,b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+    const sendResources = ['positions-raw', 'notifications'].map((name) => ({ 'Fn::GetAtt': [queueId(region, name), 'Arn'] })).sort((a,b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+    const expected = [
+      { Effect: 'Allow', Action: ['sqs:DeleteMessage', 'sqs:GetQueueUrl', 'sqs:ReceiveMessage'], Resource: receiveResources },
+      { Effect: 'Allow', Action: ['sqs:SendMessage'], Resource: sendResources },
+      { Effect: 'Allow', Action: ['dynamodb:BatchWriteItem', 'dynamodb:Query'], Resource: { 'Fn::GetAtt': [ofType(region, 'AWS::DynamoDB::GlobalTable')[0]?.[0], 'Arn'] } },
+      { Effect: 'Allow', Action: ['events:PutEvents'], Resource: { 'Fn::GetAtt': [ofType(region, 'AWS::Events::EventBus')[0]?.[0], 'Arn'] } },
+    ].sort((a,b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+    expect(statementsOf(region, roleId)).toEqual(expected);
+    expect(roleId ? synthesized(region).resources[roleId]?.Properties?.ManagedPolicyArns : undefined).toBeUndefined();
+  });
+});
