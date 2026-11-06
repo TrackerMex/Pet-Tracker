@@ -233,3 +233,24 @@ describe('R21: provision-device y set-device-subscription sin dotenv en código'
     );
   });
 });
+
+describe('R23: pnpm build compila scripts/ a dist/scripts', () => {
+  it('R23: tsconfig y tsconfig.build no acotan include ni files, y el exclude de build no nombra scripts', () => {
+    type Config = { exclude?: string[]; include?: unknown; files?: unknown };
+    const config = JSON.parse(
+      readFileSync(join(__dirname, '..', 'tsconfig.json'), 'utf8'),
+    ) as Config;
+    const build = JSON.parse(
+      readFileSync(join(__dirname, '..', 'tsconfig.build.json'), 'utf8'),
+    ) as Config;
+    expect(Array.isArray(build.exclude)).toBe(true);
+    expect(build.exclude).toContain('test');
+    for (const item of [config, build]) {
+      expect(item).not.toHaveProperty('include');
+      expect(item).not.toHaveProperty('files');
+    }
+    expect(build.exclude?.some((entry) => entry.includes('scripts'))).toBe(
+      false,
+    );
+  });
+});
