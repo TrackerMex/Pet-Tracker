@@ -46,7 +46,34 @@ Lo que el leader verificó en la documentación de AWS (2026-11-06) para mx-cent
 - También están ECS, ECR, ALB, ACM, Route 53, DynamoDB, SQS, EventBridge, S3, Secrets Manager,
   KMS, Backup, CloudWatch y NAT Gateway (tabla pública de servicios por región).
 
-Conclusión: la versión mínima del motor es Aurora PostgreSQL 16.4. La spec de #246 la fija.
+Conclusión: el motor será Aurora PostgreSQL 17 (17.4 o posterior). La 16.4 también valdría
+en mx-central-1, pero local corre Postgres 17 (riesgo 13 de la explore): con 17 no hay
+divergencia. La spec de #246 verifica que `aws-cdk-lib` 2.263.0 trae el enum de la versión.
+
+### Decisiones técnicas del leader sobre la explore (2026-11-06)
+
+`progress/explore_produccion-aws.md` dejó 17 decisiones abiertas. Las técnicas sin costo las
+cierra el leader. Las de costo o de producto pasan al §5 (D2, D4).
+
+| # explore | Decisión | Feature |
+|---|---|---|
+| 1 | Migraciones con el migrator runtime de `drizzle-orm` desde un script compilado; los `.sql` se copian a la imagen. Se ejecutan como tarea única de ECS con la misma imagen y otro comando, y la lanza el humano (GA4) | #245 contrato, #246 task definition |
+| 2 | La credencial de Aurora la genera CDK en Secrets Manager. La tarea recibe `PGHOST`, `PGPORT`, `PGDATABASE` y `PGUSER` como entorno, y `PGPASSWORD` como secreto de ECS. Fuera de producción, `DATABASE_URL` sigue funcionando. Sin IAM auth | #245, #246 |
+| 3 | TLS con el bundle global de CA de RDS dentro de la imagen y `NODE_EXTRA_CA_CERTS`, con verificación del certificado | #245 |
+| 4, 5 | El dispatcher de recordatorios sigue en proceso. El servicio de workers despliega con `minHealthyPercent: 0` y `maxHealthyPercent: 100`: nunca hay dos tareas vivas. EventBridge Scheduler no vuelve | #246 |
+| 7 | `trust proxy` en la API. El límite de correo sigue en memoria por tarea. Se acepta: con N tareas el límite efectivo es N veces el nominal. Queda como deuda | #245 |
+| 8 | El apagado ordenado (shutdown hooks y cierre del pool) y los logs en JSON de una línea entran en #245 | #245 |
+| 9 | El ALB y ECS usan un liveness que no toca la base. `/v1/health`, que sí la toca, queda para el health check de Route 53 en #249 | #245, #246 |
+| 10 | Aurora 17 (ver arriba) | #246 |
+| 11 | Imagen x86_64: `cdk deploy` construye la imagen en la máquina del humano. arm64 se deja para cuando haya pipeline | #245, #246 |
+| 12 | La versión de Node se fija en la imagen base: Node 24, la misma que en CI | #245 |
+| 13–15 | Endpoint global de escritura, bucket réplica y `JWT_SECRET` replicado | #249 |
+| 16 | Disponibilidad ya verificada en el §1 | — |
+| 17 | Validación de la configuración al arrancar: un flag activo sin su clave aborta, y `SIM_MODE` debe venir explícito. Qué integraciones van en real el miércoles es D4 | #245 valida, #246 fija los valores |
+| 6 | Salida a internet | D2 (§5) |
+
+Además, en #245: el entrypoint correcto es `dist/src/main.js` (riesgo 1 de la explore), el pool
+lleva `max` explícito (riesgo 11) y ningún `.env` entra en la imagen (riesgo 4).
 
 ## 2. Features
 
@@ -152,6 +179,7 @@ A la checklist de firma se le suman tres puntos:
 | D1 | Dominio de la API y si la zona está en Route 53 | Antes de firmar #246 | este plan |
 | D2 | Salida a internet de las tareas: NAT por AZ, un solo NAT, o subredes públicas con IP pública y SG cerrado | Antes de firmar #246 | este plan |
 | D3 | Borrado de cuenta con mascotas compartidas | Antes de firmar #247 | este plan |
+| D4 | Qué integraciones van en real en producción el miércoles: Wialon (`SIM_MODE`), push, correo con Resend (exige verificar el dominio por DNS) e IA con Anthropic (costo por uso) | Antes de firmar #246 | este plan |
 | G1 | Copy y, si hace falta, artboard de #248 | Antes de firmar #248 | `specs/mobile-account-deletion/requirements.md` |
 | GA1 | Dominio, zona hospedada y certificado ACM | Antes de GA3 | este plan |
 | GA2 | Crear en Secrets Manager los secretos que nombra #246 | Antes de GA3 | este plan |
@@ -166,6 +194,7 @@ A la checklist de firma se le suman tres puntos:
 - [ ] D1 (fecha: ____)
 - [ ] D2 (fecha: ____)
 - [ ] D3 (fecha: ____)
+- [ ] D4 (fecha: ____)
 - [ ] GA1 (fecha: ____)
 - [ ] GA2 (fecha: ____)
 - [ ] GA3 mx-central-1 (fecha: ____)
