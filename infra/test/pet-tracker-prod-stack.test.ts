@@ -166,3 +166,27 @@ describe('#246 R6: tabla positions on-demand con PITR, protección y clave de AW
     template.resourceCountIs('AWS::KMS::Key', 0);
   });
 });
+
+describe('#246 R7: bucket de media versionado, SSE-S3 y Retain', () => {
+  it.each(REGIONS)('#246 R7: bucket de %s', (region) => {
+    const { template } = synthesized(region);
+    template.resourceCountIs('AWS::S3::Bucket', 1);
+    template.hasResourceProperties('AWS::S3::Bucket', {
+      BucketName: { 'Fn::Join': ['', [`pet-tracker-media-prod-${region}-`, { Ref: 'AWS::AccountId' }]] },
+      VersioningConfiguration: { Status: 'Enabled' },
+      PublicAccessBlockConfiguration: { BlockPublicAcls: true, BlockPublicPolicy: true, IgnorePublicAcls: true, RestrictPublicBuckets: true },
+      CorsConfiguration: Match.absent(),
+    });
+    const bucket = ofType(region, 'AWS::S3::Bucket')[0];
+    expect(bucket?.[1].Properties?.BucketEncryption).toEqual({ ServerSideEncryptionConfiguration: [{ ServerSideEncryptionByDefault: { SSEAlgorithm: 'AES256' } }] });
+    expect(bucket?.[1].Properties?.LifecycleConfiguration).toEqual({ Rules: [{ ExpiredObjectDeleteMarker: true, NoncurrentVersionExpiration: { NoncurrentDays: 30 }, Status: 'Enabled' }] });
+    expect(bucket?.[1].DeletionPolicy).toBe('Retain');
+    expect(bucket?.[1].UpdateReplacePolicy).toBe('Retain');
+    template.hasResourceProperties('AWS::S3::BucketPolicy', {
+      Bucket: { Ref: bucket?.[0] },
+      PolicyDocument: { Statement: Match.arrayWith([Match.objectLike({
+        Effect: 'Deny', Action: 's3:*', Principal: { AWS: '*' }, Condition: { Bool: { 'aws:SecureTransport': 'false' } },
+      })]) },
+    });
+  });
+});
