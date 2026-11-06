@@ -24,6 +24,7 @@ import {
   UpdateProfileDto,
   UpdateProfileSchema,
 } from '@/modules/users/application/dto/update-profile.dto';
+import { DeleteAccountUseCase } from '@/modules/users/application/use-cases/delete-account.use-case';
 import { DeletePushTokenUseCase } from '@/modules/users/application/use-cases/delete-push-token.use-case';
 import { GetProfileUseCase } from '@/modules/users/application/use-cases/get-profile.use-case';
 import { RegisterPushTokenUseCase } from '@/modules/users/application/use-cases/register-push-token.use-case';
@@ -44,7 +45,14 @@ export class UsersController {
     private readonly updateProfile: UpdateProfileUseCase,
     private readonly registerPushTokenUseCase: RegisterPushTokenUseCase,
     private readonly deletePushTokenUseCase: DeletePushTokenUseCase,
+    private readonly deleteAccountUseCase: DeleteAccountUseCase,
   ) {}
+
+  deleteMe(user: CurrentUserPayload, body: unknown): Promise<void> {
+    void user;
+    void body;
+    return Promise.reject(new Error('Not implemented'));
+  }
 
   @Get()
   async me(@CurrentUser() user: CurrentUserPayload): Promise<ProfileResponse> {
