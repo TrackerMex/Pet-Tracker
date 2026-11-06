@@ -477,5 +477,6 @@ Sin casilla: iOS no se verifica (D8, feature #60).
 
 #244 se implementa en dos tramos (tasks.md): C1 a C3 (R1 a R9 y R11) no necesitan
 G4 y se mergean en `dev` con la firma del leader, G6 y el veredicto «aprobado» del
-`reviewer`; C4 y C5 (R10) entran solo cuando el humano marque G4. Queda `spec_ready`,
-no `done`, hasta que estén cerradas G4, G3 y G2.
+`reviewer`; C4 y C5 (R10) entran solo cuando el humano marque G4. Quedó `spec_ready`
+hasta que se cerraron G4, G3 y G2 (2026-11-06); con las tres casillas marcadas y los
+dos veredictos «aprobado» del `reviewer`, #244 pasa a `done`.
