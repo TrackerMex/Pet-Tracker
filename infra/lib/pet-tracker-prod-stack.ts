@@ -1,3 +1,4 @@
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
@@ -6,10 +7,11 @@ import {
   QUEUE_NOTIFICATIONS, QUEUE_NOTIFICATIONS_DLQ,
   QUEUE_GEOFENCE_EVENTS, QUEUE_GEOFENCE_EVENTS_DLQ,
   SQS_MAX_RECEIVE_COUNT, EVENT_BUS_NAME, EVENT_SOURCE,
+  TABLE_POSITIONS, TABLE_POSITIONS_PARTITION_KEY, TABLE_POSITIONS_SORT_KEY, TABLE_POSITIONS_TTL_ATTRIBUTE,
   DETAIL_TYPE_POSITION_UPDATED, DETAIL_TYPE_BATTERY_LOW, RULE_GEOFENCE_EVENTS,
 } from '@backend/aws/constants';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
-import { Duration, Stack, StackProps } from 'aws-cdk-lib';
+import { Duration, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 
 export interface PetTrackerProdStackProps extends StackProps {
@@ -68,5 +70,15 @@ export class PetTrackerProdStack extends Stack {
       eventPattern: { source: [EVENT_SOURCE], detailType: [DETAIL_TYPE_POSITION_UPDATED, DETAIL_TYPE_BATTERY_LOW] },
     });
     geofenceEventsRule.addTarget(new targets.SqsQueue(geofenceEventsQueue));
+    new dynamodb.TableV2(this, 'PositionsTable', {
+      tableName: TABLE_POSITIONS,
+      billing: dynamodb.Billing.onDemand(),
+      partitionKey: { name: TABLE_POSITIONS_PARTITION_KEY, type: dynamodb.AttributeType.STRING },
+      sortKey: { name: TABLE_POSITIONS_SORT_KEY, type: dynamodb.AttributeType.NUMBER },
+      timeToLiveAttribute: TABLE_POSITIONS_TTL_ATTRIBUTE,
+      pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
+      deletionProtection: true,
+      removalPolicy: RemovalPolicy.RETAIN,
+    });
   }
 }
