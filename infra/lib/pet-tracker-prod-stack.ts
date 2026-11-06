@@ -1,3 +1,7 @@
+import * as sns from 'aws-cdk-lib/aws-sns';
+import * as subscriptions from 'aws-cdk-lib/aws-sns-subscriptions';
+import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
+import * as cloudwatchActions from 'aws-cdk-lib/aws-cloudwatch-actions';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
@@ -224,5 +228,25 @@ export class PetTrackerProdStack extends Stack {
     opsTask.node.tryRemoveChild('TaskRole');
     db.connections.allowDefaultPortFrom(api.service);
     db.connections.allowDefaultPortFrom(workersSg);
+    const topic = new sns.Topic(this, 'AlarmTopic');
+    topic.addSubscription(new subscriptions.EmailSubscription(props.alarmEmail));
+    const period = Duration.minutes(5);
+    const alarmDefinitions = [
+      { id: 'ApiElb5xxAlarm', metric: api.loadBalancer.metrics.httpCodeElb(elbv2.HttpCodeElb.ELB_5XX_COUNT, { period, statistic: 'Sum' }), threshold: 5 },
+      { id: 'ApiTarget5xxAlarm', metric: api.targetGroup.metrics.httpCodeTarget(elbv2.HttpCodeTarget.TARGET_5XX_COUNT, { period, statistic: 'Sum' }), threshold: 5 },
+      { id: 'ApiUnhealthyHostsAlarm', metric: api.targetGroup.metrics.unhealthyHostCount({ period, statistic: 'Maximum' }), threshold: 1 },
+      { id: 'PositionsRawDlqAlarm', metric: positionsRawDlq.metricApproximateNumberOfMessagesVisible({ period, statistic: 'Maximum' }), threshold: 1 },
+      { id: 'NotificationsDlqAlarm', metric: notificationsDlq.metricApproximateNumberOfMessagesVisible({ period, statistic: 'Maximum' }), threshold: 1 },
+      { id: 'GeofenceEventsDlqAlarm', metric: geofenceEventsDlq.metricApproximateNumberOfMessagesVisible({ period, statistic: 'Maximum' }), threshold: 1 },
+      { id: 'DbCpuAlarm', metric: new cloudwatch.Metric({ namespace: 'AWS/RDS', metricName: 'CPUUtilization', dimensionsMap: { DBInstanceIdentifier: db.instanceIdentifiers[0] }, period, statistic: 'Average' }), threshold: 80 },
+      { id: 'DbAcuAlarm', metric: new cloudwatch.Metric({ namespace: 'AWS/RDS', metricName: 'ACUUtilization', dimensionsMap: { DBInstanceIdentifier: db.instanceIdentifiers[0] }, period, statistic: 'Average' }), threshold: 80 },
+    ];
+    for (const { id: alarmId, metric, threshold } of alarmDefinitions) {
+      const alarm = new cloudwatch.Alarm(this, alarmId, {
+        metric, threshold, treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+        comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD, evaluationPeriods: 1,
+      });
+      alarm.addAlarmAction(new cloudwatchActions.SnsAction(topic));
+    }
   }
 }
