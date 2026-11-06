@@ -1,8 +1,10 @@
 import { parseArgs } from 'node:util';
+import { ConfigService } from '@nestjs/config';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
+import { buildPoolConfig } from '@/db/pool-config';
 import { devices } from '@/db/schema/devices.schema';
 import { deviceSubscriptions } from '@/db/schema/subscriptions.schema';
 import {
@@ -140,7 +142,8 @@ async function main(): Promise<void> {
       'period-end': { type: 'string' },
     },
   });
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const config = new ConfigService();
+  const pool = new Pool(buildPoolConfig(config));
 
   try {
     const result = await setDeviceSubscription(drizzle(pool), {

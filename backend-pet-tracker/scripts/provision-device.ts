@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
+import { buildPoolConfig } from '@/db/pool-config';
 import { uuidv7 } from 'uuidv7';
 import { devices } from '@/db/schema/devices.schema';
 import { createWialonClient } from '@/integrations/wialon/wialon.factory';
@@ -116,9 +117,10 @@ async function main(): Promise<void> {
     throw new Error('falta --unit-id');
   }
 
-  const wialon = createWialonClient(new ConfigService());
+  const config = new ConfigService();
+  const wialon = createWialonClient(config);
   assertRealWialonClient(wialon);
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const pool = new Pool(buildPoolConfig(config));
 
   try {
     const result = await provisionDevice(drizzle(pool), wialon, {
