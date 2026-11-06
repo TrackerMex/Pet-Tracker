@@ -57,14 +57,14 @@ export class PetTrackerProdStack extends Stack {
     const positionsRawDlq = new sqs.Queue(this, 'PositionsRawDlq', {
       queueName: QUEUE_POSITIONS_RAW_DLQ, retentionPeriod: Duration.days(14),
     });
-    new sqs.Queue(this, 'PositionsRaw', {
+    const positionsRaw = new sqs.Queue(this, 'PositionsRaw', {
       queueName: QUEUE_POSITIONS_RAW,
       deadLetterQueue: { queue: positionsRawDlq, maxReceiveCount: SQS_MAX_RECEIVE_COUNT },
     });
     const notificationsDlq = new sqs.Queue(this, 'NotificationsDlq', {
       queueName: QUEUE_NOTIFICATIONS_DLQ, retentionPeriod: Duration.days(14),
     });
-    new sqs.Queue(this, 'Notifications', {
+    const notifications = new sqs.Queue(this, 'Notifications', {
       queueName: QUEUE_NOTIFICATIONS,
       deadLetterQueue: { queue: notificationsDlq, maxReceiveCount: SQS_MAX_RECEIVE_COUNT },
     });
@@ -190,5 +190,18 @@ export class PetTrackerProdStack extends Stack {
       minHealthyPercent: 0, maxHealthyPercent: 100, circuitBreaker: { rollback: true },
       assignPublicIp: true, vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC }, securityGroups: [workersSg],
     });
+    workersTask.taskRole.addToPrincipalPolicy(new iam.PolicyStatement({
+      actions: ['sqs:ReceiveMessage', 'sqs:DeleteMessage', 'sqs:GetQueueUrl'],
+      resources: [positionsRaw.queueArn, geofenceEventsQueue.queueArn, notifications.queueArn],
+    }));
+    workersTask.taskRole.addToPrincipalPolicy(new iam.PolicyStatement({
+      actions: ['sqs:SendMessage'], resources: [positionsRaw.queueArn, notifications.queueArn],
+    }));
+    workersTask.taskRole.addToPrincipalPolicy(new iam.PolicyStatement({
+      actions: ['dynamodb:Query', 'dynamodb:BatchWriteItem'], resources: [table.tableArn],
+    }));
+    workersTask.taskRole.addToPrincipalPolicy(new iam.PolicyStatement({
+      actions: ['events:PutEvents'], resources: [eventBus.eventBusArn],
+    }));
   }
 }
