@@ -1,3 +1,4 @@
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as ecsPatterns from 'aws-cdk-lib/aws-ecs-patterns';
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
@@ -20,7 +21,7 @@ import {
   DETAIL_TYPE_POSITION_UPDATED, DETAIL_TYPE_BATTERY_LOW, RULE_GEOFENCE_EVENTS,
 } from '@backend/aws/constants';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
-import { Aws, Duration, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
+import { Aws, Duration, RemovalPolicy, Stack, StackProps, Token } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 
 export interface PetTrackerProdStackProps extends StackProps {
@@ -89,7 +90,7 @@ export class PetTrackerProdStack extends Stack {
       deletionProtection: true,
       removalPolicy: RemovalPolicy.RETAIN,
     });
-    new s3.Bucket(this, 'MediaBucket', {
+    const bucket = new s3.Bucket(this, 'MediaBucket', {
       bucketName: resourceName(BUCKET_MEDIA_BASE, `prod-${this.region}-${Aws.ACCOUNT_ID}`),
       versioned: true,
       encryption: s3.BucketEncryption.S3_MANAGED,
@@ -100,7 +101,7 @@ export class PetTrackerProdStack extends Stack {
     });
     const dbSecret = new rds.DatabaseSecret(this, 'DbSecret', { username: 'pet_tracker' });
     dbSecret.applyRemovalPolicy(RemovalPolicy.RETAIN);
-    new rds.DatabaseCluster(this, 'Db', {
+    const db = new rds.DatabaseCluster(this, 'Db', {
       vpc, vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_ISOLATED },
       engine: rds.DatabaseClusterEngine.auroraPostgres({ version: rds.AuroraPostgresEngineVersion.VER_17_4 }),
       credentials: rds.Credentials.fromSecret(dbSecret),
@@ -116,6 +117,10 @@ export class PetTrackerProdStack extends Stack {
       hostedZoneId: props.hostedZoneId, zoneName: props.hostedZoneName,
     });
     const image = ecs.ContainerImage.fromAsset(props.imageDirectory, { platform: Platform.LINUX_AMD64 });
+    const jwtSecret = secretsmanager.Secret.fromSecretNameV2(this, 'JwtSecret', 'pet-tracker/prod/jwt');
+    const wialonTokenSecret = secretsmanager.Secret.fromSecretNameV2(this, 'WialonTokenSecret', 'pet-tracker/prod/wialon-token');
+    const resendApiKeySecret = secretsmanager.Secret.fromSecretNameV2(this, 'ResendApiKeySecret', 'pet-tracker/prod/resend-api-key');
+    const anthropicApiKeySecret = secretsmanager.Secret.fromSecretNameV2(this, 'AnthropicApiKeySecret', 'pet-tracker/prod/anthropic-api-key');
     const apiLogs = new logs.LogGroup(this, 'ApiLogs', { retention: logs.RetentionDays.ONE_MONTH });
     const api = new ecsPatterns.ApplicationLoadBalancedFargateService(this, 'Api', {
       cluster, cpu: 512, memoryLimitMiB: 1024, desiredCount: 2,
@@ -127,6 +132,20 @@ export class PetTrackerProdStack extends Stack {
       circuitBreaker: { rollback: true }, minHealthyPercent: 100, maxHealthyPercent: 200,
       taskImageOptions: {
         image, containerName: 'api', containerPort: 3000,
+        environment: {
+          PORT: '3000', PGHOST: db.clusterEndpoint.hostname, PGPORT: Token.asString(db.clusterEndpoint.port),
+          PGDATABASE: 'pet_tracker', PGUSER: 'pet_tracker', DB_POOL_MAX: '10', AWS_MODE: 'aws',
+          MEDIA_BUCKET_NAME: bucket.bucketName, SIM_MODE: 'false', EMAIL_ENABLED: 'true',
+          RESEND_FROM: props.resendFrom, RESET_LINK_HOST: props.resetLinkHost,
+          ANTHROPIC_ENABLED: 'true', ANTHROPIC_MODEL: 'claude-haiku-5-5',
+        },
+        secrets: {
+          PGPASSWORD: ecs.Secret.fromSecretsManager(db.secret!, 'password'),
+          JWT_SECRET: ecs.Secret.fromSecretsManager(jwtSecret),
+          WIALON_TOKEN: ecs.Secret.fromSecretsManager(wialonTokenSecret),
+          RESEND_API_KEY: ecs.Secret.fromSecretsManager(resendApiKeySecret),
+          ANTHROPIC_API_KEY: ecs.Secret.fromSecretsManager(anthropicApiKeySecret),
+        },
         logDriver: ecs.LogDrivers.awsLogs({ streamPrefix: 'api', logGroup: apiLogs }),
       },
     });
