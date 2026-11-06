@@ -6,6 +6,7 @@ import request, { Response } from 'supertest';
 import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
+import { devices, petDevices } from '@/db/schema/devices.schema';
 import { auditLog } from '@/db/schema/audit-log.schema';
 import { pets, petUsers } from '@/db/schema/pets.schema';
 import { users } from '@/db/schema/users.schema';
@@ -97,6 +98,7 @@ describe('Pets CRUD (e2e)', () => {
 
   const createdUserIds: string[] = [];
   const createdPetIds: string[] = [];
+  const createdDeviceIds: string[] = [];
 
   interface TestUser {
     id: string;
@@ -145,6 +147,19 @@ describe('Pets CRUD (e2e)', () => {
     return body;
   }
 
+  async function seedDevice(label: string): Promise<string> {
+    const id = uuidv7();
+    await db.insert(devices).values({
+      id,
+      model: 'e2e-collar',
+      isSimulated: true,
+      status: 'assigned',
+      esn: `${label}-${RUN_ID}`,
+    });
+    createdDeviceIds.push(id);
+    return id;
+  }
+
   function seedMembership(
     petId: string,
     userId: string,
@@ -182,6 +197,8 @@ describe('Pets CRUD (e2e)', () => {
     if (createdUserIds.length > 0) {
       await db.delete(users).where(inArray(users.id, createdUserIds));
     }
+    if (createdDeviceIds.length)
+      await db.delete(devices).where(inArray(devices.id, createdDeviceIds));
     await app.close();
   });
 
@@ -750,6 +767,25 @@ describe('Pets CRUD (e2e)', () => {
       expect(new URL(detailPhotoUrl ?? '').pathname).toBe(
         listPhotoUrl.pathname,
       );
+    });
+  });
+  describe('#247 R10: borrar la mascota libera su collar', () => {
+    it('#247 R10: DELETE /v1/pets/:id deja el collar asignado en available', async () => {
+      const owner = await seedUser('247-r10');
+      const pet = await createPetViaApi(owner);
+      const deviceId = await seedDevice('247-r10');
+      await db
+        .insert(petDevices)
+        .values({ id: uuidv7(), petId: pet.id, deviceId });
+      await api()
+        .delete(`/v1/pets/${pet.id}`)
+        .set('Authorization', `Bearer ${owner.token}`)
+        .expect(204);
+      const [device] = await db
+        .select()
+        .from(devices)
+        .where(eq(devices.id, deviceId));
+      expect(device.status).toBe('available');
     });
   });
 });
