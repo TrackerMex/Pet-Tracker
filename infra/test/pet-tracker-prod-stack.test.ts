@@ -451,3 +451,22 @@ describe('#246 R11: task role de la API con permisos mínimos', () => {
     expect(roleId ? synthesized(region).resources[roleId]?.Properties?.ManagedPolicyArns : undefined).toBeUndefined();
   });
 });
+
+describe('#246 R12: la API escala de 2 a 4 tareas por CPU', () => {
+  it('#246 R12: scalable target y política target tracking al 60 %', () => {
+    const region = 'mx-central-1';
+    const { template } = synthesized(region);
+    template.resourceCountIs('AWS::ApplicationAutoScaling::ScalableTarget', 1);
+    template.resourceCountIs('AWS::ApplicationAutoScaling::ScalingPolicy', 1);
+    template.hasResourceProperties('AWS::ApplicationAutoScaling::ScalableTarget', {
+      MinCapacity: 2, MaxCapacity: 4, ScalableDimension: 'ecs:service:DesiredCount', ServiceNamespace: 'ecs',
+      ResourceId: { 'Fn::Join': ['', ['service/', { Ref: ofType(region, 'AWS::ECS::Cluster')[0]?.[0] }, '/', { 'Fn::GetAtt': [service(region, 'api')?.[0], 'Name'] }]] },
+    });
+    template.hasResourceProperties('AWS::ApplicationAutoScaling::ScalingPolicy', {
+      PolicyType: 'TargetTrackingScaling', ScalingTargetId: { Ref: ofType(region, 'AWS::ApplicationAutoScaling::ScalableTarget')[0]?.[0] },
+      TargetTrackingScalingPolicyConfiguration: {
+        PredefinedMetricSpecification: { PredefinedMetricType: 'ECSServiceAverageCPUUtilization' }, TargetValue: 60,
+      },
+    });
+  });
+});
