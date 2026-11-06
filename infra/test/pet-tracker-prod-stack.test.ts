@@ -228,3 +228,138 @@ describe('#246 R8: Aurora Serverless v2 en subredes aisladas', () => {
     expect(secret?.[1].UpdateReplacePolicy).toBe('Retain');
   });
 });
+
+interface ContainerProperties extends Record<string, unknown> {
+  readonly LogConfiguration?: { LogDriver?: string; Options?: Record<string, unknown> };
+}
+interface TaskDefinitionProperties extends Record<string, unknown> {
+  readonly ContainerDefinitions?: ContainerProperties[];
+}
+function taskDefinition(region: string, which: 'api' | 'workers' | 'ops'): [string, TaskDefinitionProperties] | undefined {
+  return ofType(region, 'AWS::ECS::TaskDefinition')
+    .map(([id, resource]): [string, TaskDefinitionProperties] => [id, resource.Properties as TaskDefinitionProperties])
+    .find(([, props]) => which === 'ops' ? props?.Family === 'pet-tracker-ops' :
+      props?.ContainerDefinitions?.length === 1 && props.ContainerDefinitions[0]?.Name === which);
+}
+function containerOf(region: string, which: 'api' | 'workers' | 'ops'): ContainerProperties | undefined {
+  return taskDefinition(region, which)?.[1].ContainerDefinitions?.[0];
+}
+function service(region: string, which: 'api' | 'workers'): [string, Record<string, unknown>] | undefined {
+  return ofType(region, 'AWS::ECS::Service')
+    .map(([id, resource]): [string, Record<string, unknown>] => [id, resource.Properties ?? {}])
+    .find(([, props]) => which === 'api' ? props.LoadBalancers !== undefined : props.LoadBalancers === undefined);
+}
+function securityGroupIdOf(value: unknown): string | undefined {
+  if (typeof value !== 'object' || value === null) return undefined;
+  const parts = (value as { 'Fn::GetAtt'?: unknown[] })['Fn::GetAtt'];
+  return parts?.[1] === 'GroupId' && typeof parts[0] === 'string' ? parts[0] : undefined;
+}
+function withoutDescription(entry: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(entry).filter(([key]) => key !== 'Description'));
+}
+function ingressesTo(region: string, groupId: string): Array<Record<string, unknown>> {
+  return ofType(region, 'AWS::EC2::SecurityGroupIngress')
+    .filter(([, resource]) => securityGroupIdOf(resource.Properties?.GroupId) === groupId)
+    .map(([, resource]) => withoutDescription(resource.Properties ?? {}));
+}
+function dockerImageSources(region: string) {
+  return synthesized(region).assembly.artifacts.flatMap((artifact) => artifact instanceof cxapi.AssetManifestArtifact
+    ? Object.values(artifact.contents.dockerImages ?? {}).map((asset) => asset.source) : []);
+}
+
+describe('#246 R9: API en Fargate detrás de un ALB HTTPS', () => {
+  it('#246 R9: balanceador, certificado, registro, listeners y target group', () => {
+    const region = 'mx-central-1';
+    const { template } = synthesized(region);
+    template.resourceCountIs('AWS::ECS::Cluster', 1);
+    template.resourceCountIs('AWS::ElasticLoadBalancingV2::LoadBalancer', 1);
+    template.resourceCountIs('AWS::CertificateManager::Certificate', 1);
+    template.resourceCountIs('AWS::Route53::RecordSet', 1);
+    template.resourceCountIs('AWS::ElasticLoadBalancingV2::Listener', 2);
+    template.resourceCountIs('AWS::ElasticLoadBalancingV2::TargetGroup', 1);
+    const lb = ofType(region, 'AWS::ElasticLoadBalancingV2::LoadBalancer')[0];
+    expect(lb?.[1].Properties?.Scheme).toBe('internet-facing');
+    expect(lb?.[1].Properties?.Type).toBe('application');
+    expect(((lb?.[1].Properties?.Subnets ?? []) as unknown[]).map((v) => JSON.stringify(v)).sort())
+      .toEqual(subnetIdsByAz(region, 'Public').map((id) => JSON.stringify({ Ref: id })).sort());
+    expect((lb?.[1].Properties?.LoadBalancerAttributes as Array<{ Key: string; Value: string }> | undefined)
+      ?.find((attribute) => attribute.Key === 'idle_timeout.timeout_seconds')?.Value).toBe('60');
+    template.hasResourceProperties('AWS::CertificateManager::Certificate', {
+      DomainName: PROPS.apiDomain, ValidationMethod: 'DNS',
+      DomainValidationOptions: [{ DomainName: PROPS.apiDomain, HostedZoneId: PROPS.hostedZoneId }],
+    });
+    template.hasResourceProperties('AWS::Route53::RecordSet', {
+      Type: 'A', Name: `${PROPS.apiDomain}.`, HostedZoneId: PROPS.hostedZoneId,
+    });
+    expect(JSON.stringify(ofType(region, 'AWS::Route53::RecordSet')[0]?.[1].Properties?.AliasTarget))
+      .toContain(JSON.stringify({ 'Fn::GetAtt': [lb?.[0], 'DNSName'] }));
+    const tg = ofType(region, 'AWS::ElasticLoadBalancingV2::TargetGroup')[0];
+    const certificate = ofType(region, 'AWS::CertificateManager::Certificate')[0]?.[0];
+    template.hasResourceProperties('AWS::ElasticLoadBalancingV2::Listener', {
+      Port: 443, Protocol: 'HTTPS', Certificates: [{ CertificateArn: { Ref: certificate } }],
+      SslPolicy: 'ELBSecurityPolicy-TLS13-1-2-2021-06',
+      DefaultActions: [{ Type: 'forward', TargetGroupArn: { Ref: tg?.[0] } }],
+    });
+    template.hasResourceProperties('AWS::ElasticLoadBalancingV2::Listener', {
+      Port: 80, Protocol: 'HTTP',
+      DefaultActions: [{ Type: 'redirect', RedirectConfig: { Port: '443', Protocol: 'HTTPS', StatusCode: 'HTTP_301' } }],
+    });
+    template.hasResourceProperties('AWS::ElasticLoadBalancingV2::TargetGroup', {
+      TargetType: 'ip', Protocol: 'HTTP', HealthCheckPath: '/v1/health/live', Matcher: { HttpCode: '200' },
+    });
+    expect((tg?.[1].Properties?.TargetGroupAttributes as Array<{ Key: string; Value: string }> | undefined)
+      ?.find((attribute) => attribute.Key === 'deregistration_delay.timeout_seconds')?.Value).toBe('30');
+  });
+
+  it('#246 R9: servicio API y su task definition', () => {
+    const region = 'mx-central-1';
+    const svc = service(region, 'api')?.[1];
+    expect(svc?.LaunchType).toBe('FARGATE');
+    expect(svc?.DesiredCount).toBe(2);
+    expect(svc?.LoadBalancers).toEqual([{ ContainerName: 'api', ContainerPort: 3000, TargetGroupArn: { Ref: ofType(region, 'AWS::ElasticLoadBalancingV2::TargetGroup')[0]?.[0] } }]);
+    const network = svc?.NetworkConfiguration as { AwsvpcConfiguration?: { AssignPublicIp?: string; Subnets?: unknown[] } } | undefined;
+    expect(network?.AwsvpcConfiguration?.AssignPublicIp).toBe('ENABLED');
+    expect(network?.AwsvpcConfiguration?.Subnets?.map((v) => JSON.stringify(v)).sort())
+      .toEqual(subnetIdsByAz(region, 'Public').map((id) => JSON.stringify({ Ref: id })).sort());
+    const deployment = svc?.DeploymentConfiguration as Record<string, unknown> | undefined;
+    expect(deployment?.DeploymentCircuitBreaker).toEqual({ Enable: true, Rollback: true });
+    expect(deployment?.MaximumPercent).toBe(200);
+    expect(deployment?.MinimumHealthyPercent).toBe(100);
+    const td = taskDefinition(region, 'api')?.[1];
+    expect(td?.Cpu).toBe('512');
+    expect(td?.Memory).toBe('1024');
+    expect(td?.RuntimePlatform).toEqual({ CpuArchitecture: 'X86_64', OperatingSystemFamily: 'LINUX' });
+    expect(td?.RequiresCompatibilities).toEqual(['FARGATE']);
+    expect(td?.NetworkMode).toBe('awsvpc');
+    expect(td?.ContainerDefinitions).toHaveLength(1);
+    const container = containerOf(region, 'api');
+    expect(container?.Name).toBe('api');
+    expect(container?.PortMappings).toEqual([{ ContainerPort: 3000, Protocol: 'tcp' }]);
+    expect(container?.LogConfiguration?.LogDriver).toBe('awslogs');
+    const logGroup = container?.LogConfiguration?.Options?.['awslogs-group'] as { Ref?: string } | undefined;
+    expect(logGroup?.Ref ? synthesized(region).resources[logGroup.Ref]?.Properties?.RetentionInDays : undefined).toBe(30);
+  });
+
+  it('#246 R9: grupos de seguridad del servicio y del balanceador', () => {
+    const region = 'mx-central-1';
+    const network = service(region, 'api')?.[1].NetworkConfiguration as { AwsvpcConfiguration?: { SecurityGroups?: unknown[] } } | undefined;
+    const apiSg = securityGroupIdOf(network?.AwsvpcConfiguration?.SecurityGroups?.[0]);
+    expect(apiSg).toBeDefined();
+    const lbGroups = ofType(region, 'AWS::ElasticLoadBalancingV2::LoadBalancer')[0]?.[1].Properties?.SecurityGroups as unknown[] | undefined;
+    const lbSg = securityGroupIdOf(lbGroups?.[0]);
+    expect(lbSg).toBeDefined();
+    expect(apiSg ? synthesized(region).resources[apiSg]?.Properties?.SecurityGroupIngress : undefined).toBeUndefined();
+    expect(ingressesTo(region, apiSg ?? '')).toEqual([{
+      IpProtocol: 'tcp', FromPort: 3000, ToPort: 3000,
+      GroupId: { 'Fn::GetAtt': [apiSg, 'GroupId'] }, SourceSecurityGroupId: { 'Fn::GetAtt': [lbSg, 'GroupId'] },
+    }]);
+    const ingress = (lbSg ? synthesized(region).resources[lbSg]?.Properties?.SecurityGroupIngress : []) as Array<Record<string, unknown>>;
+    expect(ingress.map(withoutDescription).sort((a, b) => Number(a.FromPort) - Number(b.FromPort)))
+      .toEqual([80, 443].map((port) => ({ IpProtocol: 'tcp', FromPort: port, ToPort: port, CidrIp: '0.0.0.0/0' })));
+  });
+
+  it('#246 R9: una sola imagen Docker linux/amd64', () => {
+    expect(dockerImageSources('mx-central-1')).toHaveLength(1);
+    expect(dockerImageSources('mx-central-1')[0]?.platform).toBe('linux/amd64');
+  });
+});
