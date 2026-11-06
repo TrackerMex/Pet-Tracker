@@ -1047,3 +1047,32 @@ descripción gráfica de la mascota; no cambia su nombre ni su voz (punto 7).
 Detalle y tests en `specs/mobile-orbit-cachorro-art/requirements.md` (R1 a R7).
 
 - [ ] Enmienda #243 aprobada por humano
+
+## Enmienda #244 — El icono y el splash son de Orbit
+
+Fecha: 2026-11-06. Feature #244 `mobile-orbit-splash-icono`. Cierra el punto 4
+(«Pendiente») de la Enmienda #243; no cambia ninguna regla de pantalla.
+
+1. **Marca.** El icono de la app, el icono adaptativo de Android (primer plano y
+   monocromo), el splash, el favicon, los dos iconos de notificación y
+   `assets/expo.icon/` muestran a Orbit, el cachorro de la Enmienda #243. Ningún
+   asset de marca dibuja ya la cabeza del robot.
+2. **Icono.** Orbit de frente sobre el violeta de marca `#9460FC`, 1024 × 1024 y sin
+   transparencia. El icono adaptativo usa el mismo fondo plano `#9460FC` y el
+   primer plano es solo Orbit.
+3. **Zona segura.** Todo píxel visible del icono adaptativo y del splash cae dentro
+   de un círculo de radio 338 px sobre un lienzo de 1024 px (66 % del lienzo): lo
+   que no recortan el launcher de Android ni la máscara circular del splash de
+   Android 12. El splash se pinta con `imageWidth` 200 sobre `#9460FC`.
+4. **Monocromo y notificaciones.** El monocromo y la notificación son siluetas
+   blancas de Orbit con los ojos, la nariz y la boca como hueco. La notificación
+   solo aporta el alfa: Android la tiñe con `#9460FC`.
+5. **Fuentes.** Las tres fuentes aprobadas y el script que las convierte viven en
+   `specs/mobile-orbit-splash-icono/` y están congeladas por sha256. Los ocho PNG
+   salen del script; no se retocan a mano.
+6. **Rebuild.** Icono, splash, favicon y notificaciones son nativos: no viajan por
+   Metro ni por OTA, y exigen un rebuild del dev build para verse.
+
+Detalle y tests en `specs/mobile-orbit-splash-icono/requirements.md` (R1 a R11).
+
+- [ ] Enmienda #244 aprobada por humano
