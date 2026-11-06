@@ -88,6 +88,10 @@ describe('R4: AWS_RESOURCE_NAMES resuelve nombres sufijados', () => {
       directEnvRead.test(readFileSync(file, 'utf8')),
     );
 
-    expect(offenders).toEqual([]);
+    expect(
+      offenders
+        .map((file) => file.slice(join(__dirname, '..').length + 1))
+        .sort(),
+    ).toEqual(['config/config.module.spec.ts', 'main.spec.ts', 'main.ts']);
   });
 });

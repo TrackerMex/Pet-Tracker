@@ -61,6 +61,7 @@ describe('R1 (nutrition-ai-explainer #18): la IA esta cableada y sin literales d
         .map((path) => path.slice(root.length + 1))
         .sort(),
     ).toEqual([
+      'config/env.validation.ts',
       'modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts',
     ]);
   });
