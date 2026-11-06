@@ -2,6 +2,8 @@ import {
   BadRequestException,
   Body,
   Controller,
+  ForbiddenException,
+  UnauthorizedException,
   Delete,
   Get,
   HttpCode,
@@ -13,7 +15,14 @@ import {
 import { ZodType } from 'zod';
 import { CurrentUser } from '@/modules/auth/infrastructure/decorators/current-user.decorator';
 import type { CurrentUserPayload } from '@/modules/auth/infrastructure/decorators/current-user.decorator';
-import { UserNotFoundError } from '@/modules/auth/domain/errors/user.errors';
+import {
+  DeleteAccountSchema,
+  DeleteAccountDto,
+} from '@/modules/users/application/dto/delete-account.dto';
+import {
+  InvalidCredentialsError,
+  UserNotFoundError,
+} from '@/modules/auth/domain/errors/user.errors';
 import {
   DeletePushTokenDto,
   DeletePushTokenSchema,
@@ -48,10 +57,21 @@ export class UsersController {
     private readonly deleteAccountUseCase: DeleteAccountUseCase,
   ) {}
 
-  deleteMe(user: CurrentUserPayload, body: unknown): Promise<void> {
-    void user;
-    void body;
-    return Promise.reject(new Error('Not implemented'));
+  @Delete()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteMe(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: unknown,
+  ): Promise<void> {
+    const dto = parseBody<DeleteAccountDto>(DeleteAccountSchema, body);
+    try {
+      await this.deleteAccountUseCase.execute(user.id, dto.password);
+    } catch (error) {
+      if (error instanceof InvalidCredentialsError)
+        throw new ForbiddenException('Invalid password');
+      if (error instanceof UserNotFoundError) throw new UnauthorizedException();
+      throw error;
+    }
   }
 
   @Get()

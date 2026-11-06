@@ -1,4 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
+import {
+  UserNotFoundError,
+  InvalidCredentialsError,
+} from '@/modules/auth/domain/errors/user.errors';
 import { USER_REPOSITORY } from '@/modules/auth/domain/repositories/user.repository';
 import type { UserRepository } from '@/modules/auth/domain/repositories/user.repository';
 import { PASSWORD_HASHER } from '@/modules/auth/domain/ports/password-hasher';
@@ -17,9 +21,12 @@ export class DeleteAccountUseCase {
     private readonly accountDeletion: AccountDeletionRepository,
     @Inject(PET_DATA_PURGER) private readonly purger: PetDataPurger,
   ) {}
-  execute(userId: string, password: string): Promise<void> {
-    void userId;
-    void password;
-    return Promise.reject(new Error('Not implemented'));
+  async execute(userId: string, password: string): Promise<void> {
+    const user = await this.users.findById(userId);
+    if (!user) throw new UserNotFoundError(userId);
+    if (!(await this.hasher.verify(password, user.passwordHash)))
+      throw new InvalidCredentialsError();
+    const petIds = await this.accountDeletion.deleteAccount(userId);
+    await this.purger.purge(petIds);
   }
 }
