@@ -165,5 +165,19 @@ export class PetTrackerProdStack extends Stack {
       actions: ['dynamodb:Query', 'dynamodb:BatchWriteItem'], resources: [table.tableArn],
     }));
     api.service.autoScaleTaskCount({ minCapacity: 2, maxCapacity: 4 }).scaleOnCpuUtilization('ApiCpuScaling', { targetUtilizationPercent: 60 });
+    const workersSg = new ec2.SecurityGroup(this, 'WorkersSg', { vpc, allowAllOutbound: true });
+    const workersLogs = new logs.LogGroup(this, 'WorkersLogs', { retention: logs.RetentionDays.ONE_MONTH });
+    const workersTask = new ecs.FargateTaskDefinition(this, 'WorkersTask', {
+      cpu: 512, memoryLimitMiB: 1024,
+      runtimePlatform: { cpuArchitecture: ecs.CpuArchitecture.X86_64, operatingSystemFamily: ecs.OperatingSystemFamily.LINUX },
+    });
+    workersTask.addContainer('workers', {
+      image, logging: ecs.LogDrivers.awsLogs({ streamPrefix: 'workers', logGroup: workersLogs }),
+    });
+    new ecs.FargateService(this, 'Workers', {
+      cluster, taskDefinition: workersTask, desiredCount: 1,
+      minHealthyPercent: 0, maxHealthyPercent: 100, circuitBreaker: { rollback: true },
+      assignPublicIp: true, vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC }, securityGroups: [workersSg],
+    });
   }
 }
