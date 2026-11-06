@@ -173,6 +173,17 @@ export class PetTrackerProdStack extends Stack {
     });
     workersTask.addContainer('workers', {
       image, logging: ecs.LogDrivers.awsLogs({ streamPrefix: 'workers', logGroup: workersLogs }),
+      environment: {
+        PORT: '3000', PGHOST: db.clusterEndpoint.hostname, PGPORT: Token.asString(db.clusterEndpoint.port),
+        PGDATABASE: 'pet_tracker', PGUSER: 'pet_tracker', DB_POOL_MAX: '5', AWS_MODE: 'aws',
+        MEDIA_BUCKET_NAME: bucket.bucketName, SIM_MODE: 'false', PUSH_ENABLED: 'true',
+        POLLER_ENABLED: 'true', ACTIVITY_AGGREGATOR_ENABLED: 'true', ALERTS_ENGINE_ENABLED: 'true', NOTIFIER_ENABLED: 'true', REMINDERS_ENABLED: 'true',
+      },
+      secrets: {
+        PGPASSWORD: ecs.Secret.fromSecretsManager(db.secret!, 'password'),
+        JWT_SECRET: ecs.Secret.fromSecretsManager(jwtSecret),
+        WIALON_TOKEN: ecs.Secret.fromSecretsManager(wialonTokenSecret),
+      },
     });
     new ecs.FargateService(this, 'Workers', {
       cluster, taskDefinition: workersTask, desiredCount: 1,
