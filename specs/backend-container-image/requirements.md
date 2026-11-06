@@ -1,6 +1,6 @@
 ---
 feature: "backend-container-image"
-status: draft        # draft | approved
+status: approved      # draft | approved
 tags: [harness, spec, backend, infra, produccion]
 ---
 
@@ -307,4 +307,6 @@ Los dos scripts de esta sección son `scripts/provision-device.ts` y
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Firmada por el leader con la firma delegada (mandato del humano 2026-10-23,
+  ampliado 2026-11-06), tras la checklist de `progress/plan_canvas-parity-2026-10-23.md`
+  §4 y los tres puntos de `progress/plan_produccion-aws-2026-11-06.md` §4 (fecha: 2026-11-06)

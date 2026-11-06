@@ -1,6 +1,6 @@
 ---
 feature: "backend-container-image"
-status: draft        # draft | approved
+status: approved      # draft | approved
 tags: [harness, spec, backend, infra, produccion]
 ---
 

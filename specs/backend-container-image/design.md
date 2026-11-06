@@ -1,6 +1,6 @@
 ---
 feature: "backend-container-image"
-status: draft        # draft | approved
+status: approved      # draft | approved
 tags: [harness, spec, backend, infra, produccion]
 ---
 
@@ -445,6 +445,15 @@ imagen y `command` sobrescrito. Las lanza el humano; ninguna IA.
   va a CloudWatch Logs con el resto de la tarea. No incluye `PGPASSWORD` ni
   `WIALON_TOKEN` (R22).
 - **Fuera del contrato**: el resto de `dist/scripts/*.js`.
+- **`activation_code` en el log** (decisión del leader en la firma,
+  2026-11-06): se acepta. Es el código que el humano entrega con el collar y
+  la tarea única no tiene otra salida. Leer CloudWatch Logs exige IAM de la
+  cuenta. #246 fija la retención del grupo de logs de las tareas únicas; el
+  leader propone 30 días.
+- **Por qué la task definition de migración y no la de workers** (decisión
+  del leader en la firma): se mantiene la de migración ampliada. #246 ya
+  firma contra este contrato y el coste es un secreto más en su execution
+  role.
 
 ### Apagado
 
