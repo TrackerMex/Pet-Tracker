@@ -3999,5 +3999,87 @@
       "specs/mobile-orbit-splash-icono/convert-orbit-icons.py",
       "docs/ui-guidelines.md"
     ]
+  },
+  {
+    "id": 245,
+    "name": "backend-container-image",
+    "status": "pending",
+    "priority": "P0",
+    "description": "Imagen de contenedor del backend para ECS Fargate (decisión del humano 2026-11-06: Fargate, no Lambda). Dockerfile multi-stage sin herramientas de build y no root, endpoint de health para ALB y Route 53, apagado ordenado con SIGTERM, migraciones y seeds como tarea única de ECS, validación de configuración al arrancar, TLS hacia Aurora con el CA de RDS y credenciales del task role sin endpoint de LocalStack en AWS real. Fija el contrato que consume #246 (ruta del Dockerfile, puerto, health, comando de migración, variables de entorno). Explore: progress/explore_produccion-aws.md. Registrada el 2026-11-06 por el plan progress/plan_produccion-aws-2026-11-06.md. Firma delegada al leader (ampliación del 2026-11-06 en CLAUDE.md). Responsable: leader @Backend.",
+    "acceptance_criteria": [
+      "Requisitos R<n> de specs/backend-container-image/requirements.md con su test nombrado en verde",
+      "Ningún secreto en el repo; ninguna prueba toca AWS real"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/Dockerfile",
+      "backend-pet-tracker/.dockerignore",
+      "backend-pet-tracker/src/main.ts"
+    ]
+  },
+  {
+    "id": 246,
+    "name": "infra-prod-region-stack",
+    "status": "pending",
+    "priority": "P0",
+    "description": "Stack CDK de producción parametrizado por región y rol (primary | standby); el 2026-11-11 se despliega solo mx-central-1 como primary. VPC 3 AZ, ECS Fargate (API con ALB HTTPS y autoescalado; workers con 1 tarea en primary y 0 en standby), Aurora PostgreSQL Serverless v2 >= 16.4 con escritor y lector en AZ distintas, DynamoDB positions con PITR lista para réplicas, SQS con DLQ, EventBridge, S3 de media, secretos por nombre (los crea el humano) y alarmas de CloudWatch. Pruebas: assertions de CDK y cdk synth; cdk deploy y bootstrap los corre el humano (GA3). Depende del contrato de #245. Decisiones previas a la firma: D1 (dominio) y D2 (salida a internet). Registrada el 2026-11-06 por el plan progress/plan_produccion-aws-2026-11-06.md. Firma delegada al leader (ampliación del 2026-11-06 en CLAUDE.md). Responsable: leader @Backend.",
+    "acceptance_criteria": [
+      "Requisitos R<n> de specs/infra-prod-region-stack/requirements.md con su test de assertions en verde",
+      "cdk synth verde para mx-central-1 primary y us-east-2 standby",
+      "Cada recurso con estado declara removalPolicy y protección contra borrado, fijadas por test",
+      "cdk deploy y bootstrap los corre el humano, nunca una IA"
+    ],
+    "files_affected": [
+      "infra/bin/app.ts",
+      "infra/lib/pet-tracker-prod-stack.ts",
+      "infra/test/pet-tracker-prod-stack.test.ts"
+    ]
+  },
+  {
+    "id": 247,
+    "name": "users-account-deletion-api",
+    "status": "pending",
+    "priority": "P1",
+    "description": "DELETE del usuario autenticado, exigido por Apple 5.1.1(v) y Google Play. Borra o anonimiza sus datos en Postgres, S3 y tokens de push, e invalida sus sesiones. El destino de las mascotas compartidas con otros miembros es la decisión D3 del humano. Explore: progress/explore_account-deletion.md. Registrada el 2026-11-06 por el plan progress/plan_produccion-aws-2026-11-06.md. Firma delegada al leader (ampliación del 2026-11-06 en CLAUDE.md). Responsable: leader @Backend.",
+    "acceptance_criteria": [
+      "Requisitos R<n> de specs/users-account-deletion-api/requirements.md con su test nombrado en verde",
+      "Tras el borrado, un token emitido antes no da acceso"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/users/"
+    ]
+  },
+  {
+    "id": 248,
+    "name": "mobile-account-deletion",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Acción destructiva «eliminar cuenta» en Editar perfil (decisión del humano 2026-11-06: «tenemos editar podemos ponerlo ahi»), con confirmación. Llama al API de #247, cierra la sesión (secure-store y caché) y vuelve a la bienvenida. Copy y artboard: G1, del humano. Smoke en dispositivo: G2, en lote. Depende del contrato de #247. Registrada el 2026-11-06 por el plan progress/plan_produccion-aws-2026-11-06.md. Firma delegada al leader (ampliación del 2026-11-06 en CLAUDE.md). Responsable: leader @Backend.",
+    "acceptance_criteria": [
+      "Requisitos R<n> de specs/mobile-account-deletion/requirements.md con su test nombrado en verde",
+      "G1 y G2 marcadas por el humano"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/edit-profile/index.tsx",
+      "mobile-pet-tracker/src/api/",
+      "mobile-pet-tracker/src/i18n/catalog.ts"
+    ]
+  },
+  {
+    "id": 249,
+    "name": "infra-prod-dr-standby",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Pilot light en us-east-2 (decisión del humano 2026-11-06): clúster secundario de Aurora Global Database, réplica de la DynamoDB positions, replicación de S3 (CRR) y ECR, réplica de secretos, stack de #246 con rol standby (servicios a 0), registros failover de Route 53 con health check sobre la API primaria y docs/runbook-failover.md. El poller de Wialon corre solo en la región activa. Después de la presentación del 2026-11-11. El simulacro de failover es GA7, del humano. Registrada el 2026-11-06 por el plan progress/plan_produccion-aws-2026-11-06.md. Firma delegada al leader (ampliación del 2026-11-06 en CLAUDE.md). Responsable: leader @Backend.",
+    "acceptance_criteria": [
+      "Requisitos R<n> de specs/infra-prod-dr-standby/requirements.md con su test de assertions en verde",
+      "docs/runbook-failover.md con conmutación y vuelta",
+      "GA7: simulacro de failover hecho por el humano"
+    ],
+    "files_affected": [
+      "infra/bin/app.ts",
+      "infra/lib/pet-tracker-prod-stack.ts",
+      "infra/test/pet-tracker-prod-stack.test.ts",
+      "docs/runbook-failover.md"
+    ]
   }
 ]
