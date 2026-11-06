@@ -3958,5 +3958,14 @@
       "specs/mobile-orbit-cachorro-art/convert-orbit.py",
       "docs/ui-guidelines.md"
     ]
+  },
+  {
+    "id": 244,
+    "name": "mobile-orbit-splash-icono",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Registrada el 2026-11-06 a pedido del humano, como continuación de #243. El humano aprobó G1 del arte de las diez poses de Orbit (cachorro) y pidió registrar aparte el splash y el icono, que #243 deja fuera (D4) y que siguen mostrando el robot anterior. Alcance: sustituir el arte del robot en los assets de marca de mobile-pet-tracker/assets/images/ (icon.png, splash-icon.png, que también se usa en src/app/index.tsx con testID splash-logo, android-icon-foreground.png, android-icon-monochrome.png, favicon.png, pet-tracker-notification-96.png, pet-tracker-notification-color-96.png, pet-tracker-app-icon.png, logo-glow.png) y en assets/expo.icon/, conservando los nombres y las geometrías que fijan app.assets.test.ts y app.config.test.ts. Depende de #243 (arte de Orbit mergeado) y de G6, que no se delega: el humano entrega el PNG del icono de Orbit. Icono y splash son nativos: cambiarlos exige rebuild del dev build (G3, humano) y smoke en dispositivo (G2, en lote al final). Gates humanos, no delegados: G6, G3 y G2. Responsable: leader @Frontend. Registrada sin spec.",
+    "acceptance_criteria": null,
+    "files_affected": null
   }
 ]
