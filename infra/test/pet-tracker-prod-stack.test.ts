@@ -230,6 +230,8 @@ describe('#246 R8: Aurora Serverless v2 en subredes aisladas', () => {
 });
 
 interface ContainerProperties extends Record<string, unknown> {
+  readonly Environment?: Array<{ Name: string; Value: unknown }>;
+  readonly Secrets?: Array<{ Name: string; ValueFrom: unknown }>;
   readonly LogConfiguration?: { LogDriver?: string; Options?: Record<string, unknown> };
 }
 interface TaskDefinitionProperties extends Record<string, unknown> {
@@ -361,5 +363,60 @@ describe('#246 R9: API en Fargate detrás de un ALB HTTPS', () => {
   it('#246 R9: una sola imagen Docker linux/amd64', () => {
     expect(dockerImageSources('mx-central-1')).toHaveLength(1);
     expect(dockerImageSources('mx-central-1')[0]?.platform).toBe('linux/amd64');
+  });
+});
+
+function envMap(container: ContainerProperties | undefined): Record<string, unknown> {
+  return Object.fromEntries((container?.Environment ?? []).map(({ Name, Value }) => [Name, Value]));
+}
+function roleIdOf(arn: unknown): string | undefined {
+  if (typeof arn !== 'object' || arn === null) return undefined;
+  const parts = (arn as { 'Fn::GetAtt'?: unknown[] })['Fn::GetAtt'];
+  return parts?.[1] === 'Arn' && typeof parts[0] === 'string' ? parts[0] : undefined;
+}
+function secretsReadBy(region: string, roleId: string | undefined): string[] {
+  if (!roleId) return [];
+  const attachmentId = ofType(region, 'AWS::SecretsManager::SecretTargetAttachment')[0]?.[0];
+  const labels: string[] = [];
+  for (const [, policy] of ofType(region, 'AWS::IAM::Policy')) {
+    const roles = (policy.Properties?.Roles ?? []) as unknown[];
+    if (!roles.some((role) => JSON.stringify(role) === JSON.stringify({ Ref: roleId }))) continue;
+    const document = policy.Properties?.PolicyDocument as { Statement?: Array<{ Action?: string | string[]; Resource?: unknown }> } | undefined;
+    for (const statement of document?.Statement ?? []) {
+      if (![statement.Action].flat().includes('secretsmanager:GetSecretValue')) continue;
+      const resources: unknown[] = Array.isArray(statement.Resource) ? statement.Resource as unknown[] : [statement.Resource];
+      for (const resource of resources) {
+        const serialized = JSON.stringify(resource) ?? 'undefined';
+        labels.push(serialized === JSON.stringify({ Ref: attachmentId }) ? 'db' :
+          /:secret:pet-tracker\/prod\/([a-z-]+)-\?{6}/.exec(serialized)?.[1] ?? serialized);
+      }
+    }
+  }
+  return [...new Set(labels)].sort();
+}
+
+describe('#246 R10: entorno y secretos del contenedor api', () => {
+  it('#246 R10: environment exacto', () => {
+    const region = 'mx-central-1';
+    const db = ofType(region, 'AWS::RDS::DBCluster')[0]?.[0];
+    expect(envMap(containerOf(region, 'api'))).toEqual({
+      PORT: '3000', PGHOST: { 'Fn::GetAtt': [db, 'Endpoint.Address'] }, PGPORT: { 'Fn::GetAtt': [db, 'Endpoint.Port'] },
+      PGDATABASE: 'pet_tracker', PGUSER: 'pet_tracker', DB_POOL_MAX: '10', AWS_MODE: 'aws',
+      MEDIA_BUCKET_NAME: { Ref: ofType(region, 'AWS::S3::Bucket')[0]?.[0] }, SIM_MODE: 'false', EMAIL_ENABLED: 'true',
+      RESEND_FROM: PROPS.resendFrom, RESET_LINK_HOST: PROPS.resetLinkHost, ANTHROPIC_ENABLED: 'true', ANTHROPIC_MODEL: 'claude-haiku-5-5',
+    });
+  });
+  it('#246 R10: secretos y lectura del execution role', () => {
+    const region = 'mx-central-1';
+    const secrets = containerOf(region, 'api')?.Secrets ?? [];
+    expect(secrets.map(({ Name }) => Name).sort()).toEqual(['ANTHROPIC_API_KEY', 'JWT_SECRET', 'PGPASSWORD', 'RESEND_API_KEY', 'WIALON_TOKEN']);
+    expect(secrets.find(({ Name }) => Name === 'PGPASSWORD')?.ValueFrom).toEqual({
+      'Fn::Join': ['', [{ Ref: ofType(region, 'AWS::SecretsManager::SecretTargetAttachment')[0]?.[0] }, ':password::']],
+    });
+    for (const [variable, name] of [['ANTHROPIC_API_KEY', 'anthropic-api-key'], ['JWT_SECRET', 'jwt'], ['RESEND_API_KEY', 'resend-api-key'], ['WIALON_TOKEN', 'wialon-token']]) {
+      expect(JSON.stringify(secrets.find(({ Name }) => Name === variable)?.ValueFrom)).toContain(`:secret:pet-tracker/prod/${name}"`);
+    }
+    expect(secretsReadBy(region, roleIdOf(taskDefinition(region, 'api')?.[1].ExecutionRoleArn)))
+      .toEqual(['anthropic-api-key', 'db', 'jwt', 'resend-api-key', 'wialon-token']);
   });
 });
