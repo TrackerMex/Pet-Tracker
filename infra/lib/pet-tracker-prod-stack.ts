@@ -203,5 +203,24 @@ export class PetTrackerProdStack extends Stack {
     workersTask.taskRole.addToPrincipalPolicy(new iam.PolicyStatement({
       actions: ['events:PutEvents'], resources: [eventBus.eventBusArn],
     }));
+    const opsLogs = new logs.LogGroup(this, 'OpsLogs', { retention: logs.RetentionDays.ONE_MONTH });
+    const opsTask = new ecs.FargateTaskDefinition(this, 'OpsTask', {
+      family: 'pet-tracker-ops', cpu: 256, memoryLimitMiB: 512,
+      runtimePlatform: { cpuArchitecture: ecs.CpuArchitecture.X86_64, operatingSystemFamily: ecs.OperatingSystemFamily.LINUX },
+    });
+    opsTask.addContainer('ops', {
+      image, command: ['node', 'dist/src/db/migrate.js'],
+      logging: ecs.LogDrivers.awsLogs({ streamPrefix: 'ops', logGroup: opsLogs }),
+      environment: {
+        PGHOST: db.clusterEndpoint.hostname, PGPORT: Token.asString(db.clusterEndpoint.port),
+        PGDATABASE: 'pet_tracker', PGUSER: 'pet_tracker', DB_POOL_MAX: '1', SIM_MODE: 'false',
+      },
+      secrets: {
+        PGPASSWORD: ecs.Secret.fromSecretsManager(db.secret!, 'password'),
+        WIALON_TOKEN: ecs.Secret.fromSecretsManager(wialonTokenSecret),
+      },
+    });
+    (opsTask.node.defaultChild as ecs.CfnTaskDefinition).addPropertyDeletionOverride('TaskRoleArn');
+    opsTask.node.tryRemoveChild('TaskRole');
   }
 }
