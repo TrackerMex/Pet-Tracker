@@ -123,6 +123,23 @@ tokens de push, e invalida sus sesiones. La explore `progress/explore_account-de
 mapea los datos. Qué pasa con las mascotas que comparte con otros miembros es la decisión
 abierta D3 (§5).
 
+Decisiones técnicas del leader sobre `progress/explore_account-deletion.md` (2026-11-06):
+
+| Decisión de la explore | Elección | Motivo |
+|---|---|---|
+| D-HTTP | `DELETE /v1/me` con cuerpo `{ password }` y 204. Contraseña incorrecta: 403, nunca 401, porque el móvil cierra sesión con 401 | Contrato de #248 |
+| D-PWD | Opción (1): la contraseña va en el cuerpo y se verifica con `PasswordHasher` | No hay login social, así que todo usuario tiene contraseña. No se recorta la reautenticación |
+| D-HARD | Opción (1): borrado duro inmediato | Es lo más simple y cumple Apple 5.1.1(v) y Google sin interpretación |
+| D-FK | Opción (1): migración a `on delete set null` en las cinco FKs `created_by`, con columnas nullable | Conserva el historial de los demás miembros y desbloquea el 23503 |
+| D-JWT | Opción (2): el guard comprueba que el usuario existe (una consulta por PK) y responde 401. Es una enmienda a R8 del guard | Se arregla en un solo sitio: el segundo dispositivo cierra sesión por el camino que ya existe |
+| D-EXT | Opción (1): purga inmediata tras el commit de S3 (prefijos `pets/<petId>/`) y DynamoDB (`PET#<petId>`), *best effort* y con registro del prefijo para reintentar. Vive en el borrado de mascota, así que también el borrado suelto de una mascota deja de dejar huérfanos | Las posiciones revelan dónde vive el usuario |
+| D-AUD | Opción (1): se mantiene el uuid, que ya es pseudónimo sin la fila de `users`, y se registra `user.delete` | Sin migración de `audit_log` |
+| D-RET | #246 fija la retención: backups de Aurora 7 días, PITR de DynamoDB 35 días (fijo en AWS) y expiración de versiones no actuales de S3 a 30 días. La política de privacidad del sitio web lo declara | Va al sitio web (@Frontend) por el humano |
+
+Lo que esto pide a #246: el task role de la API suma `s3:ListBucket`, `s3:DeleteObject`,
+`dynamodb:Query` y `dynamodb:BatchWriteItem`, y el bucket una regla de ciclo de vida para las
+versiones no actuales.
+
 ### 248 `mobile-account-deletion` (P1, @Backend)
 
 En Editar perfil: una acción destructiva «eliminar cuenta» con confirmación. Llama al API de
@@ -176,7 +193,7 @@ A la checklist de firma se le suman tres puntos:
 
 | Gate | Qué | Cuándo | Casilla |
 |---|---|---|---|
-| D1 | Dominio de la API y si la zona está en Route 53 | Antes de firmar #246 | este plan |
+| D1 | Dominio de la API y si la zona está en Route 53. #246 recibe el dominio y el ARN del certificado como contexto de despliegue (`cdk deploy -c`), así que D1 no bloquea su firma; la zona en Route 53 sí la necesita #249 para el failover | Antes de GA1 | este plan |
 | D2 | Salida a internet de las tareas: NAT por AZ, un solo NAT, o subredes públicas con IP pública y SG cerrado | Antes de firmar #246 | este plan |
 | D3 | Borrado de cuenta con mascotas compartidas | Antes de firmar #247 | este plan |
 | D4 | Qué integraciones van en real en producción el miércoles: Wialon (`SIM_MODE`), push, correo con Resend (exige verificar el dominio por DNS) e IA con Anthropic (costo por uso) | Antes de firmar #246 | este plan |
