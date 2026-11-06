@@ -84,6 +84,21 @@ van en la misma cadena, tras C2.
   - Commit: `docs(ui): R6 charter amendment, Orbit is a puppy (#243)`.
 - [ ] **(3) Refactor.** Nada.
 
+## Enmienda 1: entrada de `exceptions` (C6)
+
+El rojo ya existe: `orbit-rename.test.ts` `#225 R4: el código de test solo nombra a
+Pingo…` falla desde C5 (`orbit-cachorro-art.test.ts:106`). Se arregla con un commit
+que solo toca ese fichero.
+
+- [ ] **(1)** Añadir al final del array `exceptions` de `src/__tests__/orbit-rename.test.ts`
+  la entrada `{ file: '__tests__/orbit-cachorro-art.test.ts', snippet: "'antena', 'Pingo', 'diez poses'", lines: 1 },`.
+  Ningún otro cambio en el fichero.
+  - Verde esperado: `orbit-rename.test.ts` entero (ambos `it` de `#225 R4`).
+  - Mutación (para el reporte, no se commitea): quitar la entrada, el `it` de
+    `#225 R4` vuelve a rojo; cambiar `lines: 1` a `2`, rojo en el segundo `it`.
+  - Commit: `test(mobile): R5 allow the Pingo history literal in the #243 test (#243)`.
+  - Nace de un rojo previo (C5), no hay commit rojo aparte; dilo en el reporte.
+
 ## Verde de la cadena (tras C2 y tras C5)
 
 Desde `mobile-pet-tracker/`, cada comando con su salida esperada:
@@ -114,7 +129,8 @@ nada más (R7).
 ```
 git diff --name-only H0..HEAD -- mobile-pet-tracker/src
 ```
-→ exactamente `mobile-pet-tracker/src/__tests__/orbit-cachorro-art.test.ts` (R5).
+→ exactamente `mobile-pet-tracker/src/__tests__/orbit-cachorro-art.test.ts` y
+`mobile-pet-tracker/src/__tests__/orbit-rename.test.ts` (R5, Enmienda 1).
 
 ```
 git diff --name-only H0..HEAD -- . ':!mobile-pet-tracker' ':!specs' ':!progress' ':!docs/ui-guidelines.md'

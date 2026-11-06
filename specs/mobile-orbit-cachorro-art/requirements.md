@@ -116,10 +116,12 @@ cambiar el binario no mueve ningún cálculo de layout.
 - **R5**: WHILE la app pinta cualquier pose THE SYSTEM SHALL cargarla desde el mismo
   `require('…/orbit-<pose>.webp')` y con el mismo tamaño que antes de #243, es decir,
   ningún fichero de `mobile-pet-tracker/src/` que no sea un test cambia, y los tests
-  existentes de §Tests existentes pasan **sin modificación**.
+  existentes de §Tests existentes pasan **sin modificación**, con una única excepción
+  (Enmienda 1, 2026-11-06): `orbit-rename.test.ts` gana una entrada en su inventario
+  `exceptions`, porque el `it` de R6 nombra `Pingo` en una línea de código.
   - Prueba: las suites listadas en §Tests existentes en verde, más la guarda de
     tasks.md §Guardas finales (`git diff --name-only <H0>..HEAD -- mobile-pet-tracker/src`
-    solo lista el test nuevo).
+    solo lista el test nuevo y `orbit-rename.test.ts`).
 
 ### Documentación (gate G4, humano)
 
@@ -188,11 +190,20 @@ sustituir los binarios, es un hallazgo: PARA y anótalo, no lo edites.
 | `src/components/__tests__/celebration.test.tsx` | formato de `orbit-celebrate.webp` (el `it` conserva el título histórico `pingo-celebrate.webp…`) | ninguno; no renombrar el título (rompe trazabilidad) |
 | `src/components/__tests__/empty-state-hero.test.tsx` | usa `pose="talk"` y no nombra el arte | ninguno |
 | `src/__tests__/orbit-activity-pose.test.ts` (#225 R5) | formato de `orbit-walk.webp`; congela el **maestro viejo** `specs/mobile-orbit-activity-pose/design-src/mascot-11-walk.png` y su prompt | ninguno; ese maestro queda como historia |
-| `src/__tests__/orbit-rename.test.ts` (#225 R2) | sin `/pingo/i` en los nombres de imagen; nombres existen; todo `require(...webp)` resuelve | ninguno |
+| `src/__tests__/orbit-rename.test.ts` (#225 R2, R4) | sin `/pingo/i` en los nombres de imagen; nombres existen; todo `require(...webp)` resuelve; **`#225 R4`: ningún test nombra a Pingo en código salvo las entradas de `exceptions`** | **una entrada nueva en `exceptions`** (Enmienda 1): `{ file: '__tests__/orbit-cachorro-art.test.ts', snippet: "'antena', 'Pingo', 'diez poses'", lines: 1 }`. Nada más del fichero cambia |
 | `src/__tests__/orbit-rename-copy.test.ts` (#221) | copy visible | ninguno |
 | `src/__tests__/orbit-charter-voice.test.ts` | literales del punto 7 de la carta | ninguno (R6) |
 | `src/__tests__/design-drift.test.ts` | solo cita `components/orbit-float.tsx` en una lista de ficheros; sin candado de imágenes | ninguno |
 | `app.assets.test.ts`, `app.config.test.ts` (#101, #115 R10) | geometría de icono, splash y notificación | ninguno (R7) |
+
+**Enmienda 1 (2026-11-06, firma delegada).** La spec firmó que ningún test existente
+cambiaba; Codex paró bien en C5: el `it` de R6 afirma el literal `Pingo` (la
+Enmienda #243 lo conserva como historia) y `#225 R4` escanea todos los tests y solo
+tolera `pingo` en títulos, comentarios y las entradas de `exceptions`. Se omitió ese
+candado (el de las 10 filas de arriba se revisó por «qué fija sobre el arte», no por
+«qué escanea todos los ficheros»). Arreglo: la entrada de `exceptions` de la fila de
+`orbit-rename.test.ts`, que es el mecanismo previsto de ese candado (su segundo `it`
+exige que casen exactamente `lines: 1`). No se oculta el literal ni se cambia R6.
 
 Ningún texto de `docs/` ni de `mobile-pet-tracker/src/` describe el aspecto viejo:
 `git grep -nIiE "antena|antenna|gorro|robot|chest button"` sobre `docs`,
