@@ -32,8 +32,9 @@ vacío. Tras las ocho mutaciones autorizadas y revertidas, las dos suites afecta
 volvieron a pasar (41/41); índice sin mutaciones. M2 y M3 no se plantaron por fix1.
 Detalle, salidas de guardas y ocho hashes medidos en
 `progress/impl_mobile-orbit-splash-icono.md` §Reanudación.
-R1–R9 y R11 quedan implementados y verificados para revisión; R10 sigue pendiente
-de G4. C4 y C5 no se ejecutaron. No se cambian las firmas ni el estado de la feature.
+R1–R9 y R11 quedaron implementados y verificados (PR #315). R10 estaba pendiente de G4
+al cerrar C3; el humano firmó G4 el 2026-11-06 y C4 y C5 se ejecutaron después en el
+tramo R10 (ver la fila de R10). No se cambian las firmas ni el estado de la feature.
 
 Regla: el reviewer no aprueba si alguna fila de R1 a R9 y R11 queda sin cerrar. R10 queda
 condicionada a la casilla G4 de [[requirements]] §Aprobación; sin ella, la feature

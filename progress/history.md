@@ -10386,3 +10386,8 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
 - **Acciones:** implementó Codex CLI en herdr, test-primero: C1a `91b91fd7` y C1b `1abb6782` en rojo por aserción, C2 `3c4832a9` en verde. Paró antes de C2 porque la guarda de lint del handoff y de `tasks.md` (`bun run lint … && test ! -s`) nunca podía dar 0 (el banner de Bun llena el log); el leader la corrigió a `bunx expo lint --no-cache` (fix1, y enmienda a `tasks.md`). Reviewer: aprobado sobre R1 a R9 y R11, con dos hallazgos bajos (cabecera del reporte, `status: draft` de traceability).
 - **Resultado:** `./init.sh` del leader en verde en la corrida 2 (exit 0; móvil 6826 tests, backend 1651, e2e 601). La corrida 1 había salido roja por un solo `it` de `profile` (`#173 R5`, `pet-info-card`) bajo presión de memoria; en aislado pasa 226/226.
 - **Estado final:** spec_ready. R10 (enmienda de la carta, C4/C5) espera al gate humano G4; `done` espera además a G3 (rebuild del dev build) y al smoke G2 en dispositivo, en lote al final.
+
+### Tramo R10 de #244 (2026-11-06)
+
+- **Acciones:** el humano firmó G4 en chat el 2026-11-06 y el leader lo registró en `requirements.md` (`f201b9df`). Codex CLI hizo C4 (`2a53b995`, test en rojo por aserción: la cuenta de `## Enmienda #244 — ` era 0) y C5 (`1cdf6c63`, la Enmienda #244 al final de `docs/ui-guidelines.md`, con la casilla desmarcada porque el test la exige así). Reviewer: aprobado, con una mutación propia (encabezado duplicado, rojo con esperado 1 y recibido 2).
+- **Estado final:** spec_ready. `done` espera a G3 (rebuild del dev build) y al smoke G2 en dispositivo.
