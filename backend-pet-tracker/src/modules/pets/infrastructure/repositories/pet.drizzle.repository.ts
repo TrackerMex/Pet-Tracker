@@ -22,6 +22,8 @@ import {
   PetWithRole,
 } from '@/modules/pets/domain/repositories/pet.repository';
 
+import { deletePetsTx } from './delete-pets.tx';
+
 type PetRow = typeof pets.$inferSelect;
 
 @Injectable()
@@ -143,7 +145,7 @@ export class PetDrizzleRepository implements PetRepository {
   }
 
   async delete(petId: string): Promise<void> {
-    await this.db.delete(pets).where(eq(pets.id, petId));
+    await this.db.transaction((tx) => deletePetsTx(tx, [petId]));
   }
 }
 
