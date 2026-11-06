@@ -199,3 +199,16 @@ describe('R19: ningún .env entra en la imagen', () => {
     ).toBe(false);
   });
 });
+
+function packageScripts(): Record<string, string> {
+  return (
+    JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf8')) as {
+      scripts: Record<string, string>;
+    }
+  ).scripts;
+}
+describe('R20: start:prod arranca el main compilado', () => {
+  it('R20: scripts.start:prod es node dist/src/main.js', () => {
+    expect(packageScripts()['start:prod']).toBe('node dist/src/main.js');
+  });
+});
