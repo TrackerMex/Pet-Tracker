@@ -946,6 +946,99 @@ Comprobaciones desde `backend-pet-tracker/`, con las Esperas del handoff antes d
 
 Después se sigue con Cierre (2), el mismo comando de siempre, y el resto del Cierre.
 
+## Enmienda del leader (2026-11-06, 3): el bundle de RDS va directo en `/app`
+
+Gate de Docker del leader en rojo sobre `aaabb4c4`. `build exit=0`, pero
+dentro de la imagen, como uid 1000, se ve esto:
+
+```
+stat: cannot statx '/etc/ssl/certs/rds-global-bundle.pem': Permission denied
+node: OpenSSL configuration error:
+...BIO_new_file:Permission denied:...calling fopen(/etc/ssl/openssl.cnf, rb)
+default exit=13
+```
+
+**Causa**, medida con `ls -ld` como root dentro de la imagen:
+
+- `/etc/ssl` y `/etc/ssl/certs` quedan en `dr--r--r--`.
+- `node:24-bookworm-slim` no trae `/etc/ssl`. El
+  `COPY --from=build --chmod=0444 … /etc/ssl/certs/…` crea los dos padres, y
+  BuildKit les aplica también el `0444`.
+- Sin bit de ejecución, uid 1000 no puede atravesarlos. El `fopen` de
+  `openssl.cnf` da `EACCES` en vez de `ENOENT`, y node aborta antes de
+  ejecutar nada (exit 13).
+- R16 prohíbe `RUN` en `runtime`, así que no cabe un `mkdir` previo.
+
+**Arreglo**: el destino va directo en `/app`, que ya existe por
+`WORKDIR /app` (`0755`, root). Lo probó el leader en una imagen mínima:
+
+- el fichero queda `-r--r--r--`, y uid 1000 no puede escribirlo;
+- `/etc/ssl` no llega a existir;
+- `node -e "console.log(require('tls').getCACertificates('extra').length)"`
+  da `114`, que es el `grep -c "BEGIN CERTIFICATE"` del PEM.
+
+R17 de [[requirements]] ya dice las líneas nuevas. El texto de §R17 (1) de
+arriba queda como historia: donde dice `/etc/ssl/certs/rds-global-bundle.pem`,
+ahora va `/app/rds-global-bundle.pem`.
+
+Cadena desde `cd /home/claude/sites/Pet-Tracker-wt-245/backend-pet-tracker`.
+Aplican §Reglas de la cadena y las Esperas del handoff antes de cada jest. No
+se toca ningún otro fichero.
+
+1. **Rojo**: en `src/container-image.spec.ts`, cambiar solo estos tres
+   literales. Los nombres de los `it` no cambian.
+   - En `it('R17: runtime copia el PEM con 0444 y NODE_EXTRA_CA_CERTS apunta a su destino, ambos antes de USER')`:
+     - `const copy` pasa a
+       `'COPY --from=build --chmod=0444 /app/certs/rds-global-bundle.pem /app/rds-global-bundle.pem'`;
+     - `const env` pasa a `'ENV NODE_EXTRA_CA_CERTS=/app/rds-global-bundle.pem'`.
+   - En `it('R17: ninguna instrucción ADD descarga de una URL')`, el literal
+     anti-vacío pasa a la misma línea `COPY` de arriba.
+
+   Después:
+
+   ```
+   pnpm exec prettier --write src/container-image.spec.ts
+   pnpm exec eslint src/container-image.spec.ts; echo "eslint exit=$?"
+   pnpm exec tsc --noEmit -p tsconfig.json; echo "tsc exit=$?"
+   FORCE_COLOR=0 pnpm exec jest --config package.json src/container-image.spec.ts > /tmp/impl-245-R17b-red.log 2>&1; echo "exit=$?"
+   grep -cE "ReferenceError|Cannot find module|error TS|TypeError" /tmp/impl-245-R17b-red.log
+   ```
+
+   - Esperado: `exit=1` y el `grep` da `0`.
+   - Caen exactamente esos dos `it` de R17, por `toContain`, y el resto del
+     fichero queda en verde.
+   - **Commit**: `test(backend-container-image): pin RDS CA bundle directly under /app (R17)`.
+2. **Verde**: en `Dockerfile`, etapa `runtime`, cambiar las dos líneas por
+   estas dos, en el mismo sitio:
+   ```
+   COPY --from=build --chmod=0444 /app/certs/rds-global-bundle.pem /app/rds-global-bundle.pem
+   ENV NODE_EXTRA_CA_CERTS=/app/rds-global-bundle.pem
+   ```
+   - El mismo jest con log `/tmp/impl-245-R17b-green.log` da `exit=0`.
+   - `grep -cF "/etc/ssl" Dockerfile` da `0`.
+   - **Commit**: `fix(backend-container-image): copy RDS CA bundle into /app so --chmod spares /etc/ssl (R17)`.
+3. **Mutación**: volver a poner `/etc/ssl/certs/rds-global-bundle.pem` como
+   destino del `COPY` y como valor del `ENV` en `Dockerfile`, y correr el
+   mismo jest.
+   - Esperado: caen los dos `it` del paso 1.
+   - Revertir con `git checkout HEAD -- Dockerfile`; después,
+     `git diff --quiet && git diff --cached --quiet; echo "clean exit=$?"`
+     da `clean exit=0`.
+4. **Trazabilidad e informe**:
+   - En [[traceability]], fila R17: tras `b918e1bf …`, añadir `<br>` con el
+     hash y el mensaje del commit del paso 2.
+   - En `progress/impl_backend-container-image.md`, añadir al final la sección
+     `## Enmienda 3` con:
+     - los dos commits;
+     - los `exit=` de los pasos 1 y 2;
+     - el `grep` del paso 1;
+     - los `it` en rojo de la mutación.
+   - **Commit**: `docs(backend-container-image): record the RDS CA bundle path amendment`.
+
+Al terminar, `git rev-list --count 08dd2515..HEAD` da `54`: 50, más este
+commit de spec, más los tres de esta enmienda. Después, `touch` del marcador
+`progress/impl_backend-container-image.done`.
+
 ## Cierre
 
 1. **Suite unitaria completa**:
@@ -994,7 +1087,7 @@ log va a `progress/docker-gate_backend-container-image.txt`; la extensión es
 ```
 cd /home/claude/sites/Pet-Tracker-wt-245/backend-pet-tracker
 docker build --platform linux/amd64 -t pet-tracker-backend:245-local . > ../progress/docker-gate_backend-container-image.txt 2>&1; echo "build exit=$?" | tee -a ../progress/docker-gate_backend-container-image.txt
-docker run --rm --platform linux/amd64 pet-tracker-backend:245-local sh -c 'id -u; stat -c %A /etc/ssl/certs/rds-global-bundle.pem; grep -q "BEGIN CERTIFICATE" "$NODE_EXTRA_CA_CERTS" && echo ca-ok; test ! -e /app/.env && echo no-env; test ! -e node_modules/drizzle-kit && test ! -e node_modules/@nestjs/cli && echo no-dev; node -e "require(\"argon2\"); console.log(\"argon2-ok\")"; test -f dist/src/db/migrations/meta/_journal.json && echo migrations-ok; test -f dist/scripts/provision-device.js && test -f dist/scripts/set-device-subscription.js && echo scripts-ok' >> ../progress/docker-gate_backend-container-image.txt 2>&1; echo "inspect exit=$?" | tee -a ../progress/docker-gate_backend-container-image.txt
+docker run --rm --platform linux/amd64 pet-tracker-backend:245-local sh -c 'id -u; stat -c %A "$NODE_EXTRA_CA_CERTS"; test ! -w "$NODE_EXTRA_CA_CERTS" && echo ro-ok; grep -q "BEGIN CERTIFICATE" "$NODE_EXTRA_CA_CERTS" && echo ca-ok; node -e "console.log(\"extra-ca=\" + require(\"tls\").getCACertificates(\"extra\").length)"; test ! -e /app/.env && echo no-env; test ! -e node_modules/drizzle-kit && test ! -e node_modules/@nestjs/cli && echo no-dev; node -e "require(\"argon2\"); console.log(\"argon2-ok\")"; test -f dist/src/db/migrations/meta/_journal.json && echo migrations-ok; test -f dist/scripts/provision-device.js && test -f dist/scripts/set-device-subscription.js && echo scripts-ok' >> ../progress/docker-gate_backend-container-image.txt 2>&1; echo "inspect exit=$?" | tee -a ../progress/docker-gate_backend-container-image.txt
 timeout 60 docker run --rm --platform linux/amd64 pet-tracker-backend:245-local >> ../progress/docker-gate_backend-container-image.txt 2>&1; echo "default exit=$?" | tee -a ../progress/docker-gate_backend-container-image.txt
 docker run --rm --platform linux/amd64 pet-tracker-backend:245-local node dist/scripts/provision-device.js >> ../progress/docker-gate_backend-container-image.txt 2>&1; echo "provision exit=$?" | tee -a ../progress/docker-gate_backend-container-image.txt
 docker run --rm --platform linux/amd64 pet-tracker-backend:245-local node dist/scripts/set-device-subscription.js --unit-id gate-245 >> ../progress/docker-gate_backend-container-image.txt 2>&1; echo "subscription exit=$?" | tee -a ../progress/docker-gate_backend-container-image.txt
@@ -1005,7 +1098,11 @@ docker run --rm --platform linux/amd64 pet-tracker-backend:245-local node dist/s
 
 1. `build exit=0`.
 2. `inspect exit=0`, y en el log, en este orden: `1000`, `-r--r--r--`,
-   `ca-ok`, `no-env`, `no-dev`, `argon2-ok`, `migrations-ok` y `scripts-ok`.
+   `ro-ok`, `ca-ok`, `extra-ca=<N>`, `no-env`, `no-dev`, `argon2-ok`,
+   `migrations-ok` y `scripts-ok`. `<N>` es igual a
+   `grep -c "BEGIN CERTIFICATE" certs/rds-global-bundle.pem` y mayor que `0`:
+   node cargó el bundle de `NODE_EXTRA_CA_CERTS` (enmienda 3). Ninguna línea
+   del log contiene `Permission denied`.
 3. `default exit=` distinto de `0` y de `124`, con un error que nombra
    `SIM_MODE` y `JWT_SECRET` (R12 y R13 de punta a punta: el contenedor
    arranca sin entorno). `124` es el `timeout`: la app no abortó, y eso es un

@@ -205,9 +205,17 @@ tags: [harness, spec, backend, infra, produccion]
     `us-east-2` y al menos uno que contiene `mx-central-1`, las dos regiones
     del plan.
   - **Etapa `runtime` del `Dockerfile`**, las dos líneas antes de `USER node`:
-    - `COPY --from=build --chmod=0444 /app/certs/rds-global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem`;
-    - `ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/rds-global-bundle.pem`.
+    - `COPY --from=build --chmod=0444 /app/certs/rds-global-bundle.pem /app/rds-global-bundle.pem`;
+    - `ENV NODE_EXTRA_CA_CERTS=/app/rds-global-bundle.pem`.
   - El valor de `NODE_EXTRA_CA_CERTS` es igual al destino de ese `COPY`.
+  - El destino va directo en `/app`, que ya existe por `WORKDIR /app`
+    (enmienda del leader del 2026-11-06, 3). BuildKit aplica el `--chmod` de un
+    `COPY` también a los directorios padre que crea. `node:24-bookworm-slim` no
+    trae `/etc/ssl`, así que el destino original
+    `/etc/ssl/certs/rds-global-bundle.pem` dejaba `/etc/ssl` y
+    `/etc/ssl/certs` en `0444`, sin bit de ejecución. Con eso, `node` no
+    arrancaba como uid 1000 (`fopen(/etc/ssl/openssl.cnf) Permission denied`,
+    exit 13).
   - Ninguna instrucción del `Dockerfile` es `ADD` con una URL (`http://` o
     `https://`).
 - **R18**: THE SYSTEM SHALL copiar las migraciones a la imagen con

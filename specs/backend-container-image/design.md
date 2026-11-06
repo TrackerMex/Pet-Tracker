@@ -212,10 +212,16 @@ escribe en disco.
 implementador lo descarga una vez de la URL oficial de AWS ([[tasks]] §R17)
 y lo commitea. Entra en la etapa `build` con el resto del contexto
 (`COPY . .`) y la etapa `runtime` lo copia con
-`COPY --from=build --chmod=0444 … /etc/ssl/certs/rds-global-bundle.pem`. Así
+`COPY --from=build --chmod=0444 … /app/rds-global-bundle.pem`. Así
 el build no depende de la red para el PEM y dos builds del mismo commit
 llevan el mismo bundle. `--chmod` en `COPY` exige BuildKit, por eso la
-primera línea es `# syntax=docker/dockerfile:1`. El test de R17 comprueba que
+primera línea es `# syntax=docker/dockerfile:1`. El destino va directo en
+`/app` porque BuildKit aplica `--chmod` también a los padres que crea. La
+imagen base no trae `/etc/ssl`, y con `/etc/ssl/certs/…` los dos
+directorios quedaban en `0444`: `node` no podía abrir
+`/etc/ssl/openssl.cnf` y abortaba con exit 13. Lo midió el gate de Docker
+del leader (enmienda 3 de [[tasks]]). `/app` lo crea `WORKDIR` con `0755` y
+el `COPY` no lo toca. El test de R17 comprueba que
 el fichero es un bundle X.509 válido y que cubre `us-east-2` y
 `mx-central-1`, las regiones del plan: sin la CA de la región, TLS contra
 Aurora falla con `rejectUnauthorized: true` (R3). Si AWS rota la CA, se
