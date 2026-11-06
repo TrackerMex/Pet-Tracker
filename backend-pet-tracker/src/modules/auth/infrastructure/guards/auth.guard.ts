@@ -8,7 +8,10 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
-import type { TokenService } from '@/modules/auth/domain/ports/token-service';
+import type {
+  TokenService,
+  TokenPayload,
+} from '@/modules/auth/domain/ports/token-service';
 import { USER_REPOSITORY } from '@/modules/auth/domain/repositories/user.repository';
 import type { UserRepository } from '@/modules/auth/domain/repositories/user.repository';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
@@ -22,7 +25,7 @@ export interface AuthenticatedRequest extends Request {
  * `auth-login-me`): si el handler/clase tiene @Public(), deja pasar sin
  * verificar (R7); si no, exige `Authorization: Bearer <token>` valido y
  * vigente (R5, R6) y adjunta `request.user = { id, email }` desde los claims
- * del JWT, sin consultar `users` (R8).
+ * del JWT, tras comprobar que el usuario existe en `users` (#247 R2).
  */
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -32,32 +35,25 @@ export class AuthGuard implements CanActivate {
     @Inject(USER_REPOSITORY) private readonly users: UserRepository,
   ) {}
 
-  canActivate(context: ExecutionContext): Promise<boolean> {
-    return Promise.resolve().then(() => {
-      const isPublic = this.reflector.getAllAndOverride<boolean>(
-        IS_PUBLIC_KEY,
-        [context.getHandler(), context.getClass()],
-      );
-
-      if (isPublic) {
-        return true;
-      }
-
-      const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
-      const token = extractBearerToken(request.headers.authorization);
-
-      if (!token) {
-        throw new UnauthorizedException();
-      }
-
-      try {
-        const payload = this.tokenService.verify(token);
-        request.user = { id: payload.sub, email: payload.email };
-        return true;
-      } catch {
-        throw new UnauthorizedException();
-      }
-    });
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (isPublic) return true;
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
+    const token = extractBearerToken(request.headers.authorization);
+    if (!token) throw new UnauthorizedException();
+    let payload: TokenPayload;
+    try {
+      payload = this.tokenService.verify(token);
+    } catch {
+      throw new UnauthorizedException();
+    }
+    const user = await this.users.findById(payload.sub);
+    if (!user) throw new UnauthorizedException();
+    request.user = { id: payload.sub, email: payload.email };
+    return true;
   }
 }
 
