@@ -310,7 +310,7 @@ oscuro:
 - [x] G4: enmienda de `docs/ui-guidelines.md` aprobada por el humano, con el literal
   de design.md §4 (humano; fecha: 2026-11-06; fuente: su mensaje en la sesión de
   Frontend, cuenta alexfdgf32@gmail.com, «apruebo G4»; lo registra el leader)
-- [ ] Smoke G2 en dispositivo, pasos 1–6, claro y oscuro (humano; fecha: ____)
+- [X] Smoke G2 en dispositivo, pasos 1–6, claro y oscuro (humano; fecha: 2026-11-06)
 
 G6 (PNG del icono de Orbit) **no** es una casilla de esta feature: queda fuera (D4).
 
