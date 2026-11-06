@@ -1,0 +1,108 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 857B done
+#1 DONE 0.0s
+
+#2 resolve image config for docker-image://docker.io/docker/dockerfile:1
+#2 DONE 0.4s
+
+#3 docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+#3 CACHED
+
+#4 [internal] load metadata for docker.io/library/node:24-bookworm-slim
+#4 DONE 0.3s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 96B done
+#5 DONE 0.0s
+
+#6 [build 1/7] FROM docker.io/library/node:24-bookworm-slim@sha256:01d566e8d94d8c619591d78652babfccd3c6992a3dffa9ed5ab39e11cf6c70e9
+#6 DONE 0.0s
+
+#7 [internal] load build context
+#7 transferring context: 70.17kB 0.0s done
+#7 DONE 0.0s
+
+#8 [build 2/7] WORKDIR /app
+#8 CACHED
+
+#9 [build 3/7] RUN npm install -g pnpm@10
+#9 CACHED
+
+#10 [build 4/7] COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+#10 CACHED
+
+#11 [build 5/7] RUN pnpm install --frozen-lockfile
+#11 CACHED
+
+#12 [build 6/7] COPY . .
+#12 DONE 0.2s
+
+#13 [build 7/7] RUN pnpm build
+#13 0.560 
+#13 0.560 > backend-pet-tracker@0.0.1 build /app
+#13 0.560 > nest build && tsc-alias -p tsconfig.build.json
+#13 0.560 
+#13 DONE 10.1s
+
+#14 [deps 5/5] RUN pnpm install --prod --frozen-lockfile
+#14 CACHED
+
+#15 [runtime 3/6] COPY --from=deps /app/node_modules ./node_modules
+#15 CACHED
+
+#16 [runtime 4/6] COPY --from=build /app/dist ./dist
+#16 CACHED
+
+#17 [runtime 5/6] COPY --from=build --chmod=0444 /app/certs/rds-global-bundle.pem /app/rds-global-bundle.pem
+#17 DONE 0.0s
+
+#18 [runtime 6/6] COPY --from=build /app/src/db/migrations ./dist/src/db/migrations
+#18 DONE 0.0s
+
+#19 exporting to image
+#19 exporting layers 0.0s done
+#19 writing image sha256:c1655082a3915381089380104356628bcfbac03110bbe7d17f2b8d8145752d55 done
+#19 naming to docker.io/library/pet-tracker-backend:245-local done
+#19 DONE 0.0s
+build exit=0
+1000
+-r--r--r--
+ro-ok
+ca-ok
+extra-ca=114
+no-env
+no-dev
+argon2-ok
+migrations-ok
+scripts-ok
+inspect exit=0
+{"level":"log","pid":1,"timestamp":1794003590443,"message":"Starting Nest application...","context":"NestFactory"}
+{"level":"error","pid":1,"timestamp":1794003590446,"message":"EnvValidationError: Invalid production environment: SIM_MODE, JWT_SECRET\n    at Object.validateEnv [as validate] (/app/dist/src/config/env.validation.js:39:15)\n    at ConfigModule.forRoot (/app/node_modules/.pnpm/@nestjs+config@4.0.4_@nestjs+common@11.1.28_reflect-metadata@0.2.2_rxjs@7.8.2__rxjs@7.8.2/node_modules/@nestjs/config/dist/config.module.js:88:45)\n    at AppConfigModule.forRoot (/app/dist/src/config/config.module.js:20:39)\n    at Object.<anonymous> (/app/dist/src/app.module.js:41:45)\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\n    at Object..js (node:internal/modules/cjs/loader:2060:10)\n    at Module.load (node:internal/modules/cjs/loader:1651:32)\n    at Module._load (node:internal/modules/cjs/loader:1443:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\n    at Module.require (node:internal/modules/cjs/loader:1674:12)","context":"ExceptionHandler"}
+default exit=1
+provision-device failed: Error: falta --unit-id
+    at main (/app/dist/scripts/provision-device.js:87:15)
+    at Object.<anonymous> (/app/dist/scripts/provision-device.js:108:5)
+    at Module._compile (node:internal/modules/cjs/loader:1929:14)
+    at Object..js (node:internal/modules/cjs/loader:2060:10)
+    at Module.load (node:internal/modules/cjs/loader:1651:32)
+    at Module._load (node:internal/modules/cjs/loader:1443:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47
+provision exit=1
+subscription:set failed: DatabaseConfigError: Invalid database configuration: PGHOST, PGDATABASE, PGUSER, PGPASSWORD, PGPORT, DB_POOL_MAX
+    at buildPoolConfig (/app/dist/src/db/pool-config.js:44:15)
+    at main (/app/dist/scripts/set-device-subscription.js:101:66)
+    at Object.<anonymous> (/app/dist/scripts/set-device-subscription.js:117:5)
+    at Module._compile (node:internal/modules/cjs/loader:1929:14)
+    at Object..js (node:internal/modules/cjs/loader:2060:10)
+    at Module.load (node:internal/modules/cjs/loader:1651:32)
+    at Module._load (node:internal/modules/cjs/loader:1443:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47
+subscription exit=1
+{"level":"error","pid":1,"timestamp":1794003592365,"message":"Invalid database configuration: PGHOST, PGDATABASE, PGUSER, PGPASSWORD, PGPORT, DB_POOL_MAX","context":"Migrate"}
+migrate exit=1
