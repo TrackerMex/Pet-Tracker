@@ -1,6 +1,7 @@
 import { X509Certificate } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
+import { MIGRATIONS_FOLDER } from './db/migrate';
 function readOrEmpty(path: string): string {
   return existsSync(path) ? readFileSync(path, 'utf8') : '';
 }
@@ -156,6 +157,17 @@ describe('R17: la etapa runtime trae el bundle de CA de RDS versionado', () => {
     );
     expect(docker.lines.some((line) => /^ADD\s.*https?:\/\//.test(line))).toBe(
       false,
+    );
+  });
+});
+
+describe('R18: las migraciones viajan junto a migrate.js', () => {
+  it('R18: runtime copia src/db/migrations a dist/src/db/migrations, que es MIGRATIONS_FOLDER compilado', () => {
+    expect(stage('runtime')).toContain(
+      'COPY --from=build /app/src/db/migrations ./dist/src/db/migrations',
+    );
+    expect(relative(__dirname, MIGRATIONS_FOLDER)).toBe(
+      join('db', 'migrations'),
     );
   });
 });
