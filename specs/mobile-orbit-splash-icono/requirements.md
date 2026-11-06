@@ -1,6 +1,6 @@
 ---
 feature: "mobile-orbit-splash-icono"
-status: draft        # draft | approved
+status: approved      # draft | approved
 tags: [mobile, ui, mascota, orbit, assets, icono, splash, spec]
 ---
 
@@ -461,13 +461,13 @@ Sin casilla: iOS no se verifica (D8, feature #60).
 
 ## Aprobación
 
-- [ ] Firmada por el leader con la firma delegada (mandato 2026-10-26 UI), tras la
+- [x] Firmada por el leader con la firma delegada (mandato 2026-10-26 UI), tras la
   checklist de `progress/plan_canvas-parity-2026-10-23.md` §4 y los tres puntos de
-  `progress/plan_ui-2026-10-26.md` §4 (fecha: ____)
+  `progress/plan_ui-2026-10-26.md` §4 (fecha: 2026-11-06)
 - [x] G6: arte de marca de Orbit aprobado por el humano, las tres fuentes de
-  `design-src/` con los sha256 de §Constantes (humano; fecha: 2026-11-06; fuente: el
-  encargo del leader a `spec_author` para esta spec, que lo da por aprobado; el leader
-  cita el mensaje del humano al firmar)
+  `design-src/` con los sha256 de §Constantes (humano; fecha: 2026-11-06; fuente: mensaje
+  del humano en la sesión @Frontend el 2026-11-06, «Si apruebo G6», tras ver las tres
+  imágenes y la nota del parche morado)
 - [ ] G4: enmienda de `docs/ui-guidelines.md` aprobada por el humano, con el literal de
   design.md §5 (humano; fecha: ____)
 - [ ] G3: rebuild del dev build con los iconos nuevos (humano; fecha: ____)

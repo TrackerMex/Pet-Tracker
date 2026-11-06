@@ -1,6 +1,6 @@
 ---
 feature: "mobile-orbit-splash-icono"
-status: draft        # draft | approved
+status: approved      # draft | approved
 tags: [mobile, ui, mascota, orbit, assets, icono, splash, spec]
 ---
 
