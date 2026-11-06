@@ -67,11 +67,10 @@ y su huella es R2 (D2, D9). Ya se cubre en C2; el `reviewer` lo re-ejecuta.
   de las diez poses.
 - [ ] **(3)** Corre las guardas tras C2 y tras C5.
 
-## R6: enmienda de la carta (C4, C5) — solo tras la firma G4
+## R6: enmienda de la carta (C4, C5)
 
-El leader avisa en el handoff cuando la casilla G4 de [[requirements]] §Aprobación
-esté marcada por el humano. Antes de eso, **no** empieces C4 ni C5 ni toques
-`docs/ui-guidelines.md`.
+G4 quedó firmada por el humano el 2026-11-06 ([[requirements]] §Aprobación): C4 y C5
+van en la misma cadena, tras C2.
 
 - [ ] **(1) C4 test rojo.** Añadir a `src/__tests__/orbit-cachorro-art.test.ts` el
   `it` de R6 ([[design]] §3). Rojo esperado: la cuenta de `## Enmienda #243 — ` es 0,
