@@ -1,4 +1,5 @@
 import { AuditLogger } from '@/audit/audit-log.repository';
+import { PetDataPurger } from '@/modules/pets/domain/ports/pet-data-purger';
 import { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
 import { DeletePetUseCase } from './delete-pet.use-case';
 
@@ -17,16 +18,22 @@ function buildDeps(overrides?: { deleteFn?: jest.Mock }) {
     calls.push('record');
     return Promise.resolve();
   });
+  const purge = jest.fn().mockImplementation(() => {
+    calls.push('purge');
+    return Promise.resolve();
+  });
+  const purger: PetDataPurger = { purge };
   const pets = { delete: deleteFn } as unknown as PetRepository;
   const auditLogger: AuditLogger = { record };
 
-  return { pets, auditLogger, deleteFn, record, calls };
+  return { pets, auditLogger, deleteFn, record, calls, purger, purge };
 }
 
 describe('R16: DeletePetUseCase borra la mascota y audita pet.delete', () => {
   it('borra por id y registra la entrada de auditoria despues', async () => {
-    const { pets, auditLogger, deleteFn, record, calls } = buildDeps();
-    const useCase = new DeletePetUseCase(pets, auditLogger);
+    const { pets, auditLogger, deleteFn, record, calls, purger, purge } =
+      buildDeps();
+    const useCase = new DeletePetUseCase(pets, auditLogger, purger);
 
     await useCase.execute(PET_ID, USER_ID);
 
@@ -37,15 +44,19 @@ describe('R16: DeletePetUseCase borra la mascota y audita pet.delete', () => {
       entity: 'pet',
       entityId: PET_ID,
     });
-    expect(calls).toEqual(['delete', 'record']);
+    expect(calls).toEqual(['delete', 'purge', 'record']);
+    expect(purge).toHaveBeenCalledWith([PET_ID]);
   });
 
-  it('no audita si el borrado falla', async () => {
+  it('no audita ni purga si el borrado falla', async () => {
     const failing = jest.fn().mockRejectedValue(new Error('db down'));
-    const { pets, auditLogger, record } = buildDeps({ deleteFn: failing });
-    const useCase = new DeletePetUseCase(pets, auditLogger);
+    const { pets, auditLogger, record, purger, purge } = buildDeps({
+      deleteFn: failing,
+    });
+    const useCase = new DeletePetUseCase(pets, auditLogger, purger);
 
     await expect(useCase.execute(PET_ID, USER_ID)).rejects.toThrow('db down');
     expect(record).not.toHaveBeenCalled();
+    expect(purge).not.toHaveBeenCalled();
   });
 });

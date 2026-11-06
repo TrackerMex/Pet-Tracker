@@ -1,6 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { AUDIT_LOGGER } from '@/audit/audit-log.repository';
 import type { AuditLogger } from '@/audit/audit-log.repository';
+import { PET_DATA_PURGER } from '@/modules/pets/domain/ports/pet-data-purger';
+import type { PetDataPurger } from '@/modules/pets/domain/ports/pet-data-purger';
 import { PET_REPOSITORY } from '@/modules/pets/domain/repositories/pet.repository';
 import type { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
 
@@ -16,6 +18,7 @@ export class DeletePetUseCase {
     private readonly pets: PetRepository,
     @Inject(AUDIT_LOGGER)
     private readonly auditLogger: AuditLogger,
+    @Inject(PET_DATA_PURGER) private readonly purger: PetDataPurger,
   ) {}
 
   async execute(petId: string, userId: string): Promise<void> {

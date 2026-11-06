@@ -15,6 +15,12 @@ import type { PetRepository } from '@/modules/pets/domain/repositories/pet.repos
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
 import { localDayOf, shiftDay } from '@/pipeline/local-day';
+import {
+  petStoresOf,
+  seedPetStores,
+  countPetStores,
+  cleanPetStores,
+} from './fixtures/pet-stores';
 import { AppModule } from './../src/app.module';
 
 /** Shape del contrato R8 tal como viaja por HTTP (todo serializado). */
@@ -99,6 +105,7 @@ describe('Pets CRUD (e2e)', () => {
   const createdUserIds: string[] = [];
   const createdPetIds: string[] = [];
   const createdDeviceIds: string[] = [];
+  const seededStorePetIds: string[] = [];
 
   interface TestUser {
     id: string;
@@ -199,6 +206,8 @@ describe('Pets CRUD (e2e)', () => {
     }
     if (createdDeviceIds.length)
       await db.delete(devices).where(inArray(devices.id, createdDeviceIds));
+    for (const petId of seededStorePetIds)
+      await cleanPetStores(petStoresOf(app), petId);
     await app.close();
   });
 
@@ -786,6 +795,30 @@ describe('Pets CRUD (e2e)', () => {
         .from(devices)
         .where(eq(devices.id, deviceId));
       expect(device.status).toBe('available');
+    });
+  });
+  describe('#247 R13: borrar la mascota purga S3 y DynamoDB', () => {
+    it('#247 R13: DELETE /v1/pets/:id borra pets/<petId>/ y PET#<petId> y no toca otra mascota', async () => {
+      const owner = await seedUser('247-r13');
+      const pet = await createPetViaApi(owner);
+      const foreignPetId = uuidv7();
+      const stores = petStoresOf(app);
+      for (const petId of [pet.id, foreignPetId]) {
+        seededStorePetIds.push(petId);
+        await seedPetStores(stores, petId);
+      }
+      await api()
+        .delete(`/v1/pets/${pet.id}`)
+        .set('Authorization', `Bearer ${owner.token}`)
+        .expect(204);
+      expect(await countPetStores(stores, pet.id)).toEqual({
+        s3Objects: 0,
+        dynamoItems: 0,
+      });
+      expect(await countPetStores(stores, foreignPetId)).toEqual({
+        s3Objects: 2,
+        dynamoItems: 30,
+      });
     });
   });
 });
