@@ -137,6 +137,7 @@ const exceptions = [
   { file: '__tests__/orbit-charter-voice.test.ts', snippet: '**Orbit** (antes Pingo).', lines: 1 },
   { file: '__tests__/orbit-charter-voice.test.ts', snippet: 'conservan «Pingo»', lines: 1 },
   { file: '__tests__/orbit-charter-voice.test.ts', snippet: String.raw`/\bPingo\b/`, lines: 1 },
+  { file: '__tests__/orbit-cachorro-art.test.ts', snippet: "'antena', 'Pingo', 'diez poses'", lines: 1 },
 ];
 
 const scannedTestFiles = () => testFiles()
