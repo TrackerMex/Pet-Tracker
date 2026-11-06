@@ -993,6 +993,13 @@ describe('Devices claim (e2e)', () => {
         .where(eq(petDevices.deviceId, device.id));
       expect(assignments).toHaveLength(0);
 
+      // Los collares que quedaron huerfanos antes de #247 conservan el cache
+      // en 'assigned' sin fila activa: se siembra ese estado a mano.
+      await db
+        .update(devices)
+        .set({ status: 'assigned' })
+        .where(eq(devices.id, device.id));
+
       // La disponibilidad se deriva de la fila activa, no del cache de
       // status: el device sigue reclamable (D3).
       await claim(ownerB, {
