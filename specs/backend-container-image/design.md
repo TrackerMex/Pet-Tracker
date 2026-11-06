@@ -330,6 +330,12 @@ Rutas relativas a `backend-pet-tracker/` salvo indicación.
 **Controlador (cambia)**: `src/modules/health/infrastructure/health.controller.ts`,
 método `live()` (R8).
 
+**Tests previos que cambian** (enmienda del leader del 2026-11-06, ver tasks.md
+§Enmienda del leader: dos candados de inventario previos):
+
+- `src/modules/nutrition/nutrition-scope.spec.ts`
+- `src/aws/aws.module.spec.ts`
+
 **Tests nuevos**:
 
 - `src/config/environment.spec.ts`

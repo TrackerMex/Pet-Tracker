@@ -854,6 +854,38 @@ En los ficheros nuevos basta `R<n>:`.
   La evidencia va en el informe (§Cierre).
 - [ ] (3) Refactor: no aplica.
 
+## Enmienda del leader (2026-11-06): dos candados de inventario previos
+
+PARA de Codex en Cierre (1): la suite unitaria completa cae en dos candados de
+inventario que existían antes de H0 y que esta spec no listó. No son regresiones:
+los lectores nuevos los exigen R11, R12 y R13. Se ajustan sus listas esperadas, sin
+tocar el título de los `it`, en un solo commit que va **antes** de Cierre (1):
+
+- `src/modules/nutrition/nutrition-scope.spec.ts`, `it('R5: asercion 10 solo el
+  factory lee la configuracion')`: el `toEqual` pasa a
+  `['config/env.validation.ts', 'modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts']`.
+  `validateEnv` (R12) valida `ANTHROPIC_API_KEY` y `ANTHROPIC_MODEL` en el arranque,
+  pero no los usa: el factory sigue siendo el único que los consume.
+- `src/aws/aws.module.spec.ts`, `it('no lee NODE_ENV ni AWS_MODE directamente desde
+  process.env en src')`: los `offenders` se mapean a rutas relativas a `src/`
+  (`file.slice(join(__dirname, '..').length + 1)`), se ordenan con `.sort()` y el
+  `toEqual([])` pasa a `['config/config.module.spec.ts', 'main.spec.ts', 'main.ts']`
+  (orden comprobado con `node`). `main.ts` es la excepción de R11; los dos specs fijan
+  `NODE_ENV` para probar R11 y R13. La lista es cerrada: un lector nuevo sigue cayendo.
+
+Comprobaciones antes del commit, desde `backend-pet-tracker/`, con la cadena
+del handoff (prettier, eslint, tsc) sobre esos dos ficheros:
+
+```
+FORCE_COLOR=0 pnpm exec jest --config package.json src/modules/nutrition/nutrition-scope.spec.ts src/aws/aws.module.spec.ts > /tmp/impl-245-guards.log 2>&1; echo "exit=$?"
+```
+
+Da `exit=0`. Mutación de control, sin commit: añadir en `src/app-setup.ts` una línea
+`const _probe = process.env.AWS_MODE;`, correr el mismo jest, anotar que cae el `it`
+de `aws.module.spec.ts` y revertir con `git checkout HEAD -- src/app-setup.ts`.
+
+- **Commit**: `test(backend-container-image): widen two env inventory locks to the readers of R11-R13`.
+
 ## Cierre
 
 1. **Suite unitaria completa**:
