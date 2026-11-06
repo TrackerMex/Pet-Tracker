@@ -4032,6 +4032,10 @@
       "backend-pet-tracker/test/migrate.e2e-spec.ts",
       "backend-pet-tracker/Dockerfile",
       "backend-pet-tracker/.dockerignore",
+      "backend-pet-tracker/certs/rds-global-bundle.pem",
+      "backend-pet-tracker/scripts/provision-device.ts",
+      "backend-pet-tracker/scripts/set-device-subscription.ts",
+      "backend-pet-tracker/test/one-off-scripts.e2e-spec.ts",
       "backend-pet-tracker/package.json",
       "docs/conventions.md",
       ".env.example"

@@ -112,7 +112,14 @@ de `InFlightTicks` y no el registro.
 - **Lote de SQS a medias**: no se borró de la cola, así que se reentrega tras
   el visibility timeout. Ya es el comportamiento ante cualquier caída.
 - **Recordatorio**: el dispatcher puede haber encolado el push sin marcarlo
-  enviado, así que puede salir duplicado. Queda como deuda (pregunta abierta 5).
+  enviado, así que puede salir duplicado.
+
+**Deuda conocida: tick abandonado al agotar el drenaje.** Si a los 20 s queda
+un tick pendiente, `InFlightTicks` registra el `Logger.warn` (R6) y deja que
+el cierre siga: no cancela el tick ni lo espera más. Las dos consecuencias de
+arriba quedan aceptadas y fuera de alcance (decisión del leader en la
+revisión de la spec). Se ataca si los logs de producción muestran ese
+`warn`.
 
 ### DT5 — `GET /v1/health/live` para el ALB, sin Postgres (R8)
 
@@ -151,8 +158,11 @@ solo en producción, para no romper el desarrollo local ni los tests.
   la ausencia, activa el simulador. En producción eso escondería un olvido.
 - **Flag encendido sin su clave**: los consumidores hoy se apagan en
   silencio (`PENDING`, vacío). En producción lo correcto es abortar.
-- **`JWT_SECRET`**: va más allá de la lista del leader (pregunta abierta 6).
-  Sin él no hay login.
+- **`JWT_SECRET`**: no blanco en producción en **todo** proceso que carga
+  `AppConfigModule`, es decir, la API y los workers, aunque los workers no
+  firmen tokens. Confirmado por el leader en la revisión de la spec. Sin él
+  no hay login. `migrate.js` y los comandos únicos no cargan
+  `AppConfigModule`, así que R12 no les aplica.
 
 **Qué no valida**:
 
@@ -198,9 +208,23 @@ escribe en disco.
 **`CMD` sin `ENTRYPOINT`**: así el comando de migración se sobrescribe con
 `command` en la task definition sin pelearse con un entrypoint.
 
-**PEM de RDS**: entra con `ADD --chmod=0444 <url>`. Es público, se descarga
-en el build y no se commitea (pregunta abierta 1). `--chmod` en `ADD` exige
-BuildKit, por eso la primera línea es `# syntax=docker/dockerfile:1`.
+**PEM de RDS**: se versiona en `certs/rds-global-bundle.pem`. El
+implementador lo descarga una vez de la URL oficial de AWS ([[tasks]] §R17)
+y lo commitea. Entra en la etapa `build` con el resto del contexto
+(`COPY . .`) y la etapa `runtime` lo copia con
+`COPY --from=build --chmod=0444 … /etc/ssl/certs/rds-global-bundle.pem`. Así
+el build no depende de la red para el PEM y dos builds del mismo commit
+llevan el mismo bundle. `--chmod` en `COPY` exige BuildKit, por eso la
+primera línea es `# syntax=docker/dockerfile:1`. El test de R17 comprueba que
+el fichero es un bundle X.509 válido y que cubre `us-east-2` y
+`mx-central-1`, las regiones del plan: sin la CA de la región, TLS contra
+Aurora falla con `rejectUnauthorized: true` (R3). Si AWS rota la CA, se
+renueva con un commit que reemplaza el fichero.
+
+**Plataforma**: el `Dockerfile` no fija `--platform` en `FROM`. La imagen es
+x86_64 porque #246 la construye con `platform: Platform.LINUX_AMD64` y declara
+`runtimePlatform` X86_64/LINUX (§Contrato). Así el gate local del leader y un
+futuro pipeline arm64 (decisión 11 del plan) no chocan con un `FROM` fijado.
 
 **`.dockerignore`**: excluye `.env*` (secretos), `node_modules` y `dist` (no
 deben pisar los de la etapa `build`) y `coverage`. El `.env` real vive en la
@@ -223,7 +247,37 @@ trae un parser mínimo:
 
 Comprueba línea a línea lo que piden R16–R19. Lo que solo se ve
 construyendo (uid real, permisos del PEM, ausencia de devDependencies,
-`require('argon2')`) va en el chequeo local opcional de [[tasks]].
+`require('argon2')`, `dist/scripts/*.js`) lo comprueba el leader en el VPS
+(Docker 29.2.1 con buildx) antes de lanzar al `reviewer`, con los comandos
+exactos de [[tasks]] §Gate del leader. No tiene R-id: es un paso del gate,
+no un test del repo.
+
+### DT11 — Comandos únicos de operación con la misma imagen (R21–R23)
+
+`provision-device` y `set-device-subscription` son las dos operaciones
+manuales que hacen falta contra producción (dar de alta un collar y fijar su
+suscripción). Corren como tarea única con la imagen de la API y el comando
+sobrescrito: `node dist/scripts/<x>.js …` (§Contrato).
+
+- **Compilados, no `ts-node`**: `tsconfig.build.json` ya incluye `scripts/`,
+  así que `pnpm build` emite `dist/scripts/*.js` y `tsc-alias` reescribe los
+  imports `@/`. R23 lo fija.
+- **Misma conexión que la app**: cada script hace
+  `new Pool(buildPoolConfig(config))` con `config = new ConfigService()`
+  (R22). `new ConfigService()` sin
+  `forRoot` lee `process.env`, así que en producción usan `PG*` con TLS y
+  `DB_POOL_MAX`, y fuera de producción `DATABASE_URL`. No se copia la lógica
+  de `buildPoolConfig`.
+- **Sin `.env` en código**: se quita `loadDotenv({ path: '../.env' })`. En
+  local, los scripts de `package.json` pasan `--env-file-if-exists=../.env` a
+  `node` (verificado en v20.20.2, la del VPS; CI y la imagen usan Node 24).
+  Si falta el fichero, Node avisa y sigue; una variable ya presente en el entorno gana
+  al fichero, igual que con `dotenv`.
+- **Wialon**: `provision-device` usa `createWialonClient(new ConfigService())`,
+  que en producción necesita `SIM_MODE=false` y `WIALON_TOKEN` real
+  (`assertRealWialonClient` aborta con el fake). No cambia.
+- **El resto de `scripts/`** se compila igual pero no se adapta ni entra en el
+  contrato (requirements §Fuera de alcance).
 
 ## Mutaciones (evidencia en `progress/impl_backend-container-image.md`)
 
@@ -232,7 +286,10 @@ construyendo (uid real, permisos del PEM, ausencia de devDependencies,
 | R10, ancla negativa «fuera de producción no es JSON» | `createAppLogger` devuelve `new ConsoleLogger({ json: true })` siempre | el `it` de no-producción en rojo |
 | R12, anclas «fuera de producción pasa sin validar» y «producción válida pasa» | (a) quitar la guarda `isProduction`; (b) lanzar siempre en producción | (a) rojo el `it` de no-producción; (b) rojo el `it` de producción válida |
 | R15 | `MIGRATIONS_FOLDER = join(__dirname, 'migrations-inexistente')` | `test/migrate.e2e-spec.ts` en rojo |
+| R17, ancla «ningún `ADD` con URL» | añadir `ADD https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /tmp/rds.pem` a la etapa `runtime`, antes de `USER node` | el `it` de R17 «sin ADD con URL» en rojo y el resto de R16–R18 en verde |
 | R19, ancla «sin `.env` en el Dockerfile» | añadir `COPY --from=build /app/.env ./.env` a la etapa `runtime` | el `it` de R19 en rojo y los de R16–R18 en verde |
+| R19, ancla «el PEM no se ignora» | añadir la línea `*.pem` a `.dockerignore` | el `it` de R19 «no excluye el PEM» en rojo |
+| R23 | añadir `"scripts"` al `exclude` de `tsconfig.build.json` | el `it` de R23 en rojo |
 
 Cada mutación se revierte con `git checkout HEAD -- <fichero>`, no con un
 commit. La evidencia guarda el nombre del `it` en rojo y la línea decisiva.
@@ -283,8 +340,9 @@ método `live()` (R8).
 - `src/lifecycle/lifecycle.module.spec.ts`
 - `src/app-setup.spec.ts`
 - `src/main.spec.ts`
-- `src/container-image.spec.ts`
+- `src/container-image.spec.ts` (R16–R21 y R23)
 - `test/migrate.e2e-spec.ts`
+- `test/one-off-scripts.e2e-spec.ts` (R22)
 
 **Tests que cambian**:
 
@@ -298,7 +356,13 @@ método `live()` (R8).
 
 - `Dockerfile` (nuevo)
 - `.dockerignore` (nuevo)
-- `package.json` (`start:prod`)
+- `certs/rds-global-bundle.pem` (nuevo, descargado de AWS, R17)
+- `package.json` (`start:prod`, `provision:device` y `subscription:set`)
+
+**Comandos únicos (cambian, R21, R22)**:
+
+- `scripts/provision-device.ts`
+- `scripts/set-device-subscription.ts`
 
 **Docs**:
 
@@ -318,7 +382,10 @@ a verificar contra el código mergeado antes de escribir la task definition.
 
 - **Construcción**: `ContainerImage.fromAsset('<repo>/backend-pet-tracker', { platform: Platform.LINUX_AMD64 })`.
   El `Dockerfile` está en la raíz del contexto y el build respeta `.dockerignore`.
-- **Plataforma de la task definition**: `runtimePlatform: { cpuArchitecture: X86_64, operatingSystemFamily: LINUX }`.
+  El `Dockerfile` **no** fija plataforma en `FROM` (R16): la arquitectura la
+  pone esta llamada, así que `platform` es obligatorio aquí.
+- **Plataforma de la task definition** (API, workers y tareas únicas):
+  `runtimePlatform: { cpuArchitecture: CpuArchitecture.X86_64, operatingSystemFamily: OperatingSystemFamily.LINUX }`.
 - **Arranque**: `CMD ["node", "dist/src/main.js"]`, sin `ENTRYPOINT`. El
   usuario es `node`, no root.
 
@@ -340,13 +407,44 @@ a verificar contra el código mergeado antes de escribir la task definition.
 - **Cómo se lanza**: es una tarea única (`RunTask`) con la misma task
   definition de la API o una propia con la misma imagen, y `command` =
   `["node", "dist/src/db/migrate.js"]`. La lanza el humano (GA4); ninguna IA.
-- **Entorno**: solo `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `DB_POOL_MAX`
-  (sugerido `1`) y el secreto `PGPASSWORD`. `NODE_ENV` viene de la imagen.
+- **Entorno**: solo `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`,
+  `DB_POOL_MAX=1` y el secreto `PGPASSWORD`. `NODE_ENV` viene de la imagen.
+  `migrate.js` no carga `AppConfigModule`, así que R12 no le exige
+  `SIM_MODE` ni `JWT_SECRET`.
 - **Permisos**: no necesita task role. La ejecución de la tarea solo
   necesita leer el secreto.
 - **Resultado**: código de salida `0` si aplicó o no había nada que aplicar,
   `1` si falló. El log va en JSON y no incluye la contraseña.
 - **Seeds**: ninguno (requirements §Fuera de alcance).
+
+### Comandos únicos de operación
+
+Dos operaciones manuales, cada una como tarea única (`RunTask`) con la misma
+imagen y `command` sobrescrito. Las lanza el humano; ninguna IA.
+
+- **Task definition**: la de la tarea de migración, ampliada con `SIM_MODE=false`
+  (plano) y el secreto `WIALON_TOKEN`. El execution role de esa tarea
+  necesita entonces leer también ese secreto. `DB_POOL_MAX=1`. Sin task role.
+- **Alta de un collar** (`provision-device`):
+  ```
+  ["node", "dist/scripts/provision-device.js", "--unit-id", "<wialon-unit-id>"]
+  ```
+  Opcionales, cada uno seguido de su valor: `--imei`, `--serial`, `--esn`,
+  `--model`. Necesita salida a Wialon. Imprime una línea
+  `provision-device: <alta OK|sin cambios>, device <uuid>, activation_code <código>`.
+- **Suscripción de un collar** (`set-device-subscription`):
+  ```
+  ["node", "dist/scripts/set-device-subscription.js", "--unit-id", "<wialon-unit-id>"]
+  ```
+  o con `"--device-id", "<uuid>"` en lugar de `--unit-id` (uno de los dos,
+  no ambos). Opcionales: `--status` (default `active`), `--plan` (default
+  `track_monthly`) y `--period-end <ISO-8601>` (default: ahora + 30 días).
+  Imprime una línea `subscription:set deviceId=… status=… planCode=… …`.
+- **Resultado**: código de salida `0` si terminó, distinto de `0` si falló
+  (argumentos, configuración o base). La salida es texto plano, no JSON, y
+  va a CloudWatch Logs con el resto de la tarea. No incluye `PGPASSWORD` ni
+  `WIALON_TOKEN` (R22).
+- **Fuera del contrato**: el resto de `dist/scripts/*.js`.
 
 ### Apagado
 
@@ -368,7 +466,7 @@ referencia de ECS a Secrets Manager (`secrets`), nunca `environment`.
 | `PGDATABASE` | sí | sí | plano | |
 | `PGUSER` | sí | sí | plano | |
 | `PGPASSWORD` | sí | sí | **secreto** | Clave `password` del secreto que genera Aurora. |
-| `DB_POOL_MAX` | sí | sí | plano | Obligatoria en producción. Valor por servicio: pregunta abierta 2. |
+| `DB_POOL_MAX` | `10` | `5` | plano | Obligatoria en producción (R3). Tarea de migración y comandos únicos: `1`. |
 | `JWT_SECRET` | sí | sí | **secreto** | Lo crea el humano (GA2). Los workers no firman tokens, pero R12 lo exige en todo proceso de producción. |
 | `AWS_MODE` | `aws` | `aws` | plano | |
 | `MEDIA_BUCKET_NAME` | sí | sí | plano | Obligatoria en modo `aws`. |
@@ -462,9 +560,22 @@ sobre esa clave. Con claves administradas por AWS no hace falta.
   `sslmode=require` como `verify-full` según versión, lo que da una semántica
   frágil. Con `ssl.rejectUnauthorized` y `NODE_EXTRA_CA_CERTS`, el
   comportamiento es explícito.
-- **Commitear el PEM de RDS.** Se puede, pero caduca y rota; descargarlo en
-  el build lo mantiene al día. Si se prefiere fijarlo, se añade `--checksum`
-  al `ADD` (pregunta abierta 1).
+- **`ADD <url>` del PEM de RDS en el build.** Lo mantendría al día, pero el
+  build dependería de la red y dos builds del mismo commit podrían dar
+  imágenes distintas. Se versiona el fichero y se renueva con un commit.
+- **`--platform=linux/amd64` en cada `FROM`.** Fijaría la arquitectura en el
+  `Dockerfile`; la decisión es que la fije quien construye (#246), para no
+  bloquear un pipeline arm64 futuro.
+- **Cargar `dotenv` en los scripts solo fuera de producción.** Dejaría una
+  rama de código sin test en el camino de producción. `--env-file-if-exists`
+  en `package.json` saca el `.env` del código.
+- **Copiar la construcción del pool en cada script.** Dos copias de R3 que
+  podrían divergir de la app (TLS, `DB_POOL_MAX`). Se reutiliza
+  `buildPoolConfig`.
+- **`node -r dotenv/config` en `package.json`.** Necesita
+  `dotenv_config_path=../.env` como argumento o variable de entorno: la
+  variable no funciona igual en el shell de Windows y el argumento posicional
+  lo recibiría `parseArgs`, que lo rechaza.
 - **Drenaje por scheduler con `onModuleDestroy` en cada uno.** Repetiría la
   misma lógica cinco veces, y `onModuleDestroy` corre antes que
   `beforeApplicationShutdown` sin orden garantizado entre módulos. Un único

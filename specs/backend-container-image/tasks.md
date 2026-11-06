@@ -8,8 +8,8 @@ tags: [harness, spec, backend, infra, produccion]
 
 > Disciplina TDD de `CHECKPOINTS.md` C4. Cada requisito de [[requirements]]
 > tiene un commit rojo (`test(...)`) seguido de un commit verde (`feat(...)`),
-> salvo R15, que es un requisito de verificación (vía (b): un solo commit de
-> test más evidencia de mutación). Las decisiones están en [[design]]; aquí
+> salvo R15 y R23, que son requisitos de verificación (vía (b): un solo
+> commit de test más evidencia de mutación). Las decisiones están en [[design]]; aquí
 > solo va el **qué** y el **orden**.
 
 ## Reglas de la cadena
@@ -33,6 +33,8 @@ tags: [harness, spec, backend, infra, produccion]
   - `pnpm db:migrate` y `psql` crudo;
   - `git rebase` y `git commit --amend` sobre commits ya hechos;
   - cualquier comando contra AWS, `cdk`, `docker push` y `docker build`;
+  - cualquier acceso a la red, salvo **una** excepción: el `curl` que descarga
+    el PEM público de RDS en el verde de R17;
   - `pnpm run <script> -- <args>` (el `--` llega a jest; usar `pnpm exec`);
   - tocar ficheros fuera de la lista de [[design]] §Archivos afectados.
 - **Sin dependencias nuevas.** Todo lo necesario ya está en `package.json`:
@@ -614,12 +616,12 @@ En los ficheros nuevos basta `R<n>:`.
   - **Regla anti-vacío**: cada `it` que afirma algo universal («ninguna»,
     «cada») afirma primero algo positivo de la misma etapa o del total de
     etapas, para no nacer verde con el fichero ausente.
-  - `describe('R16: Dockerfile multi-etapa x86_64 sin herramientas de build ni root')`:
+  - `describe('R16: Dockerfile multi-etapa sin herramientas de build ni root')`:
     - `it('R16: la primera línea es # syntax=docker/dockerfile:1')`.
-    - `it('R16: tres etapas deps, build y runtime sobre node:24-bookworm-slim linux/amd64')`:
+    - `it('R16: tres etapas deps, build y runtime sobre node:24-bookworm-slim, sin --platform')`:
       las líneas `FROM` son exactamente, en orden,
-      `FROM --platform=linux/amd64 node:24-bookworm-slim AS deps`, luego
-      `… AS build` y luego `… AS runtime`.
+      `FROM node:24-bookworm-slim AS deps`, `FROM node:24-bookworm-slim AS build`
+      y `FROM node:24-bookworm-slim AS runtime`.
     - `it('R16: cada etapa fija WORKDIR /app antes de su primer COPY')`:
       primero, que hay 3 etapas.
     - `it('R16: deps instala solo dependencias de producción con el lockfile congelado')`,
@@ -656,15 +658,50 @@ En los ficheros nuevos basta `R<n>:`.
 ## R17 — CA de RDS en la imagen
 
 - [ ] (1) **Rojo**: en `src/container-image.spec.ts`,
-  `describe('R17: la etapa runtime trae el bundle de CA de RDS')`.
-  - `it('R17: ADD del PEM global con 0444 y NODE_EXTRA_CA_CERTS apuntándolo, ambos antes de USER')`:
-    - líneas exactas:
-      - `ADD --chmod=0444 https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem`
+  `describe('R17: la etapa runtime trae el bundle de CA de RDS versionado')`.
+  Sin stub: `readOrEmpty` devuelve `''` si el PEM todavía no existe.
+  - **Ruta del PEM**: `join(__dirname, '..', 'certs', 'rds-global-bundle.pem')`.
+  - **Helper del propio spec** `pemBlocks(raw)`:
+    `raw.match(/-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/g) ?? []`.
+  - `it('R17: certs/rds-global-bundle.pem es un bundle X.509 que cubre us-east-2 y mx-central-1')`:
+    - `pemBlocks(raw).length` es mayor que `0`;
+    - para cada bloque, `expect(() => new X509Certificate(block)).not.toThrow()`,
+      con `X509Certificate` de `node:crypto`;
+    - de los `subject` de esos certificados, alguno contiene `us-east-2` y
+      alguno contiene `mx-central-1`.
+  - `it('R17: runtime copia el PEM con 0444 y NODE_EXTRA_CA_CERTS apunta a su destino, ambos antes de USER')`:
+    - `runtime` contiene exactamente estas dos líneas:
+      - `COPY --from=build --chmod=0444 /app/certs/rds-global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem`
       - `ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/rds-global-bundle.pem`
-    - las dos con índice menor que `USER node`.
-  - **Commit**: `test(backend-container-image): pin RDS CA bundle in runtime image (R17)`.
-- [ ] (2) **Verde**: añadir las dos líneas a `runtime`.
-  - **Commit**: `feat(backend-container-image): trust RDS CA bundle in runtime image (R17)`.
+    - las dos tienen índice menor que `USER node`;
+    - calculado sobre las líneas encontradas, no sobre los literales: el valor
+      tras `NODE_EXTRA_CA_CERTS=` es igual al último token de la línea `COPY`
+      que nombra `rds-global-bundle.pem`.
+  - `it('R17: ninguna instrucción ADD descarga de una URL')`:
+    - primero, `runtime` contiene la línea `COPY --from=build --chmod=0444 …`
+      de arriba (anti-vacío);
+    - después, ninguna línea lógica de ninguna etapa casa con
+      `/^ADD\s.*https?:\/\//`. Es un **ancla negativa** (§Cierre).
+  - **Commit**: `test(backend-container-image): pin versioned RDS CA bundle in runtime image (R17)`.
+- [ ] (2) **Verde**:
+  1. Descargar el bundle **una vez** desde la URL oficial que da la guía de
+     AWS (<https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/UsingWithRDS.SSL.html>):
+     ```
+     cd /home/claude/sites/Pet-Tracker-wt-245/backend-pet-tracker
+     mkdir -p certs && curl -fsSL https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem -o certs/rds-global-bundle.pem; echo "curl exit=$?"
+     ```
+     - Es la única descarga permitida en toda la cadena.
+     - Si `curl` falla (por ejemplo, el sandbox no tiene red), **para** y
+       anótalo en el informe. El leader descarga el fichero con el mismo
+       comando y Codex sigue desde aquí.
+     - No lo sustituyas por otro fichero ni lo escribas a mano.
+  2. Añadir las dos líneas a `runtime`, antes de `USER node`.
+  3. Correr el spec. Si el `it` del bundle queda en rojo porque falta
+     `us-east-2` o `mx-central-1`, **para** y anótalo en el informe, con la
+     lista de `subject` que contienen `Amazon RDS`. No cambies el test ni el
+     fichero: sin esa CA, TLS contra Aurora falla en producción.
+  4. `git add certs/rds-global-bundle.pem Dockerfile`.
+  - **Commit**: `feat(backend-container-image): trust versioned RDS CA bundle in runtime image (R17)`.
 - [ ] (3) Refactor: no previsto.
 
 ## R18 — migraciones en la imagen
@@ -688,6 +725,11 @@ En los ficheros nuevos basta `R<n>:`.
       `**/.env.*`, `node_modules`, `dist` y `coverage`;
     - ninguna línea lógica del `Dockerfile` contiene `.env`. Es un **ancla
       negativa** (§Cierre).
+  - `it('R19: .dockerignore no excluye el PEM de R17')`:
+    - primero, las líneas no comentadas de `.dockerignore` contienen `**/.env`
+      (anti-vacío);
+    - después, ninguna línea no comentada contiene `certs` ni `pem`. Es un
+      **ancla negativa** (§Cierre).
   - **Commit**: `test(backend-container-image): pin no .env in image context (R19)`.
 - [ ] (2) **Verde**: crear `.dockerignore` con esas cinco líneas y, además,
   `.git` y `*.log`. Nada más.
@@ -704,6 +746,102 @@ En los ficheros nuevos basta `R<n>:`.
   - **Commit**: `feat(backend-container-image): fix start:prod entry path (R20)`.
 - [ ] (3) Refactor: no previsto.
 
+## R21 — los scripts de operación no cargan `.env` desde código
+
+- [ ] (1) **Rojo**: en `src/container-image.spec.ts`,
+  `describe('R21: provision-device y set-device-subscription sin dotenv en código')`.
+  Sin stub.
+  - **Rutas**: `join(__dirname, '..', 'scripts', 'provision-device.ts')` y
+    `join(__dirname, '..', 'scripts', 'set-device-subscription.ts')`.
+  - `it('R21: ninguno de los dos scripts contiene dotenv')`: para cada uno,
+    primero contiene `parseArgs` (anti-vacío) y después no contiene `dotenv`.
+  - `it('R21: provision:device y subscription:set cargan ../.env con --env-file-if-exists')`:
+    `scripts['provision:device']` y `scripts['subscription:set']` de
+    `package.json` son exactamente los literales de [[requirements]] R21.
+  - **Commit**: `test(backend-container-image): pin one-off scripts free of dotenv (R21)`.
+- [ ] (2) **Verde**:
+  - en los dos scripts, quitar `import { config as loadDotenv } from 'dotenv';`
+    y la llamada `loadDotenv({ path: '../.env' });` de `main()`. Nada más;
+  - cambiar esos dos scripts de `package.json` a los literales de R21;
+  - comprobar que el e2e que ya lanza `provision-device.ts` sigue en verde
+    (sus dos `spawnSync` fallan antes de conectar y no necesitan `.env`):
+    ```
+    FORCE_COLOR=0 pnpm exec jest --config ./test/jest-e2e.json test/provision-device.e2e-spec.ts > /tmp/impl-245-R21-e2e.log 2>&1; echo "exit=$?"
+    ```
+  - **Commit**: `feat(backend-container-image): load .env for one-off scripts via node flag (R21)`.
+- [ ] (3) Refactor: no previsto.
+
+## R22 — los scripts de operación conectan con `buildPoolConfig`
+
+- [ ] (1) **Rojo**: fichero nuevo `test/one-off-scripts.e2e-spec.ts`. Sin stub:
+  hoy los scripts conectan con `DATABASE_URL` y mueren con `ECONNREFUSED`,
+  así que el test falla por aserción.
+  - **Helper del propio spec** `runScript(file: string, args: string[])`:
+    ```
+    spawnSync(process.execPath, ['-r', 'ts-node/register', '-r', 'tsconfig-paths/register', file, ...args], { cwd: process.cwd(), encoding: 'utf8', env, timeout: 50_000 })
+    ```
+    `env` es una copia de `process.env` con `delete` de `PGHOST`, `PGPORT`,
+    `PGDATABASE`, `PGUSER` y `DB_POOL_MAX`, y además:
+    - `NODE_ENV: 'production'`;
+    - `DATABASE_URL: 'postgresql://pet:pet@127.0.0.1:1/none-245'`;
+    - `PGPASSWORD: 'pass-sentinel-245'`;
+    - `SIM_MODE: 'false'` y `WIALON_TOKEN: 'wialon-sentinel-245'`: así
+      `provision-device` pasa el guard de cliente simulado y llega al `Pool`;
+    - `WIALON_BASE_URL: 'http://127.0.0.1:1/wialon-245'`: ninguna llamada sale
+      de la máquina aunque un script llegara a Wialon.
+  - `describe('R22: los scripts de operación conectan con buildPoolConfig')`,
+    con un `it` por script, cada uno con timeout `60_000` (tercer argumento de
+    `it`):
+    - `it('R22: provision-device en producción sin PGHOST falla con DatabaseConfigError antes de conectar')`:
+      `runScript('scripts/provision-device.ts', ['--unit-id', 'unit-245'])`;
+    - `it('R22: set-device-subscription en producción sin PGHOST falla con DatabaseConfigError antes de conectar')`:
+      `runScript('scripts/set-device-subscription.ts', ['--unit-id', 'unit-245'])`.
+  - **Aserciones de cada `it`**, en este orden:
+    1. `result.error` es `undefined` (no hubo timeout);
+    2. `result.status` no es `0`;
+    3. `result.stderr` contiene `DatabaseConfigError` y contiene `PGHOST`;
+    4. `result.stderr` no contiene `ECONNREFUSED`;
+    5. `result.stdout + result.stderr` no contiene `pass-sentinel-245` ni
+       `wialon-sentinel-245`.
+  - **Commit**: `test(backend-container-image): pin one-off scripts on buildPoolConfig (R22)`.
+- [ ] (2) **Verde**: en `main()` de cada script, sustituir
+  `new Pool({ connectionString: process.env.DATABASE_URL })` por
+  `new Pool(buildPoolConfig(config))`.
+  - `config` es un `new ConfigService()`. En `provision-device.ts` puede ser
+    el mismo que ya recibe `createWialonClient`.
+  - Importar `buildPoolConfig` de `@/db/pool-config` y, donde falte,
+    `ConfigService` de `@nestjs/config`.
+  - El resto de `main()` no cambia: el error sale por el `catch` que ya
+    existe, con `console.error(...)` y `process.exitCode = 1`.
+  - El e2e de R21 (`test/provision-device.e2e-spec.ts`) sigue en verde.
+  - **Commit**: `feat(backend-container-image): one-off scripts connect through buildPoolConfig (R22)`.
+- [ ] (3) Refactor: no previsto.
+
+## R23 — `scripts/` se compila a `dist/scripts` (vía (b))
+
+- [ ] (1) **Test**, un solo commit tras el verde de R22, en
+  `src/container-image.spec.ts`:
+  - `describe('R23: pnpm build compila scripts/ a dist/scripts')`.
+  - `it('R23: tsconfig y tsconfig.build no acotan include ni files, y el exclude de build no nombra scripts')`:
+    - lee `join(__dirname, '..', 'tsconfig.json')` y
+      `join(__dirname, '..', 'tsconfig.build.json')` con
+      `JSON.parse(readFileSync(...))`, igual que R20 con `package.json`;
+    - primero, el `exclude` de `tsconfig.build.json` es un array que contiene
+      `'test'` (anti-vacío);
+    - ninguno de los dos objetos tiene la propiedad `include` ni `files`;
+    - ninguna entrada del `exclude` contiene `scripts`.
+  - Nace verde. El comando del test unitario de `src/container-image.spec.ts`
+    da `exit=0`.
+  - **Commit**: `test(backend-container-image): pin scripts compiled into dist (R23)`.
+- [ ] (2) **Mutación**, sin commit:
+  - añadir `"scripts"` al `exclude` de `tsconfig.build.json`;
+  - correr el spec: el `it` de R23 sale en rojo;
+  - `git checkout HEAD -- tsconfig.build.json`;
+  - correr otra vez: verde.
+
+  La evidencia va en el informe (§Cierre).
+- [ ] (3) Refactor: no aplica.
+
 ## Cierre
 
 1. **Suite unitaria completa**:
@@ -713,7 +851,7 @@ En los ficheros nuevos basta `R<n>:`.
    Debe dar `exit=0`.
 2. **e2e de la feature**:
    ```
-   FORCE_COLOR=0 pnpm exec jest --config ./test/jest-e2e.json test/health.e2e-spec.ts test/migrate.e2e-spec.ts > /tmp/impl-245-e2e.log 2>&1; echo "exit=$?"
+   FORCE_COLOR=0 pnpm exec jest --config ./test/jest-e2e.json test/health.e2e-spec.ts test/migrate.e2e-spec.ts test/one-off-scripts.e2e-spec.ts test/provision-device.e2e-spec.ts > /tmp/impl-245-e2e.log 2>&1; echo "exit=$?"
    ```
    Debe dar `exit=0`. La suite e2e completa la corre el leader con `init.sh`.
 3. **Mutaciones**: plantar cada una de [[design]] §Mutaciones, correr el
@@ -723,40 +861,58 @@ En los ficheros nuevos basta `R<n>:`.
    - R12 (a): sin la guarda `isProduction`.
    - R12 (b): lanzar siempre en producción.
    - R15: carpeta inexistente.
-   - R19: `COPY --from=build /app/.env ./.env` en `runtime`.
+   - R17: `ADD https://…/global-bundle.pem /tmp/rds.pem` en `runtime`, antes de `USER node`.
+   - R19 (a): `COPY --from=build /app/.env ./.env` en `runtime`.
+   - R19 (b): línea `*.pem` en `.dockerignore`.
+   - R23: `"scripts"` en el `exclude` de `tsconfig.build.json`.
 
    Al terminar, `git status --short` está limpio.
 4. **Trazabilidad**: rellenar [[traceability]] (test `archivo::nombre del it`
-   y `hash + mensaje` de cada commit verde, o del de test en R15).
+   y `hash + mensaje` de cada commit verde, o del de test en R15 y R23).
    - **Commit**: `docs(backend-container-image): fill traceability`.
 5. **Informe**: escribir `progress/impl_backend-container-image.md` con:
    - la lista de commits;
    - los `exit=` de los pasos 1 y 2;
-   - la evidencia de las cinco mutaciones;
+   - la evidencia de las ocho mutaciones;
+   - el `curl exit=` de R17, o la nota de que lo descargó el leader;
    - cualquier desviación de esta spec, con su motivo.
 
-## Chequeo local opcional de la imagen (sin R-id)
+## Gate del leader: `docker build` en el VPS (sin R-id)
 
-No forma parte de la cadena de Codex. Lo corre el leader o el reviewer si hay
-Docker en la máquina (pregunta abierta 3). No toca AWS: solo descarga la
-imagen base y el PEM público.
+No forma parte de la cadena de Codex. Lo corre el **leader** en el VPS
+(Docker 29.2.1 con buildx) cuando Codex termina y **antes** de lanzar al
+`reviewer`. No toca AWS: solo descarga la imagen base y paquetes de npm. El
+log va a `progress/docker-gate_backend-container-image.txt`; la extensión es
+`.txt` porque `.gitignore` ignora `*.log`. El leader lo commitea en la branch.
+
+**Comandos**, en este orden y sin pipes que oculten el código de salida:
 
 ```
 cd /home/claude/sites/Pet-Tracker-wt-245/backend-pet-tracker
-docker build --platform linux/amd64 -t pet-tracker-backend:245-local .
-docker run --rm pet-tracker-backend:245-local sh -c 'id -u; stat -c %A /etc/ssl/certs/rds-global-bundle.pem; test ! -e /app/.env && echo no-env; test ! -e node_modules/drizzle-kit && test ! -e node_modules/@nestjs/cli && echo no-dev; node -e "require(\"argon2\"); console.log(\"argon2-ok\")"; test -f dist/src/db/migrations/meta/_journal.json && echo migrations-ok'
-docker run --rm pet-tracker-backend:245-local; echo "exit=$?"
+docker build --platform linux/amd64 -t pet-tracker-backend:245-local . > ../progress/docker-gate_backend-container-image.txt 2>&1; echo "build exit=$?" | tee -a ../progress/docker-gate_backend-container-image.txt
+docker run --rm --platform linux/amd64 pet-tracker-backend:245-local sh -c 'id -u; stat -c %A /etc/ssl/certs/rds-global-bundle.pem; grep -q "BEGIN CERTIFICATE" "$NODE_EXTRA_CA_CERTS" && echo ca-ok; test ! -e /app/.env && echo no-env; test ! -e node_modules/drizzle-kit && test ! -e node_modules/@nestjs/cli && echo no-dev; node -e "require(\"argon2\"); console.log(\"argon2-ok\")"; test -f dist/src/db/migrations/meta/_journal.json && echo migrations-ok; test -f dist/scripts/provision-device.js && test -f dist/scripts/set-device-subscription.js && echo scripts-ok' >> ../progress/docker-gate_backend-container-image.txt 2>&1; echo "inspect exit=$?" | tee -a ../progress/docker-gate_backend-container-image.txt
+timeout 60 docker run --rm --platform linux/amd64 pet-tracker-backend:245-local >> ../progress/docker-gate_backend-container-image.txt 2>&1; echo "default exit=$?" | tee -a ../progress/docker-gate_backend-container-image.txt
+docker run --rm --platform linux/amd64 pet-tracker-backend:245-local node dist/scripts/provision-device.js >> ../progress/docker-gate_backend-container-image.txt 2>&1; echo "provision exit=$?" | tee -a ../progress/docker-gate_backend-container-image.txt
+docker run --rm --platform linux/amd64 pet-tracker-backend:245-local node dist/scripts/set-device-subscription.js --unit-id gate-245 >> ../progress/docker-gate_backend-container-image.txt 2>&1; echo "subscription exit=$?" | tee -a ../progress/docker-gate_backend-container-image.txt
+docker run --rm --platform linux/amd64 pet-tracker-backend:245-local node dist/src/db/migrate.js >> ../progress/docker-gate_backend-container-image.txt 2>&1; echo "migrate exit=$?" | tee -a ../progress/docker-gate_backend-container-image.txt
 ```
 
-**Esperado del primer `docker run`**, en este orden:
+**Esperado**:
 
-1. `1000`
-2. `-r--r--r--`
-3. `no-env`
-4. `no-dev`
-5. `argon2-ok`
-6. `migrations-ok`
+1. `build exit=0`.
+2. `inspect exit=0`, y en el log, en este orden: `1000`, `-r--r--r--`,
+   `ca-ok`, `no-env`, `no-dev`, `argon2-ok`, `migrations-ok` y `scripts-ok`.
+3. `default exit=` distinto de `0` y de `124`, con un error que nombra
+   `SIM_MODE` y `JWT_SECRET` (R12 y R13 de punta a punta: el contenedor
+   arranca sin entorno). `124` es el `timeout`: la app no abortó, y eso es un
+   fallo.
+4. `provision exit=` distinto de `0`, con `falta --unit-id`. Prueba que el
+   `.js` compilado carga sus imports `@/` reescritos por `tsc-alias`.
+5. `subscription exit=` distinto de `0`, con `DatabaseConfigError` y `PGHOST`
+   (R22 en la imagen).
+6. `migrate exit=1`, con una línea JSON que nombra `PGHOST` (R14 en la
+   imagen).
 
-**Esperado del segundo**: arranca sin entorno, así que aborta con
-`exit` distinto de 0 y un error que nombra `SIM_MODE` y `JWT_SECRET` (R12 y
-R13 de punta a punta).
+Si algo no cuadra, el leader no lanza al `reviewer`: devuelve el fallo a
+Codex con la línea decisiva del log. Al terminar,
+`docker image rm pet-tracker-backend:245-local`.

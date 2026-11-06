@@ -28,10 +28,13 @@ tags: [harness, spec, backend, infra, produccion]
 | R18 | pendiente | pendiente |
 | R19 | pendiente | pendiente |
 | R20 | pendiente | pendiente |
+| R21 | pendiente | pendiente |
+| R22 | pendiente | pendiente |
+| R23 | pendiente | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
-Convención de commit: `feat(backend-container-image): <desc> (R<n>)`. En R15,
-requisito de verificación (vía (b)), la columna de commit lleva el commit de
-test, y la evidencia de mutación va en `progress/impl_backend-container-image.md`.
+Convención de commit: `feat(backend-container-image): <desc> (R<n>)`. En R15 y
+R23, requisitos de verificación (vía (b)), la columna de commit lleva el
+commit de test, y la evidencia de mutación va en `progress/impl_backend-container-image.md`.
 El implementer actualiza esta tabla tras cada commit; el reviewer la valida
 al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).

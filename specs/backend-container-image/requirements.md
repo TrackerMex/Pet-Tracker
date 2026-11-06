@@ -182,7 +182,8 @@ tags: [harness, spec, backend, infra, produccion]
   `backend-pet-tracker/`) con estas propiedades:
   - **Cabecera**: la primera línea es `# syntax=docker/dockerfile:1`.
   - **Etapas**: exactamente tres `FROM`, en orden `deps`, `build` y `runtime`,
-    cada una `FROM --platform=linux/amd64 node:24-bookworm-slim AS <nombre>`.
+    cada una `FROM node:24-bookworm-slim AS <nombre>`, sin `--platform`. La
+    plataforma la fija #246 al construir ([[design]] §Contrato con #246, Imagen).
   - **Directorio de trabajo**: cada etapa tiene `WORKDIR /app` antes de su
     primer `COPY`.
   - **Dependencias**: `deps` instala con `pnpm install --prod --frozen-lockfile`;
@@ -195,20 +196,60 @@ tags: [harness, spec, backend, infra, produccion]
       último `COPY`/`ADD`;
     - termina en `CMD ["node", "dist/src/main.js"]`.
   - Ninguna etapa tiene `ENTRYPOINT`.
-- **R17**: THE SYSTEM SHALL incluir en la etapa `runtime` del `Dockerfile` el
-  bundle global de CA de RDS:
-  - `ADD --chmod=0444 https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem`;
-  - `ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/rds-global-bundle.pem`;
-  - las dos antes de `USER node`.
+- **R17**: THE SYSTEM SHALL versionar el bundle global de CA de RDS en
+  `certs/rds-global-bundle.pem` y llevarlo a la imagen:
+  - **Fichero**: contiene al menos un bloque
+    `-----BEGIN CERTIFICATE-----` … `-----END CERTIFICATE-----`; cada bloque se
+    parsea sin error con `new X509Certificate(<bloque>)` de `node:crypto`; y
+    entre los `subject` de esos certificados hay al menos uno que contiene
+    `us-east-2` y al menos uno que contiene `mx-central-1`, las dos regiones
+    del plan.
+  - **Etapa `runtime` del `Dockerfile`**, las dos líneas antes de `USER node`:
+    - `COPY --from=build --chmod=0444 /app/certs/rds-global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem`;
+    - `ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/rds-global-bundle.pem`.
+  - El valor de `NODE_EXTRA_CA_CERTS` es igual al destino de ese `COPY`.
+  - Ninguna instrucción del `Dockerfile` es `ADD` con una URL (`http://` o
+    `https://`).
 - **R18**: THE SYSTEM SHALL copiar las migraciones a la imagen con
   `COPY --from=build /app/src/db/migrations ./dist/src/db/migrations` en la
   etapa `runtime`. Ese destino es `MIGRATIONS_FOLDER` (R14) compilado:
   `relative(<src>, MIGRATIONS_FOLDER)` es `db/migrations`.
 - **R19**: THE SYSTEM SHALL tener `.dockerignore` con las líneas `**/.env`,
   `**/.env.*`, `node_modules`, `dist` y `coverage`. Ninguna línea no comentada
-  del `Dockerfile` contiene `.env`.
+  del `Dockerfile` contiene `.env`. Ninguna línea no comentada de
+  `.dockerignore` contiene `certs` ni `pem`, para que el PEM de R17 llegue a
+  la etapa `build`.
 - **R20**: THE SYSTEM SHALL tener en `package.json` el script `start:prod` igual
   a `node dist/src/main.js`.
+
+### Comandos únicos de operación
+
+Los dos scripts de esta sección son `scripts/provision-device.ts` y
+`scripts/set-device-subscription.ts`.
+
+- **R21**: THE SYSTEM SHALL no cargar ningún `.env` desde el código de los dos
+  scripts: ninguno contiene la cadena `dotenv`. Para que el uso local siga
+  leyendo `../.env`, `package.json` define exactamente:
+  - `"provision:device": "node --env-file-if-exists=../.env -r ts-node/register -r tsconfig-paths/register scripts/provision-device.ts"`;
+  - `"subscription:set": "node --env-file-if-exists=../.env -r ts-node/register -r tsconfig-paths/register scripts/set-device-subscription.ts"`.
+- **R22**: WHEN se ejecuta cualquiera de los dos scripts THE SYSTEM SHALL
+  construir su `Pool` con `new Pool(buildPoolConfig(config))` (R2/R3), donde
+  `config` es un `new ConfigService()`, sin leer `DATABASE_URL` directamente.
+  Por eso, con `NODE_ENV=production`, sin `PGHOST`, `PGPORT`, `PGDATABASE`,
+  `PGUSER` ni `DB_POOL_MAX`, y con `DATABASE_URL` apuntando a un puerto
+  cerrado, cada script, lanzado como proceso:
+  - sale con código distinto de `0`;
+  - escribe en stderr `DatabaseConfigError` y `PGHOST`;
+  - no escribe `ECONNREFUSED`, es decir, no intentó conectar con `DATABASE_URL`;
+  - no reproduce en stdout ni en stderr el valor de `PGPASSWORD` ni el de
+    `WIALON_TOKEN` (valores centinela únicos).
+- **R23** *(requisito de verificación, vía (b) de C4)*: THE SYSTEM SHALL
+  compilar `scripts/` con `pnpm build`, de modo que la imagen contenga
+  `dist/scripts/provision-device.js` y `dist/scripts/set-device-subscription.js`.
+  Es decir: ni `tsconfig.json` ni `tsconfig.build.json` tienen `include` ni
+  `files`, y ninguna entrada del `exclude` de `tsconfig.build.json` contiene
+  `scripts`. Nace verde; su cierre se prueba por mutación ([[design]]
+  §Mutaciones).
 
 ## Comportamiento que se mantiene (sin R-id; ya tiene candado)
 
@@ -240,10 +281,12 @@ tags: [harness, spec, backend, infra, produccion]
   Ningún seed hace falta en producción:
   - `seed:vaccines` es redundante, porque la migración `0023_vaccine_catalog_data.sql`
     ya carga el catálogo, con `ON CONFLICT DO NOTHING`;
-  - `seed:devices` es solo para desarrollo;
-  - `provision:device`, `subscription:set` y `backfill:weights` son operaciones
-    manuales que leen `DATABASE_URL` y corren con `ts-node`, que no está en la
-    imagen. Quedan como deuda para cuando haya que operarlas contra producción.
+  - `seed:devices` es solo para desarrollo.
+- **Otros scripts de `scripts/`.** Solo `provision-device` y
+  `set-device-subscription` son comandos únicos de producción (R21–R23). El
+  resto (`seed-*`, `provision-local-device`, `backfill-weights`, …) se compila
+  a `dist/scripts/` porque `tsconfig.build.json` no los excluye, pero no se
+  adaptan, no entran en el contrato con #246 y no se prueban en la imagen.
 - **Rate limit en memoria por tarea.** Se acepta que con N tareas el límite
   sea N veces el nominal (decisión 7 del plan). Queda como deuda.
 - **Timeouts del pool**: `connectionTimeoutMillis`, `idleTimeoutMillis` y
@@ -253,8 +296,9 @@ tags: [harness, spec, backend, infra, produccion]
 - **Imagen para arm64.** La decisión 11 la deja para cuando haya pipeline.
 - **CI de la imagen**: ni `docker build` en CI ni push a ECR. `cdk deploy`
   construye la imagen en la máquina del humano (plan §6). Las propiedades del
-  `Dockerfile` se verifican con un test estático (R16–R19). Hay además un
-  chequeo local opcional, sin R-id, en [[tasks]] §Chequeo local opcional.
+  `Dockerfile` se verifican con un test estático (R16–R19). Antes del
+  `reviewer`, el leader corre `docker build` en el VPS y guarda el log en
+  `progress/`. Es un paso del gate, sin R-id, en [[tasks]] §Gate del leader.
 - **Drenaje de peticiones HTTP en vuelo.** Lo cubre el
   `deregistration_delay` del target group del ALB, que es de #246. Esta
   feature drena solo los ticks de los workers.
