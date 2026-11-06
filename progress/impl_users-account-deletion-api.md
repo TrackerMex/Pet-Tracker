@@ -434,3 +434,43 @@ Todas las esperas previas a cada Jest y a `db:migrate` dieron `test -z "${DATABA
 No se ejecutaron `./init.sh`, instalaciones, mutaciones del reviewer, push ni operaciones de PR. No se modificaron el estado de la feature, la aprobación, archivos de configuración, migraciones 0000–0023, `.env`, mobile ni infra. El leader queda a cargo de init, revisión, integración en dev y PR. Los límites de purga síncrona, rate limiting e IAM siguen siendo los documentados en el diseño aprobado.
 
 Último artefacto: `progress/impl_users-account-deletion-api.done`, sin commitear, con una sola línea que apunta a este reporte.
+
+## Enmienda del leader: devices.e2e R15
+
+Enmienda aprobada en `a39cd0c0` (2026-11-06). El init del leader detectó un candado previo de #5 que esperaba `assigned` tras borrar la mascota; R10 exige `available`. Se actualizó únicamente `test/devices.e2e-spec.ts`: comentario de dos líneas, variable `released` y aserción de estado. Los títulos del describe/it, las asignaciones en 0, el reclamo posterior de ownerB y su estado final `assigned` se conservaron.
+
+Anclas medidas desde `backend-pet-tracker/`:
+
+| Orden | Antes | Después |
+|---|---|---|
+| `grep -cF "orphaned" test/devices.e2e-spec.ts` | `2` | `0` |
+| `grep -cF "expect(released.status).toBe('available');" test/devices.e2e-spec.ts` | `0` | `1` |
+| `grep -cF "queda 'assigned' huerfano" test/devices.e2e-spec.ts` | `1` | `0` |
+
+Esperas previas al Jest, en comandos separados: `test -z "${DATABASE_URL:-}"` devolvió `0`; el bucle de `pgrep` devolvió `espera=1`.
+
+`FORCE_COLOR=0 pnpm exec jest --config ./test/jest-e2e.json test/devices.e2e-spec.ts > /tmp/impl-247-devices-e2e.log 2>&1; echo "exit=$?"`:
+
+```text
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       29 passed, 29 total
+```
+
+Después del Jest se ejecutaron `pnpm exec prettier --write test/devices.e2e-spec.ts`, `pnpm exec prettier --check test/devices.e2e-spec.ts`, `pnpm exec eslint test/devices.e2e-spec.ts` y `pnpm exec tsc --noEmit -p tsconfig.json`: `exit=0`. Prettier no cambió el fichero y `git diff --check` no encontró problemas.
+
+Commit 14: `f33a4e2c test(devices): R15 e2e expects the collar released by #247 R10`.
+
+Commit 15 (este commit documental): `docs(users-account-deletion-api): record the devices R15 amendment`.
+
+Los apartados previos describen la entrega original en `58cc9623`; su cuenta de 13 commits es histórica. La cuenta final de esta enmienda incluye aquellos 13, `a39cd0c0` y los commits 14 y 15:
+
+```text
+git rev-list --count 0e70fff2..HEAD
+16
+
+git status --short -- backend-pet-tracker specs docs
+(sin salida)
+```
+
+No se ejecutó `./init.sh` ni se aplicaron migraciones. No hubo un nuevo PARA. Los logs se conservan en `/tmp`. Última acción: recrear `progress/impl_users-account-deletion-api.done` con la ruta de este reporte, sin commitear el marcador.
