@@ -61,7 +61,7 @@ describe('R1: tabla reminders y migracion 0011 aditiva', () => {
     expect(columns.get('schedule_name')?.notNull).toBe(false);
     expect(columns.get('schedule_name')?.getSQLType()).toBe('varchar(64)');
     expect(columns.get('enqueued_at')?.notNull).toBe(false);
-    expect(columns.get('created_by')?.notNull).toBe(true);
+    expect(columns.get('created_by')?.notNull).toBe(false);
   });
 
   it('declara los CHECKs, FKs e indices exactos', () => {
@@ -88,7 +88,7 @@ describe('R1: tabla reminders y migracion 0011 aditiva', () => {
         {
           column: 'created_by',
           foreignTable: 'users',
-          onDelete: 'no action',
+          onDelete: 'set null',
         },
       ]),
     );

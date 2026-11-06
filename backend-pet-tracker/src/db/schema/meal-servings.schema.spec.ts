@@ -48,7 +48,7 @@ describe('R1 (meals-served-tracking #83): tabla meal_servings y migracion nueva'
       'timestamp with time zone',
     );
     expect(columns.get('served_at')?.hasDefault).toBe(true);
-    expect(columns.get('created_by')?.notNull).toBe(true);
+    expect(columns.get('created_by')?.notNull).toBe(false);
     expect(columns.get('created_by')?.getSQLType()).toBe('uuid');
   });
 
@@ -68,7 +68,7 @@ describe('R1 (meals-served-tracking #83): tabla meal_servings y migracion nueva'
       {
         column: 'created_by',
         foreignTable: 'users',
-        onDelete: 'no action',
+        onDelete: 'set null',
       },
       { column: 'pet_id', foreignTable: 'pets', onDelete: 'cascade' },
     ]);
