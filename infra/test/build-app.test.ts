@@ -28,3 +28,36 @@ describe('#246 R1: sin contexto prod la app solo tiene PetTrackerDev', () => {
     expect(source).not.toContain('new PetTrackerDevStack');
   });
 });
+
+const PROD_CONTEXT = {
+  apiDomain: 'api.pets.example.org',
+  hostedZoneId: 'Z0R20EXAMPLE',
+  hostedZoneName: 'pets.example.org',
+  alarmEmail: 'ops@example.org',
+  resendFrom: 'hola@pets.example.org',
+  resetLinkHost: 'reset.pets.example.org',
+};
+
+describe('#246 R2: contexto prod parcial lanza con las claves que faltan', () => {
+  it.each([
+    {
+      caso: 'solo apiDomain',
+      context: { apiDomain: PROD_CONTEXT.apiDomain },
+      missing: 'hostedZoneId, hostedZoneName, alarmEmail, resendFrom, resetLinkHost',
+    },
+    {
+      caso: 'sin alarmEmail ni resetLinkHost',
+      context: {
+        apiDomain: PROD_CONTEXT.apiDomain,
+        hostedZoneId: PROD_CONTEXT.hostedZoneId,
+        hostedZoneName: PROD_CONTEXT.hostedZoneName,
+        resendFrom: PROD_CONTEXT.resendFrom,
+      },
+      missing: 'alarmEmail, resetLinkHost',
+    },
+    { caso: 'resendFrom en blanco', context: { ...PROD_CONTEXT, resendFrom: '   ' }, missing: 'resendFrom' },
+    { caso: 'hostedZoneId numérico', context: { ...PROD_CONTEXT, hostedZoneId: 12345 }, missing: 'hostedZoneId' },
+  ])('#246 R2: $caso', ({ context, missing }) => {
+    expect(() => buildApp(new App({ context }))).toThrow(new Error(`Missing prod context keys: ${missing}`));
+  });
+});
