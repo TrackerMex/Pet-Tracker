@@ -479,6 +479,52 @@ siempre con las suites unit y e2e de arriba verdes.
       - `pnpm -C backend-pet-tracker exec jest`
       - la e2e de la regla 6.
 
+## Enmienda del leader (2026-11-06): candado previo de `devices.e2e` R15
+
+`init.sh` del leader, sobre el commit 13, da un solo rojo:
+`test/devices.e2e-spec.ts:988`, `expect(orphaned.status).toBe('assigned')`, que recibe
+`"available"`. Es el comportamiento que pide R10. Ese `it` de #5 fijaba el collar
+huérfano en `'assigned'` y esta spec no lo listó. No es una regresión: se actualiza el
+candado.
+
+Fichero: `backend-pet-tracker/test/devices.e2e-spec.ts`. El cambio va en
+`describe('R15: borrar una mascota con collar deja el device reclamable (D3)')`, dentro de
+`it('claim -> DELETE /v1/pets/:petId -> claim con otra mascota responde 201')`. Los nombres
+del `describe` y del `it` no cambian.
+
+- El comentario de dos líneas sobre el DELETE de #5 pasa a:
+  ```
+        // Desde #247 R10 el DELETE libera el collar antes de que pet_devices
+        // caiga en cascada: devices.status queda 'available'.
+  ```
+- `const [orphaned] = await db` pasa a `const [released] = await db`.
+- `expect(orphaned.status).toBe('assigned');` pasa a
+  `expect(released.status).toBe('available');`.
+- El resto del `it` (asignaciones en 0 tras el DELETE, el reclamo de `ownerB` y el
+  `'assigned'` final) no se toca.
+
+Anclas, desde `backend-pet-tracker/`:
+
+| Orden | Antes | Después |
+|---|---|---|
+| `grep -cF "orphaned" test/devices.e2e-spec.ts` | `2` | `0` |
+| `grep -cF "expect(released.status).toBe('available');" test/devices.e2e-spec.ts` | `0` | `1` |
+| `grep -cF "queda 'assigned' huerfano" test/devices.e2e-spec.ts` | `1` | `0` |
+
+Comprobación: §Esperas del handoff y después
+`FORCE_COLOR=0 pnpm exec jest --config ./test/jest-e2e.json test/devices.e2e-spec.ts > /tmp/impl-247-devices-e2e.log 2>&1; echo "exit=$?"`,
+que da `exit=0`. Antes del commit, la cadena prettier, eslint y tsc del handoff sobre ese
+fichero.
+
+- **Commit 14**: `test(devices): R15 e2e expects the collar released by #247 R10`.
+- **Commit 15**: una sección «Enmienda del leader: devices.e2e R15» al final de
+  `progress/impl_users-account-deletion-api.md`, con las anclas, el `exit=` y las líneas
+  `Test Suites:` y `Tests:`. Mensaje:
+  `docs(users-account-deletion-api): record the devices R15 amendment`.
+
+Cuenta final: `git rev-list --count 0e70fff2..HEAD` da `16` (13, más esta enmienda, más
+los commits 14 y 15).
+
 ## Mutaciones para el reviewer
 
 Cada una debe poner rojo al menos el test indicado:
