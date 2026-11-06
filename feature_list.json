@@ -4003,7 +4003,7 @@
   {
     "id": 245,
     "name": "backend-container-image",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P0",
     "description": "Imagen de contenedor del backend para ECS Fargate (decisión del humano 2026-11-06: Fargate, no Lambda). Dockerfile multi-stage sin herramientas de build y no root, endpoint de health para ALB y Route 53, apagado ordenado con SIGTERM, migraciones y seeds como tarea única de ECS, validación de configuración al arrancar, TLS hacia Aurora con el CA de RDS y credenciales del task role sin endpoint de LocalStack en AWS real. Fija el contrato que consume #246 (ruta del Dockerfile, puerto, health, comando de migración, variables de entorno). Explore: progress/explore_produccion-aws.md. Registrada el 2026-11-06 por el plan progress/plan_produccion-aws-2026-11-06.md. Firma delegada al leader (ampliación del 2026-11-06 en CLAUDE.md). Responsable: leader @Backend.",
     "acceptance_criteria": [
@@ -4011,9 +4011,30 @@
       "Ningún secreto en el repo; ninguna prueba toca AWS real"
     ],
     "files_affected": [
+      "backend-pet-tracker/src/config/environment.ts",
+      "backend-pet-tracker/src/config/env.validation.ts",
+      "backend-pet-tracker/src/config/config.module.ts",
+      "backend-pet-tracker/src/db/pool-config.ts",
+      "backend-pet-tracker/src/db/migrate.ts",
+      "backend-pet-tracker/src/db/drizzle.module.ts",
+      "backend-pet-tracker/src/lifecycle/in-flight-ticks.ts",
+      "backend-pet-tracker/src/lifecycle/lifecycle.module.ts",
+      "backend-pet-tracker/src/app-setup.ts",
+      "backend-pet-tracker/src/main.ts",
+      "backend-pet-tracker/src/app.module.ts",
+      "backend-pet-tracker/src/modules/health/infrastructure/health.controller.ts",
+      "backend-pet-tracker/src/workers/ingestion-scheduler.service.ts",
+      "backend-pet-tracker/src/workers/alerts-engine/alerts-engine-scheduler.service.ts",
+      "backend-pet-tracker/src/workers/notifier/notifier-scheduler.service.ts",
+      "backend-pet-tracker/src/modules/reminders/infrastructure/reminders-scheduler.service.ts",
+      "backend-pet-tracker/src/modules/activity/infrastructure/activity-scheduler.service.ts",
+      "backend-pet-tracker/src/container-image.spec.ts",
+      "backend-pet-tracker/test/migrate.e2e-spec.ts",
       "backend-pet-tracker/Dockerfile",
       "backend-pet-tracker/.dockerignore",
-      "backend-pet-tracker/src/main.ts"
+      "backend-pet-tracker/package.json",
+      "docs/conventions.md",
+      ".env.example"
     ]
   },
   {
