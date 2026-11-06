@@ -470,3 +470,45 @@ describe('#246 R12: la API escala de 2 a 4 tareas por CPU', () => {
     });
   });
 });
+
+describe('#246 R13: un único worker sin entrada de red', () => {
+  it('#246 R13: servicio workers, su grupo y la imagen compartida', () => {
+    const region = 'mx-central-1';
+    synthesized(region).template.resourceCountIs('AWS::ECS::Service', 2);
+    const svc = service(region, 'workers')?.[1];
+    expect(svc?.LaunchType).toBe('FARGATE');
+    expect(svc?.DesiredCount).toBe(1);
+    const deployment = svc?.DeploymentConfiguration as Record<string, unknown> | undefined;
+    expect(deployment?.DeploymentCircuitBreaker).toEqual({ Enable: true, Rollback: true });
+    expect(deployment?.MaximumPercent).toBe(100);
+    expect(deployment?.MinimumHealthyPercent).toBe(0);
+    const network = svc?.NetworkConfiguration as { AwsvpcConfiguration?: { AssignPublicIp?: string; Subnets?: unknown[]; SecurityGroups?: unknown[] } } | undefined;
+    expect(network?.AwsvpcConfiguration?.AssignPublicIp).toBe('ENABLED');
+    expect(network?.AwsvpcConfiguration?.Subnets?.map((v) => JSON.stringify(v)).sort())
+      .toEqual(subnetIdsByAz(region, 'Public').map((id) => JSON.stringify({ Ref: id })).sort());
+    expect(network?.AwsvpcConfiguration?.SecurityGroups).toHaveLength(1);
+    const sg = securityGroupIdOf(network?.AwsvpcConfiguration?.SecurityGroups?.[0]);
+    expect(sg).toBeDefined();
+    const props = sg ? synthesized(region).resources[sg]?.Properties : undefined;
+    expect(props?.SecurityGroupIngress).toBeUndefined();
+    expect(ingressesTo(region, sg ?? '')).toEqual([]);
+    expect((props?.SecurityGroupEgress as Array<Record<string, unknown>> | undefined)?.map(withoutDescription))
+      .toEqual([{ CidrIp: '0.0.0.0/0', IpProtocol: '-1' }]);
+    expect(dockerImageSources(region)).toHaveLength(1);
+  });
+  it('#246 R13: task definition workers', () => {
+    const region = 'mx-central-1';
+    const td = taskDefinition(region, 'workers')?.[1];
+    expect(td?.Cpu).toBe('512');
+    expect(td?.Memory).toBe('1024');
+    expect(td?.RuntimePlatform).toEqual({ CpuArchitecture: 'X86_64', OperatingSystemFamily: 'LINUX' });
+    expect(td?.ContainerDefinitions).toHaveLength(1);
+    const container = containerOf(region, 'workers');
+    expect(container?.Name).toBe('workers');
+    expect(container?.PortMappings).toBeUndefined();
+    expect(container?.Image).toEqual(containerOf(region, 'api')?.Image);
+    expect(container?.LogConfiguration?.LogDriver).toBe('awslogs');
+    const log = container?.LogConfiguration?.Options?.['awslogs-group'] as { Ref?: string } | undefined;
+    expect(log?.Ref ? synthesized(region).resources[log.Ref]?.Properties?.RetentionInDays : undefined).toBe(30);
+  });
+});
