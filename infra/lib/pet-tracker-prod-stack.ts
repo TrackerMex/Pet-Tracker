@@ -1,3 +1,9 @@
+import * as ecs from 'aws-cdk-lib/aws-ecs';
+import * as ecsPatterns from 'aws-cdk-lib/aws-ecs-patterns';
+import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
+import * as route53 from 'aws-cdk-lib/aws-route53';
+import * as logs from 'aws-cdk-lib/aws-logs';
+import { Platform } from 'aws-cdk-lib/aws-ecr-assets';
 import * as rds from 'aws-cdk-lib/aws-rds';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
@@ -105,5 +111,26 @@ export class PetTrackerProdStack extends Stack {
       removalPolicy: RemovalPolicy.SNAPSHOT,
       backup: { retention: Duration.days(7) }, defaultDatabaseName: 'pet_tracker',
     });
+    const cluster = new ecs.Cluster(this, 'Cluster', { vpc });
+    const zone = route53.HostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
+      hostedZoneId: props.hostedZoneId, zoneName: props.hostedZoneName,
+    });
+    const image = ecs.ContainerImage.fromAsset(props.imageDirectory, { platform: Platform.LINUX_AMD64 });
+    const apiLogs = new logs.LogGroup(this, 'ApiLogs', { retention: logs.RetentionDays.ONE_MONTH });
+    const api = new ecsPatterns.ApplicationLoadBalancedFargateService(this, 'Api', {
+      cluster, cpu: 512, memoryLimitMiB: 1024, desiredCount: 2,
+      runtimePlatform: { cpuArchitecture: ecs.CpuArchitecture.X86_64, operatingSystemFamily: ecs.OperatingSystemFamily.LINUX },
+      domainName: props.apiDomain, domainZone: zone,
+      protocol: elbv2.ApplicationProtocol.HTTPS, sslPolicy: elbv2.SslPolicy.RECOMMENDED_TLS,
+      redirectHTTP: true, idleTimeout: Duration.seconds(60),
+      assignPublicIp: true, taskSubnets: { subnetType: ec2.SubnetType.PUBLIC },
+      circuitBreaker: { rollback: true }, minHealthyPercent: 100, maxHealthyPercent: 200,
+      taskImageOptions: {
+        image, containerName: 'api', containerPort: 3000,
+        logDriver: ecs.LogDrivers.awsLogs({ streamPrefix: 'api', logGroup: apiLogs }),
+      },
+    });
+    api.targetGroup.configureHealthCheck({ path: '/v1/health/live', healthyHttpCodes: '200' });
+    api.targetGroup.setAttribute('deregistration_delay.timeout_seconds', '30');
   }
 }
