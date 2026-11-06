@@ -33,9 +33,9 @@ export const reminders = pgTable(
     }),
     scheduleName: varchar('schedule_name', { length: 64 }),
     enqueuedAt: timestamp('enqueued_at', { withTimezone: true }),
-    createdBy: uuid('created_by')
-      .notNull()
-      .references(() => users.id),
+    createdBy: uuid('created_by').references(() => users.id, {
+      onDelete: 'set null',
+    }),
   },
   (table) => [
     check(

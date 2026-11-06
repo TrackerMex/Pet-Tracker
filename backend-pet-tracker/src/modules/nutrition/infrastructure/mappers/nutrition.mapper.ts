@@ -54,7 +54,7 @@ export interface MealServingResponse {
   servedOn: string;
   mealTime: string;
   servedAt: string;
-  createdBy: string;
+  createdBy: string | null;
 }
 
 export function toNutritionProfileResponse(

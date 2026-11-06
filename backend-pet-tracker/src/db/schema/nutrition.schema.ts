@@ -143,9 +143,9 @@ export const mealServings = pgTable(
     servedAt: timestamp('served_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
-    createdBy: uuid('created_by')
-      .notNull()
-      .references(() => users.id),
+    createdBy: uuid('created_by').references(() => users.id, {
+      onDelete: 'set null',
+    }),
   },
   (table) => [
     uniqueIndex('meal_servings_pet_id_served_on_meal_time_idx').on(

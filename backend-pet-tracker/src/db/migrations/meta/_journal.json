@@ -169,6 +169,13 @@
       "when": 1793727687404,
       "tag": "0023_vaccine_catalog_data",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1794000712701,
+      "tag": "0024_created_by_set_null",
+      "breakpoints": true
     }
   ]
 }

@@ -51,9 +51,9 @@ export const petVaccines = pgTable(
     clinic: varchar('clinic', { length: 120 }),
     notes: text('notes'),
     documentKey: text('document_key'),
-    createdBy: uuid('created_by')
-      .notNull()
-      .references(() => users.id),
+    createdBy: uuid('created_by').references(() => users.id, {
+      onDelete: 'set null',
+    }),
   },
   (table) => [
     index('pet_vaccines_pet_id_applied_at_idx').on(
@@ -75,9 +75,9 @@ export const weights = pgTable(
     weightKg: numeric('weight_kg', { precision: 5, scale: 2 }).notNull(),
     bodyCondition: integer('body_condition'),
     measuredAt: date('measured_at').notNull(),
-    createdBy: uuid('created_by')
-      .notNull()
-      .references(() => users.id),
+    createdBy: uuid('created_by').references(() => users.id, {
+      onDelete: 'set null',
+    }),
   },
   (table) => [
     check(

@@ -4,7 +4,7 @@ export interface MealServingProps {
   servedOn: string;
   mealTime: string;
   servedAt: Date;
-  createdBy: string;
+  createdBy: string | null;
 }
 
 export class MealServing implements MealServingProps {
@@ -13,7 +13,7 @@ export class MealServing implements MealServingProps {
   readonly servedOn: string;
   readonly mealTime: string;
   readonly servedAt: Date;
-  readonly createdBy: string;
+  readonly createdBy: string | null;
 
   constructor(props: MealServingProps) {
     Object.assign(this, props);
