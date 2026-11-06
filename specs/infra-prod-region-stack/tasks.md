@@ -69,9 +69,16 @@ Un commit rojo falla **solo** por aserciones.
 - `grep -cE "ReferenceError|Cannot find module|error TS|TypeError" /tmp/impl-246-<R>-red.log`
   debe dar `0`.
 - Fallan solo los `it` del requisito:
-  `grep -E "^  ● " /tmp/impl-246-<R>-red.log | grep -vc "^  ● #246 <R>:"` debe
-  dar `0`, y `grep -cE "^  ● #246 <R>:" /tmp/impl-246-<R>-red.log` debe dar
+  `grep -E "^  ● " /tmp/impl-246-<R>-red.log | grep -v "^  ● Console$" | grep -vc "^  ● #246 <R>:"`
+  debe dar `0`, y `grep -cE "^  ● #246 <R>:" /tmp/impl-246-<R>-red.log` debe dar
   el número de `it` nuevos de ese bloque.
+- El bloque `  ● Console` no es un test: jest lo imprime para el
+  `console.error` de CDK `[Warning] Template validation found issues` con
+  `WARNING Resources section must exist and be non-empty (CloudFormation Validate)`
+  (F0001), que sale mientras un stack de prod no tiene recursos. Por eso el
+  segundo grep lo excluye por línea exacta. Es un aviso esperado, como los
+  `W3010`: no se silencia ni se «arregla». (Enmienda del leader 2026-11-06,
+  tras el PARA de Codex en el rojo de R4.)
 - Un helper de test nunca desreferencia un recurso que falta: devuelve `[]`
   o `undefined`, y el test compara con `toEqual`/`toBe` usando `?.`. Cuando
   hace falta estrechar un tipo para seguir, se lanza
