@@ -208,10 +208,20 @@ A la checklist de firma se le suman tres puntos:
 | G2 | Smoke en dispositivo de #248 | En lote, al final | `progress/smoke_produccion.md` |
 | G5 | Mergear `dev` → `main` | Cuando el humano dé la app por lista | PR en GitHub |
 
-- [ ] D1 (fecha: ____)
-- [ ] D2 (fecha: ____)
-- [ ] D3 (fecha: ____)
-- [ ] D4 (fecha: ____)
+- [x] D1 (fecha: 2026-11-06): «Zona en Route 53». Nombre del dominio pendiente; llega como
+  contexto de despliegue. Con la zona en Route 53 (se asume en la misma cuenta), #246 crea el
+  certificado con validación DNS y el registro alias hacia el ALB. GA1 se reduce a dar el
+  nombre del dominio y el id de la zona.
+- [x] D2 (fecha: 2026-11-06): «Subredes públicas (Recommended)». Tareas con IP pública y SG
+  sin entrada salvo desde el ALB; Aurora en subredes aisladas; endpoints gateway de S3 y
+  DynamoDB. Sin NAT.
+- [x] D3 (fecha: 2026-11-06): «Borrarla para todos». Las mascotas de las que el usuario es
+  owner se borran aunque tengan otros miembros. La confirmación de #248 lo advierte. Avisar
+  por push a los demás miembros queda fuera de alcance.
+- [x] D4 (fecha: 2026-11-06): «Correo (Resend), IA (Anthropic), Notificaciones push, Wialon
+  real (collares)». En producción: `SIM_MODE=false`, `PUSH_ENABLED=true`,
+  `EMAIL_ENABLED=true`, `ANTHROPIC_ENABLED=true`. GA2 crea el token de Wialon y las claves de
+  Resend y Anthropic. GA1 suma verificar el dominio en Resend (SPF y DKIM en la zona).
 - [ ] GA1 (fecha: ____)
 - [ ] GA2 (fecha: ____)
 - [ ] GA3 mx-central-1 (fecha: ____)
