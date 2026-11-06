@@ -222,5 +222,7 @@ export class PetTrackerProdStack extends Stack {
     });
     (opsTask.node.defaultChild as ecs.CfnTaskDefinition).addPropertyDeletionOverride('TaskRoleArn');
     opsTask.node.tryRemoveChild('TaskRole');
+    db.connections.allowDefaultPortFrom(api.service);
+    db.connections.allowDefaultPortFrom(workersSg);
   }
 }
