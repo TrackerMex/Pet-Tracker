@@ -1,3 +1,4 @@
+import { X509Certificate } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 function readOrEmpty(path: string): string {
@@ -103,6 +104,57 @@ describe('R16: Dockerfile multi-etapa sin herramientas de build ni root', () => 
   it('R16: hay tres etapas y ninguna línea es ENTRYPOINT', () => {
     expect(docker.stages).toHaveLength(3);
     expect(docker.lines.some((line) => /^ENTRYPOINT(?:\s|$)/.test(line))).toBe(
+      false,
+    );
+  });
+});
+
+function pemBlocks(raw: string): string[] {
+  return (
+    raw.match(
+      /-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/g,
+    ) ?? []
+  );
+}
+describe('R17: la etapa runtime trae el bundle de CA de RDS versionado', () => {
+  it('R17: certs/rds-global-bundle.pem es un bundle X.509 que cubre us-east-2 y mx-central-1', () => {
+    const blocks = pemBlocks(
+      readOrEmpty(join(__dirname, '..', 'certs', 'rds-global-bundle.pem')),
+    );
+    expect(blocks.length).toBeGreaterThan(0);
+    for (const block of blocks)
+      expect(() => new X509Certificate(block)).not.toThrow();
+    const subjects = blocks.map((block) => new X509Certificate(block).subject);
+    expect(subjects.some((subject) => subject.includes('us-east-2'))).toBe(
+      true,
+    );
+    expect(subjects.some((subject) => subject.includes('mx-central-1'))).toBe(
+      true,
+    );
+  });
+  it('R17: runtime copia el PEM con 0444 y NODE_EXTRA_CA_CERTS apunta a su destino, ambos antes de USER', () => {
+    const runtime = stage('runtime');
+    const copy =
+      'COPY --from=build --chmod=0444 /app/certs/rds-global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem';
+    const env = 'ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/rds-global-bundle.pem';
+    expect(runtime).toContain(copy);
+    expect(runtime).toContain(env);
+    expect(runtime.indexOf(copy)).toBeLessThan(runtime.indexOf('USER node'));
+    expect(runtime.indexOf(env)).toBeLessThan(runtime.indexOf('USER node'));
+    const foundCopy = runtime.find(
+      (line) =>
+        line.startsWith('COPY ') && line.includes('rds-global-bundle.pem'),
+    );
+    const foundEnv = runtime.find((line) =>
+      line.startsWith('ENV NODE_EXTRA_CA_CERTS='),
+    );
+    expect(foundEnv?.split('=')[1]).toBe(foundCopy?.split(' ').at(-1));
+  });
+  it('R17: ninguna instrucción ADD descarga de una URL', () => {
+    expect(stage('runtime')).toContain(
+      'COPY --from=build --chmod=0444 /app/certs/rds-global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem',
+    );
+    expect(docker.lines.some((line) => /^ADD\s.*https?:\/\//.test(line))).toBe(
       false,
     );
   });
