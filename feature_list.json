@@ -3962,10 +3962,42 @@
   {
     "id": 244,
     "name": "mobile-orbit-splash-icono",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Registrada el 2026-11-06 a pedido del humano, como continuación de #243. El humano aprobó G1 del arte de las diez poses de Orbit (cachorro) y pidió registrar aparte el splash y el icono, que #243 deja fuera (D4) y que siguen mostrando el robot anterior. Alcance: sustituir el arte del robot en los assets de marca de mobile-pet-tracker/assets/images/ (icon.png, splash-icon.png, que también se usa en src/app/index.tsx con testID splash-logo, android-icon-foreground.png, android-icon-monochrome.png, favicon.png, pet-tracker-notification-96.png, pet-tracker-notification-color-96.png, pet-tracker-app-icon.png, logo-glow.png) y en assets/expo.icon/, conservando los nombres y las geometrías que fijan app.assets.test.ts y app.config.test.ts. Depende de #243 (arte de Orbit mergeado) y de G6, que no se delega: el humano entrega el PNG del icono de Orbit. Icono y splash son nativos: cambiarlos exige rebuild del dev build (G3, humano) y smoke en dispositivo (G2, en lote al final). Gates humanos, no delegados: G6, G3 y G2. Responsable: leader @Frontend. Registrada sin spec.",
-    "acceptance_criteria": null,
-    "files_affected": null
+    "acceptance_criteria": [
+      "R1: los ocho PNG de marca (icon, android-icon-foreground, android-icon-monochrome, splash-icon, favicon, las dos pet-tracker-notification-96 y expo.icon/Assets/orbit.png) tienen el sha256 del arte de Orbit y logo-glow.png conserva el suyo.",
+      "R2: ningun fichero de mobile-pet-tracker/assets (recursivo) conserva uno de los once sha256 del arte del robot y los cinco ficheros retirados (pet-tracker-app-icon, notification-monochrome-original, expo-symbol 2.svg, grid.png y scripts/make-icons.mjs) no existen.",
+      "R3: las tres fuentes de specs/mobile-orbit-splash-icono/design-src y el script convert-orbit-icons.py (uvx pillow==13.0.0) estan congelados por sha256.",
+      "R4: el script termina con codigo 0 solo si cada PNG cumple tamano, tope de bytes y las comprobaciones de su fila; su salida es determinista.",
+      "R5: toda la mascota del splash, del primer plano y del monocromo cabe en el circulo de radio 338 de 1024 px; el it la punta del pin es transparente se sustituye por ese candado y los demas it de #115 R10 no cambian.",
+      "R6: icon.png y favicon.png no tienen ni un pixel con alfa menor que 255.",
+      "R7: el monocromo y la notificacion 96 solo tienen pixeles blancos; las dos notificaciones dejan 4 px de margen y la de color conserva su color.",
+      "R8: expo.icon/icon.json compone solo orbit.png sobre #9460FC y expo.icon/Assets contiene unicamente orbit.png.",
+      "R9: app.json y app.config.test.ts no cambian y ningun fichero de src fuera del test nuevo cambia; mobile-pet-tracker solo cambia en assets, en app.assets.test.ts, en el test nuevo y en el borrado de scripts/make-icons.mjs.",
+      "R10: docs/ui-guidelines.md lleva una sola Enmienda #244 con Orbit en el icono, el splash y las notificaciones, la zona segura de radio 338 y el cierre del punto 4 de la #243 (gate G4, humano).",
+      "R11: bajo mobile-pet-tracker/assets solo cambian los trece ficheros listados en la spec; las diez poses orbit y logo-glow no cambian.",
+      "Gates humanos: G6 (arte aprobado, 2026-11-06), G4 (enmienda de la carta), G3 (rebuild del dev build) y G2 (smoke en dispositivo, en lote al final)."
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/assets/images/icon.png",
+      "mobile-pet-tracker/assets/images/android-icon-foreground.png",
+      "mobile-pet-tracker/assets/images/android-icon-monochrome.png",
+      "mobile-pet-tracker/assets/images/splash-icon.png",
+      "mobile-pet-tracker/assets/images/favicon.png",
+      "mobile-pet-tracker/assets/images/pet-tracker-notification-96.png",
+      "mobile-pet-tracker/assets/images/pet-tracker-notification-color-96.png",
+      "mobile-pet-tracker/assets/images/pet-tracker-app-icon.png (borrado)",
+      "mobile-pet-tracker/assets/images/pet-tracker-notification-monochrome-original.png (borrado)",
+      "mobile-pet-tracker/assets/expo.icon/icon.json",
+      "mobile-pet-tracker/assets/expo.icon/Assets/orbit.png",
+      "mobile-pet-tracker/assets/expo.icon/Assets/expo-symbol 2.svg (borrado)",
+      "mobile-pet-tracker/assets/expo.icon/Assets/grid.png (borrado)",
+      "mobile-pet-tracker/scripts/make-icons.mjs (borrado)",
+      "mobile-pet-tracker/app.assets.test.ts",
+      "mobile-pet-tracker/src/__tests__/orbit-brand-assets.test.ts",
+      "specs/mobile-orbit-splash-icono/convert-orbit-icons.py",
+      "docs/ui-guidelines.md"
+    ]
   }
 ]
