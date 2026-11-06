@@ -76,3 +76,30 @@ describe('#238: PG_POOL logs idle client errors instead of crashing', () => {
     }
   });
 });
+
+describe('#245 R4: PG_POOL se construye con buildPoolConfig', () => {
+  it('#245 R4: con DB_POOL_MAX=7 el pool tiene options.max 7', async () => {
+    const moduleRef = await Test.createTestingModule({
+      imports: [DrizzleModule],
+    })
+      .overrideProvider(ConfigService)
+      .useValue({
+        get: (key: string) =>
+          (
+            ({
+              DATABASE_URL:
+                'postgresql://pet_tracker:pet_tracker@localhost:5432/pet_tracker',
+              DB_POOL_MAX: '7',
+            }) as Record<string, string>
+          )[key],
+      })
+      .compile();
+    try {
+      expect(moduleRef.get<Pool>(PG_POOL, { strict: false }).options.max).toBe(
+        7,
+      );
+    } finally {
+      await moduleRef.close();
+    }
+  });
+});
