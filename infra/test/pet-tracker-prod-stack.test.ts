@@ -109,3 +109,40 @@ describe('#246 R4: VPC de 3 AZ sin NAT con endpoints gateway', () => {
     expect(routes.map(([, route]) => JSON.stringify(route.Properties?.RouteTableId)).sort()).toEqual(publicRouteTables);
   });
 });
+
+function queueId(region: string, queueName: string): string | undefined {
+  return ofType(region, 'AWS::SQS::Queue').find(([, resource]) => resource.Properties?.QueueName === queueName)?.[0];
+}
+
+describe('#246 R5: colas con DLQ, bus y regla de geocercas', () => {
+  it('#246 R5: seis colas, redrive, retención de DLQ, bus, regla y política', () => {
+    const region = 'mx-central-1';
+    const { template, resources } = synthesized(region);
+    template.resourceCountIs('AWS::SQS::Queue', 6);
+    expect(ofType(region, 'AWS::SQS::Queue').map(([, resource]) => resource.Properties?.QueueName).sort())
+      .toEqual(['positions-raw', 'positions-raw-dlq', 'notifications', 'notifications-dlq', 'geofence-events', 'geofence-events-dlq'].sort());
+    for (const name of ['positions-raw', 'notifications', 'geofence-events']) {
+      const dlq = queueId(region, `${name}-dlq`);
+      template.hasResourceProperties('AWS::SQS::Queue', {
+        QueueName: name,
+        RedrivePolicy: { deadLetterTargetArn: { 'Fn::GetAtt': [dlq, 'Arn'] }, maxReceiveCount: 3 },
+      });
+      expect(dlq ? resources[dlq]?.Properties?.MessageRetentionPeriod : undefined).toBe(1209600);
+    }
+    template.resourceCountIs('AWS::Events::EventBus', 1);
+    template.resourceCountIs('AWS::Events::Rule', 1);
+    template.hasResourceProperties('AWS::Events::EventBus', { Name: 'pet-tracker' });
+    template.hasResourceProperties('AWS::Events::Rule', {
+      Name: 'geofence-events', EventBusName: { Ref: ofType(region, 'AWS::Events::EventBus')[0]?.[0] },
+      EventPattern: { source: ['pet-tracker'], 'detail-type': ['position.updated', 'battery.low'] },
+      State: 'ENABLED',
+      Targets: [{ Arn: { 'Fn::GetAtt': [queueId(region, 'geofence-events'), 'Arn'] }, Id: 'Target0' }],
+    });
+    const policy = ofType(region, 'AWS::SQS::QueuePolicy').find(([, resource]) =>
+      JSON.stringify(resource.Properties?.Queues) === JSON.stringify([{ Ref: queueId(region, 'geofence-events') }]));
+    const document = policy?.[1].Properties?.PolicyDocument as { Statement?: Array<{ Principal?: unknown; Action?: string | string[] }> } | undefined;
+    expect(document?.Statement?.some((statement) =>
+      JSON.stringify(statement.Principal) === JSON.stringify({ Service: 'events.amazonaws.com' }) &&
+      [statement.Action].flat().includes('sqs:SendMessage'))).toBe(true);
+  });
+});
