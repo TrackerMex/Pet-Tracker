@@ -21,7 +21,7 @@ function readIhdr(relativePath: string) {
   };
 }
 
-function readAlpha(relativePath: string) {
+function readPixels(relativePath: string) {
   const buf = readFileSync(join(__dirname, relativePath));
   const { width, height, bitDepth, colorType } = readIhdr(relativePath);
 
@@ -55,7 +55,35 @@ function readAlpha(relativePath: string) {
     }
   }
 
-  return (x: number, y: number) => px[(y * width + x) * 4 + 3];
+  return {
+    width,
+    height,
+    at: (x: number, y: number): [number, number, number, number] => {
+      const offset = (y * width + x) * 4;
+      return [px[offset], px[offset + 1], px[offset + 2], px[offset + 3]];
+    },
+  };
+}
+
+function readAlpha(relativePath: string) {
+  const { at } = readPixels(relativePath);
+  return (x: number, y: number) => at(x, y)[3];
+}
+
+function outsideSafeCircle(
+  at: (x: number, y: number) => [number, number, number, number],
+  width: number,
+  height: number,
+) {
+  let count = 0;
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (at(x, y)[3] > 0 && (2 * x + 1 - 1024) ** 2 + (2 * y + 1 - 1024) ** 2 > 676 ** 2) {
+        count++;
+      }
+    }
+  }
+  return count;
 }
 
 function countAlpha(
@@ -179,15 +207,92 @@ describe('#115 R10: el splash es la mascota sola sobre transparente', () => {
     ]).toEqual([0, 0, 0, 0]);
   });
 
-  it('la punta del pin es transparente', () => {
-    const alpha = readAlpha('assets/images/splash-icon.png');
+  it('#244 R5: toda la mascota del splash cabe en el círculo de radio 338', () => {
+    const { at, width, height } = readPixels('assets/images/splash-icon.png');
 
-    expect(countAlpha(alpha, [492, 790, 532, 830])).toBe(0);
+    expect(outsideSafeCircle(at, width, height)).toBe(0);
   });
 
   it('la cara de la mascota es opaca', () => {
     const alpha = readAlpha('assets/images/splash-icon.png');
 
     expect(alpha(512, 560)).toBe(255);
+  });
+});
+
+describe('#244 R5, R6, R7: arte de marca de Orbit', () => {
+  it.each(['android-icon-foreground.png', 'android-icon-monochrome.png'])(
+    '#244 R5: la mascota de android-icon-foreground.png y de android-icon-monochrome.png cabe en el círculo de radio 338 (%s)',
+    name => {
+      const { at, width, height } = readPixels(`assets/images/${name}`);
+      expect(outsideSafeCircle(at, width, height)).toBe(0);
+    },
+  );
+
+  it.each(['icon.png', 'favicon.png'])(
+    '#244 R6: icon.png y favicon.png no tienen ni un píxel con alfa menor que 255 (%s)',
+    name => {
+      const { at, width, height } = readPixels(`assets/images/${name}`);
+      let count = 0;
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          if (at(x, y)[3] < 255) count++;
+        }
+      }
+      expect(count).toBe(0);
+    },
+  );
+
+  it.each(['android-icon-monochrome.png', 'pet-tracker-notification-96.png'])(
+    '#244 R7: el monocromo y la notificación 96 solo tienen píxeles blancos (%s)',
+    name => {
+      const { at, width, height } = readPixels(`assets/images/${name}`);
+      let count = 0;
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const [r, g, b, a] = at(x, y);
+          if (a > 0 && (r !== 255 || g !== 255 || b !== 255)) count++;
+        }
+      }
+      expect(count).toBe(0);
+    },
+  );
+
+  it.each(['pet-tracker-notification-96.png', 'pet-tracker-notification-color-96.png'])(
+    '#244 R7: las dos notificaciones dejan 4 px de margen (%s)',
+    name => {
+      const { at, width, height } = readPixels(`assets/images/${name}`);
+      let left = width;
+      let top = height;
+      let right = -1;
+      let bottom = -1;
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          if (at(x, y)[3] > 0) {
+            left = Math.min(left, x);
+            top = Math.min(top, y);
+            right = Math.max(right, x);
+            bottom = Math.max(bottom, y);
+          }
+        }
+      }
+      expect(right).toBeGreaterThanOrEqual(left);
+      expect(bottom).toBeGreaterThanOrEqual(top);
+      for (const margin of [left, top, 95 - right, 95 - bottom]) {
+        expect(margin).toBeGreaterThanOrEqual(4);
+      }
+    },
+  );
+
+  it('#244 R7: la notificación en color conserva su color', () => {
+    const { at, width, height } = readPixels('assets/images/pet-tracker-notification-color-96.png');
+    let count = 0;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const [r, g, b, a] = at(x, y);
+        if (a > 0 && (r !== 255 || g !== 255 || b !== 255)) count++;
+      }
+    }
+    expect(count).toBeGreaterThanOrEqual(1000);
   });
 });
