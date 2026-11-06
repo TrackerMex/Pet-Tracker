@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InFlightTicks } from '@/lifecycle/in-flight-ticks';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { RemindersDispatchService } from './reminders-dispatch.service';
 import {
@@ -15,6 +16,7 @@ export class RemindersSchedulerService implements OnApplicationBootstrap {
     private readonly config: ConfigService,
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly dispatcher: RemindersDispatchService,
+    private readonly ticks: InFlightTicks,
   ) {}
 
   onApplicationBootstrap(): void {

@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InFlightTicks } from '@/lifecycle/in-flight-ticks';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import {
   ACTIVITY_TICK_INTERVAL_MS,
@@ -28,6 +29,7 @@ export class ActivitySchedulerService implements OnApplicationBootstrap {
     private readonly config: ConfigService,
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly aggregator: AggregateDailyActivityUseCase,
+    private readonly ticks: InFlightTicks,
   ) {}
 
   onApplicationBootstrap(): void {
