@@ -103,3 +103,37 @@ describe('#245 R4: PG_POOL se construye con buildPoolConfig', () => {
     }
   });
 });
+
+describe('#245 R5: PG_POOL se cierra después de beforeApplicationShutdown', () => {
+  it('#245 R5: end no se ha llamado en beforeApplicationShutdown y se llama una vez al cerrar', async () => {
+    let callsBefore = -1;
+    class ShutdownProbe {
+      beforeApplicationShutdown(): void {
+        callsBefore = end.mock.calls.length;
+      }
+    }
+    const moduleRef = await Test.createTestingModule({
+      imports: [DrizzleModule],
+      providers: [ShutdownProbe],
+    })
+      .overrideProvider(ConfigService)
+      .useValue({
+        get: (key: string) =>
+          (
+            ({
+              DATABASE_URL:
+                'postgresql://pet_tracker:pet_tracker@localhost:5432/pet_tracker',
+              DB_POOL_MAX: '7',
+            }) as Record<string, string>
+          )[key],
+      })
+      .compile();
+    const end = jest
+      .spyOn(moduleRef.get<Pool>(PG_POOL, { strict: false }), 'end')
+      .mockImplementation();
+    await moduleRef.close();
+    expect(callsBefore).toBe(0);
+    expect(end).toHaveBeenCalledTimes(1);
+    end.mockRestore();
+  });
+});
