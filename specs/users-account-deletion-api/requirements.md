@@ -1,6 +1,6 @@
 ---
 feature: "users-account-deletion-api"
-status: draft        # draft | approved
+status: approved       # draft | approved
 tags: [harness, spec, backend]
 ---
 
@@ -203,11 +203,11 @@ autenticada con body válido ningún camino de dominio da `404` ni `5xx`:
 el usuario ausente es `401` (R7), las filas `created_by` ajenas no dan
 `23503` (R1, R9), las mascotas compartidas y los collares asignados se
 borran y liberan (R8, R10) y un fallo de purga no cambia el `204` (R14).
-Los únicos `5xx` posibles son de infraestructura y no borran nada:
-Postgres caído o una transacción abortada por Postgres (p. ej. `40P01`,
-interbloqueo entre dos borrados de cuenta concurrentes que comparten una
-mascota), con rollback completo, y el `504` del balanceador si la purga
-supera su timeout (ver [[design]] §Preguntas abiertas).
+Los únicos `5xx` posibles son de infraestructura: Postgres caído o una
+transacción abortada por Postgres (p. ej. `40P01`, interbloqueo entre dos
+borrados de cuenta concurrentes que comparten una mascota), con rollback
+completo y nada borrado, y el `504` del balanceador si la purga supera su
+timeout, ya con el commit hecho (ver [[design]] §Preguntas cerradas por el leader, 1).
 
 ### Datos
 
@@ -362,14 +362,14 @@ Ningún otro test construye `AuthGuard`, `DeletePetUseCase` o
 
 ## Decisiones abiertas
 
-Ninguna para Codex. Las preguntas para el humano están en [[design]]
-§Preguntas abiertas y no bloquean la implementación.
+Ninguna. Las seis preguntas del spec_author las cerró el leader en
+[[design]] §Preguntas cerradas por el leader.
 
 ## Premisas falsas
 
 - *«No hay rate limiter»*: existe `EmailRateLimitGuard`, pero solo en las
   rutas de email de auth. `DELETE /v1/me` queda sin limitar (fuera de
-  alcance, pregunta abierta en [[design]]).
+  alcance; deuda en [[design]] §Preguntas cerradas por el leader, 2).
 - *«El borrado de mascota libera el collar»*: no. Hoy `pet_devices` cae en
   cascada y `devices.status` se queda en `'assigned'`. R10 lo arregla
   también en el `DELETE /v1/pets/:id` suelto.
@@ -395,4 +395,6 @@ Ninguna para Codex. Las preguntas para el humano están en [[design]]
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Firmada por el leader con la firma delegada (mandato del humano 2026-10-23,
+  ampliado 2026-11-06), tras la checklist de `progress/plan_canvas-parity-2026-10-23.md`
+  §4 y los tres puntos de `progress/plan_produccion-aws-2026-11-06.md` §4 (fecha: 2026-11-06)

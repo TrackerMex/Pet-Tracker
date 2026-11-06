@@ -1,6 +1,6 @@
 ---
 feature: "users-account-deletion-api"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, backend]
 ---
 
@@ -297,7 +297,7 @@ Lo que el móvil puede asumir de `DELETE /v1/me`:
 | `400` `{ statusCode, message: 'Validation failed', errors: [{ path, message }] }` | Body que no es `{ password: string no vacío }` | Error de formulario; sigue con sesión. No debería ocurrir si el cliente valida «no vacío» |
 | `401` `{ statusCode: 401, message: 'Unauthorized' }` | Sin token, token inválido/expirado, usuario ya inexistente, o usuario desaparecido durante la petición (carrera, R7) | Lo de siempre ante un 401: cerrar sesión |
 | `403` `{ statusCode: 403, message: 'Invalid password', error: 'Forbidden' }` | Contraseña incorrecta | Mensaje de contraseña incorrecta; **sigue con sesión** |
-| `5xx` / timeout | Solo infraestructura: Postgres caído o transacción abortada (rollback, nada borrado), o `504` del ALB tras el commit (pregunta abierta 1) | Error genérico. Reintento seguro: si el borrado sí se había hecho, el reintento da `401` y el móvil cierra sesión |
+| `5xx` / timeout | Solo infraestructura: Postgres caído o transacción abortada (rollback, nada borrado), o `504` del ALB tras el commit (§Preguntas cerradas, 1) | Error genérico. Reintento seguro: si el borrado sí se había hecho, el reintento da `401` y el móvil cierra sesión |
 
 Ninguna otra. `DELETE /v1/me` nunca responde `404`; la lista cerrada y
 los tests que la fijan están en [[requirements]] §Respuestas posibles.
@@ -330,10 +330,8 @@ las cuatro que listaba #246 y precisa los recursos:
   (`NoncurrentVersionExpiration`, `ExpiredObjectDeleteMarker`) es del
   lifecycle del bucket en #246.
 - No hace falta `dynamodb:DeleteItem`.
-- KMS: **sin verificar**. Si #246 cifra el bucket o la tabla con una CMK
-  propia, hay que comprobar en la documentación de AWS qué acciones de KMS
-  piden `ListObjectsV2`/`DeleteObjects` y `Query`/`BatchWriteItem` sobre
-  datos cifrados; esta spec no lo afirma.
+- KMS: ninguna acción. #246 cifra con SSE-S3 y con la clave de AWS por
+  defecto de DynamoDB, sin CMK propia (§Preguntas cerradas, 6).
 
 ## Alternativas descartadas
 
@@ -346,7 +344,7 @@ las cuatro que listaba #246 y precisa los recursos:
   borrado de Postgres, que es lo que exigen las tiendas. Después del
   commit y best effort.
 - **Purga asíncrona (cola o fire-and-forget)**: fuera de alcance; ver
-  Preguntas abiertas (límite de 60 s del ALB).
+  Preguntas cerradas (límite de 60 s del ALB).
 - **`DELETE /v1/me` llamando a `DeletePetUseCase` por mascota**: una
   transacción por mascota rompe la atomicidad del borrado de cuenta y
   escribe N filas `pet.delete`.
@@ -356,19 +354,31 @@ las cuatro que listaba #246 y precisa los recursos:
 - **401 para contraseña incorrecta**: cierra la sesión del móvil
   (decisión cerrada).
 
-## Preguntas abiertas (para el humano; no bloquean la implementación)
+## Preguntas cerradas por el leader (firma delegada, 2026-11-06)
 
-1. **Techo de 60 s del ALB.** La purga es síncrona. Una mascota con ~90
-   días de posiciones a una por minuto tiene ~129 600 ítems ⇒ ~5 200
-   `BatchWriteItem`. Puede pasar de 60 s; el commit ya está hecho, el
-   cliente vería un 504 y su reintento un 401 (cierra sesión: correcto,
-   pero la purga queda a medias y solo en el log). Alternativas: purga en
-   segundo plano o cola. Hoy: aceptar y medir en el smoke.
-2. **Sin límite de intentos de contraseña** en `DELETE /v1/me`
-   (`EmailRateLimitGuard` solo cubre rutas de email).
-3. **Coste del guard**: una consulta por PK en cada petición autenticada.
-4. **`meta.petIds`** en la fila de auditoría: guarda ids de mascotas ya
-   inexistentes (sin datos personales). ¿Se queda?
-5. **`MealServingResponse.createdBy`** pasa a `string | null` en el tipo;
-   el móvil no lo lee hoy.
-6. **KMS** sin verificar si #246 usa CMK (ver §IAM).
+El spec_author dejó seis preguntas. Las cierra el leader; ninguna cambia
+requisitos ni tests.
+
+1. **Techo de 60 s del ALB.** La purga se queda síncrona. Un `504` del ALB
+   no corta el handler: Node sigue purgando tras cerrarse la conexión del
+   cliente, así que la purga termina igual salvo que la task se pare a
+   mitad. El cliente ve un error genérico, reintenta, recibe `401` y cierra
+   sesión, que es el estado final correcto. Una purga en segundo plano
+   perdería el trabajo en cada despliegue o *scale-in* de Fargate sin dejar
+   rastro; la síncrona deja `PET_PURGE_FAILED` en el log. Los ítems de
+   posiciones tienen además TTL de 90 días (`POSITIONS_TTL_DAYS`). Deuda:
+   medir en el smoke el tiempo de `DELETE /v1/me` con una mascota con
+   historial; si se acerca a 60 s, pasar la purga a una cola.
+2. **Sin límite de intentos de contraseña.** Se acepta. `POST /v1/auth/login`
+   tampoco tiene límite y no pide token, así que limitar solo
+   `DELETE /v1/me` no cierra nada. Deuda: un límite común a login y a
+   `DELETE /v1/me`. La alternativa de infraestructura (regla *rate-based* de
+   AWS WAF en el ALB) cuesta dinero y la decide el humano.
+3. **Coste del guard.** Se acepta: una consulta por PK sobre `users` por
+   petición autenticada.
+4. **`meta.petIds`** se queda en la fila de auditoría: son UUIDs sin datos
+   personales y dicen qué se borró.
+5. **`MealServingResponse.createdBy: string | null`.** Se acepta; el móvil no
+   lo lee.
+6. **KMS.** #246 cifra el bucket con SSE-S3 y la tabla con la clave de AWS
+   por defecto; no usa CMK propia. La task role no necesita acciones `kms:`.
