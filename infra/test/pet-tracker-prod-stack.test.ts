@@ -554,3 +554,50 @@ describe('#246 R15: task role de workers con permisos mínimos', () => {
     expect(roleId ? synthesized(region).resources[roleId]?.Properties?.ManagedPolicyArns : undefined).toBeUndefined();
   });
 });
+
+describe('#246 R16: task definition ops sin task role', () => {
+  it('#246 R16: TD ops, su contenedor, logs y secretos', () => {
+    const region = 'mx-central-1';
+    const td = taskDefinition(region, 'ops')?.[1];
+    expect(td?.Family).toBe('pet-tracker-ops');
+    expect(td?.Cpu).toBe('256');
+    expect(td?.Memory).toBe('512');
+    expect(td?.RuntimePlatform).toEqual({ CpuArchitecture: 'X86_64', OperatingSystemFamily: 'LINUX' });
+    expect(td?.RequiresCompatibilities).toEqual(['FARGATE']);
+    expect(td?.NetworkMode).toBe('awsvpc');
+    expect(td?.TaskRoleArn).toBeUndefined();
+    expect(td?.ExecutionRoleArn).toBeDefined();
+    expect(td?.ContainerDefinitions).toHaveLength(1);
+    const container = containerOf(region, 'ops');
+    expect(container?.Name).toBe('ops');
+    expect(container?.Command).toEqual(['node', 'dist/src/db/migrate.js']);
+    expect(container?.Image).toEqual(containerOf(region, 'api')?.Image);
+    expect(container?.PortMappings).toBeUndefined();
+    const db = ofType(region, 'AWS::RDS::DBCluster')[0]?.[0];
+    expect(envMap(container)).toEqual({
+      PGHOST: { 'Fn::GetAtt': [db, 'Endpoint.Address'] }, PGPORT: { 'Fn::GetAtt': [db, 'Endpoint.Port'] },
+      PGDATABASE: 'pet_tracker', PGUSER: 'pet_tracker', DB_POOL_MAX: '1', SIM_MODE: 'false',
+    });
+    const secrets = container?.Secrets ?? [];
+    expect(secrets.map(({ Name }) => Name).sort()).toEqual(['PGPASSWORD', 'WIALON_TOKEN']);
+    expect(secrets.find(({ Name }) => Name === 'PGPASSWORD')?.ValueFrom).toEqual({
+      'Fn::Join': ['', [{ Ref: ofType(region, 'AWS::SecretsManager::SecretTargetAttachment')[0]?.[0] }, ':password::']],
+    });
+    expect(JSON.stringify(secrets.find(({ Name }) => Name === 'WIALON_TOKEN')?.ValueFrom)).toContain(':secret:pet-tracker/prod/wialon-token"');
+    expect(container?.LogConfiguration?.LogDriver).toBe('awslogs');
+    const log = container?.LogConfiguration?.Options?.['awslogs-group'] as { Ref?: string } | undefined;
+    expect(log?.Ref ? synthesized(region).resources[log.Ref]?.Properties?.RetentionInDays : undefined).toBe(30);
+    expect(secretsReadBy(region, roleIdOf(td?.ExecutionRoleArn))).toEqual(['db', 'wialon-token']);
+  });
+  it('#246 R16: cinco roles de ecs-tasks, todos referenciados, y dos servicios', () => {
+    const region = 'mx-central-1';
+    const roles = ofType(region, 'AWS::IAM::Role').filter(([, resource]) => JSON.stringify(resource.Properties?.AssumeRolePolicyDocument)?.includes('"ecs-tasks.amazonaws.com"')).map(([id]) => id).sort();
+    expect(roles).toHaveLength(5);
+    const references = (['api', 'workers', 'ops'] as const).flatMap((which) => {
+      const td = taskDefinition(region, which)?.[1];
+      return [roleIdOf(td?.TaskRoleArn), roleIdOf(td?.ExecutionRoleArn)].filter((id): id is string => id !== undefined);
+    });
+    expect(roles).toEqual([...new Set(references)].sort());
+    synthesized(region).template.resourceCountIs('AWS::ECS::Service', 2);
+  });
+});
