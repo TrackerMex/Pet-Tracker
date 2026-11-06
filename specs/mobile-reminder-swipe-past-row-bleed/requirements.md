@@ -464,7 +464,7 @@ cambia. No se retira ni se añade ninguna clave de copy.
   `progress/plan_ui-2026-10-26.md` y los dos de
   `progress/plan_mejoras-smoke-2026-11-03.md` §4; mandato del humano
   2026-10-23, ampliado 2026-11-04)
-- [ ] **G2**: smoke en el dev build de Android (pasos de «Paso de smoke
-  nuevo», tema claro y oscuro) (fecha: ____) ← gate humano, por lote al final;
+- [x] **G2**: smoke en el dev build de Android (pasos de «Paso de smoke
+  nuevo», tema claro y oscuro) (fecha: 2026-11-06) ← gate humano, por lote al final;
   lo registra `progress/smoke_arreglos-smoke.md`
 - Base congelada: `0f1ab26f` (`origin/dev`).
