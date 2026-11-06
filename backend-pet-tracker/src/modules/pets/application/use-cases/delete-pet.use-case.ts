@@ -23,6 +23,7 @@ export class DeletePetUseCase {
 
   async execute(petId: string, userId: string): Promise<void> {
     await this.pets.delete(petId);
+    await this.purger.purge([petId]);
 
     await this.auditLogger.record({
       userId,
