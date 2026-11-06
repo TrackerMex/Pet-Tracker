@@ -136,8 +136,8 @@ describe('R17: la etapa runtime trae el bundle de CA de RDS versionado', () => {
   it('R17: runtime copia el PEM con 0444 y NODE_EXTRA_CA_CERTS apunta a su destino, ambos antes de USER', () => {
     const runtime = stage('runtime');
     const copy =
-      'COPY --from=build --chmod=0444 /app/certs/rds-global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem';
-    const env = 'ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/rds-global-bundle.pem';
+      'COPY --from=build --chmod=0444 /app/certs/rds-global-bundle.pem /app/rds-global-bundle.pem';
+    const env = 'ENV NODE_EXTRA_CA_CERTS=/app/rds-global-bundle.pem';
     expect(runtime).toContain(copy);
     expect(runtime).toContain(env);
     expect(runtime.indexOf(copy)).toBeLessThan(runtime.indexOf('USER node'));
@@ -153,7 +153,7 @@ describe('R17: la etapa runtime trae el bundle de CA de RDS versionado', () => {
   });
   it('R17: ninguna instrucción ADD descarga de una URL', () => {
     expect(stage('runtime')).toContain(
-      'COPY --from=build --chmod=0444 /app/certs/rds-global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem',
+      'COPY --from=build --chmod=0444 /app/certs/rds-global-bundle.pem /app/rds-global-bundle.pem',
     );
     expect(docker.lines.some((line) => /^ADD\s.*https?:\/\//.test(line))).toBe(
       false,
