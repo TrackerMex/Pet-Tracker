@@ -468,8 +468,10 @@ Sin casilla: iOS no se verifica (D8, feature #60).
   `design-src/` con los sha256 de §Constantes (humano; fecha: 2026-11-06; fuente: mensaje
   del humano en la sesión @Frontend el 2026-11-06, «Si apruebo G6», tras ver las tres
   imágenes y la nota del parche morado)
-- [ ] G4: enmienda de `docs/ui-guidelines.md` aprobada por el humano, con el literal de
-  design.md §5 (humano; fecha: ____)
+- [x] G4: enmienda de `docs/ui-guidelines.md` aprobada por el humano, con el literal de
+  design.md §5 (humano; fecha: 2026-11-06; fuente: mensaje del humano en la sesión
+  @Frontend el 2026-11-06, «tienes mi aprobacion para G4 puedes empezar mientras yo
+  realizo el dev build»)
 - [ ] G3: rebuild del dev build con los iconos nuevos (humano; fecha: ____)
 - [ ] Smoke G2 en dispositivo, pasos 1–6 (humano; fecha: ____)
 
