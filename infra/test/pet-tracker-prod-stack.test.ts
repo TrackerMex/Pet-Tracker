@@ -512,3 +512,28 @@ describe('#246 R13: un único worker sin entrada de red', () => {
     expect(log?.Ref ? synthesized(region).resources[log.Ref]?.Properties?.RetentionInDays : undefined).toBe(30);
   });
 });
+
+describe('#246 R14: entorno y secretos del contenedor workers', () => {
+  it('#246 R14: environment exacto', () => {
+    const region = 'mx-central-1';
+    const db = ofType(region, 'AWS::RDS::DBCluster')[0]?.[0];
+    expect(envMap(containerOf(region, 'workers'))).toEqual({
+      PORT: '3000', PGHOST: { 'Fn::GetAtt': [db, 'Endpoint.Address'] }, PGPORT: { 'Fn::GetAtt': [db, 'Endpoint.Port'] },
+      PGDATABASE: 'pet_tracker', PGUSER: 'pet_tracker', DB_POOL_MAX: '5', AWS_MODE: 'aws',
+      MEDIA_BUCKET_NAME: { Ref: ofType(region, 'AWS::S3::Bucket')[0]?.[0] }, SIM_MODE: 'false', PUSH_ENABLED: 'true',
+      POLLER_ENABLED: 'true', ACTIVITY_AGGREGATOR_ENABLED: 'true', ALERTS_ENGINE_ENABLED: 'true', NOTIFIER_ENABLED: 'true', REMINDERS_ENABLED: 'true',
+    });
+  });
+  it('#246 R14: secretos y lectura del execution role', () => {
+    const region = 'mx-central-1';
+    const secrets = containerOf(region, 'workers')?.Secrets ?? [];
+    expect(secrets.map(({ Name }) => Name).sort()).toEqual(['JWT_SECRET', 'PGPASSWORD', 'WIALON_TOKEN']);
+    expect(secrets.find(({ Name }) => Name === 'PGPASSWORD')?.ValueFrom).toEqual({
+      'Fn::Join': ['', [{ Ref: ofType(region, 'AWS::SecretsManager::SecretTargetAttachment')[0]?.[0] }, ':password::']],
+    });
+    for (const [variable, name] of [['JWT_SECRET', 'jwt'], ['WIALON_TOKEN', 'wialon-token']]) {
+      expect(JSON.stringify(secrets.find(({ Name }) => Name === variable)?.ValueFrom)).toContain(`:secret:pet-tracker/prod/${name}"`);
+    }
+    expect(secretsReadBy(region, roleIdOf(taskDefinition(region, 'workers')?.[1].ExecutionRoleArn))).toEqual(['db', 'jwt', 'wialon-token']);
+  });
+});
