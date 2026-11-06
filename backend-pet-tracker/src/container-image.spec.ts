@@ -171,3 +171,31 @@ describe('R18: las migraciones viajan junto a migrate.js', () => {
     );
   });
 });
+
+function ignoreLines(): string[] {
+  return readOrEmpty(join(__dirname, '..', '.dockerignore'))
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('#'));
+}
+describe('R19: ningún .env entra en la imagen', () => {
+  it('R19: .dockerignore excluye .env, node_modules, dist y coverage, y el Dockerfile no nombra .env', () => {
+    expect(ignoreLines()).toEqual(
+      expect.arrayContaining([
+        '**/.env',
+        '**/.env.*',
+        'node_modules',
+        'dist',
+        'coverage',
+      ]),
+    );
+    expect(docker.lines.some((line) => line.includes('.env'))).toBe(false);
+  });
+  it('R19: .dockerignore no excluye el PEM de R17', () => {
+    const lines = ignoreLines();
+    expect(lines).toContain('**/.env');
+    expect(
+      lines.some((line) => line.includes('certs') || line.includes('pem')),
+    ).toBe(false);
+  });
+});
