@@ -164,5 +164,6 @@ export class PetTrackerProdStack extends Stack {
     api.taskDefinition.taskRole.addToPrincipalPolicy(new iam.PolicyStatement({
       actions: ['dynamodb:Query', 'dynamodb:BatchWriteItem'], resources: [table.tableArn],
     }));
+    api.service.autoScaleTaskCount({ minCapacity: 2, maxCapacity: 4 }).scaleOnCpuUtilization('ApiCpuScaling', { targetUtilizationPercent: 60 });
   }
 }
