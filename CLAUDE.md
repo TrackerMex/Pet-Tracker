@@ -161,6 +161,16 @@ arreglos?», el humano eligió «Firma delegada». El mandato cubre las features
 checklist de firma y PRs a `dev`. No se delegan los mismos gates: G1, G4, G2 y
 `dev` → `main` (G5).
 
+**Ampliación del 2026-11-06 (producción en AWS).** El humano pidió el backend en
+producción en AWS para la presentación del 2026-11-11, con respaldo en otra región
+y borrado de cuenta. A la pregunta «Las specs de este plan (stack de producción,
+segunda región, borrar cuenta desde Editar perfil) no las cubre la firma delegada.
+¿Quién las firma?», eligió «Extender firma delegada». El mandato cubre #245–#249
+de `progress/plan_produccion-aws-2026-11-06.md`, con la checklist de firma más los
+tres puntos de su §4, y PRs a `dev`. No se delegan las decisiones D1–D3, G1, G2,
+G5, ni nada de la cuenta AWS real (GA1–GA7: dominio, secretos, `cdk bootstrap`,
+`cdk deploy`, migraciones en producción, smoke, presupuesto y simulacro de failover).
+
 ## UI móvil
 
 Todo trabajo sobre `mobile-pet-tracker/` (specs, handoffs, reviews) se rige
