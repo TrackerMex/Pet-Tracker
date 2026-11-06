@@ -1,6 +1,6 @@
 ---
 feature: "infra-prod-region-stack"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, infra, produccion]
 ---
 
@@ -15,7 +15,7 @@ tags: [harness, spec, infra, produccion]
 
 | Fuente | Commit leído | Qué aporta |
 |---|---|---|
-| `specs/backend-container-image/design.md` §Contrato con #246 | `2650406e` (`feature/245-backend-container-image`); las enmiendas hasta `b35e8ad8` no tocan el apartado ni el código de producción | Variables de entorno, IAM mínimo, tarea de migración, comandos únicos, `/v1/health/live`, puerto 3000 |
+| `specs/backend-container-image/design.md` §Contrato con #246 | `2650406e` (`feature/245-backend-container-image`); las enmiendas hasta `76444c93` no tocan el apartado; la única que toca producción, la 3, mueve el bundle de RDS a `/app/rds-global-bundle.pem` dentro de la imagen, ruta que #246 no nombra | Variables de entorno, IAM mínimo, tarea de migración, comandos únicos, `/v1/health/live`, puerto 3000 |
 | `specs/users-account-deletion-api/design.md` §IAM para #246 | `bf45e5fc` (`feature/247-users-account-deletion-api`); su design y sus requisitos sin cambios hasta `58cc9623`, cuyo adaptador (`pet-data-purger.aws.adapter.ts`) usa exactamente `ListObjectsV2`, `DeleteObjects`, `Query` y `BatchWriteItem` | Permisos del purgado de cuenta (S3 y DynamoDB) |
 | `progress/plan_produccion-aws-2026-11-06.md` §1, §2 (#246), §5 D1–D4 | `899a894d` | Alcance, D1 zona en Route 53, D2 subredes públicas sin NAT, D4 integraciones reales |
 | Decisiones del leader del 2026-11-06 (firma de #245 y de #247) | — | Retención de logs de las tareas únicas, `DB_POOL_MAX`, plataforma, KMS, ciclo de vida del bucket, IAM del purgado, idle timeout |

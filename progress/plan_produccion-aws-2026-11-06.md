@@ -95,8 +95,9 @@ comando de migración y variables de entorno.
 
 ### 246 `infra-prod-region-stack` (P0, @Backend)
 
-Stack CDK de producción parametrizado por región y por rol (`primary` | `standby`). El
-miércoles se despliega solo en mx-central-1, como `primary`. Contiene:
+Stack CDK de producción parametrizado por región. El parámetro de rol
+(`primary` | `standby`) pasa a #249, que es quien lo necesita: la spec de #246 lo difiere
+(firma del 2026-11-06). El miércoles se despliega solo en mx-central-1. Contiene:
 
 - **Red:** una VPC con 3 AZ.
 - **Compute:**
@@ -155,7 +156,8 @@ Pilot light en us-east-2:
 - réplica de la tabla DynamoDB;
 - replicación de S3 (CRR) y de ECR;
 - réplica de los secretos;
-- el stack de #246 con el rol `standby`;
+- el parámetro de rol (`primary` | `standby`) en el stack de #246, diferido desde su spec,
+  y ese stack desplegado como `standby`;
 - registros failover de Route 53 con health check sobre la API primaria;
 - `docs/runbook-failover.md` con la conmutación y la vuelta.
 

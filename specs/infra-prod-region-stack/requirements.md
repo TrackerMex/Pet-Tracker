@@ -1,6 +1,6 @@
 ---
 feature: "infra-prod-region-stack"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, infra, produccion]
 ---
 
@@ -10,10 +10,11 @@ tags: [harness, spec, infra, produccion]
 > Las decisiones están en [[design]]; el orden y los comandos, en [[tasks]].
 > Contrato de la imagen: `specs/backend-container-image/design.md` §Contrato con
 > #246, leído en `2650406e` (branch `feature/245-backend-container-image`; las
-> enmiendas posteriores hasta `b35e8ad8` no tocan ese apartado ni el código de
-> producción). IAM del borrado de cuenta:
+> enmiendas posteriores hasta `76444c93` no tocan ese apartado; la 3 mueve el
+> bundle de RDS a `/app/rds-global-bundle.pem` dentro de la imagen, ruta que #246
+> no nombra). IAM del borrado de cuenta:
 > `specs/users-account-deletion-api/design.md` §IAM para #246, leído en
-> `bf45e5fc` (sin cambios en su design ni en sus requisitos hasta `58cc9623`).
+> `bf45e5fc` (sin cambios en su design ni en sus requisitos hasta `83cb3102`).
 
 ## Términos
 
@@ -330,4 +331,6 @@ tags: [harness, spec, infra, produccion]
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Firmada por el leader con la firma delegada (mandato del humano 2026-10-23,
+  ampliado 2026-11-06), tras la checklist de `progress/plan_canvas-parity-2026-10-23.md`
+  §4 y los tres puntos de `progress/plan_produccion-aws-2026-11-06.md` §4 (fecha: 2026-11-06)

@@ -1,6 +1,6 @@
 ---
 feature: "infra-prod-region-stack"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, infra, produccion]
 ---
 
@@ -51,6 +51,12 @@ tags: [harness, spec, infra, produccion]
   Tarda alrededor de 30 s hoy y más a medida que el stack crece. Los avisos
   `W3010` (AZ fijas) que imprime la validación de CloudFormation son
   esperados ([[design]] §Incertidumbres) y no cambian el código de salida.
+  También son esperadas las dos líneas por cada `TableV2` construida:
+  - `[WARNING] aws-cdk-lib.aws_dynamodb.TableGrantsProps#encryptedResource is deprecated`;
+  - `[WARNING] aws-cdk-lib.aws_dynamodb.TableGrantsProps#policyResource is deprecated`.
+
+  Salen de dentro de `aws-cdk-lib` 2.263.0: un `new TableV2(...)` vacío
+  también las imprime. No se «arreglan».
 - **Tipos**: `pnpm exec tsc --noEmit -p tsconfig.json`. Debe salir 0 en
   **todos** los commits, rojos incluidos.
 - **Lint**: `pnpm exec eslint <ficheros .ts tocados>`. Debe salir 0 en todos
@@ -186,7 +192,7 @@ rechaza funciones sin uso). Ninguno lanza ni desreferencia `undefined`.
 | `dockerImageSources(region)` | R9 | de `synthesized(region).assembly.artifacts`, los `instanceof cxapi.AssetManifestArtifact` (`import * as cxapi from 'aws-cdk-lib/cx-api'`); concatena los `source` de `Object.values(artifact.contents.dockerImages ?? {})` |
 | `envMap(container)` | R10 | `Environment` como `Record<Name, Value>` (`{}` si falta) |
 | `roleIdOf(arn: unknown): string \| undefined` | R10 | el logical id de un `{ 'Fn::GetAtt': [id, 'Arn'] }` |
-| `secretsReadBy(region, roleId: string \| undefined): string[]` | R10 | etiquetas, sin repetir y ordenadas, de los secretos que lee ese rol según [[requirements]] §Términos. Una `Resource` igual a `{ Ref: <la SecretTargetAttachment> }` es `db`; otra cuya serialización casa con `/:secret:pet-tracker\/prod\/([a-z-]+)-\?{6}/` es el grupo 1 |
+| `secretsReadBy(region, roleId: string \| undefined): string[]` | R10 | etiquetas, sin repetir y ordenadas, de los secretos que lee ese rol según [[requirements]] §Términos. Una `Resource` igual a `{ Ref: <la SecretTargetAttachment> }` es `db`; otra cuya serialización casa con `/:secret:pet-tracker\/prod\/([a-z-]+)-\?{6}/` es el grupo 1; **cualquier otra** `Resource` de una sentencia que incluye `secretsmanager:GetSecretValue` se etiqueta con su `JSON.stringify` y no se descarta, para que un comodín (`'*'`, `…:secret:pet-tracker/prod/*`) haga caer el `toEqual` («exactamente», R10, R14 y R16) |
 | `statementsOf(region, roleId: string \| undefined): unknown[]` | R11 | sentencias de las `AWS::IAM::Policy` cuyo `Roles` contiene `{ Ref: roleId }`, normalizadas según [[requirements]] §Términos y ordenadas por su `JSON.stringify` |
 
 ## R1 — `buildApp` sin contexto: solo dev
@@ -640,7 +646,7 @@ rechaza funciones sin uso). Ninguno lanza ni desreferencia `undefined`.
 3. **Synth sin contexto, sin credenciales**:
    ```
    rm -rf cdk.out
-   env -u AWS_PROFILE -u AWS_ACCESS_KEY_ID -u AWS_SECRET_ACCESS_KEY -u AWS_SESSION_TOKEN AWS_CONFIG_FILE=/dev/null AWS_SHARED_CREDENTIALS_FILE=/dev/null AWS_EC2_METADATA_DISABLED=true CDK_DISABLE_VERSION_CHECK=1 pnpm run synth > /tmp/impl-246-synth.log 2>&1; echo "exit=$?"
+   env -u AWS_PROFILE -u AWS_ACCESS_KEY_ID -u AWS_SECRET_ACCESS_KEY -u AWS_SESSION_TOKEN AWS_CONFIG_FILE=/dev/null AWS_SHARED_CREDENTIALS_FILE=/dev/null AWS_EC2_METADATA_DISABLED=true CDK_DISABLE_VERSION_CHECK=1 CDK_DISABLE_CLI_TELEMETRY=true pnpm run synth > /tmp/impl-246-synth.log 2>&1; echo "exit=$?"
    test -f cdk.out/PetTrackerDev.template.json && echo dev-ok
    ls cdk.out | grep -c '^PetTrackerProd'
    ```
@@ -670,6 +676,7 @@ rechaza funciones sin uso). Ninguno lanza ni desreferencia `undefined`.
    | 12 | ídem | `s3:DeleteObject` sobre `bucket.arnForObjects('*')` | R11 |
    | 13 | ídem | quitar las dos líneas que borran el task role de ops | R16 |
    | 14 | ídem | `RetentionDays.ONE_WEEK` en `OpsLogs` | R16 |
+   | 15 | ídem | añadir al execution role de `api` una sentencia `secretsmanager:GetSecretValue` sobre `'*'` | R10 |
 
    Al terminar, `git diff --exit-code; echo "exit=$?"` y
    `git diff --cached --exit-code; echo "exit=$?"` dan `exit=0` los dos.
@@ -678,7 +685,7 @@ rechaza funciones sin uso). Ninguno lanza ni desreferencia `undefined`.
    - antes: `grep -cF 'Junto con `.env.example` es el único sitio del repo con el literal del modelo' ../docs/conventions.md`
      da `1`;
    - sustituir esa frase por
-     `Junto con `.env.example` y `infra/lib/pet-tracker-prod-stack.ts` (entorno del contenedor `api` en producción, #246) son los únicos sitios del repo con el literal del modelo`,
+     `Junto con `.env.example` y `infra/lib/pet-tracker-prod-stack.ts` (entorno del contenedor `api` en producción, #246), más su test `infra/test/pet-tracker-prod-stack.test.ts`, son los únicos sitios del repo con el literal del modelo`,
      sin tocar el resto de la fila;
    - después: el primer `grep` da `0` y
      `grep -cF 'y `infra/lib/pet-tracker-prod-stack.ts` (entorno del contenedor `api` en producción, #246)' ../docs/conventions.md`
@@ -688,7 +695,7 @@ rechaza funciones sin uso). Ninguno lanza ni desreferencia `undefined`.
    - rellenar [[traceability]]: por fila, `archivo::nombre del it` (todos
      los del requisito) y `hash rojo + hash verde` con el mensaje del verde;
    - escribir `progress/impl_infra-prod-region-stack.md` con la lista de
-     commits, los `exit=` de los pasos 1 a 4, la evidencia de las 14
+     commits, los `exit=` de los pasos 1 a 4, la evidencia de las 15
      mutaciones y cualquier desviación de esta spec con su motivo;
    - **Commit**: `docs(infra-prod-region-stack): fill traceability`.
 
