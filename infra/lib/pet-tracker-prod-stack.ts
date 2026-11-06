@@ -15,5 +15,8 @@ export interface PetTrackerProdStackProps extends StackProps {
 export class PetTrackerProdStack extends Stack {
   constructor(scope: Construct, id: string, props: PetTrackerProdStackProps) {
     super(scope, id, props);
+    if (props.apiDomain !== props.hostedZoneName && !props.apiDomain.endsWith(`.${props.hostedZoneName}`)) {
+      throw new Error(`apiDomain "${props.apiDomain}" is not inside hosted zone "${props.hostedZoneName}"`);
+    }
   }
 }
