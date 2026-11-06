@@ -474,3 +474,83 @@ git status --short -- backend-pet-tracker specs docs
 ```
 
 No se ejecutó `./init.sh` ni se aplicaron migraciones. No hubo un nuevo PARA. Los logs se conservan en `/tmp`. Última acción: recrear `progress/impl_users-account-deletion-api.done` con la ruta de este reporte, sin commitear el marcador.
+
+## Enmienda del leader 2: candado D3
+
+Enmienda completada, aprobada por el leader en `63b63c82` (2026-11-06), tras el rechazo H1 del reviewer. Se repone en el e2e R15 el estado de collar huérfano anterior a #247: caché `assigned` sin asignación activa. Se conservan la aserción `released.status === 'available'` de R10 y los títulos existentes.
+
+Anclas del commit 16, desde `backend-pet-tracker/`:
+
+| Orden | Antes | Después |
+|---|---|---|
+| `grep -cF ".set({ status: 'assigned' })" test/devices.e2e-spec.ts` | `1` | `2` |
+| `grep -cF "conservan el cache" test/devices.e2e-spec.ts` | `0` | `1` |
+| `grep -cF "expect(released.status).toBe('available');" test/devices.e2e-spec.ts` | `1` | `1` |
+
+Las esperas del verde y la sonda confirmaron `DATABASE_URL` exportada ausente (`0`) y `espera=1`. La primera esperó a que terminara un `init.sh` de otro worktree. Verde: `exit=0`, 29/29 tests. Sonda: `exit=1`, un único rojo en R15, `expected 201 "Created", got 409 "Conflict"`. Se revirtió con el checkout indicado; `src=0` después de revertir.
+
+
+### Evidencia del commit 16
+
+`FORCE_COLOR=0 pnpm exec jest --config ./test/jest-e2e.json test/devices.e2e-spec.ts`, con el test nuevo y producción intacta:
+
+`/tmp/impl-247-d3-verde.log`:
+
+```text
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       29 passed, 29 total
+```
+
+La sonda añadió temporalmente `device.status === 'assigned' ||` debajo de la comprobación de `inactive`. Mismo Jest y esperas repetidas, log `/tmp/impl-247-d3-sonda.log`:
+
+```text
+exit=1
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 28 passed, 29 total
+  ● Devices claim (e2e) › R15: borrar una mascota con collar deja el device reclamable (D3) › claim -> DELETE /v1/pets/:petId -> claim con otra mascota responde 201
+expected 201 "Created", got 409 "Conflict"
+```
+
+Un solo `●`, por aserción en el segundo claim de R15; ningún otro rojo ni `Test suite failed to run`. Se revirtió antes de commitear con `git checkout HEAD -- src/modules/devices/application/use-cases/claim-device.use-case.ts`. La comprobación `git diff --quiet -- src; echo "src=$?"` dio `src=0`, también tras el commit 16. El diff de ese commit contiene únicamente `test/devices.e2e-spec.ts` (7 líneas añadidas).
+
+La cadena prettier write/check, eslint sobre el fichero de test y tsc del handoff pasó con `exit=0`.
+
+Commit 16: `4dd25416 test(devices): R15 e2e reclaims a collar whose cache still says assigned`.
+
+### Evidencia del commit 17
+
+El mensaje usa `${BATCH_WRITE_ATTEMPTS}` y conserva el mismo texto con el valor actual de la constante. Anclas medidas desde `backend-pet-tracker/`:
+
+| Orden | Antes | Después |
+|---|---|---|
+| `grep -cF "after 3 attempts" src/modules/pets/infrastructure/pet-data-purger.aws.adapter.ts` | `1` | `0` |
+| `grep -cF 'after ${BATCH_WRITE_ATTEMPTS} attempts' src/modules/pets/infrastructure/pet-data-purger.aws.adapter.ts` | `0` | `1` |
+
+`FORCE_COLOR=0 pnpm exec jest src/modules/pets > /tmp/impl-247-h3.log 2>&1; echo "exit=$?"`:
+
+```text
+exit=0
+Test Suites: 17 passed, 17 total
+Tests:       146 passed, 146 total
+```
+
+Antes de ese Jest: `DATABASE_URL` exportada ausente (`0`) y `espera=1`. La cadena prettier write/check, eslint sobre el adapter y tsc del handoff pasó con `exit=0`.
+
+Commit 17: `bad8fe88 refactor(pets): build the UnprocessedItems message from BATCH_WRITE_ATTEMPTS`.
+
+### Cierre del commit 18
+
+`docs(users-account-deletion-api): record the D3 lock amendment` (este commit documental). Antes de commitear se repitió la cadena prettier write/check, eslint y tsc sobre los dos ficheros de esta enmienda: `exit=0`; sin cambios adicionales de TypeScript.
+
+Las cuentas de entregas anteriores son históricas. La cuenta final incluye 16 commits anteriores, la enmienda `63b63c82` y los commits 16, 17 y 18:
+
+```text
+git rev-list --count 0e70fff2..HEAD
+20
+
+git status --short -- backend-pet-tracker specs docs
+(sin salida)
+```
+
+No hubo PARA en esta enmienda. No se ejecutaron `./init.sh`, `docker build`, migraciones, otras mutaciones, push ni operaciones de PR. Los tres logs se conservan en `/tmp`. La última acción recrea `progress/impl_users-account-deletion-api.done` con la ruta del reporte; el marcador no se commitea.
