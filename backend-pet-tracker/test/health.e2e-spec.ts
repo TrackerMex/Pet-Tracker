@@ -87,4 +87,11 @@ describe('R8: GET /v1/health responde 503 con Postgres caído', () => {
     const rawBody = JSON.stringify(response.body);
     expect(rawBody).not.toMatch(/ECONNREFUSED|node_modules|pg\.Pool|stack/i);
   });
+  it('#245 R8: GET /v1/health/live responde 200 { status: "ok" } y /v1/health 503', async () => {
+    await request(app.getHttpServer())
+      .get('/v1/health/live')
+      .expect(200)
+      .expect({ status: 'ok' });
+    await request(app.getHttpServer()).get('/v1/health').expect(503);
+  });
 });

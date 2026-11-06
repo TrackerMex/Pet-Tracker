@@ -6,6 +6,10 @@ import { CheckHealthUseCase } from '../application/use-cases/check-health.use-ca
 export class HealthController {
   constructor(private readonly checkHealthUseCase: CheckHealthUseCase) {}
 
+  live() {
+    return { status: '' };
+  }
+
   @Public()
   @Get()
   async check() {
