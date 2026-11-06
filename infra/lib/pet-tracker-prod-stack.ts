@@ -29,6 +29,8 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import { Aws, CfnOutput, Duration, Fn, RemovalPolicy, Stack, StackProps, Token } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 
+export const PROD_PRIMARY_REGION = 'mx-central-1';
+
 export interface PetTrackerProdStackProps extends StackProps {
   readonly env: { readonly region: string; readonly account?: string };
   readonly apiDomain: string;

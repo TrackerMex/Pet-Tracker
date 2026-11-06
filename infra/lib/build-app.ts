@@ -1,4 +1,5 @@
 import { App } from 'aws-cdk-lib';
+import { PetTrackerProdStack, PROD_PRIMARY_REGION } from './pet-tracker-prod-stack';
 import { join } from 'path';
 import { DEV_REGION, PetTrackerDevStack } from './pet-tracker-dev-stack';
 
@@ -17,6 +18,14 @@ export function buildApp(app: App, imageDirectory = BACKEND_IMAGE_DIRECTORY): Ap
     throw new Error(`Missing prod context keys: ${missing.join(', ')}`);
   }
   new PetTrackerDevStack(app, 'PetTrackerDev', { env: { region: DEV_REGION } });
-  void imageDirectory;
+  if (missing.length === 0) {
+    const values = Object.fromEntries(PROD_CONTEXT_KEYS.map((key) => {
+      const value = app.node.tryGetContext(key) as string;
+      return [key, value.trim()];
+    })) as Record<(typeof PROD_CONTEXT_KEYS)[number], string>;
+    new PetTrackerProdStack(app, `PetTrackerProd-${PROD_PRIMARY_REGION}`, {
+      env: { region: PROD_PRIMARY_REGION }, ...values, imageDirectory,
+    });
+  }
   return app;
 }
