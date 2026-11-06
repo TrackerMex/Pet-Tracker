@@ -40,7 +40,7 @@ export class ActivitySchedulerService implements OnApplicationBootstrap {
     this.schedulerRegistry.addInterval(
       ACTIVITY_TICK_NAME,
       setInterval(
-        () => void this.aggregator.runOnce(new Date()),
+        () => this.ticks.run(() => this.aggregator.runOnce(new Date())),
         ACTIVITY_TICK_INTERVAL_MS,
       ),
     );

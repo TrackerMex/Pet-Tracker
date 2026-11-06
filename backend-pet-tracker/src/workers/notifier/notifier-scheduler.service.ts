@@ -37,7 +37,10 @@ export class NotifierSchedulerService implements OnApplicationBootstrap {
 
     this.schedulerRegistry.addInterval(
       NOTIFIER_INTERVAL_NAME,
-      setInterval(() => void this.consumer.drainOnce(), NOTIFIER_INTERVAL_MS),
+      setInterval(
+        () => this.ticks.run(() => this.consumer.drainOnce()),
+        NOTIFIER_INTERVAL_MS,
+      ),
     );
 
     this.logger.log(

@@ -39,11 +39,17 @@ export class IngestionSchedulerService implements OnApplicationBootstrap {
 
     this.schedulerRegistry.addInterval(
       POLLER_INTERVAL_NAME,
-      setInterval(() => void this.poller.runOnce(), POLLER_INTERVAL_MS),
+      setInterval(
+        () => this.ticks.run(() => this.poller.runOnce()),
+        POLLER_INTERVAL_MS,
+      ),
     );
     this.schedulerRegistry.addInterval(
       CONSUMER_INTERVAL_NAME,
-      setInterval(() => void this.consumer.drainOnce(), CONSUMER_INTERVAL_MS),
+      setInterval(
+        () => this.ticks.run(() => this.consumer.drainOnce()),
+        CONSUMER_INTERVAL_MS,
+      ),
     );
 
     this.logger.log(

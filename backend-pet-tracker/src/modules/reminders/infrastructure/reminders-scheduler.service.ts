@@ -25,7 +25,7 @@ export class RemindersSchedulerService implements OnApplicationBootstrap {
     this.schedulerRegistry.addInterval(
       REMINDERS_INTERVAL_NAME,
       setInterval(
-        () => void this.dispatcher.dispatchOnce(),
+        () => this.ticks.run(() => this.dispatcher.dispatchOnce()),
         REMINDERS_INTERVAL_MS,
       ),
     );

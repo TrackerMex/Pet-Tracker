@@ -35,7 +35,7 @@ export class AlertsEngineSchedulerService implements OnApplicationBootstrap {
     this.schedulerRegistry.addInterval(
       ALERTS_ENGINE_INTERVAL_NAME,
       setInterval(
-        () => void this.consumer.drainOnce(),
+        () => this.ticks.run(() => this.consumer.drainOnce()),
         ALERTS_ENGINE_INTERVAL_MS,
       ),
     );
