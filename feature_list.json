@@ -3930,7 +3930,7 @@
   {
     "id": 243,
     "name": "mobile-orbit-cachorro-art",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P2",
     "description": "Registrada el 2026-11-05 a pedido del humano tras un feedback externo: la mascota «se parece más a una persona que a un animal». El humano eligió la variante A (cachorro sentado, de frente) entre tres propuestas; las diez poses ya están generadas y congeladas en specs/mobile-orbit-cachorro-art/design-src/ (las nueve de la variante A más walk), con su origen en ~/pet-tracker-mascot/v2/. Diseño nuevo: cachorro crema con parche morado sobre un ojo, orejas y cola gris oscuro, nariz negra, lengua rosa y collar morado con placa GPS y luz verde #178255; sin antena, sin manos ni botón en el pecho. Alcance: sustituir en la app (mobile-pet-tracker/assets/images/orbit-*.webp) el arte de las diez poses actuales, conservando los nombres de archivo con prefijo orbit; convertir los PNG a WebP con alfa 1024x1024 y ≤100000 bytes limpiando el alfa residual de 1 a 3 píxeles fuera del contorno; actualizar los tests que bloquean la lista, el formato y el tamaño de los assets, y cualquier texto de docs o copy que describa la mascota anterior (antena, gorro verde, cara morada, mapa de nombres Pingo/Orbit). El nombre de la mascota sigue siendo Orbit (decidido por el humano el 2026-11-05); worried y search quedan fuera. Spec firmada por delegación el 2026-11-06. Gates humanos, no delegados: G1 (aprobar el arte final y el copy), G4 (enmienda de docs/ui-guidelines.md con la nueva descripción de la mascota), G6 (PNG de la pose walk, si se genera aparte) y G2 (smoke en dispositivo, en lote al final). Responsable: leader @Frontend. Registrada sin spec.",
     "acceptance_criteria": [
