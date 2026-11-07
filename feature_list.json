@@ -4037,7 +4037,7 @@
   {
     "id": 247,
     "name": "users-account-deletion-api",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P1",
     "description": "DELETE del usuario autenticado, exigido por Apple 5.1.1(v) y Google Play. Borra o anonimiza sus datos en Postgres, S3 y tokens de push, e invalida sus sesiones. El destino de las mascotas compartidas con otros miembros es la decisión D3 del humano. Explore: progress/explore_account-deletion.md. Registrada el 2026-11-06 por el plan progress/plan_produccion-aws-2026-11-06.md. Firma delegada al leader (ampliación del 2026-11-06 en CLAUDE.md). Responsable: leader @Backend.",
     "acceptance_criteria": [

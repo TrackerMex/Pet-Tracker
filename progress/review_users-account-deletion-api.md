@@ -1,170 +1,155 @@
-# review: users-account-deletion-api (#247)
-Fecha: 2026-11-06 22:23 UTC
-Veredicto: RECHAZADO
+# review: users-account-deletion-api (#247), ronda 2
+Fecha: 2026-11-07 00:05 UTC
+Veredicto: APROBADO
 
 Rama `feature/247-users-account-deletion-api`, worktree `Pet-Tracker-wt-247`.
-H0 = `0e70fff2`, HEAD = `83cb3102`, `git rev-list --count 0e70fff2..HEAD` = 16.
+H0 = `0e70fff2`, HEAD = `8cd43998`, `git rev-list --count 0e70fff2..HEAD` = 20 (lo que fija
+la enmienda 2 en `tasks.md`).
 
-Bloquea un solo hallazgo, H1: la enmienda del leader a `devices.e2e` R15 quita el único
-candado de la regla D3 de `devices-claim`. Todo lo demás pasa: el código, la migración,
-la trazabilidad, el historial TDD y las 14 mutaciones de `tasks.md`.
+La ronda 1 (HEAD `83cb3102`) se rechazó por H1. Desde entonces hay 4 commits:
+- `63b63c82`: enmienda 2 del leader en `tasks.md`. Ese commit también versiona el review
+  de la ronda 1.
+- `4dd25416` (commit 16): test.
+- `bad8fe88` (commit 17): refactor.
+- `8cd43998` (commit 18): registro.
+
+`git diff --stat 83cb3102..HEAD` toca 5 ficheros, todos dentro de lo que fija la enmienda:
+- `backend-pet-tracker/test/devices.e2e-spec.ts`: +7;
+- `pet-data-purger.aws.adapter.ts`: +3 −1;
+- `progress/impl_users-account-deletion-api.md`;
+- `progress/review_users-account-deletion-api.md`;
+- `specs/users-account-deletion-api/tasks.md`.
+
+## H1 de la ronda 1: cerrado
+
+`devices.e2e-spec.ts` R15 sigue asertando `released.status` en `'available'` (#247 R10)
+y la cascada de `pet_devices` a 0 filas. Después, dentro del mismo `it`, siembra a mano
+`devices.status = 'assigned'` sin fila activa (líneas 996-1001) y reclama con `ownerB`
+esperando `201`. Esa es justo la regla D3 de `devices-claim` R15 que había quedado sin
+candado.
+
+Corrí la sonda yo mismo, desde `backend-pet-tracker/`, con
+`FORCE_COLOR=0 pnpm exec jest --config ./test/jest-e2e.json test/devices.e2e-spec.ts`. Antes
+de cada corrida apliqué §Esperas del handoff: `DATABASE_URL` no estaba exportada (`0`) y no
+había ningún `init.sh` (`espera=1`). La primera esperó a que terminara el `init.sh` de
+`Pet-Tracker-wt-246`.
+
+| Corrida | Estado del árbol | `exit` | Resultado |
+|---|---|---|---|
+| Verde | HEAD `8cd43998` intacto | `0` | 1/1 suites, 29/29 tests |
+| Sonda | `      device.status === 'assigned' ||` bajo `device.status === 'inactive' ||` en `claim-device.use-case.ts` (`mutada=1`, diff de 1 línea) | `1` | 1 failed, 28 passed, 29 total |
+
+El único rojo de la sonda:
+```
+● Devices claim (e2e) › R15: borrar una mascota con collar deja el device reclamable (D3) › claim -> DELETE /v1/pets/:petId -> claim con otra mascota responde 201
+  expected 201 "Created", got 409 "Conflict"
+  > 1008 |       }).expect(201);
+```
+Es por aserción, en el reclamo de D3. No hay ningún `Test suite failed to run` ni
+`error TS` en ninguno de los dos logs. Coincide con lo que Codex registra en el impl report
+(§Enmienda del leader 2).
+
+Revertí con `git checkout HEAD -- src/modules/devices/application/use-cases/claim-device.use-case.ts`,
+con un `trap EXIT` de respaldo en el script. Después:
+- `git diff --quiet -- src` da `0`;
+- `git diff --cached --quiet` da `0`;
+- `git status --short` sale vacío.
+
+Logs:
+- `/tmp/claude-1002/-home-claude-sites-Pet-Tracker/514dba8a-c290-4329-b2f8-7d88945d9888/scratchpad/r2-247-verde.log`
+- `/tmp/claude-1002/-home-claude-sites-Pet-Tracker/514dba8a-c290-4329-b2f8-7d88945d9888/scratchpad/r2-247-sonda.log`
+
+Script: `/tmp/claude-1002/-home-claude-sites-Pet-Tracker/514dba8a-c290-4329-b2f8-7d88945d9888/scratchpad/r2-sonda-247.sh`.
+
+## H2 y H3 de la ronda 1: cerrados
+
+- H2: la fila de `onDelete` en la tabla de mutaciones de `tasks.md` ya no promete un rojo
+  e2e. Dice que la base e2e sale de las migraciones SQL y no del esquema TS.
+- H3: `pet-data-purger.aws.adapter.ts:114-116` construye el mensaje con
+  `${BATCH_WRITE_ATTEMPTS}`. Anclas: `grep -cF "after 3 attempts"` da `0` y
+  `grep -cF 'after ${BATCH_WRITE_ATTEMPTS} attempts'` da `1`. El texto resultante es el
+  mismo, porque la constante vale `3` (línea 26). Ningún test aserta ese literal: el
+  `#247 R15` (e) solo aserta el prefijo `PET_PURGE_FAILED store=dynamodb …`.
 
 ## Checklist C2: estado coherente
-- [x] Ninguna feature está `in_progress` en `feature_list.json`: ni en el worktree, ni en
-      `origin/main`, ni en `origin/dev`. #247 está `spec_ready`. El init.sh del leader dice
-      «Sin features en progreso (sesión limpia)» (línea 42 del log).
-- [x] `progress/current.md`: lo escribe el leader al cerrar, y el diff no lo toca (un solo
-      escritor). Nota: hoy no menciona el plan `plan_produccion-aws-2026-11-06` ni #247. Lo
-      actualiza el leader al cerrar; no bloquea.
+- [x] `feature_list.json` no tiene ninguna feature `in_progress` (0 en HEAD, `origin/main`
+      y `origin/dev`). #247 está `spec_ready`.
+- [x] `progress/current.md`: el diff no lo toca, porque lo escribe el leader al cerrar. Sigue
+      sin mencionar #247 ni el plan AWS del 2026-11-06, igual que en la ronda 1; no bloquea.
+- [x] El marcador `progress/impl_users-account-deletion-api.done` no está versionado: lo
+      ignora `.gitignore:27`.
 
 ## Checklist C3: arquitectura
-- [x] `domain` no importa de `infrastructure`. Los puertos nuevos son un `Symbol` más una
-      interfaz:
-      - `users/domain/repositories/account-deletion.repository.ts`;
-      - `pets/domain/ports/pet-data-purger.ts`.
-      Las entidades solo cambian `createdBy: string | null`.
-- [x] Los contratos en `domain` son interfaces puras.
-- [x] `application` depende de puertos y no de implementaciones. `DeleteAccountUseCase`
-      inyecta `USER_REPOSITORY`, `PASSWORD_HASHER`, `ACCOUNT_DELETION_REPOSITORY` y
-      `PET_DATA_PURGER`. `DeletePetUseCase` inyecta `PET_DATA_PURGER`.
-- [x] `infrastructure` no tiene lógica de negocio.
-      - El orden transaccional (lock, audit, liberar, borrar) vive en
-        `account-deletion.drizzle.repository.ts:17-39`, como fija el design.
-      - La importación de `deletePetsTx` y `releaseDeviceTx` entre módulos de
-        infraestructura es la que autoriza D4.
-      - El mapeo a HTTP vive en `users.controller.ts:62-75`.
+- [x] Los dos commits de código de esta ronda no tocan `domain` ni `application`:
+      - `4dd25416` es solo test e2e;
+      - `bad8fe88` cambia un literal en infraestructura.
+      Lo que se verificó en la ronda 1 sigue igual: puertos puros, `application` depende
+      de puertos y el orden transaccional vive donde fija el design.
+- [x] `infrastructure` sin lógica de negocio nueva.
 
 ## Checklist C4: TDD
-- [x] Cada R1–R15 tiene al menos un test que nombra `#247 R<n>:`. Recuento por `grep`:
-      R1 5, R2 8, R3 7, R4 3, R5 2, R6 6, R7 4, R8 3, R9 2, R10 4, R11 4, R12 2, R13 7,
-      R14 2, R15 8.
-- [x] El historial va test primero, en pares rojo→verde: `ffd2645d`→`6a900be5`,
-      `527c57f1`→`e62b7bb9`, `d5c3cc9c`→`5ae914bc`, `3f031262`→`b84011b5`,
-      `012fdb87`→`7ab40b41` y `75a66352`→`83ecc9e7`. La enmienda es `f33a4e2c`.
-      - Los commits rojos llevan solo tests y stubs: firmas y cuerpos `void x; return
-        Promise.reject(new Error('Not implemented'))` / `Promise.resolve()`, y en el guard
-        un `async` sin cambio de lógica.
-      - El impl report da 0 errores de carga, TS o DI en los rojos.
-      - Los tests que nacen verdes coinciden con los que declara el plan.
+- [x] Cada R1–R15 de #247 tiene al menos un test que nombra `#247 R<n>:`. La ronda no
+      añade ni quita ningún título `#247`.
+- [x] El historial va test primero:
+      - Los seis pares rojo→verde de la ronda 1 siguen intactos y son ancestros de HEAD.
+      - El commit 16 (`4dd25416`) solo trae test: +7 líneas en `devices.e2e-spec.ts`, sin
+        nada en `src/`. Nace verde, como declara la enmienda: es un candado de una regla
+        que ya existe (D3 de `devices-claim`), no hay producción nueva que fijar. Su rojo
+        lo demuestra la sonda (ver H1).
+      - El commit 17 (`bad8fe88`) es un refactor sin cambio de comportamiento, con el
+        unit de pets en verde según el impl report (17 suites, 146 tests).
+      - El commit 18 es solo docs.
 
 ## Checklist C5: trazabilidad
-- [x] `traceability.md` no tiene ninguna fila «pendiente». Sus hashes (`6a900be5`,
-      `e62b7bb9`, `5ae914bc`, `b84011b5`, `7ab40b41`, `83ecc9e7`) son ancestros de HEAD; no
-      hubo rebase.
-- [x] Los commits siguen el formato `test|feat|docs(<scope>): <desc> (R-ids)`.
+- [x] `traceability.md` no tiene ninguna fila «pendiente». La única aparición de la
+      palabra está en la regla de la línea 27. La ronda no lo toca.
+- [x] Todos sus hashes son ancestros de HEAD, así que no hubo rebase: `6a900be5`,
+      `e62b7bb9`, `5ae914bc`, `b84011b5`, `7ab40b41` y `83ecc9e7`.
+- [x] El candado nuevo es de `devices-claim` R15 (D3), no de un R-id de #247, así que no le
+      toca fila. Va registrado en la enmienda 2 de `tasks.md` y en el impl report.
+- [x] Los mensajes de los commits 16, 17 y 18 son literalmente los que prescribe la enmienda
+      2: `test(devices): …`, `refactor(pets): …` y `docs(users-account-deletion-api): …`.
+- [x] Cuentas de la enmienda: `rev-list --count` da `20`. Las anclas del commit 16 dan
+      `2`, `1` y `1`, y las del commit 17 dan `0` y `1`. Todas coinciden con las columnas
+      «Después».
 
 ## Checklist C6: spec aprobada
-- [x] `requirements.md` está en `status: approved` y tiene marcada la casilla de firma
-      delegada (mandato 2026-10-23, ampliado el 2026-11-06).
+- [x] `requirements.md` está en `status: approved`, con la casilla de firma delegada marcada
+      (línea 398).
 
 ## Checklist C7: sin código huérfano
-- [ ] N/A: la feature no reemplaza ningún módulo. `DeviceDrizzleRepository.release` delega
-      en `releaseDeviceTx`; no queda ninguna copia.
-
-## Migración 0024
-- `0024_created_by_set_null.sql` trae 5 `DROP CONSTRAINT`, 5 `DROP NOT NULL` y 5
-  `ADD CONSTRAINT … ON DELETE set null`. No trae ningún DROP ni CREATE TABLE.
-- El journal pasa de 24 a 25 entradas: idx 24 = `0024_created_by_set_null`.
-- El `prevId` del snapshot 0024 es el id del 0023. Solo cambian las 5 tablas.
-- `origin/dev` termina en 0023, así que no hay choque de número.
+- [ ] N/A: la feature no reemplaza ningún módulo, igual que en la ronda 1.
 
 ## Recursos AWS reales
-Ninguno. El diff no toca `infra/`, CDK ni `mobile-pet-tracker/` (0 ficheros).
-`PetDataPurgerAwsAdapter` usa los clientes `S3_CLIENT`/`DYNAMODB_CLIENT` inyectados por
-`AwsModule`, que en e2e apuntan a LocalStack. Los nombres salen de `AWS_RESOURCE_NAMES`.
-
-## Mutaciones (cada una revertida con `git checkout HEAD -- <ruta>`)
-
-Unit con `pnpm exec jest <ruta>`; e2e con `pnpm exec jest --config ./test/jest-e2e.json …`,
-sobre `pet_tracker_wt` (5433) y LocalStack. Base verde antes de mutar: unit acotado
-486/486 y e2e users+pets+devices+vaccine-catalog-migration 81/81.
-
-| # | Mutación | Resultado | Rojos |
-|---|---|---|---|
-| 1 | Quitar `if (!user) throw` del guard (`auth.guard.ts:54`) | MATA | guard `#247 R2: responde 401 y no adjunta request.user…`; users e2e `#247 R2` (1) y `#247 R4` (2) |
-| 2 | `deleteMe`: `UserNotFoundError` vía `mapProfileError` | MATA | controller `#247 R7: responde UnauthorizedException, nunca NotFoundException` |
-| 3a | Quitar `onDelete: 'set null'` en `nutrition.schema.ts` (meal_servings) | MATA | `#247 R1` (los 2 its: columnas y FKs) y `R1 (#83) aplica las FKs…` |
-| 3b | Lo mismo en `media.schema.ts` (pet_documents) | MATA | `#247 R1` (los 2 its) |
-| 4 | Meter `findById` dentro del `try` de `verify` | MATA | guard `#247 R2: un error de la consulta se propaga y no se convierte en 401` |
-| 5 | `InvalidCredentialsError` mapeado a `UnauthorizedException` | MATA | controller `#247 R6`; users e2e `#247 R6` |
-| 6 | Quitar `eq(petUsers.role, 'owner')` | MATA (solo e2e) | users e2e `#247 R9: la mascota ajena sobrevive…`. El unit del repo sigue verde (46/46), como prevé la tabla |
-| 7 | `deletePetsTx`: borrar `pets` antes de liberar collares | MATA | pets e2e `#247 R10`; users e2e `#247 R10`; devices e2e R15 |
-| 8 | Insertar el audit después de `DELETE users` | MATA | repo `#247 R11` (2 its) |
-| 9 | Quitar `.for('update')` | MATA | repo `#247 R11` (3 its; aserción `"select:users:for update"`) |
-| 10 | `DeletePetUseCase`: purgar antes de `delete` | MATA | E7 `no audita ni purga si el borrado falla` y `borra por id y registra…` |
-| 11 | Quitar el `try/catch` por almacén (dos variantes: fundido en uno y sin ninguno) | MATA | `#247 R15` (f), (g) y orden/nunca rechaza; users e2e `#247 R14` |
-| 12 | `BATCH_WRITE_MAX_ITEMS = 26` | MATA | `#247 R15 … borra en lotes de 25` |
-| 13 | `BATCH_WRITE_ATTEMPTS = 2` | MATA | `#247 R15: reenvía UnprocessedItems hasta 3 intentos por lote` |
-| 14 | `Quiet: false` | MATA | `#247 R15: lista pets/<petId>/ y borra la página con DeleteObjects Quiet` |
-| X | Extra (enmienda): el claim veta también `device.status === 'assigned'` (`claim-device.use-case.ts:70-72`) | **SOBREVIVE** | Ninguno. Unit devices 40/40; e2e devices+pets+users 72/72; e2e alerts-engine, device-subscriptions, ingestion, provision-device y resource-isolation 50/50 |
-
-Todos los rojos son de aserción: ningún log tiene `error TS` ni «Test suite failed to run».
-Al terminar, `git status --short` está vacío y `git diff --cached --quiet` sale 0.
+Ninguno. La ronda no toca `infra/`, CDK ni `mobile-pet-tracker/`.
 
 ## Observaciones
+Ninguna bloqueante.
 
-### H1 (bloqueante): la enmienda de `devices.e2e` R15 deja sin candado la regla D3 de `devices-claim`
-
-- La regla: `specs/devices-claim/requirements.md:191-200` (R15) dice que el claim responde
-  `201` «aunque `devices.status` haya quedado en `'assigned'`». La disponibilidad «se deriva
-  de la fila activa en `pet_devices`»; `devices.status` es caché (D3).
-- Ese caso (caché `'assigned'` sin fila activa) solo lo ejercía
-  `backend-pet-tracker/test/devices.e2e-spec.ts`, en
-  `describe('R15: borrar una mascota con collar deja el device reclamable (D3)')` (línea 964).
-  En H0 el `it` fijaba `expect(orphaned.status).toBe('assigned')` y luego reclamaba con
-  `201`.
-- Tras #247 R10 y la enmienda (`f33a4e2c`), el DELETE deja el caché en `'available'`
-  (línea 988). El reclamo de las líneas 998-1001 ya no distingue un claim que mire la fila activa
-  de uno que mire `devices.status`. El comentario de las líneas 996-997 («La disponibilidad
-  se deriva de la fila activa, no del cache de status… (D3)») ya no es lo que prueba el `it`.
-- Evidencia: la mutación X sobrevive en todos los tests que reclaman collares, y el
-  unit `claim-device.use-case.spec.ts` no cubre el caso.
-  - Que el claim vete `status === 'assigned'` debería romper D3.
-  - En el unit, `buildDevice()` usa `'available'` por defecto, y
-    `describe('R8: …')` (línea 190) solo prueba fila activa o `'inactive'`.
-- No es un caso teórico. Los collares que quedaron huérfanos en `'assigned'` antes de #247
-  (justo el defecto que corrige R10) siguen en las bases existentes. La migración 0024 no los
-  repara, y su reclamo depende de esta regla.
-- La enmienda de `tasks.md` (§«Enmienda del leader», líneas 482-526) es coherente con R10,
-  pero afirma «se actualiza el candado». En realidad cambia lo que el candado mide y no lo
-  repone.
-- Qué falta: un test que reclame con `201` un device con `devices.status = 'assigned'` sin
-  fila activa en `pet_devices`. Puede ser:
-  - en `devices.e2e` R15, sembrando ese estado en base tras el DELETE;
-  - o en unit, en `claim-device.use-case.spec.ts`, con `findByIdentifier` →
-    `buildDevice({ status: 'assigned' })` y `hasActiveAssignment` → `false`.
-  En cualquiera de los dos, la mutación X tiene que ponerlo rojo. Como toca los candados de
-  la spec, pasa por la enmienda del leader.
-
-### H2 (no bloqueante): la tabla de mutaciones promete un rojo e2e que no puede dar
-
-`tasks.md:536` espera «e2e `#247 R9` si es `meal_servings`» al quitar `onDelete` del
-esquema TS. La base e2e sale de las migraciones SQL (init.sh), no de `nutrition.schema.ts`,
-así que quitarlo del TS no llega al e2e. El candado real son los dos its de esquema
-`#247 R1`, que sí ponen rojo esa mutación (3a). Conviene precisarlo en la tabla.
-
-### H3 (nit, no bloqueante)
-
-`pet-data-purger.aws.adapter.ts:114` escribe a mano el `3` en
-`'UnprocessedItems after 3 attempts'`, en vez de usar `BATCH_WRITE_ATTEMPTS`.
+1. El review de la ronda 1 quedó versionado en `63b63c82`. Por eso este veredicto, que lo
+   sobrescribe sin commitear, deja `M progress/review_users-account-deletion-api.md` en el
+   árbol. Es el único cambio: el código está limpio.
+2. `progress/current.md` no menciona #247 (ver C2). Lo actualiza el leader al cerrar.
+3. La evidencia de suite completa es el `init.sh` del leader. Mis corridas fueron acotadas
+   (devices e2e, verde y sonda), por la restricción del encargo.
 
 ## Output de ./init.sh
-No lo corrí: el leader lo prohíbe en el encargo porque choca con otros worktrees. Va
-el log del leader sobre HEAD `83cb3102`, en
-`/tmp/claude-1002/-home-claude-sites-Pet-Tracker/514dba8a-c290-4329-b2f8-7d88945d9888/scratchpad/init-247.log`:
+No lo corrí: el encargo lo prohíbe porque choca con los otros worktrees. Va el log del
+leader, sobre HEAD `8cd43998`. Está en
+`/tmp/claude-1002/-home-claude-sites-Pet-Tracker/514dba8a-c290-4329-b2f8-7d88945d9888/scratchpad/init-247.log`
+(mtime 23:43 UTC, posterior al commit 18 de las 22:40; el árbol estaba limpio):
 ```
 ✅ Sin features en progreso (sesión limpia)                      (línea 42)
-Test Suites: 202 passed, 202 total                               (backend unit)
+Test Suites: 202 passed, 202 total                               (backend unit, línea 220)
 Tests:       1680 passed, 1680 total
 Test Suites: 2 passed, 2 total                                   (infra)
 Tests:       14 passed, 14 total
 Test Suites: 184 passed, 184 total                               (móvil)
 Tests:       6827 passed, 6827 total
-Test Suites: 3 skipped, 34 passed, 34 of 37 total                (e2e backend)
+Test Suites: 3 skipped, 34 passed, 34 of 37 total                (e2e backend, línea 205809)
 Tests:       8 skipped, 621 passed, 629 total
 ✅ Lint sin errores
 ✅ Typecheck sin errores
 ✅ Todo verde. Listo para trabajar.
 ```
-Mis corridas acotadas, sin mutación: unit `src/db/schema src/modules/{auth,devices,pets,users}`
-486/486; e2e users+pets+devices+vaccine-catalog-migration 81/81.
+Sin ningún `FAIL`. Todos los `●` del log son bloques `● Console`.
