@@ -1,0 +1,86 @@
+import { App, Stack } from 'aws-cdk-lib';
+import { Match, Template } from 'aws-cdk-lib/assertions';
+import { PetTrackerProdStack } from '../lib/pet-tracker-prod-stack';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import { BACKEND_IMAGE_DIRECTORY, buildApp } from '../lib/build-app';
+import { DEV_REGION, PetTrackerDevStack } from '../lib/pet-tracker-dev-stack';
+
+function stackIds(app: App): string[] {
+  return app.node.children.filter((child) => Stack.isStack(child)).map((child) => child.node.id);
+}
+
+describe('#246 R1: sin contexto prod la app solo tiene PetTrackerDev', () => {
+  it('#246 R1: devuelve la misma app con solo PetTrackerDev en us-east-1', () => {
+    const app = new App();
+    const returned = buildApp(app);
+    expect(returned === app).toBe(true);
+    expect(stackIds(app)).toEqual(['PetTrackerDev']);
+    const stack = app.node.tryFindChild('PetTrackerDev');
+    expect(stack instanceof PetTrackerDevStack && stack.region === DEV_REGION).toBe(true);
+  });
+
+  it('#246 R1: BACKEND_IMAGE_DIRECTORY es backend-pet-tracker del repo', () => {
+    expect(BACKEND_IMAGE_DIRECTORY).toBe(join(__dirname, '..', '..', 'backend-pet-tracker'));
+  });
+
+  it('#246 R1: bin/app.ts delega en buildApp', () => {
+    const source = readFileSync(join(__dirname, '..', 'bin', 'app.ts'), 'utf8');
+    expect(source).toContain('buildApp(new App())');
+    expect(source).not.toContain('new PetTrackerDevStack');
+  });
+});
+
+const PROD_CONTEXT = {
+  apiDomain: 'api.pets.example.org',
+  hostedZoneId: 'Z0R20EXAMPLE',
+  hostedZoneName: 'pets.example.org',
+  alarmEmail: 'ops@example.org',
+  resendFrom: 'hola@pets.example.org',
+  resetLinkHost: 'reset.pets.example.org',
+};
+
+describe('#246 R2: contexto prod parcial lanza con las claves que faltan', () => {
+  it.each([
+    {
+      caso: 'solo apiDomain',
+      context: { apiDomain: PROD_CONTEXT.apiDomain },
+      missing: 'hostedZoneId, hostedZoneName, alarmEmail, resendFrom, resetLinkHost',
+    },
+    {
+      caso: 'sin alarmEmail ni resetLinkHost',
+      context: {
+        apiDomain: PROD_CONTEXT.apiDomain,
+        hostedZoneId: PROD_CONTEXT.hostedZoneId,
+        hostedZoneName: PROD_CONTEXT.hostedZoneName,
+        resendFrom: PROD_CONTEXT.resendFrom,
+      },
+      missing: 'alarmEmail, resetLinkHost',
+    },
+    { caso: 'resendFrom en blanco', context: { ...PROD_CONTEXT, resendFrom: '   ' }, missing: 'resendFrom' },
+    { caso: 'hostedZoneId numérico', context: { ...PROD_CONTEXT, hostedZoneId: 12345 }, missing: 'hostedZoneId' },
+  ])('#246 R2: $caso', ({ context, missing }) => {
+    expect(() => buildApp(new App({ context }))).toThrow(new Error(`Missing prod context keys: ${missing}`));
+  });
+});
+
+const FIXTURE_IMAGE_DIRECTORY = join(__dirname, 'fixtures', 'backend-image');
+describe('#246 R20: con contexto prod completo la app añade el stack de mx-central-1', () => {
+  it('#246 R20: añade PetTrackerProd-mx-central-1 con los valores del contexto', () => {
+    const app = new App({ context: PROD_CONTEXT });
+    buildApp(app, FIXTURE_IMAGE_DIRECTORY);
+    expect(stackIds(app)).toEqual(['PetTrackerDev', 'PetTrackerProd-mx-central-1']);
+    const prod = app.node.tryFindChild('PetTrackerProd-mx-central-1');
+    if (!(prod instanceof PetTrackerProdStack)) throw new Error('#246 R20: falta el stack prod');
+    expect(prod.region).toBe('mx-central-1');
+    const template = Template.fromStack(prod);
+    template.hasResourceProperties('AWS::CertificateManager::Certificate', { DomainName: PROD_CONTEXT.apiDomain });
+    template.hasResourceProperties('AWS::Route53::RecordSet', { Name: `${PROD_CONTEXT.apiDomain}.`, HostedZoneId: PROD_CONTEXT.hostedZoneId });
+    template.hasResourceProperties('AWS::SNS::Subscription', { Endpoint: PROD_CONTEXT.alarmEmail });
+    template.hasResourceProperties('AWS::ECS::TaskDefinition', {
+      ContainerDefinitions: Match.arrayWith([Match.objectLike({ Name: 'api', Environment: Match.arrayWith([
+        { Name: 'RESEND_FROM', Value: PROD_CONTEXT.resendFrom }, { Name: 'RESET_LINK_HOST', Value: PROD_CONTEXT.resetLinkHost },
+      ]) })]),
+    });
+  }, 60_000);
+});

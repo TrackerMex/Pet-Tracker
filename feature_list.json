@@ -4044,19 +4044,24 @@
   {
     "id": 246,
     "name": "infra-prod-region-stack",
-    "status": "pending",
+    "status": "done",
     "priority": "P0",
-    "description": "Stack CDK de producción parametrizado por región y rol (primary | standby); el 2026-11-11 se despliega solo mx-central-1 como primary. VPC 3 AZ, ECS Fargate (API con ALB HTTPS y autoescalado; workers con 1 tarea en primary y 0 en standby), Aurora PostgreSQL Serverless v2 >= 16.4 con escritor y lector en AZ distintas, DynamoDB positions con PITR lista para réplicas, SQS con DLQ, EventBridge, S3 de media, secretos por nombre (los crea el humano) y alarmas de CloudWatch. Pruebas: assertions de CDK y cdk synth; cdk deploy y bootstrap los corre el humano (GA3). Depende del contrato de #245. Decisiones previas a la firma: D1 (dominio) y D2 (salida a internet). Registrada el 2026-11-06 por el plan progress/plan_produccion-aws-2026-11-06.md. Firma delegada al leader (ampliación del 2026-11-06 en CLAUDE.md). Responsable: leader @Backend.",
+    "description": "Stack CDK de producción parametrizado por región (el parámetro de rol primary | standby lo añade #249); el 2026-11-11 se despliega solo mx-central-1. VPC 3 AZ, ECS Fargate (API con ALB HTTPS y autoescalado; workers con 1 tarea), tarea ops para migraciones y comandos únicos, Aurora PostgreSQL Serverless v2 17.4 con escritor y lector en AZ distintas, DynamoDB positions con PITR lista para réplicas, SQS con DLQ, EventBridge, S3 de media, secretos por nombre (los crea el humano) y alarmas de CloudWatch. Pruebas: assertions de CDK y cdk synth; cdk deploy y bootstrap los corre el humano (GA3). Depende del contrato de #245. Decisiones previas a la firma: D1 (dominio) y D2 (salida a internet). Registrada el 2026-11-06 por el plan progress/plan_produccion-aws-2026-11-06.md. Firma delegada al leader (ampliación del 2026-11-06 en CLAUDE.md). Responsable: leader @Backend.",
     "acceptance_criteria": [
       "Requisitos R<n> de specs/infra-prod-region-stack/requirements.md con su test de assertions en verde",
-      "cdk synth verde para mx-central-1 primary y us-east-2 standby",
+      "Tests de assertions verdes para mx-central-1 y us-east-2; cdk synth sin contexto verde y solo con PetTrackerDev",
+      "El stack prod de mx-central-1 se añade con las seis claves de contexto (-c) que fija R20; el rol standby llega con #249",
       "Cada recurso con estado declara removalPolicy y protección contra borrado, fijadas por test",
       "cdk deploy y bootstrap los corre el humano, nunca una IA"
     ],
     "files_affected": [
       "infra/bin/app.ts",
+      "infra/lib/build-app.ts",
       "infra/lib/pet-tracker-prod-stack.ts",
-      "infra/test/pet-tracker-prod-stack.test.ts"
+      "infra/test/build-app.test.ts",
+      "infra/test/pet-tracker-prod-stack.test.ts",
+      "infra/test/fixtures/backend-image/Dockerfile",
+      "docs/conventions.md"
     ]
   },
   {
