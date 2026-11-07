@@ -68,7 +68,7 @@ Los dos fallos reales son:
 Por la regla «Si una cifra, ancla o salida no coincide [...] PARA», no se creó el commit rojo de R4 y no se implementó R4 ni ningún requisito posterior. El parche de R4 se preservó en `/tmp/impl-246-R4-red.patch`; se restauró únicamente `infra/test/pet-tracker-prod-stack.test.ts` desde HEAD. Los scripts auxiliares de trabajo permanecen en `/tmp/impl-246-*.py`; ninguno se añadió al repositorio. Los logs no se borraron.
 
 
-El leader resolvió ese PARA con `28e93a83` (`chore(spec): exclude the jest Console block from the #246 red check`). La enmienda excluye solo la línea exacta `  ● Console` en el segundo grep; no silencia los avisos. El humano ordenó reanudar desde el parche y autorizó la cuenta final de 43 commits, que reemplaza el 42 original del handoff y de tasks.md.
+El leader resolvió ese PARA con `28e93a83` (`chore(spec): exclude the jest Console block from the #246 red check`). La enmienda excluye solo la línea exacta `  ● Console` en el segundo grep; no silencia los avisos. El leader ordenó reanudar desde el parche y autorizó la cuenta final de 43 commits, que reemplaza el 42 original del handoff y de tasks.md.
 
 Se aplicó `/tmp/impl-246-R4-red.patch`, se repitió la suite completa y las tres comprobaciones dieron `0`, `0`, `2`. El log original previo a la enmienda está preservado en `/tmp/impl-246-R4-red-before-enmienda.log`; el nuevo rojo está en `/tmp/impl-246-R4-red.log`.
 

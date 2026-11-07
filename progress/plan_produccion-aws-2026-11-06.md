@@ -159,7 +159,15 @@ Pilot light en us-east-2:
 - el parámetro de rol (`primary` | `standby`) en el stack de #246, diferido desde su spec,
   y ese stack desplegado como `standby`;
 - registros failover de Route 53 con health check sobre la API primaria;
-- `docs/runbook-failover.md` con la conmutación y la vuelta.
+- `docs/runbook-failover.md` con la conmutación y la vuelta;
+- the lock on the #246 execution roles. Observation O2 of
+  `progress/review_infra-prod-region-stack.md` found that a `secretsmanager:*` statement
+  on `'*'`, or `AdministratorAccess` on the api execution role, passes the 50 tests. The
+  reason is that `secretsReadBy` only reads statements with
+  `secretsmanager:GetSecretValue`, and R10, R14 and R16 do not pin `ManagedPolicyArns`.
+  The current code is correct. The #249 spec should close this gap with one of two
+  requirements: either extend `secretsReadBy` to `secretsmanager:*` and `*`, or require
+  `ManagedPolicyArns` to be absent on the three execution roles.
 
 El poller de Wialon solo corre en la región activa, para no ingerir dos veces. El simulacro
 de conmutación es GA7, del humano.

@@ -4019,7 +4019,7 @@
   {
     "id": 246,
     "name": "infra-prod-region-stack",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P0",
     "description": "Stack CDK de producción parametrizado por región (el parámetro de rol primary | standby lo añade #249); el 2026-11-11 se despliega solo mx-central-1. VPC 3 AZ, ECS Fargate (API con ALB HTTPS y autoescalado; workers con 1 tarea), tarea ops para migraciones y comandos únicos, Aurora PostgreSQL Serverless v2 17.4 con escritor y lector en AZ distintas, DynamoDB positions con PITR lista para réplicas, SQS con DLQ, EventBridge, S3 de media, secretos por nombre (los crea el humano) y alarmas de CloudWatch. Pruebas: assertions de CDK y cdk synth; cdk deploy y bootstrap los corre el humano (GA3). Depende del contrato de #245. Decisiones previas a la firma: D1 (dominio) y D2 (salida a internet). Registrada el 2026-11-06 por el plan progress/plan_produccion-aws-2026-11-06.md. Firma delegada al leader (ampliación del 2026-11-06 en CLAUDE.md). Responsable: leader @Backend.",
     "acceptance_criteria": [
