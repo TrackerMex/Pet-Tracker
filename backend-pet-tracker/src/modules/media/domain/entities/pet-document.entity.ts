@@ -7,5 +7,5 @@ export interface PetDocument {
   vet: string | null;
   key: string;
   uploadedAt: Date | null;
-  createdBy: string;
+  createdBy: string | null;
 }

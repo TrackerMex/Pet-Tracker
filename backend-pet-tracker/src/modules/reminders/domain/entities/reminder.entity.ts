@@ -22,7 +22,7 @@ export interface ReminderProps {
   status: ReminderStatus;
   scheduleName: string | null;
   enqueuedAt: Date | null;
-  createdBy: string;
+  createdBy: string | null;
   recurrence: ReminderRecurrence | null;
 }
 
@@ -37,7 +37,7 @@ export class Reminder implements ReminderProps {
   readonly status: ReminderStatus;
   readonly scheduleName: string | null;
   readonly enqueuedAt: Date | null;
-  readonly createdBy: string;
+  readonly createdBy: string | null;
   readonly recurrence: ReminderRecurrence | null;
 
   constructor(props: ReminderProps) {

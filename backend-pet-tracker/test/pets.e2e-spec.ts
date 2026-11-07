@@ -6,12 +6,21 @@ import request, { Response } from 'supertest';
 import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
+import { devices, petDevices } from '@/db/schema/devices.schema';
 import { auditLog } from '@/db/schema/audit-log.schema';
 import { pets, petUsers } from '@/db/schema/pets.schema';
 import { users } from '@/db/schema/users.schema';
+import { PET_REPOSITORY } from '@/modules/pets/domain/repositories/pet.repository';
+import type { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
 import { localDayOf, shiftDay } from '@/pipeline/local-day';
+import {
+  petStoresOf,
+  seedPetStores,
+  countPetStores,
+  cleanPetStores,
+} from './fixtures/pet-stores';
 import { AppModule } from './../src/app.module';
 
 /** Shape del contrato R8 tal como viaja por HTTP (todo serializado). */
@@ -55,7 +64,7 @@ function listBody(response: Response): PetProfileBody[] {
  * (R9) es obligatorio por acceptance criteria: usuario B sobre mascota de
  * A recibe el MISMO 404 que una mascota inexistente, en GET, PATCH y
  * DELETE. Los tokens se firman con el TokenService de la app (el AuthGuard
- * no consulta `users`, solo verifica la firma — auth-login-me R8), y los
+ * consulta `users` por PK — #247 R2), y los
  * usuarios se siembran directo en la base: la gestion de miembros por API
  * esta fuera de alcance de #5.
  */
@@ -95,6 +104,8 @@ describe('Pets CRUD (e2e)', () => {
 
   const createdUserIds: string[] = [];
   const createdPetIds: string[] = [];
+  const createdDeviceIds: string[] = [];
+  const seededStorePetIds: string[] = [];
 
   interface TestUser {
     id: string;
@@ -143,6 +154,19 @@ describe('Pets CRUD (e2e)', () => {
     return body;
   }
 
+  async function seedDevice(label: string): Promise<string> {
+    const id = uuidv7();
+    await db.insert(devices).values({
+      id,
+      model: 'e2e-collar',
+      isSimulated: true,
+      status: 'assigned',
+      esn: `${label}-${RUN_ID}`,
+    });
+    createdDeviceIds.push(id);
+    return id;
+  }
+
   function seedMembership(
     petId: string,
     userId: string,
@@ -180,6 +204,10 @@ describe('Pets CRUD (e2e)', () => {
     if (createdUserIds.length > 0) {
       await db.delete(users).where(inArray(users.id, createdUserIds));
     }
+    if (createdDeviceIds.length)
+      await db.delete(devices).where(inArray(devices.id, createdDeviceIds));
+    for (const petId of seededStorePetIds)
+      await cleanPetStores(petStoresOf(app), petId);
     await app.close();
   });
 
@@ -205,22 +233,16 @@ describe('Pets CRUD (e2e)', () => {
     });
 
     it('si el insert de pet_users falla, la fila de pets no persiste (rollback)', async () => {
-      // Token valido para un usuario que NO existe en `users`: el AuthGuard
-      // pasa (solo verifica firma), pero el insert de pet_users viola la FK
-      // user_id -> users.id dentro de la transaccion.
-      const ghostId = uuidv7();
-      const ghostToken = tokenService.sign({
-        sub: ghostId,
-        email: `ghost-${RUN_ID}@example.com`,
-      });
+      // Se llama al repositorio para provocar la FK: el guard rechaza al usuario ausente (#247 R2).
       const uniqueName = `Rollback-${RUN_ID}`;
-
-      const response = await api()
-        .post('/v1/pets')
-        .set('Authorization', `Bearer ${ghostToken}`)
-        .send({ name: uniqueName, species: 'dog', birthDate: '2024-01-15' });
-
-      expect(response.status).toBeGreaterThanOrEqual(500);
+      await expect(
+        app
+          .get<PetRepository>(PET_REPOSITORY)
+          .createWithOwner(
+            { name: uniqueName, species: 'dog', birthDate: '2024-01-15' },
+            uuidv7(),
+          ),
+      ).rejects.toThrow();
 
       const orphanPets = await db
         .select()
@@ -754,6 +776,49 @@ describe('Pets CRUD (e2e)', () => {
       expect(new URL(detailPhotoUrl ?? '').pathname).toBe(
         listPhotoUrl.pathname,
       );
+    });
+  });
+  describe('#247 R10: borrar la mascota libera su collar', () => {
+    it('#247 R10: DELETE /v1/pets/:id deja el collar asignado en available', async () => {
+      const owner = await seedUser('247-r10');
+      const pet = await createPetViaApi(owner);
+      const deviceId = await seedDevice('247-r10');
+      await db
+        .insert(petDevices)
+        .values({ id: uuidv7(), petId: pet.id, deviceId });
+      await api()
+        .delete(`/v1/pets/${pet.id}`)
+        .set('Authorization', `Bearer ${owner.token}`)
+        .expect(204);
+      const [device] = await db
+        .select()
+        .from(devices)
+        .where(eq(devices.id, deviceId));
+      expect(device.status).toBe('available');
+    });
+  });
+  describe('#247 R13: borrar la mascota purga S3 y DynamoDB', () => {
+    it('#247 R13: DELETE /v1/pets/:id borra pets/<petId>/ y PET#<petId> y no toca otra mascota', async () => {
+      const owner = await seedUser('247-r13');
+      const pet = await createPetViaApi(owner);
+      const foreignPetId = uuidv7();
+      const stores = petStoresOf(app);
+      for (const petId of [pet.id, foreignPetId]) {
+        seededStorePetIds.push(petId);
+        await seedPetStores(stores, petId);
+      }
+      await api()
+        .delete(`/v1/pets/${pet.id}`)
+        .set('Authorization', `Bearer ${owner.token}`)
+        .expect(204);
+      expect(await countPetStores(stores, pet.id)).toEqual({
+        s3Objects: 0,
+        dynamoItems: 0,
+      });
+      expect(await countPetStores(stores, foreignPetId)).toEqual({
+        s3Objects: 2,
+        dynamoItems: 30,
+      });
     });
   });
 });

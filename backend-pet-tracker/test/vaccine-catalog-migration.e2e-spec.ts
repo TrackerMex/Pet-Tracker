@@ -154,8 +154,22 @@ describe('#226 vaccine catalog migration (e2e)', () => {
       app.setGlobalPrefix('v1');
       await app.init();
       tokens = app.get<TokenService>(TOKEN_SERVICE);
+      const catalogUserId = uuidv7();
+      await drizzle(poolA)
+        .insert(users)
+        .values({
+          id: catalogUserId,
+          email: `catalog-${runId}@example.com`,
+          passwordHash: 'e2e',
+          firstName: 'Catalog',
+          lastName: 'E2e',
+          phone: '+525512345678',
+          country: 'MX',
+          timezone: 'UTC',
+          termsAcceptedAt: new Date(),
+        });
       catalogToken = tokens.sign({
-        sub: uuidv7(),
+        sub: catalogUserId,
         email: `catalog-${runId}@example.com`,
       });
     });

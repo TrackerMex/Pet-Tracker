@@ -23,9 +23,9 @@ export const petDocuments = pgTable(
     vet: varchar('vet', { length: 120 }),
     key: text('key').notNull(),
     uploadedAt: timestamp('uploaded_at', { withTimezone: true }),
-    createdBy: uuid('created_by')
-      .notNull()
-      .references(() => users.id),
+    createdBy: uuid('created_by').references(() => users.id, {
+      onDelete: 'set null',
+    }),
   },
   (table) => [index('pet_documents_pet_id_idx').on(table.petId)],
 );

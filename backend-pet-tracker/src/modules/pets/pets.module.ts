@@ -4,6 +4,8 @@ import { PetDeviceReadModule } from '@/modules/devices/pet-device-read.module';
 import { PetPhotoReadModule } from '@/modules/media/pet-photo-read.module';
 import { PetVaccineReadModule } from '@/modules/health/pet-vaccine-read.module';
 import { PetMealsReadModule } from '@/modules/nutrition/pet-meals-read.module';
+import { PET_DATA_PURGER } from '@/modules/pets/domain/ports/pet-data-purger';
+import { PetDataPurgerAwsAdapter } from '@/modules/pets/infrastructure/pet-data-purger.aws.adapter';
 import { PET_REPOSITORY } from './domain/repositories/pet.repository';
 import { CreatePetUseCase } from './application/use-cases/create-pet.use-case';
 import { DeletePetUseCase } from './application/use-cases/delete-pet.use-case';
@@ -40,11 +42,12 @@ import { PetDrizzleRepository } from './infrastructure/repositories/pet.drizzle.
     SetLostModeUseCase,
     DeletePetUseCase,
     PetAccessGuard,
+    { provide: PET_DATA_PURGER, useClass: PetDataPurgerAwsAdapter },
     {
       provide: PET_REPOSITORY,
       useClass: PetDrizzleRepository,
     },
   ],
-  exports: [PET_REPOSITORY, PetAccessGuard],
+  exports: [PET_REPOSITORY, PetAccessGuard, PET_DATA_PURGER],
 })
 export class PetsModule {}

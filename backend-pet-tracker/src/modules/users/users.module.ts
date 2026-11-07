@@ -1,4 +1,8 @@
 import { Module } from '@nestjs/common';
+import { PetsModule } from '@/modules/pets/pets.module';
+import { DeleteAccountUseCase } from '@/modules/users/application/use-cases/delete-account.use-case';
+import { ACCOUNT_DELETION_REPOSITORY } from '@/modules/users/domain/repositories/account-deletion.repository';
+import { AccountDeletionDrizzleRepository } from '@/modules/users/infrastructure/repositories/account-deletion.drizzle.repository';
 import { AuthModule } from '@/modules/auth/auth.module';
 import { DeletePushTokenUseCase } from './application/use-cases/delete-push-token.use-case';
 import { GetProfileUseCase } from './application/use-cases/get-profile.use-case';
@@ -21,9 +25,14 @@ import { UsersController } from './infrastructure/users.controller';
  * mecanismo por el que AlertsEngineModule importa PetsModule.
  */
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, PetsModule],
   controllers: [UsersController],
   providers: [
+    DeleteAccountUseCase,
+    {
+      provide: ACCOUNT_DELETION_REPOSITORY,
+      useClass: AccountDeletionDrizzleRepository,
+    },
     GetProfileUseCase,
     UpdateProfileUseCase,
     RegisterPushTokenUseCase,

@@ -74,6 +74,8 @@ tags: [harness, spec]
   token) a través del decorador de parámetro `@CurrentUser()` en el handler
   — sin una consulta adicional a `users` por parte del guard.
 
+> **Enmendado por #247 R2** (users-account-deletion-api): el guard hace una consulta por PK a `users` y responde 401 si el usuario del token ya no existe.
+
 ### Perfil — lectura
 
 - **R9**: WHEN se envía `GET /v1/me` con un JWT válido y vigente, THE SYSTEM

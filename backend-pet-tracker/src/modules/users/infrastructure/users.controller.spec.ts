@@ -1,9 +1,20 @@
-import { HttpStatus, RequestMethod } from '@nestjs/common';
+import {
+  HttpStatus,
+  RequestMethod,
+  ForbiddenException,
+  UnauthorizedException,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   HTTP_CODE_METADATA,
   METHOD_METADATA,
   PATH_METADATA,
 } from '@nestjs/common/constants';
+import {
+  InvalidCredentialsError,
+  UserNotFoundError,
+} from '@/modules/auth/domain/errors/user.errors';
+import type { DeleteAccountUseCase } from '@/modules/users/application/use-cases/delete-account.use-case';
 import { IS_PUBLIC_KEY } from '@/modules/auth/infrastructure/decorators/public.decorator';
 import type { CurrentUserPayload } from '@/modules/auth/infrastructure/decorators/current-user.decorator';
 import type { DeletePushTokenUseCase } from '@/modules/users/application/use-cases/delete-push-token.use-case';
@@ -20,6 +31,7 @@ const LAST_SEEN_AT = new Date('2026-08-07T10:00:00.000Z');
 function controller(overrides: {
   register?: jest.Mock;
   remove?: jest.Mock;
+  deleteAccount?: jest.Mock;
 }): UsersController {
   return new UsersController(
     {} as GetProfileUseCase,
@@ -37,6 +49,10 @@ function controller(overrides: {
     {
       execute: overrides.remove ?? jest.fn().mockResolvedValue(undefined),
     } as unknown as DeletePushTokenUseCase,
+    {
+      execute:
+        overrides.deleteAccount ?? jest.fn().mockResolvedValue(undefined),
+    } as unknown as DeleteAccountUseCase,
   );
 }
 
@@ -46,7 +62,9 @@ function controller(overrides: {
  * no arrastrar el `this` sin ligar que @typescript-eslint/unbound-method
  * (con razon) prohibe.
  */
-function handlerOf(name: 'registerPushToken' | 'deletePushToken'): object {
+function handlerOf(
+  name: 'registerPushToken' | 'deletePushToken' | 'deleteMe',
+): object {
   const descriptor = Object.getOwnPropertyDescriptor(
     UsersController.prototype,
     name,
@@ -135,5 +153,60 @@ describe('R4: el body invalido es 400 antes de tocar la base', () => {
 
     expect(register).not.toHaveBeenCalled();
     expect(remove).not.toHaveBeenCalled();
+  });
+});
+
+describe('#247 R3: DELETE /v1/me exige JWT y responde 204', () => {
+  it('#247 R3: ni el controller ni deleteMe llevan @Public()', () => {
+    expect(Reflect.getMetadata(IS_PUBLIC_KEY, UsersController)).toBeUndefined();
+    expect(
+      Reflect.getMetadata(IS_PUBLIC_KEY, handlerOf('deleteMe')),
+    ).toBeUndefined();
+  });
+  it('#247 R3: deleteMe es DELETE en la raíz de me con 204', () => {
+    expect(Reflect.getMetadata(PATH_METADATA, handlerOf('deleteMe'))).toBe('/');
+    expect(Reflect.getMetadata(METHOD_METADATA, handlerOf('deleteMe'))).toBe(
+      RequestMethod.DELETE,
+    );
+    expect(Reflect.getMetadata(HTTP_CODE_METADATA, handlerOf('deleteMe'))).toBe(
+      HttpStatus.NO_CONTENT,
+    );
+  });
+  it('#247 R3: delega en DeleteAccountUseCase con el id y la contraseña', async () => {
+    const deleteAccount = jest.fn().mockResolvedValue(undefined);
+    await expect(
+      controller({ deleteAccount }).deleteMe(USER, { password: 'secret' }),
+    ).resolves.toBeUndefined();
+    expect(deleteAccount).toHaveBeenCalledWith('user-1', 'secret');
+  });
+});
+describe('#247 R6: InvalidCredentialsError del borrado es 403 Invalid password', () => {
+  it('#247 R6: responde ForbiddenException con el body exacto', async () => {
+    const result = controller({
+      deleteAccount: jest.fn().mockRejectedValue(new InvalidCredentialsError()),
+    }).deleteMe(USER, { password: 'secret' });
+    await expect(result).rejects.toBeInstanceOf(ForbiddenException);
+    const error: unknown = await result.catch((error: unknown) => error);
+    expect((error as ForbiddenException).getResponse()).toEqual({
+      statusCode: 403,
+      message: 'Invalid password',
+      error: 'Forbidden',
+    });
+  });
+});
+describe('#247 R7: UserNotFoundError del borrado es 401', () => {
+  it('#247 R7: responde UnauthorizedException, nunca NotFoundException', async () => {
+    const result = controller({
+      deleteAccount: jest
+        .fn()
+        .mockRejectedValue(new UserNotFoundError('user-1')),
+    }).deleteMe(USER, { password: 'secret' });
+    await expect(result).rejects.toBeInstanceOf(UnauthorizedException);
+    await expect(result).rejects.not.toBeInstanceOf(NotFoundException);
+    const error: unknown = await result.catch((error: unknown) => error);
+    expect((error as UnauthorizedException).getResponse()).toEqual({
+      statusCode: 401,
+      message: 'Unauthorized',
+    });
   });
 });

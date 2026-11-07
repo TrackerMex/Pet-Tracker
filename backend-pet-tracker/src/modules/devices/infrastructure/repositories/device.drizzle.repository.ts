@@ -18,6 +18,8 @@ import {
   DeviceRepository,
 } from '@/modules/devices/domain/repositories/device.repository';
 
+import { releaseDeviceTx } from './release-device.tx';
+
 type DeviceRow = typeof devices.$inferSelect;
 
 /** Columna UNIQUE de `devices` para cada identificador del claim (D4). */
@@ -111,17 +113,9 @@ export class DeviceDrizzleRepository implements DeviceRepository {
 
   async release(assignmentId: string, deviceId: string): Promise<void> {
     // R13: cierre del historial + cache de status atomicos.
-    await this.db.transaction(async (tx) => {
-      await tx
-        .update(petDevices)
-        .set({ releasedAt: new Date() })
-        .where(eq(petDevices.id, assignmentId));
-
-      await tx
-        .update(devices)
-        .set({ status: 'available', updatedAt: new Date() })
-        .where(eq(devices.id, deviceId));
-    });
+    await this.db.transaction((tx) =>
+      releaseDeviceTx(tx, assignmentId, deviceId),
+    );
   }
 }
 

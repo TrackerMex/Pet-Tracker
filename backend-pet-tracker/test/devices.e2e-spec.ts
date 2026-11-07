@@ -974,24 +974,31 @@ describe('Devices claim (e2e)', () => {
         activationCode: device.activationCode,
       }).expect(201);
 
-      // DELETE de #5: el ON DELETE CASCADE borra la fila de pet_devices y
-      // nadie actualiza devices.status — queda 'assigned' huerfano.
+      // Desde #247 R10 el DELETE libera el collar antes de que pet_devices
+      // caiga en cascada: devices.status queda 'available'.
       await api()
         .delete(`/v1/pets/${petA.id}`)
         .set('Authorization', `Bearer ${ownerA.token}`)
         .expect(204);
 
-      const [orphaned] = await db
+      const [released] = await db
         .select()
         .from(devices)
         .where(eq(devices.id, device.id));
-      expect(orphaned.status).toBe('assigned');
+      expect(released.status).toBe('available');
 
       const assignments = await db
         .select()
         .from(petDevices)
         .where(eq(petDevices.deviceId, device.id));
       expect(assignments).toHaveLength(0);
+
+      // Los collares que quedaron huerfanos antes de #247 conservan el cache
+      // en 'assigned' sin fila activa: se siembra ese estado a mano.
+      await db
+        .update(devices)
+        .set({ status: 'assigned' })
+        .where(eq(devices.id, device.id));
 
       // La disponibilidad se deriva de la fila activa, no del cache de
       // status: el device sigue reclamable (D3).

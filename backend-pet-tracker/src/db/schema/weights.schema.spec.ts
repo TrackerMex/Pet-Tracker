@@ -44,7 +44,7 @@ describe('R1 (health-weights #15): tabla weights y migracion 0010 nueva', () => 
     expect(columns.get('body_condition')?.getSQLType()).toBe('integer');
     expect(columns.get('measured_at')?.notNull).toBe(true);
     expect(columns.get('measured_at')?.getSQLType()).toBe('date');
-    expect(columns.get('created_by')?.notNull).toBe(true);
+    expect(columns.get('created_by')?.notNull).toBe(false);
   });
 
   it('aplica las FKs y el cascade solo a pet_id', () => {
@@ -63,7 +63,7 @@ describe('R1 (health-weights #15): tabla weights y migracion 0010 nueva', () => 
         {
           column: 'created_by',
           foreignTable: 'users',
-          onDelete: 'no action',
+          onDelete: 'set null',
         },
       ]),
     );

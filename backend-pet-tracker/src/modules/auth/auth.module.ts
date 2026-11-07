@@ -101,6 +101,6 @@ import { JwtTokenService } from './infrastructure/security/jwt-token-service';
   ],
   // USER_REPOSITORY se reexporta para que UsersModule (GET/PATCH /v1/me) lo
   // reutilice sin duplicar la interface ni el token (docs/architecture.md).
-  exports: [USER_REPOSITORY],
+  exports: [USER_REPOSITORY, PASSWORD_HASHER],
 })
 export class AuthModule {}
